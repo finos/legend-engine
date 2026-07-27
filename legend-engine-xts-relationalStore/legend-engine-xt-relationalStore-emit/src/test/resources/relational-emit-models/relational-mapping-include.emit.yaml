@@ -1,0 +1,38 @@
+name: relational-mapping-include
+title: "Mapping Composition via include mapping"
+description: |
+  A base mapping owns the Person class mapping; a second mapping pulls it in
+  with `include mapping demo::PersonBaseMapping` and adds only the Firm class
+  mapping of its own. Both classes are then queried through the including
+  mapping. Proves that an included mapping's class mappings are resolvable from
+  the including mapping exactly as if they had been declared locally — the
+  composition mechanism used to layer mappings without duplicating them.
+
+modelSources:
+  model:
+    root: relational-mapping-include
+    files:
+      - data/testData.pure
+      - mapping/baseMapping.pure
+      - mapping/includingMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+    - source: relational-shared-firm-db.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:mapping-include
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - composition
+  - h2
+  - mapping-include
+  - mapping-test
+  - shared-domain
+  - shared-store

@@ -30,14 +30,16 @@ modelSources:
     - source: relation-shared-data.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-filter
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - mapping-test

@@ -1,0 +1,51 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relation-primary-key
+title: "Relation Function Mapping — Explicit ~primaryKey (Relation Form)"
+description: |
+  Closes the relation-primary-key gap: the RELATION-form ~primaryKey — a colon
+  followed by a bracketed list of bare column identifiers (grammar rule
+  `primaryKey` in RelationFunctionMappingParserGrammar.g4), resolved at compile
+  time against the ~func's RelationType. Two mappings over the shared Employee
+  ~func exercise both the single-column (`~primaryKey: [ID]`) and composite
+  (`~primaryKey: [ID, LAST_NAME]`) forms, each with a testSuite that projects and
+  asserts. This is distinct from the relational `~primaryKey ([db]Table.COL)`
+  form that relation-relational-union / relation-mixed-association-chain use on
+  their relational set implementations.
+
+modelSources:
+  model:
+    root: relation-primary-key
+    files:
+      - mapping/primaryKeyMapping.pure
+  dependencies:
+    - source: relation-shared-data.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-primary-key
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - relation
+  - primary-key

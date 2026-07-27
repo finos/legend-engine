@@ -39,13 +39,17 @@ modelSources:
     - source: relation-shared-db.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-model-join
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - grammar:milestoning
-  - store:relation-model-join
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
 complexity: intermediate

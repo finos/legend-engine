@@ -24,18 +24,19 @@ modelSources:
     - source: relational-shared-firm-db.emit.yaml
 
 features:
-  - class
-  - association
-  - derived-property
-  - relational-store
-  - relational-mapping
-  - relational-connection
-  - runtime
-  - service
-  - service-test
+  - execution:service
+  - execution:service-test
+  - grammar:association
+  - grammar:derived-property
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-inner-join
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - join

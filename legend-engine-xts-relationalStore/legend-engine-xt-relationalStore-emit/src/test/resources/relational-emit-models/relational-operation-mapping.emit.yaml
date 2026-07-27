@@ -1,0 +1,36 @@
+name: relational-operation-mapping
+title: "Operation Mapping with Inheritance Dispatch"
+description: |
+  A Vehicle hierarchy stored table-per-class — Car in CarTable, Truck in
+  TruckTable, with no shared parent table — where the abstract root is mapped
+  by an `Operation` element invoking the `inheritance` router operation with no
+  parameters. Proves that the operation resolves the mapped leaf subtypes of
+  the root class at routing time, so a query on Vehicle reaches every leaf
+  table without naming the subtypes anywhere in the query.
+
+modelSources:
+  model:
+    root: relational-operation-mapping
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/vehicleMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:operation-mapping
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inheritance
+  - mapping-test
+  - operation-mapping
+  - table-per-class

@@ -38,11 +38,13 @@ modelSources:
       - model/temporalDepartment.pure
 
 features:
-  - scaffolding:class
-  - grammar:enumeration
   - grammar:association
   - grammar:derived-property
-  - grammar:milestoning
+  - grammar:enumeration
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:processing-temporal
+  - scaffolding:class
 stores: []
 complexity: basic
 tags:

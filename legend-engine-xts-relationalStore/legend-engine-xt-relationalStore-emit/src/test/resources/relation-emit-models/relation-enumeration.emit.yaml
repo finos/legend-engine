@@ -31,15 +31,16 @@ modelSources:
     - source: relation-shared-db.emit.yaml
 
 features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:function
+  - mapping:enumeration-mapping
   - scaffolding:class
   - scaffolding:relation-function
   - scaffolding:relation-mapping
-  - grammar:enumeration-mapping
-  - execution:data-element
-  - execution:test-data
 stores:
   - relational
-complexity: basic
+complexity: intermediate
 tags:
   - h2
   - mapping-test

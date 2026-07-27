@@ -23,8 +23,8 @@
     </parent>
 
     <artifactId>legend-engine-xt-relationalStore-emit</artifactId>
-    <name>Legend Engine - XT - Relational Store - EMIT Examples</name>
-    <description>Example EMIT (Engine Model Integration Test) models exercising the relational store: parse, compile and execute relational mapping tests against an in-memory H2.</description>
+    <name>Legend Engine - XT - Relational Store - EMIT Tests</name>
+    <description>EMIT (Engine Model Integration Test) models exercising the relational store: parse, compile and execute relational mapping tests against an in-memory H2.</description>
 
     <dependencies>
         <!-- EMIT framework + JUnit integration -->

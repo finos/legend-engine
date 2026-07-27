@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A two-schema H2 store shared by the relational store-feature EMIT models.
+// HR holds EMPLOYEE and DEPARTMENT; SALES holds SALE. Emp_Dept joins within HR;
+// Emp_Sale joins EMPLOYEE (HR) to SALE (SALES) across the schema boundary.
+###Relational
+Database demo::store::JoinsDB
+(
+  Schema HR
+  (
+    Table EMPLOYEE
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      DEPT_ID INTEGER
+    )
+    Table DEPARTMENT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      LOCATION VARCHAR(100)
+    )
+  )
+  Schema SALES
+  (
+    Table SALE
+    (
+      ID INTEGER PRIMARY KEY,
+      EMP_ID INTEGER,
+      AMOUNT INTEGER
+    )
+  )
+
+  Join Emp_Dept(HR.EMPLOYEE.DEPT_ID = HR.DEPARTMENT.ID)
+  Join Emp_Sale(HR.EMPLOYEE.ID = SALES.SALE.EMP_ID)
+
+  // A filter on DEPARTMENT; a class mapping on EMPLOYEE applies it through the
+  // Emp_Dept join (~filter [db]@Emp_Dept | [db]NycDeptFilter) to filter employees
+  // by a column of another table — used by relational-cross-table-filter.
+  Filter NycDeptFilter(HR.DEPARTMENT.LOCATION = 'NYC')
+)

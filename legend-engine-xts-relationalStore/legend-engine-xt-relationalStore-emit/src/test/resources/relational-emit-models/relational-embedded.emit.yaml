@@ -1,0 +1,34 @@
+name: relational-embedded
+title: "Embedded Relational Mapping of a Complex Property"
+description: |
+  An Employee whose `address` is a complex-typed property is mapped from
+  columns living on the Employee's own denormalized table, using an embedded
+  property mapping — `address ( line1: ..., postcode: ... )` — rather than a
+  separate Address class mapping. Proves that a complex property can be
+  materialised from the owning table's columns with no join and no standalone
+  set implementation, including the embedded block's own `~primaryKey`.
+
+modelSources:
+  model:
+    root: relational-embedded
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/employeeMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-embedded
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - denormalized
+  - embedded
+  - h2
+  - mapping-test
