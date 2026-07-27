@@ -156,8 +156,15 @@ function <<access.private>> meta::external::language::java::transform::processVa
 
 function meta::external::language::java::transform::processLambda(l:LambdaFunction<Any>[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
-    let parameters = $l.classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::FunctionType).parameters->map(p|$p->processVariableExpressionAsParameter($conventions, $debug->indent()));
-    let expression = $l.expressionSequence->evaluateAndDeactivate()->statementsForBlock($conventions->addProvidedVariables($parameters), $debug)->j_block();
+    let keyedParameters = $l.classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::FunctionType).parameters->map(p|
+       let baseParam  = $p->processVariableExpressionAsParameter($conventions, $debug->indent());
+       let key        = $baseParam->variableName();
+       let emitted    = if($key == 'this', |$key, |uniqueVariableName($key, $conventions.variablesInScope));
+       let finalParam = if($emitted == $key, |$baseParam, |j_parameter($baseParam.type, $emitted));
+       pair($key, $finalParam);
+    );
+    let parameters = $keyedParameters->map(kp|$kp.second);
+    let expression = $l.expressionSequence->evaluateAndDeactivate()->statementsForBlock($conventions->addProvidedVariablesRenamed($keyedParameters), $debug)->j_block();
     j_lambda($parameters, $expression, javaFunctionType($parameters.type, $expression.type));
 }
 function <<access.private>> meta::external::language::java::transform::processInstanceValue(i: InstanceValue[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
