@@ -64,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.testable.assertion.RelationAssertionColumnTypes;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -77,6 +78,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Servic
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
 import java.io.Closeable;
 import java.util.List;
@@ -153,25 +155,6 @@ public class ServiceTestRunner implements TestRunner
         throw new UnsupportedOperationException("Execution type : " + protocolService.execution.getClass().getSimpleName() + " not supported with ServiceTestRunner");
     }
 
-    private TestConnectionBuildParameters computeHints(PureModel pureModel)
-    {
-        try
-        {
-            if (this.pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
-            {
-                Root_meta_legend_service_metamodel_PureExecution pureExecution = (Root_meta_legend_service_metamodel_PureExecution) this.pureService._execution();
-                if (TestReturnTypeHelper.isRelationReturnType(pureExecution._func(), pureModel))
-                {
-                    return TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
-                }
-            }
-        }
-        catch (Exception ignored)
-        {
-            // If we can't determine the return type, default to H2
-        }
-        return TestConnectionBuildParameters.NONE;
-    }
 
     private Map<String, String> getAllValidKeysForExecEnv(String execKey, ServiceTestSuite suite, List<String> testIds)
     {
@@ -199,7 +182,7 @@ public class ServiceTestRunner implements TestRunner
         return testWithKey;
     }
 
-    private TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan)
+    private TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan, RelationAssertionColumnTypes relationAssertionColumnTypes)
     {
         SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
 
@@ -226,7 +209,7 @@ public class ServiceTestRunner implements TestRunner
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
-                AssertionStatus status = assertion.accept(new TestAssertionEvaluator(result, testSerializationFormat));
+                AssertionStatus status = assertion.accept(new TestAssertionEvaluator(result, testSerializationFormat, relationAssertionColumnTypes));
                 if (status == null)
                 {
                     throw new RuntimeException("Can't evaluate the test assertion: '" + assertion.id + "'");
@@ -305,9 +288,30 @@ public class ServiceTestRunner implements TestRunner
 
     private abstract class ServiceTestSuiteSession extends AbstractTestSuiteSessionWithResources<ServiceTestSuite, ServiceTest, TestResult>
     {
+        protected final RelationAssertionColumnTypes relationAssertionColumnTypes;
+        protected final TestConnectionBuildParameters hints;
+
         private ServiceTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd)
         {
             super(pureSuite, protocolSuite, pureModel, pmcd, ServiceTestSuiteSession::getTestSuiteTests, ServiceTestSuiteSession::getAtomicTestId);
+            TestConnectionBuildParameters computedHints = TestConnectionBuildParameters.NONE;
+            RelationAssertionColumnTypes computedColumnTypes = RelationAssertionColumnTypes.NONE;
+            try
+            {
+                FunctionDefinition<?> func = (ServiceTestRunner.this.pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
+                        ? ((Root_meta_legend_service_metamodel_PureExecution) ServiceTestRunner.this.pureService._execution())._func()
+                        : null;
+                if (func != null && TestReturnTypeHelper.isRelationReturnType(func, pureModel))
+                {
+                    computedHints = TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
+                    computedColumnTypes = RelationAssertionColumnTypes.of(TestReturnTypeHelper.getRelationReturnColumns(func, pureModel));
+                }
+            }
+            catch (Exception ignored)
+            {
+            }
+            this.hints = computedHints;
+            this.relationAssertionColumnTypes = computedColumnTypes;
         }
 
         @Override
@@ -318,7 +322,7 @@ public class ServiceTestRunner implements TestRunner
 
         protected TestResult runSingleExecTest(ServiceTest atomicTest, SingleExecutionPlan executionPlan)
         {
-            TestResult testResult = executeServiceTest(atomicTest, executionPlan);
+            TestResult testResult = executeServiceTest(atomicTest, executionPlan, this.relationAssertionColumnTypes);
             testResult.testable = testablePath(this.pureModel);
             testResult.testSuiteId = getTestSuiteId();
             return testResult;
@@ -346,13 +350,12 @@ public class ServiceTestRunner implements TestRunner
         @Override
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer) throws Exception
         {
-            TestConnectionBuildParameters hints = computeHints(this.pureModel);
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport()));
             MutableList<PlanTransformer> planTransformers = ServiceTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
             PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(this.execution);
             if (this.execution.runtime != null)
             {
-                Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(this.execution.runtime, this.protocolSuite.testData, this.pmcd, hints);
+                Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(this.execution.runtime, this.protocolSuite.testData, this.pmcd, this.hints);
                 testPureSingleExecution.runtime = runtimeWithCloseables.getOne();
                 registerCloseables(runtimeWithCloseables.getTwo());
             }
@@ -396,7 +399,6 @@ public class ServiceTestRunner implements TestRunner
         @Override
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer) throws Exception
         {
-            TestConnectionBuildParameters hints = computeHints(this.pureModel);
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport()));
             MutableList<PlanTransformer> planTransformers = ServiceTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
@@ -424,7 +426,7 @@ public class ServiceTestRunner implements TestRunner
                     PureSingleExecution pureSingleExecution = new PureSingleExecution();
                     pureSingleExecution.func = this.execution.func;
                     pureSingleExecution.mapping = param.mapping;
-                    Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, this.protocolSuite.testData, this.pmcd, hints);
+                    Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, this.protocolSuite.testData, this.pmcd, this.hints);
                     pureSingleExecution.runtime = runtimeWithCloseables.getOne();
                     pureSingleExecution.executionOptions = param.executionOptions;
                     registerCloseables(runtimeWithCloseables.getTwo());
