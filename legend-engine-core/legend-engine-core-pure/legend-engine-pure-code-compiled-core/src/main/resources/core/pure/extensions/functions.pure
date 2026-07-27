@@ -46,7 +46,7 @@ function meta::pure::extension::_storeContractForSetImplementation(extensions: E
         e: EmbeddedSetImplementation[1]|
             if($e.owner->isEmpty(),
                | $extensions->meta::pure::extension::storeContractForSetImplementation($e),
-               | $extensions->meta::pure::extension::_storeContractForSetImplementation($e.owner->toOne()->cast(@SetImplementation))
+               | $extensions->meta::pure::extension::_storeContractForSetImplementation($e->resolveRootFromEmbedded())
             ),
         i: InstanceSetImplementation[1]|
             $extensions->meta::pure::extension::storeContractForSetImplementation($i->toOne()),
