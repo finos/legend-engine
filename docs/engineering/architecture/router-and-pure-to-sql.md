@@ -371,6 +371,25 @@ After `processQuery` completes, several post-processors are applied:
 - Milestoning post-processors add temporal WHERE clauses.
 - `PostProcessor` chain (registered via `RelationalExecutionContext`) can apply user-defined
   SQL transformations (e.g. add schema prefixes, apply row-level-security policies).
+- Alias-limit column renaming — for dialects that set `aliasLimit` on their `DbExtension`
+  (e.g. Snowflake, see §5.3), `dbSpecificProcessor` runs
+  `meta::relational::postProcessor::reAliasColumnName::trimColumnName`, which shortens any
+  column alias longer than the dialect's limit while preserving output. It runs in two passes:
+  `search` collects the over-long names (computing the limit once via `lengthConfig` — see the
+  performance note below), and `replace` rebuilds the AST with the shortened aliases substituted.
+
+> **Performance note (why `replace` is memoized).** The `SQLQuery` AST is a **DAG, not a tree**:
+> a `Union` of many set-implementations doing many `SemiStructuredPropertyAccess` navigations
+> shares common base operands, so one node is reachable by many paths. A naive recursive rebuild
+> re-materializes each shared node once *per reaching path*, which is exponential in the sharing
+> depth and can exhaust even a large heap. `reAliasColumnName::replace` therefore threads an
+> **identity-keyed cache** (`Map<RelationalOperationElement, RelationalOperationElement>`, mirroring
+> `meta::relational::postProcessor::transform`): each distinct node is rebuilt once and reused by
+> identity, keeping the result a DAG. `search` similarly hoists `lengthConfig` (which builds the
+> full `DbExtension` registry) out of the per-node recursion so it runs once rather than per leaf.
+> If you add another AST-walking post-processor over this graph, follow the same two patterns —
+> memoize by node identity and hoist any per-dialect config lookups — or you will reintroduce the
+> same blow-up. See `trimColumnNamePostProcessor.pure`.
 
 ---
 
@@ -429,6 +448,7 @@ overridden by a dialect's extension implementation:
 | `ddlCommandsTranslator` | — | CREATE TABLE / DROP TABLE / LOAD TABLE DDL |
 | `isBooleanLiteralSupported` | true | Whether `TRUE`/`FALSE` literals are valid |
 | `isDbReservedIdentifier` | empty list | Whether an identifier needs quoting |
+| `aliasLimit` | empty (no limit) | Max column-alias length; when set, triggers the alias-limit column-rename post-processor (§4.6) |
 
 ### 5.4 DynaFunction Dispatch
 
