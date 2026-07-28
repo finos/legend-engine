@@ -1,0 +1,28 @@
+name: grammar-class-inheritance
+title: "Class Inheritance Hierarchy"
+description: |
+  A branching three-level class hierarchy — a root, two siblings extending it, and a
+  leaf extending one of those — together with a subclass whose derived property
+  reaches a property declared on its supertype, and a class holding a property typed
+  as the root that any subtype satisfies. Proves that supertype resolution, inherited
+  property visibility, and subtype substitutability hold through parse and compile
+  without a store or mapping involved. The existing inheritance coverage is all
+  relational (single-table / joined-table strategies), where the mapping strategy can
+  mask a plain modelling regression; this isolates the language construct.
+
+modelSources:
+  model:
+    root: grammar-class-inheritance
+    files:
+      - model.pure
+
+features:
+  - grammar:class-inheritance
+  - grammar:derived-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - inheritance
+  - subtype
+  - hierarchy

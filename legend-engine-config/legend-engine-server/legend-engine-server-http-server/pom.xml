@@ -50,6 +50,8 @@
                                 <subpath>src/test/resources/emit-models</subpath>
                                 <subpath>src/test/resources/relational-emit-models</subpath>
                                 <subpath>src/test/resources/relation-emit-models</subpath>
+                                <subpath>src/test/resources/grammar-emit-models</subpath>
+                                <subpath>src/test/resources/m2m-emit-models</subpath>
                             </includedRelativeSubpaths>
                         </configuration>
                     </execution>

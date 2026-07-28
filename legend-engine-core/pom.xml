@@ -35,5 +35,6 @@
         <module>legend-engine-core-query-pure-http-api</module>
         <module>legend-engine-core-identity</module>
         <module>legend-engine-core-emit</module>
+        <module>legend-engine-core-emit-tests</module>
     </modules>
 </project>

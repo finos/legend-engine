@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Profile demo::profile::Governance
+{
+  stereotypes: [pii, deprecated, internal];
+  tags: [owner, classification, since];
+}
+
+// A second profile, so stereotype and tag references have to be resolved against
+// the right profile rather than by bare name.
+Profile demo::profile::Lineage
+{
+  stereotypes: [derived];
+  tags: [sourceSystem];
+}
+
+// Stereotypes and tagged values applied to a class, and to individual properties
+// of that class — including a property carrying stereotypes and tags from both
+// profiles at once.
+Class <<demo::profile::Governance.internal>> {demo::profile::Governance.owner = 'data-platform', demo::profile::Governance.classification = 'restricted'} demo::profile::Customer
+{
+  customerId: String[1];
+  <<demo::profile::Governance.pii>> {demo::profile::Governance.classification = 'sensitive'} emailAddress: String[1];
+  <<demo::profile::Governance.deprecated>> {demo::profile::Governance.since = '2024-01-01'} legacyCode: String[0..1];
+  <<demo::profile::Governance.pii, demo::profile::Lineage.derived>> {demo::profile::Lineage.sourceSystem = 'crm'} normalisedName: String[1];
+}
+
+// Stereotypes and tagged values on an enumeration and on one of its values.
+Enum <<demo::profile::Governance.internal>> {demo::profile::Governance.owner = 'risk'} demo::profile::Tier
+{
+  GOLD,
+  <<demo::profile::Governance.deprecated>> {demo::profile::Governance.since = '2023-06-01'} PLATINUM,
+  SILVER
+}
+
+// Stereotypes and tagged values on an association and on its properties.
+Association <<demo::profile::Lineage.derived>> {demo::profile::Lineage.sourceSystem = 'crm'} demo::profile::Customer_Account
+{
+  <<demo::profile::Governance.internal>> account: demo::profile::Account[*];
+  customer: demo::profile::Customer[1];
+}
+
+Class demo::profile::Account
+{
+  accountId: String[1];
+  tier: demo::profile::Tier[1];
+}
+
+// Stereotypes and tagged values on a standalone function.
+function <<demo::profile::Governance.internal>> {demo::profile::Governance.owner = 'data-platform'} demo::profile::activeAccounts(accounts: demo::profile::Account[*]): demo::profile::Account[*]
+{
+  $accounts->filter(a | $a.tier != demo::profile::Tier.SILVER)
+}

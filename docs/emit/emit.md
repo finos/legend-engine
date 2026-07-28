@@ -295,6 +295,18 @@ The parent aggregator sits directly under `legend-engine-core/` (as a sibling of
 pipeline — parsing, compilation, generation, test execution, and plan generation — rather than
 being scoped to the `Testable` metamodel concept alone.
 
+**Everything inside `legend-engine-core-emit/` is framework.** The EMIT models under
+`legend-engine-emit/src/test/resources/emit-models/` are self-test fixtures for the runner —
+several drive fake test-only SPIs (`EmitDemo*Extension`) rather than real engine extensions, and
+one (`compile-failure`) is expected to fail. They exist to exercise the runner, not to demonstrate
+engine features, and should not be read as catalog examples. (Note that the §5.4 coverage report
+does still render them: the server pom excludes only `legend-engine-emit-junit` by name, so
+`legend-engine-emit`'s own fixtures reach the dashboard. Adding `legend-engine-emit` to
+`excludedDirectoryNames` would keep self-test fixtures out of the catalog view.) Catalog models for
+core engine features live in a separate module,
+`legend-engine-core/legend-engine-core-emit-tests`, which is a *sibling* of
+`legend-engine-core-emit` rather than a child of it precisely so the two are not confused.
+
 #### Distributed Test Locations
 
 Actual EMIT tests are **spread throughout the codebase**, living in the modules that own the
@@ -341,12 +353,41 @@ mechanism; see §4.1.)
 
 The same pattern applies to other extension modules (`legend-engine-xts-service`, `legend-engine-xts-generation`, etc.) — each owns the EMIT models for its feature area, with one `*.emit.yaml` per test and a sibling source-root directory. Most modules host a single suite and keep the plain `emit-models/` root name; disambiguate only when a module genuinely hosts more than one independently-owned suite, as above.
 
+Feature areas that are not extensions at all — core Pure language constructs and model-to-model
+mappings — are owned the same way by `legend-engine-core/legend-engine-core-emit-tests`. It applies
+the same two-suite split as the relational module, because language constructs and M2M mappings are
+independent subjects that should be runnable and attributable separately:
+
+```
+legend-engine-core/
+  legend-engine-core-emit-tests/            ← Core-feature catalog models (no store extension)
+    src/test/java/.../emit/core/
+      grammar/GrammarEMITTests.java         ← Pure language suite
+      m2m/M2MEMITTests.java                 ← Model-to-model mapping suite
+    src/test/resources/
+      grammar-emit-models/                  ← Parse + compile only: no store, no mapping
+        grammar-constraint.emit.yaml
+        grammar-constraint/model.pure
+        grammar-measure.emit.yaml
+        ...
+      m2m-emit-models/                      ← M2M mappings with executing test suites
+        m2m-transform.emit.yaml
+        m2m-transform/
+          model/source.pure
+          model/target.pure
+          mapping/employeeMapping.pure
+        ...
+```
+
 > **Coverage-report caveat:** the HTML coverage report's discovery walk (§5.4) only looks under
 > a root literally named `emit-models/` by default. A module using a disambiguated root name —
-> like `relational-emit-models/` and `relation-emit-models/` above — is invisible to the report
+> like `relational-emit-models/` and `relation-emit-models/` above, or `grammar-emit-models/` and
+> `m2m-emit-models/` in the core-feature module — is invisible to the report
 > unless its consuming pom adds that root to `includedRelativeSubpaths`. `legend-engine-server-http-server`
-> does this explicitly (see the table in §5.4) so both relational-store suites are represented in
+> does this explicitly (see the table in §5.4) so every such suite is represented in
 > the coverage dashboard; any other module that disambiguates its root needs the same override.
+> **This is the standing cost of the two-suite split** — pay it deliberately, and update the
+> server pom in the same PR that introduces the root.
 
 The `EMITRunner` automatically discovers all `*.emit.yaml` files. The YAML file explicitly configures which directories and files comprise the test.
 
@@ -666,7 +707,7 @@ still applies, are:
 | Parameter | Default | Server override |
 |---|---|---|
 | `outputFilePath` | `${project.build.outputDirectory}/emit/emit-coverage.html` (i.e. `target/classes/emit/...`, so jar packaging automatically bundles it into the consuming jar) | Pinned explicitly to the default so the server jar's bundled resource path stays fixed if the plugin default ever changes |
-| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | `["src/test/resources/emit-models", "src/test/resources/relational-emit-models", "src/test/resources/relation-emit-models"]` (adds the two disambiguated relational-store roots on top of the default) |
+| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | `["src/test/resources/emit-models", "src/test/resources/relational-emit-models", "src/test/resources/relation-emit-models", "src/test/resources/grammar-emit-models", "src/test/resources/m2m-emit-models"]` (adds the two disambiguated relational-store roots and the two core-feature roots on top of the default) |
 | `excludedDirectoryNames` | `["target"]` | `["target", "legend-engine-emit-junit"]` (excludes the binding module's bootstrap examples from the server-side report) |
 | `excludedDirectoryNamePrefixes` | `["."]` | — |
 | `excludedRelativeSubpaths` | `["src/main"]` | — |

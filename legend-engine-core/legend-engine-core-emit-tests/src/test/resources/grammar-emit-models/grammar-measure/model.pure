@@ -1,0 +1,53 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+// A measure with a canonical unit (marked with *) and two non-canonical units
+// whose conversion functions are lambdas back to the canonical unit.
+Measure demo::measure::Mass
+{
+  *Gram: x -> $x;
+  Kilogram: x -> $x * 1000;
+  Pound: x -> $x * 453.59;
+}
+
+// A second measure, to prove unit namespaces stay distinct: Second here must not
+// collide with anything in Mass, and the conversion arithmetic differs in kind
+// (integral multiples rather than decimal factors).
+Measure demo::measure::Duration
+{
+  *Second: x -> $x;
+  Minute: x -> $x * 60;
+  Hour: x -> $x * 3600;
+}
+
+// Unit-typed properties: the Measure~Unit form, across all three multiplicities
+// and across both measures, so the compiler must resolve each unit against its
+// owning measure rather than against the measure alone.
+Class demo::measure::Shipment
+{
+  shipmentId: String[1];
+  netWeight: demo::measure::Mass~Kilogram[1];
+  tareWeight: demo::measure::Mass~Gram[0..1];
+  itemWeights: demo::measure::Mass~Pound[*];
+  transitTime: demo::measure::Duration~Hour[1];
+}
+
+// A measure-typed property declared at the measure level rather than at a
+// specific unit, which is the weaker typing the metamodel also allows.
+Class demo::measure::WeighingRecord
+{
+  recordedBy: String[1];
+  measured: demo::measure::Mass[1];
+}

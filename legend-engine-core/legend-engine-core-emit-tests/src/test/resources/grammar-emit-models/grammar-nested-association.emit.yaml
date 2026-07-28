@@ -1,0 +1,29 @@
+name: grammar-nested-association
+title: "Multi-Level Association Traversal"
+description: |
+  Three chained associations — Person to Firm, Firm to Address, Address to Country —
+  each declared as an independent element, traversed by derived properties two, three
+  and four hops deep, including one traversal that crosses every association in the
+  model and comes back down the far side into a collection. Proves that property
+  references spanning several separately-declared associations resolve at compile
+  time, with multiplicity propagating correctly from [1] hops to [*] hops. The
+  existing nested-association coverage traverses a relation-function ModelJoin chain;
+  this isolates the plain association form.
+
+modelSources:
+  model:
+    root: grammar-nested-association
+    files:
+      - model.pure
+
+features:
+  - grammar:association
+  - grammar:derived-property
+  - grammar:nested-association
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - association
+  - traversal
+  - multi-level

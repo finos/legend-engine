@@ -1,0 +1,100 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::m2m::transform::EmployeeMapping
+(
+  *demo::m2m::transform::target::Employee: Pure
+  {
+    ~src demo::m2m::transform::source::S_Employee
+
+    // String concatenation across two source properties.
+    fullName: $src.firstName + ' ' + $src.lastName,
+    // Nested function application: substring of each name, then concatenated.
+    initials: $src.firstName->substring(0, 1) + $src.lastName->substring(0, 1),
+    // Arithmetic over two source properties.
+    netSalary: $src.grossSalary * (1.0 - $src.taxRate),
+    // Collection function chain: split a composite code and take one part.
+    department: $src.departmentCode->split('-')->at(0),
+    // Conditional transform selecting between two literals.
+    status: if($src.active, |'ACTIVE', |'INACTIVE')
+  }
+
+  testSuites:
+  [
+    transformSuite:
+    {
+      function: |demo::m2m::transform::target::Employee.all()->graphFetch(#{demo::m2m::transform::target::Employee{fullName, initials, netSalary, department, status}}#)->serialize(#{demo::m2m::transform::target::Employee{fullName, initials, netSalary, department, status}}#);
+      tests:
+      [
+        activeEmployee:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::transform::source::S_Employee:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"John","lastName":"Smith","grossSalary":120000.0,"taxRate":0.25,"departmentCode":"ENG-NYC","active":true}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":"John Smith","initials":"JS","netSalary":90000.0,"department":"ENG","status":"ACTIVE"}';
+                  }#;
+              }#
+          ];
+        },
+        inactiveEmployee:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::transform::source::S_Employee:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"Jane","lastName":"Doe","grossSalary":80000.0,"taxRate":0.5,"departmentCode":"OPS-LDN","active":false}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"fullName":"Jane Doe","initials":"JD","netSalary":40000.0,"department":"OPS","status":"INACTIVE"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

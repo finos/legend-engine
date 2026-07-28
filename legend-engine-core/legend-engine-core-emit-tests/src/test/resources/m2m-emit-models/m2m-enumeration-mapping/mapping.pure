@@ -1,0 +1,110 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::m2m::enumeration::InstrumentMapping
+(
+  *demo::m2m::enumeration::target::Instrument: Pure
+  {
+    ~src demo::m2m::enumeration::source::S_Instrument
+
+    identifier: $src.identifier,
+    // Named enumeration mapping applied to a string-valued source property.
+    identifierType: EnumerationMapping SynonymTypeMapping: $src.identifierType,
+    // A second enumeration mapping, keyed on integers rather than strings.
+    side: EnumerationMapping TradeSideMapping: $src.side
+  }
+
+  // Multiple source spellings collapse onto one enum value, so the transform is a
+  // genuine many-to-one lookup rather than a name match.
+  demo::m2m::enumeration::target::SynonymType: EnumerationMapping SynonymTypeMapping
+  {
+    CUSIP: ['cusip', 'CUSIP'],
+    ISIN: ['isin', 'ISIN'],
+    SEDOL: ['sedol', 'SEDOL']
+  }
+
+  demo::m2m::enumeration::target::TradeSide: EnumerationMapping TradeSideMapping
+  {
+    BUY: [0],
+    SELL: [1]
+  }
+
+  testSuites:
+  [
+    enumerationSuite:
+    {
+      function: |demo::m2m::enumeration::target::Instrument.all()->graphFetch(#{demo::m2m::enumeration::target::Instrument{identifier, identifierType, side}}#)->serialize(#{demo::m2m::enumeration::target::Instrument{identifier, identifierType, side}}#);
+      tests:
+      [
+        lowerCaseIsinBuy:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::enumeration::source::S_Instrument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"US0378331005","identifierType":"isin","side":0}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"US0378331005","identifierType":"ISIN","side":"BUY"}';
+                  }#;
+              }#
+          ];
+        },
+        upperCaseCusipSell:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::enumeration::source::S_Instrument:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"037833100","identifierType":"CUSIP","side":1}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"identifier":"037833100","identifierType":"CUSIP","side":"SELL"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

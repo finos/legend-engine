@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::function::Employee
+{
+  firstName: String[1];
+  lastName: String[1];
+  department: String[1];
+  salary: Integer[1];
+}
+
+// Simplest form: scalar parameters, scalar return, single-expression body.
+function demo::function::fullName(firstName: String[1], lastName: String[1]): String[1]
+{
+  $firstName + ' ' + $lastName
+}
+
+// Collection parameter and collection return.
+function demo::function::inDepartment(employees: demo::function::Employee[*], department: String[1]): demo::function::Employee[*]
+{
+  $employees->filter(e | $e.department == $department)
+}
+
+// Multi-statement body with let bindings, returning a scalar aggregate.
+function demo::function::averageSalary(employees: demo::function::Employee[*]): Float[1]
+{
+  let total = $employees->map(e | $e.salary)->sum();
+  let count = $employees->size();
+  if($count == 0, | 0.0, | $total->toFloat() / $count->toFloat());
+}
+
+// A function calling two other functions in this model, so cross-function
+// resolution has to happen at compile time.
+function demo::function::departmentSummary(employees: demo::function::Employee[*], department: String[1]): String[1]
+{
+  let members = demo::function::inDepartment($employees, $department);
+  $department + ': ' + $members->size()->toString() + ' staff, average ' + demo::function::averageSalary($members)->toString();
+}
+
+// Optional parameter and optional return, exercising non-[1] multiplicities on
+// both sides of the signature.
+function demo::function::firstOrNone(employees: demo::function::Employee[*]): demo::function::Employee[0..1]
+{
+  $employees->first()
+}
+
+// Zero-parameter function returning a literal collection.
+function demo::function::knownDepartments(): String[*]
+{
+  ['ENGINEERING', 'OPERATIONS', 'RISK']
+}

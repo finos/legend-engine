@@ -89,8 +89,9 @@ Apply the rule from `emit.md` §3.2:
 
 | Your model uses… | Place it in… |
 |---|---|
-| Only basic types (`class`, `enumeration`, `association`, `function`, constraints) | `legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/test/resources/emit-models/` (bootstrap examples for the framework itself — only for true core fixtures) |
-| M2M mapping (no service, no store) | `legend-engine-core/legend-engine-core-emit/legend-engine-emit-m2m` |
+| A fixture whose purpose is to exercise the EMIT runner itself (e.g. a deliberate compile failure, a dependency-clash case) | `legend-engine-core/legend-engine-core-emit/legend-engine-emit/src/test/resources/emit-models/` (bootstrap examples for the framework, several using fake test-only SPIs — not catalog content) |
+| Core Pure language constructs — constraint, measure, profile, qualified property, inheritance, function, association traversal | `legend-engine-core/legend-engine-core-emit-tests`, under `src/test/resources/grammar-emit-models/`, run by `GrammarEMITTests` |
+| M2M mapping (no service, no store) | `legend-engine-core/legend-engine-core-emit-tests`, under `src/test/resources/m2m-emit-models/`, run by `M2MEMITTests` |
 | Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relational-emit-models/`, run by `RelationalEMITTests` |
 | Relation (`~func`) function-based class mapping — `ClassName: Relation { ~func f():Relation<Any>[1]; ... }` | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relation-emit-models/`, run by `RelationEMITTests` |
 | Service / service-test (where the mapping & store are already on the service-emit classpath) | `legend-engine-xts-service/legend-engine-xt-service-emit` |
@@ -415,14 +416,19 @@ discovered — `"emit-models/"` is the convention. Discovery will find
 everything in the root and all its sub-directories, so adding a new
 descriptor is purely a matter of dropping the YAML in.
 
-If your target module already hosts an independently-owned suite for a different feature
-area, don't share its root — give your suite its own disambiguated root name and its own
-`*EMITTests` class, so a failure is attributable to one feature rather than the whole module.
+If your target module hosts more than one subject area, don't share a single root — give each
+subject its own disambiguated root name and its own `*EMITTests` class, so each area can be run
+on its own and a failure is attributable to one subject rather than the whole module.
 `legend-engine-xt-relationalStore-emit` does this: classic relational-mapping models live under
 `relational-emit-models/` (`RelationalEMITTests`), and relation (`~func`) mapping models live
-under `relation-emit-models/` (`RelationEMITTests`). Note the HTML coverage-report caveat in
+under `relation-emit-models/` (`RelationEMITTests`). `legend-engine-core-emit-tests` does the same
+with `grammar-emit-models/` (`GrammarEMITTests`) and `m2m-emit-models/` (`M2MEMITTests`).
+
+Split by **subject**, not by size: the test is whether someone debugging one area would want to
+run it without the other. Note the HTML coverage-report caveat in
 `emit.md` §5.4 — a disambiguated root needs an explicit `includedRelativeSubpaths` entry in the
-consuming pom to show up in that report; plain `emit-models/` roots don't need this.
+consuming pom to show up in that report; plain `emit-models/` roots don't need this. Add the entry
+in the same PR that introduces the root.
 
 `testContainers(...)` returns one `DynamicContainer` per model, named after
 the model, with its tasks grouped by phase: a `Load Model Descriptor` task,
@@ -565,3 +571,38 @@ duplicates:
 - `{A, B, C, D}` tests the full multi-feature composition.
 
 All three provide distinct regression coverage and should all be kept.
+
+### 11.3 Don't Tag a Capability the Fixture Cannot Execute
+
+Some capabilities are only meaningful at run time — a mapping transform, a local
+mapping property, a merge operation. If you cannot make the model *execute* the
+capability, **do not add a fixture that merely parses and compiles it** and tag the
+capability in `features`. Every feature tag is a claim of coverage: it lands in the
+HTML coverage dashboard (`emit.md` §5.4) and in any gap analysis computed from
+descriptor metadata. A tag backed only by successful compilation reports a capability
+as exercised while proving nothing about its behaviour, and a false green is worse
+than an honest gap — it stops anyone from looking again.
+
+Leave the capability untagged and uncovered instead, and say why: in the descriptor of
+whatever related fixture you *are* adding, or in the commit that decides not to add
+one. An honest gap is discoverable; a wrong tag is not.
+
+A worked example. Model-to-model mapping test suites can supply exactly **one** source
+connection: `ModelStoreTestConnectionFactory.buildModelStoreConnectionsForStore`
+returns inside its loop on the first entry, and
+`buildCloseableConnectionFromExternalFormat` installs a single `StreamProviderHolder`
+thread-local stream. So a `ModelStore: ModelStore #{ ClassA: …, ClassB: … }#` block
+silently uses only `ClassA`, and any query whose plan crosses two set implementations
+yields an `InMemoryCrossStoreGraphFetchExecutionNode` whose second store read fails
+with `RuntimeException: Input stream was not provided`. That behaviour is long-standing
+and intentionally left alone — other code depends on its particulars. It means
+`mapping:m2m-local-property` and the two `mapping:operation-mapping-merge*`
+capabilities cannot be proven by any M2M fixture, since each needs two populated
+sources. All three have real, verified grammar; authoring them is easy and would be
+dishonest. They wait for a cross-store fixture where a second store supplies the other
+side.
+
+This is not an argument against parse-and-compile fixtures generally. A fixture whose
+subject *is* the language construct — everything under `grammar-emit-models/` — proves
+exactly what it claims, because there is nothing to execute. The rule is about matching
+the claim to what the fixture actually demonstrates.
