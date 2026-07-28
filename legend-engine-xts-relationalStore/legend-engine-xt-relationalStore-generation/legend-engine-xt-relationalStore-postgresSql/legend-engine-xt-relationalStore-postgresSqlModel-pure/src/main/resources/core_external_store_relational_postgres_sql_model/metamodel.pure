@@ -83,10 +83,17 @@ Class meta::external::query::sql::metamodel::QuerySpecification extends meta::ex
   <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
   <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> windows: meta::external::query::sql::metamodel::NamedWindow[*];
 }
 
 Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SetOperation extends meta::external::query::sql::metamodel::QueryBody
 {
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> distinct: Boolean[1] = false;
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 Class meta::external::query::sql::metamodel::AliasedRelation extends meta::external::query::sql::metamodel::Relation
@@ -101,11 +108,17 @@ Class meta::external::query::sql::metamodel::LateralRelation extends meta::exter
   <<equality.Key>> relation:meta::external::query::sql::metamodel::Relation[1];
 }
 
+//TODO left/right/distinct should not be Union/Except/Interset but issue with PAR serialization
 Class meta::external::query::sql::metamodel::Union extends meta::external::query::sql::metamodel::SetOperation
 {
-  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
-  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
-  <<equality.Key>> distinct: Boolean[1] = false;
+}
+
+Class meta::external::query::sql::metamodel::Except extends meta::external::query::sql::metamodel::SetOperation
+{
+}
+
+Class meta::external::query::sql::metamodel::Intersect extends meta::external::query::sql::metamodel::SetOperation
+{
 }
 
 Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
@@ -114,7 +127,7 @@ Class meta::external::query::sql::metamodel::Select extends meta::external::quer
   <<equality.Key>> selectItems: meta::external::query::sql::metamodel::SelectItem[*];
 }
 
-Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
+Class meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
 {
 }
 
@@ -456,6 +469,13 @@ Class meta::external::query::sql::metamodel::Window extends meta::external::quer
   <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
   <<equality.Key>> windowFrame: meta::external::query::sql::metamodel::WindowFrame[0..1];
 }
+
+Class meta::external::query::sql::metamodel::NamedWindow extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> window: meta::external::query::sql::metamodel::Window[1];
+}
+
 
 Class meta::external::query::sql::metamodel::WindowFrame extends meta::external::query::sql::metamodel::Node
 {

@@ -308,6 +308,43 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testUnionAllWithGlobalOrderBy()
+    {
+        check("SELECT a FROM t1 UNION ALL SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5");
+        check("SELECT a FROM t1 UNION ALL SELECT b FROM t2 ORDER BY a ASC");
+        check("SELECT a FROM t1 UNION ALL SELECT b FROM t2 LIMIT 10");
+        check("SELECT a FROM t1 UNION ALL SELECT b FROM t2 OFFSET 5");
+        check("SELECT a FROM t1 UNION ALL SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5 OFFSET 2");
+    }
+
+    @Test
+    public void testUnionWithGlobalOrderByAndParenthesizedBranch()
+    {
+        check("SELECT a FROM t1 UNION ALL (SELECT b FROM t2 ORDER BY 1 ASC LIMIT 3)");
+        check("SELECT a FROM t1 UNION ALL (SELECT b FROM t2 ORDER BY 1 ASC) ORDER BY 1 ASC LIMIT 5");
+    }
+
+    @Test
+    public void testIntersect()
+    {
+        check("SELECT * FROM myTable INTERSECT SELECT * FROM myTable");
+        check("SELECT * FROM myTable INTERSECT ALL SELECT * FROM myTable");
+        check("SELECT * FROM myTable INTERSECT (SELECT * FROM myTable)");
+        check("SELECT a FROM t1 INTERSECT SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5");
+        check("SELECT a FROM t1 INTERSECT ALL SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5");
+    }
+
+    @Test
+    public void testExcept()
+    {
+        check("SELECT * FROM myTable EXCEPT SELECT * FROM myTable");
+        check("SELECT * FROM myTable EXCEPT ALL SELECT * FROM myTable");
+        check("SELECT * FROM myTable EXCEPT (SELECT * FROM myTable)");
+        check("SELECT a FROM t1 EXCEPT SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5");
+        check("SELECT a FROM t1 EXCEPT ALL SELECT b FROM t2 ORDER BY 1 ASC LIMIT 5");
+    }
+
+    @Test
     public void testArithmetic()
     {
         check("SELECT (1 + 1) AS plus, (1 - 1) AS minus, (1 / 1) AS divide, " +
@@ -406,7 +443,7 @@ public class TestSQLRoundTrip
     }
 
     @Test
-    public void testWindowFunctions() 
+    public void testWindowFunctions()
     {
         check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS UNBOUNDED PRECEDING) AS col from MyTable");
         check("SELECT max(col1) OVER (PARTITION BY col2 ORDER BY col3 ASC ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED PRECEDING) AS col from MyTable");
@@ -434,7 +471,7 @@ public class TestSQLRoundTrip
     public void testValuesRelation()
     {
         check("SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t (number, string)");
-    }    
+    }
 
     @Test
     public void testJSONExpressions()
@@ -476,6 +513,50 @@ public class TestSQLRoundTrip
     public void testLateralFunction()
     {
         check("SELECT * FROM myTable, LATERAL generate_series(1, myTable.n) AS t");
+    }
+
+    @Test
+    public void testWindowClauseSingleNamedWindow()
+    {
+        check("SELECT row_number() OVER (w) FROM myTable WINDOW w AS (PARTITION BY col1 ORDER BY col2 ASC)");
+    }
+
+    @Test
+    public void testWindowClauseMultipleNamedWindows()
+    {
+        check("SELECT row_number() OVER (w1), rank() OVER (w2) FROM myTable WINDOW w1 AS (PARTITION BY col1 ORDER BY col2 ASC), w2 AS (PARTITION BY col3 ORDER BY col4 DESC)");
+    }
+
+    @Test
+    public void testWindowClauseNamedWindowWithFrame()
+    {
+        check("SELECT sum(col1) OVER (w) FROM myTable WINDOW w AS (PARTITION BY col2 ORDER BY col3 ASC ROWS UNBOUNDED PRECEDING)");
+    }
+
+    @Test
+    public void testWindowClauseNamedWindowWithBetweenFrame()
+    {
+        check("SELECT sum(col1) OVER (w) FROM myTable WINDOW w AS (ORDER BY col1 ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)",
+                "SELECT sum(col1) OVER (w) FROM myTable WINDOW w AS ( ORDER BY col1 ASC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)");
+    }
+
+    @Test
+    public void testWindowClauseNamedWindowInheritance()
+    {
+        // When OVER references a named window with additional clauses, the composer renders only the windowRef
+        check("SELECT sum(col1) OVER (w) FROM myTable WINDOW w AS (PARTITION BY col1)");
+    }
+
+    @Test
+    public void testWindowClauseWithWhereAndGroupBy()
+    {
+        check("SELECT sum(col1) OVER (w) FROM myTable WHERE col2 > 0 GROUP BY col1 WINDOW w AS (PARTITION BY col1 ORDER BY col2 ASC)");
+    }
+
+    @Test
+    public void testWindowClauseEmptyWindow()
+    {
+        check("SELECT row_number() OVER (w) FROM myTable WINDOW w AS ()");
     }
 
     private void fail(String sql, int start, int end, String message)

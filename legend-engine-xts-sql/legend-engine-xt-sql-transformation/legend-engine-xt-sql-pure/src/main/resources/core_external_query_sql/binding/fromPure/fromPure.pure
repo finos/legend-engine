@@ -482,10 +482,17 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSetOperation(setOperation: SetOperation[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processSetOperation', $context.debug);
-  $setOperation->match([
+  let processed = $setOperation->match([
     u:Union[1] | $u->processUnion($context),
+    i:Intersect[1] | unsupported('Intersect'); $context;,
+    e:Except[1] | unsupported('Except'); $context;,
     s:SetOperation[1] | $context
   ]);
+
+  //we need the select items so that if the order by is by index, we can get the column name
+  let selectItems = $processed.columns->map(c | ^SingleColumn(expression=^IntegerLiteral(value=1), alias = $c.name));
+
+  $setOperation.limit->processLimitOffset($setOperation.offset, $setOperation.orderBy->processOrderBy($selectItems, $processed));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processUnion(union: Union[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -496,7 +503,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
 
-  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)));
+  let newExp = ^TDSBuilder().union($left.expression->toOne(), $right.expression->toOne(), $union.distinct, $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)));
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
@@ -519,7 +526,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processQuerySpec', $_context.debug);
 
-  let context = ^$_context(debug = $_context.debug->indent());
+  let context = ^$_context(debug = $_context.debug->indent(), windows = $querySpec.windows);
 
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
@@ -654,7 +661,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]))->map(e | ^SingleColumn(expression = $e));
 
   let standardExtensions = $standard->filter(si | !$si->isNonAliasedSelectItemColumnReference() && !$si->isSelectItemAggregate())->cast(@SingleColumn);
-  let windowExtensions = extractWindowExtensionExpressions($windows);
+  let windowExtensions = extractWindowExtensionExpressions($windows, $context);
 
   let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($originalSelect);
   let isWindow = $windows->isNotEmpty();
@@ -882,11 +889,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 //we need to pull out the partition and order expressions and extend the TDS so the call to olapGroupBy can take in the qualified name references of these columns
 //ideally there would be a project/olap implementation which accepts lambdas, instead of column references.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*]):SingleColumn[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*], context:SqlTransformContext[1]):SingleColumn[*]
 {
   let functionCall = $s.expression->cast(@FunctionCall);
-  let window = $functionCall.window;
+  let window = $functionCall.window->map(w | getWindow($w, $context.windows));
   $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->map(e | ^SingleColumn(expression = $e));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindow(window:meta::external::query::sql::metamodel::Window[0..1], windows:NamedWindow[*]):meta::external::query::sql::metamodel::Window[0..1]
+{
+  if ($window.windowRef->isNotEmpty(), | $windows->filter(w | $w.name == $window.windowRef)->first().window, | $window);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWindowSingleColumn(s:SingleColumn[1], input:ValueSpecification[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -896,8 +908,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   assert($s.expression->cast(@FunctionCall).window->isNotEmpty(), | 'window function must not be empty');
 
   let functionCall = $s.expression->cast(@FunctionCall);
-  let window = $functionCall.window;
+  let window = getWindow($functionCall.window, $context.windows);
   let relation = $context.relation->isTrue();
+
 
   assert($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
   assert($window.windowFrame->isEmpty() || $context.relation->isTrue(), | 'window frame not yet supported');
@@ -1452,8 +1465,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJoin(join: Join[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processJoin', $_context.debug);
-  
-  if ($join.right->isLateral(), 
+
+  if ($join.right->isLateral(),
     | processLateralJoin($join, $_context),
     | processStandardJoin($join, $_context));
 }
@@ -1498,7 +1511,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let allAliases = $left.aliases->concatenate($right.aliases);
 
-  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);  
+  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -1693,7 +1706,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 
-
         let queryColumns = $columns->map(c | ^QueryColumn(
                                           name = $c.name->toOne(),
                                           type = $c.classifierGenericType.typeArguments->last().rawType->cast(@Type),
@@ -1703,12 +1715,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ^$context
         (
           columns = $queryColumns,
-          expression = ^InstanceValue
+          expression = $vs->match([
+            v:ValueSpecification[1] | $v,
+            a:Any[*] | ^InstanceValue
                        (
                         genericType=$vs->genericType(),
                         multiplicity = PureOne,
                         values = $vs->toOne()
-                       ),
+                       )
+          ]),
           aliases = $columns->map(c | ^SQLColumnAlias(name = $c.name->toOne()))
         );,
       s:SQLSource[1]|
@@ -2567,6 +2582,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair($type == Variant, | processVariantCast($c, $expression)),
         pair($castName == 'VARCHAR', | processVarcharCast($c, $expression, $expContext, $context)),
         pair($castName == 'NUMERIC' || $castName == 'DECIMAL', | processNumericCast($c, $expression, $expContext, $context)),
+        pair($castName == 'INTEGER' && !$type->subTypeOf(Integer) && $type->subTypeOfExNil(Number), | processRound($expression)),
         pair($castName->in(['DOUBLE PRECISION', 'FLOAT8']), | processDoublePrecisionCast($c, $expression, $expContext, $context)),
         pair($type->preciseToPrimitive() == String || $castName->in(['TEXT', 'JSON', 'JSONB']), | processCastAsParse($c, $expression, $expContext, $context)),
         pair(true, | processCastAsCast($c, $expression, $expContext, $context))
@@ -3242,6 +3258,22 @@ function meta::external::query::sql::transformation::queryToPure::processSubstri
   nullOrSfe($func, $args);
 }
 
+function meta::external::query::sql::transformation::queryToPure::processRound(args:ValueSpecification[*]):ValueSpecification[1]
+{
+  assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
+
+  let func = if ($args->size() == 1 || ($args->at(0).genericType.rawType == Integer
+                                        && $args->at(1)->match([i:InstanceValue[1] | $i.values == 0, v:ValueSpecification[1] | false])),
+    |
+      round_Number_1__Integer_1_,
+    | if ($args->at(0).genericType.rawType == Float,
+        | round_Float_1__Integer_1__Float_1_,
+        | round_Decimal_1__Integer_1__Decimal_1_)
+  );
+
+  nullOrSfe($func, $args);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processNotExpression', $context.debug);
@@ -3839,7 +3871,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let select = walk($q.select, $accumulator, $extras);
         let limit = walk($q.limit, $accumulator, $extras);
         let offset = walk($q.offset, $accumulator, $extras);
-        $from->concatenate($where)->concatenate($groupBy)->concatenate($having)->concatenate($select)->concatenate($limit)->concatenate($offset);,
+        let windows = walk($q.windows, $accumulator, $extras);
+        $from->concatenate($where)->concatenate($groupBy)->concatenate($having)->concatenate($select)->concatenate($limit)->concatenate($offset)->concatenate($windows);,
     s:Select[1] | walk($s.selectItems, $accumulator, $extras);,
     s:SingleColumn[1] |  walk($s.expression, $accumulator, $extras),
     s:SortItem[1] | walk($s.sortKey, $accumulator, $extras),
@@ -4057,6 +4090,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 {
   id: Integer[1];
   contexts: SqlTransformContext[*];
+  windows: NamedWindow[*];
   withQueries: WithQueryContext[*];
   withSupported: Boolean[1] = false; //currently only enable for dynamic source use case as plan generation is incorrect for normal sources
   root:Boolean[1];
@@ -4312,7 +4346,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let col = ^meta::pure::metamodel::relation::Column<Nil,Any|*>(name = $name, nameWildCard = false);
   let gt = ^GenericType(rawType = meta::pure::metamodel::relation::Column, typeArguments = [ ^GenericType(rawType = Nil), ^GenericType(rawType = $type)], multiplicityArguments = $multiplicity);
-  ^$col(classifierGenericType = $gt);  
+  ^$col(classifierGenericType = $gt);
 }
 
 
@@ -4346,25 +4380,31 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     let distinct = $columns->removeDuplicates();
 
     if ($relation,
-      | 
+      |
         let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
         let relationType = buildRelationType($distinct->map(d | $relationColumns->get($d).values));
+
         sfe(select_Relation_1__ColSpecArray_1__Relation_1_, $relationType, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $distinct))]);,
       | sfe(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, [$func, iv($distinct)]));
   }:ValueSpecification[1];
 
-  concatenate(
+  union(
     left: ValueSpecification[1],
     right: ValueSpecification[1],
+    distinct: Boolean[1],
     relation: Boolean[1],
     context:SqlTransformContext[1]
   ){
 
     let args = [$left, $right];
 
-    if ($relation,
-      | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
-      | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args));
+    if ($distinct,
+      | if ($relation,
+          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, buildRelationType($context.columns), $args)),
+          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, $args))),
+      | if ($relation,
+          | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
+          | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args)));
   }:ValueSpecification[1];
 
   distinct(

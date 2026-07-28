@@ -48,9 +48,15 @@ public class TableSourceExtractorTest
     }
 
     @Test
-    public void testSimpleTable()
+    public void testSimple2PartTable()
     {
         test("select * from service.table1", TABLE_1);
+    }
+
+    @Test
+    public void testSimple1PartTable()
+    {
+        test("select * from table1");
     }
 
     @Test

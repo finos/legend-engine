@@ -105,6 +105,8 @@ public class FunctionCoverageReport
         int total = 0;
         int[] tds = new int[5];
         int[] rel = new int[5];
+        int totalTests = 0;
+        java.util.Map<String, String> functionNameStatus = new java.util.HashMap<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
             total += fns.size();
@@ -115,12 +117,74 @@ public class FunctionCoverageReport
                 tds[i] += t[i];
                 rel[i] += r[i];
             }
+
+            // Track best status for each unique function name
+            for (FunctionCatalogExtractor.PgFunction fn : fns)
+            {
+                if (fn.coverage != null)
+                {
+                    totalTests += fn.coverage.total;
+                }
+
+                String existingStatus = functionNameStatus.get(fn.name);
+                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus);
+
+                if (existingStatus == null || isStatusBetter(currentStatus, existingStatus))
+                {
+                    functionNameStatus.put(fn.name, currentStatus);
+                }
+            }
+        }
+
+        int uniqueFunctionCount = functionNameStatus.size();
+        
+        // Count TDS and Relation supported separately (PASS or PARTIAL)
+        java.util.Map<String, String> tdsFunctionStatus = new java.util.HashMap<>();
+        java.util.Map<String, String> relFunctionStatus = new java.util.HashMap<>();
+        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+        {
+            for (FunctionCatalogExtractor.PgFunction fn : fns)
+            {
+                // TDS
+                String existingTds = tdsFunctionStatus.get(fn.name);
+                if (existingTds == null || isStatusBetter(fn.tdsStatus, existingTds))
+                {
+                    tdsFunctionStatus.put(fn.name, fn.tdsStatus);
+                }
+                // Relation
+                String existingRel = relFunctionStatus.get(fn.name);
+                if (existingRel == null || isStatusBetter(fn.relStatus, existingRel))
+                {
+                    relFunctionStatus.put(fn.name, fn.relStatus);
+                }
+            }
+        }
+        
+        int tdsSupported = 0;
+        int relSupported = 0;
+        for (String status : tdsFunctionStatus.values())
+        {
+            if ("PASS".equals(status) || "PARTIAL".equals(status))
+            {
+                tdsSupported++;
+            }
+        }
+        for (String status : relFunctionStatus.values())
+        {
+            if ("PASS".equals(status) || "PARTIAL".equals(status))
+            {
+                relSupported++;
+            }
         }
 
         ObjectNode summary = root.putObject("summary");
         summary.put("total", total);
-        putPathSummary(summary.putObject("tds"), tds);
-        putPathSummary(summary.putObject("relation"), rel);
+        summary.put("unique_function_names", uniqueFunctionCount);
+        summary.put("tds_supported_functions", tdsSupported);
+        summary.put("relation_supported_functions", relSupported);
+        summary.put("total_tests", totalTests);
+        putPathSummary(summary.putObject("tds"), tds, total);
+        putPathSummary(summary.putObject("relation"), rel, total);
 
         // Categories
         ArrayNode categories = root.putArray("categories");
@@ -185,13 +249,55 @@ public class FunctionCoverageReport
         MAPPER.writeValue(new File(path), root);
     }
 
-    private static void putPathSummary(ObjectNode node, int[] counts)
+    /**
+     * Get the best status between TDS and Relation paths.
+     * PASS > PARTIAL > UNTESTED > FAIL > ERROR > NOT_APPLICABLE
+     */
+    private static String getBestStatus(String tdsStatus, String relStatus)
+    {
+        if ("PASS".equals(tdsStatus) && "PASS".equals(relStatus))
+        {
+            return "PASS";
+        }
+        String best = tdsStatus;
+        if (isStatusBetter(relStatus, best))
+        {
+            best = relStatus;
+        }
+        return best;
+    }
+
+    /**
+     * Returns true if status1 is better than status2.
+     */
+    private static boolean isStatusBetter(String status1, String status2)
+    {
+        return statusRank(status1) < statusRank(status2);
+    }
+
+    private static int statusRank(String status)
+    {
+        switch (status)
+        {
+            case "PASS": return 0;
+            case "PARTIAL": return 1;
+            case "UNTESTED": return 2;
+            case "FAIL": return 3;
+            case "ERROR": return 4;
+            case "NOT_APPLICABLE": return 5;
+            default: return 6;
+        }
+    }
+
+    private static void putPathSummary(ObjectNode node, int[] counts, int total)
     {
         node.put("pass", counts[0]);
         node.put("partial", counts[1]);
         node.put("fail", counts[2]);
         node.put("error", counts[3]);
         node.put("untested", counts[4]);
+        int accounted = counts[0] + counts[1] + counts[2] + counts[3] + counts[4];
+        node.put("unsupported", total - accounted);
     }
 
     private void generateMarkdown(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog, String path, File parityReportFile) throws IOException
@@ -248,6 +354,7 @@ public class FunctionCoverageReport
         int totalTests = 0;
         int totalUnsupported = 0;
         Set<String> uniqueNames = new HashSet<>();
+        java.util.Map<String, String> functionNameStatus = new java.util.HashMap<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
         {
             for (FunctionCatalogExtractor.PgFunction fn : fns)
@@ -272,13 +379,64 @@ public class FunctionCoverageReport
                         totalRelSkip += fn.coverage.relSkip;
                     }
                 }
+                
+                // Track best status for each unique function name
+                String existingStatus = functionNameStatus.get(fn.name);
+                String currentStatus = getBestStatus(fn.tdsStatus, fn.relStatus);
+                if (existingStatus == null || isStatusBetter(currentStatus, existingStatus))
+                {
+                    functionNameStatus.put(fn.name, currentStatus);
+                }
             }
         }
+        
+        // Count TDS and Relation supported separately (PASS or PARTIAL)
+        java.util.Map<String, String> tdsFunctionStatus = new java.util.HashMap<>();
+        java.util.Map<String, String> relFunctionStatus = new java.util.HashMap<>();
+        for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+        {
+            for (FunctionCatalogExtractor.PgFunction fn : fns)
+            {
+                // TDS
+                String existingTds = tdsFunctionStatus.get(fn.name);
+                if (existingTds == null || isStatusBetter(fn.tdsStatus, existingTds))
+                {
+                    tdsFunctionStatus.put(fn.name, fn.tdsStatus);
+                }
+                // Relation
+                String existingRel = relFunctionStatus.get(fn.name);
+                if (existingRel == null || isStatusBetter(fn.relStatus, existingRel))
+                {
+                    relFunctionStatus.put(fn.name, fn.relStatus);
+                }
+            }
+        }
+        
+        int tdsSupported = 0;
+        int relSupported = 0;
+        for (String status : tdsFunctionStatus.values())
+        {
+            if ("PASS".equals(status) || "PARTIAL".equals(status))
+            {
+                tdsSupported++;
+            }
+        }
+        for (String status : relFunctionStatus.values())
+        {
+            if ("PASS".equals(status) || "PARTIAL".equals(status))
+            {
+                relSupported++;
+            }
+        }
+        double tdsSupportedPct = uniqueNames.size() > 0 ? (100.0 * tdsSupported / uniqueNames.size()) : 0;
+        double relSupportedPct = uniqueNames.size() > 0 ? (100.0 * relSupported / uniqueNames.size()) : 0;
 
         md.append("## Summary\n\n");
         md.append("| Metric | TDS | Relation |\n|--------|-----|----------|\n");
         md.append(String.format("| Total signatures | %d | %d |\n", total, total));
         md.append(String.format("| Unique function names | %d | %d |\n", uniqueNames.size(), uniqueNames.size()));
+        md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n", 
+                tdsSupported, tdsSupportedPct, relSupported, relSupportedPct));
         md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
         md.append(String.format("| PASS | %d | %d |\n", totalTdsPass, totalRelPass));
         md.append(String.format("| FAIL | %d | %d |\n", totalTdsFail, totalRelFail));

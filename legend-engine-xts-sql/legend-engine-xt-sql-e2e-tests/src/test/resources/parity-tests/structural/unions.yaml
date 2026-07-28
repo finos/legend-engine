@@ -18,27 +18,27 @@ tests:
     category: "set_operations"
 
   # UNION (dedup)
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
   - id: union_dedup
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL UNION SELECT dept_id FROM persons WHERE salary > 60000 ORDER BY 1"
     feature: "UNION"
     category: "set_operations"
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
   - id: union_dedup_strings
     sql: "SELECT name FROM persons WHERE age > 30 UNION SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
     feature: "UNION"
     category: "set_operations"
 
   # Multiple UNIONs
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
   - id: union_multiple
     sql: "SELECT name FROM persons WHERE dept_id = 1 UNION ALL SELECT name FROM persons WHERE dept_id = 2 UNION ALL SELECT name FROM persons WHERE dept_id = 3 ORDER BY 1"
     feature: "Multiple UNION"
     category: "set_operations"
-    expected_tds_status: FAIL
+    expected_tds_status: PASS
     expected_rel_status: PASS
   - id: union_multiple_mixed
     sql: "SELECT 'dept1' AS src, name FROM persons WHERE dept_id = 1 UNION ALL SELECT 'dept2', name FROM persons WHERE dept_id = 2 ORDER BY 1, 2"

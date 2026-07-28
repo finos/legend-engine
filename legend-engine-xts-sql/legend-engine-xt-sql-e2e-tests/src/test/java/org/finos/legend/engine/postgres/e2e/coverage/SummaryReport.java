@@ -58,6 +58,13 @@ public class SummaryReport
             JsonNode root = MAPPER.readTree(funcJson);
             JsonNode summary = root.get("summary");
             int total = summary.get("total").asInt();
+            int uniqueFunctionNames = summary.has("unique_function_names") ? summary.get("unique_function_names").asInt() : 0;
+            int tdsSupported = summary.has("tds_supported_functions") ? summary.get("tds_supported_functions").asInt() : 0;
+            int relSupported = summary.has("relation_supported_functions") ? summary.get("relation_supported_functions").asInt() : 0;
+            int totalTests = summary.has("total_tests") ? summary.get("total_tests").asInt() : 0;
+            double tdsSupportedPct = uniqueFunctionNames > 0 ? (100.0 * tdsSupported / uniqueFunctionNames) : 0;
+            double relSupportedPct = uniqueFunctionNames > 0 ? (100.0 * relSupported / uniqueFunctionNames) : 0;
+            
             JsonNode tds = summary.get("tds");
             JsonNode rel = summary.get("relation");
 
@@ -66,19 +73,21 @@ public class SummaryReport
             int tdsFail = tds.get("fail").asInt();
             int tdsError = tds.get("error").asInt();
             int tdsUntested = tds.get("untested").asInt();
-            int tdsTested = tdsPass + tdsPartial + tdsFail + tdsError;
+            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
+            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
 
             int relPass = rel.get("pass").asInt();
             int relPartial = rel.get("partial").asInt();
             int relFail = rel.get("fail").asInt();
             int relError = rel.get("error").asInt();
             int relUntested = rel.get("untested").asInt();
-            int relTested = relPass + relPartial + relFail + relError;
+            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
+            int relExpected = relPass + relPartial + relFail + relError + relUntested;
 
-            double tdsPct = tdsTested > 0 ? (100.0 * tdsPass / tdsTested) : 0;
-            double relPct = relTested > 0 ? (100.0 * relPass / relTested) : 0;
-            double tdsPartialPct = tdsTested > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsTested) : 0;
-            double relPartialPct = relTested > 0 ? (100.0 * (relPass + relPartial) / relTested) : 0;
+            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
+            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
+            double tdsPartialPct = tdsExpected > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsExpected) : 0;
+            double relPartialPct = relExpected > 0 ? (100.0 * (relPass + relPartial) / relExpected) : 0;
 
             md.append("## Function Coverage\n\n");
             md.append("Coverage of Postgres built-in functions in Legend SQL.\n");
@@ -87,6 +96,11 @@ public class SummaryReport
             md.append("| Metric | TDS | Relation |\n");
             md.append("|--------|-----|----------|\n");
             md.append(String.format("| Total signatures | %d | %d |\n", total, total));
+            md.append(String.format("| Unique function names | %d | %d |\n", uniqueFunctionNames, uniqueFunctionNames));
+            md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n", 
+                    tdsSupported, tdsSupportedPct, relSupported, relSupportedPct));
+            md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
+            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
             md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
             md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
             md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
@@ -94,12 +108,17 @@ public class SummaryReport
             md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
             md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
             md.append(String.format("| **Pass + partial rate** | **%.1f%%** | **%.1f%%** |\n", tdsPartialPct, relPartialPct));
+            md.append("\n_Percentages exclude unsupported functions from the denominator._\n");
+
+            // List FAIL test links
+            appendFailLinks(md, root, "function");
+
             md.append("\n---\n\n");
 
             combinedTdsPass += tdsPass;
             combinedRelPass += relPass;
-            combinedTdsTotal += tdsTested;
-            combinedRelTotal += relTested;
+            combinedTdsTotal += tdsExpected;
+            combinedRelTotal += relExpected;
         }
 
         // === Structural Parity ===
@@ -117,19 +136,21 @@ public class SummaryReport
             int tdsFail = tds.get("fail").asInt();
             int tdsError = tds.get("error").asInt();
             int tdsUntested = tds.get("untested").asInt();
-            int tdsTested = tdsPass + tdsPartial + tdsFail + tdsError;
+            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
+            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
 
             int relPass = rel.get("pass").asInt();
             int relPartial = rel.get("partial").asInt();
             int relFail = rel.get("fail").asInt();
             int relError = rel.get("error").asInt();
             int relUntested = rel.get("untested").asInt();
-            int relTested = relPass + relPartial + relFail + relError;
+            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
+            int relExpected = relPass + relPartial + relFail + relError + relUntested;
 
-            double tdsPct = tdsTested > 0 ? (100.0 * tdsPass / tdsTested) : 0;
-            double relPct = relTested > 0 ? (100.0 * relPass / relTested) : 0;
-            double tdsPartialPct = tdsTested > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsTested) : 0;
-            double relPartialPct = relTested > 0 ? (100.0 * (relPass + relPartial) / relTested) : 0;
+            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
+            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
+            double tdsPartialPct = tdsExpected > 0 ? (100.0 * (tdsPass + tdsPartial) / tdsExpected) : 0;
+            double relPartialPct = relExpected > 0 ? (100.0 * (relPass + relPartial) / relExpected) : 0;
 
             md.append("## Structural Parity\n\n");
             md.append("Coverage of SQL structural features (joins, subqueries, aggregations, etc.).\n");
@@ -139,6 +160,7 @@ public class SummaryReport
             md.append("|--------|-----|----------|\n");
             md.append(String.format("| Total features | %d | %d |\n", totalFeatures, totalFeatures));
             md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
+            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
             md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
             md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
             md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
@@ -146,12 +168,17 @@ public class SummaryReport
             md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
             md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
             md.append(String.format("| **Pass + partial rate** | **%.1f%%** | **%.1f%%** |\n", tdsPartialPct, relPartialPct));
+            md.append("\n_Percentages exclude unsupported features from the denominator._\n");
+
+            // List FAIL test links
+            appendFailLinks(md, root, "structural");
+
             md.append("\n---\n\n");
 
             combinedTdsPass += tdsPass;
             combinedRelPass += relPass;
-            combinedTdsTotal += tdsTested;
-            combinedRelTotal += relTested;
+            combinedTdsTotal += tdsExpected;
+            combinedRelTotal += relExpected;
         }
 
         // === Overall ===
@@ -176,6 +203,70 @@ public class SummaryReport
             fw.write(md.toString());
         }
         LOGGER.info("Generated summary report: {}", filePath);
+    }
+
+    /**
+     * Appends a list of links to failure-details.md for every FAIL test found in the JSON report.
+     */
+    private void appendFailLinks(StringBuilder md, JsonNode root, String reportType)
+    {
+        JsonNode categories = root.get("categories");
+        if (categories == null || !categories.isArray())
+        {
+            return;
+        }
+
+        java.util.Set<String> seen = new java.util.LinkedHashSet<>();
+        for (JsonNode cat : categories)
+        {
+            // Try both "functions" (for function coverage) and "features" (for structural parity)
+            JsonNode items = cat.get("functions");
+            if (items == null)
+            {
+                items = cat.get("features");
+            }
+            if (items == null)
+            {
+                continue;
+            }
+            
+            for (JsonNode item : items)
+            {
+                JsonNode details = item.get("testDetails");
+                if (details == null)
+                {
+                    continue;
+                }
+                for (JsonNode te : details)
+                {
+                    String testId = te.get("id").asText();
+                    String tdsState = te.has("tds") ? te.get("tds").asText() : "";
+                    String relState = te.has("relation") ? te.get("relation").asText() : "";
+
+                    if ("FAIL".equals(tdsState))
+                    {
+                        String anchor = "fail-" + testId + "-TDS";
+                        String link = String.format("- [%s \\[TDS\\]](failure-details.md#%s)\n", testId, anchor);
+                        seen.add(link);
+                    }
+                    if ("FAIL".equals(relState))
+                    {
+                        String anchor = "fail-" + testId + "-Relation";
+                        String link = String.format("- [%s \\[Relation\\]](failure-details.md#%s)\n", testId, anchor);
+                        seen.add(link);
+                    }
+                }
+            }
+        }
+
+        if (!seen.isEmpty())
+        {
+            md.append("\n**Failed tests:**\n\n");
+            for (String link : seen)
+            {
+                md.append(link);
+            }
+        }
     }
 }
 

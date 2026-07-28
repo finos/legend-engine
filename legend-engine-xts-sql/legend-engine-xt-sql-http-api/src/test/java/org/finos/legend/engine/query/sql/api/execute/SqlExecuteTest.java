@@ -236,9 +236,9 @@ public class SqlExecuteTest
         //this is to test the query realiasing, can be moved to testTranspile one realiser moved to pure code
 
         allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
-                "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                "UNION ALL SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                "UNION ALL SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                "UNION ALL SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Alice"))

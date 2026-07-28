@@ -144,25 +144,22 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       math('exp', exp_Number_1__Float_1_),
       math('floor', floor_Number_1__Integer_1_),
       math('ln', log_Number_1__Float_1_),
-      math('log', log10_Number_1__Float_1_),
+      math('log', Float, {args, fc, expCtx, ctx | 
+        assert($args->size() <=2, | 'invalid arguments to log function');
+        assert($args->size() == 1 || $args->at(0)->instanceOf(InstanceValue) && $args->at(0)->cast(@InstanceValue).values == 10, | 'only base 10 supported for log function');
+
+        let value = $args->match([
+          v:ValueSpecification[1] | $v,
+          v:ValueSpecification[2] | $v->at(1);
+        ]);
+
+        nullOrSfe(log10_Number_1__Float_1_, $value);
+      }),
       math('mod', rem_Number_1__Number_1__Number_1_),
       math('pi', pi__Float_1_),
       math('power', pow_Number_1__Number_1__Number_1_),
       math('radians', toRadians_Number_1__Float_1_),
-      math('round', Number, {args, fc, expCtx, ctx |
-        assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
-
-        let func = if ($args->size() == 1 || ($args->at(0).genericType.rawType == Integer
-                                              && $args->at(1)->match([i:InstanceValue[1] | $i.values == 0, v:ValueSpecification[1] | false])),
-          |
-            round_Number_1__Integer_1_,
-          | if ($args->at(0).genericType.rawType == Float,
-              | round_Float_1__Integer_1__Float_1_,
-              | round_Decimal_1__Integer_1__Decimal_1_)
-        );
-
-        nullOrSfe($func, $args);
-      }),
+      math('round', Number, {args, fc, expCtx, ctx | processRound($args)}),
       math('sign', sign_Number_1__Integer_1_),
       math('sin', sin_Number_1__Float_1_),
       math('sinh', sinh_Number_1__Float_1_),

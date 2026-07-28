@@ -33,6 +33,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.Except;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Extract;
 import org.finos.legend.engine.protocol.sql.metamodel.FrameBound;
@@ -41,6 +42,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Group;
 import org.finos.legend.engine.protocol.sql.metamodel.InListExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.InPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.IntegerLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.Intersect;
 import org.finos.legend.engine.protocol.sql.metamodel.IntervalLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.IsNotNullPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.IsNullPredicate;
@@ -53,6 +55,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Literal;
 import org.finos.legend.engine.protocol.sql.metamodel.LogicalBinaryExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.NamedArgumentExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.NamedWindow;
 import org.finos.legend.engine.protocol.sql.metamodel.NegativeExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
@@ -235,6 +238,12 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     }
 
     @Override
+    public Node visit(Except val)
+    {
+        return visit((SetOperation) val);
+    }
+
+    @Override
     public Node visit(Expression val)
     {
         return val;
@@ -291,6 +300,12 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     public Node visit(IntegerLiteral val)
     {
         return val;
+    }
+
+    @Override
+    public Node visit(Intersect val)
+    {
+        return visit((SetOperation) val);
     }
 
     @Override
@@ -385,6 +400,13 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     }
 
     @Override
+    public Node visit(NamedWindow val)
+    {
+        val.window = _visit(val.window);
+        return val;
+    }
+
+    @Override
     public Node visit(NegativeExpression val)
     {
         val.value = _visit(val.value);
@@ -455,6 +477,7 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
         val.select = (Select) val.select.accept(this);
         val.limit = _visit(val.limit);
         val.offset = _visit(val.offset);
+        val.windows = _visit(val.windows);
 
         return val;
     }
@@ -491,6 +514,12 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     @Override
     public Node visit(SetOperation val)
     {
+        val.left = _visit(val.left);
+        val.right = _visit(val.right);
+        val.orderBy = _visit(val.orderBy);
+        val.limit = _visit(val.limit);
+        val.offset = _visit(val.offset);
+
         return val;
     }
 
@@ -591,10 +620,7 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     @Override
     public Node visit(Union val)
     {
-        val.left = _visit(val.left);
-        val.right = _visit(val.right);
-
-        return val;
+        return visit((SetOperation) val);
     }
 
     @Override

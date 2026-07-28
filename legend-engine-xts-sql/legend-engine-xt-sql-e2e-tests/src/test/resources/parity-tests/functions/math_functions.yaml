@@ -369,8 +369,8 @@ tests:
   sql: SELECT LOG(10::numeric, ABS(numeric_val) + 1) AS result FROM numbers WHERE numeric_val IS NOT NULL ORDER BY 1
   function: log
   signature: log(numeric, numeric) → numeric
-  expected_tds_status: FAIL
-  expected_rel_status: FAIL
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
 - id: log10__dp__from_table
   sql: SELECT LOG(ABS(float_val) + 1) AS result FROM numbers WHERE float_val IS NOT NULL ORDER BY 1
   function: log10

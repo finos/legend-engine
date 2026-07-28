@@ -154,25 +154,19 @@ querySpecWithScope
     ;
 
 querySpec
-    : ((OPEN_ROUND_BRACKET selectQuery CLOSE_ROUND_BRACKET) | selectQuery) queryTermExtension*  #defaultQuerySpec
-    | VALUES values (COMMA values)*                                                             #valuesRelation
+    : ((OPEN_ROUND_BRACKET selectQueryCore CLOSE_ROUND_BRACKET) | selectQueryCore) queryTermExtension*
+      (ORDER BY sortItem (COMMA sortItem)*)?
+      (limitClause? offsetClause? | offsetClause? limitClause?)                                #defaultQuerySpec
+    | VALUES values (COMMA values)*                                                            #valuesRelation
     ;
 
 queryTermExtension
-    : (queryTermIntersectExtension | queryTermUnionExtension)
-    ;
-
-queryTermIntersectExtension
-    : operator=(INTERSECT | EXCEPT) second=querySpecOptParens
-    ;
-
-queryTermUnionExtension
-    : operator=UNION setQuant? right=querySpecOptParens
+    : operator=(UNION | INTERSECT | EXCEPT) setQuant? right=querySpecOptParens
     ;
 
 querySpecOptParens
     : OPEN_ROUND_BRACKET querySpecWithScope CLOSE_ROUND_BRACKET
-    | querySpecWithScope
+    | selectQueryCore
     | OPEN_ROUND_BRACKET querySpecOptParens CLOSE_ROUND_BRACKET
     ;
 
@@ -194,7 +188,7 @@ sortItem
     : expr ordering=(ASC | DESC)? (NULLS nullOrdering=(FIRST | LAST))?
     ;
 
-selectQuery
+selectQueryCore
     :
     SELECT setQuant? selectItem (COMMA selectItem)*
           (FROM relation (COMMA relation)*)?
@@ -202,8 +196,13 @@ selectQuery
           (GROUP BY expr (COMMA expr)*)?
           (HAVING having=booleanExpression)?
           (WINDOW windows+=namedWindow (COMMA windows+=namedWindow)*)?
-          (ORDER BY sortItem (COMMA sortItem)*)?
-          (limitClause? offsetClause? | offsetClause? limitClause?)
+    ;
+
+selectQuery
+    :
+    selectQueryCore
+    (ORDER BY sortItem (COMMA sortItem)*)?
+    (limitClause? offsetClause? | offsetClause? limitClause?)
     ;
 
 selectItem

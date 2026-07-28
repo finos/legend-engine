@@ -386,16 +386,20 @@ public class TestPostgresParity
         {
             return;
         }
-        if ("PASS".equals(expectedStatus) && !"PASS".equals(actualStatus))
+        if ("PASS".equals(expectedStatus))
         {
             throw new AssertionError("REGRESSION: " + tc.id + "|" + path + " was expected PASS, now " + actualStatus +
                     ". If this is intentional, update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
         }
-        if (!"PASS".equals(expectedStatus) && "PASS".equals(actualStatus) && !Boolean.getBoolean("parity.ignoreFixDetection"))
+        if ("PASS".equals(actualStatus) && !Boolean.getBoolean("parity.ignoreFixDetection"))
         {
             throw new AssertionError("FIX DETECTED: " + tc.id + "|" + path + " was expected " + expectedStatus +
                     ", now PASS. Update the test's expected_" + path.toLowerCase() + "_status in the YAML file to PASS.");
         }
+        // Exact-status mismatch (e.g. expected FAIL but got ERROR, or expected ERROR but got FAIL)
+        throw new AssertionError("STATUS MISMATCH: " + tc.id + "|" + path + " was expected " + expectedStatus +
+                ", but got " + actualStatus +
+                ". Update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
     }
 
     private ResultMatrix executeLegendQuery(String sql) throws Exception

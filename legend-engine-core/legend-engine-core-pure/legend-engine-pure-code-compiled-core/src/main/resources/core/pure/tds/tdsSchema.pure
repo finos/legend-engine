@@ -212,7 +212,8 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
          meta::pure::mapping::from_FunctionDefinition_1__PackageableRuntime_1__T_m_,
          meta::pure::mapping::from_FunctionDefinition_1__Runtime_1__T_m_,
          meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
-         meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_
+         meta::pure::mapping::from_FunctionDefinition_1__Mapping_1__Runtime_1__T_m_,
+         toOne_T_MANY__T_1_
       ]->map(x| pair($x->cast(@Function<Any>), {|
          resolveSchemaImpl($fe.parametersValues->at(0), $openVars, $extensions)
          }))
