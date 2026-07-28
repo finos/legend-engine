@@ -1,0 +1,27 @@
+name: grammar-constraint
+title: "Class Constraints"
+description: |
+  Classes carrying constraints in every form the Legend grammar accepts: an
+  anonymous boolean expression, a named short-form constraint, and the full form
+  with ~owner, ~externalId, ~function, ~enforcementLevel (both Error and Warn) and
+  a ~message lambda over $this. A fourth class constrains a value against a
+  property reached through an association-free reference to another class, so
+  constraint compilation must resolve beyond the constrained class's own
+  properties. Proves that constraint definitions survive parse and compile as
+  first-class model content rather than being dropped or deferred.
+
+modelSources:
+  model:
+    root: grammar-constraint
+    files:
+      - model.pure
+
+features:
+  - grammar:constraint
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - constraint
+  - enforcement-level
+  - validation

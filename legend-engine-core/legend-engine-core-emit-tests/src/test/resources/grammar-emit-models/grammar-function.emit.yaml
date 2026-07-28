@@ -1,0 +1,28 @@
+name: grammar-function
+title: "Standalone Pure Functions"
+description: |
+  Standalone function elements across the signature and body shapes the grammar
+  supports: scalar in / scalar out, collection parameters and returns, optional
+  [0..1] returns, a zero-parameter function returning a literal collection, a
+  multi-statement body with let bindings, and a function that calls two other
+  functions defined in the same model. Proves that function elements compile as
+  packageable elements with their signatures and bodies intact, and that
+  cross-function references resolve at compile time. Existing coverage of
+  grammar:function is incidental — every relation-mapping model carries a ~func —
+  so this is the first fixture where the function element itself is the subject.
+
+modelSources:
+  model:
+    root: grammar-function
+    files:
+      - model.pure
+
+features:
+  - grammar:function
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - function
+  - lambda
+  - let

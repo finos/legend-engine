@@ -1,0 +1,27 @@
+name: grammar-measure
+title: "Measures and Units"
+description: |
+  Two Measure definitions, each with a canonical unit and non-canonical units whose
+  conversion functions are lambdas back to the canonical one, consumed by classes
+  through unit-typed properties in the Measure~Unit form across all three
+  multiplicities, plus one property typed at the measure level rather than at a
+  specific unit. Proves that measure and unit declarations compile as types and are
+  resolvable from property signatures — the unit namespace is per-measure, so the
+  compiler has to bind each unit to its owning measure rather than to the measure
+  name alone.
+
+modelSources:
+  model:
+    root: grammar-measure
+    files:
+      - model.pure
+
+features:
+  - grammar:measure
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - measure
+  - unit
+  - conversion

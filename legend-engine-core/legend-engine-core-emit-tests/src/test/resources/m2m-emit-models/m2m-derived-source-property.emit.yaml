@@ -1,0 +1,32 @@
+name: m2m-derived-source-property
+title: "Derived Properties on an M2M Source Class"
+description: |
+  A model-to-model mapping that reads only derived and qualified properties of its
+  source class, never the stored properties directly: one derived from two stored
+  properties, one computed by arithmetic, one that reads another derived property,
+  and a parameterised property invoked with a literal argument. Only the stored
+  properties are supplied as test data, so the embedded test suite proves the derived
+  properties are actually evaluated on the deserialized source instance at execution
+  time rather than expected to arrive in the input.
+
+modelSources:
+  model:
+    root: m2m-derived-source-property
+    files:
+      - model.pure
+      - mapping.pure
+
+features:
+  - execution:test-data
+  - grammar:derived-property
+  - grammar:qualified-property
+  - mapping:m2m-derived-source-property
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - derived-property
+  - mapping-test
