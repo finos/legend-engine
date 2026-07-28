@@ -925,7 +925,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::modelJo
     'left outer join (select "addresstable_1".PERSONID as "PERSONID", "addresstable_1".CITY as "CITY", ' +
     '"addresstable_1".COUNTRY as "COUNTRY" from addressTable as "addresstable_1") as "addresstable_0" ' +
     'on ("persontable_3"."ID" = "addresstable_0"."PERSONID")) as "persontable_2") as "persontable_1") as "persontable_0" ' +
-    'on ("persontable_0"."CITY" = "firmtable_0"."CITY")';
+    'on ("persontable_0"."CITY" is not distinct from "firmtable_0"."CITY")';
   assertEquals($expectedSql, $result->sql());
 
   assertEquals(
