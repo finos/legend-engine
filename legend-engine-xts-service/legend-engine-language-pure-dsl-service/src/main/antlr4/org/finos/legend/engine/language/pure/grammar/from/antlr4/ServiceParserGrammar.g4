@@ -150,13 +150,29 @@ embeddedRuntimeContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAN
 
 serviceTestSuites:                      SERVICE_TEST_SUITES COLON BRACKET_OPEN (serviceTestSuite ( COMMA serviceTestSuite )*)? BRACKET_CLOSE
 ;
-serviceTestSuite:                       identifier COLON BRACE_OPEN ( serviceTestSuiteData | serviceTestSuiteTests )* BRACE_CLOSE
+serviceTestSuite:                       identifier serviceTestSuiteBody
+;
+serviceTestSuiteBody:                     COLON BRACE_OPEN ( serviceTestSuiteData | serviceTestSuiteTests )* BRACE_CLOSE
+                                        | STRING? PAREN_OPEN ( serviceTestDataStatement | serviceAtomicTest )* PAREN_CLOSE
 ;
 serviceTestSuiteData:                   SERVICE_TEST_DATA COLON BRACKET_OPEN (serviceTestConnectionsData)* BRACKET_CLOSE
 ;
 serviceTestConnectionsData:             SERVICE_TEST_CONNECTION_DATA COLON BRACKET_OPEN (serviceTestConnectionData ( COMMA serviceTestConnectionData )*)? BRACKET_CLOSE
 ;
 serviceTestConnectionData:              qualifiedName COLON embeddedData
+;
+// -------- New flat-form data + atomic-test statements (mirrors Function grammar) --------
+serviceTestDataStatement:               (baseDataResolver | referenceDataResolver) SEMI_COLON
+;
+referenceDataResolver:                  qualifiedName
+;
+baseDataResolver:                       qualifiedName COLON embeddedData
+;
+serviceAtomicTest:                      testId=identifier (doc=STRING)?
+                                            ( PAREN_OPEN serviceTestParameter ( COMMA serviceTestParameter )* PAREN_CLOSE )?
+                                            ( BRACKET_OPEN key+=STRING ( COMMA key+=STRING )* BRACKET_CLOSE )?
+                                            ( COLON serializationFormat=identifier )?
+                                            EQUAL GREATER_THAN embeddedData SEMI_COLON
 ;
 embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
 ;

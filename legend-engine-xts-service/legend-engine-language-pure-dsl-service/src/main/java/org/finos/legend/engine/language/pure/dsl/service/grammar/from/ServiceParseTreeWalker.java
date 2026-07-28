@@ -34,6 +34,9 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
@@ -181,18 +184,157 @@ public class ServiceParseTreeWalker
         serviceTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         serviceTestSuite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
 
-        // data
-        ServiceParserGrammar.ServiceTestSuiteDataContext testSuiteDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceTestSuiteData(), "data", serviceTestSuite.sourceInformation);
-        if (testSuiteDataContext != null)
+        ServiceParserGrammar.ServiceTestSuiteBodyContext body = ctx.serviceTestSuiteBody();
+        if (body.PAREN_OPEN() != null)
         {
-            serviceTestSuite.testData = visitServiceTestData(testSuiteDataContext);
+            // Flat (DataResolver-based) form
+            visitServiceTestSuiteFlat(body, serviceTestSuite);
+        }
+        else
+        {
+            // Legacy brace form with data:[ connections:[...] ] and tests:[ ... ].
+            ServiceParserGrammar.ServiceTestSuiteDataContext testSuiteDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(body.serviceTestSuiteData(), "data", serviceTestSuite.sourceInformation);
+            if (testSuiteDataContext != null)
+            {
+                serviceTestSuite.testData = visitServiceTestData(testSuiteDataContext);
+            }
+
+            ServiceParserGrammar.ServiceTestSuiteTestsContext testSuiteTestsContext = PureGrammarParserUtility.validateAndExtractRequiredField(body.serviceTestSuiteTests(), "tests", serviceTestSuite.sourceInformation);
+            serviceTestSuite.tests = ListIterate.collect(testSuiteTestsContext.serviceTestBlock(), this::visitServiceTest);
         }
 
-        // tests
-        ServiceParserGrammar.ServiceTestSuiteTestsContext testSuiteTestsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceTestSuiteTests(), "tests", serviceTestSuite.sourceInformation);
-        serviceTestSuite.tests = ListIterate.collect(testSuiteTestsContext.serviceTestBlock(), this::visitServiceTest);
-
         return serviceTestSuite;
+    }
+
+    private void visitServiceTestSuiteFlat(ServiceParserGrammar.ServiceTestSuiteBodyContext body, ServiceTestSuite serviceTestSuite)
+    {
+        if (body.STRING() != null)
+        {
+            serviceTestSuite.doc = PureGrammarParserUtility.fromGrammarString(body.STRING().getText(), true);
+        }
+
+        TestData testData = new TestData();
+        testData.sourceInformation = this.walkerSourceInformation.getSourceInformation(body);
+        testData.serviceTestData = ListIterate.collect(body.serviceTestDataStatement(), this::visitServiceTestDataStatement);
+        if (!testData.serviceTestData.isEmpty())
+        {
+            serviceTestSuite.testData = testData;
+        }
+        serviceTestSuite.tests = ListIterate.collect(body.serviceAtomicTest(), this::visitServiceAtomicTest);
+    }
+
+    private DataResolver visitServiceTestDataStatement(ServiceParserGrammar.ServiceTestDataStatementContext ctx)
+    {
+        if (ctx.baseDataResolver() != null)
+        {
+            return visitBaseDataResolver(ctx.baseDataResolver());
+        }
+        return visitReferenceDataResolver(ctx.referenceDataResolver());
+    }
+
+    private ReferenceDataResolver visitReferenceDataResolver(ServiceParserGrammar.ReferenceDataResolverContext ctx)
+    {
+        ReferenceDataResolver resolver = new ReferenceDataResolver();
+        resolver.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        resolver.elementPointer = new PackageableElementPointer(
+                (ctx.qualifiedName().packagePath() == null ? "" : (PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier()) + "::")) + PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier())
+        );
+        resolver.elementPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        return resolver;
+    }
+
+    private BaseDataResolver visitBaseDataResolver(ServiceParserGrammar.BaseDataResolverContext ctx)
+    {
+        BaseDataResolver resolver = new BaseDataResolver();
+        resolver.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        resolver.elementPointer = new PackageableElementPointer(
+                (ctx.qualifiedName().packagePath() == null ? "" : (PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier()) + "::")) + PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier())
+        );
+        resolver.elementPointer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
+        resolver.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+        return resolver;
+    }
+
+    private ServiceTest visitServiceAtomicTest(ServiceParserGrammar.ServiceAtomicTestContext ctx)
+    {
+        ServiceTest serviceTest = new ServiceTest();
+        serviceTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        serviceTest.id = PureGrammarParserUtility.fromIdentifier(ctx.testId);
+        if (ctx.doc != null)
+        {
+            serviceTest.doc = PureGrammarParserUtility.fromGrammarString(ctx.doc.getText(), true);
+        }
+        if (ctx.serviceTestParameter() != null && !ctx.serviceTestParameter().isEmpty())
+        {
+            serviceTest.parameters = ListIterate.collect(ctx.serviceTestParameter(), this::visitServiceTestParameter);
+        }
+        if (ctx.key != null && !ctx.key.isEmpty())
+        {
+            serviceTest.keys = ListIterate.collect(ctx.key, k -> PureGrammarParserUtility.fromGrammarString(k.getText(), true));
+        }
+        if (ctx.serializationFormat != null)
+        {
+            serviceTest.serializationFormat = PureGrammarParserUtility.fromIdentifier(ctx.serializationFormat);
+        }
+
+        SourceInformation embeddedSourceInfo = this.walkerSourceInformation.getSourceInformation(ctx.embeddedData());
+        String embeddedType = PureGrammarParserUtility.fromIdentifier(ctx.embeddedData().identifier());
+        TestAssertion assertion;
+        if ("Relation".equals(embeddedType))
+        {
+            String content = org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser
+                    .extractIslandContent(ctx.embeddedData().embeddedDataContent());
+            ParseTreeWalkerSourceInformation innerWalkerSourceInformation = org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser
+                    .buildIslandSourceInformation(ctx.embeddedData().ISLAND_OPEN(), this.walkerSourceInformation);
+            org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement element =
+                    org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser
+                            .parseRelationElement(content, innerWalkerSourceInformation, embeddedSourceInfo);
+            org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation eq =
+                    new org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation();
+            eq.id = "default";
+            eq.expected = element;
+            eq.sourceInformation = embeddedSourceInfo;
+            assertion = eq;
+        }
+        else
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData embedded =
+                    HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+            assertion = buildAssertionFromEmbeddedData(embedded, embeddedSourceInfo);
+        }
+        serviceTest.assertions = Collections.singletonList(assertion);
+        return serviceTest;
+    }
+
+    private TestAssertion buildAssertionFromEmbeddedData(org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData embedded, SourceInformation sourceInfo)
+    {
+        if (embedded instanceof org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData rel =
+                    (org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData) embedded;
+            if (rel.relationElements == null || rel.relationElements.size() != 1)
+            {
+                throw new EngineException("Service atomic test with '=> Relation #{...}#' expects exactly one relation element as the expected result",
+                        sourceInfo, EngineErrorType.PARSER);
+            }
+            org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation assertion =
+                    new org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation();
+            assertion.id = "default";
+            assertion.expected = rel.relationElements.get(0);
+            assertion.sourceInformation = sourceInfo;
+            return assertion;
+        }
+        if (embedded instanceof org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson assertion =
+                    new org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson();
+            assertion.id = "default";
+            assertion.expected = (org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData) embedded;
+            assertion.sourceInformation = sourceInfo;
+            return assertion;
+        }
+        throw new EngineException("Service atomic test '=> ...' expects Relation or ExternalFormat embedded data as the expected result; got: "
+                + embedded.getClass().getSimpleName(), sourceInfo, EngineErrorType.PARSER);
     }
 
     private TestData visitServiceTestData(ServiceParserGrammar.ServiceTestSuiteDataContext ctx)
@@ -543,7 +685,7 @@ public class ServiceParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
         String parameter = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parsePrimitiveValue(parameter, serviceParamSourceInformation, null);
+        ValueSpecification valueSpecification = parser.parsePrimitiveValue(parameter, serviceParamSourceInformation, this.context);
         return valueSpecification;
     }
 
@@ -572,7 +714,7 @@ public class ServiceParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.context);
         if (valueSpecification instanceof LambdaFunction)
         {
             return (LambdaFunction) valueSpecification;
