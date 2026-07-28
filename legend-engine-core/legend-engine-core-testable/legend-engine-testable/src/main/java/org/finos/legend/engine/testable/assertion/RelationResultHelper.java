@@ -18,21 +18,99 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.finos.legend.engine.protocol.pure.m3.relation.Column;
+import org.finos.legend.engine.protocol.pure.m3.type.Type;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
 import org.finos.legend.pure.runtime.java.extension.functions.shared.string.CsvParseHelper;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Utility class for converting between RelationElement, JSON, and TDS string formats.
- * Used by the test assertion evaluator for EqualToRelation assertions.
- */
 public class RelationResultHelper
 {
+
+    private enum ColumnKind
+    {
+        TEXT,       // String, Varchar, Char, StrictDate, DateTime, Date, LatestDate, Byte, ...
+        INTEGER,    // Integer, Int, TinyInt, SmallInt, BigInt, and unsigned variants
+        FLOAT,      // Float, Float4, Double
+        DECIMAL,    // Decimal, Numeric
+        BOOLEAN,    // Boolean
+        NUMBER,     // meta::pure::metamodel::type::Number
+        UNKNOWN     // anything else: fall back to guessing
+    }
+
+    private enum PureTypeKind
+    {
+        // map pure types to ColumnKind
+        STRING("String", ColumnKind.TEXT),
+        INTEGER("Integer", ColumnKind.INTEGER),
+        FLOAT("Float", ColumnKind.FLOAT),
+        DECIMAL("Decimal", ColumnKind.DECIMAL),
+        NUMBER("Number", ColumnKind.NUMBER),
+        BOOLEAN("Boolean", ColumnKind.BOOLEAN),
+        DATE("Date", ColumnKind.TEXT),
+        STRICT_DATE("StrictDate", ColumnKind.TEXT),
+        DATE_TIME("DateTime", ColumnKind.TEXT),
+        LATEST_DATE("LatestDate", ColumnKind.TEXT),
+        STRICT_TIME("StrictTime", ColumnKind.TEXT),
+        BYTE("Byte", ColumnKind.TEXT),
+
+        // Precise primitives
+        P_VARCHAR("meta::pure::precisePrimitives::Varchar", ColumnKind.TEXT),
+        P_CHAR("meta::pure::precisePrimitives::Char", ColumnKind.TEXT),
+        P_TIMESTAMP("meta::pure::precisePrimitives::Timestamp", ColumnKind.TEXT),
+        P_TINY_INT("meta::pure::precisePrimitives::TinyInt", ColumnKind.INTEGER),
+        P_U_TINY_INT("meta::pure::precisePrimitives::UTinyInt", ColumnKind.INTEGER),
+        P_SMALL_INT("meta::pure::precisePrimitives::SmallInt", ColumnKind.INTEGER),
+        P_U_SMALL_INT("meta::pure::precisePrimitives::USmallInt", ColumnKind.INTEGER),
+        P_INT("meta::pure::precisePrimitives::Int", ColumnKind.INTEGER),
+        P_U_INT("meta::pure::precisePrimitives::UInt", ColumnKind.INTEGER),
+        P_BIG_INT("meta::pure::precisePrimitives::BigInt", ColumnKind.INTEGER),
+        P_U_BIG_INT("meta::pure::precisePrimitives::UBigInt", ColumnKind.INTEGER),
+        P_FLOAT4("meta::pure::precisePrimitives::Float4", ColumnKind.FLOAT),
+        P_DOUBLE("meta::pure::precisePrimitives::Double", ColumnKind.FLOAT),
+        P_NUMERIC("meta::pure::precisePrimitives::Numeric", ColumnKind.DECIMAL);
+
+        private static final Map<String, ColumnKind> BY_FULL_PATH;
+
+        static
+        {
+            Map<String, ColumnKind> byFullPath = new HashMap<>();
+            for (PureTypeKind t : values())
+            {
+                byFullPath.put(t.fullPath, t.kind);
+            }
+            BY_FULL_PATH = Collections.unmodifiableMap(byFullPath);
+        }
+
+        final String fullPath;
+        final ColumnKind kind;
+
+        PureTypeKind(String fullPath, ColumnKind kind)
+        {
+            this.fullPath = fullPath;
+            this.kind = kind;
+        }
+
+        static ColumnKind kindOf(String fullPath)
+        {
+            if (fullPath == null)
+            {
+                return ColumnKind.UNKNOWN;
+            }
+            ColumnKind kind = BY_FULL_PATH.get(fullPath);
+            return kind == null ? ColumnKind.UNKNOWN : kind;
+        }
+    }
+
     private static List<List<String>> parseRelationElementAsCsv(RelationElement element)
     {
         List<String> columns = element.columns != null ? element.columns : Collections.emptyList();
@@ -49,68 +127,189 @@ public class RelationResultHelper
 
     public static String relationElementToJson(RelationElement element) throws IOException
     {
+        return relationElementToJson(element, null);
+    }
+
+    public static String relationElementToJson(RelationElement element, List<Column> columnTypes) throws IOException
+    {
         List<List<String>> parsed = parseRelationElementAsCsv(element);
         if (parsed.isEmpty())
         {
             return "[]";
         }
 
-        List<String> columns = parsed.get(0);
+        List<String> headerColumns = parsed.get(0);
         ObjectMapper mapper = new ObjectMapper();
         ArrayNode arrayNode = mapper.createArrayNode();
+
+        ColumnKind[] kinds = resolveColumnKinds(headerColumns, columnTypes);
 
         for (int r = 1; r < parsed.size(); r++)
         {
             List<String> rowValues = parsed.get(r);
             ObjectNode objectNode = mapper.createObjectNode();
-            for (int i = 0; i < columns.size(); i++)
+            for (int i = 0; i < headerColumns.size(); i++)
             {
-                String colName = columns.get(i);
+                String colName = headerColumns.get(i);
                 String value = (i < rowValues.size()) ? rowValues.get(i) : "";
-
-                if (value.isEmpty() || "null".equalsIgnoreCase(value))
-                {
-                    objectNode.putNull(colName);
-                }
-                else
-                {
-                    // Try integer first
-                    try
-                    {
-                        long longVal = Long.parseLong(value);
-                        objectNode.put(colName, longVal);
-                        continue;
-                    }
-                    catch (NumberFormatException ignored)
-                    {
-                    }
-
-                    // Try double
-                    try
-                    {
-                        double doubleVal = Double.parseDouble(value);
-                        objectNode.put(colName, doubleVal);
-                        continue;
-                    }
-                    catch (NumberFormatException ignored)
-                    {
-                    }
-
-                    // Try boolean
-                    if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))
-                    {
-                        objectNode.put(colName, Boolean.parseBoolean(value));
-                    }
-                    else
-                    {
-                        objectNode.put(colName, value);
-                    }
-                }
+                putTypedValue(objectNode, colName, value, kinds[i]);
             }
             arrayNode.add(objectNode);
         }
 
         return mapper.writeValueAsString(arrayNode);
+    }
+
+    private static ColumnKind[] resolveColumnKinds(List<String> headerColumns, List<Column> columnTypes)
+    {
+        ColumnKind[] kinds = new ColumnKind[headerColumns.size()];
+        boolean columnTypesPassed = columnTypes != null && !columnTypes.isEmpty();
+
+        Map<String, ColumnKind> byName = Collections.emptyMap();
+        if (columnTypesPassed)
+        {
+            byName = new HashMap<>();
+            for (Column c : columnTypes)
+            {
+                if (c != null && c.name != null)
+                {
+                    byName.put(c.name.trim(), kindOf(c));
+                }
+            }
+        }
+        for (int i = 0; i < headerColumns.size(); i++)
+        {
+            String headerName = headerColumns.get(i) == null ? "" : headerColumns.get(i).trim();
+            ColumnKind kind = byName.get(headerName);
+            if (kind == null)
+            {
+                kind = columnTypesPassed ? ColumnKind.TEXT : ColumnKind.UNKNOWN;
+            }
+            kinds[i] = kind;
+        }
+        return kinds;
+    }
+
+    private static ColumnKind kindOf(Column column)
+    {
+        if (column == null || column.genericType == null || column.genericType.rawType == null)
+        {
+            return ColumnKind.UNKNOWN;
+        }
+        Type rawType = column.genericType.rawType;
+        if (!(rawType instanceof PackageableType))
+        {
+            return ColumnKind.UNKNOWN;
+        }
+        return PureTypeKind.kindOf(((PackageableType) rawType).fullPath);
+    }
+
+    private static void putTypedValue(ObjectNode objectNode, String colName, String value, ColumnKind kind)
+    {
+        if (value == null || value.isEmpty() || "null".equalsIgnoreCase(value))
+        {
+            objectNode.putNull(colName);
+            return;
+        }
+        switch (kind)
+        {
+            case TEXT:
+                objectNode.put(colName, value);
+                return;
+            case INTEGER:
+                try
+                {
+                    objectNode.put(colName, Long.parseLong(value.trim()));
+                }
+                catch (NumberFormatException e)
+                {
+                    // Preserve original text so the mismatch surfaces meaningfully in the failure message.
+                    objectNode.put(colName, value);
+                }
+                return;
+            case FLOAT:
+                try
+                {
+                    objectNode.put(colName, Double.parseDouble(value.trim()));
+                }
+                catch (NumberFormatException e)
+                {
+                    objectNode.put(colName, value);
+                }
+                return;
+            case DECIMAL:
+                try
+                {
+                    objectNode.put(colName, new BigDecimal(value.trim()));
+                }
+                catch (NumberFormatException e)
+                {
+                    objectNode.put(colName, value);
+                }
+                return;
+            case BOOLEAN:
+                String trimmed = value.trim();
+                if ("true".equalsIgnoreCase(trimmed) || "false".equalsIgnoreCase(trimmed))
+                {
+                    objectNode.put(colName, Boolean.parseBoolean(trimmed));
+                }
+                else
+                {
+                    objectNode.put(colName, value);
+                }
+                return;
+            case NUMBER:
+                // Number can be integer or decimal at runtime — prefer integer when it fits.
+                try
+                {
+                    objectNode.put(colName, Long.parseLong(value.trim()));
+                    return;
+                }
+                catch (NumberFormatException ignored)
+                {
+                    // fall through
+                }
+                try
+                {
+                    objectNode.put(colName, new BigDecimal(value.trim()));
+                }
+                catch (NumberFormatException e)
+                {
+                    objectNode.put(colName, value);
+                }
+                return;
+            case UNKNOWN:
+            default:
+                putGuessedValue(objectNode, colName, value);
+        }
+    }
+
+    private static void putGuessedValue(ObjectNode objectNode, String colName, String value)
+    {
+        try
+        {
+            objectNode.put(colName, Long.parseLong(value));
+            return;
+        }
+        catch (NumberFormatException ignored)
+        {
+        }
+        try
+        {
+            objectNode.put(colName, Double.parseDouble(value));
+            return;
+        }
+        catch (NumberFormatException ignored)
+        {
+        }
+        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value))
+        {
+            objectNode.put(colName, Boolean.parseBoolean(value));
+        }
+        else
+        {
+            objectNode.put(colName, value);
+        }
     }
 
     public static String relationElementToTdsString(RelationElement element)
