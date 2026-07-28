@@ -172,6 +172,8 @@ Class meta::protocols::pure::vX_X_X::metamodel::m3::relation::Column
   name: String[1];
   genericType: meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType[1];
   multiplicity : meta::protocols::pure::vX_X_X::metamodel::m3::multiplicity::Multiplicity[1];
+  taggedValues : meta::protocols::pure::vX_X_X::metamodel::m3::extension::TaggedValue[*];
+  stereotypes : meta::protocols::pure::vX_X_X::metamodel::m3::extension::StereotypePtr[*];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::m3::type::generics::GenericType
