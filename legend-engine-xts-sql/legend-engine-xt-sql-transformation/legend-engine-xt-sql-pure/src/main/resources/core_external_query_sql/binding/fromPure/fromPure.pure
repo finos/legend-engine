@@ -496,7 +496,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
 
-  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicates()));
+  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)));
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
