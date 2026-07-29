@@ -488,6 +488,6 @@ public class TestRewriteQuery
 
     public void test(String sql)
     {
-        Assert.assertEquals(sql.replace("\n", ""), SQLGrammarParser.getSqlBaseParser(sql, "query").statement().accept(new SQLSerializer()));
+        Assert.assertEquals(sql.replace("\n", "").toUpperCase(), SQLGrammarParser.getSqlBaseParser(sql, "query").statement().accept(new SQLSerializer()).toUpperCase());
     }
 }

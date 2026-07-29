@@ -1671,13 +1671,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCasts():Boolean[1]
 {
   test('SELECT' +
-      ' CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date",' +
+      ' CAST(\'2023-01-01\' AS DATE) AS "constant", CAST(String AS VARCHAR) AS "string", CAST(String AS TEXT) AS "text", CAST(String AS DATE) AS "date", ' +
       ' CAST(String AS INTEGER) AS "integer", CAST(String AS BIGINT) AS "bigint", CAST(String AS SMALLINT) AS "smallint", CAST(String AS BOOLEAN) AS "boolean", ' +
       ' CAST(String AS DOUBLE PRECISION) AS "double", CAST(String AS NUMERIC) AS "numeric",' +
       ' CAST(String AS TIMESTAMP) AS "timestamp", CAST(Integer AS TEXT) AS "integerText", CAST(Integer AS VARCHAR) AS "integerString", CAST(Integer AS Integer) AS "expression",' +
       ' CAST(String AS VARCHAR(2)) AS "stringChars", CAST(Integer AS VARCHAR(2)) AS "integerStringChars",' +
       ' CAST(Float AS NUMERIC) AS "floatNumeric", CAST(Decimal AS NUMERIC) AS "decimalNumeric", CAST(1 + 1.1 AS NUMERIC) AS "numberNumeric", CAST(Decimal AS DOUBLE PRECISION) AS "decimalDoublePrecision",' +
-      ' CAST(Float AS DOUBLE PRECISION) AS "floatDoublePrecision", CAST(1 + 1.1 AS DOUBLE PRECISION) AS "numberDoublePrecision", CAST(String AS NUMERIC(4, 2)) AS "numericParams" FROM service."/service/service1"',
+      ' CAST(Float AS DOUBLE PRECISION) AS "floatDoublePrecision", CAST(1 + 1.1 AS DOUBLE PRECISION) AS "numberDoublePrecision", CAST(String AS NUMERIC(4, 2)) AS "numericParams", CAST(Float AS INTEGER) AS "floatInteger" FROM service."/service/service1"',
 
     [
       {| FlatInput.all()->project(
@@ -1706,7 +1706,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | toFloat($row.getDecimal('Decimal')), 'decimalDoublePrecision'),
           col(row:TDSRow[1] | $row.getFloat('Float'), 'floatDoublePrecision'),
           col(row:TDSRow[1] | toFloat(1 + 1.1), 'numberDoublePrecision'),
-          col(row:TDSRow[1] | round(parseDecimal($row.getString('String')), 2), 'numericParams')
+          col(row:TDSRow[1] | round(parseDecimal($row.getString('String')), 2), 'numericParams'),
+          col(row:TDSRow[1] | round($row.getFloat('Float')), 'floatInteger')
         ])
       },
 
@@ -1736,8 +1737,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 decimalDoublePrecision : x|$x.Decimal->toFloat(),
                 floatDoublePrecision : x|$x.Float,
                 numberDoublePrecision : x|toFloat(1 + 1.1),
-                numericParams : x|$x.String->parseDecimal()
-          ->round(2)]
+                numericParams : x|$x.String->parseDecimal()->round(2),
+                floatInteger : x |$x.Float->round()
+          ]
      )}
     ]
   )
@@ -2289,22 +2291,54 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict('Integer')
-        ->concatenate(
+        ->union(
           FlatInput.all()
             ->project(
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')
-        )
+        )->toOne()
       },
 
       {|
         FlatInput.all()
           ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
           ->select(~[Integer])
-          ->concatenate(FlatInput.all()
+          ->union(FlatInput.all()
           ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
-          ->select(~[Integer]))
+          ->select(~[Integer]))->toOne()
+      }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnionPrecendence():Boolean[1]
+{
+  test('SELECT Integer FROM service."/service/service1" UNION SELECT Integer FROM service."/service/service2" order by Integer offset 2 limit 1 ',
+
+    [
+      {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict('Integer')
+        ->union(
+          FlatInput.all()
+            ->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
+              [ 'ID', 'Integer', 'String' ])
+            ->restrict('Integer')
+        )->toOne()->sort([asc('Integer')])->slice(2, 2 + 1)
+      },
+
+      {|
+        FlatInput.all()
+          ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+          ->select(~[Integer])
+          ->union(FlatInput.all()
+          ->project(~[ID : x|$x.idIn, Integer : x|$x.integerIn, String : x|$x.stringIn])
+          ->select(~[Integer]))->toOne()->sort([ascending(~Integer)])->slice(2, 2 + 1)
       }
     ]
   )
@@ -2320,19 +2354,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        ->concatenate(
+        ->union(
           FlatInput.all()
               ->project(
                 [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
                 [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        )
+        )->toOne()
       },
 
       {|FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
-            ->concatenate(
+            ->union(
               FlatInput.all()
-              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn]))
+              ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn]))->toOne()
       }
     ]
   )
@@ -3140,6 +3174,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathUnsupported():Boolean[1]
+{
+
+  error('SELECT log(4, 10)', 'only base 10 supported for log function');
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctionsNullable():Boolean[1]
 {
   test(
@@ -3435,13 +3475,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testProjectWithWindowFunctions():Boolean[1]
 {
-  test(
-    'SELECT String, abs(Integer) AS "ABS", ' +
+  let sql1 = 'SELECT String, abs(Integer) AS "ABS", ' +
     'row_number() OVER (PARTITION BY upper(String) ORDER BY EXTRACT(YEAR FROM StrictDate) + 10 ASC) AS "ROW", ' +
     'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
     'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
-    'FROM service."/service/service1"',
+    'FROM service."/service/service1"';
 
+  let sql2 = 'SELECT String, abs(Integer) AS "ABS", ' +
+    'row_number() OVER w1 AS "ROW", ' +
+    'dense_rank() OVER w2 AS "DENSE RANK", ' +
+    'rank() OVER w3 AS "RANK" ' +
+    'FROM service."/service/service1" ' +
+    'WINDOW w1 AS (PARTITION BY upper(String) ORDER BY EXTRACT(YEAR FROM StrictDate) + 10 ASC), ' +
+    'w2 AS (PARTITION BY String ORDER BY Integer DESC), ' +
+    'w3 AS (PARTITION BY String ORDER BY Integer ASC)';
+
+  test([$sql1, $sql2],
     [
       c({|
           FlatInput.all()
@@ -3475,7 +3524,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->select(~[String, ABS, ROW, 'DENSE RANK', RANK])
         }, true, false)
     ]
-  )
+  );
 }
 
 
@@ -3734,13 +3783,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict('Integer')->from(dummyMapping, dummyRuntime())
-        ->concatenate(
+        ->union(
           FlatInput.all()
             ->project(
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
             ->restrict('Integer')->from(dummyMapping, dummyRuntime())
-        )
+        )->toOne()
       }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
 }
 
@@ -3847,14 +3896,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [
             'ID', 'Integer', 'Enum'
           ]
-        )->concatenate(FlatInput.all()->project(
+        )->union(FlatInput.all()->project(
           [
             x | $x.idIn, x | $x.integerIn, x | $x.enumVal, x | $x.type, x | $const_union_3
           ],
           [
             'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
           ]
-        )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')));
+        )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')))->toOne();
       }
 
       //TODO issue with getType on enum
@@ -3913,7 +3962,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
             let cte2 = $cte1;
 
-            $cte1->restrict('Integer')->concatenate($cte2->restrict('Integer'));
+            $cte1->restrict('Integer')->union($cte2->restrict('Integer'))->toOne();
       }),
       c({|
             let cte1 = FlatInput.all()->project(
@@ -3922,7 +3971,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
             let cte2 = $cte1;
 
-            $cte1->select(~[Integer])->concatenate($cte2->select(~[Integer]));
+            $cte1->select(~[Integer])->union($cte2->select(~[Integer]))->toOne();
       })
     ]
   )

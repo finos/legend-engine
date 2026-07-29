@@ -62,8 +62,8 @@ tests:
     category: "type_casting"
 
   # CAST integer to boolean
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
   - id: cast_int_to_bool
     sql: "SELECT CAST(1 AS BOOLEAN) AS t_val, CAST(0 AS BOOLEAN) AS f_val FROM persons WHERE id = 1"
     feature: "CAST integer to boolean"
@@ -78,8 +78,8 @@ tests:
     category: "type_casting"
 
   # CAST date to text
-    expected_tds_status: FAIL
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
   - id: cast_date_to_text
     sql: "SELECT CAST(hire_date AS TEXT) AS result FROM persons WHERE hire_date IS NOT NULL ORDER BY 1"
     feature: "CAST date to text"

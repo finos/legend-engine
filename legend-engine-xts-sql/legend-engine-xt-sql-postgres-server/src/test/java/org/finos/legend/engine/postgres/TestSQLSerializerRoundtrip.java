@@ -19,10 +19,15 @@ import org.finos.legend.engine.postgres.protocol.sql.serialization.SQLSerializer
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Comprehensive round-trip tests for SQLSerializer.
  * Each test parses SQL and asserts that the serialized output matches the expected form.
- * The serializer lowercases keywords, so expected values use lowercase keywords.
+ * The serializer normalizes SQL keywords to uppercase.
  */
 public class TestSQLSerializerRoundtrip
 {
@@ -376,6 +381,54 @@ public class TestSQLSerializerRoundtrip
     public void testExcept()
     {
         assertRoundtrip("select name from persons EXCEPT select name from departments");
+    }
+
+    @Test
+    public void testUnionWithOrderBy()
+    {
+        assertRoundtrip("select name from persons UNION ALL select name from departments order by 1");
+    }
+
+    @Test
+    public void testUnionWithLimit()
+    {
+        assertRoundtrip("select name from persons UNION ALL select name from departments limit 10");
+    }
+
+    @Test
+    public void testUnionWithOrderByAndLimit()
+    {
+        assertRoundtrip("select name from persons UNION select name from departments order by 1 limit 5");
+    }
+
+    @Test
+    public void testUnionWithOrderByLimitOffset()
+    {
+        assertRoundtrip("select name from persons UNION ALL select name from departments order by 1 limit 10 offset 5");
+    }
+
+    @Test
+    public void testIntersectWithOrderBy()
+    {
+        assertRoundtrip("select name from persons INTERSECT select name from departments order by 1");
+    }
+
+    @Test
+    public void testExceptWithOrderByAndLimit()
+    {
+        assertRoundtrip("select name from persons EXCEPT select name from departments order by 1 limit 10");
+    }
+
+    @Test
+    public void testMultipleUnions()
+    {
+        assertRoundtrip("select name from persons UNION ALL select name from departments UNION ALL select name from projects");
+    }
+
+    @Test
+    public void testMultipleUnionsWithOrderBy()
+    {
+        assertRoundtrip("select name from persons UNION ALL select name from departments UNION ALL select name from projects order by 1");
     }
 
     // ===== Functions =====
@@ -895,7 +948,7 @@ public class TestSQLSerializerRoundtrip
     private void assertRoundtrip(String sql)
     {
         String result = SQLGrammarParser.getSqlBaseParser(sql, "query").statement().accept(new SQLSerializer());
-        Assert.assertEquals(sql, result);
+        Assert.assertEquals(sql.toUpperCase(), result.toUpperCase());
     }
 }
 

@@ -62,8 +62,8 @@ tests:
     category: "group_by"
 
   # ORDER BY aggregate
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
   - id: group_by_order_agg
     sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY SUM(salary) DESC"
     feature: "ORDER BY aggregate"
