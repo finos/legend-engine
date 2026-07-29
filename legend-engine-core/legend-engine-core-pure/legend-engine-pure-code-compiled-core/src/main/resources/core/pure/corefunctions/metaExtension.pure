@@ -135,7 +135,15 @@ function <<access.private>>
    if($visited->get($key)->isNotEmpty(),
       | [],
       | let visitedNext = $visited->put($key, $class);
-        let properties = $class->allProperties();
+        // Include inherited properties in the output. allProperties(class) returns only
+        // the class's own directly-declared properties, which silently drops entries
+        // declared on a superclass. Downstream callers (notably
+        // graphFetch::calculateSourceTree, which uses this to build a
+        // childPropertiesMap keyed by return type for back-edge lookups) then fail to
+        // find a back-edge that legitimately exists via inheritance. See
+        // counterexample.alloy: BaseTrade.commission (returning Commission) is invisible
+        // via allProperties(Trade) but is a valid back-edge from Commission to Payload.
+        let properties = $class->meta::pure::functions::meta::hierarchicalAllProperties();
         let nestedClassTypes = $class->meta::pure::functions::meta::hierarchicalProperties()
                                      ->map(p | $p.genericType.rawType->toOne())
                                      ->filter(t | $t->instanceOf(Class))

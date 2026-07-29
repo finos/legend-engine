@@ -818,20 +818,37 @@ function <<access.private>> meta::pure::graphFetch::collectPropertyTreeClasses(p
    $direct->concatenate($pTree.children->map(ch | $ch->collectPropertyTreeClasses()));
 }
 
+// Look up candidate properties whose return type "reaches" target - either equal (path-
+// compared to avoid Pure's lazy-eval identity pitfall), or a subtype of target. The
+// subtype direction is required because a property whose return type is a subclass of
+// target is a valid back-edge: any instance the property yields IS a target instance via
+// inheritance. Without this, a mapping whose intermediate reads a property declared on
+// an abstract superclass (e.g. BaseTrade.commission where BaseTrade is only reachable
+// via Event.trade returning the concrete Trade subclass) fails to find any back-edge and
+// buildPropertyPathUptoOwner asserts. See testPhantomIntermediateOverInheritedProperty.
+function <<access.private>>
+   meta::pure::graphFetch::lookupIntermediateCandidates(t : Map<Type, List<AbstractProperty<Any>>>[1], target:Class<Any>[1]) : AbstractProperty<Any>[*]
+{
+   let targetPath = $target->elementToPath();
+   $t->keyValues()
+     ->filter(kv | $kv.first->elementToPath() == $targetPath || $kv.first->isStrictSubType($target))
+     ->map(kv | $kv.second.values);
+}
+
 function meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]) : PropertyPathTree[*]
 {
    $pTree.value->match([
       node:PropertyPathNode[1] | if($ownerClass == $node.class
                                        || $node.class->isStrictSubType($ownerClass)
                                        || $ownerClass->isStrictSubType($node.class)
-                                       || $t->get($node.class)->isNotEmpty(),
+                                       || meta::pure::graphFetch::lookupIntermediateCandidates($t, $node.class)->isNotEmpty(),
                                     | $pTree;,
                                     | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 ),
       clz : Class<Any>[1]      | if($clz == $ownerClass
                                        || $clz->isStrictSubType($ownerClass)
                                        || $ownerClass->isStrictSubType($clz)
-                                       || $t->get($clz)->isNotEmpty(),
+                                       || meta::pure::graphFetch::lookupIntermediateCandidates($t, $clz)->isNotEmpty(),
                                     | $pTree;,
                                     | $pTree.children->map(ch | findSubTreeWithOwnerOrPropertyTreesFromOwner($ch, $ownerClass, $t))
                                 );,
@@ -867,7 +884,7 @@ function <<access.private>>
                                     // or a supertype of owner (inheritance). The supertype-of-owner case relies on
                                     // addPropertyGraphFetchTrees accepting the property under owner via inheritance.
                                     | $pTree,
-                                    | let candidates = $t->get($propOwner)->orElse(list([])).values;
+                                    | let candidates = meta::pure::graphFetch::lookupIntermediateCandidates($t, $propOwner);
                                       assert($candidates->isNotEmpty(),
                                              | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $propOwner->elementToPath() + ' - cannot build path back to owner.');
                                       let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $propOwner);
@@ -884,7 +901,7 @@ function <<access.private>>
                                   // `$src->typeName()` transform on _S_PersonC puts a _S_Person Class
                                   // node in the property tree; _S_PersonC instances inherit access).
                                   | $pTree,
-                                  | let candidates = $t->get($clz)->orElse(list([])).values;
+                                  | let candidates = meta::pure::graphFetch::lookupIntermediateCandidates($t, $clz);
                                     assert($candidates->isNotEmpty(),
                                            | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $clz->elementToPath() + ' - cannot build path back to owner.');
                                     let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $clz);

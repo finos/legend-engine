@@ -3485,6 +3485,169 @@ function <<test.Test>>
   true;
 }
 
+// Regression fixture derived from counterexample.alloy. The root mapping constructs an
+// intermediate ^Commission from $src.event.trade.commission (a property declared on the
+// abstract superclass PhantomBaseTrade), then delegates to a second class mapping with
+// ~src PhantomCommission. calculateSourceTree must synthesise a back-edge from
+// PhantomCommission back to PhantomPayload via PhantomBaseTrade.commission. Before the
+// fix in metaExtension.pure, allNestedProperties used allProperties(class) which excluded
+// inherited properties, so childPropertiesMap[PhantomCommission] was empty and
+// buildPropertyPathUptoOwner asserted with
+// "No intermediate-class property of PhantomPayload returns PhantomCommission - cannot
+// build path back to owner."
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomIdentifier
+{
+  identifier     : String[1];
+  identifierType : String[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomParty
+{
+  oe : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomIdentifier[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCharge
+{
+  payBy  : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomParty[1];
+  payTo  : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomParty[1];
+  amount : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommission
+{
+  executionCommission : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCharge[0..1];
+  totalCommission     : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCharge[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomBaseTrade
+{
+  parties    : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomParty[*];
+  commission : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommission[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomTrade extends meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomBaseTrade
+{
+  tradeDate : StrictDate[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomEvent
+{
+  trade : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomTrade[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomPayload
+{
+  event : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomOut
+{
+  commissionInfo : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommissionOut[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommissionOut
+{
+  chargedPartyId : String[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::testPhantomIntermediateOverInheritedProperty():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomOut {
+      commissionInfo { chargedPartyId }
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomPathMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  // Source tree must connect Payload -> event -> trade -> commission (inherited from
+  // PhantomBaseTrade) -> executionCommission -> payBy -> oe -> identifier.
+  assert($str->contains('event'),               | 'expected event in source tree: '               + $str);
+  assert($str->contains('trade'),               | 'expected trade in source tree: '               + $str);
+  assert($str->contains('commission'),          | 'expected commission (inherited) in source tree: ' + $str);
+  assert($str->contains('executionCommission'), | 'expected executionCommission in source tree: ' + $str);
+  assert($str->contains('payBy'),               | 'expected payBy in source tree: '               + $str);
+  assert($str->contains('oe'),                  | 'expected oe in source tree: '                  + $str);
+  assert($str->contains('identifier'),          | 'expected identifier in source tree: '          + $str);
+  true;
+}
+
+// Regression fixture derived from user-supplied example.pure model.
+// Target class MoTrade has two properties (transactionRunDate + commissionAmount) but
+// only transactionRunDate is mapped. Target tree requesting BOTH properties should not
+// trigger the "No intermediate-class property..." diagnostic - commissionAmount is
+// silently dropped since the outer if in enrichSourceTreeNodeForProperty short-circuits
+// on empty propertyMappings + no auto-map/default-empty/merge.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoMoney
+{
+  amount : Float[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTransactionCharge
+{
+  amount : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoMoney[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoCommissionCharge
+{
+  totalCommission : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTransactionCharge[1];
+}
+
+Class <<meta::pure::profiles::typemodifiers.abstract>> meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoBaseTrade
+{
+  commission : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoCommissionCharge[0..1];
+}
+
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoBookableTrade
+{
+  tradeDate : StrictDate[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoBookableTradeEvent
+{
+  bookableTrade : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoBookableTrade[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoPayload
+{
+  bte : meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoBookableTradeEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTrade
+{
+  transactionRunDate : StrictDate[1];
+  commissionAmount : Float[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::testMoTradeWithUnmappedProperty():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTrade {
+      transactionRunDate,
+      commissionAmount
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTradeMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  println($str);
+  // Mapped property lands in the source tree; unmapped property is silently absent
+  // (existing calculateSourceTree behaviour, unchanged by this branch).
+  assert($str->contains('bte'),          | 'expected bte in source tree for mapped transactionRunDate: '          + $str);
+  assert($str->contains('bookableTrade'),| 'expected bookableTrade in source tree for mapped transactionRunDate: '+ $str);
+  assert($str->contains('tradeDate'),    | 'expected tradeDate in source tree for mapped transactionRunDate: '    + $str);
+  assert(!$str->contains('commission'),  | 'unmapped commissionAmount must not induce a commission-side source path: ' + $str);
+  true;
+}
+
 ###Mapping
 Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::UnionInheritedPropMapping
 (
@@ -3501,5 +3664,31 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::Union
   {
     ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::SrcPersonC
     firstName : $src.fullName + ' ' + $src.cName
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTradeMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoTrade : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::MoPayload
+    transactionRunDate : $src.bte.bookableTrade.tradeDate
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomPathMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomOut : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomPayload
+    commissionInfo[commOutCM] : ^meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommission(
+       executionCommission = $src.event.trade.commission.executionCommission,
+       totalCommission     = $src.event.trade.commission.totalCommission->toOne()
+    )
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommissionOut[commOutCM] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommission
+    chargedPartyId : $src.executionCommission.payBy.oe.identifier->toOne()
   }
 )
