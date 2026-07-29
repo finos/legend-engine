@@ -148,7 +148,9 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::t
             (
                 name = $c.name->toOne(),
                 genericType = $c.classifierGenericType.typeArguments->at(1)->transformGenericType(),
-                multiplicity = $c.classifierGenericType.multiplicityArguments->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity()
+                multiplicity = $c.classifierGenericType.multiplicityArguments->at(0)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity(),
+                stereotypes = $c.stereotypes->map(s|$s->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformStereotype()),
+                taggedValues = $c.taggedValues->map(t|$t->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformTaggedValue())
             )
         )
     )
