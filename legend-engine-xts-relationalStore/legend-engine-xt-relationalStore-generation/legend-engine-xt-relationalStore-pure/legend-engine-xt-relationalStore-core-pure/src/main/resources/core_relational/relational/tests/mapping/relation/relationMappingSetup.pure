@@ -74,6 +74,13 @@ Database meta::relational::tests::mapping::relation::testDB
     LEGALNAME VARCHAR(100) NOT NULL
   )
 
+  View personView
+  (
+    ID: personTable.ID PRIMARY KEY,
+    age: personTable.AGE,
+    name: personTable."FIRST NAME"
+  )
+
   Join GroupMembership_Person(groupMembershipTable.PERSONID = personTable.ID)
 )
 
