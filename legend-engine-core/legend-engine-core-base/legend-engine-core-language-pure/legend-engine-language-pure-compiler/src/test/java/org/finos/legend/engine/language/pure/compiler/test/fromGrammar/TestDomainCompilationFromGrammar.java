@@ -1555,6 +1555,62 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testSingleElementCollectionLiteralAcceptsOptional()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   many : String[*];\n" +
+                "   prop() { concatenate([$this.optional], $this.many) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionLiteralAcceptsMany()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   many1 : String[*];\n" +
+                "   many2 : String[*];\n" +
+                "   prop() { concatenate([$this.many1], $this.many2) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionInIfBranches()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   prop(cond:Boolean[1]) { if($cond, | [$this.optional], | []) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionInConstructorManySlot()
+    {
+
+        test("Class test::Foo { xs : String[*]; }\n" +
+                "function test::mkFoo(opt:String[0..1]):test::Foo[1]\n" +
+                "{\n" +
+                "   ^test::Foo(xs = [$opt])\n" +
+                "}");
+    }
+
+    @Test
+    public void testMultiElementCollectionStillRejectsNonOne()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   prop() { [$this.optional, 'x'] } : String[*];\n" +
+                "}", "COMPILATION error at [4:20-27]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop], multiplicity:[0..1]");
+    }
+
+    @Test
     public void testConstraint()
     {
         test("Class test::A\n" +
