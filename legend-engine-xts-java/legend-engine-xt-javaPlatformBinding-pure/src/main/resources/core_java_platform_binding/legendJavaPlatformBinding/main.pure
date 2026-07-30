@@ -39,6 +39,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::GenerationContext
    nodeInfos                 : NodeInfo[*];
    baseProject               : Project[0..1];
    suppliedClassesForGeneration : meta::pure::metamodel::type::Class<Any>[*];
+   resolutionState           : CodeDependencyResolutionState[0..1];
 }
 
 Class meta::pure::executionPlan::platformBinding::legendJava::NodeInfo
@@ -70,12 +71,27 @@ Class meta::pure::executionPlan::platformBinding::legendJava::GeneratedCode
 {
    project: Project[0..1];
    implementation: JavaPlatformImplementation[0..1];
+   resolutionState: CodeDependencyResolutionState[0..1];
 }
 
 Class meta::pure::executionPlan::platformBinding::legendJava::GeneratedNode
 {
    project: Project[0..1];
    node: ExecutionNode[1];
+   resolutionState: CodeDependencyResolutionState[0..1];
+}
+
+Class meta::pure::executionPlan::platformBinding::legendJava::ProjectAndState
+{
+   project: Project[0..1];
+   resolutionState: CodeDependencyResolutionState[1];
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::currentResolutionState(context:GenerationContext[1]): CodeDependencyResolutionState[1]
+{
+   if($context.resolutionState->isEmpty(),
+      | ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()),
+      | $context.resolutionState->toOne());
 }
 
 
