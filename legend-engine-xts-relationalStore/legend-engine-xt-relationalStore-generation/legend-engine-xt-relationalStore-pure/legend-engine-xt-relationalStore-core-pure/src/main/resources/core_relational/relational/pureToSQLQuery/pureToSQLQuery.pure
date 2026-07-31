@@ -1216,7 +1216,9 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                            ->concatenate($select.extraFilteringOperation)
                            ->extractTableAliasColumns()
                            ->filter(t|$t.alias->in($foundNodeSubNodes))
-                           ->filter(c|!($c.alias == $child.alias && $nestedSelect.columns->cast(@Alias).name->contains($c.column.name)))
+                           // Strip quotes before comparing — milestoning aliases in the union are quoted (e.g. "lake_thru_0")
+                           // but column references may use the unquoted form. Without this, duplicates slip through.
+                            ->filter(c|!($c.alias == $child.alias && $nestedSelect.columns->cast(@Alias).name->map(n|$n->stripMatchingQuotes())->contains($c.column.name->stripMatchingQuotes())))
                            ->filter(c|!$c.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten) && !$c.alias.relationalElement->instanceOf(meta::relational::functions::pureToSqlQuery::metamodel::SemiStructuredArrayFlattenRelation));
 
    let flattenColumnsInSelect = if($isolateGroupBy, |[], |
@@ -1908,7 +1910,8 @@ function meta::relational::functions::pureToSqlQuery::findUnionPropertyMapping(u
 
 function meta::relational::functions::pureToSqlQuery::addMissingColumn(nested:Boolean[1], union:Union[1], propName:String[1], relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   $oldSrcOperation->addMissingColumnToUnion({q,i|if( $q.columns->filter(c|$c->cast(@Alias).name == $propName)->isEmpty(),
+   // Compare with stripMatchingQuotes — milestoning aliases are quoted in the union (e.g. "lake_thru_0") and we must recognize them as already present to avoid adding unquoted duplicates.
+   $oldSrcOperation->addMissingColumnToUnion({q,i|if( $q.columns->filter(c|$c->cast(@Alias).name == $propName || $c->cast(@Alias).name->stripMatchingQuotes() == $propName->stripMatchingQuotes())->isEmpty(),
                                                      |
                                                      let filteredRelationalPropertyMappings =  findUnionPropertyMapping($union, $i, $property, $relationalPropertyMappings, $state, $extensions);
                                                      if ($filteredRelationalPropertyMappings->isEmpty(),
