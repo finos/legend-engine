@@ -456,6 +456,56 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"count\":10}}", json);
     }
 
+    @Test
+    public void testM2MNestedLambdaParamNameCollidingWithCalleeFunctionParam() throws IOException
+    {
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::Swap\n" +
+                "{\n" +
+                "   name : String[1];\n" +
+                "}\n" +
+                "Class test::SrcHolder\n" +
+                "{\n" +
+                "   swaps : test::Swap[*];\n" +
+                "}\n" +
+                "Class test::TgtRow\n" +
+                "{\n" +
+                "   label : String[0..1];\n" +
+                "}\n" +
+                "function test::first(swap: test::Swap[1]): String[1]\n" +
+                "{\n" +
+                "   $swap.name\n" +
+                "}\n" +
+                "function test::labelOf(h: test::SrcHolder[1]): String[0..1]\n" +
+                "{\n" +
+                "   $h.swaps->map(swap | $h.swaps->map(swap | $swap->test::first()))->first()\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::TestMapping\n" +
+                "(\n" +
+                "   *test::TgtRow : Pure\n" +
+                "   {\n" +
+                "     ~src test::SrcHolder\n" +
+                "     label : $src->test::labelOf()\n" +
+                "   }\n" +
+                ")\n"
+        );
+
+        ClassInstance fetchTree = rootGFT("test::TgtRow", propertyGFT("label"));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::TgtRow")), fetchTree), fetchTree));
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::TestMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(jsonModelConnection("test::SrcHolder", "{\"swaps\":[{\"name\":\"A\"},{\"name\":\"B\"}]}"));
+        input.context = context();
+        String json = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"label\":\"A\"}}", json);
+    }
+
     private Response runTest(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
