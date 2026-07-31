@@ -1,0 +1,29 @@
+name: service-shared-domain
+title: "Shared Person Domain, H2 Store and Relational Mapping"
+description: |
+  A reusable bundle consumed by every service EMIT example in this module: a
+  Person class with a `fullName` derived property, a single-table H2 store,
+  and the relational mapping that ties them together. Declaring no connection,
+  runtime or service, it leaves each consumer free to layer on the execution
+  shape that is actually under test — one runtime or two, a modern test suite
+  or a deprecated one. Its own EMIT run only exercises parse + compile.
+
+modelSources:
+  model:
+    root: service-shared-domain
+    files:
+      - model/person.pure
+      - store/personDb.pure
+      - mapping/personMapping.pure
+
+features:
+  - grammar:derived-property
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - shared-domain
+  - h2

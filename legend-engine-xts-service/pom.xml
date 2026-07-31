@@ -35,5 +35,6 @@
         <module>legend-engine-services-model</module>
         <module>legend-engine-services-model-http-api</module>
         <module>legend-engine-test-runner-service</module>
+        <module>legend-engine-xt-service-emit</module>
     </modules>
 </project>

@@ -1,0 +1,41 @@
+name: service-multi-execution
+title: "Multi-Execution Service Routed by Environment Key"
+description: |
+  A Service whose execution is `Multi`, keyed on `env`: the same query is bound
+  to a QA and a UAT execution, each with its own runtime and its own H2
+  connection. The test suite primes both connections with different rows and
+  pins each atomic test to one key, so a test only passes if the engine routed
+  it to that key's runtime — proving per-key resolution rather than merely that
+  a multi-execution service compiles. Plan generation runs over the resulting
+  `CompositeExecutionPlan`.
+
+modelSources:
+  model:
+    root: service-multi-execution
+    files:
+      - connection/connections.pure
+      - runtime/runtimes.pure
+      - service/personEnvService.pure
+  dependencies:
+    - source: service-shared-domain.emit.yaml
+
+features:
+  - execution:multi-execution-service
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - multi-execution
+  - h2
+  - service-test
+  - plan-generation
+  - shared-domain
