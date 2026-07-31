@@ -68,7 +68,10 @@ public class FunctionJarTreeWalker
         functionJar._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         functionJar.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         functionJar.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        functionJar.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        functionJar.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
 
         FunctionJarParserGrammar.FunctionJarFuncContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionJarFunc(), "function", functionJar.sourceInformation);
         functionJar.function = new PackageableElementPointer(

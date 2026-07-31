@@ -119,7 +119,10 @@ public class ServiceParseTreeWalker
         service._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         service.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         service.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        service.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        service.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
 
         // pattern
         ServiceParserGrammar.ServicePatternContext patternContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.servicePattern(), "pattern", service.sourceInformation);

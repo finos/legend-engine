@@ -101,8 +101,9 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
         PureGrammarComposerContext indentedContext = PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(PureGrammarComposerUtility.getTabString()).build();
         StringBuilder str = new StringBuilder();
 
-        str.append("Data ")
-                .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, dataElement.taggedValues))
+        str.append(HelperDomainGrammarComposer.renderDocumentation(dataElement.taggedValues, ""))
+                .append("Data ")
+                .append(HelperDomainGrammarComposer.renderAnnotations(dataElement.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(dataElement.taggedValues)))
                 .append(PureGrammarComposerUtility.convertPath(dataElement.getPath()))
                 .append("\n{\n");
 

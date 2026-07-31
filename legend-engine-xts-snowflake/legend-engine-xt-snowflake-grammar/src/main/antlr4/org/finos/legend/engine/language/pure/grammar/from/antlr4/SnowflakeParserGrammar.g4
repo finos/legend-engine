@@ -33,7 +33,7 @@ identifier:     VALID_STRING | STRING |
 definition:                         (snowflakeApp| snowflakeM2MUdf | deploymentConfig)*
                                     EOF
 ;
-snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifiedName
+snowflakeApp:                   documentation? SNOWFLAKE_APP stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 applicationName
@@ -47,7 +47,7 @@ snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifi
                                             )*
                                         BRACE_CLOSE;
 
-snowflakeM2MUdf:                   SNOWFLAKE_M2M_UDF stereotypes? taggedValues? qualifiedName
+snowflakeM2MUdf:                   documentation? SNOWFLAKE_M2M_UDF stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 udfName

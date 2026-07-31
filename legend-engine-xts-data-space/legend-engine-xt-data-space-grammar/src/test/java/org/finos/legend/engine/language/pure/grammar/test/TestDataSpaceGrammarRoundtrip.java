@@ -23,7 +23,10 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpace()
     {
         test("###DataSpace\n" +
-                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
                 "{\n" +
                 "  executionContexts:\n" +
                 "  [\n" +
@@ -236,7 +239,10 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpaceParserBackwardCompatibility()
     {
         testFormat("###DataSpace\n" +
-                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
+                "'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
                 "{\n" +
                 "  executionContexts:\n" +
                 "  [\n" +
@@ -766,6 +772,51 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      'testEmail@test.org'\n" +
                 "    ];\n" +
                 "  };\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceDocumentation()
+    {
+        // documentation is sugar for the doc tagged value, which is a different slot from the DataSpace's own
+        // `description` field - an element may carry both, and they mean different things
+        test("###DataSpace\n" +
+                "'''\n" +
+                "Covers trading positions across desks.\n" +
+                "\n" +
+                "Sourced from the overnight batch.\n" +
+                "'''\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  description: 'Short blurb shown in the catalog.';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceDocumentationFallsBackToATaggedValue()
+    {
+        // a value the parser's canonicalization would not read back unchanged stays an ordinary tagged value
+        test("###DataSpace\n" +
+                "DataSpace {meta::pure::profiles::doc.doc = 'text\\n'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
                 "}\n");
     }
 }

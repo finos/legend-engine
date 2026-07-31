@@ -118,9 +118,6 @@ public class DomainParseTreeWalker
     private static final String KNOWN_JSON_CONTENT_TYPE = "JSON";
     private static final String KNOWN_XML_CONTENT_TYPE = "XML";
 
-    private static final String DOC_PROFILE_PATH = "meta::pure::profiles::doc";
-    private static final String DOC_TAG = "doc";
-
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
     private final boolean allowPropertyBracketExpression;
@@ -201,85 +198,12 @@ public class DomainParseTreeWalker
         return profile;
     }
 
-    /**
-     * Build an element's tagged values, folding in its documentation as a `meta::pure::profiles::doc` `doc` value
-     * when it declares any. Documentation is sugar for that tagged value - there is no new profile and no new
-     * protocol - so nothing downstream of the parser needs to know it was written as a `'''...'''` block.
-     */
     private List<TaggedValue> visitTaggedValues(DomainParserGrammar.DocumentationContext docCtx, DomainParserGrammar.TaggedValuesContext tvCtx)
     {
-        List<TaggedValue> explicit = tvCtx == null ? Lists.mutable.empty() : this.visitTaggedValues(tvCtx);
-        if (docCtx == null)
-        {
-            return explicit;
-        }
-        // `documentation` matches the single STRING token, which covers both literal shapes, so the block shape is
-        // checked here rather than in the grammar
-        String rawToken = docCtx.STRING().getText();
-        if (!PureGrammarParserUtility.isTextBlock(rawToken))
-        {
-            throw new EngineException("Documentation must be written as a multi-line ('''...''') literal", this.walkerSourceInformation.getSourceInformation(docCtx), EngineErrorType.PARSER);
-        }
-        TaggedValue conflict = ListIterate.detect(explicit, DomainParseTreeWalker::isDocTaggedValue);
-        if (conflict != null)
-        {
-            throw new EngineException("Element has both documentation and an explicit doc.doc tagged value. Use one.", conflict.sourceInformation, EngineErrorType.PARSER);
-        }
-        return Lists.mutable.with(this.buildDocumentationTaggedValue(docCtx, rawToken)).withAll(explicit);
-    }
-
-    private TaggedValue buildDocumentationTaggedValue(DomainParserGrammar.DocumentationContext ctx, String rawToken)
-    {
-        SourceInformation sourceInformation = this.documentationSourceInformation(ctx.STRING().getSymbol(), rawToken);
-        TaggedValue taggedValue = new TaggedValue();
-        taggedValue.tag = new TagPtr();
-        taggedValue.tag.profile = DOC_PROFILE_PATH;
-        taggedValue.tag.value = DOC_TAG;
-        taggedValue.tag.profileSourceInformation = sourceInformation;
-        taggedValue.tag.sourceInformation = sourceInformation;
-        taggedValue.value = PureGrammarParserUtility.canonicalizeDocumentation(rawToken);
-        taggedValue.sourceInformation = sourceInformation;
-        return taggedValue;
-    }
-
-    /**
-     * A token reports only the line it *starts* on, and the shared
-     * {@link ParseTreeWalkerSourceInformation#getSourceInformation} derives the end column from the start column plus
-     * the whole token length - which names a column past the end of the first line for a token whose text spans lines.
-     * A documentation literal always spans lines (the opening delimiter must be followed by a line terminator) and
-     * always ends on `'''`, so the end is computed here from the text instead.
-     * <p>
-     * This is deliberately not fixed in the shared helper: the island and section content tokens run through it too,
-     * they end *with* a newline rather than after one, and several suites pin their current coordinates.
-     */
-    private SourceInformation documentationSourceInformation(Token token, String rawToken)
-    {
-        if (!this.walkerSourceInformation.getReturnSourceInfo())
-        {
-            return null;
-        }
-        int lineOffset = this.walkerSourceInformation.getLineOffset();
-        // the column offset applies only to the first line, which the end never sits on here
-        int startLine = token.getLine() + lineOffset;
-        int startColumn = token.getCharPositionInLine() + 1 + (token.getLine() == 1 ? this.walkerSourceInformation.getColumnOffset() : 0);
-        int newLines = 0;
-        for (int i = rawToken.indexOf('\n'); i >= 0; i = rawToken.indexOf('\n', i + 1))
-        {
-            newLines++;
-        }
-        int endColumn = rawToken.length() - rawToken.lastIndexOf('\n') - 1;
-        return new SourceInformation(this.walkerSourceInformation.getSourceId(), startLine, startColumn, startLine + newLines, endColumn);
-    }
-
-    /**
-     * Tag references are not resolved at parse time, so this matches the profile as written: bare `doc` resolved
-     * through an import, or the fully qualified `meta::pure::profiles::doc`. A user profile that merely ends in
-     * `doc`, such as `my::pkg::doc`, is a different profile and is not a conflict.
-     */
-    private static boolean isDocTaggedValue(TaggedValue taggedValue)
-    {
-        return taggedValue.tag != null && DOC_TAG.equals(taggedValue.tag.value)
-                && (DOC_TAG.equals(taggedValue.tag.profile) || DOC_PROFILE_PATH.equals(taggedValue.tag.profile));
+        return PureGrammarParserUtility.taggedValuesWithDocumentation(
+                docCtx == null ? null : docCtx.STRING().getSymbol(),
+                tvCtx == null ? Lists.mutable.empty() : this.visitTaggedValues(tvCtx),
+                this.walkerSourceInformation);
     }
 
     private List<TaggedValue> visitTaggedValues(DomainParserGrammar.TaggedValuesContext ctx)

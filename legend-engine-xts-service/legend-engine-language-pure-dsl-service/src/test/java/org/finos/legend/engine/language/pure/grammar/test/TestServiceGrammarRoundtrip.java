@@ -29,7 +29,10 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     public void testService()
     {
         test("###Service\n" +
-                "Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle\n" +
+                "'''\n" +
+                "something\n" +
+                "'''\n" +
+                "Service <<meta::pure::profiles::typemodifiers.abstract>> meta::pure::myServiceSingle\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl/';\n" +
                 "  owners:\n" +
@@ -57,7 +60,10 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  }\n" +
                 "}\n" +
                 "\n" +
-                "Service <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::pure::myServiceSingle2\n" +
+                "'''\n" +
+                "something\n" +
+                "'''\n" +
+                "Service <<meta::pure::profiles::typemodifiers.abstract>> meta::pure::myServiceSingle2\n" +
                 "{\n" +
                 "  pattern: 'url/myUrl2/';\n" +
                 "  owners:\n" +

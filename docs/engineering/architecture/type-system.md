@@ -135,10 +135,38 @@ position or it is a value.
 
 #### Where it attaches
 
-`Class`, `Enum` (and individual enum values), `Association`, `function`, properties, and qualified
-(derived) properties. Documentation precedes the **whole declaration**, before any stereotypes or
-tagged values. Intervening whitespace and comments are skipped, so a note written between the
-documentation and the declaration does not detach it.
+Documentation precedes the **whole declaration**, before any stereotypes or tagged values.
+Intervening whitespace and comments are skipped, so a note written between the documentation and the
+declaration does not detach it.
+
+The rule is the same everywhere: wherever an element accepts `taggedValues`, it accepts documentation.
+
+| Grammar | Declarations |
+|---|---|
+| `###Pure` | `Class`, `Enum` and its values, `Association`, `function`, properties, qualified properties |
+| `###Relational` | `Database`, `Schema`, `Table`, column, `View` |
+| `###DataSpace` | `DataSpace` |
+| `###Service` / `###HostedService` | `Service` |
+| `###FunctionJar` | `FunctionJar` |
+| `###DataQuality` | `DataQualityValidation`, `DataQualityRelationValidation` |
+| `###Snowflake` | `SnowflakeApp`, `SnowflakeM2MUdf` |
+| `###BigQueryFunction` / `###MemSqlFunction` | `BigQueryFunction`, `MemSqlFunction` |
+| `###Data` | `Data` |
+
+The `documentation` rule lives in `M3ParserGrammar.g4`, so the eight grammars that import it inherit
+the rule and only name it in their element rule. `RelationalParserGrammar.g4` and
+`DataParserGrammar.g4` import `CoreParserGrammar` and carry their own `stereotypes`/`taggedValues`,
+so they declare a local copy.
+
+**Several of these DSLs already have a `documentation:` or `description:` field of their own** —
+Service, HostedService and FunctionJar have `documentation`; DataSpace, Snowflake, BigQuery and
+MemSql have `description`. A `'''…'''` block does **not** populate those. It is the `doc` tagged
+value in every grammar, so the same syntax means the same thing everywhere; the DSL-specific field
+stays a separate slot and an element may carry both.
+
+`PureGrammarParserUtility.taggedValuesWithDocumentation` is the single implementation every walker
+calls. ANTLR generates a distinct `DocumentationContext` class per grammar even for a rule inherited
+from `M3ParserGrammar`, so it takes the literal's token rather than the context.
 
 An element may not carry both documentation and an explicit `doc.doc` tagged value — that is a parser
 error rather than a silent drop. Because tag references are unresolved at parse time, the check
@@ -183,9 +211,13 @@ legend-pure additionally attaches documentation to `Profile`, `Measure`, `Primit
 `taggedValues` field, and `nativeFunction` has no walker (it reaches `visitElement`'s
 "Unsupported syntax" throw). Deferred rather than half-supported.
 
-`###Relational` and the other DSLs are also out of scope — `RelationalParserGrammar.g4` defines its
-own `taggedValues`/`stereotypes` and does not import `M3ParserGrammar`. Note this is *better* than
-legend-pure, where a `'''…'''` relational tagged value parses and then NPEs.
+Graph-fetch projections (`treePath`, `simpleProperty`, `complexProperty`, `derivedProperty`) are also
+out of scope: they are projections rather than declarations, and legend-pure did not touch them.
+
+In the other direction the engine goes **further** than legend-pure on `###Relational`, where
+documentation on a `Database`, `Schema`, `Table`, column or `View` is supported. In legend-pure a
+`'''…'''` relational tagged value parses and then NPEs in
+`RelationalGraphBuilder.visitTaggedValueNew`.
 
 ---
 

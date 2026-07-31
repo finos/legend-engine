@@ -23,6 +23,7 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
@@ -134,10 +135,10 @@ public class RelationalParseTreeWalker
         }
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        if (ctx.taggedValues() != null)
-        {
-            database.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-        }
+        database.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
         List<View> views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, scopeInfo));
@@ -208,11 +209,10 @@ public class RelationalParseTreeWalker
         {
             schema.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            schema.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        schema.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
         return schema;
     }
 
@@ -234,11 +234,10 @@ public class RelationalParseTreeWalker
         {
             table.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            table.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        table.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
         return table;
     }
 
@@ -251,11 +250,10 @@ public class RelationalParseTreeWalker
         {
             column.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            column.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        column.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {
@@ -555,11 +553,10 @@ public class RelationalParseTreeWalker
         {
             view.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            view.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        view.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
         return view;
     }
 

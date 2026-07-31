@@ -23,7 +23,10 @@ public class TestDataGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
     public void testDataElementWithStereoTypeAndTagValue()
     {
         test("###Data\n" +
-                "Data <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'something'} meta::data::MyData\n" +
+                "'''\n" +
+                "something\n" +
+                "'''\n" +
+                "Data <<meta::pure::profiles::typemodifiers.abstract>> meta::data::MyData\n" +
                 "{\n" +
                 "  ExternalFormat\n" +
                 "  #{\n" +

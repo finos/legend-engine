@@ -45,16 +45,6 @@ elementDefinition:                              (
                                                 )
 ;
 
-// -------------------------------------- DOCUMENTATION --------------------------------------
-
-// Sugar for the meta::pure::profiles::doc doc tagged value. Documentation is its own construct that
-// happens to share a lexical shape with the string literal - there is a single STRING token covering
-// both - so it is listed explicitly at each declaration that accepts it, leaving '''...''' in
-// expression position entirely unaffected. The walker rejects a single-quoted string here.
-documentation:                                  STRING
-;
-
-
 // -------------------------------------- CLASS --------------------------------------
 
 classDefinition:                                documentation? CLASS stereotypes? taggedValues? qualifiedName typeParametersWithContravarianceAndMultiplicityParameters?

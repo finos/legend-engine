@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDocumentation;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.withoutDocumentation;
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 
@@ -75,7 +77,7 @@ public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExten
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "BigQueryFunction " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "") + "BigQueryFunction " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +

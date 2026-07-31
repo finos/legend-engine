@@ -32,6 +32,8 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.Snow
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDocumentation;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.withoutDocumentation;
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 
 public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
@@ -59,7 +61,7 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "SnowflakeApp " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "") + "SnowflakeApp " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
                 "{\n" +
                 "   applicationName : '" + app.applicationName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
