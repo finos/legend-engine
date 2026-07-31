@@ -1336,3 +1336,15 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relatio
      $result.values->at(0)->sort(~firm->ascending())->toString()
    );
 }
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::relation::testRelationStoreAccessorOnView():Boolean[1]
+{
+  let func = {|#>{meta::relational::tests::mapping::relation::testDB.personView}#
+                 ->select(~[ID, age, name])
+                 ->from(meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::relation::testDB))};
+
+  let result = meta::legend::executeLegendQuery($func, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+
+  assert($result->contains('"sql":"select \\"personview_0\\".ID as \\"ID\\", \\"personview_0\\".age as \\"age\\", \\"personview_0\\".name as \\"name\\" from (select \\"root\\".ID as ID, \\"root\\".AGE as age, \\"root\\".\\"FIRST NAME\\" as name from personTable as \\"root\\") as \\"personview_0\\""'));
+  assert($result->contains('"result" : {"columns" : ["ID","age","name"], "rows" : [{"values": [1,23,"Peter"]},{"values": [2,30,"John"]},{"values": [3,23,"Jane"]},{"values": [4,19,"Anthony"]},{"values": [5,45,"Fabrice"]},{"values": [6,26,"Oliver"]},{"values": [7,52,"David"]}]'));
+}

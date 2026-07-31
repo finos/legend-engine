@@ -295,10 +295,13 @@ function meta::relational::grammar::serialization::relationGrammarExtension():me
         extraInstanceValueHandlers = 
           [
             x:RelationStoreAccessor<Any>[1]|
-              let table = $x.sourceElement->cast(@Table);  
-              let schema = $table.schema;
+              let schemaAndName = $x.sourceElement->match([
+                                    t:meta::relational::metamodel::relation::Table[1] | pair($t.schema, $t.name->toOne()),
+                                    v:meta::relational::metamodel::relation::View[1]  | pair($v.schema, $v.name->toOne())
+                                  ]);
+              let schema = $schemaAndName.first;
               let schemaName = if ($schema.name == 'default', |'', |$schema.name + '.');
-              '#>{' + $x.store->elementToPath() + '.' + $schemaName + $table.name->toOne() + '}#';
+              '#>{' + $x.store->elementToPath() + '.' + $schemaName + $schemaAndName.second + '}#';
               ,
             t:meta::pure::metamodel::relation::TDS<Any>[1]|
                       $t->toString(true)

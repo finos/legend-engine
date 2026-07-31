@@ -600,7 +600,11 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
 function meta::relational::functions::pureToSqlQuery::processRelationStoreAccessor(r:meta::pure::store::RelationStoreAccessor<Any>[1], index:String[1], operation:SelectWithCursor[1], state:State[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
   let relation = $r.sourceElement->cast(@NamedRelation);
-  let tableAlias = ^TableAlias(name = 'dbAccessor' + buildNodeId($nodeId, '_i' + $index), relationalElement = $relation);
+  let relationalElement = $relation->match([
+     v:meta::relational::metamodel::relation::View[1] | $v->processRelation([], JoinType.INNER, $nodeId, false, 0, true, [], $state, $context, $extensions),
+     n:meta::relational::metamodel::relation::NamedRelation[1] | $n
+  ]);
+  let tableAlias = ^TableAlias(name = 'dbAccessor' + buildNodeId($nodeId, '_i' + $index), relationalElement = $relationalElement);
   let node = ^RootJoinTreeNode(alias = $tableAlias);
   let res = ^$operation
             (

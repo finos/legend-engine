@@ -923,13 +923,13 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
 
-                Table table = HelperRelationalBuilder.findTable(ds, schemaName, tableName, accessor.sourceInformation);
+                NamedRelation relation = (NamedRelation) HelperRelationalBuilder.getRelation(ds, schemaName, tableName, accessor.sourceInformation);
 
                 ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
                 org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;
 
-                RelationType<?> type = _RelationType.build(table._columns().collect(c ->
+                RelationType<?> type = _RelationType.build(relation._columns().collect(c ->
                 {
                     Column col = (Column) c;
                     String name = col._name();
@@ -937,7 +937,9 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(col._nullable() ? 0 : 1, 1, processorSupport), col._stereotypes(), col._taggedValues(), sourceInformation, processorSupport);
+                    Boolean nullable = col._nullable();
+                    int lowerBound = (nullable == null || nullable) ? 0 : 1;  //Add null check for View
+                    return (CoreInstance) _Column.getColumnInstance(name, false, convertTypes(col._type(), context), (Multiplicity) org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.newMultiplicity(lowerBound, 1, processorSupport), col._stereotypes(), col._taggedValues(), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
@@ -954,7 +956,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 FastList.newListWith(
                                         new Root_meta_pure_store_RelationStoreAccessor_Impl<>("", new org.finos.legend.pure.m4.coreinstance.SourceInformation("X", 0, 0, 0, 0), null)
                                                 ._sourceElementContainer(ds)
-                                                ._sourceElement(table)
+                                                ._sourceElement(relation)
                                                 ._store(ds)
                                                 ._classifierGenericType(genericType)
                                 )
