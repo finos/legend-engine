@@ -33,7 +33,10 @@ Class test::gen::ClosingData
 >>>test::gen::ClosingDatas
 Class test::gen::ClosingDatas
 {
-  {meta::pure::profiles::doc.doc = 'Detailed information of a days closing data.'} closingData: test::gen::ClosingData[*];
+  '''
+  Detailed information of a days closing data.
+  '''
+  closingData: test::gen::ClosingData[*];
   fromTime: DateTime[1];
   toTime: DateTime[1];
 }
@@ -108,12 +111,27 @@ Enum test::gen::HaltReasonType
 >>>test::gen::Instrument
 Class test::gen::Instrument
 {
-  {meta::pure::profiles::doc.doc = 'Detailed information about the current market view.'} levelData: test::gen::LevelData[0..1];
-  {meta::pure::profiles::doc.doc = 'A collection of closing datas.'} closingDatas: test::gen::ClosingDatas[0..1];
-  {meta::pure::profiles::doc.doc = 'A collection of trades.'} trades: test::gen::Trades[0..1];
+  '''
+  Detailed information about the current market view.
+  '''
+  levelData: test::gen::LevelData[0..1];
+  '''
+  A collection of closing datas.
+  '''
+  closingDatas: test::gen::ClosingDatas[0..1];
+  '''
+  A collection of trades.
+  '''
+  trades: test::gen::Trades[0..1];
   instrumentDetail: test::gen::InstrumentDetail[0..1];
-  {meta::pure::profiles::doc.doc = 'The instrument\'s listing, delisting, corporate actions and financial status information.'} listingInfo: test::gen::ListingInfo[0..1];
-  {meta::pure::profiles::doc.doc = 'A collection of corporate actions.'} corporateActions: test::gen::CorporateAction[*];
+  '''
+  The instrument's listing, delisting, corporate actions and financial status information.
+  '''
+  listingInfo: test::gen::ListingInfo[0..1];
+  '''
+  A collection of corporate actions.
+  '''
+  corporateActions: test::gen::CorporateAction[*];
   id: String[1];
   isin: String[0..1];
   name: String[0..1];
@@ -186,7 +204,10 @@ Enum test::gen::LotType
 Class test::gen::MarketSegment
 {
   marketSegment: test::gen::MarketSegment[*];
-  {meta::pure::profiles::doc.doc = 'An instrument at the NGM exchange.'} instrument: test::gen::Instrument[*];
+  '''
+  An instrument at the NGM exchange.
+  '''
+  instrument: test::gen::Instrument[*];
   turnoverSummary: test::gen::TurnoverSummary[*];
   marketId: String[1];
   segmentId: String[1];
@@ -244,7 +265,10 @@ Enum test::gen::TradeType
 >>>test::gen::Trades
 Class test::gen::Trades
 {
-  {meta::pure::profiles::doc.doc = 'A trade\'s information.'} trade: test::gen::Trade[*];
+  '''
+  A trade's information.
+  '''
+  trade: test::gen::Trade[*];
   tradeCount: Decimal[0..1];
   fromTime: DateTime[1];
   toTime: DateTime[1];

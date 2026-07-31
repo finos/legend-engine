@@ -45,9 +45,19 @@ elementDefinition:                              (
                                                 )
 ;
 
+// -------------------------------------- DOCUMENTATION --------------------------------------
+
+// Sugar for the meta::pure::profiles::doc doc tagged value. Documentation is its own construct that
+// happens to share a lexical shape with the string literal - there is a single STRING token covering
+// both - so it is listed explicitly at each declaration that accepts it, leaving '''...''' in
+// expression position entirely unaffected. The walker rejects a single-quoted string here.
+documentation:                                  STRING
+;
+
+
 // -------------------------------------- CLASS --------------------------------------
 
-classDefinition:                                CLASS stereotypes? taggedValues? qualifiedName typeParametersWithContravarianceAndMultiplicityParameters?
+classDefinition:                                documentation? CLASS stereotypes? taggedValues? qualifiedName typeParametersWithContravarianceAndMultiplicityParameters?
                                                 (
                                                     (PROJECTS projection)
                                                     |
@@ -64,9 +74,9 @@ classBody:                                      BRACE_OPEN
 ;
 properties:                                     (property | qualifiedProperty)*
 ;
-property:                                       stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType defaultValue? SEMI_COLON
+property:                                       documentation? stereotypes? taggedValues? aggregation? identifier COLON propertyReturnType defaultValue? SEMI_COLON
 ;
-qualifiedProperty:                              stereotypes? taggedValues? identifier qualifiedPropertyBody COLON propertyReturnType  SEMI_COLON
+qualifiedProperty:                              documentation? stereotypes? taggedValues? identifier qualifiedPropertyBody COLON propertyReturnType  SEMI_COLON
 ;
 qualifiedPropertyBody:                          PAREN_OPEN (functionVariableExpression (COMMA functionVariableExpression)*)? PAREN_CLOSE
                                                     BRACE_OPEN codeBlock BRACE_CLOSE
@@ -88,7 +98,7 @@ defaultValueExpressionsArray: BRACKET_OPEN ( defaultValueExpression (COMMA defau
 
 // -------------------------------------- ASSOCIATION --------------------------------------
 
-association:                                    ASSOCIATION stereotypes? taggedValues? qualifiedName
+association:                                    documentation? ASSOCIATION stereotypes? taggedValues? qualifiedName
                                                     (associationProjection | associationBody)
 ;
 associationBody:                                BRACE_OPEN properties BRACE_CLOSE
@@ -115,12 +125,12 @@ tagDefinitions:                                 (TAGS COLON BRACKET_OPEN (identi
 
 // -------------------------------------- ENUM --------------------------------------
 
-enumDefinition:                                 ENUM stereotypes? taggedValues? qualifiedName
+enumDefinition:                                 documentation? ENUM stereotypes? taggedValues? qualifiedName
                                                     BRACE_OPEN
                                                         (enumValue (COMMA enumValue)*)?
                                                     BRACE_CLOSE
 ;
-enumValue:                                      stereotypes? taggedValues? identifier
+enumValue:                                      documentation? stereotypes? taggedValues? identifier
 ;
 
 
@@ -152,7 +162,7 @@ nativeFunction:                                 NATIVE FUNCTION qualifiedName ty
 ;
 functionTypeSignature:                          PAREN_OPEN (functionVariableExpression (COMMA functionVariableExpression)*)? PAREN_CLOSE COLON type multiplicity
 ;
-functionDefinition:                             FUNCTION stereotypes? taggedValues? qualifiedName typeAndMultiplicityParameters? functionTypeSignature
+functionDefinition:                             documentation? FUNCTION stereotypes? taggedValues? qualifiedName typeAndMultiplicityParameters? functionTypeSignature
                                                 constraints?
                                                     BRACE_OPEN
                                                         codeBlock

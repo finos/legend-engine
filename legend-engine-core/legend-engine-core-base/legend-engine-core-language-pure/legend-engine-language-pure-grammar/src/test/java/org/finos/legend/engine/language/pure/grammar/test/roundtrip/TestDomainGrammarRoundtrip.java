@@ -181,12 +181,24 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testClass()
     {
-        test("Class <<temporal.businesstemporal>> {doc.doc = 'something'} A extends B\n" +
+        test("'''\n" +
+                "something\n" +
+                "'''\n" +
+                "Class <<temporal.businesstemporal>> A extends B\n" +
                 "{\n" +
-                "  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];\n" +
-                "  {doc.doc = 'bla'} ok: Integer[1..2];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  <<equality.Key>> name: e::R[*];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  ok: Integer[1..2];\n" +
                 "  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];\n" +
-                "  {doc.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
                 "}\n" +
                 "\n" +
                 "Class z::k::B\n" +
@@ -302,7 +314,10 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("Class <<temporal.businesstemporal, taggedValue.Number2>> {doc.test1 = 'up1', doc.test2 = 'up2'} meta::this::class::has::path::A extends B\n" +
                 "{\n" +
-                "  <<equality.Key, taggedValue.test>> {doc.doc = 'Borrowers date of birth'} name: e::R[*];\n" +
+                "  '''\n" +
+                "  Borrowers date of birth\n" +
+                "  '''\n" +
+                "  <<equality.Key, taggedValue.test>> name: e::R[*];\n" +
                 "  {Descriptor.descriptionA = 'test1', Descriptor.descriptionB = 'test2'} ok: Integer[1..2];\n" +
                 "  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];\n" +
                 "  {doc.test1 = 'test1', doc.test2 = 'test2'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
@@ -324,21 +339,36 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     {
         test("Class <<temporal.businesstemporal, taggedValue.Number2>> {doc.test1 = 'test1\\'s', doc.test2 = 'm\\'s test'} meta::this::class::has::path::A\n" +
                 "{\n" +
-                "  <<equality.Key, taggedValue.test>> {doc.doc = 'uyaguari\\'s test', doc.test2 = 'm\\'s test'} name: e::R[*];\n" +
+                "  '''\n" +
+                "  uyaguari's test\n" +
+                "  '''\n" +
+                "  <<equality.Key, taggedValue.test>> {doc.test2 = 'm\\'s test'} name: e::R[*];\n" +
                 "}\n");
     }
 
     @Test
     public void testEnumerations()
     {
-        test("Enum <<st.test>> {doc.doc = 'bla'} myEnum\n" +
+        test("'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Enum <<st.test>> myEnum\n" +
                 "{\n" +
-                "  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} a,\n" +
-                "  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} b,\n" +
+                "  '''\n" +
+                "  Tag Value for enum Value\n" +
+                "  '''\n" +
+                "  <<equality.Key, taggedValue.test>> a,\n" +
+                "  '''\n" +
+                "  Tag Value for enum Value\n" +
+                "  '''\n" +
+                "  <<equality.Key, taggedValue.test>> b,\n" +
                 "  c\n" +
                 "}\n" +
                 "\n" +
-                "Enum <<st.test>> {doc.doc = 'bla'} zz::MyOther\n" +
+                "'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Enum <<st.test>> zz::MyOther\n" +
                 "{\n" +
                 "  e,\n" +
                 "  g,\n" +
@@ -349,7 +379,10 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testQuotedEnumerations()
     {
-        test("Enum <<st.test>> {doc.doc = 'bla'} '@'::'my Enum'\n" +
+        test("'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Enum <<st.test>> '@'::'my Enum'\n" +
                 "{\n" +
                 "  'Anything e',\n" +
                 "  'A g',\n" +
@@ -376,7 +409,10 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  b: a::c::A[1];\n" +
                 "}\n" +
                 "\n" +
-                "Association {doc.doc = 'bla'} k::p::Asso\n" +
+                "'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Association k::p::Asso\n" +
                 "{\n" +
                 "  a: Integer[1];\n" +
                 "  b: a::c::B[1];\n" +
@@ -493,16 +529,28 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testDomainMixed()
     {
-        test("Class <<temporal.businesstemporal>> {doc.doc = 'bla'} A extends B\n" +
+        test("'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Class <<temporal.businesstemporal>> A extends B\n" +
                 "[\n" +
                 "  constraint1: $this.ok->toOne() == 1,\n" +
                 "  constraint2: $this.ok->toOne()->toString() == $this.name\n" +
                 "]\n" +
                 "{\n" +
-                "  <<equality.Key>> {doc.doc = 'bla'} name: e::R[*];\n" +
-                "  {doc.doc = 'bla'} ok: Integer[1..2];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  <<equality.Key>> name: e::R[*];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  ok: Integer[1..2];\n" +
                 "  <<devStatus.inProgress>> q(s: String[1]) {$s + 'ok'}: c::d::R[1];\n" +
-                "  {doc.doc = 'bla'} xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
+                "  '''\n" +
+                "  bla\n" +
+                "  '''\n" +
+                "  xza(s: z::k::B[1]) {$s + 'ok'}: String[1];\n" +
                 "}\n" +
                 "\n" +
                 "Association myAsso\n" +
@@ -511,9 +559,15 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  b: a::c::A[1];\n" +
                 "}\n" +
                 "\n" +
-                "Enum <<st.test>> {doc.doc = 'bla'} z::k::B\n" +
+                "'''\n" +
+                "bla\n" +
+                "'''\n" +
+                "Enum <<st.test>> z::k::B\n" +
                 "{\n" +
-                "  <<equality.Key, taggedValue.test>> {doc.doc = 'Tag Value for enum Value'} a,\n" +
+                "  '''\n" +
+                "  Tag Value for enum Value\n" +
+                "  '''\n" +
+                "  <<equality.Key, taggedValue.test>> a,\n" +
                 "  b,\n" +
                 "  c\n" +
                 "}\n" +

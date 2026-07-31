@@ -24,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -148,6 +149,35 @@ public class PureGrammarParserUtility
             result = StringEscapeUtils.unescapeJava(result);
         }
         return result;
+    }
+
+    /**
+     * Convert the raw text of a documentation literal (`'''...'''`) into the string stored as the
+     * `meta::pure::profiles::doc` `doc` tagged value: the same layout as a multi-line string literal, minus the
+     * escape processing, plus the removal of leading and trailing blank lines.
+     * <p>
+     * Content is literal on purpose - documentation is prose, and unescaping prose silently rewrites a regex
+     * (`\d+` -> `d+`), a Markdown escape (`\*` -> `*`) and a Windows path (`C:\temp` -> `C:` followed by a tab).
+     * Dropping the surrounding blank lines is what makes a documentation literal and the equivalent explicit
+     * `doc.doc` tagged value hold the same string.
+     * <p>
+     * Kept behaviourally identical to legend-pure's {@code DocumentationCanonicalizer}.
+     */
+    public static String canonicalizeDocumentation(String rawToken)
+    {
+        String[] lines = processTextBlock(rawToken, false).split("\n", -1);
+        // the layout has already stripped trailing whitespace, so a blank line is exactly empty
+        int start = 0;
+        int end = lines.length;
+        while (start < end && lines[start].isEmpty())
+        {
+            start++;
+        }
+        while (end > start && lines[end - 1].isEmpty())
+        {
+            end--;
+        }
+        return String.join("\n", Arrays.asList(lines).subList(start, end));
     }
 
     private static String stripTrailingWhitespace(String line)
