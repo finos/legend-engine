@@ -67,6 +67,8 @@ fragment PathSeparator:                 '::'
 
 fragment String:                        ('\'' ( EscSeq | ~['\r\n\\] )*  '\'' )
 ;
+fragment TextBlock:                     ('\'\'\'' [ \t]* '\r'? '\n' .*? '\'\'\'' )
+;
 fragment Boolean:                       True | False
 ;
 fragment Integer:                       (Digit)+

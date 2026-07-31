@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
@@ -29,6 +30,8 @@ import java.util.Objects;
 public class CString extends PrimitiveValueSpecification
 {
     public String value = "";
+    @JsonInclude(JsonInclude.Include.NON_DEFAULT)
+    public boolean multiLine = false;
 
     public CString()
     {
@@ -58,7 +61,14 @@ public class CString extends PrimitiveValueSpecification
             {
                 return new CString("");
             }
-            return customParsePrimitive(jsonParser.getCodec(), node, x -> new CString(x.asText()));
+            ValueSpecification result = customParsePrimitive(jsonParser.getCodec(), node, x -> new CString(x.asText()));
+            JsonNode multiLine = node.get("multiLine");
+            // a multi-value node yields a Collection, which carries no multiLine flag
+            if (multiLine != null && result instanceof CString)
+            {
+                ((CString) result).multiLine = multiLine.asBoolean();
+            }
+            return result;
         }
     }
 

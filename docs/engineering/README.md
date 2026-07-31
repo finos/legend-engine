@@ -99,6 +99,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 |---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
 | [Architecture Overview](architecture/overview.md)             | What Legend Engine is, the 5 core pipelines, extension model, module dependency layers                                          |
 | [Domain & Key Concepts](architecture/domain-concepts.md)      | Class/Mapping/Runtime/Store model, execution concepts, glossary, design patterns                                                |
+| [Type System](architecture/type-system.md)                    | Where types come from (inherited from Legend Pure), where the engine touches them, and a register of divergences                |
 | [Key Java Areas](architecture/key-java-areas.md)              | Grammar layer, PureModel compiler, PlanGenerator, PlanExecutor, Relational executor, Auth, Server assembly                      |
 | [Key Pure Areas](architecture/key-pure-areas.md)              | Router, ExecutionPlan metamodel, GraphFetch, Milestoning, TDS/Relation, M2M chain, Service metamodel, Binding, PCT              |
 | [Alloy Compiler](architecture/alloy-compiler.md)              | Deep-dive on the Alloy (Legend Engine) compiler: compilation phases, type/function resolution, extension points, and testing    |

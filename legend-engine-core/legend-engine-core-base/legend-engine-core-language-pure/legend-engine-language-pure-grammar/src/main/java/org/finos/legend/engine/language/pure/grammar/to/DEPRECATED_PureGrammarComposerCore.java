@@ -1059,7 +1059,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(CString cString)
     {
-        return HelperValueSpecificationGrammarComposer.renderString(cString.value, this);
+        return HelperValueSpecificationGrammarComposer.renderString(cString, this);
     }
 
     @Override

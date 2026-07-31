@@ -163,7 +163,7 @@ public class ModelStoreDataParseTreeWalker
             ModelStoreDataParserGrammar.InstanceLiteralTokenContext literalToken = ctx.instanceLiteralToken();
             if (literalToken.STRING() != null)
             {
-                result = new CString(PureGrammarParserUtility.fromGrammarString(literalToken.STRING().getText(), true));
+                result = PureGrammarParserUtility.toCString(literalToken.STRING().getText());
             }
             else if (literalToken.INTEGER() != null)
             {
