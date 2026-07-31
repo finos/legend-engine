@@ -78,6 +78,7 @@ import org.finos.legend.engine.testable.extension.TestableRunnerExtensionLoader;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsTestableInput;
 import org.finos.legend.engine.testable.model.UniqueTestId;
+import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
@@ -89,6 +90,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 
@@ -391,28 +393,56 @@ public final class EMITTasks
     }
 
     /**
+     * Whether a test result is a pass — the predicate form of {@link #assertTestPassed(TestResult)},
+     * for callers that tally results rather than failing on the first bad one. A
+     * {@link MultiExecutionServiceTestResult} passes only if it has results and all of them are passes.
+     */
+    public static boolean isTestPassed(TestResult result)
+    {
+        if (result instanceof TestExecuted)
+        {
+            return ((TestExecuted) result).testExecutionStatus == TestExecutionStatus.PASS;
+        }
+        if (result instanceof MultiExecutionServiceTestResult)
+        {
+            Map<String, TestResult> resultsByKey = ((MultiExecutionServiceTestResult) result).getKeyIndexedTestResults();
+            return !resultsByKey.isEmpty() && Iterate.allSatisfy(resultsByKey.values(), EMITTasks::isTestPassed);
+        }
+        return false;
+    }
+
+    /**
      * Throws an {@link EMITAssertionError} if the given test result is anything other than {@code PASS}.
+     *
+     * <p>A test on a multi-execution service yields a {@link MultiExecutionServiceTestResult}:
+     * the atomic test is run once per execution key the test applies to, and the per-key
+     * results are bundled together. Such a result is unwrapped and every key asserted, so a
+     * failure under any one key fails the task and names the key that failed.</p>
      *
      * @param result test result
      * @throws EMITAssertionError if the given test result is anything other than {@code PASS}
      */
     public static void assertTestPassed(TestResult result)
     {
-        StringBuilder builder = new StringBuilder(result.testable);
-        if (result.testSuiteId != null)
-        {
-            builder.append(" / ").append(result.testSuiteId);
-        }
-        builder.append(" / ").append(result.atomicTestId);
+        assertTestPassed(result, null);
+    }
+
+    /**
+     * @param executionKey the multi-execution key this result was produced under, or
+     *                     {@code null} for a result that is not keyed by execution
+     */
+    private static void assertTestPassed(TestResult result, String executionKey)
+    {
         if (result instanceof TestError)
         {
-            throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("; ").append(((TestError) result).error).toString());
+            throw new EMITException(EMITPhase.TEST_EXECUTION, describeTest(result, executionKey).append("; ").append(((TestError) result).error).toString());
         }
         if (result instanceof TestExecuted)
         {
             TestExecuted executed = (TestExecuted) result;
             if (executed.testExecutionStatus != TestExecutionStatus.PASS)
             {
+                StringBuilder builder = describeTest(result, executionKey);
                 builder.append(" did not pass; status=").append(executed.testExecutionStatus).append("; assertions=[");
                 executed.assertStatuses.forEach(s -> printAssertStatus(builder, s).append(", "));
                 builder.setLength(builder.length() - 2);
@@ -421,7 +451,32 @@ public final class EMITTasks
             }
             return;
         }
-        throw new EMITException(EMITPhase.TEST_EXECUTION, builder.append("Unexpected test result type: ").append(result.getClass().getSimpleName()).toString());
+        if (result instanceof MultiExecutionServiceTestResult)
+        {
+            Map<String, TestResult> resultsByKey = ((MultiExecutionServiceTestResult) result).getKeyIndexedTestResults();
+            if (resultsByKey.isEmpty())
+            {
+                throw new EMITException(EMITPhase.TEST_EXECUTION, describeTest(result, null).append(" ran under no execution key; the test's 'keys' match none of the service's execution keys").toString());
+            }
+            resultsByKey.forEach((key, keyResult) -> assertTestPassed(keyResult, key));
+            return;
+        }
+        throw new EMITException(EMITPhase.TEST_EXECUTION, describeTest(result, executionKey).append("Unexpected test result type: ").append(result.getClass().getSimpleName()).toString());
+    }
+
+    private static StringBuilder describeTest(TestResult result, String executionKey)
+    {
+        StringBuilder builder = new StringBuilder(result.testable);
+        if (result.testSuiteId != null)
+        {
+            builder.append(" / ").append(result.testSuiteId);
+        }
+        builder.append(" / ").append(result.atomicTestId);
+        if (executionKey != null)
+        {
+            builder.append(" [key=").append(executionKey).append(']');
+        }
+        return builder;
     }
 
     private static StringBuilder printAssertStatus(StringBuilder builder, AssertionStatus status)

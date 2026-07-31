@@ -94,13 +94,37 @@ Apply the rule from `emit.md` §3.2:
 | M2M mapping (no service, no store) | `legend-engine-core/legend-engine-core-emit-tests`, under `src/test/resources/m2m-emit-models/`, run by `M2MEMITTests` |
 | Relational store / mapping / connection (including embedded service tests) | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relational-emit-models/`, run by `RelationalEMITTests` |
 | Relation (`~func`) function-based class mapping — `ClassName: Relation { ~func f():Relation<Any>[1]; ... }` | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit`, under `src/test/resources/relation-emit-models/`, run by `RelationEMITTests` |
-| Service / service-test (where the mapping & store are already on the service-emit classpath) | `legend-engine-xts-service/legend-engine-xt-service-emit` |
+| Service shapes — multi-execution, test data shared between services, and the deprecated `test: Single` block on a Service (Phase 5's legacy service test runner) | `legend-engine-xts-service/legend-engine-xt-service-emit`, under `src/test/resources/emit-models/`, run by `ServiceEMITTests` |
 | File / model generation | `legend-engine-xts-generation/legend-engine-xt-generation-emit` |
 | External format / binding | The format's `-emit` module under `legend-engine-core-external-format` or its `xts-*` peer (e.g. `legend-engine-xts-json/legend-engine-external-format-jsonSchema-emit`) |
 | Flat-data store | `legend-engine-xts-flatdata/legend-engine-xt-flatdata-emit` |
 | Persistence (service-output target, ingestion tests) | `legend-engine-xts-persistence/legend-engine-xt-persistence-emit` |
 
 If the module you want doesn't exist yet, create it — see §9.
+
+#### Legacy `MappingTests` place by mapping kind, not by runner
+
+A deprecated `MappingTests [ ... ]` block on a Mapping (Phase 5's legacy
+`MappingTestRunner`) involves **no Service**, so it does not belong with the
+service fixtures even though it is the sibling of the legacy *service* test
+runner. Place it with the mappings it exercises, exactly as you would a modern
+`testSuites` block:
+
+| The mapping under test is… | Place it in… |
+|---|---|
+| Relational | `relational-emit-models/` — `relational-legacy-mapping-test` |
+| M2M | `m2m-emit-models/` in `legend-engine-core-emit-tests` — `m2m-legacy-mapping-test` |
+| Spanning several feature areas | `legend-engine-emit-tests` (cross-feature, §3.2) |
+
+The runner being deprecated is a property of the *test style*, not a feature
+area; grouping by it would scatter mappings away from their own suites.
+
+The split also matters for coverage, not just tidiness: `MappingTestRunner`
+resolves `<Object, JSON, …>` input data into a `JsonModelConnection` over a
+base64 `data:` URL, while store-backed input data goes through
+`ConnectionFactoryExtension` and, for relational, becomes H2 setup SQL. One
+fixture proves nothing about the other branch, so a new store flavour wanting
+legacy-mapping-test coverage needs its own fixture in its own suite.
 
 ### 3.2 Cross-feature module (multi-area combinations)
 

@@ -24,12 +24,6 @@ import java.util.stream.Stream;
  * EMIT coverage for persistence models. Each {@code *.emit.yaml} under
  * {@code emit-models/} becomes one {@link DynamicContainer} whose leaves run
  * the full EMIT pipeline (parse → compile → … → test execution).
- *
- * <p>Note that these dynamic tests pass <em>vacuously</em> if no persistence
- * test is ever discovered: a model that yields no Test tasks simply contributes
- * no failing leaf. The guard against that silent regression lives in
- * {@link TestPersistenceEMITTestSuiteBuilder} (for this JUnit integration) and
- * {@link TestPersistenceEMITRunner} (for the standalone runner).
  */
 public class PersistenceEMITTests
 {

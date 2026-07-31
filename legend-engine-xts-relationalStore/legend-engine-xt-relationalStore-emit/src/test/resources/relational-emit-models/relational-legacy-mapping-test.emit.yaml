@@ -1,0 +1,36 @@
+name: relational-legacy-mapping-test
+title: "Relational Mapping Tested Through the Deprecated MappingTests Block"
+description: |
+  A relational mapping over the Person class from `relational-shared-domain`
+  carrying the deprecated `MappingTests [ ... ]` block — `query` / `data` /
+  `assert` triples with `<Relational, CSV, store, '...'>` data — instead of a
+  modern `testSuites` block. This is the only example anywhere in the catalog
+  of the second of EMIT Phase 5's three runners: it drives the legacy
+  `MappingTestRunner`, which sets up H2 from the CSV, plans and executes each
+  query, and compares the serialised TDS against the `assert` string. Two
+  tests are declared so the per-test loop is exercised rather than a single
+  case.
+
+modelSources:
+  model:
+    root: relational-legacy-mapping-test
+    files:
+      - store/db.pure
+      - mapping/personMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+
+features:
+  - execution:legacy-mapping-test
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - legacy-mapping-test
+  - deprecated
+  - h2
+  - shared-domain
