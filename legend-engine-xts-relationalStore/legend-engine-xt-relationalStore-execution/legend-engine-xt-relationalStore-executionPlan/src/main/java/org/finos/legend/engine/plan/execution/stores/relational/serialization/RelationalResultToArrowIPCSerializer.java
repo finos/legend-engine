@@ -181,7 +181,6 @@ import java.util.Map;
                 return ArrowType.Utf8.INSTANCE; // fallback (CHAR, VARCHAR, CLOB, etc.)
         }
     }
-
     // ----------------------------------------------------------------------
     // Row streaming with batching + tracing (mirrors the original spans)
     // ----------------------------------------------------------------------
