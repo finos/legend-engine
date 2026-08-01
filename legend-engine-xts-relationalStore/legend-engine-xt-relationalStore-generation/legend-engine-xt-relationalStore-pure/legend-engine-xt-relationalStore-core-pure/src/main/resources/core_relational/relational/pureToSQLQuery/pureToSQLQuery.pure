@@ -116,6 +116,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    graphFetchFlow : Boolean[0..1];
    graphFetchProperties : Property<Nil,Any|*>[*];
    pushDownEnumTransformations :Boolean[1] = false;
+   legacyNullUnsafeEquals : Boolean[1] = false;
    currentWindow : WindowColumn[0..1];
    idToClassMapping : Map<String, List<SetImplementation>>[1];
    colName : String[0..1];
@@ -332,10 +333,10 @@ function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mappi
    let initialState = defaultState($mapping,$inScopeVars);
       let context = if($exeCtx->isEmpty(),
              | $initialState,
-             | if($exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),
-                  |  ^$initialState(pushDownEnumTransformations=true);,
-                  |$initialState
-                );
+             | ^$initialState(
+                  pushDownEnumTransformations = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),
+                  legacyNullUnsafeEquals = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS)
+                )
            );
 }
 
@@ -7866,20 +7867,9 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
                                       |let firstVal  = ^EnumProcessingHolder(param = $leftParam, processedParam = $leftVal, currentPropertyMapping = $left);
                                        let secondVal = ^EnumProcessingHolder(param = $rightParam, processedParam = $rightVal, currentPropertyMapping = $right);
                                        processEqualsForEnum($firstVal, $secondVal, $context, $state);,
-                                      |let leftIsEmptyLiteral  = $leftParam.multiplicity->hasUpperBound() && ($leftParam.multiplicity->getUpperBound() == 0);
-                                       let rightIsEmptyLiteral = $rightParam.multiplicity->hasUpperBound() && ($rightParam.multiplicity->getUpperBound() == 0);
-                                       // a literal empty ([]) operand degenerates to a null check on the other side ([] == [] is statically true);
-                                       // optional bind parameters render as a SQL null literal when absent, so null-safe equality applies in any context
-                                       if([
-                                            pair(|$leftIsEmptyLiteral && $rightIsEmptyLiteral, |^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])),
-                                            pair(|$leftIsEmptyLiteral,                         |^DynaFunction(name = 'isNull', parameters = [$rightVal])),
-                                            pair(|$rightIsEmptyLiteral,                        |^DynaFunction(name = 'isNull', parameters = [$leftVal])),
-                                            pair(|$leftVal->hasOptionalVarPlaceHolderValue() || $rightVal->hasOptionalVarPlaceHolderValue(),
-                                                                                               |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal])),
-                                            pair(|$leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
-                                                                                               |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal]))
-                                          ],
-                                          |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal])););
+                                      |if($state.legacyNullUnsafeEquals,
+                                          |legacyNullUnsafeEqualsOperation($leftVal, $rightVal),
+                                          |nullSafeEqualsOperation($leftParam, $rightParam, $leftVal, $rightVal)));
 
          let selectWithCursor = $left.element->extractSelectWithCursor($operation);
 
@@ -7907,6 +7897,40 @@ function meta::relational::functions::pureToSqlQuery::processEquals(
 
                      );
       );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::nullSafeEqualsOperation(leftParam:ValueSpecification[1], rightParam:ValueSpecification[1], leftVal:RelationalOperationElement[1], rightVal:RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+   let leftIsEmptyLiteral  = $leftParam.multiplicity->hasUpperBound() && ($leftParam.multiplicity->getUpperBound() == 0);
+   let rightIsEmptyLiteral = $rightParam.multiplicity->hasUpperBound() && ($rightParam.multiplicity->getUpperBound() == 0);
+   // a literal empty ([]) operand degenerates to a null check on the other side ([] == [] is statically true);
+   // optional bind parameters render as a SQL null literal when absent, so null-safe equality applies in any context
+   if([
+        pair(|$leftIsEmptyLiteral && $rightIsEmptyLiteral, |^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])),
+        pair(|$leftIsEmptyLiteral,                         |^DynaFunction(name = 'isNull', parameters = [$rightVal])),
+        pair(|$rightIsEmptyLiteral,                        |^DynaFunction(name = 'isNull', parameters = [$leftVal])),
+        pair(|$leftVal->hasOptionalVarPlaceHolderValue() || $rightVal->hasOptionalVarPlaceHolderValue(),
+                                                           |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal])),
+        pair(|$leftParam.multiplicity->getLowerBound() == 0 && $rightParam.multiplicity->getLowerBound() == 0,
+                                                           |^DynaFunction(name = 'nullSafeEqual', parameters = [$leftVal, $rightVal]))
+      ],
+      |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]));
+}
+
+// pre-nullSafeEqual behavior, selectable per query via Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS
+function <<access.private>> meta::relational::functions::pureToSqlQuery::legacyNullUnsafeEqualsOperation(leftVal:RelationalOperationElement[1], rightVal:RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+   if($leftVal->hasOptionalVarPlaceHolderValue() && $rightVal->hasOptionalVarPlaceHolderValue(),
+       |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal,
+                                                                                           ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal,$rightVal]),^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 0)])]),
+                                                                                           ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 0)]),^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])])]),
+       |if($rightVal->hasOptionalVarPlaceHolderValue(),
+           |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$rightVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$leftVal])]),
+           |if($leftVal->hasOptionalVarPlaceHolderValue(),
+               |^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [$leftVal, ^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]), ^DynaFunction(name = 'isNull', parameters = [$rightVal])]),
+               |^DynaFunction(name = 'equal', parameters = [$leftVal, $rightVal]));
+           );
+       );
 }
 
 Class meta::relational::functions::pureToSqlQuery::EnumProcessingHolder
