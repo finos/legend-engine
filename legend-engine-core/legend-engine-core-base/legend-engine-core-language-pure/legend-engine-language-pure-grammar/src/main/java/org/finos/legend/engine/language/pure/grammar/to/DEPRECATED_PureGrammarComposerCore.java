@@ -152,6 +152,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     private final boolean isVariableInFunctionSignature;
     // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
     private final boolean isPropertyBracketExpressionModeEnabled;
+    /**
+     * See {@link PureGrammarComposerContext}: promote single-line doc.doc tagged values to documentation
+     * ('''...''') blocks as well as multi-line ones.
+     */
+    private final boolean alwaysRenderDocumentation;
 
     private boolean shouldQuoteReservedKeywords = false;
 
@@ -167,6 +172,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
         this.isPureGrammar = builder.isPureGrammar;
+        this.alwaysRenderDocumentation = builder.alwaysRenderDocumentation;
         this.shouldQuoteReservedKeywords = builder.shouldQuoteReservedKeywords;
         this.reservedKeywords = builder.reservedKeywords;
     }
@@ -220,7 +226,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     {
         return isPropertyBracketExpressionModeEnabled;
     }
-    
+
+    public boolean isAlwaysRenderDocumentation()
+    {
+        return alwaysRenderDocumentation;
+    }
+
     public java.util.function.Function<String, String> identifierConverter()
     {
         return shouldQuoteReservedKeywords
@@ -236,6 +247,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
         private boolean isPureGrammar = false;
+        private boolean alwaysRenderDocumentation = false;
         private boolean shouldQuoteReservedKeywords = false;
         private Set<String> reservedKeywords = Collections.emptySet();
 
@@ -253,6 +265,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isValueSpecificationExternalParameter = grammarTransformer.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = grammarTransformer.isPropertyBracketExpressionModeEnabled;
             builder.isPureGrammar = grammarTransformer.isPureGrammar;
+            builder.alwaysRenderDocumentation = grammarTransformer.alwaysRenderDocumentation;
             builder.shouldQuoteReservedKeywords = grammarTransformer.shouldQuoteReservedKeywords;
             builder.reservedKeywords = grammarTransformer.reservedKeywords;
             return builder;
@@ -267,6 +280,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             builder.isValueSpecificationExternalParameter = context.isValueSpecificationExternalParameter();
             builder.isPropertyBracketExpressionModeEnabled = context.isPropertyBracketExpressionModeEnabled();
             builder.isPureGrammar = context.isPureGrammar();
+            builder.alwaysRenderDocumentation = context.isAlwaysRenderDocumentation();
             return builder;
         }
 
@@ -302,6 +316,12 @@ public final class DEPRECATED_PureGrammarComposerCore implements
         public Builder withPropertyBracketExpressionModeEnabled()
         {
             this.isPropertyBracketExpressionModeEnabled = true;
+            return this;
+        }
+
+        public Builder withAlwaysRenderDocumentation()
+        {
+            this.alwaysRenderDocumentation = true;
             return this;
         }
 
@@ -394,11 +414,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Enumeration _enum)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(_enum.taggedValues, "") +
-                "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_enum.taggedValues)) +
+        return HelperDomainGrammarComposer.renderDocumentation(_enum.taggedValues, "", this.alwaysRenderDocumentation) +
+                "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_enum.taggedValues, this.alwaysRenderDocumentation)) +
                 PureGrammarComposerUtility.convertPath(_enum.getPath(), this.isPureGrammar) +
                 "\n{\n" +
-                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue, this.isPureGrammar)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
+                LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue, this.isPureGrammar, this.alwaysRenderDocumentation)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
                 "}";
     }
 
@@ -424,8 +444,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Class _class)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(HelperDomainGrammarComposer.renderDocumentation(_class.taggedValues, ""));
-        builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_class.taggedValues))).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
+        builder.append(HelperDomainGrammarComposer.renderDocumentation(_class.taggedValues, "", this.alwaysRenderDocumentation));
+        builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_class.taggedValues, this.alwaysRenderDocumentation))).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
         MutableList<String> superTypesStr = ListIterate.collect(_class.superTypes, x -> x.path).select(x -> !"meta::pure::metamodel::type::Any".equals(x));
         if (!superTypesStr.isEmpty())
         {
@@ -453,8 +473,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Association association)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(association.taggedValues, "") +
-                "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(association.taggedValues)) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
+        return HelperDomainGrammarComposer.renderDocumentation(association.taggedValues, "", this.alwaysRenderDocumentation) +
+                "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(association.taggedValues, this.alwaysRenderDocumentation)) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
                 "{\n" +
                 LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
                 LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
@@ -464,8 +484,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Function function)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(function.taggedValues, "") +
-                "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(function.taggedValues)) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
+        return HelperDomainGrammarComposer.renderDocumentation(function.taggedValues, "", this.alwaysRenderDocumentation) +
+                "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(function.taggedValues, this.alwaysRenderDocumentation)) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + HelperValueSpecificationGrammarComposer.printGenericType(function.returnGenericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
@@ -1267,6 +1287,6 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(DataElement dataElement)
     {
-        return CorePureGrammarComposer.renderDataElement(dataElement, PureGrammarComposerContext.Builder.newInstance().build());
+        return CorePureGrammarComposer.renderDataElement(dataElement, this.toContext());
     }
 }

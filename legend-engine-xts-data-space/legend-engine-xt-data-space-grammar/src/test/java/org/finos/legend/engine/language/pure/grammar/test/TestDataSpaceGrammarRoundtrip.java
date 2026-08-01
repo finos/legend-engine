@@ -23,10 +23,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpace()
     {
         test("###DataSpace\n" +
-                "'''\n" +
-                "bla\n" +
-                "'''\n" +
-                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
                 "{\n" +
                 "  executionContexts:\n" +
                 "  [\n" +
@@ -239,10 +236,7 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     public void testDataSpaceParserBackwardCompatibility()
     {
         testFormat("###DataSpace\n" +
-                "'''\n" +
-                "bla\n" +
-                "'''\n" +
-                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> {doc.doc = 'bla'} model::dataSpace\n" +
                 "{\n" +
                 "  executionContexts:\n" +
                 "  [\n" +

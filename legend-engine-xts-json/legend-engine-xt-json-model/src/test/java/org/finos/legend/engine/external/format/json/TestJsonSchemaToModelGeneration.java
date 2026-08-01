@@ -469,123 +469,36 @@ public class TestJsonSchemaToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>example::jsonSchema::Test\n" +
                 "Class {meta::json::schema::JSONSchemaGeneration.title = 'meta::json::schema::tests::PrimitiveTypeDomain'} example::jsonSchema::Test\n" +
                 "{\n" +
-                "  '''\n" +
-                "  Float Field\n" +
-                "  '''\n" +
-                "  floatField: Float[1];\n" +
-                "  '''\n" +
-                "  Field Float - range 1..3\n" +
-                "  '''\n" +
-                "  floatRangeField: Float[1..3];\n" +
-                "  '''\n" +
-                "  Field String - Range 0..3\n" +
-                "  '''\n" +
-                "  stringRangeZeroField: String[0..3];\n" +
-                "  '''\n" +
-                "  Field Decimal - range 0..3\n" +
-                "  '''\n" +
-                "  decimalRangeZeroField: Float[0..3];\n" +
-                "  '''\n" +
-                "  Boolean Field\n" +
-                "  '''\n" +
-                "  booleanField: Boolean[1];\n" +
-                "  '''\n" +
-                "  StrictDate Field-multiple 0..3\n" +
-                "  '''\n" +
-                "  strictDateRangeZeroField: String[0..3];\n" +
-                "  '''\n" +
-                "  DateTime Field\n" +
-                "  '''\n" +
-                "  dateTimeField: DateTime[1];\n" +
-                "  '''\n" +
-                "  StrictDate Field-multiple 1..3\n" +
-                "  '''\n" +
-                "  strictDateRangeField: String[1..3];\n" +
-                "  '''\n" +
-                "  Field Integer - Range 0..3\n" +
-                "  '''\n" +
-                "  integerRangeZeroField: Integer[0..3];\n" +
-                "  '''\n" +
-                "  StrictDate Field\n" +
-                "  '''\n" +
-                "  strictDateField: StrictDate[1];\n" +
-                "  '''\n" +
-                "  StrictDate Field-multiple\n" +
-                "  '''\n" +
-                "  strictDateMultipleField: String[*];\n" +
-                "  '''\n" +
-                "  DateTime Field-multiple 1..3\n" +
-                "  '''\n" +
-                "  dateTimeRangeField: String[1..3];\n" +
-                "  '''\n" +
-                "  Field Float - range 0..3\n" +
-                "  '''\n" +
-                "  floatRangeZeroField: Float[0..3];\n" +
-                "  '''\n" +
-                "  Integer Field - multiple\n" +
-                "  '''\n" +
-                "  integerMultipleField: Integer[*];\n" +
-                "  '''\n" +
-                "  Decimal Field\n" +
-                "  '''\n" +
-                "  decimalField: Float[1];\n" +
-                "  '''\n" +
-                "  Field Decimal - range 1..3\n" +
-                "  '''\n" +
-                "  decimalRangeField: Float[1..3];\n" +
-                "  '''\n" +
-                "  Date Field-multiple 0..3\n" +
-                "  '''\n" +
-                "  dateRangeZeroField: String[0..3];\n" +
-                "  '''\n" +
-                "  DateTime Field-multiple\n" +
-                "  '''\n" +
-                "  dateTimeMultipleField: String[*];\n" +
-                "  '''\n" +
-                "  Field String - Range 1..3\n" +
-                "  '''\n" +
-                "  stringRangeField: String[1..3];\n" +
-                "  '''\n" +
-                "  Date Field\n" +
-                "  '''\n" +
-                "  dateField: DateTime[1];\n" +
-                "  '''\n" +
-                "  DateTime Field-multiple 0..3\n" +
-                "  '''\n" +
-                "  dateTimeRangeZeroField: String[0..3];\n" +
-                "  '''\n" +
-                "  Float Field - multiple\n" +
-                "  '''\n" +
-                "  floatMultipleField: Float[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Float Field'} floatField: Float[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Float - range 1..3'} floatRangeField: Float[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field String - Range 0..3'} stringRangeZeroField: String[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Decimal - range 0..3'} decimalRangeZeroField: Float[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Boolean Field'} booleanField: Boolean[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'StrictDate Field-multiple 0..3'} strictDateRangeZeroField: String[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'DateTime Field'} dateTimeField: DateTime[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'StrictDate Field-multiple 1..3'} strictDateRangeField: String[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Integer - Range 0..3'} integerRangeZeroField: Integer[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'StrictDate Field'} strictDateField: StrictDate[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'StrictDate Field-multiple'} strictDateMultipleField: String[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'DateTime Field-multiple 1..3'} dateTimeRangeField: String[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Float - range 0..3'} floatRangeZeroField: Float[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Integer Field - multiple'} integerMultipleField: Integer[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Decimal Field'} decimalField: Float[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Decimal - range 1..3'} decimalRangeField: Float[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Date Field-multiple 0..3'} dateRangeZeroField: String[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'DateTime Field-multiple'} dateTimeMultipleField: String[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field String - Range 1..3'} stringRangeField: String[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Date Field'} dateField: DateTime[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'DateTime Field-multiple 0..3'} dateTimeRangeZeroField: String[0..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Float Field - multiple'} floatMultipleField: Float[*];\n" +
                 "  stringNoDescriptionField: String[1];\n" +
-                "  '''\n" +
-                "  Field Integer - Range 1..3\n" +
-                "  '''\n" +
-                "  integerRangeField: Integer[1..3];\n" +
-                "  '''\n" +
-                "  String Field- multiple\n" +
-                "  '''\n" +
-                "  srtingMultipleField: String[*];\n" +
-                "  '''\n" +
-                "  Date Field-multiple 1..3\n" +
-                "  '''\n" +
-                "  dateRangeField: String[1..3];\n" +
-                "  '''\n" +
-                "  Integer Field\n" +
-                "  '''\n" +
-                "  integerField: Integer[1];\n" +
-                "  '''\n" +
-                "  Decimal Field - multiple\n" +
-                "  '''\n" +
-                "  decimalMultipleField: Float[*];\n" +
-                "  '''\n" +
-                "  String Field\n" +
-                "  '''\n" +
-                "  stringField: String[1];\n" +
-                "  '''\n" +
-                "  Date Field-multiple\n" +
-                "  '''\n" +
-                "  dateMultipleField: String[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Field Integer - Range 1..3'} integerRangeField: Integer[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'String Field- multiple'} srtingMultipleField: String[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Date Field-multiple 1..3'} dateRangeField: String[1..3];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Integer Field'} integerField: Integer[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Decimal Field - multiple'} decimalMultipleField: Float[*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'String Field'} stringField: String[1];\n" +
+                "  {meta::pure::profiles::doc.doc = 'Date Field-multiple'} dateMultipleField: String[*];\n" +
                 "}\n";
         Assert.assertEquals(modelTextsFromString(expected), modelTextsFromContextData(model));
     }

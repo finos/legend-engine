@@ -365,34 +365,22 @@ public class TestRelationalGrammarRoundtrip extends TestToPureGrammarRoundtrip
     public void testRelationalDatabase()
     {
         test("###Relational\n" +
-                "'''\n" +
-                "database\n" +
-                "'''\n" +
-                "Database <<equality.Key>> test::db\n" +
+                "Database <<equality.Key>> {doc.doc = 'database'} test::db\n" +
                 "(\n" +
                 "  include Store1\n" +
                 "  include test::Store2\n" +
                 "\n" +
-                "  '''\n" +
-                "  schema\n" +
-                "  '''\n" +
-                "  Schema <<equality.Key>> mySchema\n" +
+                "  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema\n" +
                 "  (\n" +
                 "  )\n" +
                 "\n" +
-                "  '''\n" +
-                "  table\n" +
-                "  '''\n" +
-                "  Table <<equality.Key>> table1\n" +
+                "  Table <<equality.Key>> {doc.doc = 'table'} table1\n" +
                 "  (\n" +
                 "    col1 CHAR(32)\n" +
                 "  )\n" +
                 "  Table table2\n" +
                 "  (\n" +
-                "    '''\n" +
-                "    col\n" +
-                "    '''\n" +
-                "    col1 <<equality.Key>> CHAR(32)\n" +
+                "    col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)\n" +
                 "  )\n" +
                 "  Table table3\n" +
                 "  (\n" +
@@ -984,32 +972,17 @@ public class TestRelationalGrammarRoundtrip extends TestToPureGrammarRoundtrip
     public void testRelationalElementsWithStereotypesAndTaggedValues()
     {
         test("###Relational\n" +
-                "'''\n" +
-                "schema\n" +
-                "'''\n" +
-                "Database <<equality.Key>> test::db\n" +
+                "Database <<equality.Key>> {doc.doc = 'schema'} test::db\n" +
                 "(\n" +
-                "  '''\n" +
-                "  schema\n" +
-                "  '''\n" +
-                "  Schema <<equality.Key>> mySchema\n" +
+                "  Schema <<equality.Key>> {doc.doc = 'schema'} mySchema\n" +
                 "  (\n" +
-                "    '''\n" +
-                "    table\n" +
-                "    '''\n" +
-                "    Table <<equality.Key>> table1\n" +
+                "    Table <<equality.Key>> {doc.doc = 'table'} table1\n" +
                 "    (\n" +
-                "      '''\n" +
-                "      col\n" +
-                "      '''\n" +
-                "      col1 <<equality.Key>> CHAR(32)\n" +
+                "      col1 <<equality.Key>> {doc.doc = 'col'} CHAR(32)\n" +
                 "    )\n" +
                 "  )\n" +
                 "\n" +
-                "  '''\n" +
-                "  view\n" +
-                "  '''\n" +
-                "  View <<equality.Key>> view1\n" +
+                "  View <<equality.Key>> {doc.doc = 'view'} view1\n" +
                 "  (\n" +
                 "    col1: mySchema.table1.col1\n" +
                 "  )\n" +

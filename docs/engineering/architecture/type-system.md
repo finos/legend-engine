@@ -189,9 +189,13 @@ legend-pure's `DocumentationCanonicalizer`:
 
 #### Engine-only: re-emission
 
-The composer promotes a `doc.doc` tagged value back to a documentation block. Unlike `CString`, this
-is unconditional — there is no `multiLine`-style flag on `TaggedValue`, and none is wanted, so an
-existing `{doc.doc = '…'}` *does* reformat into a block on save. That was an explicit decision.
+The composer promotes a `doc.doc` tagged value back to a documentation block when the value spans
+multiple lines — a multi-line value has no readable single-line form, so `{doc.doc = 'a\nb'}`
+reformats into a block on save. A single-line value keeps its tagged-value formatting by default;
+`PureGrammarComposerContext`'s `alwaysRenderDocumentation` flag (builder:
+`withAlwaysRenderDocumentation()`) opts a composer into promoting those too. There is no
+`multiLine`-style flag on `TaggedValue` itself, and none is wanted — the decision is the composing
+context's, not the data's.
 
 Because documentation has no escape mechanism at all, the composer cannot encode an arbitrary value
 the way `renderTextBlock` does. `isRenderableAsDocumentation` is the guard, and anything it rejects

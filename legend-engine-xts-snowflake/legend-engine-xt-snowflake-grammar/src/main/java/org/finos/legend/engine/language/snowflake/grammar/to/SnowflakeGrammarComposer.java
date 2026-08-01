@@ -44,24 +44,24 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
         return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
     }
 
-    private static String renderElement(PackageableElement element)
+    private static String renderElement(PackageableElement element, PureGrammarComposerContext context)
     {
         if (element instanceof SnowflakeApp)
         {
-            return renderSnowflakeApp((SnowflakeApp) element);
+            return renderSnowflakeApp((SnowflakeApp) element, context);
         }
         if (element instanceof SnowflakeM2MUdf)
         {
-            return renderSnowflakeM2MUdf((SnowflakeM2MUdf) element);
+            return renderSnowflakeM2MUdf((SnowflakeM2MUdf) element, context);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderSnowflakeApp(SnowflakeApp app)
+    private static String renderSnowflakeApp(SnowflakeApp app, PureGrammarComposerContext context)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return renderDocumentation(app.taggedValues, "") + "SnowflakeApp " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "", context.isAlwaysRenderDocumentation()) + "SnowflakeApp " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
                 "{\n" +
                 "   applicationName : '" + app.applicationName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
@@ -74,11 +74,11 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
                 "}";
     }
 
-    private static String renderSnowflakeM2MUdf(SnowflakeM2MUdf udf)
+    private static String renderSnowflakeM2MUdf(SnowflakeM2MUdf udf, PureGrammarComposerContext context)
     {
         String packageName = udf._package == null || udf._package.isEmpty() ? udf.name : udf._package + "::" + udf.name;
 
-        return "SnowflakeM2MUdf " + renderAnnotations(udf.stereotypes, udf.taggedValues) + packageName + "\n" +
+        return renderDocumentation(udf.taggedValues, "", context.isAlwaysRenderDocumentation()) + "SnowflakeM2MUdf " + renderAnnotations(udf.stereotypes, withoutDocumentation(udf.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
                 "{\n" +
                 "   udfName : '" + udf.udfName + "';\n" +
                 "   function : " + udf.function.path + ";\n" +
@@ -103,11 +103,11 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
             {
                 if (element instanceof SnowflakeApp)
                 {
-                    return renderSnowflakeApp((SnowflakeApp) element);
+                    return renderSnowflakeApp((SnowflakeApp) element, context);
                 }
                 if (element instanceof SnowflakeM2MUdf)
                 {
-                    return renderSnowflakeM2MUdf((SnowflakeM2MUdf) element);
+                    return renderSnowflakeM2MUdf((SnowflakeM2MUdf) element, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -122,7 +122,7 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
             MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof SnowflakeApp || e instanceof SnowflakeM2MUdf), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(SnowflakeGrammarComposer::renderElement).makeString("###" + SnowflakeGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(e -> renderElement(e, context)).makeString("###" + SnowflakeGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

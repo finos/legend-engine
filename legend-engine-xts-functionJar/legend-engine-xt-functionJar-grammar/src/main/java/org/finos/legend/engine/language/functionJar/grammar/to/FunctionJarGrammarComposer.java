@@ -51,7 +51,7 @@ public class FunctionJarGrammarComposer implements PureGrammarComposerExtension
     {
         if (element instanceof FunctionJar)
         {
-            return renderFunctionJar((FunctionJar) element);
+            return renderFunctionJar((FunctionJar) element, context);
         }
         return null;
     });
@@ -68,20 +68,20 @@ public class FunctionJarGrammarComposer implements PureGrammarComposerExtension
         return Lists.mutable.with(buildSectionComposer(FunctionJarGrammarParserExtension.NAME, renderers));
     }
 
-    private static String renderElement(PackageableElement element)
+    private static String renderElement(PackageableElement element, PureGrammarComposerContext context)
     {
         if (element instanceof FunctionJar)
         {
-            return renderFunctionJar((FunctionJar) element);
+            return renderFunctionJar((FunctionJar) element, context);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderFunctionJar(FunctionJar app)
+    private static String renderFunctionJar(FunctionJar app, PureGrammarComposerContext context)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return renderDocumentation(app.taggedValues, "") + "FunctionJar " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "", context.isAlwaysRenderDocumentation()) + "FunctionJar " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
                 "{\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +
                 "   function : " + app.function.path + ";\n" +
@@ -106,7 +106,7 @@ public class FunctionJarGrammarComposer implements PureGrammarComposerExtension
             MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof FunctionJar), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(FunctionJarGrammarComposer::renderElement).makeString("###" + FunctionJarGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(e -> renderElement(e, context)).makeString("###" + FunctionJarGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

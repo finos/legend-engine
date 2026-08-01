@@ -46,10 +46,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::Rectangle\n" +
                 "Class test::gen::Rectangle\n" +
                 "{\n" +
-                "  '''\n" +
-                "  One of two dimensions of a rectangle\n" +
-                "  '''\n" +
-                "  height: Integer[1..*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Integer[1..*];\n" +
                 "  width: Integer[*];\n" +
                 "}";
 
@@ -108,10 +105,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::Attributes", "test::gen", false, true));
 
         String expected = ">>>test::gen::LinkId\n" +
-                "'''\n" +
-                "The data type used for link identifiers.\n" +
-                "'''\n" +
-                "Class test::gen::LinkId\n" +
+                "Class {meta::pure::profiles::doc.doc = 'The data type used for link identifiers.'} test::gen::LinkId\n" +
                 "[\n" +
                 "  c1_length_LinkId: $this.value->length() <= 255\n" +
                 "]\n" +
@@ -154,10 +148,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         PureModelContextData model = generateModel(schemaCode, config("test::Inheritance", "test::gen", false, true));
 
         String expected = ">>>test::gen::Rectangle\n" +
-                "'''\n" +
-                "Class level doc\n" +
-                "'''\n" +
-                "Class test::gen::Rectangle\n" +
+                "Class {meta::pure::profiles::doc.doc = 'Class level doc'} test::gen::Rectangle\n" +
                 "{\n" +
                 "  height: Integer[1];\n" +
                 "  width: Integer[1];\n" +
@@ -344,10 +335,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
         String expected = ">>>test::gen::Rectangle\n" +
                 "Class test::gen::Rectangle\n" +
                 "{\n" +
-                "  '''\n" +
-                "  One of two dimensions of a rectangle\n" +
-                "  '''\n" +
-                "  height: Integer[1..*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Integer[1..*];\n" +
                 "  width: Integer[*];\n" +
                 "}";
 
@@ -1030,10 +1018,7 @@ public class TestXsdToModelGeneration extends SchemaToModelGenerationTest
                 "  c2_range_Rectangle: $this.width->forAll(x: Decimal[1]|$x >= 0D)\n" +
                 "]\n" +
                 "{\n" +
-                "  '''\n" +
-                "  One of two dimensions of a rectangle\n" +
-                "  '''\n" +
-                "  height: Decimal[1..*];\n" +
+                "  {meta::pure::profiles::doc.doc = 'One of two dimensions of a rectangle'} height: Decimal[1..*];\n" +
                 "  width: Decimal[*];\n" +
                 "}\n" +
                 "\n" +

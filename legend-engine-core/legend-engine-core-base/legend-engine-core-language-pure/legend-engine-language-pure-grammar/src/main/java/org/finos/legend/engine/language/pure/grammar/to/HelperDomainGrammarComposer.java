@@ -85,10 +85,14 @@ public class HelperDomainGrammarComposer
      * whitespace and backslashes because string literals are unescaped when read back, whereas documentation content
      * is literal. Nothing here is escaped - {@link #isRenderableAsDocumentation} is what guarantees the parser reads
      * the value back unchanged, and anything it rejects stays an ordinary tagged value.
+     * <p>
+     * Only multi-line values are promoted by default - they have no readable single-line form. Single-line values
+     * keep their existing tagged-value formatting unless {@code alwaysRender} (the context's
+     * {@code alwaysRenderDocumentation} flag) opts in.
      */
-    public static String renderDocumentation(List<TaggedValue> taggedValues, String indent)
+    public static String renderDocumentation(List<TaggedValue> taggedValues, String indent, boolean alwaysRender)
     {
-        TaggedValue documentation = extractDocumentation(taggedValues);
+        TaggedValue documentation = extractDocumentation(taggedValues, alwaysRender);
         if (documentation == null)
         {
             return "";
@@ -103,9 +107,9 @@ public class HelperDomainGrammarComposer
         return builder.append(indent).append("'''\n").append(indent).toString();
     }
 
-    public static List<TaggedValue> withoutDocumentation(List<TaggedValue> taggedValues)
+    public static List<TaggedValue> withoutDocumentation(List<TaggedValue> taggedValues, boolean alwaysRender)
     {
-        TaggedValue documentation = extractDocumentation(taggedValues);
+        TaggedValue documentation = extractDocumentation(taggedValues, alwaysRender);
         return documentation == null ? taggedValues : ListIterate.reject(taggedValues, tv -> tv == documentation);
     }
 
@@ -113,7 +117,7 @@ public class HelperDomainGrammarComposer
      * The one tagged value to promote to a documentation block, or null. Requires exactly one doc tag: two would
      * compose to two consecutive blocks, which is a parse error, so both are left as tagged values.
      */
-    private static TaggedValue extractDocumentation(List<TaggedValue> taggedValues)
+    private static TaggedValue extractDocumentation(List<TaggedValue> taggedValues, boolean alwaysRender)
     {
         if (taggedValues == null)
         {
@@ -131,7 +135,7 @@ public class HelperDomainGrammarComposer
                 found = taggedValue;
             }
         }
-        return found != null && isRenderableAsDocumentation(found.value) ? found : null;
+        return found != null && isRenderableAsDocumentation(found.value) && (alwaysRender || found.value.indexOf('\n') >= 0) ? found : null;
     }
 
     private static boolean isDocTaggedValue(TaggedValue taggedValue)
@@ -165,13 +169,13 @@ public class HelperDomainGrammarComposer
 
     public static String renderEnumValue(EnumValue enumValue)
     {
-        return renderEnumValue(enumValue, false);
+        return renderEnumValue(enumValue, false, false);
     }
 
-    public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar)
+    public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar, boolean alwaysRenderDocumentation)
     {
-        return renderDocumentation(enumValue.taggedValues, getTabString()) +
-                renderAnnotations(enumValue.stereotypes, withoutDocumentation(enumValue.taggedValues)) +
+        return renderDocumentation(enumValue.taggedValues, getTabString(), alwaysRenderDocumentation) +
+                renderAnnotations(enumValue.stereotypes, withoutDocumentation(enumValue.taggedValues, alwaysRenderDocumentation)) +
                 PureGrammarComposerUtility.convertIdentifier(enumValue.value, false, isPureGrammar);
     }
 
@@ -193,7 +197,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderDocumentation(property.taggedValues, getTabString()) + renderAnnotations(property.stereotypes, withoutDocumentation(property.taggedValues)) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderDocumentation(property.taggedValues, getTabString(), transformer.isAlwaysRenderDocumentation()) + renderAnnotations(property.stereotypes, withoutDocumentation(property.taggedValues, transformer.isAlwaysRenderDocumentation())) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     private static String renderAggregation(AggregationKind aggregationKind)
@@ -226,8 +230,8 @@ public class HelperDomainGrammarComposer
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
-        return renderDocumentation(qualifiedProperty.taggedValues, getTabString())
-                + renderAnnotations(qualifiedProperty.stereotypes, withoutDocumentation(qualifiedProperty.taggedValues))
+        return renderDocumentation(qualifiedProperty.taggedValues, getTabString(), transformer.isAlwaysRenderDocumentation())
+                + renderAnnotations(qualifiedProperty.stereotypes, withoutDocumentation(qualifiedProperty.taggedValues, transformer.isAlwaysRenderDocumentation()))
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"

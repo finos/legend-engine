@@ -5,10 +5,7 @@ Class test::gen::AbstractMessageT
 }
 
 >>>test::gen::AssetSubTypeEnumT
-'''
-Sub-type of asset of an EEX instrument
-'''
-Enum test::gen::AssetSubTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Sub-type of asset of an EEX instrument'} test::gen::AssetSubTypeEnumT
 {
   _0,
   _1,
@@ -28,10 +25,7 @@ Enum test::gen::AssetSubTypeT
 }
 
 >>>test::gen::AssetTypeEnumT
-'''
-Type of asset of an EEX instrument
-'''
-Enum test::gen::AssetTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Type of asset of an EEX instrument'} test::gen::AssetTypeEnumT
 {
   _0,
   _1
@@ -162,10 +156,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrmtScopeBlockT
 }
 
 >>>test::gen::InstrumentBlockT
-'''
-The Instrument component block contains all the fields commonly used to describe a security or instrument. Typically the data elements in this component block are considered the static data of a security, data that may be commonly found in a security master database. The Instrument component block can be used to describe any asset type supported by FIX.
-'''
-Class test::gen::InstrumentBlockT
+Class {meta::pure::profiles::doc.doc = 'The Instrument component block contains all the fields commonly used to describe a security or instrument. Typically the data elements in this component block are considered the static data of a security, data that may be commonly found in a security master database. The Instrument component block can be used to describe any asset type supported by FIX.'} test::gen::InstrumentBlockT
 {
   aid: test::gen::SecAltIdGrpBlockT[*];
   pty: test::gen::InstrumentPartyBlockT[*];
@@ -179,10 +170,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::InstrumentExtensionBlockT
 }
 
 >>>test::gen::InstrumentLegBlockT
-'''
-The InstrumentLeg component block, like the Instrument component block, contains all the fields commonly used to describe a security or instrument. In the case of the InstrumentLeg component block it describes a security used in multileg-oriented messages.
-'''
-Class test::gen::InstrumentLegBlockT
+Class {meta::pure::profiles::doc.doc = 'The InstrumentLeg component block, like the Instrument component block, contains all the fields commonly used to describe a security or instrument. In the case of the InstrumentLeg component block it describes a security used in multileg-oriented messages.'} test::gen::InstrumentLegBlockT
 {
 }
 
@@ -204,10 +192,7 @@ Enum test::gen::InstrumentPartyIdSourceT
 }
 
 >>>test::gen::LastFragmentEnumT
-'''
-Indicates whether this message is the last in a sequence of messages for those messages that support fragmentation, such as Allocation Instruction, Mass Quote, Security List, Derivative Security List
-'''
-Enum test::gen::LastFragmentEnumT
+Enum {meta::pure::profiles::doc.doc = 'Indicates whether this message is the last in a sequence of messages for those messages that support fragmentation, such as Allocation Instruction, Mass Quote, Security List, Derivative Security List'} test::gen::LastFragmentEnumT
 {
   N,
   Y
@@ -221,10 +206,7 @@ Enum test::gen::LastFragmentT
 }
 
 >>>test::gen::LegSecurityIdSourceEnumT
-'''
-Multileg instrument&apos;s individual security&apos;s SecurityIDSource. See SecurityIDSource (22) field for description
-'''
-Enum test::gen::LegSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Multileg instrument&apos;s individual security&apos;s SecurityIDSource. See SecurityIDSource (22) field for description'} test::gen::LegSecurityIdSourceEnumT
 {
   _1,
   _2,
@@ -278,10 +260,7 @@ Enum test::gen::LegSecurityIdSourceT
 }
 
 >>>test::gen::LegSecurityTypeEnumT
-'''
-The type of an individual leg (multileg security).
-'''
-Enum test::gen::LegSecurityTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'The type of an individual leg (multileg security).'} test::gen::LegSecurityTypeEnumT
 {
   MLEG,
   ULEG
@@ -295,10 +274,7 @@ Enum test::gen::LegSecurityTypeT
 }
 
 >>>test::gen::LegSideEnumT
-'''
-The side of this individual leg (multileg security). See Side (54) field for description and values
-'''
-Enum test::gen::LegSideEnumT
+Enum {meta::pure::profiles::doc.doc = 'The side of this individual leg (multileg security). See Side (54) field for description and values'} test::gen::LegSideEnumT
 {
   _1,
   _2,
@@ -345,10 +321,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::MarketDataFeedTypesBlockT
 }
 
 >>>test::gen::MarketDefinitionMessageT
-'''
-The Market Definition message is used to respond to Market Definition Request. In a subscription, it will be used to provide the initial snapshot of the information requested. Subsequent updates are provided by the Market Definition Update Report.
-'''
-Class test::gen::MarketDefinitionMessageT extends test::gen::AbstractMessageT
+Class {meta::pure::profiles::doc.doc = 'The Market Definition message is used to respond to Market Definition Request. In a subscription, it will be used to provide the initial snapshot of the information requested. Subsequent updates are provided by the Market Definition Update Report.'} test::gen::MarketDefinitionMessageT extends test::gen::AbstractMessageT
 {
   undly: test::gen::UnderlyingBlockT[0..1];
   relatedMktSeg: test::gen::RelatedMktSegBlockT[*];
@@ -366,10 +339,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::MarketSegmentGrpBlockT
 }
 
 >>>test::gen::MarketSegmentStatusEnumT
-'''
-Status of market segment.
-'''
-Enum test::gen::MarketSegmentStatusEnumT
+Enum {meta::pure::profiles::doc.doc = 'Status of market segment.'} test::gen::MarketSegmentStatusEnumT
 {
   _1,
   _3
@@ -416,10 +386,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::MatchRulesBlockT
 }
 
 >>>test::gen::MatchTypeEnumT
-'''
-The point in the matching process at which this trade was matched.
-'''
-Enum test::gen::MatchTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'The point in the matching process at which this trade was matched.'} test::gen::MatchTypeEnumT
 {
   _1,
   _2,
@@ -486,10 +453,7 @@ Class test::gen::MessageHeaderT extends test::gen::BaseHeaderT
 }
 
 >>>test::gen::ProductComplexEnumT
-'''
-Identifies an entire suite of products for a given market. In Futures this may be &quot;interest rates&quot;, &quot;agricultural&quot;, &quot;equity indexes&quot;, etc.
-'''
-Enum test::gen::ProductComplexEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies an entire suite of products for a given market. In Futures this may be &quot;interest rates&quot;, &quot;agricultural&quot;, &quot;equity indexes&quot;, etc.'} test::gen::ProductComplexEnumT
 {
   _1,
   _2,
@@ -567,10 +531,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::SecAltIdGrpBlockT
 }
 
 >>>test::gen::SecurityAltIdSourceEnumT
-'''
-Identifies class or source of the SecurityAltID (455) value. Required if SecurityAltID is specified. Valid values: Same valid values as the SecurityIDSource (22) field
-'''
-Enum test::gen::SecurityAltIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityAltID (455) value. Required if SecurityAltID is specified. Valid values: Same valid values as the SecurityIDSource (22) field'} test::gen::SecurityAltIdSourceEnumT
 {
   _1,
   _2,
@@ -624,10 +585,7 @@ Enum test::gen::SecurityAltIdSourceT
 }
 
 >>>test::gen::SecurityDefinitionMessageT
-'''
-The Security Definition message is used for the following: 1. Accept the security defined in a Security Definition message. 2. Accept the security defined in a Security Definition message with changes to the definition and/or identity of the security. 3. Reject the security requested in a Security Definition message. 4. Respond to a request for securities within a specified market segment. 5. Convey comprehensive security definition for all market segments that the security participates in. 6. Convey the security&apos;s trading rules that differ from default rules for the market segment.
-'''
-Class test::gen::SecurityDefinitionMessageT extends test::gen::AbstractMessageT
+Class {meta::pure::profiles::doc.doc = 'The Security Definition message is used for the following: 1. Accept the security defined in a Security Definition message. 2. Accept the security defined in a Security Definition message with changes to the definition and/or identity of the security. 3. Reject the security requested in a Security Definition message. 4. Respond to a request for securities within a specified market segment. 5. Convey comprehensive security definition for all market segments that the security participates in. 6. Convey the security&apos;s trading rules that differ from default rules for the market segment.'} test::gen::SecurityDefinitionMessageT extends test::gen::AbstractMessageT
 {
   instrmt: test::gen::InstrumentBlockT[1];
   instrmtExt: test::gen::InstrAttribBlockT[*];
@@ -637,10 +595,7 @@ Class test::gen::SecurityDefinitionMessageT extends test::gen::AbstractMessageT
 }
 
 >>>test::gen::SecurityDefinitionUpdateReportMessageT
-'''
-This message is used for reporting updates to a Product Security Masterfile. Updates could be the result of corporate actions or other business events. Updates may include additions, modifications or deletions.
-'''
-Class test::gen::SecurityDefinitionUpdateReportMessageT extends test::gen::AbstractMessageT
+Class {meta::pure::profiles::doc.doc = 'This message is used for reporting updates to a Product Security Masterfile. Updates could be the result of corporate actions or other business events. Updates may include additions, modifications or deletions.'} test::gen::SecurityDefinitionUpdateReportMessageT extends test::gen::AbstractMessageT
 {
   instrmt: test::gen::InstrumentBlockT[0..1];
   instrmtExt: test::gen::InstrAttribBlockT[*];
@@ -649,10 +604,7 @@ Class test::gen::SecurityDefinitionUpdateReportMessageT extends test::gen::Abstr
 }
 
 >>>test::gen::SecurityIdSourceEnumT
-'''
-Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications
-'''
-Enum test::gen::SecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::SecurityIdSourceEnumT
 {
   _1,
   _2,
@@ -706,10 +658,7 @@ Enum test::gen::SecurityIdSourceT
 }
 
 >>>test::gen::SecurityStatusEnumT
-'''
-Used for derivatives. Denotes the current state of the Instrument.
-'''
-Enum test::gen::SecurityStatusEnumT
+Enum {meta::pure::profiles::doc.doc = 'Used for derivatives. Denotes the current state of the Instrument.'} test::gen::SecurityStatusEnumT
 {
   _1,
   _2,
@@ -733,19 +682,13 @@ Enum test::gen::SecurityStatusT
 }
 
 >>>test::gen::SecurityTradingRulesBlockT
-'''
-Ths SecurityTradingRules component block is used as part of security definition to specify the specific security&apos;s standard trading parameters such as trading session eligibility and other attributes of the security.
-'''
-Class test::gen::SecurityTradingRulesBlockT
+Class {meta::pure::profiles::doc.doc = 'Ths SecurityTradingRules component block is used as part of security definition to specify the specific security&apos;s standard trading parameters such as trading session eligibility and other attributes of the security.'} test::gen::SecurityTradingRulesBlockT
 {
   baseTrdgRules: test::gen::BaseTrdgRulesBlockT[0..1];
 }
 
 >>>test::gen::SecurityTypeEnumT
-'''
-Indicates type of security. Security type enumerations are grouped by Product(460) field value. NOTE: Additional values may be used by mutual agreement of the counterparties.
-'''
-Enum test::gen::SecurityTypeEnumT
+Enum {meta::pure::profiles::doc.doc = 'Indicates type of security. Security type enumerations are grouped by Product(460) field value. NOTE: Additional values may be used by mutual agreement of the counterparties.'} test::gen::SecurityTypeEnumT
 {
   _,
   ABS,
@@ -1081,10 +1024,7 @@ Class {meta::pure::profiles::doc.doc = ''} test::gen::UnderlyingInstrumentBlockT
 }
 
 >>>test::gen::UnderlyingInstrumentSecurityIdSourceEnumT
-'''
-Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications
-'''
-Enum test::gen::UnderlyingInstrumentSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::UnderlyingInstrumentSecurityIdSourceEnumT
 {
   M
 }
@@ -1096,10 +1036,7 @@ Enum test::gen::UnderlyingInstrumentSecurityIdSourceT
 }
 
 >>>test::gen::UnderlyingSecurityIdSourceEnumT
-'''
-Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications
-'''
-Enum test::gen::UnderlyingSecurityIdSourceEnumT
+Enum {meta::pure::profiles::doc.doc = 'Identifies class or source of the SecurityID (48) value. Required if SecurityID is specified. 100+ are reserved for private security identifications'} test::gen::UnderlyingSecurityIdSourceEnumT
 {
   _1,
   _2,
