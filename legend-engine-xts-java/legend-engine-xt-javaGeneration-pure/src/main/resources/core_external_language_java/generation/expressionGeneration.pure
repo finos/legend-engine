@@ -33,21 +33,21 @@ function meta::external::language::java::transform::generateJavaMethodBody(vses:
 function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1], debug: DebugContext[1]):Code[1]
 {
    assert($vses->isNotEmpty(), 'Method body must have at least one expression');
-   $vses->statementsForBlock($conventions, [], $debug)->j_block();
+   $vses->statementsForBlock($conventions, $debug)->j_block();
 }
 
-function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1], returnType: meta::external::language::java::metamodel::Type[0..1]):Code[1]
-{
-   generateJavaMethodBody($vses, $conventions, $returnType, noDebug());
-}
-
-function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1], returnType: meta::external::language::java::metamodel::Type[0..1], debug: DebugContext[1]):Code[1]
+function <<access.private>>  meta::external::language::java::transform::generateJavaMethodBody(vses: ValueSpecification[*], conventions: Conventions[1], returnType:meta::external::language::java::metamodel::Type[1], debug: DebugContext[1]):Code[1]
 {
    assert($vses->isNotEmpty(), 'Method body must have at least one expression');
    $vses->statementsForBlock($conventions, $returnType, $debug)->j_block();
 }
 
-function <<access.private>> meta::external::language::java::transform::statementsForBlock(vses:ValueSpecification[*], conventions: Conventions[1], returnType: meta::external::language::java::metamodel::Type[0..1], debug: DebugContext[1]):Code[*]
+function <<access.private>> meta::external::language::java::transform::statementsForBlock(vses:ValueSpecification[*], conventions: Conventions[1], debug: DebugContext[1]):Code[*]
+{
+   $vses->statementsForBlock($conventions,[], $debug);
+}
+
+function <<access.private>> meta::external::language::java::transform::statementsForBlock(vses:ValueSpecification[*], conventions: Conventions[1], returnType:meta::external::language::java::metamodel::Type[0..1], debug: DebugContext[1]):Code[*]
 {
    let generated = $vses->toIndexed()
       			->map(z| print(if($debug.debug,|$debug.space+'statementsForBlock - processing expression '+$z.first->toString()+'\n',|''));
@@ -58,33 +58,35 @@ function <<access.private>> meta::external::language::java::transform::statement
          {cs: Code[*] |
             let toLast = $cs->init();
             let last   = $cs->last()->toOne();
+            let lastValueSpecification = $vses->last()->toOne();
 
             if($last->isAssignment(),
-               | $toLast->add($last)->add($last->variableAssigned()->prepareMethodReturnExpression($returnType)->j_return()),
+               | $toLast->add($last)->add($last->variableAssigned()->j_return()),
                |
             if($last->isDeclaration(),
-               | $toLast->add($last)->add($last->variableDeclared()->prepareMethodReturnExpression($returnType)->j_return()),
-               | $toLast->add($last->prepareMethodReturnExpression($returnType)->j_return())
+               | $toLast->add($last)->add($last->variableDeclared()->j_return()),
+               | $toLast->add($last->j_return())
             ));
          }
       ])
       ->toStatements();
 }
 
-function <<access.private>> meta::external::language::java::transform::prepareMethodReturnExpression(expression: Code[1], returnType: meta::external::language::java::metamodel::Type[0..1]): Code[1]
+function <<access.private>> meta::external::language::java::transform::prepareMethodReturnExpression(expression: Code[1], valueSpecification: ValueSpecification[1], returnType: meta::external::language::java::metamodel::Type[0..1]): Code[1]
 {
-   if($returnType->isEmpty(),
-      | $expression,
-      {| let type = $returnType->toOne();
+   if($returnType->isEmpty() || !$valueSpecification->isNil(), 
+      | $expression, 
+      {
+         |let type = $returnType->toOne();
          if($type->isJavaList(),
             | $expression->j_listOf($type),
             | if($expression.type->isJavaList() && !$expression->isCollectionsEmptyList(),
-               | $expression->j_streamOf()->js_resolve(javaObject())->j_cast($type),
-               | $expression->j_cast($type)
-            )
+                 | $expression->j_streamOf()->js_resolve(javaObject())->j_cast($type),
+                 | $expression->j_cast($type)
+              )
          );
       }
-   );
+   )
 }
 
 function meta::external::language::java::transform::generateJava(vs:ValueSpecification[1], conventions: Conventions[1]):Code[1]
@@ -184,7 +186,7 @@ function <<access.private>> meta::external::language::java::transform::processVa
 function meta::external::language::java::transform::processLambda(l:LambdaFunction<Any>[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
     let parameters = $l.classifierGenericType.typeArguments.rawType->cast(@meta::pure::metamodel::type::FunctionType).parameters->map(p|$p->processVariableExpressionAsParameter($conventions, $debug->indent()));
-    let expression = $l.expressionSequence->evaluateAndDeactivate()->statementsForBlock($conventions->addProvidedVariables($parameters), [], $debug)->j_block();
+    let expression = $l.expressionSequence->evaluateAndDeactivate()->statementsForBlock($conventions->addProvidedVariables($parameters), $debug)->j_block();
     j_lambda($parameters, $expression, javaFunctionType($parameters.type, $expression.type));
 }
 function <<access.private>> meta::external::language::java::transform::processInstanceValue(i: InstanceValue[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
