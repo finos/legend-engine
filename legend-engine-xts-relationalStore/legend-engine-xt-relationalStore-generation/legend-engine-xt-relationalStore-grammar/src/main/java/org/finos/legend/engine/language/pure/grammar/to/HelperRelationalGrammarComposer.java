@@ -265,8 +265,7 @@ public class HelperRelationalGrammarComposer
     {
         int baseIndentation = 1;
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDocumentation(schema.taggedValues, getTabString(baseIndentation))).append("Schema ");
-        builder.append(HelperDomainGrammarComposer.renderAnnotations(schema.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(schema.taggedValues)));
+        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDeclarationPrefix("Schema", getTabString(baseIndentation), schema.stereotypes, schema.taggedValues));
         builder.append(schema.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         boolean nonEmpty = false;
@@ -295,8 +294,7 @@ public class HelperRelationalGrammarComposer
     public static String renderDatabaseTable(Table table, int baseIndentation, RelationalGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDocumentation(table.taggedValues, getTabString(baseIndentation))).append("Table ");
-        builder.append(HelperDomainGrammarComposer.renderAnnotations(table.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(table.taggedValues)));
+        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDeclarationPrefix("Table", getTabString(baseIndentation), table.stereotypes, table.taggedValues));
         builder.append(table.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         boolean nonEmpty = false;
@@ -486,8 +484,7 @@ public class HelperRelationalGrammarComposer
     public static String renderDatabaseView(View view, int baseIndentation, RelationalGrammarComposerContext context)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDocumentation(view.taggedValues, getTabString(baseIndentation))).append("View ");
-        builder.append(HelperDomainGrammarComposer.renderAnnotations(view.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(view.taggedValues)));
+        builder.append(getTabString(baseIndentation)).append(HelperDomainGrammarComposer.renderDeclarationPrefix("View", getTabString(baseIndentation), view.stereotypes, view.taggedValues));
         builder.append(view.name).append("\n");
         builder.append(getTabString(baseIndentation)).append("(\n");
         builder.append(view.filter != null ? (getTabString(baseIndentation + 1) + renderFilterMapping(view.filter) + "\n") : "");

@@ -394,8 +394,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Enumeration _enum)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(_enum.taggedValues, "") +
-                "Enum " + HelperDomainGrammarComposer.renderAnnotations(_enum.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_enum.taggedValues)) +
+        return HelperDomainGrammarComposer.renderDeclarationPrefix("Enum", _enum.stereotypes, _enum.taggedValues) +
                 PureGrammarComposerUtility.convertPath(_enum.getPath(), this.isPureGrammar) +
                 "\n{\n" +
                 LazyIterate.collect(_enum.values, enumValue -> getTabString() + HelperDomainGrammarComposer.renderEnumValue(enumValue, this.isPureGrammar)).makeString(",\n") + (_enum.values.isEmpty() ? "" : "\n") +
@@ -424,8 +423,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     public String visit(Class _class)
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(HelperDomainGrammarComposer.renderDocumentation(_class.taggedValues, ""));
-        builder.append("Class ").append(HelperDomainGrammarComposer.renderAnnotations(_class.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(_class.taggedValues))).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
+        builder.append(HelperDomainGrammarComposer.renderDeclarationPrefix("Class", _class.stereotypes, _class.taggedValues)).append(PureGrammarComposerUtility.convertPath(_class.getPath()));
         MutableList<String> superTypesStr = ListIterate.collect(_class.superTypes, x -> x.path).select(x -> !"meta::pure::metamodel::type::Any".equals(x));
         if (!superTypesStr.isEmpty())
         {
@@ -453,8 +451,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Association association)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(association.taggedValues, "") +
-                "Association " + HelperDomainGrammarComposer.renderAnnotations(association.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(association.taggedValues)) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
+        return HelperDomainGrammarComposer.renderDeclarationPrefix("Association", association.stereotypes, association.taggedValues) + PureGrammarComposerUtility.convertPath(association.getPath()) + "\n" +
                 "{\n" +
                 LazyIterate.collect(association.properties, p -> getTabString() + HelperDomainGrammarComposer.renderProperty(p, this) + ";").makeString("\n") + (association.properties.isEmpty() ? "" : "\n") +
                 LazyIterate.collect(association.qualifiedProperties, p -> getTabString() + HelperDomainGrammarComposer.renderDerivedProperty(p, this) + ";").makeString("\n") + (association.qualifiedProperties.isEmpty() ? "" : "\n") +
@@ -464,8 +461,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(Function function)
     {
-        return HelperDomainGrammarComposer.renderDocumentation(function.taggedValues, "") +
-                "function " + HelperDomainGrammarComposer.renderAnnotations(function.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(function.taggedValues)) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
+        return HelperDomainGrammarComposer.renderDeclarationPrefix("function", function.stereotypes, function.taggedValues) + PureGrammarComposerUtility.convertPath(HelperValueSpecificationGrammarComposer.getFunctionName(function))
                 + "(" + LazyIterate.collect(function.parameters, p -> p.accept(Builder.newInstance(this).withVariableInFunctionSignature().build())).makeString(", ") + ")"
                 + ": " + HelperValueSpecificationGrammarComposer.printGenericType(function.returnGenericType, this) + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +

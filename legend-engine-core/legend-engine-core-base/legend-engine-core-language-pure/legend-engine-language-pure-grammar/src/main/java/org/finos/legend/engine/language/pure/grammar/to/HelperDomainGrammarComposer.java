@@ -78,6 +78,25 @@ public class HelperDomainGrammarComposer
     }
 
     /**
+     * The prefix of a documented, annotated declaration: the documentation block when the element has a promotable
+     * doc tagged value, the declaration keyword, then the annotations with the promoted value removed - so callers
+     * never pair {@link #renderDocumentation} with {@link #withoutDocumentation} themselves. {@code keyword} is the
+     * bare keyword ("Class", "Enum", ...; empty for members such as properties and enum values, which have none)
+     * and {@code indent} is where the declaration sits (empty for top-level elements).
+     */
+    public static String renderDeclarationPrefix(String keyword, List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
+    {
+        return renderDeclarationPrefix(keyword, "", stereotypes, taggedValues);
+    }
+
+    public static String renderDeclarationPrefix(String keyword, String indent, List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
+    {
+        return renderDocumentation(taggedValues, indent)
+                + (keyword.isEmpty() ? "" : keyword + " ")
+                + renderAnnotations(stereotypes, withoutDocumentation(taggedValues));
+    }
+
+    /**
      * The `'''...'''` documentation block for an element's doc tagged value, indented to `indent` and ending on the
      * line the declaration itself starts, or "" when the element has none to promote.
      * <p>
@@ -172,8 +191,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar)
     {
-        return renderDocumentation(enumValue.taggedValues, getTabString()) +
-                renderAnnotations(enumValue.stereotypes, withoutDocumentation(enumValue.taggedValues)) +
+        return renderDeclarationPrefix("", getTabString(), enumValue.stereotypes, enumValue.taggedValues) +
                 PureGrammarComposerUtility.convertIdentifier(enumValue.value, false, isPureGrammar);
     }
 
@@ -195,7 +213,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderDocumentation(property.taggedValues, getTabString()) + renderAnnotations(property.stereotypes, withoutDocumentation(property.taggedValues)) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderDeclarationPrefix("", getTabString(), property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     private static String renderAggregation(AggregationKind aggregationKind)
@@ -228,8 +246,7 @@ public class HelperDomainGrammarComposer
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
-        return renderDocumentation(qualifiedProperty.taggedValues, getTabString())
-                + renderAnnotations(qualifiedProperty.stereotypes, withoutDocumentation(qualifiedProperty.taggedValues))
+        return renderDeclarationPrefix("", getTabString(), qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"
