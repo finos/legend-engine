@@ -697,7 +697,7 @@ public class CompileContext
         tagPtr.profile = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(t._tag()._profile(), pureModel.getExecutionSupport());
         tagPtr.value = t._tag()._value();
         taggedValue.tag = tagPtr;
-        taggedValue.value = t._value();
+        taggedValue.value = new org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString(t._value());
         return taggedValue;
     }
 
@@ -802,7 +802,7 @@ public class CompileContext
     {
         return new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, this.pureModel.getClass(M3Paths.TaggedValue))
                 ._tag(resolveTag(taggedValue.tag))
-                ._value(taggedValue.value);
+                ._value(taggedValue.value.value);
     }
 
     public boolean taxonomyContains(String taxonomy, String value)

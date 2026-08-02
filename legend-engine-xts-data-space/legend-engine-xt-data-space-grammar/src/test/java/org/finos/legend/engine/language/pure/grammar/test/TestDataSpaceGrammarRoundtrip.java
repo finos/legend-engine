@@ -798,7 +798,8 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
     @Test
     public void testDataSpaceDocumentationFallsBackToATaggedValue()
     {
-        // a value the parser's canonicalization would not read back unchanged stays an ordinary tagged value
+        // authored as an ordinary tagged value, so it composes back as one - and its trailing \n could not
+        // survive a documentation block anyway
         test("###DataSpace\n" +
                 "DataSpace {meta::pure::profiles::doc.doc = 'text\\n'} model::dataSpace\n" +
                 "{\n" +

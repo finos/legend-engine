@@ -54,7 +54,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
     {
         if (element instanceof HostedService)
         {
-            return renderHostedService((HostedService) element, context);
+            return renderHostedService((HostedService) element);
         }
         return null;
     });
@@ -71,20 +71,20 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
         return Lists.mutable.with(buildSectionComposer(HostedServiceGrammarParserExtension.NAME, renderers));
     }
 
-    private static String renderElement(PackageableElement element, PureGrammarComposerContext context)
+    private static String renderElement(PackageableElement element)
     {
         if (element instanceof HostedService)
         {
-            return renderHostedService((HostedService) element, context);
+            return renderHostedService((HostedService) element);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderHostedService(HostedService app, PureGrammarComposerContext context)
+    private static String renderHostedService(HostedService app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return renderDocumentation(app.taggedValues, "", context.isAlwaysRenderDocumentation()) + "HostedService " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "") + "HostedService " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
                 "{\n" +
                 "   pattern : " + PureGrammarComposerUtility.convertString(app.pattern, true) + ";\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +
@@ -116,7 +116,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
             MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof HostedService), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(e -> renderElement(e, context)).makeString("###" + HostedServiceGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(HostedServiceGrammarComposer::renderElement).makeString("###" + HostedServiceGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

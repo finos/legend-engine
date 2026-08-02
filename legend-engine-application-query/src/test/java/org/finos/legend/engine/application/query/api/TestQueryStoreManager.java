@@ -21,6 +21,7 @@ import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.*;
@@ -298,7 +299,7 @@ public class TestQueryStoreManager
         taggedValue.tag = new TagPtr();
         taggedValue.tag.profile = profile;
         taggedValue.tag.value = tag;
-        taggedValue.value = value;
+        taggedValue.value = new CString(value);
         return taggedValue;
     }
 

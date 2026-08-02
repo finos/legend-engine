@@ -269,7 +269,7 @@ public class QueryStoreManager
                     Filters.and(
                             Filters.eq("taggedValues.tag.profile", taggedValue.tag.profile),
                             Filters.eq("taggedValues.tag.value", taggedValue.tag.value),
-                            Filters.eq("taggedValues.value", taggedValue.value)
+                            Filters.eq("taggedValues.value", taggedValue.value.value)
                     )
             );
             Bson taggedValuesFilter = searchSpecification.combineTaggedValuesCondition != null && searchSpecification.combineTaggedValuesCondition
@@ -280,7 +280,7 @@ public class QueryStoreManager
                     ? searchSpecification.taggedValues.stream()
                     .filter(taggedValue -> QUERY_PROFILE_PATH.equals(taggedValue.tag.profile) &&
                             QUERY_PROFILE_TAG_DATA_SPACE.equals(taggedValue.tag.value))
-                    .map(taggedValue -> taggedValue.value)
+                    .map(taggedValue -> taggedValue.value.value)
                     .collect(Collectors.toList())
                     : new ArrayList<>();
 

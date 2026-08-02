@@ -59,12 +59,6 @@ public class PureGrammarComposerContext
     private final boolean isVariableInFunctionSignature;
     // TODO PropertyBracketExpression is deprecated.  Remove flag and related processing once all use has been addressed
     private final boolean isPropertyBracketExpressionModeEnabled;
-    /**
-     * A doc.doc tagged value whose content spans multiple lines is always composed as a documentation
-     * ('''...''') block. With this flag enabled, single-line values are promoted too; by default they
-     * stay as tagged values so existing single-line sources keep their formatting.
-     */
-    private final boolean alwaysRenderDocumentation;
     public final List<PureGrammarComposerExtension> extensions;
     public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> extraSectionComposers;
     public final List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> extraFreeSectionComposers;
@@ -85,7 +79,6 @@ public class PureGrammarComposerContext
         this.isValueSpecificationExternalParameter = builder.isValueSpecificationExternalParameter;
         this.isPropertyBracketExpressionModeEnabled = builder.isPropertyBracketExpressionModeEnabled;
         this.isPureGrammar = builder.isPureGrammar;
-        this.alwaysRenderDocumentation = builder.alwaysRenderDocumentation;
         // extensions
         this.extensions = PureGrammarComposerExtensionLoader.extensions();
         this.extraSectionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraSectionComposers);
@@ -131,11 +124,6 @@ public class PureGrammarComposerContext
         return isPropertyBracketExpressionModeEnabled;
     }
 
-    public boolean isAlwaysRenderDocumentation()
-    {
-        return alwaysRenderDocumentation;
-    }
-
     public static class Builder
     {
         private String indentationString = "";
@@ -144,7 +132,6 @@ public class PureGrammarComposerContext
         private boolean isVariableInFunctionSignature = false;
         private boolean isPropertyBracketExpressionModeEnabled = false;
         private boolean isPureGrammar = false;
-        private boolean alwaysRenderDocumentation = false;
 
         private Builder()
         {
@@ -160,7 +147,6 @@ public class PureGrammarComposerContext
             builder.isValueSpecificationExternalParameter = composerContext.isValueSpecificationExternalParameter;
             builder.isPropertyBracketExpressionModeEnabled = composerContext.isPropertyBracketExpressionModeEnabled;
             builder.isPureGrammar = composerContext.isPureGrammar;
-            builder.alwaysRenderDocumentation = composerContext.alwaysRenderDocumentation;
             return builder;
         }
 
@@ -174,7 +160,6 @@ public class PureGrammarComposerContext
             builder.isValueSpecificationExternalParameter = DEPRECATED_context.isValueSpecificationExternalParameter();
             builder.isPropertyBracketExpressionModeEnabled = DEPRECATED_context.isPropertyBracketExpressionModeEnabled();
             builder.isPureGrammar = DEPRECATED_context.isPureGrammar();
-            builder.alwaysRenderDocumentation = DEPRECATED_context.isAlwaysRenderDocumentation();
             return builder;
         }
 
@@ -215,12 +200,6 @@ public class PureGrammarComposerContext
         public Builder withPropertyBracketExpressionModeEnabled()
         {
             this.isPropertyBracketExpressionModeEnabled = true;
-            return this;
-        }
-
-        public Builder withAlwaysRenderDocumentation()
-        {
-            this.alwaysRenderDocumentation = true;
             return this;
         }
 

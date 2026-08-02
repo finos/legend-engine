@@ -189,8 +189,8 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 dataSpace.diagrams = featuredDiagrams;
             }
         }
-        return HelperDomainGrammarComposer.renderDocumentation(dataSpace.taggedValues, "", context.isAlwaysRenderDocumentation()) +
-                "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(dataSpace.taggedValues, context.isAlwaysRenderDocumentation())) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
+        return HelperDomainGrammarComposer.renderDocumentation(dataSpace.taggedValues, "") +
+                "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, HelperDomainGrammarComposer.withoutDocumentation(dataSpace.taggedValues)) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
                 "{\n" +
                 getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, executionContext -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutionContext(executionContext, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n" +
                 getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +

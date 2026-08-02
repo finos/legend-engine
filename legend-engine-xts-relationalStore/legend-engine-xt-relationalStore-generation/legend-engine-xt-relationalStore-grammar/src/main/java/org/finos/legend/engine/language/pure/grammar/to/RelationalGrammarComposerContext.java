@@ -29,7 +29,6 @@ public final class RelationalGrammarComposerContext
     private final String currentDatabase;
     private final Boolean useDynaFunctionName;
     private final RenderStyle renderStyle;
-    private final boolean alwaysRenderDocumentation;
 
     private RelationalGrammarComposerContext(RelationalGrammarComposerContext.Builder builder)
     {
@@ -37,7 +36,7 @@ public final class RelationalGrammarComposerContext
         this.currentDatabase = builder.currentDatabase;
         this.useDynaFunctionName = builder.useDynaFunctionName;
         this.renderStyle = builder.renderStyle;
-        this.alwaysRenderDocumentation = builder.alwaysRenderDocumentation;
+
     }
 
     public PureGrammarComposerContext toPureGrammarComposerContext()
@@ -65,18 +64,12 @@ public final class RelationalGrammarComposerContext
         return renderStyle;
     }
 
-    public boolean isAlwaysRenderDocumentation()
-    {
-        return alwaysRenderDocumentation;
-    }
-
     public static final class Builder
     {
         private String indentationString = "";
         private String currentDatabase;
         private Boolean useDynaFunctionName = true;
         private RenderStyle renderStyle = RenderStyle.STANDARD;
-        private boolean alwaysRenderDocumentation = false;
 
         private Builder()
         {
@@ -87,7 +80,6 @@ public final class RelationalGrammarComposerContext
         {
             RelationalGrammarComposerContext.Builder builder = new RelationalGrammarComposerContext.Builder();
             builder.indentationString = context.getIndentationString();
-            builder.alwaysRenderDocumentation = context.isAlwaysRenderDocumentation();
             return builder;
         }
 
@@ -98,7 +90,7 @@ public final class RelationalGrammarComposerContext
             builder.currentDatabase = context.getCurrentDatabase();
             builder.useDynaFunctionName = context.getUseDynaFunctionName();
             builder.renderStyle = context.renderStyle;
-            builder.alwaysRenderDocumentation = context.alwaysRenderDocumentation;
+
             return builder;
         }
 

@@ -36,20 +36,20 @@ import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGramm
 
 public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtension
 {
-    private static String renderElement(PackageableElement element, PureGrammarComposerContext context)
+    private static String renderElement(PackageableElement element)
     {
         if (element instanceof MemSqlFunction)
         {
-            return renderMemSqlFunction((MemSqlFunction) element, context);
+            return renderMemSqlFunction((MemSqlFunction) element);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderMemSqlFunction(MemSqlFunction app, PureGrammarComposerContext context)
+    private static String renderMemSqlFunction(MemSqlFunction app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return renderDocumentation(app.taggedValues, "", context.isAlwaysRenderDocumentation()) + "MemSqlFunction " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "") + "MemSqlFunction " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
@@ -72,7 +72,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
             {
                 if (element instanceof MemSqlFunction)
                 {
-                    return renderMemSqlFunction((MemSqlFunction) element, context);
+                    return renderMemSqlFunction((MemSqlFunction) element);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -87,7 +87,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
             MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof MemSqlFunction), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(e -> renderElement(e, context)).makeString("###" + MemSqlFunctionGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(MemSqlFunctionGrammarComposer::renderElement).makeString("###" + MemSqlFunctionGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

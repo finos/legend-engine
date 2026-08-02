@@ -189,13 +189,19 @@ legend-pure's `DocumentationCanonicalizer`:
 
 #### Engine-only: re-emission
 
-The composer promotes a `doc.doc` tagged value back to a documentation block when the value spans
-multiple lines — a multi-line value has no readable single-line form, so `{doc.doc = 'a\nb'}`
-reformats into a block on save. A single-line value keeps its tagged-value formatting by default;
-`PureGrammarComposerContext`'s `alwaysRenderDocumentation` flag (builder:
-`withAlwaysRenderDocumentation()`) opts a composer into promoting those too. There is no
-`multiLine`-style flag on `TaggedValue` itself, and none is wanted — the decision is the composing
-context's, not the data's.
+`TaggedValue.value` is a `CString` in the protocol, so a doc value carries the same `multiLine`
+flag a string literal does, and the same rule applies: the parser sets it from the token shape
+alone (a documentation block or a `'''...'''` tagged-value literal), the composer obeys it, and
+neither inspects the value. A value authored as a block composes back as a block; one authored as
+an ordinary tagged value stays one, even when it contains newlines.
+
+On the wire the value stays a plain JSON string — byte-identical to the pre-flag protocol — unless
+`multiLine` is set, in which case it is an object (`{"_type": "string", "multiLine": true,
+"value": ...}`). Both shapes deserialize into the same POJO (`TestTaggedValueCompatibility` is the
+lock), so every existing model is unaffected in both directions and only models that actually use
+documentation blocks put the new shape on the wire. The flag is protocol-only: compiling to the
+graph drops it, so anything re-generated from a compiled model (`PureModelContextDataGenerator`,
+the `meta::protocols` transfers) composes docs as ordinary tagged values.
 
 Because documentation has no escape mechanism at all, the composer cannot encode an arbitrary value
 the way `renderTextBlock` does. `isRenderableAsDocumentation` is the guard, and anything it rejects

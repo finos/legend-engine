@@ -47,7 +47,7 @@ public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExten
     {
         if (element instanceof BigQueryFunction)
         {
-            return renderBigQueryFunction((BigQueryFunction) element, context);
+            return renderBigQueryFunction((BigQueryFunction) element);
         }
         return null;
     });
@@ -64,20 +64,20 @@ public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExten
         return Lists.mutable.with(buildSectionComposer(BigQueryFunctionGrammarParserExtension.NAME, renderers));
     }
 
-    private static String renderElement(PackageableElement element, PureGrammarComposerContext context)
+    private static String renderElement(PackageableElement element)
     {
         if (element instanceof BigQueryFunction)
         {
-            return renderBigQueryFunction((BigQueryFunction) element, context);
+            return renderBigQueryFunction((BigQueryFunction) element);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderBigQueryFunction(BigQueryFunction app, PureGrammarComposerContext context)
+    private static String renderBigQueryFunction(BigQueryFunction app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return renderDocumentation(app.taggedValues, "", context.isAlwaysRenderDocumentation()) + "BigQueryFunction " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues, context.isAlwaysRenderDocumentation())) + packageName + "\n" +
+        return renderDocumentation(app.taggedValues, "") + "BigQueryFunction " + renderAnnotations(app.stereotypes, withoutDocumentation(app.taggedValues)) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
@@ -95,7 +95,7 @@ public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExten
             MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof BigQueryFunction), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
-                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(e -> renderElement(e, context)).makeString("###" + BigQueryFunctionGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                    : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(BigQueryFunctionGrammarComposer::renderElement).makeString("###" + BigQueryFunctionGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 }

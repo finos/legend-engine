@@ -14,22 +14,25 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip;
 
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.language.pure.grammar.test.TestGrammarRoundtrip;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * The composer promotes a `meta::pure::profiles::doc` `doc` tagged value back to the `'''...'''` documentation block
- * it is sugar for when the value spans multiple lines - a multi-line value has no readable single-line form. A
- * single-line value keeps its tagged-value formatting unless the context's `alwaysRenderDocumentation` flag opts in,
- * so multi-line blocks are fixed points here and single-line blocks compose to tagged values.
+ * The protocol records whether a doc value was authored as a `'''...'''` documentation block ({@code multiLine} on
+ * the tagged value's {@link org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString}
+ * value), and the composer renders whichever form the value carries: a block stays a block, an ordinary tagged value
+ * stays a tagged value. The round trips here go through JSON, so they also pin that the flag survives the wire.
  * <p>
- * Documentation has no escape mechanism at all, so a value the parser's canonicalization would not read back
- * unchanged stays an ordinary tagged value regardless of the flag. Each of those triggers has its own test below.
+ * Documentation has no escape mechanism at all, so a flagged value the parser's canonicalization would not read back
+ * unchanged still composes as an ordinary tagged value. Those triggers are only reachable through hand-built
+ * protocol, so they are tested from JSON below.
  */
 public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
@@ -54,6 +57,21 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "  Derived, not stored.\n" +
                 "  '''\n" +
                 "  fullName() {$this.firstName}: String[1];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testSingleLineDocumentationStaysABlock()
+    {
+        test("'''\n" +
+                "A person in the system.\n" +
+                "'''\n" +
+                "Class model::Person\n" +
+                "{\n" +
+                "  '''\n" +
+                "  Given name.\n" +
+                "  '''\n" +
+                "  firstName: String[1];\n" +
                 "}\n");
     }
 
@@ -156,7 +174,6 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "{\n" +
                 "  '''\n" +
                 "  Given name.\n" +
-                "  Not guaranteed unique.\n" +
                 "  '''\n" +
                 "  firstName: String[1];\n" +
                 "}\n", RenderStyle.PRETTY);
@@ -174,10 +191,10 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "}\n");
     }
 
-    // ------------------------------------ SINGLE-LINE VALUES KEEP THEIR FORM ------------------------------------
+    // ------------------------------------ TAGGED-VALUE FORM KEEPS ITS FORM ------------------------------------
 
     @Test
-    public void testSingleLineTaggedValueStaysATaggedValueByDefault()
+    public void testSingleLineTaggedValueStaysATaggedValue()
     {
         test("Class {meta::pure::profiles::doc.doc = 'A person in the system.'} model::Person\n" +
                 "{\n" +
@@ -186,114 +203,10 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
-    public void testSingleLineDocumentationComposesToATaggedValueByDefault()
+    public void testMultiLineContentInATaggedValueStaysATaggedValue()
     {
-        testFormat("Class {meta::pure::profiles::doc.doc = 'A person in the system.'} model::Person\n" +
-                        "{\n" +
-                        "}\n",
-                "'''\n" +
-                        "A person in the system.\n" +
-                        "'''\n" +
-                        "Class model::Person\n" +
-                        "{\n" +
-                        "}\n");
-    }
-
-    @Test
-    public void testTheFlagPromotesSingleLineValues()
-    {
-        Assert.assertEquals("'''\n" +
-                        "A person in the system.\n" +
-                        "'''\n" +
-                        "Class model::Person\n" +
-                        "{\n" +
-                        "  '''\n" +
-                        "  Given name.\n" +
-                        "  '''\n" +
-                        "  firstName: String[1];\n" +
-                        "}\n",
-                composeWithAlwaysRenderDocumentation("Class {meta::pure::profiles::doc.doc = 'A person in the system.'} model::Person\n" +
-                        "{\n" +
-                        "  {meta::pure::profiles::doc.doc = 'Given name.'} firstName: String[1];\n" +
-                        "}\n"));
-    }
-
-    @Test
-    public void testTheFlagDoesNotPromoteAnUnrenderableValue()
-    {
-        Assert.assertEquals("Class {meta::pure::profiles::doc.doc = ''} model::A\n" +
-                        "{\n" +
-                        "}\n",
-                composeWithAlwaysRenderDocumentation("Class {meta::pure::profiles::doc.doc = ''} model::A\n" +
-                        "{\n" +
-                        "}\n"));
-    }
-
-    private static String composeWithAlwaysRenderDocumentation(String code)
-    {
-        return PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().withAlwaysRenderDocumentation().build())
-                .renderPureModelContextData(PureGrammarParser.newInstance().parseModel(code));
-    }
-
-    // ----------------------------------------------- FALLBACK TO A TAGGED VALUE -----------------------------------
-
-    @Test
-    public void testValueContainingTheDelimiterStaysATaggedValue()
-    {
-        // there is no escape for ''' inside a block
-        test("Class {meta::pure::profiles::doc.doc = 'contains \\'\\'\\' delimiter\\non more than one line'} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testValueContainingACarriageReturnStaysATaggedValue()
-    {
-        // the layout normalizes line terminators, so a \r would not survive
-        test("Class {meta::pure::profiles::doc.doc = 'a\\rb\\nc'} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testValueWithTrailingWhitespaceOnALineStaysATaggedValue()
-    {
-        // the layout strips trailing whitespace per line
-        test("Class {meta::pure::profiles::doc.doc = 'trailing space \\nb'} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testValueWithALeadingBlankLineStaysATaggedValue()
-    {
-        test("Class {meta::pure::profiles::doc.doc = '\\ntext'} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testValueWithATrailingBlankLineStaysATaggedValue()
-    {
-        test("Class {meta::pure::profiles::doc.doc = 'text\\n'} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testEmptyValueStaysATaggedValue()
-    {
-        test("Class {meta::pure::profiles::doc.doc = ''} model::A\n" +
-                "{\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testValueWithASectionHeaderLineStaysATaggedValue()
-    {
-        // the ###Section split runs before any grammar and is not string-aware, so a line starting with ### inside a
-        // block would re-split the file
-        test("Class {meta::pure::profiles::doc.doc = 'text\\n###Pure\\nmore'} model::A\n" +
+        // the value was authored as an escaped single-quoted literal, so it composes back as one
+        test("Class {meta::pure::profiles::doc.doc = 'line one\\nline two'} model::A\n" +
                 "{\n" +
                 "}\n");
     }
@@ -301,9 +214,167 @@ public class TestDocumentationRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testTwoDocTagsStayTaggedValues()
     {
-        // two blocks in a row is a parse error, so neither is promoted
         test("Class {meta::pure::profiles::doc.doc = 'first\\nspans lines', meta::pure::profiles::doc.doc = 'second'} model::A\n" +
                 "{\n" +
                 "}\n");
+    }
+
+    // -------------------------------- BLOCK-LITERAL TAGGED VALUES ARE PROMOTED --------------------------------
+
+    @Test
+    public void testABlockLiteralTaggedValueComposesToDocumentation()
+    {
+        // `{doc.doc = '''...'''}` carries the multiLine flag, and documentation is that tagged value's sugar
+        testFormat("'''\n" +
+                        "A person in the system.\n" +
+                        "Identity is established by name.\n" +
+                        "'''\n" +
+                        "Class model::Person\n" +
+                        "{\n" +
+                        "}\n",
+                "Class {meta::pure::profiles::doc.doc = '''\n" +
+                        "A person in the system.\n" +
+                        "Identity is established by name.'''} model::Person\n" +
+                        "{\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testABlockLiteralWithATrailingNewlineFallsBackToATaggedValue()
+    {
+        // a string literal's closing delimiter on its own line puts a trailing \n in the value, which a
+        // documentation block cannot represent - promotion would change the value, so the escaped form is kept
+        testFormat("Class {meta::pure::profiles::doc.doc = 'line one\\nline two\\n'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                "Class {meta::pure::profiles::doc.doc = '''\n" +
+                        "line one\n" +
+                        "line two\n" +
+                        "'''} model::A\n" +
+                        "{\n" +
+                        "}\n");
+    }
+
+    @Test
+    public void testAnEmptyBlockLiteralTaggedValueFallsBackToATaggedValue()
+    {
+        // the canonicalized content is empty, which a documentation block cannot represent
+        testFormat("Class {meta::pure::profiles::doc.doc = ''} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                "Class {meta::pure::profiles::doc.doc = '''\n" +
+                        "'''} model::A\n" +
+                        "{\n" +
+                        "}\n");
+    }
+
+    // ------------------------------------- FALLBACK TO A TAGGED VALUE -------------------------------------
+    // A parsed block always canonicalizes to representable content, so a flagged-but-unrenderable value can only
+    // arrive as hand-built protocol; each guard trigger is driven from JSON.
+
+    @Test
+    public void testALegacyPlainStringValueComposesToATaggedValue()
+    {
+        Assert.assertEquals("Class {meta::pure::profiles::doc.doc = 'line one\\nline two'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                composeClassWhoseDocValueIs("\"line one\\nline two\""));
+    }
+
+    @Test
+    public void testAFlaggedValueComposesToDocumentation()
+    {
+        Assert.assertEquals("'''\n" +
+                        "line one\n" +
+                        "line two\n" +
+                        "'''\n" +
+                        "Class model::A\n" +
+                        "{\n" +
+                        "}\n",
+                composeClassWhoseDocValueIs("{\"_type\":\"string\",\"multiLine\":true,\"value\":\"line one\\nline two\"}"));
+    }
+
+    @Test
+    public void testAnObjectValueWithoutTheFlagComposesToATaggedValue()
+    {
+        Assert.assertEquals("Class {meta::pure::profiles::doc.doc = 'line one\\nline two'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                composeClassWhoseDocValueIs("{\"_type\":\"string\",\"value\":\"line one\\nline two\"}"));
+    }
+
+    @Test
+    public void testAValueContainingTheDelimiterFallsBack()
+    {
+        // there is no escape for ''' inside a block
+        assertFallsBack("contains ''' delimiter\\non more than one line", "contains \\'\\'\\' delimiter\\non more than one line");
+    }
+
+    @Test
+    public void testAValueContainingACarriageReturnFallsBack()
+    {
+        // the layout normalizes line terminators, so a \r would not survive
+        assertFallsBack("a\\rb\\nc", "a\\rb\\nc");
+    }
+
+    @Test
+    public void testAValueWithTrailingWhitespaceOnALineFallsBack()
+    {
+        // the layout strips trailing whitespace per line
+        assertFallsBack("trailing space \\nb", "trailing space \\nb");
+    }
+
+    @Test
+    public void testAValueWithALeadingBlankLineFallsBack()
+    {
+        assertFallsBack("\\ntext", "\\ntext");
+    }
+
+    @Test
+    public void testAValueWithATrailingBlankLineFallsBack()
+    {
+        assertFallsBack("text\\n", "text\\n");
+    }
+
+    @Test
+    public void testAnEmptyValueFallsBack()
+    {
+        assertFallsBack("", "");
+    }
+
+    @Test
+    public void testAValueWithASectionHeaderLineFallsBack()
+    {
+        // the ###Section split runs before any grammar and is not string-aware, so a line starting with ### inside a
+        // block would re-split the file
+        assertFallsBack("text\\n###Pure\\nmore", "text\\n###Pure\\nmore");
+    }
+
+    /**
+     * A doc value flagged multi-line whose content a documentation block cannot represent composes as an ordinary
+     * tagged value. Both arguments are JSON-escaped; the expected one is additionally grammar-escaped.
+     */
+    private static void assertFallsBack(String jsonEscapedValue, String grammarEscapedValue)
+    {
+        Assert.assertEquals("Class {meta::pure::profiles::doc.doc = '" + grammarEscapedValue + "'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                composeClassWhoseDocValueIs("{\"_type\":\"string\",\"multiLine\":true,\"value\":\"" + jsonEscapedValue + "\"}"));
+    }
+
+    private static String composeClassWhoseDocValueIs(String valueJson)
+    {
+        String json = "{\"_type\":\"data\",\"elements\":[{\"_type\":\"class\",\"name\":\"A\",\"package\":\"model\"," +
+                "\"taggedValues\":[{\"tag\":{\"profile\":\"meta::pure::profiles::doc\",\"value\":\"doc\"},\"value\":" + valueJson + "}]}]}";
+        try
+        {
+            ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+            PureModelContextData modelData = objectMapper.readValue(json, PureModelContextData.class);
+            return PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build()).renderPureModelContextData(modelData);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

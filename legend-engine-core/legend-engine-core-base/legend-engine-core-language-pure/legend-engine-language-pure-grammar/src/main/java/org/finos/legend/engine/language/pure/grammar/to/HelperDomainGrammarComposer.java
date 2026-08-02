@@ -68,7 +68,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderTaggedValue(TaggedValue taggedValue)
     {
-        return PureGrammarComposerUtility.convertPath(taggedValue.tag.profile) + "." + PureGrammarComposerUtility.convertIdentifier(taggedValue.tag.value) + " = " + convertString(taggedValue.value, true);
+        return PureGrammarComposerUtility.convertPath(taggedValue.tag.profile) + "." + PureGrammarComposerUtility.convertIdentifier(taggedValue.tag.value) + " = " + convertString(taggedValue.value.value, true);
     }
 
     public static String renderAnnotations(List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
@@ -85,20 +85,16 @@ public class HelperDomainGrammarComposer
      * whitespace and backslashes because string literals are unescaped when read back, whereas documentation content
      * is literal. Nothing here is escaped - {@link #isRenderableAsDocumentation} is what guarantees the parser reads
      * the value back unchanged, and anything it rejects stays an ordinary tagged value.
-     * <p>
-     * Only multi-line values are promoted by default - they have no readable single-line form. Single-line values
-     * keep their existing tagged-value formatting unless {@code alwaysRender} (the context's
-     * {@code alwaysRenderDocumentation} flag) opts in.
      */
-    public static String renderDocumentation(List<TaggedValue> taggedValues, String indent, boolean alwaysRender)
+    public static String renderDocumentation(List<TaggedValue> taggedValues, String indent)
     {
-        TaggedValue documentation = extractDocumentation(taggedValues, alwaysRender);
+        TaggedValue documentation = extractDocumentation(taggedValues);
         if (documentation == null)
         {
             return "";
         }
         StringBuilder builder = new StringBuilder("'''\n");
-        for (String line : documentation.value.split("\n", -1))
+        for (String line : documentation.value.value.split("\n", -1))
         {
             // a blank line is emitted empty rather than indented, so it carries no trailing whitespace
             builder.append(line.isEmpty() ? "" : indent + line).append('\n');
@@ -107,17 +103,19 @@ public class HelperDomainGrammarComposer
         return builder.append(indent).append("'''\n").append(indent).toString();
     }
 
-    public static List<TaggedValue> withoutDocumentation(List<TaggedValue> taggedValues, boolean alwaysRender)
+    public static List<TaggedValue> withoutDocumentation(List<TaggedValue> taggedValues)
     {
-        TaggedValue documentation = extractDocumentation(taggedValues, alwaysRender);
+        TaggedValue documentation = extractDocumentation(taggedValues);
         return documentation == null ? taggedValues : ListIterate.reject(taggedValues, tv -> tv == documentation);
     }
 
     /**
      * The one tagged value to promote to a documentation block, or null. Requires exactly one doc tag: two would
-     * compose to two consecutive blocks, which is a parse error, so both are left as tagged values.
+     * compose to two consecutive blocks, which is a parse error, so both are left as tagged values. Only a value
+     * the protocol records as authored multi-line ({@code multiLine}) is promoted, so a value written as an
+     * ordinary tagged value keeps that form.
      */
-    private static TaggedValue extractDocumentation(List<TaggedValue> taggedValues, boolean alwaysRender)
+    private static TaggedValue extractDocumentation(List<TaggedValue> taggedValues)
     {
         if (taggedValues == null)
         {
@@ -135,7 +133,7 @@ public class HelperDomainGrammarComposer
                 found = taggedValue;
             }
         }
-        return found != null && isRenderableAsDocumentation(found.value) && (alwaysRender || found.value.indexOf('\n') >= 0) ? found : null;
+        return found != null && found.value != null && found.value.multiLine && isRenderableAsDocumentation(found.value.value) ? found : null;
     }
 
     private static boolean isDocTaggedValue(TaggedValue taggedValue)
@@ -169,13 +167,13 @@ public class HelperDomainGrammarComposer
 
     public static String renderEnumValue(EnumValue enumValue)
     {
-        return renderEnumValue(enumValue, false, false);
+        return renderEnumValue(enumValue, false);
     }
 
-    public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar, boolean alwaysRenderDocumentation)
+    public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar)
     {
-        return renderDocumentation(enumValue.taggedValues, getTabString(), alwaysRenderDocumentation) +
-                renderAnnotations(enumValue.stereotypes, withoutDocumentation(enumValue.taggedValues, alwaysRenderDocumentation)) +
+        return renderDocumentation(enumValue.taggedValues, getTabString()) +
+                renderAnnotations(enumValue.stereotypes, withoutDocumentation(enumValue.taggedValues)) +
                 PureGrammarComposerUtility.convertIdentifier(enumValue.value, false, isPureGrammar);
     }
 
@@ -197,7 +195,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderDocumentation(property.taggedValues, getTabString(), transformer.isAlwaysRenderDocumentation()) + renderAnnotations(property.stereotypes, withoutDocumentation(property.taggedValues, transformer.isAlwaysRenderDocumentation())) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderDocumentation(property.taggedValues, getTabString()) + renderAnnotations(property.stereotypes, withoutDocumentation(property.taggedValues)) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     private static String renderAggregation(AggregationKind aggregationKind)
@@ -230,8 +228,8 @@ public class HelperDomainGrammarComposer
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
-        return renderDocumentation(qualifiedProperty.taggedValues, getTabString(), transformer.isAlwaysRenderDocumentation())
-                + renderAnnotations(qualifiedProperty.stereotypes, withoutDocumentation(qualifiedProperty.taggedValues, transformer.isAlwaysRenderDocumentation()))
+        return renderDocumentation(qualifiedProperty.taggedValues, getTabString())
+                + renderAnnotations(qualifiedProperty.stereotypes, withoutDocumentation(qualifiedProperty.taggedValues))
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"

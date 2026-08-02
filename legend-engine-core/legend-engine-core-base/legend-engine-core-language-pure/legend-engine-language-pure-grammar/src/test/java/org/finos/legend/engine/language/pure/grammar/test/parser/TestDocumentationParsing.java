@@ -67,7 +67,8 @@ public class TestDocumentationParsing extends TestGrammarParser.TestGrammarParse
         TaggedValue documentation = taggedValues.get(0);
         Assert.assertEquals(DOC_PROFILE_PATH, documentation.tag.profile);
         Assert.assertEquals("doc", documentation.tag.value);
-        Assert.assertEquals(expectedValue, documentation.value);
+        Assert.assertEquals(expectedValue, documentation.value.value);
+        Assert.assertTrue("Documentation records that it was authored multi-line", documentation.value.multiLine);
     }
 
     private static void assertClassDoc(String expectedValue, String code)

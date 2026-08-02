@@ -229,7 +229,8 @@ public class PureGrammarParserUtility
         taggedValue.tag.value = DOC_TAG;
         taggedValue.tag.profileSourceInformation = sourceInformation;
         taggedValue.tag.sourceInformation = sourceInformation;
-        taggedValue.value = canonicalizeDocumentation(rawToken);
+        taggedValue.value = new CString(canonicalizeDocumentation(rawToken));
+        taggedValue.value.multiLine = true;
         taggedValue.sourceInformation = sourceInformation;
         return taggedValue;
     }
