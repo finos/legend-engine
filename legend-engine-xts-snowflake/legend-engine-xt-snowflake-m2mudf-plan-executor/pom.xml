@@ -113,7 +113,7 @@
             <groupId>com.snowflake</groupId>
             <artifactId>snowpark</artifactId>
             <version>1.16.0</version>
-            <scope>jar</scope>
+            <scope>runtime</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
