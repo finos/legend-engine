@@ -394,6 +394,28 @@ public class QueryStoreManager
 
     public List<Query> getQueryHistory(String queryId)
     {
+        return getQueryHistory(queryId, null);
+    }
+
+    public List<Query> getQueryHistory(String queryId, Integer version)
+    {
+        if (version != null)
+        {
+            // Push version filter down to the DB
+            Optional<ApplicationStoredQuery> match = getQueryDao().get(queryId, version);
+            if (match.isPresent())
+            {
+                return Arrays.asList(this.convertFromStoredQuery(match.get()));
+            }
+            // Distinguish "query missing" vs "version missing"
+            if (!getQueryDao().get(queryId).isPresent()
+                    && !getQueryDao().getHistory(queryId, StoredVersionedAssetFetchOptions.builder().withLimit(1).build()).findAny().isPresent())
+            {
+                throw new ApplicationQueryException("Can't find query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
+            }
+            throw new ApplicationQueryException("Can't find version '" + version + "' for query with ID '" + queryId + "'", Response.Status.NOT_FOUND);
+        }
+
         List<Query> history = getQueryDao().getHistory(queryId)
                 .map(this::convertFromStoredQuery)
                 .collect(Collectors.toList());
