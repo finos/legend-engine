@@ -107,6 +107,7 @@ Class meta::external::powerbi::metamodel::Table
   lineageTag : String[1];
   columns : Column[*];
   partition : Partition[1];
+  annotations : Map<String,String>[0..1];
 }
 
 Class meta::external::powerbi::metamodel::Database
