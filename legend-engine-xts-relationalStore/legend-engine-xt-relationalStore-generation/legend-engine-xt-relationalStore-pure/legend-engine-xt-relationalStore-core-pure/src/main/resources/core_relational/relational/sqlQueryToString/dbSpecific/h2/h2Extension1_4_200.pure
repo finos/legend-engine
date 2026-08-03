@@ -91,6 +91,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   let allStates = allGenerationStates();
 
   [
+     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),

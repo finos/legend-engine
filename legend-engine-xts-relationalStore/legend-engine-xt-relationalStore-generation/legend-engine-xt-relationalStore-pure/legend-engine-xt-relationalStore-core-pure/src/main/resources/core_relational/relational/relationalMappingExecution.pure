@@ -381,7 +381,7 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
 
    let relationalExecutionContext = $exeCtx->match([r:RelationalExecutionContext[1]|$r, a:Any[0..1]|[]]);
 
-   let originalQuery = $f->toSQLQuery($m, $inScopeVars, $relationalExecutionContext, $debug, $extensions);
+   let originalQuery = $f->toSQLQuery($m, $inScopeVars, $debug, $relationalExecutionContext->relationalExecutionContextToState(defaultState($m, $inScopeVars, $exeCtx, $extensions)), $extensions);
    let toSqlQueryDurationMilliseconds = ($toSqlQueryStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
    let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(meta::external::store::relational::runtime::DatabaseConnection));

@@ -88,8 +88,12 @@ import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformati
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SQLSource;
 import org.finos.legend.pure.generated.Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOption;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
+import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_featureFlag_FeatureFlagOption_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.core_external_format_json_toJSON;
 import org.finos.legend.pure.generated.core_external_query_sql_binding_fromPure_fromPure;
 import org.finos.legend.pure.generated.core_pure_router_preeval_preeval;
@@ -379,7 +383,7 @@ public class SQLExecutor
             TraceUtils.trace("generating plan", span ->
             {
                 FunctionDefinition<?> func2 = core_pure_router_preeval_preeval.Root_meta_pure_router_preeval_preval_FunctionDefinition_1__Extension_MANY__FunctionDefinition_1_(result._lambda(), routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-                Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
+                Root_meta_pure_executionPlan_ExecutionPlan plan = PlanGenerator.generateExecutionPlanAsPure(func2, result._mapping(), result._runtime(), legacyNullUnsafeEqualsContext(pureModel), pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
                 result._plan(plan);
             });
         }
@@ -389,6 +393,15 @@ public class SQLExecutor
         }
 
         return result;
+    }
+
+    // SQL '=' is null-unsafe (three-valued); transpiled queries keep SQL equality semantics
+    private static Root_meta_pure_runtime_ExecutionContext legacyNullUnsafeEqualsContext(PureModel pureModel)
+    {
+        return new Root_meta_pure_executionPlan_ExecutionOptionContext_Impl("", null, pureModel.getClass("meta::pure::executionPlan::ExecutionOptionContext"))
+                ._executionOptions(Lists.mutable.<Root_meta_pure_executionPlan_ExecutionOption>with(
+                        new Root_meta_pure_executionPlan_featureFlag_FeatureFlagOption_Impl("", null, pureModel.getClass("meta::pure::executionPlan::featureFlag::FeatureFlagOption"))
+                                ._flags(Lists.mutable.with(pureModel.getEnumValue("meta::pure::executionPlan::features::Feature", "LEGACY_SQL_NULL_UNSAFE_EQUALS")))));
     }
 
     private <T> T process(Query query, List<Object> positionalArguments, Function5<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter>, Span, T> func, String name, SQLContext context, Identity identity)
