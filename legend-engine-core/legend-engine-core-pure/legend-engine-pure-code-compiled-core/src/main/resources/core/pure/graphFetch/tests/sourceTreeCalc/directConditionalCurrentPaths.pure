@@ -1,0 +1,467 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::mapping::modelToModel::test::directConditionalCurrents::*;
+import meta::pure::lineage::scanProperties::test::directConditionalCurrents::*;
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::Source
+{
+  chooseChildren : Boolean[1];
+  chooseGrandChildren : Boolean[1];
+  name : String[1];
+  children : Source[*];
+  primary : Source[0..1];
+  secondary : Source[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::Target
+{
+  items : Item[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::Item
+{
+  name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::CacheTarget
+{
+  primaryItems : Item[*];
+  secondaryItems : Item[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::DowncastNode
+{
+  id : String[1];
+  description : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::DowncastA extends DowncastNode
+{
+  operations : DowncastNode[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::DowncastB extends DowncastNode
+{
+  operations : DowncastNode[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::DowncastReport
+{
+  items : DowncastItem[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::DowncastItem
+{
+  id : String[1];
+  description : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::NavigationRoot
+{
+  container : NavigationContainer[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::NavigationContainer
+{
+  value : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::NavigationTarget
+{
+  child : NavigationItem[*];
+}
+
+Class meta::pure::mapping::modelToModel::test::directConditionalCurrents::NavigationItem
+{
+  value : String[1];
+}
+
+function meta::pure::mapping::modelToModel::test::directConditionalCurrents::pickContainer(source:NavigationRoot[1]):NavigationContainer[1]
+{
+  $source.container;
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectRootOrChildren(source:Source[1]):Source[*]
+{
+  if($source.chooseChildren, |$source.children, |$source);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectNested(source:Source[1]):Source[*]
+{
+  if($source.chooseChildren,
+    |if($source.chooseGrandChildren, |$source.children.children, |$source.children),
+    |$source
+  );
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectDelegated(source:Source[1]):Source[*]
+{
+  selectNested($source);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectChildrenOrNil(source:Source[1]):Source[*]
+{
+  if($source.chooseChildren, |$source.children, |[]);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectLastExpression(source:Source[1]):Source[*]
+{
+  if($source.chooseChildren, |$source, |$source.children);
+  $source.children;
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectContainerOrRoot(source:NavigationRoot[1]):Any[1]
+{
+  if($source.container->isNotEmpty(), |$source->pickContainer(), |$source);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::isDowncastA(source:DowncastNode[1]):Boolean[1]
+{
+  $source->instanceOf(DowncastA);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::isDowncastB(source:DowncastNode[1]):Boolean[1]
+{
+  $source->instanceOf(DowncastB);
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectDowncast(source:DowncastNode[1]):DowncastNode[*]
+{
+  if(isDowncastA($source),
+    |$source->cast(@DowncastA).operations,
+    |if(isDowncastB($source), |$source->cast(@DowncastB).operations, |$source)
+  );
+}
+
+function meta::pure::lineage::scanProperties::test::directConditionalCurrents::selectDowncastDelegated(source:DowncastNode[1]):DowncastNode[*]
+{
+  selectDowncast($source);
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testDirectIfRetainsRootAndNavigationTerminals():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, name, children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, directIfMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testDirectIfIsIndependentOfBranchOrder():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, name, children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, reversedDirectIfMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNestedDirectIfRetainsEveryTerminal():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, chooseGrandChildren, name, children {name, children {name}}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, nestedDirectIfMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNilBranchDoesNotBecomeRootTerminal():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, nilDirectIfMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNavigationSourcedChildKeepsNavigatedTerminal():Boolean[1]
+{
+  let targetTree = #{NavigationTarget {child {value}}}#;
+  let expectedSourceTree = #{NavigationRoot {container {value}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, navigationSourcedMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testOrdinaryNavigationIsUnchanged():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, ordinaryNavigationMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNamedFunctionRetainsEveryTerminal():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, chooseGrandChildren, name, children {name, children {name}}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, namedConditionalMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testDelegatedNamedFunctionRetainsEveryTerminal():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, chooseGrandChildren, name, children {name, children {name}}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, delegatedConditionalMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNamedNilBranchDoesNotBecomeRootTerminal():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, namedNilConditionalMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testFunctionCacheResolvesTerminalsAgainstEachArgument():Boolean[1]
+{
+  let targetTree = #{CacheTarget {primaryItems {name}, secondaryItems {name}}}#;
+  let expectedSourceTree = #{Source {primary {chooseChildren, name, children {name}}, secondary {chooseChildren, name, children {name}}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, cachedConditionalMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testOnlyFinalFunctionExpressionCanProvideTerminals():Boolean[1]
+{
+  let targetTree = #{Target {items {name}}}#;
+  let expectedSourceTree = #{Source {chooseChildren, children {name}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, finalExpressionMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testNamedNavigationSourcedChildKeepsNavigatedTerminal():Boolean[1]
+{
+  let targetTree = #{NavigationTarget {child {value}}}#;
+  let expectedSourceTree = #{NavigationRoot {container {value}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, namedNavigationSourcedMapping, meta::pure::extension::defaultExtensions());
+  assertEquals($expectedSourceTree->sortTree()->treeToString(), $actualSourceTree->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::mapping::modelToModel::test::directConditionalCurrents::testDelegatedNamedDowncastsRetainSubtypeAndRootTerminals():Boolean[1]
+{
+  let targetTree = #{DowncastReport {items {id, description}}}#;
+  let actualSourceTree = calculateSourceTree($targetTree, namedDowncastMapping, meta::pure::extension::defaultExtensions());
+  let rootProperties = $actualSourceTree.subTrees->filter(t | $t->instanceOf(PropertyGraphFetchTree))->cast(@PropertyGraphFetchTree);
+  let subtypeTrees = $actualSourceTree.subTypeTrees;
+  assertEquals(['description', 'id'], $rootProperties.property.name->sort());
+  assertEquals(['DowncastA', 'DowncastB'], $subtypeTrees.subTypeClass.name->sort());
+  assert($subtypeTrees->forAll({st |
+    let subtypeProperties = $st.subTrees->filter(t | $t->instanceOf(PropertyGraphFetchTree))->cast(@PropertyGraphFetchTree);
+    $subtypeProperties->filter(t | $t.property.name == 'operations')->size() == 1;
+  }), |'Each downcast branch must retain its operations path');
+}
+
+###Mapping
+import meta::pure::mapping::modelToModel::test::directConditionalCurrents::*;
+import meta::pure::lineage::scanProperties::test::directConditionalCurrents::*;
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::directIfMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: if($src.chooseChildren, |$src.children, |$src)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::reversedDirectIfMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: if($src.chooseChildren, |$src, |$src.children)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::nestedDirectIfMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: if($src.chooseChildren,
+      |if($src.chooseGrandChildren, |$src.children.children, |$src.children),
+      |$src
+    )
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::nilDirectIfMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: if($src.chooseChildren, |$src.children, |[])
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::navigationSourcedMapping
+(
+  *NavigationTarget: Pure
+  {
+    ~src NavigationRoot
+    child[navigationItem]: if($src.container->isNotEmpty(), |$src->pickContainer(), |$src)->cast(@NavigationContainer)
+  }
+
+  NavigationItem[navigationItem]: Pure
+  {
+    ~src NavigationContainer
+    value: $src.value
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::ordinaryNavigationMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: $src.children
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::namedConditionalMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: selectNested($src)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::delegatedConditionalMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: selectDelegated($src)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::namedNilConditionalMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: selectChildrenOrNil($src)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::cachedConditionalMapping
+(
+  *CacheTarget: Pure
+  {
+    ~src Source
+    primaryItems[item]: selectRootOrChildren($src.primary->toOne()),
+    secondaryItems[item]: selectRootOrChildren($src.secondary->toOne())
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::finalExpressionMapping
+(
+  *Target: Pure
+  {
+    ~src Source
+    items[item]: selectLastExpression($src)
+  }
+
+  Item[item]: Pure
+  {
+    ~src Source
+    name: $src.name
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::namedNavigationSourcedMapping
+(
+  *NavigationTarget: Pure
+  {
+    ~src NavigationRoot
+    child[navigationItem]: selectContainerOrRoot($src)->cast(@NavigationContainer)
+  }
+
+  NavigationItem[navigationItem]: Pure
+  {
+    ~src NavigationContainer
+    value: $src.value
+  }
+)
+
+Mapping meta::pure::mapping::modelToModel::test::directConditionalCurrents::namedDowncastMapping
+(
+  *DowncastReport: Pure
+  {
+    ~src DowncastNode
+    items[downcastItem]: selectDowncastDelegated($src)
+  }
+
+  DowncastItem[downcastItem]: Pure
+  {
+    ~src DowncastNode
+    id: $src.id,
+    description: $src.description
+  }
+)
