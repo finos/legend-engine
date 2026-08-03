@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -31,8 +31,55 @@ function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::test
       biTemporalTestRuntime(),
       meta::relational::extension::relationalExtensions()
    );
-   assertEquals('select "unionBase"."BENEFICIARYLast_Name_CUSTOMERLast_Name" as "Name", "customer_1".Email as "Email" from (select "root".lake_from as "lake_from_0", "root".lake_thru as "lake_thru_0", null as "lake_from_1", null as "lake_thru_1", "root".Beneficiary_Id as "pk_0_0", "root".Account_Id as "pk_1_0", "root".As_Of_Date as "pk_2_0", null as "pk_0_1", null as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", null as Customer_ID_1, null as Terminated_Record_Flag_1 from OLAP.BENEFICIARY as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\' union all select null as "lake_from_0", null as "lake_thru_0", "root".lake_from as "lake_from_1", "root".lake_thru as "lake_thru_1", null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".Customer_ID as "pk_0_1", "root".As_Of_Date as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", "root".Customer_ID as Customer_ID_1, "root".Terminated_Record_Flag as Terminated_Record_Flag_1 from OLAP.CUSTOMER as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\') as "unionBase" left outer join OLAP.CUSTOMER as "customer_1" on ("unionBase".Customer_ID_1 = "customer_1".Customer_ID and "customer_1".Terminated_Record_Flag = 0 and "customer_1".lake_thru > \'9999-01-01\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\')', $result->sqlRemoveFormatting());
+     assertEquals('select "unionBase"."BENEFICIARYLast_Name_CUSTOMERLast_Name" as "Name", "customer_1".Email as "Email" from (select "root".lake_from as "lake_from_0", "root".lake_thru as "lake_thru_0", null as "lake_from_1", null as "lake_thru_1", "root".Beneficiary_Id as "pk_0_0", "root".Account_Id as "pk_1_0", "root".As_Of_Date as "pk_2_0", null as "pk_0_1", null as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", null as Customer_ID_1, null as Terminated_Record_Flag_1 from OLAP.BENEFICIARY as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\' union all select null as "lake_from_0", null as "lake_thru_0", "root".lake_from as "lake_from_1", "root".lake_thru as "lake_thru_1", null as "pk_0_0", null as "pk_1_0", null as "pk_2_0", "root".Customer_ID as "pk_0_1", "root".As_Of_Date as "pk_1_1", "root".Last_Name as "BENEFICIARYLast_Name_CUSTOMERLast_Name", "root".Customer_ID as Customer_ID_1, "root".Terminated_Record_Flag as Terminated_Record_Flag_1 from OLAP.CUSTOMER as "root" where "root".lake_from <= DATE\'2024-10-30\' and "root".lake_thru > DATE\'2024-10-30\') as "unionBase" left outer join OLAP.CUSTOMER as "customer_1" on ("unionBase".Customer_ID_1 = "customer_1".Customer_ID and "customer_1".Terminated_Record_Flag = 0 and "customer_1".lake_thru > \'9999-01-01\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\' and "customer_1".lake_from <= DATE\'2024-10-30\' and "customer_1".lake_thru > DATE\'2024-10-30\')', $result->sqlRemoveFormatting());
 }
+
+// Regression test: milestoning column references in union join ON clauses must be quoted.
+function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::testBiTemporalUnionJoin_milestoningColumnInOnClause():Boolean[1]
+{
+   let result = execute(
+      |BiTemporalPerson.all(%2024-10-30, %2024-10-30)
+         ->project([p|$p.name, p|$p.relationshipInfo.code], ['Name', 'RelCode']),
+      biTemporalUnionMapping,
+      biTemporalTestRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+   // The generated SQL must quote milestoning column references in the ON clause.
+   // If unquoted, H2 would throw: Column "unionalias_X.LAKE_THRU_0" not found (42122)
+   let sql = $result->sqlRemoveFormatting();
+   assert($sql->contains('"lake_thru_0"'), 'Milestoning column reference in ON clause must be quoted to avoid H2 case-sensitivity mismatch');
+   true;
+}
+
+// Regression test: reproduces the PWM failure pattern where a non-union entity navigates
+// TO a union-mapped bi-temporal entity. The union becomes a JOIN TARGET wrapped in a
+// correlated subquery. The wrapper's SELECT list must use quoted milestoning column
+// references (e.g. "lake_thru_0") to match the inner union's quoted aliases.
+// Without the fix, H2 throws: Column "unionalias_X.LAKE_THRU_0" not found (42122)
+function <<test.Test>> meta::relational::tests::mapping::union::biTemporal::testBiTemporalUnionAsJoinTarget_correlatedSubqueryQuoting():Boolean[1]
+{
+   let result = execute(
+      |PartyAccount.all(%2024-10-30, %2024-10-30)
+         ->project([a|$a.accountId, a|$a.owner.name], ['AccountId', 'OwnerName']),
+      biTemporalUnionMapping,
+      biTemporalTestRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+   let sql = $result->sqlRemoveFormatting();
+   // Verify the two-level wrapper pattern: inner union "unionalias_1" inside outer wrapper "unionalias_0"
+   assert($sql->contains('as "unionalias_1"'), 'Must have inner union alias (unionalias_1)');
+   assert($sql->contains('as "unionalias_0"'), 'Must have outer wrapper alias (unionalias_0)');
+   // Verify the wrapper SELECT quotes milestoning column references from the inner union.
+   // Without the fix, this would be unquoted: "unionalias_1".lake_thru_0 as lake_thru_0
+   // H2 uppercases the unquoted reference to LAKE_THRU_0, which can't match "lake_thru_0".
+   assert($sql->contains('"unionalias_1"."lake_thru_0" as "lake_thru_0"'), 'Wrapper SELECT must quote milestoning column reference from inner union');
+   // Verify the ON clause also quotes milestoning references on the wrapper
+   assert($sql->contains('"unionalias_0"."lake_thru_0"') || $sql->contains('"unionalias_0"."lake_thru_1"'), 'ON clause must quote milestoning column reference on wrapper');
+   // Verify no unquoted lake_thru_0 reference exists (the actual PWM bug pattern)
+   assert(!$sql->contains('.lake_thru_0 '), 'Must not have unquoted lake_thru_0 reference');
+   true;
+}
+
 function meta::relational::tests::mapping::union::biTemporal::biTemporalTestRuntime():meta::core::runtime::Runtime[1]
 {
    meta::external::store::relational::tests::testRuntime(biTemporalDB);
@@ -57,6 +104,7 @@ Database meta::relational::tests::mapping::union::biTemporal::biTemporalDB
          First_Name VARCHAR(100),
          Last_Name VARCHAR(100),
          Terminated_Record_Flag INTEGER,
+         active_row_ind VARCHAR(1),
          Email VARCHAR(200)
       )
 
@@ -75,12 +123,105 @@ Database meta::relational::tests::mapping::union::biTemporal::biTemporalDB
          Last_Name VARCHAR(100),
          Terminated_Record_Flag INTEGER
       )
+
+      Table PARTY_RELATIONSHIP
+      (
+         milestoning(
+            business(BUS_FROM = lake_from, BUS_THRU = lake_thru),
+            processing(PROCESSING_IN = lake_from, PROCESSING_OUT = lake_thru)
+         )
+         rel_id INTEGER PRIMARY KEY,
+         lake_from DATE,
+         lake_thru DATE,
+         active_row_ind VARCHAR(1),
+         source_party_id INTEGER,
+         rel_type_cd VARCHAR(10)
+      )
+
+      Table PARTY_ACCOUNT
+      (
+         milestoning(
+            business(BUS_FROM = lake_from, BUS_THRU = lake_thru),
+            processing(PROCESSING_IN = lake_from, PROCESSING_OUT = lake_thru)
+         )
+         acct_id INTEGER PRIMARY KEY,
+         lake_from DATE,
+         lake_thru DATE,
+         active_row_ind VARCHAR(1),
+         owner_party_id INTEGER,
+         acct_name VARCHAR(100)
+      )
+
+      // Intermediate table between account and party — mirrors PWM's Party_Account_Role.
+      // Forces a chained join path that triggers buildCorrelatedSubQuery when
+      // navigating from account → role → union-mapped party.
+      Table PARTY_ACCOUNT_ROLE
+      (
+         milestoning(
+            business(BUS_FROM = lake_from, BUS_THRU = lake_thru),
+            processing(PROCESSING_IN = lake_from, PROCESSING_OUT = lake_thru)
+         )
+         role_id INTEGER PRIMARY KEY,
+         lake_from DATE,
+         lake_thru DATE,
+         active_row_ind VARCHAR(1),
+         acct_id INTEGER,
+         source_party_id INTEGER,
+         role_type_cd VARCHAR(10)
+      )
    )
 
    Join Customer_Self_Join_Live(
       OLAP.CUSTOMER.Customer_ID = {target}.Customer_ID
       and {target}.Terminated_Record_Flag = 0
       and {target}.lake_thru > '9999-01-01'
+   )
+
+   // References milestoning columns on the target (CUSTOMER) side.
+   // When the target is a union, the engine wraps it in a correlated subquery.
+   // The wrapper must quote milestoning column references.
+   Join Account_To_Party(
+      OLAP.PARTY_ACCOUNT.owner_party_id = OLAP.CUSTOMER.Customer_ID
+      and OLAP.CUSTOMER.active_row_ind = 'Y'
+      and OLAP.CUSTOMER.lake_thru >= '9999-01-01'
+   )
+
+   Join Account_To_Beneficiary(
+      OLAP.PARTY_ACCOUNT.owner_party_id = OLAP.BENEFICIARY.Beneficiary_Id
+      and OLAP.BENEFICIARY.lake_thru >= '9999-01-01'
+   )
+
+   // Chained joins for the PWM pattern: Account → AccountRole → Party/Beneficiary
+   // The intermediate table forces the engine through buildCorrelatedSubQuery,
+   // producing the two-level wrapper subquery where the bug manifests.
+   Join Account_To_AccountRole(
+      OLAP.PARTY_ACCOUNT.acct_id = OLAP.PARTY_ACCOUNT_ROLE.acct_id
+      and OLAP.PARTY_ACCOUNT_ROLE.role_type_cd = 'OWN'
+      and OLAP.PARTY_ACCOUNT_ROLE.active_row_ind = 'Y'
+      and OLAP.PARTY_ACCOUNT_ROLE.lake_thru >= '9999-01-01'
+   )
+
+   Join AccountRole_To_Party(
+      OLAP.PARTY_ACCOUNT_ROLE.source_party_id = OLAP.CUSTOMER.Customer_ID
+      and OLAP.CUSTOMER.active_row_ind = 'Y'
+      and OLAP.CUSTOMER.lake_thru >= '9999-01-01'
+   )
+
+   Join AccountRole_To_Beneficiary(
+      OLAP.PARTY_ACCOUNT_ROLE.source_party_id = OLAP.BENEFICIARY.Beneficiary_Id
+      and OLAP.BENEFICIARY.lake_thru >= '9999-01-01'
+   )
+
+   // Join whose condition references milestoning columns (lake_thru, lake_out_id)
+   // from both sides — triggers modifyColumnNameInOperation to suffix them.
+   // If the generated ON clause uses unquoted lake_thru_0, H2 uppercases it
+   // and can't match the inner union's quoted "lake_thru_0".
+   Join Party_To_Relationship(
+      OLAP.CUSTOMER.Customer_ID = OLAP.PARTY_RELATIONSHIP.source_party_id
+      and OLAP.PARTY_RELATIONSHIP.active_row_ind = 'Y'
+      and OLAP.PARTY_RELATIONSHIP.lake_thru >= '9999-11-30'
+      and OLAP.CUSTOMER.active_row_ind = 'Y'
+      and OLAP.CUSTOMER.lake_thru >= '9999-11-30'
    )
 )
 
@@ -110,6 +251,28 @@ Association meta::relational::tests::mapping::union::biTemporal::Party_ContactIn
    contactInfo: ContactInfo[*];
 }
 
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::relational::tests::mapping::union::biTemporal::RelationshipInfo
+{
+   code: String[0..1];
+}
+
+Association meta::relational::tests::mapping::union::biTemporal::Party_RelationshipInfo
+{
+   partyForRel: BiTemporalParty[1];
+   relationshipInfo: RelationshipInfo[*];
+}
+
+Class <<meta::pure::profiles::temporal.bitemporal>> meta::relational::tests::mapping::union::biTemporal::PartyAccount
+{
+   accountId: Integer[1];
+   acctName: String[0..1];
+}
+
+Association meta::relational::tests::mapping::union::biTemporal::Account_Owner
+{
+   account: PartyAccount[*];
+   owner: BiTemporalPerson[0..1];
+}
 
 ###Mapping
 import meta::relational::tests::mapping::union::biTemporal::*;
@@ -179,6 +342,51 @@ Mapping meta::relational::tests::mapping::union::biTemporal::biTemporalUnionMapp
          contactInfo[selectParty, selectContactInfo]: [biTemporalDB]@Customer_Self_Join_Live
       )
    }
+
+   RelationshipInfo[selectRelationship]: Relational
+   {
+      ~primaryKey
+      (
+         [biTemporalDB]OLAP.PARTY_RELATIONSHIP.rel_id
+      )
+      ~mainTable [biTemporalDB]OLAP.PARTY_RELATIONSHIP
+      code: [biTemporalDB]OLAP.PARTY_RELATIONSHIP.rel_type_cd
+   }
+
+   Party_RelationshipInfo: Relational
+   {
+      AssociationMapping
+      (
+         partyForRel[selectRelationship, selectParty]: [biTemporalDB]@Party_To_Relationship,
+         relationshipInfo[selectParty, selectRelationship]: [biTemporalDB]@Party_To_Relationship
+      )
+   }
+
+   PartyAccount[selectAccount]: Relational
+   {
+      ~primaryKey
+      (
+         [biTemporalDB]OLAP.PARTY_ACCOUNT.acct_id
+      )
+      ~mainTable [biTemporalDB]OLAP.PARTY_ACCOUNT
+      accountId: [biTemporalDB]OLAP.PARTY_ACCOUNT.acct_id,
+      acctName: [biTemporalDB]OLAP.PARTY_ACCOUNT.acct_name
+   }
+
+   Account_Owner: Relational
+   {
+      AssociationMapping
+      (
+         // Chained joins through intermediate table — mirrors PWM's
+         // Account → Party_Account_Role → Party_Refined pattern.
+         // Forces engine through buildCorrelatedSubQuery, producing
+         // the two-level wrapper subquery (unionalias_1 inside unionalias_0).
+         owner[selectAccount, selectPerson]: [biTemporalDB]@Account_To_AccountRole > [biTemporalDB]@AccountRole_To_Party,
+         owner[selectAccount, selectBeneficiaryPerson]: [biTemporalDB]@Account_To_AccountRole > [biTemporalDB]@AccountRole_To_Beneficiary,
+         account[selectPerson, selectAccount]: [biTemporalDB]@AccountRole_To_Party > [biTemporalDB]@Account_To_AccountRole,
+         account[selectBeneficiaryPerson, selectAccount]: [biTemporalDB]@AccountRole_To_Beneficiary > [biTemporalDB]@Account_To_AccountRole
+      )
+   }
 )
 
 
@@ -194,11 +402,23 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::union::biTempo
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'CUSTOMER', $connection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'BENEFICIARY', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'PARTY_RELATIONSHIP', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'PARTY_ACCOUNT', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(biTemporalDB, 'OLAP', 'PARTY_ACCOUNT_ROLE', $connection);
 
-   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, Email) values (1, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Alice\', \'Alice\', 0, \'alice@test.com\');', $connection);
-   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, Email) values (2, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Bob\', \'Bob\', 0, \'bob@test.com\');', $connection);
+   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, active_row_ind, Email) values (1, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Alice\', \'Alice\', 0, \'Y\', \'alice@test.com\');', $connection);
+   executeInDb('insert into OLAP.CUSTOMER (Customer_ID, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag, active_row_ind, Email) values (2, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Bob\', \'Bob\', 0, \'Y\', \'bob@test.com\');', $connection);
 
    executeInDb('insert into OLAP.BENEFICIARY (Beneficiary_Id, Account_Id, As_Of_Date, lake_from, lake_thru, First_Name, Last_Name, Terminated_Record_Flag) values (10, 100, \'2024-10-30\', \'2020-01-01\', \'9999-12-31\', \'Charlie\', \'Charlie\', 0);', $connection);
+
+   executeInDb('insert into OLAP.PARTY_RELATIONSHIP (rel_id, lake_from, lake_thru, active_row_ind, source_party_id, rel_type_cd) values (1, \'2020-01-01\', \'9999-12-31\', \'Y\', 1, \'MNGR\');', $connection);
+   executeInDb('insert into OLAP.PARTY_RELATIONSHIP (rel_id, lake_from, lake_thru, active_row_ind, source_party_id, rel_type_cd) values (2, \'2020-01-01\', \'9999-12-31\', \'Y\', 2, \'OFFC\');', $connection);
+
+   executeInDb('insert into OLAP.PARTY_ACCOUNT (acct_id, lake_from, lake_thru, active_row_ind, owner_party_id, acct_name) values (1001, \'2020-01-01\', \'9999-12-31\', \'Y\', 1, \'Acct-Alice\');', $connection);
+   executeInDb('insert into OLAP.PARTY_ACCOUNT (acct_id, lake_from, lake_thru, active_row_ind, owner_party_id, acct_name) values (1002, \'2020-01-01\', \'9999-12-31\', \'Y\', 2, \'Acct-Bob\');', $connection);
+
+   executeInDb('insert into OLAP.PARTY_ACCOUNT_ROLE (role_id, lake_from, lake_thru, active_row_ind, acct_id, source_party_id, role_type_cd) values (1, \'2020-01-01\', \'9999-12-31\', \'Y\', 1001, 1, \'OWN\');', $connection);
+   executeInDb('insert into OLAP.PARTY_ACCOUNT_ROLE (role_id, lake_from, lake_thru, active_row_ind, acct_id, source_party_id, role_type_cd) values (2, \'2020-01-01\', \'9999-12-31\', \'Y\', 1002, 2, \'OWN\');', $connection);
 
    true;
 }
