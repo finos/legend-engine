@@ -90,32 +90,48 @@ function meta::relational::mutation::executionPlan::generateNodeForSameConnectio
     $node;
 }
 
-// Triggered when flatten() with a Variant source is detected from a non relational source (replaces write<T,Z> variant).
-function meta::relational::mutation::executionPlan::isVariantTempTableSource(source: ValueSpecification[1]): Boolean[1]
+// Unwraps flatten's variant-bridge source shape toMany(@Variant, fromJson(X)) down to X, the candidate from/with call. Returns nothing if the shape doesn't match.
+function meta::relational::mutation::executionPlan::extractVariantCandidateFromCall(source: ValueSpecification[1]): SimpleFunctionExpression[0..1]
 {
    let toManyFn   = meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_;
    let fromJsonFn = meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_;
-   let fromFns    = [meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_,
-                     meta::pure::mapping::from_T_m__Mapping_1__PackageableRuntime_1__T_m_];
-   let check = {sfe: SimpleFunctionExpression[1] |
-      $sfe.func == $toManyFn &&
-      $sfe.parametersValues->evaluateAndDeactivate()->at(0)->match([
-         fromJson: SimpleFunctionExpression[1] |
-            $fromJson.func == $fromJsonFn &&
-            $fromJson.parametersValues->evaluateAndDeactivate()->at(0)->match([
-               from: SimpleFunctionExpression[1] | $from.func->in($fromFns),
-               a:    Any[1]                      | false
-            ]),
-         a: Any[1] | false
-      ])
+   let extract = {sfe: SimpleFunctionExpression[1] |
+      if($sfe.func == $toManyFn,
+         | $sfe.parametersValues->evaluateAndDeactivate()->at(0)->match([
+              fromJson: SimpleFunctionExpression[1] |
+                 if($fromJson.func == $fromJsonFn,
+                    | $fromJson.parametersValues->evaluateAndDeactivate()->at(0)->match([
+                         from: SimpleFunctionExpression[1] | [$from],
+                         a:    Any[1]                      | []
+                      ]),
+                    | []
+                 ),
+              a: Any[1] | []
+           ]),
+         | []
+      )
    };
    $source->match([
-      sfe: SimpleFunctionExpression[1]             | $check->eval($sfe),
+      sfe: SimpleFunctionExpression[1]             | $extract->eval($sfe),
       s:   StoreMappingRoutedValueSpecification[1]  | $s.value->match([
-              sfe: SimpleFunctionExpression[1] | $check->eval($sfe),
-              a:   Any[1]                      | false]),
-      a:   Any[1]                                  | false
+              sfe: SimpleFunctionExpression[1] | $extract->eval($sfe),
+              a:   Any[1]                      | []]),
+      a:   Any[1]                                  | []
    ]);
+}
+
+// Confirms fe is one of the router's own specially-recognized from/with-family binding functions
+function meta::relational::mutation::executionPlan::isFromOrWithCall(fe: FunctionExpression[1]): Boolean[1]
+{
+   meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore([])
+      ->filter(p | $p.first->eval($fe))
+      ->isNotEmpty();
+}
+
+// Triggered when flatten() with a Variant source is detected from a non relational source (replaces write<T,Z> variant).
+function meta::relational::mutation::executionPlan::isVariantTempTableSource(source: ValueSpecification[1]): Boolean[1]
+{
+   $source->extractVariantCandidateFromCall()->filter(from | $from->meta::relational::mutation::executionPlan::isFromOrWithCall())->isNotEmpty();
 }
 
 // Returns true when the flatten expression's source matches toMany(@Variant, fromJson(...)).

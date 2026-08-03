@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
@@ -364,20 +365,20 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 }
                 if (result instanceof JsonStreamingResult)
                 {
-                    return ((JsonStreamingResult) result).toStream().map(Object::toString);
+                    return ((JsonStreamingResult) result).toStream();
                 }
                 throw new IllegalArgumentException("Unexpected Result Type : " + result.getClass().getName());
             }).onClose(() -> resultList.forEach(Result::close));
 
             // A JsonStreamingResult input (produced by serialize(...)) means this node is populating a single SemiStructured/JSON column temp table, not a normal tabular one
-            boolean isSemiStructuredIngest = resultList.stream().anyMatch(r -> r instanceof org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult);
+            boolean isSemiStructuredIngest = resultList.stream().allMatch(r -> r instanceof JsonStreamingResult);
             if (isSemiStructuredIngest)
             {
                 //serialize each streamed object to one JSON document and load it via a byte-size-bounded batched PreparedStatement (memory-bounded, no CSV).
                 RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
                 try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState))
                 {
-                    loadVariantTempTable(connectionManagerConnection, databaseCommands, createAndPopulateTempTableExecutionNode, inputStream);
+                    loadVariantTempTable(connectionManagerConnection, databaseCommands, createAndPopulateTempTableExecutionNode, (Stream<ObjectNode>) inputStream); //JsonStreamingResult will always produce Stream<ObjectNode>
                 }
                 catch (SQLException e)
                 {
@@ -1428,7 +1429,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
     }
 
     // Memory-bounded load of a single VARIANT-column temp table: each streamed object is serialized to one JSON document and bound into a batched PreparedStatement, flushed by byte-size threshold (never materializes the stream).
-    private void loadVariantTempTable(Connection connection, RelationalDatabaseCommands databaseCommands, CreateAndPopulateTempTableExecutionNode node, Stream<?> inputStream)
+    private void loadVariantTempTable(Connection connection, RelationalDatabaseCommands databaseCommands, CreateAndPopulateTempTableExecutionNode node, Stream<ObjectNode> inputStream)
     {
         String tableName = databaseCommands.processTempTableName(node.tempTableName);
         TempTableColumnMetaData semiStructuredColMeta = node.tempTableColumnMetaData.get(0);
@@ -1452,11 +1453,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         {
             long batchedBytes = 0;
             int batchedRows = 0;
-            Iterator<?> iterator = inputStream.iterator();
+            Iterator<ObjectNode> iterator = inputStream.iterator();
             while (iterator.hasNext())
             {
                 Object object = iterator.next();
-                String json = object instanceof String ? (String) object : OBJECT_MAPPER.writeValueAsString(object);
+                String json = OBJECT_MAPPER.writeValueAsString(object);
                 preparedStatement.setString(1, json);
                 preparedStatement.addBatch();
                 batchedBytes += json.length();

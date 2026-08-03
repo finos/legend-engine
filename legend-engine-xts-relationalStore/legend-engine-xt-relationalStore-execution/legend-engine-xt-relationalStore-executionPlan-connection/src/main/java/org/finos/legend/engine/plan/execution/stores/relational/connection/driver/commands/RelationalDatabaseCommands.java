@@ -58,7 +58,7 @@ public abstract class RelationalDatabaseCommands
 
     public String getSemiStructuredInsertStatement(String tableName, String columnName)
     {
-        return "INSERT INTO " + tableName + " (" + columnName + ") VALUES (?)";
+        throw new RuntimeException("Insert into semi structured column in temp table not implemented for " + this.getClass().getSimpleName());
     }
 
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)
