@@ -1,0 +1,85 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::query::average::*;
+import meta::external::store::relational::tests::*;
+import meta::relational::extension::*;
+import meta::pure::profiles::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::functions::asserts::*;
+
+Class meta::relational::tests::query::average::Average
+{
+   id: Integer[1];
+   one: Integer[1];
+   two: Integer[1];
+   myaverage() {$this.one->concatenate($this.two)->meta::pure::functions::math::average()}: Float[1];
+}
+
+function <<test.BeforePackage>> meta::relational::tests::query::average::setUp():Boolean[1]
+{
+   createTablesAndFillDb();
+}
+
+function meta::relational::tests::query::average::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime(averageDb).connectionByElement(averageDb)->cast(@TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(averageDb, 'Average', $connection);
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(averageDb, 'Average2', $connection);
+
+   executeInDb('insert into Average (id) values (1);', $connection);
+   executeInDb('insert into Average2 (id, one, two) values (1, 5, 10);', $connection);
+
+   true;
+}
+
+function <<test.Test>> meta::relational::tests::query::average::testAverageDerivedProperty():Boolean[1]
+{
+   let result = execute(|Average.all()->project([a | $a.myaverage], ['avg']), averageMapping, meta::external::store::relational::tests::testRuntime(averageDb), meta::relational::extension::relationalExtensions());
+   assertEquals(7.5, $result.values->at(0).rows->at(0).values->at(0));
+   assertSameSQL('select "average_1".aggCol as "avg" from Average as "root" left outer join (select "average_2".id as id, avg(1.0 * "unionalias_0"."one_two") as aggCol from Average as "average_2" left outer join (select "average2_0".one as "one_two", "average2_0".id as id from Average2 as "average2_0" union all select "average2_0".two as "one_two", "average2_0".id as id from Average2 as "average2_0") as "unionalias_0" on ("average_2".id = "unionalias_0".id) group by "average_2".id) as "average_1" on ("root".id = "average_1".id)', $result);
+}
+
+###Relational
+Database meta::relational::tests::query::average::averageDb
+(
+   Table Average
+   (
+      id INTEGER PRIMARY KEY
+   )
+   Table Average2
+   (
+      id INTEGER PRIMARY KEY,
+      one INTEGER,
+      two INTEGER
+   )
+
+   Join AverageJoin(Average.id = Average2.id)
+)
+
+###Mapping
+import meta::relational::tests::query::average::*;
+
+Mapping meta::relational::tests::query::average::averageMapping
+(
+   *Average: Relational
+   {
+      ~mainTable [averageDb]Average
+      id: [averageDb]Average.id,
+      one: [averageDb]@AverageJoin | Average2.one,
+      two: [averageDb]@AverageJoin | Average2.two
+   }
+)
