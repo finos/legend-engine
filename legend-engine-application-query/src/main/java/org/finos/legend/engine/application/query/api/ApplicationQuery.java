@@ -119,6 +119,27 @@ public class ApplicationQuery
     }
 
     @GET
+    @Path("{queryId}/history")
+    @ApiOperation(value = "Get all previous versions of the query with the specified ID, or a specific version when the 'version' query parameter is provided")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response getQueryHistory(@PathParam("queryId") String queryId,
+                                    @QueryParam("version") @ApiParam("Optional specific version to retrieve; if omitted, all versions are returned") Integer version)
+    {
+        try
+        {
+            return Response.ok(this.queryStoreManager.getQueryHistory(queryId, version)).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_ERROR, null);
+        }
+    }
+
+    @GET
     @Path("allQueries")
     @ApiOperation(value = "Get all queries within the specified index range [from, to)")
     @Consumes({MediaType.APPLICATION_JSON})
@@ -138,25 +159,6 @@ public class ApplicationQuery
         }
     }
 
-    @GET
-    @Path("{queryId}/history")
-    @ApiOperation(value = "Get all previous versions of the query with the specified ID")
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Response getQueryHistory(@PathParam("queryId") String queryId)
-    {
-        try
-        {
-            return Response.ok(this.queryStoreManager.getQueryHistory(queryId)).build();
-        }
-        catch (Exception e)
-        {
-            if (e instanceof ApplicationQueryException)
-            {
-                return ((ApplicationQueryException) e).toResponse();
-            }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.GET_QUERY_HISTORY_ERROR, null);
-        }
-    }
 
     @POST
     @ApiOperation(value = "Create a new query")
