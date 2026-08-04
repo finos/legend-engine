@@ -2551,6 +2551,7 @@ Database meta::relational::tests::milestoning::db(
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
    Filter NewActivityWithValidProduct(NewActivityInfoTable.productId > 0)
    Filter filterById(StockProductTable.id > 152 or StockProductTable.id < 123)
+   Filter StockClassificationOnTable(ProductClassificationTable.type='STOCK')
 )
 
 // Embedded mapping: LeafEntity inline within ChildEntity
