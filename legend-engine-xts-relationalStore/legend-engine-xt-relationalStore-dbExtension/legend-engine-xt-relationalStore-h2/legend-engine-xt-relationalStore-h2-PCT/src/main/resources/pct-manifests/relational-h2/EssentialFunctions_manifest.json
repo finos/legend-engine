@@ -595,12 +595,6 @@
     "test" : "meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_",
     "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"9999999999999992\"; SQL statement:\nselect cast('9999999999999992' as integer) [22018-214]"
   }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""
   }, {

@@ -158,6 +158,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rpad(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::rtrim(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::splitPart(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::stringToArray(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::strPos(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::substring(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::postgresNativeFunctions::string::upper(),
