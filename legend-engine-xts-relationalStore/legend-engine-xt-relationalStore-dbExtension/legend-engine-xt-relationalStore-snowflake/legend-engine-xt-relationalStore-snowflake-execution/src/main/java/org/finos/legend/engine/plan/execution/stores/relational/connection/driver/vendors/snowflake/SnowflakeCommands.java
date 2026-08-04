@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.QuoteMode;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
@@ -28,6 +30,13 @@ import java.util.stream.Collectors;
 public class SnowflakeCommands extends RelationalDatabaseCommands
 {
     private static final ImmutableMap<String, String> columnTypeToSqlTextMap = Maps.immutable.of("BIT", "BOOLEAN");
+    public static final CSVFormat TEMP_FILE_CSV_FORMAT = CSVFormat.DEFAULT.withQuoteMode(QuoteMode.ALL_NON_NULL);
+
+    @Override
+    public CSVFormat getCsvFormatForTempFile()
+    {
+        return TEMP_FILE_CSV_FORMAT;
+    }
 
     @Override
     public String processTempTableName(String tempTableName)

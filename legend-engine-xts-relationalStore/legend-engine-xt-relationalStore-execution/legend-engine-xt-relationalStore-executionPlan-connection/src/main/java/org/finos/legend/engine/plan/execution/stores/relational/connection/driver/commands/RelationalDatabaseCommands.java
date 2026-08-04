@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands;
 
+import org.apache.commons.csv.CSVFormat;
+
 import java.util.List;
 
 public abstract class RelationalDatabaseCommands
@@ -49,6 +51,11 @@ public abstract class RelationalDatabaseCommands
     public boolean supportsHeaderOnCsvFile()
     {
         return true;
+    }
+
+    public CSVFormat getCsvFormatForTempFile()
+    {
+        return CSVFormat.DEFAULT;
     }
 
     public String createTempTable(String tableName, List<Column> columns)
