@@ -66,6 +66,7 @@ import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestSuiteSession;
+import org.finos.legend.engine.testable.helper.TestExecutionContextHelper;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
@@ -74,6 +75,7 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_metamodel_MappingTestSuite;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -208,7 +210,7 @@ public class MappingTestRunner implements TestRunner
             // generate and cache one. Tests whose connections match (by identity) share the plan.
             SingleExecutionPlan plan = (sharedPlan != null)
                     ? sharedPlan.plan
-                    : context.getOrComputePlan(connections.getOne(), () -> generatePlan(buildRuntime(connections.getOne(), context), context, false)).plan;
+                    : context.getOrComputePlan(connections.getOne(), () -> generatePlan(buildRuntime(connections.getOne(), context), context, hints, false)).plan;
             // execute assertion
             TestAssertion assertion = mappingTest.assertions.get(0);
             Result result = this.executor.executeWithArgs(PlanExecutor.withArgs().withPlan(plan).build());
@@ -270,7 +272,7 @@ public class MappingTestRunner implements TestRunner
         {
             Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> modifiedFunctionForTestExecution = this.modifyFunctionForTestExecution(context, mappingTest.storeTestData);
             testOwnedCloseables = Lists.mutable.withAll(modifiedFunctionForTestExecution.getTwo().getTwo());
-            SingleExecutionPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, false).plan;
+            SingleExecutionPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, TestConnectionBuildParameters.NONE, false).plan;
             TestAssertion assertion = mappingTest.assertions.get(0);
             Result result = this.executor.executeWithArgs(PlanExecutor.withArgs().withPlan(plan).build());
             AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW, relationAssertionColumnTypes));
@@ -295,7 +297,7 @@ public class MappingTestRunner implements TestRunner
         {
             Pair<FunctionDefinition<?>, Pair<Connection, List<Closeable>>> modifiedFunctionForTestExecution = this.modifyFunctionForTestExecution(context, mappingTest.storeTestData);
             testOwnedCloseables = Lists.mutable.withAll(modifiedFunctionForTestExecution.getTwo().getTwo());
-            GeneratedPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, true);
+            GeneratedPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, TestConnectionBuildParameters.NONE, true);
             TestExecutionPlanDebug executionPlanDebug = new TestExecutionPlanDebug();
             executionPlanDebug.executionPlan = plan.plan;
             executionPlanDebug.debug = plan.debug;
@@ -367,7 +369,7 @@ public class MappingTestRunner implements TestRunner
             {
                 Pair<MutableList<Connection>, MutableList<Closeable>> connections = buildTestConnections(resolveStoreTestData(mappingTest, context), context, hints);
                 testOwnedCloseables = connections.getTwo();
-                plan = context.getOrComputePlan(connections.getOne(), () -> generatePlan(buildRuntime(connections.getOne(), context), context, true));
+                plan = context.getOrComputePlan(connections.getOne(), () -> generatePlan(buildRuntime(connections.getOne(), context), context, hints, true));
             }
             TestExecutionPlanDebug executionPlanDebug = new TestExecutionPlanDebug();
             executionPlanDebug.executionPlan = plan.plan;
@@ -435,21 +437,22 @@ public class MappingTestRunner implements TestRunner
         return runtime;
     }
 
-    private GeneratedPlan generatePlan(Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, boolean debug)
+    private GeneratedPlan generatePlan(Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, TestConnectionBuildParameters hints, boolean debug)
     {
-        return generatePlan(context.getMetamodelTestSuite()._query(), this.pureMapping, runtime, context, debug);
+        return generatePlan(context.getMetamodelTestSuite()._query(), this.pureMapping, runtime, context, hints, debug);
     }
 
-    private GeneratedPlan generatePlan(FunctionDefinition<?> query, Mapping mapping, Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, boolean debug)
+    private GeneratedPlan generatePlan(FunctionDefinition<?> query, Mapping mapping, Root_meta_core_runtime_Runtime runtime, MappingTestRunnerContext context, TestConnectionBuildParameters hints, boolean debug)
     {
         // The context's router extensions are safe to share across concurrent generations
         // because buildMappingContext pre-warmed their per-version serializer extensions.
+        Root_meta_pure_runtime_ExecutionContext executionContext = TestExecutionContextHelper.executionContextFor(hints, context.getPureModel());
         if (debug)
         {
-            PlanWithDebug plan = PlanGenerator.generateExecutionPlanDebug(query, mapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
+            PlanWithDebug plan = PlanGenerator.generateExecutionPlanDebug(query, mapping, runtime, executionContext, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers());
             return new GeneratedPlan(plan.plan, Arrays.asList(plan.debug));
         }
-        return new GeneratedPlan(PlanGenerator.generateExecutionPlan(query, mapping, runtime, null, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers()), null);
+        return new GeneratedPlan(PlanGenerator.generateExecutionPlan(query, mapping, runtime, executionContext, context.getPureModel(), this.pureVersion, PlanPlatform.JAVA, null, context.getRouterExtensions(), context.getExecutionPlanTransformers()), null);
     }
 
     private MappingTestSuite getProtocolSuite(Root_meta_pure_test_TestSuite testSuite, PureModel pureModel, PureModelContextData data)
@@ -590,7 +593,7 @@ public class MappingTestRunner implements TestRunner
                         closeAll(rebuilt.getTwo());
                     }
                 }
-                GeneratedPlan plan = generatePlan(buildRuntime(planConnections.getOne(), this.context), this.context, this.debug);
+                GeneratedPlan plan = generatePlan(buildRuntime(planConnections.getOne(), this.context), this.context, this.hints, this.debug);
                 if (planCloseables != null)
                 {
                     registerCloseables(planCloseables);

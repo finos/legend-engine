@@ -953,6 +953,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     rpad_String_1__Integer_1__String_1__String_1_,
     left_String_1__Integer_1__String_1_,
     right_String_1__Integer_1__String_1_,
+    substr_String_1__Integer_1__String_1_,
+    substr_String_1__Integer_1__Integer_1__String_1_,
     typeName_Any_1__String_1_,
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,

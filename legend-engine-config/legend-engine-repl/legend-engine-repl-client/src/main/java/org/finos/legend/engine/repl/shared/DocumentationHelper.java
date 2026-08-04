@@ -61,9 +61,7 @@ public class DocumentationHelper
         String path = definition._package + "::" + name;
         String src = MODULE_URLS.get(functionDocumentation.reportScope.module) + definition.sourceId;
         String grouping = definition.sourceId.substring(functionDocumentation.reportScope.filePath.length(), definition.sourceId.lastIndexOf("/"));
-        // NOTE: make assumption that each function has doc/usage on exactly one of the signatures
         String syntax = ListIterate.detectOptional(definition.signatures, signature -> signature.grammarCharacter != null).map(s -> s.grammarCharacter).orElse(null);
-        String doc = ListIterate.detectOptional(definition.signatures, signature -> signature.documentation != null).map(s -> s.documentation).orElse(null);
         String usage = ListIterate.detectOptional(definition.signatures, signature -> signature.grammarDoc != null).map(s -> s.grammarDoc).orElse(null);
 
         Lists.mutable.with(syntax != null ? ansiGreen(syntax) : null)
@@ -74,10 +72,16 @@ public class DocumentationHelper
         builder.append(ansiAttr("path")).append(path).append("\n");
         builder.append(ansiAttr("grouping")).append("(" + functionDocumentation.reportScope.module + ") " + grouping).append("\n");
         builder.append(ansiAttr("src")).append(src).append("\n");
-        if (doc != null)
+        // each overload carries its own documentation, so qualify with the signature when there is more than one
+        boolean qualifyDoc = definition.signatures.size() > 1;
+        ListIterate.forEach(definition.signatures, signature ->
         {
-            builder.append(ansiAttr("doc")).append(ArrayIterate.makeString(wrap(doc).split("\n"), "\n" + ansiAttr(null))).append("\n");
-        }
+            if (signature.documentation != null)
+            {
+                String body = (qualifyDoc ? signature.simple.substring(definition._package.length() + 2) + "\n" : "") + signature.documentation;
+                builder.append(ansiAttr("doc")).append(ArrayIterate.makeString(wrapDocumentation(body).split("\n"), "\n" + ansiAttr(null))).append("\n");
+            }
+        });
         if (usage != null)
         {
             builder.append(ansiAttr("usage")).append(usage).append("\n");
@@ -109,6 +113,30 @@ public class DocumentationHelper
         builder.append("\n").append(StringUtils.rightPad("compatibility", maxKeyLength + 2)).append(" :").append("\n");
         builder.append(adapters.collect(adapter -> StringUtils.rightPad("  " + adapter, maxKeyLength + 2) + " : " + matrix.getOrDefault(adapter, "∅")).makeString("\n"));
         return builder.toString();
+    }
+
+    /**
+     * Wraps each line independently. {@link REPLHelper#wrap} does not reset its column counter at an
+     * existing newline, so applying it to a whole multi-line document breaks lines mid-token. Fenced
+     * blocks are left alone so runnable examples stay runnable.
+     */
+    private static String wrapDocumentation(String documentation)
+    {
+        MutableList<String> lines = Lists.mutable.empty();
+        boolean fenced = false;
+        for (String line : documentation.split("\n", -1))
+        {
+            if (line.trim().startsWith("```"))
+            {
+                fenced = !fenced;
+                lines.add(line);
+            }
+            else
+            {
+                lines.add(fenced || line.isEmpty() ? line : wrap(line));
+            }
+        }
+        return lines.makeString("\n");
     }
 
     private static String ansiAttr(String attr)

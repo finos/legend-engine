@@ -112,8 +112,8 @@ public class PCT_to_SimpleHTML
                                 row.add(printFuncSignatures(d));
                                 if (!d.functionDefinition.signatures.isEmpty() && d.functionDefinition.signatures.get(0).platformOnly && adapterQualifiers.isEmpty())
                                 {
-                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "/" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
-                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.testCount + "/" + d.functionDefinition.testCount + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
+                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.getTestCount() + "/" + d.functionDefinition.getTestCount() + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
+                                    row.add("          <div style='color:#00C72B' class='hover-text'>" + d.functionDefinition.getTestCount() + "/" + d.functionDefinition.getTestCount() + "<div class='tooltip-text' id='top'>Platform_function Tests are executed outside of PCT</div></div>");
                                     for (int i = 0; i < orderedAdapters.size() - 2; i++)
                                     {
                                         // Should not have any tests...
@@ -273,7 +273,7 @@ public class PCT_to_SimpleHTML
         {
             return f.signatures.stream().map(x ->
                     "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.simple.substring(x.simple.indexOf(f.name + "("))) + "</td>"
-                            + "<td style='text-align: left;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>"
+                            + "<td style='text-align: left;white-space: pre-wrap;'>" + StringEscapeUtils.escapeHtml4(x.documentation != null ? x.documentation : "") + "</td>"
             ).collect(Collectors.joining("<tr></tr>", "<table style='width:1000; table-layout: fixed;'><tr>\n", "</tr></table>"));
         }
     }

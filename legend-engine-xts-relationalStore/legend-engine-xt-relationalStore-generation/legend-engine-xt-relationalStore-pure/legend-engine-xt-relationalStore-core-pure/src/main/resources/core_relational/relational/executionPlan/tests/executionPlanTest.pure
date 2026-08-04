@@ -1445,6 +1445,24 @@ function <<test.Test>> meta::pure::executionPlan::tests::testFilterWithOpenVaria
       ')\n',$result->planToString(meta::relational::extension::relationalExtensions()));
 }
 
+// toSQLString cannot carry an ExecutionContext, so the flag is exercised through plan generation.
+function <<test.Test>> meta::pure::executionPlan::tests::testSubstringIndexingCorrectedByFeatureFlag():Boolean[1]
+{
+   let extensions = meta::relational::extension::relationalExtensions();
+   let query = {|meta::relational::tests::model::simple::Person.all()->project(p|substring($p.firstName, 4, 9), 'slice')};
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let corrected = executionPlan($query, meta::relational::tests::simpleRelationalMapping, $runtime,
+                                 ^ExecutionOptionContext(executionOptions = ^FeatureFlagOption(flags = meta::pure::executionPlan::features::Feature.CORRECT_SQL_SUBSTRING_INDEXING)),
+                                 $extensions)->planToString($extensions);
+   assert($corrected->contains('substring("root".FIRSTNAME, 5, 5)'), |$corrected);
+
+   let uncorrected = executionPlan($query, meta::relational::tests::simpleRelationalMapping, $runtime,
+                                   ^meta::pure::runtime::ExecutionContext(),
+                                   $extensions)->planToString($extensions);
+   assert($uncorrected->contains('substring("root".FIRSTNAME, 4, 9)'), |$uncorrected);
+}
+
 Class meta::pure::executionPlan::tests::DummyExecutionOption extends ExecutionOption
 {
    paramsRequired(){ ^PlanVarPlaceHolder(name = 'dummyOptionParam', genericType = ^GenericType(rawType = String), multiplicity = PureOne) }:PlanVarPlaceHolder[1];

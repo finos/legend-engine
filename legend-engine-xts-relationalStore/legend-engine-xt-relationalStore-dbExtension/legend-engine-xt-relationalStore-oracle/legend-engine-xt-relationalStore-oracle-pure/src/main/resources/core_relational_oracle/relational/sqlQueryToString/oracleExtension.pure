@@ -249,7 +249,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract(second from %s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='standard_hash(%s, \'SHA1\')')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='standard_hash(%s, \'SHA256\')')),
-    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substr%s', transform={p:String[*]|$p->transformSubstring()})),
+    // Index correction lives in processSubstring/processSubstr, so this only renames the function.
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substr%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
@@ -272,15 +273,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::transformSubstring(params:String[*]):String[1]
-{
-  '(' + $params->at(0) + ',' + plus([$params->at(1)->toOne()->parseInteger(),1])->toString() + 
-                                  if($params->size() > 2, 
-                                                        | let length = $params->at(2)->parseInteger() - $params->at(1)->parseInteger();
-                                                          ',' + $length->toString() + ')';, 
-                                                        | ')');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::generateDateDiffExpressionForOracle(params:String[*]):String[1]

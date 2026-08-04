@@ -69,6 +69,7 @@ import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestSuiteSession;
+import org.finos.legend.engine.testable.helper.TestExecutionContextHelper;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
@@ -84,6 +85,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSi
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.generated.core_service_service_helperFunctions;
@@ -412,21 +414,22 @@ public class ServiceTestRunner implements TestRunner
             }
 
             SingleExecutionPlan singleExecutionPlan;
+            Root_meta_pure_runtime_ExecutionContext executionContext = TestExecutionContextHelper.executionContextFor(this.hints, this.pureModel);
             if (nonStoreRelationFunction != null)
             {
                 singleExecutionPlan = org.finos.legend.engine.plan.generation.PlanGenerator.generateExecutionPlan(
-                        nonStoreRelationFunction, null, null, null, this.pureModel,
+                        nonStoreRelationFunction, null, null, executionContext, this.pureModel,
                         ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             }
             else if (storeResolversPlanInputs != null)
             {
                 singleExecutionPlan = org.finos.legend.engine.plan.generation.PlanGenerator.generateExecutionPlan(
-                        storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, null,
+                        storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, executionContext,
                         this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             }
             else
             {
-                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, executionContext, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
                 singleExecutionPlan = (SingleExecutionPlan) executionPlan;
             }
             JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
@@ -535,15 +538,16 @@ public class ServiceTestRunner implements TestRunner
                     }
                     pureSingleExecution.executionOptions = param.executionOptions;
                     SingleExecutionPlan singleExecutionPlan;
+                    Root_meta_pure_runtime_ExecutionContext executionContext = TestExecutionContextHelper.executionContextFor(this.hints, this.pureModel);
                     if (storeResolversPlanInputs != null)
                     {
                         singleExecutionPlan = PlanGenerator.generateExecutionPlan(
-                                storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, null,
+                                storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, executionContext,
                                 this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
                     }
                     else
                     {
-                        ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+                        ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, executionContext, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
                         singleExecutionPlan = (SingleExecutionPlan) executionPlan;
                     }
                     JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());

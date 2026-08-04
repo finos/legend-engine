@@ -112,19 +112,10 @@
     "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_",
     "expectedError" : "Could not choose a best candidate operator. Explicit type casts must be added."
   }, {
-    "test" : "meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'ab'\nactual:   ''"
-  }, {
     "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "Padding string must not be empty"
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
     "expectedError" : "expected: 'Hello World'\nactual:   'H'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'xoXoXoX'\nactual:   'XoXoXoX'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'XOxOxOx'\nactual:   'xOxOxOx'"
   } ]
 }

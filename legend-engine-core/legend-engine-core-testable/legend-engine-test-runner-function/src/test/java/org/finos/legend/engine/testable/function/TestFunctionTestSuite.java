@@ -206,6 +206,28 @@ public class TestFunctionTestSuite
         Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
     }
 
+    // Relation-returning tests run on DuckDB with CORRECT_SQL_SUBSTRING_INDEXING set, so substring
+    // follows Pure's indexing rather than passing the indices straight through to SQL.
+    @Test
+    public void testRelationFunctionTestCorrectsSubstringIndexing()
+    {
+        List<TestResult> results = executeFunctionTest("legend-testable-function-test-relation-substring.pure", "model::SubstringQuery__Relation_1_");
+        Assert.assertEquals(1, results.size());
+        Assert.assertTrue(results.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) results.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testTabularDataSetFunctionTestKeepsSubstringIndexing()
+    {
+        List<TestResult> results = executeFunctionTest("legend-testable-function-test-relation-substring.pure", "model::SubstringTdsQuery__TabularDataSet_1_");
+        Assert.assertEquals(1, results.size());
+        Assert.assertTrue(results.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) results.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
     @Test
     public void testModelRelationFunctionTest()
     {

@@ -123,11 +123,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""
   } ]
 }

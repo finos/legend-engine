@@ -2409,6 +2409,8 @@ public class Handlers
         register("meta::pure::functions::string::reverseString_String_1__String_1_", "reverseString", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::split_String_1__String_1__String_MANY_", "split", true, ps -> res("String", "zeroMany"));
         register("meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_", "splitPart", false, ps -> res("String", "zeroOne"));
+        register(m(m(h("meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_", "substr", false, ps -> res("String", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::substr_String_1__Integer_1__String_1_", "substr", false, ps -> res("String", "one"), ps -> true))));
         register(m(m(h("meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::string::substring_String_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> true))));
         register("meta::pure::functions::string::toLower_String_1__String_1_", "toLower", true, ps -> res("String", "one"));
@@ -2692,6 +2694,7 @@ public class Handlers
         register("meta::pure::functions::math::pow_Number_1__Number_1__Number_1_", "pow", true, ps -> res("Number", "one"));
         register("meta::pure::functions::math::rem_Number_1__Number_1__Number_1_", "rem", true, ps -> res("Number", "one"));
         register("meta::pure::functions::math::sqrt_Number_1__Float_1_", "sqrt", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::binFloor_Integer_1__Integer_1__Integer_1_", "binFloor", false, ps -> res("Integer", "one"));
 
         register(m(
                     m(

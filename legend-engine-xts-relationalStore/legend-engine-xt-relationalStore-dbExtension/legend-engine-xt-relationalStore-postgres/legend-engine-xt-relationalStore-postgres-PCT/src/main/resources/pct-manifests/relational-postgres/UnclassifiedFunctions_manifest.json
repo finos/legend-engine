@@ -72,11 +72,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""
   } ]
 }
