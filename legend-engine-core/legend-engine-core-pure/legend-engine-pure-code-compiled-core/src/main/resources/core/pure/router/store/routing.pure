@@ -191,9 +191,26 @@ function meta::pure::router::store::routing::potentiallyRouteRelationFunctionSet
       t:RelationFunctionInstanceSetImplementation[1]|^$t(relationFunction=$t->potentiallyRouteRelationFunction($mapping, $runtime, $extensions)),
       e:EmbeddedSetImplementation[1]|$e,
       s:InstanceSetImplementation[1]|$s,
-      o:OperationSetImplementation[1]|^$o(parameters = $o.parameters->map(i| ^$i(setImplementation=if($o.id == 'embedded_operation', |$i.setImplementation->toOne(), |$mapping->classMappingById($i.id)->toOne())->potentiallyRouteRelationFunctionSet($mapping, $runtime, $extensions))))
+      o:OperationSetImplementation[1]|if($o->isOperationSetRouted(),
+                                        |$o,
+                                        |^$o(parameters = $o.parameters->map(i|^$i(setImplementation = if($o.id == 'embedded_operation' || !$i.setImplementation->isEmpty(),
+                                                                                                         |$i.setImplementation->toOne(),
+                                                                                                         |$mapping->classMappingById($i.id)->toOne())->potentiallyRouteRelationFunctionSet($mapping, $runtime, $extensions))
+                                                                                                       )
+                                        )
+                                      )
     ]
   );
+}
+
+function meta::pure::router::store::routing::isOperationSetRouted(o:OperationSetImplementation[1]):Boolean[1]
+{
+  let members = $o.parameters.setImplementation;
+  !$members->isEmpty() && $members->forAll(m | $m->match([
+         r:RelationFunctionInstanceSetImplementation[1] | $r->isRelationFunctionRouted(),
+         o:OperationSetImplementation[1]                | $o->isOperationSetRouted(),
+         a:SetImplementation[1]                         | true
+  ]));
 }
 
 function meta::pure::router::store::routing::isRelationFunctionRouted(r:RelationFunctionInstanceSetImplementation[1]):Boolean[1]
@@ -351,12 +368,12 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
   // Routed relation function set maybe cached in classMappingsByClass, if not route and update cache
   let newlyRoutedRelFuncMappings = $unroutedRelFuncMappings->map(unroutedMapping | $mappingsFromCache->filter(mc|$mc.id == $unroutedMapping.id)->defaultIfEmpty($unroutedMapping)->toOne()->potentiallyRouteRelationFunctionSet($strategy.mapping, $strategy.runtime, $extensions));
   let routedNonRelFuncMappings = $nonRelFuncMappings->map(cm | $cm->match([
-      o:OperationSetImplementation[1] | $mappingsFromCache->filter(mc | $mc.id == $o.id)->defaultIfEmpty($o)->toOne()->potentiallyRouteRelationFunctionSet($strategy.mapping, $strategy.runtime, $extensions),
+      o:OperationSetImplementation[1] | if($o->isOperationSetRouted(), |$o, |$mappingsFromCache->filter(mc | $mc.id == $o.id)->defaultIfEmpty($o)->toOne()->potentiallyRouteRelationFunctionSet($strategy.mapping, $strategy.runtime, $extensions)),
       erf:EmbeddedRelationFunctionSetImplementation[1] | $erf->potentiallyRouteRelationFunctionSet($strategy.mapping, $strategy.runtime, $extensions),
       a:SetImplementation[1] | $a
   ]));
-  let updatedClassMappings = $routedNonRelFuncMappings->concatenate($alreadyRoutedRelFuncMappings)->concatenate($newlyRoutedRelFuncMappings);
-  let updatedMappingsFromCache = $mappingsFromCache->map(mappingFromCache | $alreadyRoutedRelFuncMappings->concatenate($newlyRoutedRelFuncMappings)->concatenate($routedNonRelFuncMappings)->filter(rm|$rm.id == $mappingFromCache.id)->defaultIfEmpty($mappingFromCache));
+  let updatedClassMappings = $routedNonRelFuncMappings->concatenate($alreadyRoutedRelFuncMappings)->concatenate($newlyRoutedRelFuncMappings)->removeDuplicatesBy(x|$x.id);
+  let updatedMappingsFromCache = $mappingsFromCache->map(mappingFromCache | $alreadyRoutedRelFuncMappings->concatenate($newlyRoutedRelFuncMappings)->concatenate($routedNonRelFuncMappings)->filter(rm|$rm.id == $mappingFromCache.id)->defaultIfEmpty($mappingFromCache))->removeDuplicatesBy(x|$x.id);
   let updatedRoutingStrategy = ^$strategy(classMappingsByClass = $strategy.classMappingsByClass->put($c, list($updatedMappingsFromCache)));
   pair(list($updatedClassMappings), $updatedRoutingStrategy);
 }
