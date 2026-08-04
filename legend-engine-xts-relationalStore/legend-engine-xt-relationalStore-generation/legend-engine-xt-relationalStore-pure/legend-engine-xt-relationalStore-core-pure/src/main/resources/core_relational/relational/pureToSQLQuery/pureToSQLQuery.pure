@@ -4963,9 +4963,7 @@ function meta::relational::functions::pureToSqlQuery::applyTypeFilter(base:Selec
                  ,| applyJoinInTree($base.select.data->toOne(), $base.currentTreeNode->toOne(), $filterMapping->toOne().joinTreeNode->toOne(), $base, $nodeId, JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);
                );
           let milestonedFilterQuery = $baseFilterQuery->applyFilterJoinMilestoning($hasJoin, $base.milestoningContext, $state, $extensions);
-
           let select = $milestonedFilterQuery.select;
-
           let lastNode = $milestonedFilterQuery.currentTreeNode->toOne()->findLastJoinTreeNode();
           ^$milestonedFilterQuery(
                    select = ^$select(
