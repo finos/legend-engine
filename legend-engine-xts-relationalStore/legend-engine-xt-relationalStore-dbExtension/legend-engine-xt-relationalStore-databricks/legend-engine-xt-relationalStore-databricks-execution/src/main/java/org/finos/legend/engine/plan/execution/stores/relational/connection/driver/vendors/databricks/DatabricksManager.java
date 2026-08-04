@@ -58,7 +58,7 @@ public class DatabricksManager extends DatabaseManager
                 throw new EngineException("Unsupported protocol [" + protocol + "]");
         }
 
-        return String.format("jdbc:databricks://%s:%s/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=%s;ssl=%s;EnableArrow=0;EnableTelemetry=0;httpPath=%s",
+        return String.format("jdbc:databricks://%s:%s/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=%s;ssl=%s;EnableArrow=1;EnableTelemetry=0;httpPath=%s",
                 hostname,
                 dbport,
                 transportMode,

@@ -94,7 +94,7 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
 
         String url = extractURL(profile);
         Assert.assertEquals(
-                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=0;EnableTelemetry=0;httpPath=/httpPath",
+                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=1;EnableTelemetry=0;httpPath=/httpPath",
                 url
         );
 
@@ -128,7 +128,7 @@ public class DatabricksDataSourceSpecificationTest extends DatabricksDataSourceS
                 oauthStrategy
         );
         Assert.assertEquals(
-                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=0;EnableTelemetry=0;httpPath=/httpPath",
+                "jdbc:databricks://hostname:443/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=http;ssl=1;EnableArrow=1;EnableTelemetry=0;httpPath=/httpPath",
                 url
         );
     }

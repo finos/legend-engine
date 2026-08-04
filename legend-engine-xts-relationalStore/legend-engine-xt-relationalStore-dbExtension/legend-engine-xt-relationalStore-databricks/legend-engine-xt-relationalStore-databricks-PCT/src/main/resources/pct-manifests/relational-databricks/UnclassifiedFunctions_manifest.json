@@ -7,12 +7,6 @@
     "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
   }, {
-    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
   }, {

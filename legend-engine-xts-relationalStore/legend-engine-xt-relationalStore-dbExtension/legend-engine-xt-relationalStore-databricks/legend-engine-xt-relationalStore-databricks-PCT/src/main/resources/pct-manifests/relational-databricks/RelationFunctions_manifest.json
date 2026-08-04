@@ -1,9 +1,6 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_GROUP_BY] The query does not include a GROUP BY clause. Add GROUP BY or turn it into the window functions using OVER clauses."
-  }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_",
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
@@ -17,7 +14,7 @@
     "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW]"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_",
     "expectedError" : "Error running query: [PARSE_SYNTAX_ERROR]"
@@ -32,46 +29,13 @@
     "expectedError" : "\"pivot is not supported\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks\""
+    "expectedError" : "[DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES]"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Databricks"
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'[3]\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'[]\\'\\n#'\nactual:   '#TDS\\n   id,payload,fromRow,toRow,sliced\\n   0,\\'null\\',1,2,\\'null\\'\\n   1,\\'[1,2,3,4,5,6]\\',2,3,\\'[3]\\'\\n   2,\\'[1,2,3,4,5,6]\\',0,4,\\'[1,2,3,4]\\'\\n   3,\\'[1,2,3,4,5,6]\\',-3,-1,\\'[1,2]\\'\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
@@ -92,34 +56,34 @@
     "expectedError" : "\"pivot is not supported\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function."
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Error running query: [UNSUPPORTED_EXPR_FOR_WINDOW]"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function."
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[UNSUPPORTED_EXPR_FOR_WINDOW] Expression \"array_join(array(name), )\" not supported within a window function. SQLSTATE: 42P20;"
+    "expectedError" : "[MISSING_GROUP_BY]"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
@@ -127,62 +91,8 @@
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Databricks"
+    "expectedError" : "The third parameter requires the \"INT\" type"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
@@ -340,31 +250,19 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   }, {
-    "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
-    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Databricks\""
-  }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,firstFlattened,secondFlattened,value\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[-2,-1,0]}\\',-2\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',2\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',4\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[7,8,9]}]}\\',\\'{\"innerKey\":[7,8,9]}\\',8\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',2\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[10,11,12]}]}\\',\\'{\"innerKey\":[10,11,12]}\\',10\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[13,14,15]}]}\\',\\'{\"innerKey\":[13,14,15]}\\',14\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',4\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[16,17,18]}]}\\',\\'{\"innerKey\":[16,17,18]}\\',16\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[19,20,21]}]}\\',\\'{\"innerKey\":[19,20,21]}\\',20\\n#'\nactual:   '#TDS\\n   id,payload,firstFlattened,secondFlattened,value\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,firstFlattened,secondFlattened,value\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[-2,-1,0]}\\',-2\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[-2,-1,0]}\\',-1\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[-2,-1,0]}\\',0\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',1\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',2\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',3\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',4\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',5\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',6\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[7,8,9]}]}\\',\\'{\"innerKey\":[7,8,9]}\\',7\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[7,8,9]}]}\\',\\'{\"innerKey\":[7,8,9]}\\',8\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'{\"key\":[{\"innerKey\":[7,8,9]}]}\\',\\'{\"innerKey\":[7,8,9]}\\',9\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',1\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',2\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[1,2,3]}]}\\',\\'{\"innerKey\":[1,2,3]}\\',3\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[10,11,12]}]}\\',\\'{\"innerKey\":[10,11,12]}\\',10\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[10,11,12]}]}\\',\\'{\"innerKey\":[10,11,12]}\\',11\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[10,11,12]}]}\\',\\'{\"innerKey\":[10,11,12]}\\',12\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[13,14,15]}]}\\',\\'{\"innerKey\":[13,14,15]}\\',13\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[13,14,15]}]}\\',\\'{\"innerKey\":[13,14,15]}\\',14\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'{\"key\":[{\"innerKey\":[13,14,15]}]}\\',\\'{\"innerKey\":[13,14,15]}\\',15\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',4\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',5\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[4,5,6]}]}\\',\\'{\"innerKey\":[4,5,6]}\\',6\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[16,17,18]}]}\\',\\'{\"innerKey\":[16,17,18]}\\',16\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[16,17,18]}]}\\',\\'{\"innerKey\":[16,17,18]}\\',17\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[16,17,18]}]}\\',\\'{\"innerKey\":[16,17,18]}\\',18\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[19,20,21]}]}\\',\\'{\"innerKey\":[19,20,21]}\\',19\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[19,20,21]}]}\\',\\'{\"innerKey\":[19,20,21]}\\',20\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'{\"key\":[{\"innerKey\":[19,20,21]}]}\\',\\'{\"innerKey\":[19,20,21]}\\',21\\n#'\nactual:   '#TDS\\n   id,payload,firstFlattened,secondFlattened,value\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   1,\\'[{\"key\":[{\"innerKey\":[-2,-1,0]},{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[7,8,9]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   2,\\'[{\"key\":[{\"innerKey\":[1,2,3]}]},{\"key\":[{\"innerKey\":[10,11,12]}]},{\"key\":[{\"innerKey\":[13,14,15]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n   3,\\'[{\"key\":[{\"innerKey\":[4,5,6]}]},{\"key\":[{\"innerKey\":[16,17,18]}]},{\"key\":[{\"innerKey\":[19,20,21]}]}]\\',\\'\"{\"\\',\\'null\\',null\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
+    "expectedError" : "\"[1,2]\""
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
+    "expectedError" : "\nexpected: '#TDS\\n   variant\\n   \\'{\"hello\":[1,2]}\\'\\n   \\'{\"variant\":[3,4]}\\'\\n#'\nactual:   '#TDS\\n   variant\\n   \\'\"{\"\\'\\n   \\'\"{\"\\'\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Databricks"
+    "expectedError" : "[INVALID_EXTRACT_BASE_FIELD_TYPE]"
   } ]
 }
