@@ -43,7 +43,11 @@ function meta::external::language::java::transform::generateJavaMethodBody(vses:
 function <<access.private>>  meta::external::language::java::transform::generateJavaMethodBody(vses: ValueSpecification[*], conventions: Conventions[1], returnType:meta::external::language::java::metamodel::Type[1], debug: DebugContext[1]):Code[1]
 {
    assert($vses->isNotEmpty(), 'Method body must have at least one expression');
-   $vses->statementsForBlock($conventions, $returnType, $debug)->j_block();
+   let cleanConventions = ^$conventions(
+      providedVariables = ^Map<String,Code>(),
+      variablesInScope  = []
+   );
+   $vses->statementsForBlock($cleanConventions, $returnType, $debug)->j_block();
 }
 
 function <<access.private>> meta::external::language::java::transform::statementsForBlock(vses:ValueSpecification[*], conventions: Conventions[1], debug: DebugContext[1]):Code[*]
