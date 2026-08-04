@@ -83,9 +83,7 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-diagram-pure</artifactId>
-            <version>${legend.pure.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -112,7 +110,7 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
+            <scope>runtime</scope>
         </dependency>
-
     </dependencies>
 </project>
