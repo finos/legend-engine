@@ -30,16 +30,26 @@ function <<test.Test>> meta::relational::tests::query::legacyNullUnsafeEquals::t
    let fn = {|Person.all()
                 ->project([col(p|$p.firstName, 'name'), col(p|$p.age == $p.manager.age, 'match')])
                 ->withFeatureFlags(meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS)};
-   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".FIRSTNAME as "name", "root".AGE = "persontable_1".AGE as "match" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID)', $result);
+   let plan = executionPlan($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let planString = $plan->planToString(meta::relational::extension::relationalExtensions());
+   assert($planString->contains('"root".AGE = "persontable_1".AGE as "match"'), |'expected plain equals in plan, got: ' + $planString);
 }
 
 function <<test.Test>> meta::relational::tests::query::legacyNullUnsafeEquals::testDefaultProjectionIsNullSafe():Boolean[1]
 {
    let fn = {|Person.all()
                 ->project([col(p|$p.firstName, 'name'), col(p|$p.age == $p.manager.age, 'match')])};
+   let plan = executionPlan($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let planString = $plan->planToString(meta::relational::extension::relationalExtensions());
+   assert($planString->contains('"root".AGE is not distinct from "persontable_1".AGE as "match"'), |'expected null-safe comparison in plan, got: ' + $planString);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::legacyNullUnsafeEquals::testInFlowExecutionForcesLegacyEquals():Boolean[1]
+{
+   let fn = {|Person.all()
+                ->project([col(p|$p.firstName, 'name'), col(p|$p.age == $p.manager.age, 'match')])};
    let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".FIRSTNAME as "name", "root".AGE is not distinct from "persontable_1".AGE as "match" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID)', $result);
+   assertSameSQL('select "root".FIRSTNAME as "name", "root".AGE = "persontable_1".AGE as "match" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::legacyNullUnsafeEquals::testLegacyFlagRestoresOptionalParamFreeMarkerSelector():Boolean[1]

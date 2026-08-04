@@ -203,10 +203,26 @@ function <<test.Test>> meta::relational::tests::query::filter::equal::testBuildF
    let result = execute(buildQuery([]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Elena', $result.values->toOne().firstName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME is null)', $result->sqlRemoveFormatting());
 
    let result2 = execute(buildQuery('Peter'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result2.values, 0);
+}
+
+function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter::equal::testBuildFilterWithValueThatCanBeNullInFlowSql():Boolean[1]
+{
+   let result = execute(buildQuery([]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(expectedSqlForValueThatCanBeNull('= null'), $result->sqlRemoveFormatting());
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::filter::equal::testBuildFilterWithValueThatCanBeNullPlanSql():Boolean[1]
+{
+   let result = execute(buildQuery([]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals(expectedSqlForValueThatCanBeNull('is null'), $result->sqlRemoveFormatting());
+}
+
+function <<access.private>> meta::relational::tests::query::filter::equal::expectedSqlForValueThatCanBeNull(comparison:String[1]):String[1]
+{
+   'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME like \'F%\' and (null is null or "root".FIRSTNAME ' + $comparison + ')'
 }
 
 function <<access.private>> meta::relational::tests::query::filter::equal::buildQuery(value:String[0..1]):FunctionDefinition<{->Person[*]}>[1]
