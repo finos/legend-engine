@@ -106,7 +106,6 @@ import org.finos.legend.pure.runtime.java.compiled.execution.CompiledProcessorSu
 import org.finos.legend.pure.runtime.java.compiled.execution.ConsoleCompiled;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtensionLoader;
-import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.AbstractLazyReflectiveCoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataAccessor;
 import org.finos.legend.pure.runtime.java.compiled.metadata.MetadataPelt;
@@ -1661,7 +1660,7 @@ public class PureModel implements IPureModel
 
     public RichIterable<? extends Type> getModelClasses()
     {
-        return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof LazyCoreInstance) || (t instanceof AbstractLazyReflectiveCoreInstance));
+        return this.typesIndex.valuesView().reject(t -> (t == null) || (t == NULL_ELEMENT_SENTINEL) || (t instanceof LazyCoreInstance));
     }
 
     public Handlers getHandlers()
