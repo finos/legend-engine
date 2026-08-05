@@ -139,7 +139,7 @@ public class RelationResultHelper
         }
 
         List<String> headerColumns = parsed.get(0);
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = TestAssertionHelper.buildObjectMapperForJSONComparison();
         ArrayNode arrayNode = mapper.createArrayNode();
 
         ColumnKind[] kinds = resolveColumnKinds(headerColumns, columnTypes);
