@@ -1042,3 +1042,4 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"tradeId":1,"product":{"productId":"productID 2","productName":"productName 84","description":"description 67"}},{"tradeId":2,"product":null},{"tradeId":3,"product":null},{"tradeId":4,"product":null}]}',$result);
 
 }
+
