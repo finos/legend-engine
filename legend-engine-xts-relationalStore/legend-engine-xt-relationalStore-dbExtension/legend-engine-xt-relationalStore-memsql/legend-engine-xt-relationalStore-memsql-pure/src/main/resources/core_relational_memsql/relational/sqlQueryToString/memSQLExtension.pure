@@ -423,6 +423,9 @@ function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSql
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+      u : meta::relational::metamodel::datatype::UnsignedBigInt[1] | 'BIGINT UNSIGNED',
+      u : meta::relational::metamodel::datatype::UnsignedInt[1] | 'INT UNSIGNED',
+      u : meta::relational::metamodel::datatype::UnsignedTinyInt[1] | 'TINYINT UNSIGNED',
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }
@@ -478,6 +481,9 @@ function meta::relational::functions::sqlQueryToString::memsql::convert(genericT
             pair(|$path == 'SmallInt', |^meta::relational::metamodel::datatype::SmallInt()),
             pair(|$path == 'Timestamp', |^meta::relational::metamodel::datatype::Timestamp()),
             pair(|$path == 'TinyInt', |^meta::relational::metamodel::datatype::TinyInt()),
+            pair(|$path == 'UBigInt', |^meta::relational::metamodel::datatype::UnsignedBigInt()),
+            pair(|$path == 'UInt', |^meta::relational::metamodel::datatype::UnsignedInt()),
+            pair(|$path == 'UTinyInt', |^meta::relational::metamodel::datatype::UnsignedTinyInt()),
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
             pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())
         ],

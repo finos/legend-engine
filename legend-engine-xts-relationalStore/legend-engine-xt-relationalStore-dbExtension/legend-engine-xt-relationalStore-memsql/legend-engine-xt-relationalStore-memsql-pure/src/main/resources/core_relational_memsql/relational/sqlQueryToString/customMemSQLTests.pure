@@ -65,6 +65,55 @@ function <<test.Test>> meta::relational::memsql::tests::db::testDayOfYear() : Bo
     assertEquals('select dayofyear(date(`root`.dateTime)) as `doy` from dataTable as `root`', $result);
 }
 
+function meta::relational::memsql::tests::db::allTypesColumnsForMemSQL() : meta::relational::metamodel::Column[*]
+{
+  [
+    ^meta::relational::metamodel::Column(name='col_boolean', type=^meta::relational::metamodel::datatype::Boolean()),
+    ^meta::relational::metamodel::Column(name='col_integer', type=^meta::relational::metamodel::datatype::Integer()),
+    ^meta::relational::metamodel::Column(name='col_float', type=^meta::relational::metamodel::datatype::Float()),
+    ^meta::relational::metamodel::Column(name='col_double', type=^meta::relational::metamodel::datatype::Double()),
+    ^meta::relational::metamodel::Column(name='col_varchar', type=^meta::relational::metamodel::datatype::Varchar(size=256)),
+    ^meta::relational::metamodel::Column(name='col_char', type=^meta::relational::metamodel::datatype::Char(size=10)),
+    ^meta::relational::metamodel::Column(name='col_decimal', type=^meta::relational::metamodel::datatype::Decimal(precision=18, scale=6)),
+    ^meta::relational::metamodel::Column(name='col_numeric', type=^meta::relational::metamodel::datatype::Numeric(precision=12, scale=4)),
+    ^meta::relational::metamodel::Column(name='col_timestamp', type=^meta::relational::metamodel::datatype::Timestamp()),
+    ^meta::relational::metamodel::Column(name='col_date', type=^meta::relational::metamodel::datatype::Date()),
+    ^meta::relational::metamodel::Column(name='col_bigint', type=^meta::relational::metamodel::datatype::BigInt()),
+    ^meta::relational::metamodel::Column(name='col_smallint', type=^meta::relational::metamodel::datatype::SmallInt()),
+    ^meta::relational::metamodel::Column(name='col_tinyint', type=^meta::relational::metamodel::datatype::TinyInt()),
+    ^meta::relational::metamodel::Column(name='col_binary', type=^meta::relational::metamodel::datatype::Binary(size=512)),
+    ^meta::relational::metamodel::Column(name='col_json', type=^meta::relational::metamodel::datatype::Json()),
+    ^meta::relational::metamodel::Column(name='col_ubigint', type=^meta::relational::metamodel::datatype::UnsignedBigInt()),
+    ^meta::relational::metamodel::Column(name='col_uint', type=^meta::relational::metamodel::datatype::UnsignedInt()),
+    ^meta::relational::metamodel::Column(name='col_utinyint', type=^meta::relational::metamodel::datatype::UnsignedTinyInt())
+  ];
+}
+
+function <<test.Test>> meta::relational::memsql::tests::db::testCreateTableForMemSQL() : Boolean[*]
+{
+  let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.MemSQL);
+
+  // Non-default schema -> schema-qualified table name
+  let table = ^meta::relational::metamodel::relation::Table(
+    name = 'allTypesTable',
+    schema = ^meta::relational::metamodel::Schema(name = 'hr', database = ^meta::relational::metamodel::Database(name='testDb')),
+    columns = meta::relational::memsql::tests::db::allTypesColumnsForMemSQL()
+  );
+  let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
+  let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
+  assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $result->toOne());
+
+  // Default schema -> no schema prefix
+  let defaultTable = ^meta::relational::metamodel::relation::Table(
+    name = 'allTypesTable',
+    schema = ^meta::relational::metamodel::Schema(name = 'default', database = ^meta::relational::metamodel::Database(name='testDb')),
+    columns = meta::relational::memsql::tests::db::allTypesColumnsForMemSQL()
+  );
+  let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
+  let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
+  assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer INT,col_float FLOAT,col_double DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_numeric NUMERIC(12, 4),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_binary BINARY(512),col_json JSON,col_ubigint BIGINT UNSIGNED,col_uint INT UNSIGNED,col_utinyint TINYINT UNSIGNED);', $defaultResult->toOne());
+}
+
 ###Relational
 Database meta::relational::memsql::tests::db::schema1
 (
