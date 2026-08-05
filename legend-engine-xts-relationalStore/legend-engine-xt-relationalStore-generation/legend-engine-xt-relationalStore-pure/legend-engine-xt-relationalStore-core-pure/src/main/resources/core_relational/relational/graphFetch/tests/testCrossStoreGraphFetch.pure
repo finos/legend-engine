@@ -1043,3 +1043,134 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
 
 }
 
+
+// ==========================================================================
+// XStore cross-store graph fetch with milestoned (processingtemporal) target
+// Regression test for: JavaCompileException when qualified accessor on
+// temporal target with [0..1] multiplicity returns List<T> instead of T.
+// ==========================================================================
+
+###Pure
+Class meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::Order
+{
+   orderId: Integer[1];
+   entityId: Integer[0..1];
+}
+
+Class <<meta::pure::profiles::temporal.processingtemporal>> meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::LegalEntity
+{
+   id: Integer[1];
+   commonName: String[1];
+}
+
+Association meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::Order_LegalEntity
+{
+   order: meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::Order[*];
+   legalEntity: meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::LegalEntity[0..1];
+}
+
+###Relational
+Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::milestonedDb
+(
+   Table legalEntityTable
+   (
+      milestoning
+      (
+         processing(PROCESSING_IN = in_z, PROCESSING_OUT = out_z)
+      )
+      id INTEGER PRIMARY KEY,
+      commonName VARCHAR(200),
+      in_z TIMESTAMP,
+      out_z TIMESTAMP
+   )
+)
+
+###Mapping
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::*;
+
+Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::crossMappingMilestoned
+(
+   Order[order_set]: Pure
+   {
+      ~src Order
+      orderId: $src.orderId,
+      entityId: $src.entityId
+   }
+
+   LegalEntity[legal_entity_set]: Relational
+   {
+      ~primaryKey
+      (
+         [milestonedDb]legalEntityTable.id
+      )
+      ~mainTable [milestonedDb]legalEntityTable
+      id: [milestonedDb]legalEntityTable.id,
+      commonName: [milestonedDb]legalEntityTable.commonName
+   }
+
+   Order_LegalEntity: XStore
+   {
+      legalEntity[order_set, legal_entity_set]: $this.entityId == $that.id
+   }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::*;
+import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::alloy::connections::alloy::specification::*;
+import meta::pure::alloy::connections::alloy::authentication::*;
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::testCrossStoreMilestonedQualifiedPropertyAccess():Boolean[1]
+{
+   let csvData = 'Drop Table if exists legalEntityTable;\n' +
+                 'Create Table legalEntityTable(id INTEGER, commonName VARCHAR(200), in_z TIMESTAMP, out_z TIMESTAMP);\n' +
+                 'INSERT INTO legalEntityTable(id, commonName, in_z, out_z) VALUES (100, \'Entity_A\', \'2020-01-01 00:00:00\', \'9999-12-31 00:00:00\');\n' +
+                 'INSERT INTO legalEntityTable(id, commonName, in_z, out_z) VALUES (200, \'Entity_B\', \'2020-01-01 00:00:00\', \'9999-12-31 00:00:00\');\n';
+
+   let runtime = ^Runtime(
+      connectionStores = [
+         ^ConnectionStore(
+            element = ^meta::external::store::model::ModelStore(),
+            connection = ^meta::external::store::model::JsonModelConnection
+            (
+               class = Order,
+               url = 'data:application/json,' +
+                     '{"orderId": 1, "entityId": 100}\n' +
+                     '{"orderId": 2, "entityId": 200}\n' +
+                     '{"orderId": 3, "entityId": 999}\n'
+            )
+         ),
+         ^ConnectionStore(
+            element = milestonedDb,
+            connection = ^RelationalDatabaseConnection
+            (
+               type = DatabaseType.H2,
+               datasourceSpecification = ^LocalH2DatasourceSpecification(testDataSetupSqls = [$csvData]),
+               authenticationStrategy = ^TestDatabaseAuthenticationStrategy()
+            )
+         )
+      ]
+   );
+
+   let query = {processingDate: StrictDate[1] |
+      Order.all()
+         ->graphFetch(#{Order{orderId, legalEntity($processingDate){commonName}}}#)
+         ->serialize(#{Order{orderId, legalEntity($processingDate){commonName}}}#)
+         ->meta::pure::mapping::from(crossMappingMilestoned, $runtime)
+   };
+
+   let result = meta::legend::executeLegendQuery($query, [pair('processingDate', '2023-06-01')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
+
+   assertJsonStringsEqual(
+      '{"builder":{"_type":"json"},"values":[' +
+         '{"orderId":1,"legalEntity($processingDate)":{"commonName":"Entity_A"}},' +
+         '{"orderId":2,"legalEntity($processingDate)":{"commonName":"Entity_B"}},' +
+         '{"orderId":3,"legalEntity($processingDate)":null}' +
+      ']}',
+      $result
+   );
+}
+
