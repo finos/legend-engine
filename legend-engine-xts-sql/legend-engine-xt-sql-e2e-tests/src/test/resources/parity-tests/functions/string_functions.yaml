@@ -537,8 +537,8 @@ tests:
     sql: SELECT STRING_TO_ARRAY(val, ' ', '') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: string_to_array
     signature: string_to_array(text, text, text) → text[]
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
   - id: strpos__txt_txt__from_table
     sql: SELECT STRPOS(val, 'lo') AS result FROM strings ORDER BY 1
     function: strpos
