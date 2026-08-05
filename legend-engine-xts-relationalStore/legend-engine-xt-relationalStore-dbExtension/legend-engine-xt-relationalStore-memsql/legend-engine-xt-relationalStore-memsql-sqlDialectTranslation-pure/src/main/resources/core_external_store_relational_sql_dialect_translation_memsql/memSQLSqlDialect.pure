@@ -120,7 +120,7 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     ),
     pair('FuncTests - string_to_array(0/2)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
     pair('FuncTests - string_to_array(1/2)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
-    pair('FuncTests - string_to_array(2/2)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
+    // pair('FuncTests - string_to_array(2/2)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
     pair('FuncTests - split_part(0/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(1/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(2/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
