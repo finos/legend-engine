@@ -4956,20 +4956,43 @@ function meta::relational::functions::pureToSqlQuery::applyTypeFilter(base:Selec
   let filterMapping = $viewSpecification->getFilter();
   if ($filterMapping->isEmpty(),
         | $base,
-        | let baseFilterQuery =
-              if ($filterMapping->toOne().joinTreeNode->isEmpty(),
+        | let hasJoin = $filterMapping->toOne().joinTreeNode->isNotEmpty();
+          let baseFilterQuery =
+              if (!$hasJoin,
                   | $base;
                  ,| applyJoinInTree($base.select.data->toOne(), $base.currentTreeNode->toOne(), $filterMapping->toOne().joinTreeNode->toOne(), $base, $nodeId, JoinType.LEFT_OUTER, true, false, [], $state, $context, $extensions);
                );
-          let select = $baseFilterQuery.select;
-
-          let lastNode = $baseFilterQuery.currentTreeNode->toOne()->findLastJoinTreeNode();
-          ^$baseFilterQuery(
+          let milestonedFilterQuery = $baseFilterQuery->applyFilterJoinMilestoning($hasJoin, $base.milestoningContext, $state, $extensions);
+          let select = $milestonedFilterQuery.select;
+          let lastNode = $milestonedFilterQuery.currentTreeNode->toOne()->findLastJoinTreeNode();
+          ^$milestonedFilterQuery(
                    select = ^$select(
                                 savedFilteringOperation += pair($lastNode, $filterMapping.filter.operation->toOne()->reprocessAliases(^OldAliasToNewAlias(first=$lastNode.alias.relation->cast(@Table).name, second=$lastNode.alias->toOne())))
                             )
                    );
      );
+}
+
+function meta::relational::functions::pureToSqlQuery::applyFilterJoinMilestoning(baseFilterQuery:SelectWithCursor[1], hasJoin:Boolean[1], milestoningContext:TemporalMilestoningContext[0..1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  if (!$hasJoin || $milestoningContext->isEmpty() || $milestoningContext->toOne().isAllVersions() || $milestoningContext->toOne().isAllForEachDate(),
+      | $baseFilterQuery,
+      | let filterHeadNodes = $baseFilterQuery.currentTreeNode->toOne().childrenData->filter(c|$c->instanceOf(JoinTreeNode))->cast(@JoinTreeNode);
+        if ($filterHeadNodes->isEmpty(),
+            | $baseFilterQuery,
+            | let mCtx          = $milestoningContext->toOne();
+              let mStrategy     = $mCtx.currentMilestoningStrategy->toOne();
+              let tableFilterFn = $mStrategy->getAllMilestonedTableFilter($baseFilterQuery.select, $mCtx, $state.inScopeVars, $extensions);
+              $filterHeadNodes->fold(
+                {headNode, swc |
+                   let currentHead = $swc.currentTreeNode->toOne().childrenData->filter(c|$c->instanceOf(JoinTreeNode) && $c->cast(@JoinTreeNode).joinName == $headNode.joinName)->cast(@JoinTreeNode)->toOne();
+                   let newHead     = $currentHead->applyMilestoningFilters($tableFilterFn, getTableToTableIdentifyFunction(), true, $extensions)->cast(@JoinTreeNode);
+                   $swc->replaceTreeNodeAndUpdatePointersInSwc($currentHead, $newHead);
+                },
+                $baseFilterQuery
+              );
+        );
+   );
 }
 
 function meta::relational::functions::pureToSqlQuery::applyGroupBy(base:SelectWithCursor[1], viewSpecification:RelationalMappingSpecification[1], nodeId:String[1]):SelectWithCursor[1]
