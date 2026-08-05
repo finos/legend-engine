@@ -102,7 +102,7 @@ jobs:
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
       - name: Build Release Tag
-        run: mvn -B -e -T5 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
+        run: mvn -B -e -T3 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
         env:
           MAVEN_OPTS: -Xmx36g
 
