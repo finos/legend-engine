@@ -79,7 +79,7 @@ Class meta::analytics::search::metamodel::dataspace::ExecutionContext
 {
   name: String[1];
   mappingPath: String[1];
-  runtimePath: String[1];
+  runtimePath: String[0..1];
   classes: meta::analytics::search::metamodel::class::SimpleClassElement[*];
   databaseColumns: meta::analytics::search::metamodel::mapping::DatabaseColumn[*];
 }

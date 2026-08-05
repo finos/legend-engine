@@ -65,7 +65,7 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::analyze
 {
   $dataSpace.executionContexts->map(context|^DataSpaceExecutionContextAnalysisResult(
     name = $context.name,
-    compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes),
+    compatibleRuntimes = getMappingCompatibleRuntimes($context.mapping, $allAvailableRuntimes)->concatenate($context.defaultRuntime)->removeDuplicatesBy(r | $r->elementToPath()),
     mappingCoverage = if($mappingCoverageMap->get($context.mapping)->isEmpty()
                 ,|meta::analytics::mapping::modelCoverage::analyze($context.mapping, $returnLightGraph, false, $returnLightGraph)
                 ,|$mappingCoverageMap->get($context.mapping)->toOne()

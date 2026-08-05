@@ -493,6 +493,10 @@ public class GraphQLExecute extends GraphQL
 
         Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
         Mapping mapping = executionContextPureElement._mapping();
+        if (executionContextPureElement._defaultRuntime() == null)
+        {
+            throw new RuntimeException("GraphQL execution requires a default runtime on execution context '" + executionContextPureElement._name() + "' of data space '" + dataspacePath + "'. Runtime-less execution contexts are not yet supported.");
+        }
         Root_meta_core_runtime_Runtime runtime = executionContextPureElement._defaultRuntime()._runtimeValue();
         return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
     }

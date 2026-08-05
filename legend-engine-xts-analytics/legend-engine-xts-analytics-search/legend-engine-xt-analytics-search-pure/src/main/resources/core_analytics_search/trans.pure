@@ -107,7 +107,9 @@ function meta::analytics::search::transformation::dataspace::buildExecutionConte
   ^meta::analytics::search::metamodel::dataspace::ExecutionContext(
     name = $executionContext.name,
     mappingPath = $executionContext.mapping->elementToPath(),
-    runtimePath = $executionContext.defaultRuntime->elementToPath(),
+    runtimePath = if($executionContext.defaultRuntime->isEmpty(),
+                     | [],
+                     | $executionContext.defaultRuntime->toOne()->elementToPath()),
     classes = $executionContext.mapping->meta::analytics::search::transformation::dataspace::buildClassDocuments()
   )
 }

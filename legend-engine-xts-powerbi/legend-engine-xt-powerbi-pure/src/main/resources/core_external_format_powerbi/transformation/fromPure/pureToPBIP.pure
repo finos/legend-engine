@@ -146,26 +146,33 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(dataspaceTemplateExecutable: DataSpaceTemplateExecutable[1], dataspace: DataSpace[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
 {
   let dataspaceExecutionContext=$dataspaceTemplateExecutable.executionContextKey->getDataSpaceExecutionContext($dataspace.executionContexts, $dataspace.defaultExecutionContext);
+  let runtime=$dataspaceExecutionContext->getDefaultRuntimeForPowerBI($dataspaceTemplateExecutable.id);
 
-  $dataspaceTemplateExecutable.query->executionPlan($dataspaceExecutionContext.mapping, $dataspaceExecutionContext.defaultRuntime.runtimeValue, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions);
+  $dataspaceTemplateExecutable.query->executionPlan($dataspaceExecutionContext.mapping, $runtime, $runtime->getCustomExecutionContext($extensions), $extensions);
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(dataspacePackageableElementExecutable: DataSpacePackageableElementExecutable[1], dataspace: DataSpace[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
 {
   let dataspaceExecutionContext=$dataspacePackageableElementExecutable.executionContextKey->getDataSpaceExecutionContext($dataspace.executionContexts, $dataspace.defaultExecutionContext);
+  let runtime=$dataspaceExecutionContext->getDefaultRuntimeForPowerBI($dataspacePackageableElementExecutable.id);
 
   $dataspacePackageableElementExecutable.executable->match([
-    f: PackageableFunction<Any>[1] | $f->cast(@ConcreteFunctionDefinition<Any>)->executionPlan($dataspaceExecutionContext.mapping, $dataspaceExecutionContext.defaultRuntime.runtimeValue, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions),
-    s: Service[1] | $s->getExecutionPlan($dataspaceExecutionContext, $dataspaceExecutionContext.defaultRuntime.runtimeValue->getCustomExecutionContext($extensions), $extensions);
+    f: PackageableFunction<Any>[1] | $f->cast(@ConcreteFunctionDefinition<Any>)->executionPlan($dataspaceExecutionContext.mapping, $runtime, $runtime->getCustomExecutionContext($extensions), $extensions),
+    s: Service[1] | $s->getExecutionPlan($dataspaceExecutionContext, $runtime, $runtime->getCustomExecutionContext($extensions), $extensions);
   ]);
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(s: Service[1], dataSpaceExecutionContext: DataSpaceExecutionContext[1], customExecutionContext: ExecutionContext[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getExecutionPlan(s: Service[1], dataSpaceExecutionContext: DataSpaceExecutionContext[1], runtime: EngineRuntime[1], customExecutionContext: ExecutionContext[1], extensions: meta::pure::extension::Extension[*]): ExecutionPlan[1]
 {
   //Support only single execution services
   assert($s.execution->instanceOf(PureSingleExecution), 'Only single execution services are supported for Power BI artifact generation. Service with pattern \"' + $s.pattern + '\" is not a single execution service.');
 
-  $s.execution->cast(@PureSingleExecution).func->executionPlan($dataSpaceExecutionContext.mapping, $dataSpaceExecutionContext.defaultRuntime.runtimeValue, $customExecutionContext, $extensions);
+  $s.execution->cast(@PureSingleExecution).func->executionPlan($dataSpaceExecutionContext.mapping, $runtime, $customExecutionContext, $extensions);
+}
+
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getDefaultRuntimeForPowerBI(dataSpaceExecutionContext: DataSpaceExecutionContext[1], executableId: String[1]): EngineRuntime[1]
+{
+  $dataSpaceExecutionContext.defaultRuntime->toOne('Power BI artifact generation requires a default runtime on execution context \'' + $dataSpaceExecutionContext.name + '\' (executable \'' + $executableId + '\'). Runtime-less execution contexts are not yet supported by this generator.').runtimeValue;
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getDataSpaceExecutionContext(executionContextKey: String[0..1], executionContexts: DataSpaceExecutionContext[1..*], defaultExecutionContext: DataSpaceExecutionContext[1]): DataSpaceExecutionContext[1]

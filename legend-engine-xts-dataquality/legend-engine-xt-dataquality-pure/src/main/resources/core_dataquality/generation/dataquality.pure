@@ -400,7 +400,8 @@ function meta::external::dataquality::getMappingAndRuntime(context: DataQualityE
         ^Pair<Mapping, Runtime>(first=$mappingAndRuntimeContext.mapping, second=$mappingAndRuntimeContext.runtime);,
       | let dataSpaceDataQualityExecutionContext = $context->cast(@DataSpaceDataQualityExecutionContext);
         let dataSpaceExecutionContext = $dataSpaceDataQualityExecutionContext.dataSpace.executionContexts->filter(execContext| $execContext.name == $dataSpaceDataQualityExecutionContext.contextName)->toOne();
-        ^Pair<Mapping, Runtime>(first=$dataSpaceExecutionContext.mapping, second=$dataSpaceExecutionContext.defaultRuntime.runtimeValue);
+        let dataSpaceExecutionContextRuntime = $dataSpaceExecutionContext.defaultRuntime->toOne('Data quality execution requires a default runtime on execution context \'' + $dataSpaceExecutionContext.name + '\' of data space \'' + $dataSpaceDataQualityExecutionContext.dataSpace->elementToPath() + '\'. Runtime-less execution contexts are not yet supported.').runtimeValue;
+        ^Pair<Mapping, Runtime>(first=$dataSpaceExecutionContext.mapping, second=$dataSpaceExecutionContextRuntime);
     );
 }
 

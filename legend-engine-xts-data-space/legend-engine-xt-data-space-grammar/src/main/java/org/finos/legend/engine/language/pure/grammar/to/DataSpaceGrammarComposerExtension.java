@@ -108,10 +108,21 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (getTabString(3) + "name: " + convertString(executionContext.name, true) + ";\n") +
                 (executionContext.title != null ? (getTabString(3) + "title: " + convertString(executionContext.title, true) + ";\n") : "") +
                 (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
-                getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n" +
-                getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n" +
+                (executionContext.mapping != null ? (getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n") : "") +
+                (executionContext.mappingProvider != null ? (getTabString(3) + "mappingProvider: " + renderMappingProvider(executionContext.mappingProvider) + ";\n") : "") +
+                (executionContext.defaultRuntime != null ? (getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n") : "") +
                 (executionContext.testData == null ? "" : (renderTestData(executionContext.testData, 3, context) + "\n")) +
                 getTabString(2) + "}";
+    }
+
+    private static String renderMappingProvider(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceMappingProvider provider)
+    {
+        String base = PureGrammarComposerUtility.convertPath(provider.element.path);
+        if (provider.keys == null || provider.keys.isEmpty())
+        {
+            return base;
+        }
+        return base + "." + String.join(",", provider.keys);
     }
 
     private static String renderTestData(EmbeddedData embeddedData, int baseIndentation, PureGrammarComposerContext context)

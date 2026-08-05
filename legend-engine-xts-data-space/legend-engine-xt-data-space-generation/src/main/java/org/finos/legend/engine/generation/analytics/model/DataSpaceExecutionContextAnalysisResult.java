@@ -25,6 +25,7 @@ public class DataSpaceExecutionContextAnalysisResult
     public String title;
     public String description;
     public String mapping;
+    public DataSpaceMappingProviderAnalysisResult mappingProvider;
     public List<String> compatibleRuntimes;
     public String defaultRuntime;
     public DataSpaceExecutionContextRuntimeMetadata runtimeMetadata;

@@ -78,7 +78,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [5:5-8:5]: Field 'mapping' is required");
+                "}\n", "PARSER error at [5:5-8:5]: Data space execution context must define either 'mapping' or 'mappingProvider'");
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -87,10 +87,11 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    {\n" +
                 "      name: 'Context 1';\n" +
                 "      mapping: model::String;\n" +
+                "      mappingProvider: model::product.key;\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "PARSER error at [5:5-8:5]: Field 'defaultRuntime' is required");
+                "}\n", "PARSER error at [5:5-9:5]: Data space execution context cannot define both 'mapping' and 'mappingProvider'");
 
         // Executables
         test("###DataSpace\n" +

@@ -46,8 +46,15 @@ Class meta::pure::metamodel::dataSpace::DataSpaceExecutionContext
   title: String[0..1];
   description: String[0..1];
   mapping: meta::pure::mapping::Mapping[1];
-  defaultRuntime: meta::pure::runtime::PackageableRuntime[1];
+  mappingProvider: meta::pure::metamodel::dataSpace::DataSpaceMappingProvider[0..1];
+  defaultRuntime: meta::pure::runtime::PackageableRuntime[0..1];
   testData: meta::pure::data::EmbeddedData[0..1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceMappingProvider
+{
+  element: PackageableElement[1];
+  keys: String[*];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceDiagram

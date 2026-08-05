@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2026 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,17 +16,15 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSp
 
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 
-public class DataSpaceExecutionContext
+import java.util.Collections;
+import java.util.List;
+
+public class DataSpaceMappingProvider
 {
-    public String name;
-    public String title;
-    public String description;
-    public PackageableElementPointer mapping;
-    public PackageableElementPointer defaultRuntime;
-    public DataElementReference testData;
-    // TODO: see if we can remove mapping after deserializing mapping to mappingProvider. Check clients taking in dataspaces
-    public DataSpaceMappingProvider mappingProvider;
+    public PackageableElementPointer element;
+    public List<String> keys = Collections.emptyList();
     public SourceInformation sourceInformation;
 }
+
+
