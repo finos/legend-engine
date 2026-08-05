@@ -525,6 +525,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Chr->nativeFunctionMapEntry(),
     Reverse->nativeFunctionMapEntry(),
     SplitPart->nativeFunctionMapEntry(),
+    StringToArray->nativeFunctionMapEntry(),
     Substring->nativeFunctionMapEntry(),
     Left->nativeFunctionMapEntry(),
     Right->nativeFunctionMapEntry(),
