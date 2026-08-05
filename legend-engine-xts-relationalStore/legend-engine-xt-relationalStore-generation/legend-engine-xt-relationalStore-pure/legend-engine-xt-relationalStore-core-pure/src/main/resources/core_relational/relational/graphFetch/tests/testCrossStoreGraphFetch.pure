@@ -1117,6 +1117,7 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned
 ###Pure
 import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::milestoned::*;
 import meta::pure::graphFetch::execution::*;
+import meta::pure::executionPlan::profiles::*;
 import meta::core::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
