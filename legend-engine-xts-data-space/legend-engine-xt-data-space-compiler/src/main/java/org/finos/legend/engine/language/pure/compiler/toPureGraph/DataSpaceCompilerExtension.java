@@ -67,6 +67,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceMappingProvider_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportCombinedInfo_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl;
@@ -137,14 +138,21 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         if (executionContextSet.add(executionContext.name))
                         {
-                            Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
-                            Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                            return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
+                            Root_meta_pure_runtime_PackageableRuntime runtime = executionContext.defaultRuntime != null ? context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation) : null;
+                            Mapping mapping = executionContext.mapping != null
+                                    ? context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation)
+                                    : null;
+                            Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext impl = new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                     ._name(executionContext.name)
                                     ._title(executionContext.title)
                                     ._description(executionContext.description)
-                                    ._mapping(mapping)
                                     ._defaultRuntime(runtime);
+                            // mappingProvider is resolved in the third pass
+                            if (mapping != null)
+                            {
+                                impl._mapping(mapping);
+                            }
+                            return impl;
                         }
                         else
                         {
@@ -180,11 +188,20 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
 
                     dataSpace.executionContexts.forEach(executionContext ->
                     {
-                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
-                        if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime._runtimeValue(), mapping, context.pureModel.extensions.getExtraRuntimeCompilerHandler()))
+                        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiled = metamodel._executionContexts().toList().stream().filter(ec -> executionContext.name.equals(ec._name())).findFirst().orElseThrow(() -> new EngineException("Missing compiled execution context '" + executionContext.name + "'", executionContext.sourceInformation, EngineErrorType.COMPILATION));
+                        Mapping mapping;
+                        if (executionContext.mappingProvider != null && compiled._mapping() == null)
                         {
-                            throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            setMappingProviderAndResolvedMapping(compiled, executionContext.mappingProvider, context);
+                        }
+                        mapping = compiled._mapping();
+                        if (executionContext.defaultRuntime != null)
+                        {
+                            Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
+                            if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime._runtimeValue(), mapping, context.pureModel.extensions.getExtraRuntimeCompilerHandler()))
+                            {
+                                throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            }
                         }
                     });
 
@@ -357,7 +374,9 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                                 if (mappingImpl instanceof Root_meta_pure_mapping_Mapping_Impl)
                                                 {
                                                     String mappingPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_((Root_meta_pure_mapping_Mapping_Impl) mappingImpl, "::", context.pureModel.getExecutionSupport());
-                                                    if (!mappingPath.equals(executionContext.mapping.path))
+                                                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiledCtx = metamodel._executionContexts().toList().stream().filter(ec -> executionContext.name.equals(ec._name())).findFirst().orElse(null);
+                                                    String expectedMappingPath = compiledCtx == null ? null : effectiveMappingPath(executionContext, compiledCtx, context);
+                                                    if (expectedMappingPath != null && !mappingPath.equals(expectedMappingPath))
                                                     {
                                                         throw new EngineException("The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `" + executionContext.name + "`.");
                                                     }
@@ -380,7 +399,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                                 if (runtimeImpl != null)
                                                 {
                                                     String runtimePath = context.pureModel.getRuntimePath(runtimeImpl);
-                                                    if (!runtimePath.equals(executionContext.defaultRuntime.path))
+                                                    if (executionContext.defaultRuntime != null && !runtimePath.equals(executionContext.defaultRuntime.path))
                                                     {
                                                         throw new EngineException("The runtime utilized in the function within the curated template query does not align with the runtime applied in the execution context `" + executionContext.name + "`.");
                                                     }
@@ -397,13 +416,57 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         ));
     }
 
+
+    private static void setMappingProviderAndResolvedMapping(Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceMappingProvider provider, CompileContext context)
+    {
+        PackageableElement element = context.resolvePackageableElement(provider.element.path, provider.element.sourceInformation);
+        for (DataSpaceMappingProviderCompilerExtension ext : DataSpaceMappingProviderCompilerExtensionLoader.extensions())
+        {
+            Optional<Mapping> resolved = ext.resolveMapping(element, provider, context);
+            if (resolved.isPresent())
+            {
+                executionContext._mappingProvider(new Root_meta_pure_metamodel_dataSpace_DataSpaceMappingProvider_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceMappingProvider"))
+                        ._element(element)
+                        ._keys(Lists.immutable.withAll(provider.keys == null ? java.util.Collections.emptyList() : provider.keys)));
+                executionContext._mapping(resolved.get());
+                return;
+            }
+        }
+        throw new EngineException(
+                "'" + provider.element.path
+                        + (provider.keys == null || provider.keys.isEmpty() ? "" : "." + String.join(".", provider.keys))
+                        + "' is not a valid mapping provider",
+                provider.sourceInformation,
+                EngineErrorType.COMPILATION);
+    }
+
+    private static String effectiveMappingPath(DataSpaceExecutionContext executionContext, Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiled, CompileContext context)
+    {
+        if (executionContext.mapping != null)
+        {
+            return executionContext.mapping.path;
+        }
+        Mapping m = compiled._mapping();
+        return platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(m, "::", context.pureModel.getExecutionSupport());
+    }
+
     private Set<PackageableElementPointer> dataSpacePrerequisiteElementsPass(DataSpace dataSpace, CompileContext context)
     {
         Set<PackageableElementPointer> prerequisiteElements = Sets.mutable.empty();
         dataSpace.executionContexts.forEach(executionContext ->
         {
-            prerequisiteElements.add(executionContext.mapping);
-            prerequisiteElements.add(executionContext.defaultRuntime);
+            if (executionContext.mapping != null)
+            {
+                prerequisiteElements.add(executionContext.mapping);
+            }
+            if (executionContext.mappingProvider != null && executionContext.mappingProvider.element != null)
+            {
+                prerequisiteElements.add(executionContext.mappingProvider.element);
+            }
+            if (executionContext.defaultRuntime != null)
+            {
+                prerequisiteElements.add(executionContext.defaultRuntime);
+            }
         });
 
         if (dataSpace.elements != null)

@@ -1411,4 +1411,26 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
                 "}\n", "COMPILATION error at [43:1-55:1]: Error in 'model::dataSpace': Can't find the packageable element 'model::Mine'");
     }
+
+    @Test
+    public void testDataSpaceExecutionContextWithInvalidMappingProvider()
+    {
+        test("###Mapping\n" +
+                        "Mapping model::plainMapping3\n" +
+                        "(\n" +
+                        ")\n" +
+                        "###DataSpace\n" +
+                        "DataSpace model::mySpace3\n" +
+                        "{\n" +
+                        "  executionContexts:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      name: 'default';\n" +
+                        "      mappingProvider: model::plainMapping3.someKey;\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "  defaultExecutionContext: 'default';\n" +
+                        "}\n",
+                "COMPILATION error at [12:7-52]: 'model::plainMapping3.someKey' is not a valid mapping provider");
+    }
 }

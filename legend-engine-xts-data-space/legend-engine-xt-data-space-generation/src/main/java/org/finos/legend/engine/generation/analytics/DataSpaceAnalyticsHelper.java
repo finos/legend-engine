@@ -144,7 +144,7 @@ public class DataSpaceAnalyticsHelper
                         executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
                                 ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
                                 executionContext._mapping(),
-                                executionContext._defaultRuntime()._runtimeValue(),
+                                executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue(),
                                 HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
                                 pureModel,
                                 PureClientVersions.production,
@@ -233,7 +233,7 @@ public class DataSpaceAnalyticsHelper
                             Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                                     dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
                             mapping = executionContext._mapping();
-                            runtime = executionContext._defaultRuntime()._runtimeValue();
+                            runtime = executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue();
                             LambdaFunction lambda = new LambdaFunction();
                             lambda.body = new ArrayList<>();
                             lambda.body.addAll(((Function) _el).body);
@@ -279,7 +279,7 @@ public class DataSpaceAnalyticsHelper
         try
         {
             MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResultProtocol = DataSpaceAnalyticsHelper.objectMapper.readValue(core_analytics_mapping_modelCoverage_serializer.Root_meta_analytics_mapping_modelCoverage_serialization_json_getSerializedMappingModelCoverageAnalysisResult_MappingModelCoverageAnalysisResult_1__String_1_(mappingModelCoverageAnalysisResult, pureModel.getExecutionSupport()), MappingModelCoverageAnalysisResult.class);
-            if (returnDataSets)
+            if (returnDataSets && excResult.defaultRuntime != null)
             {
                 excResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, excResult.defaultRuntime, pureModel.getRuntime(excResult.defaultRuntime), excResult.mapping, pureModel.getMapping(excResult.mapping), pureModelContextData, pureModel)).toList();
             }
@@ -342,7 +342,14 @@ public class DataSpaceAnalyticsHelper
             excResult.title = executionContext._title();
             excResult.description = executionContext._description();
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
-            excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
+            if (executionContext._mappingProvider() != null)
+            {
+                DataSpaceMappingProviderAnalysisResult mappingProvider = new DataSpaceMappingProviderAnalysisResult();
+                mappingProvider.element = HelperModelBuilder.getElementFullPath(executionContext._mappingProvider()._element(), pureModel.getExecutionSupport());
+                mappingProvider.keys = ListIterate.collect(executionContext._mappingProvider()._keys().toList(), key -> key);
+                excResult.mappingProvider = mappingProvider;
+            }
+            excResult.defaultRuntime = executionContext._defaultRuntime() == null ? null : HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
             Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
             if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
@@ -446,7 +453,14 @@ public class DataSpaceAnalyticsHelper
             excResult.title = executionContext._title();
             excResult.description = executionContext._description();
             excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
-            excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
+            if (executionContext._mappingProvider() != null)
+            {
+                DataSpaceMappingProviderAnalysisResult mappingProvider = new DataSpaceMappingProviderAnalysisResult();
+                mappingProvider.element = HelperModelBuilder.getElementFullPath(executionContext._mappingProvider()._element(), pureModel.getExecutionSupport());
+                mappingProvider.keys = ListIterate.collect(executionContext._mappingProvider()._keys().toList(), key -> key);
+                excResult.mappingProvider = mappingProvider;
+            }
+            excResult.defaultRuntime = executionContext._defaultRuntime() == null ? null : HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             Optional<org.finos.legend.engine.protocol.pure.m3.PackageableElement> packageableRuntime = pureModelContextData.getElements().stream().filter(e -> e.getPath().equals(excResult.defaultRuntime) && e instanceof PackageableRuntime).findFirst();
             if (packageableRuntime.isPresent() && packageableRuntime.get() instanceof PackageableRuntime)
             {

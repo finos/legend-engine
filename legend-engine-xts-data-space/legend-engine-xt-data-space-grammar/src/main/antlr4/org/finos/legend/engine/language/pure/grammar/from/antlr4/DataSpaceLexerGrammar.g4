@@ -22,6 +22,7 @@ DATA_SPACE_EXECUTION_CONTEXTS:              'executionContexts';
 DATA_SPACE_DEFAULT_EXECUTION_CONTEXT:       'defaultExecutionContext';
 
 DATA_SPACE_MAPPING:                         'mapping';
+DATA_SPACE_MAPPING_PROVIDER:                'mappingProvider';
 DATA_SPACE_DEFAULT_RUNTIME:                 'defaultRuntime';
 DATA_SPACE_TEST_DATA:                       'testData';
 
