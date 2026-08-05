@@ -13,6 +13,10 @@
 # for temporary files, user local data, configs, etc.
 /temp
 /duckdb*
+# PCT properties files (typically hold local credentials for external stores)
+**/*-pct.properties
+**/pct.properties
+**/pct-external-resources.properties
 
 # VS Code ignores
 .vscode
