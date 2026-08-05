@@ -393,7 +393,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         String suites = validation.testSuites.stream()
                 .map(suite -> renderTestSuite(suite.id, suite.testData == null ? null : suite.testData.testData, suite.tests, 2, context))
                 .collect(Collectors.joining(",\n"));
-        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "];\n";
+        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "]\n";
     }
 
     private static String renderRelationComparisonTestSuites(DataQualityRelationComparison comparison, PureGrammarComposerContext context)
@@ -405,7 +405,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
         String suites = comparison.testSuites.stream()
                 .map(suite -> renderTestSuite(suite.id, suite.testData == null ? null : suite.testData.testData, suite.tests, 2, context))
                 .collect(Collectors.joining(",\n"));
-        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "];\n";
+        return dqIndent(1) + "testSuites:\n" + dqIndent(1) + "[\n" + suites + "\n" + dqIndent(1) + "]\n";
     }
 
     private static String renderTestSuite(String suiteId, List<FunctionTestData> testData, List<AtomicTest> tests, int baseIndent, PureGrammarComposerContext context)

@@ -228,11 +228,11 @@ dqTestSuiteData:                        DQ_TEST_DATA COLON BRACKET_OPEN
                                             (dqStoreTestData (COMMA dqStoreTestData)*)?
                                         BRACKET_CLOSE
 ;
-dqStoreTestData:                        qualifiedName COLON dqEmbeddedData
+dqStoreTestData:                        qualifiedName COLON embeddedData
 ;
-dqEmbeddedData:                         identifier ISLAND_OPEN (dqEmbeddedDataContent)*
+embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
 ;
-dqEmbeddedDataContent:                  ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+embeddedDataContent:                    ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 dqTestSuiteTests:                       DQ_TEST_TESTS COLON BRACKET_OPEN
                                             (dqTestBlock (COMMA dqTestBlock)*)?
@@ -246,9 +246,9 @@ dqTestAsserts:                          DQ_TEST_ASSERTS COLON BRACKET_OPEN
                                             (dqTestAssert (COMMA dqTestAssert)*)?
                                         BRACKET_CLOSE
 ;
-dqTestAssert:                           identifier COLON dqTestAssertion
+dqTestAssert:                           identifier COLON testAssertion
 ;
-dqTestAssertion:                        identifier ISLAND_OPEN (dqTestAssertionContent)*
+testAssertion:                          identifier ISLAND_OPEN (testAssertionContent)*
 ;
-dqTestAssertionContent:                 ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+testAssertionContent:                   ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;

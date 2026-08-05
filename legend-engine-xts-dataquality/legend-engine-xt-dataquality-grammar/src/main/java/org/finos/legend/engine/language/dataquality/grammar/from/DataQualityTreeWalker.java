@@ -570,7 +570,7 @@ public class DataQualityTreeWalker
                 path,
                 walkerSourceInformation.getSourceInformation(ctx.qualifiedName())
         );
-        testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.dqEmbeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
         return testData;
     }
 
@@ -587,7 +587,7 @@ public class DataQualityTreeWalker
 
     private TestAssertion visitTestAssertion(DataQualityParserGrammar.DqTestAssertContext ctx)
     {
-        TestAssertion assertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.dqTestAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        TestAssertion assertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
         assertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         return assertion;
     }

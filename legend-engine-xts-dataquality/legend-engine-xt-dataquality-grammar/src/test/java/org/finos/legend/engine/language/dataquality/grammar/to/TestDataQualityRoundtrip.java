@@ -273,20 +273,20 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "               asserts:\n" +
                 "               [\n" +
                 "                  assert1:\n" +
-                "                     EqualToJson\n" +
-                "                     #{\n" +
-                "                       expected :\n" +
-                "                         ExternalFormat\n" +
-                "                         #{\n" +
-                "                           contentType: 'application/json';\n" +
-                "                           data: '[]';\n" +
-                "                         }#;\n" +
-                "                     }#\n" +
+                "                    EqualToJson\n" +
+                "                    #{\n" +
+                "                      expected:\n" +
+                "                        ExternalFormat\n" +
+                "                        #{\n" +
+                "                          contentType: 'application/json';\n" +
+                "                          data: '[]';\n" +
+                "                        }#;\n" +
+                "                    }#\n" +
                 "               ]\n" +
                 "            }\n" +
                 "         ]\n" +
                 "      }\n" +
-                "   ];\n" +
+                "   ]\n" +
                 "}\n");
     }
 
@@ -311,20 +311,20 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "               asserts:\n" +
                 "               [\n" +
                 "                  assert1:\n" +
-                "                     EqualToJson\n" +
-                "                     #{\n" +
-                "                       expected :\n" +
-                "                         ExternalFormat\n" +
-                "                         #{\n" +
-                "                           contentType: 'application/json';\n" +
-                "                           data: '[]';\n" +
-                "                         }#;\n" +
-                "                     }#\n" +
+                "                    EqualToJson\n" +
+                "                    #{\n" +
+                "                      expected:\n" +
+                "                        ExternalFormat\n" +
+                "                        #{\n" +
+                "                          contentType: 'application/json';\n" +
+                "                          data: '[]';\n" +
+                "                        }#;\n" +
+                "                    }#\n" +
                 "               ]\n" +
                 "            }\n" +
                 "         ]\n" +
                 "      }\n" +
-                "   ];\n" +
+                "   ]\n" +
                 "}\n");
     }
 

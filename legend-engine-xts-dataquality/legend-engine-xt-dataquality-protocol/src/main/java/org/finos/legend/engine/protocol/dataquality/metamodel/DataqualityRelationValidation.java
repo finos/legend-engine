@@ -36,5 +36,5 @@ public class DataqualityRelationValidation extends ModelGenerationSpecification
     public LambdaFunction query;
     public List<RelationValidation> validations = Collections.emptyList();
     public DataQualityPersistenceStrategy persistenceStrategy;
-    public List<DataQualityRelationValidationTestSuite> testSuites = Collections.emptyList();
+    public List<DataQualityRelationValidationTestSuite> testSuites;
 }
