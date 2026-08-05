@@ -143,9 +143,8 @@ public class JsonNodeComparator implements Comparator<JsonNode>
     }
 
     /**
-     * Integral numbers are less than non-integral numbers. Integral numbers
-     * are compared to each other by value. Floating point numbers are also
-     * compared to each other by value.
+     * Numerical nodes are compared by value irrespective of the JsonNode subtype
+     * For example, 1.0 equals 1
      *
      * @param node1 first number node
      * @param node2 second number node
@@ -153,12 +152,12 @@ public class JsonNodeComparator implements Comparator<JsonNode>
      */
     private int compareNumbers(JsonNode node1, JsonNode node2)
     {
+        if (node1.isNumber() && node2.isNumber())
+        {
+            return node1.decimalValue().compareTo(node2.decimalValue());
+        }
         if (node1.isIntegralNumber())
         {
-            if (!node2.isIntegralNumber() && !(node1.asText().equals(node2.asText())))
-            {
-                return -1;
-            }
             if (node1.isBigInteger() || node2.isBigInteger())
             {
                 return node1.bigIntegerValue().compareTo(node2.bigIntegerValue());
@@ -171,10 +170,6 @@ public class JsonNodeComparator implements Comparator<JsonNode>
         }
         if (node1.isFloatingPointNumber())
         {
-            if (!node2.isFloatingPointNumber() && !(node1.asText().equals(node2.asText())))
-            {
-                return -1;
-            }
             if (node1.isBigDecimal() || node2.isBigDecimal())
             {
                 return node1.decimalValue().compareTo(node2.decimalValue());
