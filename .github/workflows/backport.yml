@@ -1,0 +1,72 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Backport Merged PR
+
+# pull_request_target is safe here: no step checks out or executes code from
+# the PR. actions/checkout below checks out the BASE ref (master), and the
+# backport action only cherry-picks commits already merged to master.
+on:
+  pull_request_target:
+    types: [closed, labeled]
+    branches:
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  backport:
+    name: Create Backport PRs
+    runs-on: ubuntu-latest
+    # Two ways in: PR merged while carrying backport label(s), or a backport
+    # label added to an already-merged PR (retroactive backport).
+    #
+    # Known limitation: on the 'labeled' path, the action re-evaluates ALL of
+    # the PR's labels (label_pattern has no way to scope to just the label
+    # from this event), not only the one just added. If a PR already has a
+    # completed backport (e.g. "backport legend-release-4.98") and a second
+    # backport label is added later (e.g. "backport legend-release-4.97"),
+    # this run retries 4.98 too. That retry fails, because the branch/PR for
+    # it already exists, so the action posts a failure comment on the
+    # original PR even though the newly requested 4.97 backport succeeds.
+    # This is expected, not a bug — see the design spec's edge cases.
+    if: >
+      github.event.pull_request.merged == true &&
+      (
+        (github.event.action == 'closed' && contains(toJSON(github.event.pull_request.labels.*.name), '"backport ')) ||
+        (github.event.action == 'labeled' && startsWith(github.event.label.name, 'backport '))
+      )
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Create backport pull requests
+        uses: korthout/backport-action@2e830a1d0b8269505846ddd407a70876913ad1f8 # v4.6.0
+        with:
+          # Must be a PAT, not the default github.token: GitHub does not fire
+          # workflow runs (e.g. build.yml) for pushes/PRs created by the
+          # default GITHUB_TOKEN (recursion prevention). Using the default
+          # here would silently leave every backport PR with zero CI checks.
+          github_token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+          add_author_as_assignee: true
+          label_pattern: '^backport ([^ ]+)$'
+          pull_title: '[Backport ${target_branch}] ${pull_title}'
+          pull_description: |-
+            Backport of #${pull_number} to `${target_branch}`.
+
+            Created automatically by the backport workflow. If this PR has
+            conflicts or CI failures, the assignee (the original author) is
+            responsible for resolving them.

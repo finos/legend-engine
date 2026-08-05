@@ -204,7 +204,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::oth
 
   
    assertEquals('name,description\n' + 'Product 1,laBond 1\n' + 'Product 2,laBond 2\n'+ 'Product 3,laSuperBond 3 super\n', $result.values->toOne()->toCSV());
-   assertSameSQL('select "root".PRODUCT_NAME as "name", concat(\'la\', "root".BOND_DETAILS) as "description" from PRODUCT_DENORM as "root" where concat(\'\', "root".BOND_DETAILS) <> \'2\' or concat(\'\', "root".BOND_DETAILS) is null', $result);
+   assertSameSQL('select "root".PRODUCT_NAME as "name", concat(\'la\', "root".BOND_DETAILS) as "description" from PRODUCT_DENORM as "root" where concat(\'\', "root".BOND_DETAILS) is distinct from \'2\'', $result);
 
 }
 

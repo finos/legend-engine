@@ -1,0 +1,133 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class testM2MOptionalFromList::model::SourceEvent
+{
+  id: String[1];
+  attributes: testM2MOptionalFromList::model::SourceAttribute[*];
+}
+
+Class testM2MOptionalFromList::model::SourceAttribute
+{
+  code: String[1];
+}
+
+Class testM2MOptionalFromList::model::TargetEvent
+{
+  id: String[1];
+  firstCode: String[0..1];
+}
+
+function testM2MOptionalFromList::model::firstCodeOrEmpty(src: testM2MOptionalFromList::model::SourceEvent[1]): String[0..1]
+{
+  if($src.attributes->isEmpty(),
+    |[],
+    |'FOUND'
+  )
+}
+
+
+###Mapping
+Mapping testM2MOptionalFromList::mapping::SourceToTargetMapping
+(
+  *testM2MOptionalFromList::model::TargetEvent: Pure
+  {
+    ~src testM2MOptionalFromList::model::SourceEvent
+    id: $src.id,
+    firstCode: $src->testM2MOptionalFromList::model::firstCodeOrEmpty()
+  }
+)
+
+
+###Runtime
+Runtime testM2MOptionalFromList::runtime::SourceToTargetRuntime
+{
+  mappings:
+  [
+    testM2MOptionalFromList::mapping::SourceToTargetMapping
+  ];
+  connections:
+  [
+    ModelStore:
+    [
+      connection_1:
+      #{
+        JsonModelConnection
+        {
+          class: testM2MOptionalFromList::model::SourceEvent;
+          url: 'executor:default';
+        }
+      }#
+    ]
+  ];
+}
+
+
+###Service
+Service testM2MOptionalFromList::service::OptionalFromListService
+{
+  pattern: '/testM2MOptionalFromList/optionalFromList';
+  owners:
+  [
+    'dummy',
+    'dummy1'
+  ];
+  documentation: 'M2M mapping calling a user function returning [0..1] whose body ends in a [*] expression.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |testM2MOptionalFromList::model::TargetEvent.all()->graphFetch(#{testM2MOptionalFromList::model::TargetEvent{id,firstCode}}#)->serialize(#{testM2MOptionalFromList::model::TargetEvent{id,firstCode}}#);
+    mapping: testM2MOptionalFromList::mapping::SourceToTargetMapping;
+    runtime: testM2MOptionalFromList::runtime::SourceToTargetRuntime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            ExternalFormat
+            #{
+              contentType: 'application/json';
+              data: '[{"id":"withOneValue","attributes":[{"code":"A"}]},{"id":"empty","attributes":[]}]';
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            assert1:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":"withOneValue","firstCode":"FOUND"},{"id":"empty"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -47,10 +47,10 @@
     "expectedError" : "\"\nexpected: ['abc']\nactual:   []\""
   }, {
     "test" : "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""

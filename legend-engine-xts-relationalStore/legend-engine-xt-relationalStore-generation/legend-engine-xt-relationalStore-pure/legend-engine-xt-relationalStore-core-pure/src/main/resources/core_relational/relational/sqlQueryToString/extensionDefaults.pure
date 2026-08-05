@@ -251,6 +251,8 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
     dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),
     dynaFnToSql('ntile',                  $allStates,            ^ToSql(format='ntile(%s)')),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='(%s = %s or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='(not (%s = %s) or (%s is null and %s is not null) or (%s is not null and %s is null))', transform={p:String[2]|$p->concatenate($p)->concatenate($p)})),
     dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
     dynaFnToSql('plus',                   $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus())),
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),

@@ -151,7 +151,7 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
     ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraDynamicSQLSources);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
 {
   let parameters = $func->getParameters()->evaluateAndDeactivate();
   let requiredParameters = $parameters->filter(p | $p.multiplicity == PureOne)->evaluateAndDeactivate().name;
@@ -309,7 +309,12 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
 
 //  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
 
-  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions), 'generating plan');
+  // SQL '=' is null-unsafe (three-valued); transpiled queries keep SQL equality semantics
+  let executionContext = ^meta::pure::executionPlan::ExecutionOptionContext(
+                            executionOptions = ^meta::pure::executionPlan::featureFlag::FeatureFlagOption(
+                                                  flags = meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS));
+
+  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $executionContext, $extensions), 'generating plan');
 }
 
 function meta::external::query::sql::transformation::queryToPure::getMapping(sources: SQLSource[*]):Mapping[0..1]
@@ -1834,7 +1839,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     ^SQLLambdaParameter(variable = ^$p(name = $name), value = $value);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
+function meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   if ($expressions->isEmpty(),
       | iv([]),

@@ -48,13 +48,10 @@ function meta::external::language::java::generation::essential::lang::unitImpl(c
 function meta::external::language::java::generation::essential::lang::castCoder(ctx:FuncCoderContext[1], collection:Code[1], exmpl:Code[1]) : Code[1]
 {
    let type   = resolveHackedUnit($ctx, $ctx.params->at(1));
-
-   let castTo = if(isJavaList($collection.type),
-                   | javaList($type),
-                   | $type
-                );
-
-   $collection->j_cast($castTo);
+   if(isJavaList($collection.type),
+      | $collection->j_listOf(javaList($type)),
+      | $collection->j_cast($type)
+   );
 }
 
 function <<access.private>> meta::external::language::java::generation::essential::lang::resolveHackedUnit(ctx:FuncCoderContext[1], exmpl:ValueSpecification[1]) : meta::external::language::java::metamodel::Type[1]

@@ -353,6 +353,58 @@ public class TestM2MGrammarCompileAndExecute
         assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"name\":\"b\",\"idx\":1}}", json);
     }
 
+    @Test
+    public void testM2MDowncastCollectionElementsToSubtype() throws IOException
+    {
+        // Regression for castCoder in essential/lang.pure: whole-list downcast followed by property navigation.
+        PureModelContextData contextData = PureGrammarParser.newInstance().parseModel("" +
+                "Class test::S_Box\n" +
+                "{\n" +
+                "   kind  : String[1];\n" +
+                "   items : test::S_Shape[*];\n" +
+                "}\n" +
+                "Class test::S_Shape\n" +
+                "{\n" +
+                "}\n" +
+                "Class test::S_Circle extends test::S_Shape\n" +
+                "{\n" +
+                "   label : String[1];\n" +
+                "}\n" +
+                "Class test::T_Row\n" +
+                "{\n" +
+                "   labels : String[*];\n" +
+                "}\n" +
+                "function test::circleLabels(box: test::S_Box[1]): String[*]\n" +
+                "{\n" +
+                "   if($box.kind == 'c', |$box.items->cast(@test::S_Circle).label, |[])\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::TestMapping\n" +
+                "(\n" +
+                "   *test::T_Row : Pure\n" +
+                "   {\n" +
+                "     ~src test::S_Box\n" +
+                "     labels : $src->test::circleLabels()\n" +
+                "   }\n" +
+                ")\n"
+        );
+
+        ClassInstance fetchTree = rootGFT("test::T_Row", propertyGFT("labels"));
+        LambdaFunction lambda = lambda(apply(SERIALIZE, apply(GRAPH_FETCH, apply(GET_ALL, clazz("test::T_Row")), fetchTree), fetchTree));
+
+        ExecuteInput input = new ExecuteInput();
+        input.clientVersion = "vX_X_X";
+        input.model = contextData;
+        input.mapping = "test::TestMapping";
+        input.function = lambda;
+        input.runtime = runtimeValue(jsonModelConnection("test::S_Box",
+                "{\"kind\":\"c\",\"items\":[{\"@type\":\"S_Circle\",\"label\":\"alpha\"},{\"@type\":\"S_Circle\",\"label\":\"beta\"}]}"));
+        input.context = context();
+        String json = responseAsString(runTest(input));
+        assertEquals("{\"builder\":{\"_type\":\"json\"},\"values\":{\"labels\":[\"alpha\",\"beta\"]}}", json);
+    }
+
     private Response runTest(ExecuteInput input)
     {
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
