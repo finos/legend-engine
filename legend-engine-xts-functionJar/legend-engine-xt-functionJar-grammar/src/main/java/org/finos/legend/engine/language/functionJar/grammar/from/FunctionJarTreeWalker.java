@@ -68,7 +68,10 @@ public class FunctionJarTreeWalker
         functionJar._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         functionJar.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         functionJar.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        functionJar.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        functionJar.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
 
         FunctionJarParserGrammar.FunctionJarFuncContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionJarFunc(), "function", functionJar.sourceInformation);
         functionJar.function = new PackageableElementPointer(
@@ -98,7 +101,7 @@ public class FunctionJarTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);

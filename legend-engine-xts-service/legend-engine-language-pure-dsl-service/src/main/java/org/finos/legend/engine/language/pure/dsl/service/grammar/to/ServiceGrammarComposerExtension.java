@@ -104,7 +104,7 @@ public class ServiceGrammarComposerExtension implements IServiceGrammarComposerE
 
     private static String renderService(Service service, PureGrammarComposerContext context)
     {
-        StringBuilder serviceBuilder = new StringBuilder().append("Service").append(" ").append(HelperDomainGrammarComposer.renderAnnotations(service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
+        StringBuilder serviceBuilder = new StringBuilder().append(HelperDomainGrammarComposer.renderDeclarationPrefix("Service", service.stereotypes, service.taggedValues)).append(PureGrammarComposerUtility.convertPath(service.getPath()));
         serviceBuilder.append("\n{\n");
         serviceBuilder.append(getTabString()).append("pattern: ").append(convertString(service.pattern, true)).append(";\n");
         if (service.title != null)

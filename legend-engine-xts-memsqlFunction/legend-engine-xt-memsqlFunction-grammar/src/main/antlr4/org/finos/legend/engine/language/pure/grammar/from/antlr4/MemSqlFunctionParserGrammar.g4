@@ -29,7 +29,7 @@ identifier:     VALID_STRING | STRING |
 definition:                         (memSqlFunction | deploymentConfig)*
                                     EOF
 ;
-memSqlFunction:               MEMSQL_FUNCTION stereotypes? taggedValues? qualifiedName
+memSqlFunction:               documentation? MEMSQL_FUNCTION stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 functionName

@@ -58,6 +58,9 @@ public class HelperDomainGrammarComposer
     private static final String APPLICATION_JSON = "application/json";
     private static final String APPLICATION_XML = "application/xml";
 
+    private static final String DOC_PROFILE_PATH = "meta::pure::profiles::doc";
+    private static final String DOC_TAG = "doc";
+
     public static String renderStereotypePointer(StereotypePtr stereotypePtr)
     {
         return PureGrammarComposerUtility.convertPath(stereotypePtr.profile) + "." + PureGrammarComposerUtility.convertIdentifier(stereotypePtr.value);
@@ -65,13 +68,120 @@ public class HelperDomainGrammarComposer
 
     public static String renderTaggedValue(TaggedValue taggedValue)
     {
-        return PureGrammarComposerUtility.convertPath(taggedValue.tag.profile) + "." + PureGrammarComposerUtility.convertIdentifier(taggedValue.tag.value) + " = " + convertString(taggedValue.value, true);
+        return PureGrammarComposerUtility.convertPath(taggedValue.tag.profile) + "." + PureGrammarComposerUtility.convertIdentifier(taggedValue.tag.value) + " = " + convertString(taggedValue.value.value, true);
     }
 
     public static String renderAnnotations(List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
     {
         return (stereotypes == null || stereotypes.isEmpty() ? "" : "<<" + LazyIterate.collect(stereotypes, HelperDomainGrammarComposer::renderStereotypePointer).makeString(", ") + ">> ")
                 + (taggedValues == null || taggedValues.isEmpty() ? "" : "{" + LazyIterate.collect(taggedValues, HelperDomainGrammarComposer::renderTaggedValue).makeString(", ") + "} ");
+    }
+
+    /**
+     * The prefix of a documented, annotated declaration: the documentation block when the element has a promotable
+     * doc tagged value, the declaration keyword, then the annotations with the promoted value removed - so callers
+     * never pair {@link #renderDocumentation} with {@link #withoutDocumentation} themselves. {@code keyword} is the
+     * bare keyword ("Class", "Enum", ...; empty for members such as properties and enum values, which have none)
+     * and {@code indent} is where the declaration sits (empty for top-level elements).
+     */
+    public static String renderDeclarationPrefix(String keyword, List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
+    {
+        return renderDeclarationPrefix(keyword, "", stereotypes, taggedValues);
+    }
+
+    public static String renderDeclarationPrefix(String keyword, String indent, List<StereotypePtr> stereotypes, List<TaggedValue> taggedValues)
+    {
+        return renderDocumentation(taggedValues, indent)
+                + (keyword.isEmpty() ? "" : keyword + " ")
+                + renderAnnotations(stereotypes, withoutDocumentation(taggedValues));
+    }
+
+    /**
+     * The `'''...'''` documentation block for an element's doc tagged value, indented to `indent` and ending on the
+     * line the declaration itself starts, or "" when the element has none to promote.
+     * <p>
+     * This is deliberately not {@code HelperValueSpecificationGrammarComposer}'s text-block renderer: that one escapes
+     * whitespace and backslashes because string literals are unescaped when read back, whereas documentation content
+     * is literal. Nothing here is escaped - {@link #isRenderableAsDocumentation} is what guarantees the parser reads
+     * the value back unchanged, and anything it rejects stays an ordinary tagged value.
+     */
+    public static String renderDocumentation(List<TaggedValue> taggedValues, String indent)
+    {
+        TaggedValue documentation = extractDocumentation(taggedValues);
+        if (documentation == null)
+        {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder("'''\n");
+        for (String line : documentation.value.value.split("\n", -1))
+        {
+            // a blank line is emitted empty rather than indented, so it carries no trailing whitespace
+            builder.append(line.isEmpty() ? "" : indent + line).append('\n');
+        }
+        // the closing delimiter sits at `indent`, which is what pins the indentation the parser strips back off
+        return builder.append(indent).append("'''\n").append(indent).toString();
+    }
+
+    public static List<TaggedValue> withoutDocumentation(List<TaggedValue> taggedValues)
+    {
+        TaggedValue documentation = extractDocumentation(taggedValues);
+        return documentation == null ? taggedValues : ListIterate.reject(taggedValues, tv -> tv == documentation);
+    }
+
+    /**
+     * The one tagged value to promote to a documentation block, or null. Requires exactly one doc tag: two would
+     * compose to two consecutive blocks, which is a parse error, so both are left as tagged values. Only a value
+     * the protocol records as authored multi-line ({@code multiLine}) is promoted, so a value written as an
+     * ordinary tagged value keeps that form.
+     */
+    private static TaggedValue extractDocumentation(List<TaggedValue> taggedValues)
+    {
+        if (taggedValues == null)
+        {
+            return null;
+        }
+        TaggedValue found = null;
+        for (TaggedValue taggedValue : taggedValues)
+        {
+            if (isDocTaggedValue(taggedValue))
+            {
+                if (found != null)
+                {
+                    return null;
+                }
+                found = taggedValue;
+            }
+        }
+        return found != null && found.value != null && found.value.multiLine && isRenderableAsDocumentation(found.value.value) ? found : null;
+    }
+
+    private static boolean isDocTaggedValue(TaggedValue taggedValue)
+    {
+        return taggedValue.tag != null && DOC_TAG.equals(taggedValue.tag.value)
+                && (DOC_TAG.equals(taggedValue.tag.profile) || DOC_PROFILE_PATH.equals(taggedValue.tag.profile));
+    }
+
+    /**
+     * Whether a value survives a documentation block unchanged. Documentation has no escape mechanism at all, so
+     * anything the parser's canonicalization would consume has to stay a tagged value instead: an embedded `'''`,
+     * a carriage return, trailing whitespace on a line, and the leading and trailing blank lines it drops. A line
+     * starting with `###` is excluded too - the section splitter runs before any grammar and is not string-aware,
+     * so it would re-split the file.
+     */
+    private static boolean isRenderableAsDocumentation(String value)
+    {
+        if (value == null || value.isEmpty() || value.contains("'''") || value.indexOf('\r') >= 0 || value.startsWith("\n") || value.endsWith("\n"))
+        {
+            return false;
+        }
+        for (String line : value.split("\n", -1))
+        {
+            if (line.startsWith("###") || (!line.isEmpty() && Character.isWhitespace(line.charAt(line.length() - 1))))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static String renderEnumValue(EnumValue enumValue)
@@ -81,7 +191,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderEnumValue(EnumValue enumValue, boolean isPureGrammar)
     {
-        return renderAnnotations(enumValue.stereotypes, enumValue.taggedValues) +
+        return renderDeclarationPrefix("", getTabString(), enumValue.stereotypes, enumValue.taggedValues) +
                 PureGrammarComposerUtility.convertIdentifier(enumValue.value, false, isPureGrammar);
     }
 
@@ -103,7 +213,7 @@ public class HelperDomainGrammarComposer
 
     public static String renderProperty(Property property, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return renderAnnotations(property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
+        return renderDeclarationPrefix("", getTabString(), property.stereotypes, property.taggedValues) + renderAggregation(property.aggregation) + PureGrammarComposerUtility.convertIdentifier(property.name) + ": " + HelperValueSpecificationGrammarComposer.printGenericType(property.genericType, transformer) + "[" + renderMultiplicity(property.multiplicity) + "]" + (property.defaultValue != null ? " = " + property.defaultValue.value.accept(transformer) : "");
     }
 
     private static String renderAggregation(AggregationKind aggregationKind)
@@ -136,7 +246,7 @@ public class HelperDomainGrammarComposer
     public static String renderDerivedProperty(QualifiedProperty qualifiedProperty, DEPRECATED_PureGrammarComposerCore transformer)
     {
         List<Variable> functionParameters = qualifiedProperty.parameters.stream().filter(p -> !p.name.equals("this")).collect(Collectors.toList());
-        return renderAnnotations(qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
+        return renderDeclarationPrefix("", getTabString(), qualifiedProperty.stereotypes, qualifiedProperty.taggedValues)
                 + PureGrammarComposerUtility.convertIdentifier(qualifiedProperty.name) + "("
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(", ")
                 + ") {"

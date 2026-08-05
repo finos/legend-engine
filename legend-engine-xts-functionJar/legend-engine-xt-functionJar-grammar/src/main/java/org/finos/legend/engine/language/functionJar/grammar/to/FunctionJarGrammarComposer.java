@@ -32,7 +32,7 @@ import org.finos.legend.engine.protocol.functionJar.metamodel.FunctionJar;
 import java.util.Collections;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDeclarationPrefix;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -79,7 +79,7 @@ public class FunctionJarGrammarComposer implements PureGrammarComposerExtension
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "FunctionJar " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("FunctionJar", app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +
                 "   function : " + app.function.path + ";\n" +

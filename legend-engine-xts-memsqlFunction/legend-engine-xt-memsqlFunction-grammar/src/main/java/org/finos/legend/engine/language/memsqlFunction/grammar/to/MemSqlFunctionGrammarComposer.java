@@ -30,7 +30,7 @@ import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import java.util.Collections;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDeclarationPrefix;
 
 public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtension
 {
@@ -47,7 +47,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "MemSqlFunction " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("MemSqlFunction", app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +

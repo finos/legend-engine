@@ -51,7 +51,7 @@ validationDefinition:                  classValidationDefinition
                                        | relationComparisonDefinition
 ;
 
-classValidationDefinition:              DATAQUALITYVALIDATION stereotypes? taggedValues? qualifiedName
+classValidationDefinition:              documentation? DATAQUALITYVALIDATION stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                              (
                                                  dqContext
@@ -122,7 +122,7 @@ dqConstraintName:                   identifier
 ;
 
 // --------------------------- Relation Definition ----------------------------------------------------------
-relationValidationDefinition:           DATAQUALITYRELATIONVALIDATION stereotypes? taggedValues? qualifiedName
+relationValidationDefinition:           documentation? DATAQUALITYRELATIONVALIDATION stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                              (
                                                  relationFunc

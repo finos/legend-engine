@@ -52,7 +52,7 @@ identifier:                         VALID_STRING | STRING
 definition:                         (dataSpaceElement)*
                                     EOF
 ;
-dataSpaceElement:                   DATA_SPACE stereotypes? taggedValues? qualifiedName
+dataSpaceElement:                   documentation? DATA_SPACE stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 executionContexts

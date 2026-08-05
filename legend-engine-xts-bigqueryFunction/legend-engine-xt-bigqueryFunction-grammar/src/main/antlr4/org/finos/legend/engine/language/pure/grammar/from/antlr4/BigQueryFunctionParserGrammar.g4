@@ -29,7 +29,7 @@ identifier:     VALID_STRING | STRING |
 definition:                         (bigQueryFunction | deploymentConfig)*
                                     EOF
 ;
-bigQueryFunction:               BIGQUERY_FUNCTION stereotypes? taggedValues? qualifiedName
+bigQueryFunction:               documentation? BIGQUERY_FUNCTION stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 functionName

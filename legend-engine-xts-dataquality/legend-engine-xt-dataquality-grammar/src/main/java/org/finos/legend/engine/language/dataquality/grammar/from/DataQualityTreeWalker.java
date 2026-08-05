@@ -194,7 +194,10 @@ public class DataQualityTreeWalker
         dataQuality._package = validationDefinitionContext.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(validationDefinitionContext.qualifiedName().packagePath().identifier());
         dataQuality.sourceInformation = walkerSourceInformation.getSourceInformation(validationDefinitionContext);
         dataQuality.stereotypes = validationDefinitionContext.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(validationDefinitionContext.stereotypes());
-        dataQuality.taggedValues = validationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(validationDefinitionContext.taggedValues());
+        dataQuality.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                validationDefinitionContext.documentation() == null ? null : validationDefinitionContext.documentation().STRING().getSymbol(),
+                validationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(validationDefinitionContext.taggedValues()),
+                this.walkerSourceInformation);
         dataQuality.sourceInformation = walkerSourceInformation.getSourceInformation(validationDefinitionContext);
 
         // context
@@ -347,7 +350,7 @@ public class DataQualityTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
@@ -399,7 +402,10 @@ public class DataQualityTreeWalker
         dataqualityRelationValidation._package = relationValidationDefinitionContext.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(relationValidationDefinitionContext.qualifiedName().packagePath().identifier());
         dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
         dataqualityRelationValidation.stereotypes = relationValidationDefinitionContext.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(relationValidationDefinitionContext.stereotypes());
-        dataqualityRelationValidation.taggedValues = relationValidationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(relationValidationDefinitionContext.taggedValues());
+        dataqualityRelationValidation.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                relationValidationDefinitionContext.documentation() == null ? null : relationValidationDefinitionContext.documentation().STRING().getSymbol(),
+                relationValidationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(relationValidationDefinitionContext.taggedValues()),
+                this.walkerSourceInformation);
         dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
 
         // query

@@ -96,6 +96,139 @@ grammar rule accepts `STRING`, which includes the text-block form, and the value
 correctly — but it composes back as an escaped single-line string. The value is preserved; only
 the block formatting is lost on a round-trip.
 
+This gap does **not** apply to documentation, which has its own construct — see §3.2.
+
+### 3.2 Documentation (`'''…'''` before a declaration)
+
+A `'''…'''` literal immediately preceding a declaration is **syntactic sugar** for the
+`meta::pure::profiles::doc` `doc` tagged value. These two parse to the same protocol:
+
+```
+'''
+A person in the system.
+'''
+Class model::Person
+{
+  '''
+  Given name. Not guaranteed unique.
+  '''
+  firstName: String[1];
+}
+```
+
+```
+Class {meta::pure::profiles::doc.doc = 'A person in the system.'} model::Person
+{
+  {meta::pure::profiles::doc.doc = 'Given name. Not guaranteed unique.'} firstName: String[1];
+}
+```
+
+There is no new profile, no new metamodel, and **no protocol change at all**: desugaring happens in
+`DomainParseTreeWalker`, so everything downstream — compiler, `PureModelContextData` JSON, every
+existing `doc` consumer — sees an ordinary `TaggedValue` and needs no update.
+
+Documentation is a **parser rule** (`documentation` in `DomainParserGrammar.g4`), listed explicitly at
+each declaration that accepts it rather than being lexer-level. That is what keeps the identical
+literal in expression position an ordinary [multi-line string](#31-multi-line-string-literals-),
+and it is why attachment needs no adjacency heuristic: either the literal is in a documentation
+position or it is a value.
+
+#### Where it attaches
+
+Documentation precedes the **whole declaration**, before any stereotypes or tagged values.
+Intervening whitespace and comments are skipped, so a note written between the documentation and the
+declaration does not detach it.
+
+The rule is the same everywhere: wherever an element accepts `taggedValues`, it accepts documentation.
+
+| Grammar | Declarations |
+|---|---|
+| `###Pure` | `Class`, `Enum` and its values, `Association`, `function`, properties, qualified properties |
+| `###Relational` | `Database`, `Schema`, `Table`, column, `View` |
+| `###DataSpace` | `DataSpace` |
+| `###Service` / `###HostedService` | `Service` |
+| `###FunctionJar` | `FunctionJar` |
+| `###DataQuality` | `DataQualityValidation`, `DataQualityRelationValidation` |
+| `###Snowflake` | `SnowflakeApp`, `SnowflakeM2MUdf` |
+| `###BigQueryFunction` / `###MemSqlFunction` | `BigQueryFunction`, `MemSqlFunction` |
+| `###Data` | `Data` |
+
+The `documentation` rule lives in `M3ParserGrammar.g4`, so the eight grammars that import it inherit
+the rule and only name it in their element rule. `RelationalParserGrammar.g4` and
+`DataParserGrammar.g4` import `CoreParserGrammar` and carry their own `stereotypes`/`taggedValues`,
+so they declare a local copy.
+
+**Several of these DSLs already have a `documentation:` or `description:` field of their own** —
+Service, HostedService and FunctionJar have `documentation`; DataSpace, Snowflake, BigQuery and
+MemSql have `description`. A `'''…'''` block does **not** populate those. It is the `doc` tagged
+value in every grammar, so the same syntax means the same thing everywhere; the DSL-specific field
+stays a separate slot and an element may carry both.
+
+`PureGrammarParserUtility.taggedValuesWithDocumentation` is the single implementation every walker
+calls. ANTLR generates a distinct `DocumentationContext` class per grammar even for a rule inherited
+from `M3ParserGrammar`, so it takes the literal's token rather than the context.
+
+An element may not carry both documentation and an explicit `doc.doc` tagged value — that is a parser
+error rather than a silent drop. Because tag references are unresolved at parse time, the check
+matches the profile *as written*: bare `doc` (through an import) or fully qualified
+`meta::pure::profiles::doc`. `my::pkg::doc.doc` is a different profile and is not a conflict.
+
+#### How the content is processed
+
+Documentation shares the text-block **layout** of §3.1 and differs in two respects, both matching
+legend-pure's `DocumentationCanonicalizer`:
+
+1. **Content is literal — there is no escape processing.** `\n`, `\'` and `\\` are content.
+   Unescaping prose would silently rewrite a regex (`\d+` → `d+`), a Markdown escape (`\*` → `*`)
+   and a Windows path (`C:\temp` → `C:` followed by a tab).
+2. **Leading and trailing blank lines are dropped**, which is what makes a documentation literal and
+   the equivalent explicit `doc.doc` tagged value hold the same string.
+
+`PureGrammarParserUtility.canonicalizeDocumentation` is the engine-side implementation;
+`TestDocumentationParsing` is the lock. **If you change one, change the other.**
+
+#### Engine-only: re-emission
+
+`TaggedValue.value` is a `CString` in the protocol, so a doc value carries the same `multiLine`
+flag a string literal does, and the same rule applies: the parser sets it from the token shape
+alone (a documentation block or a `'''...'''` tagged-value literal), the composer obeys it, and
+neither inspects the value. A value authored as a block composes back as a block; one authored as
+an ordinary tagged value stays one, even when it contains newlines.
+
+On the wire the value stays a plain JSON string — byte-identical to the pre-flag protocol — unless
+`multiLine` is set, in which case it is an object (`{"_type": "string", "multiLine": true,
+"value": ...}`). Both shapes deserialize into the same POJO (`TestTaggedValueCompatibility` is the
+lock), so every existing model is unaffected in both directions and only models that actually use
+documentation blocks put the new shape on the wire. The flag is protocol-only: compiling to the
+graph drops it, so anything re-generated from a compiled model (`PureModelContextDataGenerator`,
+the `meta::protocols` transfers) composes docs as ordinary tagged values.
+
+Because documentation has no escape mechanism at all, the composer cannot encode an arbitrary value
+the way `renderTextBlock` does. `isRenderableAsDocumentation` is the guard, and anything it rejects
+stays an ordinary tagged value: an embedded `'''`, a carriage return, trailing whitespace on a line,
+a leading or trailing blank line, an empty value, two `doc` tags on one element, and a line beginning
+`###` (the section split runs before any grammar and is not string-aware, so it would re-split the
+file). `TestDocumentationRoundtrip` has one test per trigger.
+
+Both profile spellings are promoted — bare `doc` and fully qualified — so `{doc.doc = 'x'}` composes
+to a block that reparses as `meta::pure::profiles::doc`. The text changes; the meaning does not.
+
+#### Gaps against legend-pure
+
+legend-pure additionally attaches documentation to `Profile`, `Measure`, `Primitive` and
+`native function`. The engine cannot without unrelated work: its grammar gives `profile`,
+`measureDefinition` and `nativeFunction` no annotation slots at all, the `Profile` protocol has no
+`taggedValues` field, and `nativeFunction` has no walker (it reaches `visitElement`'s
+"Unsupported syntax" throw). Deferred rather than half-supported.
+
+Graph-fetch projections (`treePath`, `simpleProperty`, `complexProperty`, `derivedProperty`) are also
+out of scope: they are projections rather than declarations, and legend-pure did not touch them.
+
+In the other direction the engine goes **further** than legend-pure on `###Relational`, where
+documentation on a `Database`, `Schema`, `Table`, column or `View` is supported. In legend-pure a
+`'''…'''` relational tagged value parses and then NPEs in
+`RelationalGraphBuilder.visitTaggedValueNew`.
+
 ---
 
 ## Related

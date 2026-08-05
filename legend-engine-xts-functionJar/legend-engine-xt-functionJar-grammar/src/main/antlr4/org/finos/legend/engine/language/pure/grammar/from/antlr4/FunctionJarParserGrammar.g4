@@ -30,7 +30,7 @@ imports:                                (importStatement)*
 ;
 importStatement:                        IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
-functionJar:                                FUNCTIONJAR stereotypes? taggedValues? qualifiedName
+functionJar:                                documentation? FUNCTIONJAR stereotypes? taggedValues? qualifiedName
                                             BRACE_OPEN
                                                 (
                                                     functionJarOwnership

@@ -28,7 +28,7 @@ identifier:                                 unquotedIdentifier | STRING
 definition:                                 (database)*
                                             EOF
 ;
-database:                                   DATABASE stereotypes? taggedValues? qualifiedName
+database:                                   documentation? DATABASE stereotypes? taggedValues? qualifiedName
                                                 PAREN_OPEN
                                                     (include | includeStore)*
                                                     (
@@ -57,9 +57,14 @@ taggedValues:                                   BRACE_OPEN taggedValue (COMMA ta
 taggedValue:                                    qualifiedName DOT identifier EQUAL STRING
 ;
 
+// Sugar for the meta::pure::profiles::doc doc tagged value - see M3ParserGrammar. Declared locally because this
+// grammar imports CoreParserGrammar and carries its own stereotypes/taggedValues rules.
+documentation:                                  STRING
+;
+
 // -------------------------------------- SCHEMA & TABLE --------------------------------------
 
-schema:                                     SCHEMA stereotypes? taggedValues? schemaIdentifier
+schema:                                     documentation? SCHEMA stereotypes? taggedValues? schemaIdentifier
                                                 PAREN_OPEN
                                                     (
                                                         table
@@ -68,13 +73,13 @@ schema:                                     SCHEMA stereotypes? taggedValues? sc
                                                     )*
                                                 PAREN_CLOSE
 ;
-table:                                      TABLE stereotypes? taggedValues? relationalIdentifier
+table:                                      documentation? TABLE stereotypes? taggedValues? relationalIdentifier
                                                 PAREN_OPEN
                                                     milestoneSpec?
                                                     (columnDefinition (COMMA columnDefinition)*)?
                                                 PAREN_CLOSE
 ;
-columnDefinition:                           relationalIdentifier stereotypes? taggedValues? identifier (PAREN_OPEN INTEGER (COMMA INTEGER)? PAREN_CLOSE)? (PRIMARY_KEY | NOT_NULL)?
+columnDefinition:                           documentation? relationalIdentifier stereotypes? taggedValues? identifier (PAREN_OPEN INTEGER (COMMA INTEGER)? PAREN_CLOSE)? (PRIMARY_KEY | NOT_NULL)?
 ;
 
 // -------------------------------------- MILESTONING --------------------------------------
@@ -125,7 +130,7 @@ processingSnapshotDate:                     PROCESSING_SNAPSHOT_DATE EQUAL ident
 ;
 // -------------------------------------- VIEW --------------------------------------
 
-view:                                       VIEW stereotypes? taggedValues?  relationalIdentifier
+view:                                       documentation? VIEW stereotypes? taggedValues?  relationalIdentifier
                                                 PAREN_OPEN
                                                     (viewFilterMapping)?
                                                     (viewGroupBy)?

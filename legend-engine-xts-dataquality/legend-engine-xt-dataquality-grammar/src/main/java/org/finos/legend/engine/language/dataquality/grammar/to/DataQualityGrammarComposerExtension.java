@@ -46,7 +46,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.eclipse.collections.impl.utility.Iterate.isEmpty;
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDeclarationPrefix;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 
@@ -82,7 +82,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
     {
         String packageName = dataQuality._package == null || dataQuality._package.isEmpty() ? dataQuality.name : dataQuality._package + "::" + dataQuality.name;
         DEPRECATED_PureGrammarComposerCore grammarTransformer = DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(1).withRenderStyle(RenderStyle.PRETTY).build();
-        return "DataQualityValidation " + renderAnnotations(dataQuality.stereotypes, dataQuality.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("DataQualityValidation", dataQuality.stereotypes, dataQuality.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   context: " + getContextFunc(dataQuality) + ";\n" +
                 "   validationTree: " + processGraphFetchTree(dataQuality.dataQualityRootGraphFetchTree, grammarTransformer) + ";\n" +
@@ -93,7 +93,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
     private static String renderDataQualityRelationValidation(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
     {
         String packageName = dataqualityRelationValidation._package == null || dataqualityRelationValidation._package.isEmpty() ? dataqualityRelationValidation.name : dataqualityRelationValidation._package + "::" + dataqualityRelationValidation.name;
-        return "DataQualityRelationValidation " + renderAnnotations(dataqualityRelationValidation.stereotypes, dataqualityRelationValidation.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("DataQualityRelationValidation", dataqualityRelationValidation.stereotypes, dataqualityRelationValidation.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +

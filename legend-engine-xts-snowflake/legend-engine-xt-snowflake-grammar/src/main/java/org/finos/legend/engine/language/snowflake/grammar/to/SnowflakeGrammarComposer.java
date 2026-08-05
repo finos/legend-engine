@@ -32,7 +32,7 @@ import org.finos.legend.engine.protocol.snowflake.snowflakeM2MUdf.metamodel.Snow
 import java.util.Collections;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDeclarationPrefix;
 
 public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
 {
@@ -59,7 +59,7 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "SnowflakeApp " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("SnowflakeApp", app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   applicationName : '" + app.applicationName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
@@ -76,7 +76,7 @@ public class SnowflakeGrammarComposer implements PureGrammarComposerExtension
     {
         String packageName = udf._package == null || udf._package.isEmpty() ? udf.name : udf._package + "::" + udf.name;
 
-        return "SnowflakeM2MUdf " + renderAnnotations(udf.stereotypes, udf.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("SnowflakeM2MUdf", udf.stereotypes, udf.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   udfName : '" + udf.udfName + "';\n" +
                 "   function : " + udf.function.path + ";\n" +

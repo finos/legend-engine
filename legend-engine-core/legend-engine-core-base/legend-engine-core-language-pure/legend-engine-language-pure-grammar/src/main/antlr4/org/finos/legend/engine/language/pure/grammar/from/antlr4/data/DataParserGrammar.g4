@@ -33,7 +33,7 @@ identifier:                 VALID_STRING | STRING
 definition:                 (dataElement)*
                             EOF
 ;
-dataElement:                DATA stereotypes? taggedValues? qualifiedName
+dataElement:                documentation? DATA stereotypes? taggedValues? qualifiedName
                                 BRACE_OPEN
                                     embeddedData?
                                     (dataResolver (dataResolver)*)?
@@ -56,5 +56,9 @@ stereotype:                 qualifiedName DOT identifier
 taggedValues:               BRACE_OPEN taggedValue (COMMA taggedValue)* BRACE_CLOSE
 ;
 taggedValue:                qualifiedName DOT identifier EQUAL STRING
+;
+// Sugar for the meta::pure::profiles::doc doc tagged value - see M3ParserGrammar. Declared locally because this
+// grammar imports CoreParserGrammar and carries its own stereotypes/taggedValues rules.
+documentation:              STRING
 ;
 
