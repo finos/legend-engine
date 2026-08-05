@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RuleContext;
 import org.apache.commons.text.StringEscapeUtils;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -47,6 +48,11 @@ public class PureGrammarParserUtility
      */
     public static String fromGrammarString(String val, boolean unescape)
     {
+        // Multi-line strings (Java text-block style) are delimited by triple single quotes.
+        if (isTextBlock(val))
+        {
+            return processTextBlock(val, unescape);
+        }
         if (unescape)
         {
             // since PURE is syntactically close to Java, we use `unescapeJava`
@@ -58,6 +64,110 @@ public class PureGrammarParserUtility
     public static String removeQuotes(String val)
     {
         return val.substring(1, val.length() - 1);
+    }
+
+    /**
+     * Build a string literal from a raw grammar STRING token, recording whether it was authored as a multi-line
+     * (triple-quoted) block. The flag is the whole decision - nothing inspects the value.
+     */
+    public static CString toCString(String rawToken)
+    {
+        CString cString = new CString(fromGrammarString(rawToken, true));
+        cString.multiLine = isTextBlock(rawToken);
+        return cString;
+    }
+
+    /**
+     * A text block opens with `'''` followed - after optional spaces or tabs - by a line terminator, so the first
+     * line of content is the line after the delimiter. This mirrors legend-pure's lexer fragment; `'''abc'''` and
+     * `''''''` are deliberately not text blocks.
+     */
+    public static boolean isTextBlock(String val)
+    {
+        if (val.length() < 7 || !val.startsWith("'''") || !val.endsWith("'''"))
+        {
+            return false;
+        }
+        int i = 3;
+        while (i < val.length() && (val.charAt(i) == ' ' || val.charAt(i) == '\t'))
+        {
+            i++;
+        }
+        if (i < val.length() && val.charAt(i) == '\r')
+        {
+            i++;
+        }
+        return i < val.length() && val.charAt(i) == '\n';
+    }
+
+    /**
+     * Convert the raw text of a multi-line string literal (`'''...'''`) into its value, following the Java text-block
+     * algorithm: normalize line terminators, drop the opening-delimiter line and the closing `'''`, strip the common
+     * (incidental) leading-whitespace indentation, strip trailing whitespace from each line, then process escape
+     * sequences. The `\s` escape and `\`-line-continuation are not supported.
+     * <p>
+     * Kept behaviourally identical to legend-pure's {@code processMultilineString} so the two grammars accept the
+     * same source and produce the same value - see docs/engineering/architecture/type-system.md.
+     */
+    public static String processTextBlock(String val, boolean unescape)
+    {
+        // normalize line terminators, then drop the opening delimiter line (through its terminator) and the closing '''
+        String normalized = val.replace("\r\n", "\n").replace('\r', '\n');
+        String body = normalized.substring(normalized.indexOf('\n') + 1, normalized.length() - 3);
+        // -1 keeps a trailing empty line (from a closing delimiter on its own line)
+        String[] lines = body.split("\n", -1);
+        // the minimum indentation spans every non-blank line plus the last (closing-delimiter) line even when blank -
+        // that last line sets a floor which prevents over-stripping the value's own indentation
+        int minIndent = Integer.MAX_VALUE;
+        for (int i = 0; i < lines.length; i++)
+        {
+            String line = lines[i];
+            int leading = leadingWhitespaceCount(line);
+            if (leading < line.length() || i == lines.length - 1)
+            {
+                minIndent = Math.min(minIndent, leading);
+            }
+        }
+        if (minIndent == Integer.MAX_VALUE)
+        {
+            minIndent = 0;
+        }
+        StringBuilder builder = new StringBuilder(body.length());
+        for (int i = 0; i < lines.length; i++)
+        {
+            if (i > 0)
+            {
+                builder.append('\n');
+            }
+            String line = lines[i];
+            builder.append(stripTrailingWhitespace(line.substring(Math.min(minIndent, line.length()))));
+        }
+        String result = builder.toString();
+        if (unescape)
+        {
+            result = StringEscapeUtils.unescapeJava(result);
+        }
+        return result;
+    }
+
+    private static String stripTrailingWhitespace(String line)
+    {
+        int end = line.length();
+        while (end > 0 && Character.isWhitespace(line.charAt(end - 1)))
+        {
+            end--;
+        }
+        return end == line.length() ? line : line.substring(0, end);
+    }
+
+    private static int leadingWhitespaceCount(String line)
+    {
+        int count = 0;
+        while (count < line.length() && Character.isWhitespace(line.charAt(count)))
+        {
+            count++;
+        }
+        return count;
     }
 
     public static <T extends RuleContext> List<T> validateRequiredListField(List<T> contexts, String fieldName, SourceInformation sourceInformation)

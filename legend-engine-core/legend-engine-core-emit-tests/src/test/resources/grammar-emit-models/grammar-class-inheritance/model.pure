@@ -1,0 +1,63 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+// Root of a three-level hierarchy.
+Class demo::inheritance::LegalEntity
+{
+  entityId: String[1];
+  legalName: String[1];
+}
+
+// Level two, with two siblings, so the hierarchy branches rather than being a
+// single chain.
+Class demo::inheritance::Firm extends demo::inheritance::LegalEntity
+{
+  incorporationDate: StrictDate[1];
+}
+
+Class demo::inheritance::Fund extends demo::inheritance::LegalEntity
+{
+  strategy: String[1];
+}
+
+// Level three: a subclass whose inherited properties come from two levels up.
+Class demo::inheritance::PublicFirm extends demo::inheritance::Firm
+{
+  ticker: String[1];
+}
+
+// A derived property declared on the root and reaching only root properties, so
+// every subtype inherits a working implementation.
+Class demo::inheritance::Party
+{
+  partyId: String[1];
+  displayLabel() { $this.partyId + ' (party)' }: String[1];
+}
+
+// A subclass that adds a derived property reaching an inherited property — the
+// case where compilation must resolve $this.partyId against the supertype.
+Class demo::inheritance::Counterparty extends demo::inheritance::Party
+{
+  rating: String[1];
+  ratedLabel() { $this.partyId + ' rated ' + $this.rating }: String[1];
+}
+
+// A property typed as the supertype, satisfiable by any subtype — the reason the
+// hierarchy has to be resolved at compile time rather than at use.
+Class demo::inheritance::Trade
+{
+  tradeId: String[1];
+  counterparty: demo::inheritance::LegalEntity[1];
+}

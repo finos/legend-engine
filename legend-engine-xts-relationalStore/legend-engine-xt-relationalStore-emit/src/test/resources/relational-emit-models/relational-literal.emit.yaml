@@ -1,0 +1,40 @@
+name: relational-literal
+title: "Literal Values in a Relational Mapping"
+description: |
+  An Account class whose `source` property is bound to a bare string constant
+  rather than a column, and whose `tier` property is derived from a
+  `case(equal(AccountTable.code, 'A'), 'PREMIUM', 'STANDARD')` expression whose
+  branches are themselves literals. Proves that a relational property mapping
+  can be satisfied by a constant with no column behind it, both standalone and
+  as an argument to a store function.
+
+  Deliberately does not cover `mapping:relational-literal-list`: the grammar
+  accepts an inline literal array (`in(col, ['A', 'B'])`), but
+  RelationalParseTreeWalker.visitFunctionOperationArgument double-wraps each
+  element in a Literal, so the SQL dialect translation fails to convert it. See
+  the note in docs/emit/emit-coverage-plan.md §3.1.
+
+modelSources:
+  model:
+    root: relational-literal
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/accountMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-literal
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - constant
+  - h2
+  - literal
+  - mapping-test

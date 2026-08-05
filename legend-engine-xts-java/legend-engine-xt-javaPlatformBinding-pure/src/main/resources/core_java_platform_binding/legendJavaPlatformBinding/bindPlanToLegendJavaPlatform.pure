@@ -35,7 +35,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::bindPlanToLegen
    let generationContext  = $plan->prepareGenerationContext($legendJavaConfig, $extensions, $debug);
 
    let baseProject        = $generationContext->generateTypes($debug);
-   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $generationContext, $extensions, $debug);
+   let seededContext      = ^$generationContext(resolutionState = ^CodeDependencyResolutionState(projectsByDependency=^Map<String, Project>()));
+   let generatedNode      = $plan.rootExecutionNode->generateLegendJavaPlatformBindingCode('root', $seededContext, $extensions, $debug);
    let generatedProject   = $baseProject->concatenate($generatedNode.project)->toOneMany()->mergeProjects();
 
    ^$plan
@@ -113,53 +114,69 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
 // Generate Java Code -----------------------------------------------------------------
 
+function meta::pure::executionPlan::platformBinding::legendJava::lastResolutionState(nodes: GeneratedNode[*], default: CodeDependencyResolutionState[1]): CodeDependencyResolutionState[1]
+{
+   let withState = $nodes->filter(n | $n.resolutionState->isNotEmpty());
+   if($withState->isEmpty(), | $default, | $withState->last()->toOne().resolutionState->toOne());
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::generateLegendJavaPlatformBindingCode(node: ExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]): GeneratedNode[1]
 {
    let supportingExtension = $node->supportingLegendJavaExtension($extensions);
+   let ctxIn = ^$context(resolutionState = $context->currentResolutionState());
 
    let generated = if ($supportingExtension.generateLegendJavaCodeForNode->isNotEmpty(),
-                       | $supportingExtension.generateLegendJavaCodeForNode->toOne()->eval($node, $path, $context, $extensions, $debug),
+                       | $supportingExtension.generateLegendJavaCodeForNode->toOne()->eval($node, $path, $ctxIn, $extensions, $debug),
                        | $node->match([
-                            p:PureExpressionPlatformExecutionNode[1]                    | $p->generateImplementionForPlatformNode($path, $context, $extensions, $debug),
-                            p:PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1] | $p->generateImplementationForPlatformPrimitiveQualifierLocalGraphFetchExecutionNode($path, $context, $extensions, $debug),
-                            f:FunctionParametersValidationNode[1]                       | $f->generateJavaClassForFunctionParameters($context, $debug),
+                            p:PureExpressionPlatformExecutionNode[1]                    | $p->generateImplementionForPlatformNode($path, $ctxIn, $extensions, $debug),
+                            p:PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1] | $p->generateImplementationForPlatformPrimitiveQualifierLocalGraphFetchExecutionNode($path, $ctxIn, $extensions, $debug),
+                            f:FunctionParametersValidationNode[1]                       | $f->generateJavaClassForFunctionParameters($ctxIn, $debug),
                             e:ExecutionNode[1]                                          | ^GeneratedCode()
                          ])
                    );
 
-   let generatedChildren = $node.executionNodes->generateLegendJavaPlatformBindingCodeForChildNodes(1, $path, $context, $extensions, $debug);
+   let stateAfterGen = if($generated.resolutionState->isEmpty(), | $ctxIn.resolutionState->toOne(), | $generated.resolutionState->toOne());
+   let ctxAfterGen = ^$context(resolutionState = $stateAfterGen);
+
+   let generatedChildren = $node.executionNodes->generateLegendJavaPlatformBindingCodeForChildNodes(1, $path, $ctxAfterGen, $extensions, $debug);
+   let stateAfterChildren = $generatedChildren->lastResolutionState($stateAfterGen);
+   let ctxAfterChildren = ^$context(resolutionState = $stateAfterChildren);
 
    let newNode     = ^$node(executionNodes = $generatedChildren.node, implementation = $generated.implementation);
    let fullProject = $generated.project->concatenate($generatedChildren.project)->concatenate($context.baseProject)->mergeProjectsNullable();
 
    if ($supportingExtension.generateLegendJavaCodeForExtraChildNodes->isNotEmpty(),
-       | $supportingExtension.generateLegendJavaCodeForExtraChildNodes->toOne()->eval($newNode, $fullProject, $path, $context, $extensions, $debug),
+       | $supportingExtension.generateLegendJavaCodeForExtraChildNodes->toOne()->eval($newNode, $fullProject, $path, $ctxAfterChildren, $extensions, $debug),
        | $newNode->match([
             {g:GlobalGraphFetchExecutionNode[1] |
-               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.globalChild' + $x->toString(), $context, $extensions, $debug));
-               let transformedLocal = $g.localGraphFetchExecutionNode->generateLegendJavaPlatformBindingCode($path + localGraphFetchNodePathPrefix(), $context, $extensions, $debug);
+               let transformedChildren = $g.children->size()->range()->map(x | $g.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.globalChild' + $x->toString(), $ctxAfterChildren, $extensions, $debug));
+               let stateAfterGlobalChildren = $transformedChildren->lastResolutionState($stateAfterChildren);
+               let transformedLocal = $g.localGraphFetchExecutionNode->generateLegendJavaPlatformBindingCode($path + localGraphFetchNodePathPrefix(), ^$context(resolutionState = $stateAfterGlobalChildren), $extensions, $debug);
                ^GeneratedNode(
                   node = ^$g
                          (
                             children = $transformedChildren.node->cast(@GlobalGraphFetchExecutionNode),
                             localGraphFetchExecutionNode = $transformedLocal.node->cast(@LocalGraphFetchExecutionNode)
                          ),
-                  project = $fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)->mergeProjectsNullable()
+                  project = $fullProject->concatenate($transformedChildren.project)->concatenate($transformedLocal.project)->mergeProjectsNullable(),
+                  resolutionState = $transformedLocal->lastResolutionState($stateAfterGlobalChildren)
                );
             },
             {f:FreeMarkerConditionalExecutionNode[1] |
-               let transformedTrueBlock = $f.trueBlock->generateLegendJavaPlatformBindingCode($path + '.trueBlock', $context, $extensions, $debug);
-               let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generateLegendJavaPlatformBindingCode($path + '.falseBlock', $context, $extensions, $debug));
+               let transformedTrueBlock = $f.trueBlock->generateLegendJavaPlatformBindingCode($path + '.trueBlock', $ctxAfterChildren, $extensions, $debug);
+               let stateAfterTrue = $transformedTrueBlock->lastResolutionState($stateAfterChildren);
+               let transformedFalseBlock = if($f.falseBlock->isEmpty(), |[], |$f.falseBlock->toOne()->generateLegendJavaPlatformBindingCode($path + '.falseBlock', ^$context(resolutionState = $stateAfterTrue), $extensions, $debug));
                ^GeneratedNode(
                   node = ^$f
                          (
                             trueBlock = $transformedTrueBlock.node,
                             falseBlock = $transformedFalseBlock.node
                          ),
-                  project = $fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)->mergeProjectsNullable()
+                  project = $fullProject->concatenate($transformedTrueBlock.project)->concatenate($transformedFalseBlock.project)->mergeProjectsNullable(),
+                  resolutionState = $transformedFalseBlock->lastResolutionState($stateAfterTrue)
                );
             },
-            {e:ExecutionNode[1] | ^GeneratedNode(node = $newNode, project = $fullProject)}
+            {e:ExecutionNode[1] | ^GeneratedNode(node = $newNode, project = $fullProject, resolutionState = $stateAfterChildren)}
          ])
    );
 }
@@ -168,9 +185,12 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 {
    $nodes->head()->match([
       n0:ExecutionNode[0] | [],
-      n :ExecutionNode[1] | $n->generateLegendJavaPlatformBindingCode($parentPath + '.n' + $childNo->toString(), $context, $extensions, $debug)->concatenate(
-                               $nodes->tail()->generateLegendJavaPlatformBindingCodeForChildNodes($childNo + 1, $parentPath, $context, $extensions, $debug)
-                            )
+      n :ExecutionNode[1] |
+         let gn = $n->generateLegendJavaPlatformBindingCode($parentPath + '.n' + $childNo->toString(), $context, $extensions, $debug);
+         let stateAfter = $gn->lastResolutionState($context->currentResolutionState());
+         $gn->concatenate(
+            $nodes->tail()->generateLegendJavaPlatformBindingCodeForChildNodes($childNo + 1, $parentPath, ^$context(resolutionState = $stateAfter), $extensions, $debug)
+         );
    ]);
 }
 

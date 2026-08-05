@@ -1,0 +1,106 @@
+tests:
+  # generate_series — integer overloads
+  - id: generate_series__big_big__from_table
+    sql: SELECT GENERATE_SERIES(1, 5) AS result
+    function: generate_series
+    signature: generate_series(bigint, bigint) → SETOF bigint
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__big_big_big__from_table
+    sql: SELECT GENERATE_SERIES(1, 10, 2) AS result
+    function: generate_series
+    signature: generate_series(bigint, bigint, bigint) → SETOF bigint
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__int_int__from_table
+    sql: SELECT GENERATE_SERIES(1, 5) AS result
+    function: generate_series
+    signature: generate_series(integer, integer) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__int_int_int__from_table
+    sql: SELECT GENERATE_SERIES(0, 20, 5) AS result
+    function: generate_series
+    signature: generate_series(integer, integer, integer) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__num_num__from_table
+    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    function: generate_series
+    signature: generate_series(numeric, numeric) → SETOF numeric
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__num_num_num__from_table
+    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    function: generate_series
+    signature: generate_series(numeric, numeric, numeric) → SETOF numeric
+
+  # generate_series — timestamp overloads
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__tstz_tstz_intv__from_table
+    sql: SELECT GENERATE_SERIES('2023-01-01'::timestamp, '2023-01-05'::timestamp, '1 day'::interval) AS result
+    function: generate_series
+    signature: generate_series(timestamp with time zone, timestamp with time zone, interval) → SETOF timestamp with time zone
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__tstz_tstz_intv_txt__from_table
+    sql: SELECT GENERATE_SERIES('2023-01-01'::timestamp, '2023-01-05'::timestamp, '1 day'::interval) AS result
+    function: generate_series
+    signature: generate_series(timestamp with time zone, timestamp with time zone, interval, text) → SETOF timestamp with time zone
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series__ts_ts_intv__from_table
+    sql: SELECT GENERATE_SERIES('2023-01-01'::timestamp, '2023-01-05'::timestamp, '1 day'::interval) AS result
+    function: generate_series
+    signature: generate_series(timestamp without time zone, timestamp without time zone, interval) → SETOF timestamp without time zone
+
+  # generate_series — edge cases
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series_empty_result
+    sql: SELECT GENERATE_SERIES(5, 1) AS result
+    function: generate_series
+    signature: generate_series(integer, integer) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series_negative_step
+    sql: SELECT GENERATE_SERIES(5, 1, -1) AS result
+    function: generate_series
+    signature: generate_series(integer, integer, integer) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series_single_value
+    sql: SELECT GENERATE_SERIES(1, 1) AS result
+    function: generate_series
+    signature: generate_series(integer, integer) → SETOF integer
+
+  # generate_series in FROM clause (lateral)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_series_in_from
+    sql: SELECT g.result FROM GENERATE_SERIES(1, 3) AS g(result) ORDER BY 1
+    function: generate_series
+    signature: generate_series(integer, integer) → SETOF integer
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: generate_series_cross_join
+    sql: SELECT p.name, g.val FROM persons p, GENERATE_SERIES(1, 2) AS g(val) WHERE p.id <= 2 ORDER BY 1, 2
+    function: generate_series
+    signature: generate_series(integer, integer) → SETOF integer
+
+  # generate_subscripts — unsupported argument types
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: generate_subscripts__anyarray_int__from_table
+    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    function: generate_subscripts
+    signature: generate_subscripts(anyarray, integer) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: generate_subscripts__anyarray_int_bool__from_table
+    sql: SELECT 1 AS result FROM persons WHERE id = 1
+    function: generate_subscripts
+    signature: generate_subscripts(anyarray, integer, boolean) → SETOF integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS

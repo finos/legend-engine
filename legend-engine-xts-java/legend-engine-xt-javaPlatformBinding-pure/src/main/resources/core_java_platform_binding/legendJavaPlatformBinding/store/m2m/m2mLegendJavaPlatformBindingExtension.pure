@@ -68,12 +68,14 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                   $impl->enrichForInMemoryGraphExecution($i, $context, $extensions, $debug)
                };
                let baseProject  = $i->generateBaseProjectForLocalGraphFetchNode($path, $context, $inMemoryGraphImplUpdateFunction, $extensions, $debug);
-               let storeProject = $i->generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug);
+               let storeResult  = $i->generateInMemoryStoreGraphFetchProject($path, $context, $extensions, $debug);
+               let storeProject = $storeResult.project->toOne();
 
-               generatedCode(
+               let gc = generatedCode(
                   $baseProject->concatenate($storeProject)->toOneMany()->mergeProjects(),
                   $storeProject->resolve($context.conventions->planNodeClass('public', $path, 'Execute'))
                );
+               ^$gc(resolutionState = $storeResult.resolutionState);
             },
             s: StoreStreamReadingExecutionNode[1] | $s->generateCodeForStoreStreamReadingExecutionNode($path, $context, $extensions, $debug),
             n: ExecutionNode[1]                   | ^GeneratedCode()
@@ -83,11 +85,16 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       generateLegendJavaCodeForExtraChildNodes = {node: ExecutionNode[1], project: Project[0..1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1] |
          $node->match([
             {i: InMemoryGraphFetchExecutionNode[1] |
-               let transformedChildren = $i.children->size()->range()->map(x | $i.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.localChild' + $x->toString(), $context, $extensions, $debug));
+               let transformedChildren = $i.children->size()->range()->fold({x, acc |
+                  let stateSoFar = $acc->lastResolutionState($context->currentResolutionState());
+                  let gn = $i.children->at($x)->generateLegendJavaPlatformBindingCode($path + '.localChild' + $x->toString(), ^$context(resolutionState = $stateSoFar), $extensions, $debug);
+                  $acc->concatenate($gn);
+               }, []);
                ^GeneratedNode
                (
                   node    = ^$i(children = $transformedChildren.node->cast(@InMemoryGraphFetchExecutionNode)),
-                  project = $project->concatenate($transformedChildren.project)->mergeProjectsNullable()
+                  project = $project->concatenate($transformedChildren.project)->mergeProjectsNullable(),
+                  resolutionState = $transformedChildren->lastResolutionState($context->currentResolutionState())
                );
             },
             n: ExecutionNode[1] | ^GeneratedNode(node = $node, project = $project)

@@ -1,0 +1,108 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Service
+Service demo::service::PersonEnvService
+{
+  pattern: '/api/persons/{env}';
+  documentation: 'List all persons from the environment selected by the env key.';
+  autoActivateUpdates: true;
+  execution: Multi
+  {
+    query: |demo::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    key: 'env';
+    executions['QA']:
+    {
+      mapping: demo::PersonMapping;
+      runtime: demo::runtime::QaRuntime;
+    }
+    executions['UAT']:
+    {
+      mapping: demo::PersonMapping;
+      runtime: demo::runtime::UatRuntime;
+    }
+  }
+  testSuites:
+  [
+    envSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          qaH2:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firstName,lastName\n' +
+                '1,Ada,Lovelace\n';
+            }#,
+          uatH2:
+            Relational
+            #{
+              default.PersonTable:
+                'id,firstName,lastName\n' +
+                '1,Grace,Hopper\n' +
+                '2,Alan,Turing\n';
+            }#
+        ]
+      ]
+      tests:
+      [
+        qaEnv:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys:
+          [
+            'QA'
+          ];
+          asserts:
+          [
+            shouldSeeQaData:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Ada","Last Name":"Lovelace"}]';
+                  }#;
+              }#
+          ]
+        },
+        uatEnv:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          keys:
+          [
+            'UAT'
+          ];
+          asserts:
+          [
+            shouldSeeUatData:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"Grace","Last Name":"Hopper"},{"First Name":"Alan","Last Name":"Turing"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

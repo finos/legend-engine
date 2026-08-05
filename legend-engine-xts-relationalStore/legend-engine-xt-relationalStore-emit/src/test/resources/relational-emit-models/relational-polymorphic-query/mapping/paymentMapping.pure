@@ -1,0 +1,112 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::PaymentPolymorphicMapping
+(
+  *demo::payment::CardPayment[cardPayment]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PaymentDB]CardPaymentTable.id
+    )
+    ~mainTable [demo::store::PaymentDB]CardPaymentTable
+    reference: [demo::store::PaymentDB]CardPaymentTable.reference,
+    amount: [demo::store::PaymentDB]CardPaymentTable.amount,
+    cardLast4: [demo::store::PaymentDB]CardPaymentTable.cardLast4
+  }
+
+  *demo::payment::BankTransfer[bankTransfer]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::PaymentDB]BankTransferTable.id
+    )
+    ~mainTable [demo::store::PaymentDB]BankTransferTable
+    reference: [demo::store::PaymentDB]BankTransferTable.reference,
+    amount: [demo::store::PaymentDB]BankTransferTable.amount,
+    sortCode: [demo::store::PaymentDB]BankTransferTable.sortCode
+  }
+
+  *demo::payment::Payment: Operation
+  {
+    meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()
+  }
+
+  testSuites:
+  [
+    rootProjectionSuite:
+    {
+      function: |demo::payment::Payment.all()->sortBy(x|$x.reference)->project([x|$x.reference, x|$x.amount], ['Reference', 'Amount']);
+      tests:
+      [
+        superclassPropertiesAcrossSubtypes:
+        {
+          data:
+          [
+            demo::store::PaymentDB:
+              Reference
+              #{
+                demo::data::PaymentData
+              }#
+          ];
+          asserts:
+          [
+            shouldReturnEveryPayment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reference":"PAY-001","Amount":100},{"Reference":"PAY-002","Amount":200},{"Reference":"PAY-003","Amount":300}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    downcastSuite:
+    {
+      function: |demo::payment::Payment.all()->sortBy(x|$x.reference)->project([x|$x.reference, x|$x->subType(@demo::payment::CardPayment).cardLast4], ['Reference', 'Card']);
+      tests:
+      [
+        subtypeSpecificProperty:
+        {
+          data:
+          [
+            demo::store::PaymentDB:
+              Reference
+              #{
+                demo::data::PaymentData
+              }#
+          ];
+          asserts:
+          [
+            shouldDowncastToCardPayment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Reference":"PAY-001","Card":"4242"},{"Reference":"PAY-002","Card":null},{"Reference":"PAY-003","Card":"1881"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

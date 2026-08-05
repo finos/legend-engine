@@ -1,0 +1,27 @@
+name: grammar-qualified-property
+title: "Qualified (Parameterised) Properties"
+description: |
+  Qualified properties across the shapes the grammar supports: one parameter, two
+  parameters of different types, an enum-typed parameter, an optional [0..1]
+  parameter, a multi-statement body using a let, a scalar return type alongside
+  collection returns, and one qualified property invoking another on the same class.
+  Proves that parameterised property bodies compile as lambdas with their parameters
+  correctly bound and their return types honoured — distinct from the no-argument
+  derived-property path, which is already covered elsewhere.
+
+modelSources:
+  model:
+    root: grammar-qualified-property
+    files:
+      - model.pure
+
+features:
+  - grammar:enumeration
+  - grammar:qualified-property
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - qualified-property
+  - parameterised
+  - lambda

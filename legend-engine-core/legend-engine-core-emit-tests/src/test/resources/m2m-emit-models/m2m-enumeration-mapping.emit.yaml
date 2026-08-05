@@ -1,0 +1,32 @@
+name: m2m-enumeration-mapping
+title: "Enumeration Mapping in an M2M Mapping"
+description: |
+  A model-to-model mapping whose target enum properties are populated through named
+  EnumerationMappings rather than by direct assignment: one keyed on strings, where
+  several source spellings collapse onto a single enum value so the transform is a
+  genuine many-to-one lookup, and one keyed on integers. The embedded test suite
+  feeds a lower-case and an upper-case spelling through the same mapping, proving the
+  lookup is applied at execution time. Enumeration mapping is store-agnostic and was
+  previously proven only over relational and relation-function sources; this
+  establishes the M2M code path.
+
+modelSources:
+  model:
+    root: m2m-enumeration-mapping
+    files:
+      - model.pure
+      - mapping.pure
+
+features:
+  - execution:test-data
+  - grammar:enumeration
+  - mapping:enumeration-mapping
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - enumeration
+  - mapping-test

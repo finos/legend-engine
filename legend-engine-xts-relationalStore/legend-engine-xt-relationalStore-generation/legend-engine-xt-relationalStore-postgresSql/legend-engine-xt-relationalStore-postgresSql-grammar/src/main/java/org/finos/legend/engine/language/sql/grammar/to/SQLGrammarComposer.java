@@ -476,6 +476,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(NamedWindow val)
+            {
+                return val.name + " AS (" + visit(val.window) + ")";
+            }
+
+            @Override
             public String visit(ArrayLiteral val)
             {
                 return "[" + visit(val.values, ", ") + "]";
@@ -544,6 +550,7 @@ public class SQLGrammarComposer
                         + (val.where == null ? "" : " where " + val.where.accept(this))
                         + (val.groupBy == null || val.groupBy.isEmpty() ? "" : " group by " + visit(val.groupBy, ", "))
                         + (val.having == null ? "" : " having " + visit(val.having))
+                        + (val.windows == null || val.windows.isEmpty() ? "" : " window " + FastList.newList(val.windows).collect(this::visit).makeString(", "))
                         + (val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
                         + (val.limit == null ? "" : " limit " + visit(val.limit))
                         + (val.offset == null ? "" : " offset " + visit(val.offset));
@@ -669,8 +676,29 @@ public class SQLGrammarComposer
             @Override
             public String visit(Union val)
             {
-                String operator = val.distinct ? " UNION " : " UNION ALL ";
-                return val.left.accept(this) + operator + val.right.accept(this);
+                return visitSetOperation(val, "UNION");
+            }
+
+            @Override
+            public String visit(Intersect val)
+            {
+                return visitSetOperation(val, "INTERSECT");
+            }
+
+            @Override
+            public String visit(Except val)
+            {
+                return visitSetOperation(val, "EXCEPT");
+            }
+
+            private String visitSetOperation(SetOperation val, String operator)
+            {
+                String distinct = val.distinct ? " " + operator + " " : " " + operator + " ALL ";
+                String base = val.left.accept(this) + distinct + val.right.accept(this);
+                return base
+                        + (val.orderBy == null || val.orderBy.isEmpty() ? "" : " order by " + visit(val.orderBy, ", "))
+                        + (val.limit == null ? "" : " limit " + visit(val.limit))
+                        + (val.offset == null ? "" : " offset " + visit(val.offset));
             }
 
             @Override

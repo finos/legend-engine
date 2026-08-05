@@ -61,6 +61,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionP
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.testable.assertion.RelationAssertionColumnTypes;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -185,14 +186,14 @@ public class MappingTestRunner implements TestRunner
         return new MappingTestRunnerContext(compiledMappingTestSuite, mapping, pureModel, pureModelContextData, this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), routerExtensions);
     }
 
-    private TestResult executeMappingTest(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
+    private TestResult executeMappingTest(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan, RelationAssertionColumnTypes relationAssertionColumnTypes)
     {
         return containsStoreTestData(mappingTest, context)
-                ? executeMappingTestWithStoreTestData(mappingTest, context, hints, sharedPlan)
-                : executeMappingTestWithNonStoreElementsTestData(mappingTest, context);
+                ? executeMappingTestWithStoreTestData(mappingTest, context, hints, sharedPlan, relationAssertionColumnTypes)
+                : executeMappingTestWithNonStoreElementsTestData(mappingTest, context, relationAssertionColumnTypes);
     }
 
-    private TestResult executeMappingTestWithStoreTestData(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan)
+    private TestResult executeMappingTestWithStoreTestData(MappingTest mappingTest, MappingTestRunnerContext context, TestConnectionBuildParameters hints, GeneratedPlan sharedPlan, RelationAssertionColumnTypes relationAssertionColumnTypes)
     {
         MutableList<Closeable> testOwnedCloseables = null;
         try
@@ -211,7 +212,7 @@ public class MappingTestRunner implements TestRunner
             // execute assertion
             TestAssertion assertion = mappingTest.assertions.get(0);
             Result result = this.executor.executeWithArgs(PlanExecutor.withArgs().withPlan(plan).build());
-            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW, relationAssertionColumnTypes));
             TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
             testResult.atomicTestId = mappingTest.id;
             return testResult;
@@ -262,7 +263,7 @@ public class MappingTestRunner implements TestRunner
         return foundStoreTestData;
     }
 
-    private TestResult executeMappingTestWithNonStoreElementsTestData(MappingTest mappingTest, MappingTestRunnerContext context)
+    private TestResult executeMappingTestWithNonStoreElementsTestData(MappingTest mappingTest, MappingTestRunnerContext context, RelationAssertionColumnTypes relationAssertionColumnTypes)
     {
         MutableList<Closeable> testOwnedCloseables = null;
         try
@@ -272,7 +273,7 @@ public class MappingTestRunner implements TestRunner
             SingleExecutionPlan plan = generatePlan(modifiedFunctionForTestExecution.getOne(), null, null, context, false).plan;
             TestAssertion assertion = mappingTest.assertions.get(0);
             Result result = this.executor.executeWithArgs(PlanExecutor.withArgs().withPlan(plan).build());
-            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+            AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW, relationAssertionColumnTypes));
             TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
             testResult.atomicTestId = mappingTest.id;
             return testResult;
@@ -504,7 +505,8 @@ public class MappingTestRunner implements TestRunner
     {
         private final boolean debug;
         MappingTestRunnerContext context;
-        TestConnectionBuildParameters hints;
+        TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
+        RelationAssertionColumnTypes relationAssertionColumnTypes = RelationAssertionColumnTypes.NONE;
         /**
          * Non-null when one plan serves every test in the suite, in which case it is
          * generated during initialization (from connections built and closed there).
@@ -525,9 +527,17 @@ public class MappingTestRunner implements TestRunner
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer)
         {
             this.context = buildMappingContext(this.pureSuite, this.pureModel, this.pmcd);
-            this.hints = TestReturnTypeHelper.isRelationReturnType(this.context.getMetamodelTestSuite()._query(), pureModel)
-                         ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build()
-                         : TestConnectionBuildParameters.NONE;
+            FunctionDefinition<?> query = this.context.getMetamodelTestSuite()._query();
+            if (TestReturnTypeHelper.isRelationReturnType(query, pureModel))
+            {
+                this.hints = TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
+                this.relationAssertionColumnTypes = RelationAssertionColumnTypes.of(TestReturnTypeHelper.getRelationReturnColumns(query, pureModel));
+            }
+            else
+            {
+                this.hints = TestConnectionBuildParameters.NONE;
+                this.relationAssertionColumnTypes = RelationAssertionColumnTypes.NONE;
+            }
             this.sharedPlan = computeSharedPlan();
         }
 
@@ -616,7 +626,7 @@ public class MappingTestRunner implements TestRunner
         @Override
         protected TestResult runAtomicTest(MappingTest atomicTest)
         {
-            TestResult testResult = executeMappingTest(atomicTest, this.context, this.hints, this.sharedPlan);
+            TestResult testResult = executeMappingTest(atomicTest, this.context, this.hints, this.sharedPlan, this.relationAssertionColumnTypes);
             testResult.testable = this.context.getMapping().getPath();
             testResult.testSuiteId = getTestSuiteId();
             return testResult;

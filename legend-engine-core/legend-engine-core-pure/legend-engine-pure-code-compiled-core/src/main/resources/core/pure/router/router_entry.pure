@@ -25,23 +25,26 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
 {
    traceSpan(
-     |meta::legend::test::mayExecuteLegendTest(
-       {clientVersion, serverVersion, serializationKind, host, port |
-           if($serializationKind == 'json',
-            | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_';
-              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
-              $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, 'SEMI_INTERACTIVE']->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);,
-            | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::legendExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__String_1__Extension_MANY__Result_1_';
-              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
-              $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, $serializationKind, 'FULL_INTERACTIVE']->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);
-           )
-       },
-       |$f->execute($m, $runtime, $exeCtx, $extensions, noDebug());
-      ),
-      'query execution',
-      |traceSpan({|[pair('query-execution-info',  $extensions.routerExtensions().traceQueryInfoBuilder->map(x|$x->eval($f,$m,$runtime))->joinStrings(','))]->newMap()}, 'build query tags'),
-      false
-    );
+     |if(isOptionSet('ForceInterpreted'),
+       | $f->execute($m, $runtime, $exeCtx, $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));,
+       | meta::legend::test::mayExecuteLegendTest(
+           {clientVersion, serverVersion, serializationKind, host, port |
+             if($serializationKind == 'json',
+               | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_';
+                 let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
+                 $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, if(isOptionSet('FullInteractiveExec'), | 'FULL_INTERACTIVE', | 'SEMI_INTERACTIVE')]->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);,
+               | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::legendExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__String_1__Extension_MANY__Result_1_';
+                 let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
+                 $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, $serializationKind, if(isOptionSet('FullInteractiveExec'), | 'FULL_INTERACTIVE', | 'SEMI_INTERACTIVE')]->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);
+             )
+           },
+           |$f->execute($m, $runtime, $exeCtx, $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
+         )
+     ),
+     'query execution',
+     |traceSpan({|[pair('query-execution-info',  $extensions.routerExtensions().traceQueryInfoBuilder->map(x|$x->eval($f,$m,$runtime))->joinStrings(','))]->newMap()}, 'build query tags'),
+     false
+   );
 }
 
 function meta::pure::router::execute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<T|m>[1]

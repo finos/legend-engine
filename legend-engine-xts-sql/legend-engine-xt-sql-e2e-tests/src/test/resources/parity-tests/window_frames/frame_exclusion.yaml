@@ -1,0 +1,70 @@
+tests:
+  # EXCLUDE CURRENT ROW
+  - id: frame_exclude_current_row
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING EXCLUDE CURRENT ROW) AS neighbors FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE CURRENT ROW"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_current_row_avg
+    sql: "SELECT name, salary, AVG(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW) AS avg_others FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE CURRENT ROW"
+    category: "window_frames"
+
+  # EXCLUDE GROUP
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_group
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (ORDER BY dept_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE GROUP) AS sum_others FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE GROUP"
+    category: "window_frames"
+
+  # EXCLUDE TIES
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_ties
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (ORDER BY dept_id ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE TIES) AS sum_no_ties FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE TIES"
+    category: "window_frames"
+
+  # EXCLUDE NO OTHERS (default)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_no_others
+    sql: "SELECT name, salary, SUM(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW EXCLUDE NO OTHERS) AS running FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE NO OTHERS"
+    category: "window_frames"
+
+  # EXCLUDE CURRENT ROW with COUNT
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_current_count
+    sql: "SELECT name, salary, COUNT(*) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW) AS others_cnt FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE CURRENT ROW"
+    category: "window_frames"
+
+  # EXCLUDE CURRENT ROW with MIN/MAX
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_current_minmax
+    sql: "SELECT name, salary, MIN(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW) AS min_others, MAX(salary) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW) AS max_others FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE CURRENT ROW"
+    category: "window_frames"
+
+  # EXCLUDE GROUP with partition
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_group_partition
+    sql: "SELECT name, dept_id, salary, SUM(salary) OVER (PARTITION BY dept_id ORDER BY salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE GROUP) AS others FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE GROUP"
+    category: "window_frames"
+
+  # EXCLUDE TIES with partition
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: frame_exclude_ties_partition
+    sql: "SELECT name, dept_id, salary, COUNT(*) OVER (PARTITION BY dept_id ORDER BY salary ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING EXCLUDE TIES) AS cnt_no_ties FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "EXCLUDE TIES"
+    category: "window_frames"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

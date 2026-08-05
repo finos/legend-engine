@@ -413,7 +413,7 @@ function <<test.Test>> meta::relational::tests::query::filter::exists::testExist
    let results = $result.values;
    assertSize($results, 10);
    assertSameElements(['Allen', 'Hill', 'Smith', 'Johnson', 'Harris', 'New York', 'Firm B', 'Smith', 'Hill', 'York'],  $results.lastName->sort());
-   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select distinct "persontable_2".FIRMID from personTable as "persontable_2" where "persontable_2".AGE is not null and "persontable_2".AGE >= 35 and (concat("persontable_2".FIRSTNAME, \' \', "persontable_2".LASTNAME) <> \'Smith\' or concat("persontable_2".FIRSTNAME, \' \', "persontable_2".LASTNAME) is null)) as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID) where "persontable_1".FIRMID is not null', $result);
+   assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join (select distinct "persontable_2".FIRMID from personTable as "persontable_2" where "persontable_2".AGE is not null and "persontable_2".AGE >= 35 and concat("persontable_2".FIRSTNAME, \' \', "persontable_2".LASTNAME) is distinct from \'Smith\') as "persontable_1" on ("firmtable_0".ID = "persontable_1".FIRMID) where "persontable_1".FIRMID is not null', $result);
 }
 
 function <<test.Test>> meta::relational::tests::query::filter::exists::testExistsWithAttributesFromLeftInOrCondition():Boolean[1]
@@ -457,7 +457,7 @@ function <<test.Test>> meta::relational::tests::query::filter::exists::testFilte
 
    assertSize($result1.values,3);
 
-   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".AGE is not null and "persontable_1".AGE > 30) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where ("root".LEGALNAME <> \'Firm B\' or "root".LEGALNAME is null) and "persontable_0".FIRMID is not null', $result1);
+   assertSameSQL('select "root".ID as "pk_0", "root".LEGALNAME as "legalName" from firmTable as "root" left outer join (select distinct "persontable_1".FIRMID from personTable as "persontable_1" where "persontable_1".AGE is not null and "persontable_1".AGE > 30) as "persontable_0" on ("root".ID = "persontable_0".FIRMID) where "root".LEGALNAME is distinct from \'Firm B\' and "persontable_0".FIRMID is not null', $result1);
 }
 
 function <<test.ToFix>> meta::relational::tests::query::filter::exists::testFilterAfterFilterFunctionExpressionWithAndConditionOnRightTableIsEmptyExpression():Boolean[1]

@@ -1,0 +1,148 @@
+tests:
+  - id: abbrev__cidr__unsupported
+    sql: "SELECT ABBREV('192.168.1.0/24'::cidr) AS result FROM persons WHERE id = 1"
+    function: abbrev
+    signature: "abbrev(cidr) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: abbrev__inet__unsupported
+    sql: "SELECT ABBREV('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: abbrev
+    signature: "abbrev(inet) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: broadcast__inet__unsupported
+    sql: "SELECT BROADCAST('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: broadcast
+    signature: "broadcast(inet) → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: family__inet__unsupported
+    sql: "SELECT FAMILY('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: family
+    signature: "family(inet) → integer"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: host__inet__unsupported
+    sql: "SELECT HOST('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: host
+    signature: "host(inet) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: hostmask__inet__unsupported
+    sql: "SELECT HOSTMASK('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: hostmask
+    signature: "hostmask(inet) → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: inet_client_addr__unsupported
+    sql: "SELECT INET_CLIENT_ADDR() AS result FROM persons WHERE id = 1"
+    function: inet_client_addr
+    signature: "inet_client_addr() → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: inet_client_port__unsupported
+    sql: "SELECT INET_CLIENT_PORT() AS result FROM persons WHERE id = 1"
+    function: inet_client_port
+    signature: "inet_client_port() → integer"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: inet_server_addr__unsupported
+    sql: "SELECT INET_SERVER_ADDR() AS result FROM persons WHERE id = 1"
+    function: inet_server_addr
+    signature: "inet_server_addr() → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: inet_server_port__unsupported
+    sql: "SELECT INET_SERVER_PORT() AS result FROM persons WHERE id = 1"
+    function: inet_server_port
+    signature: "inet_server_port() → integer"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: masklen__inet__unsupported
+    sql: "SELECT MASKLEN('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: masklen
+    signature: "masklen(inet) → integer"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: netmask__inet__unsupported
+    sql: "SELECT NETMASK('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: netmask
+    signature: "netmask(inet) → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: network__inet__unsupported
+    sql: "SELECT NETWORK('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: network
+    signature: "network(inet) → cidr"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: set_masklen__cidr_int__unsupported
+    sql: "SELECT SET_MASKLEN('192.168.1.0/24'::cidr, 16) AS result FROM persons WHERE id = 1"
+    function: set_masklen
+    signature: "set_masklen(cidr, integer) → cidr"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: set_masklen__inet_int__unsupported
+    sql: "SELECT SET_MASKLEN('192.168.1.1/24'::inet, 16) AS result FROM persons WHERE id = 1"
+    function: set_masklen
+    signature: "set_masklen(inet, integer) → inet"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__"char"__unsupported
+    sql: "SELECT TEXT('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: 'text("char") → text'
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__bool__unsupported
+    sql: "SELECT TEXT('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: "text(boolean) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__char__unsupported
+    sql: "SELECT TEXT('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: "text(character) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__inet__unsupported
+    sql: "SELECT TEXT('192.168.1.1/24'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: "text(inet) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__name__unsupported
+    sql: "SELECT TEXT('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: "text(name) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP
+  - id: text__xml__unsupported
+    sql: "SELECT TEXT('192.168.1.1'::inet) AS result FROM persons WHERE id = 1"
+    function: text
+    signature: "text(xml) → text"
+    skip: "unsupported type category"
+    expected_tds_status: SKIP
+    expected_rel_status: SKIP

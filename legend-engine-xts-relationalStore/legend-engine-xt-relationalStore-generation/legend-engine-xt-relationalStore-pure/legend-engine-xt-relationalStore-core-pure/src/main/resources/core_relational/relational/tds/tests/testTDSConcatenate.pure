@@ -86,7 +86,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\' union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -107,7 +107,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME <> \'hello\' or "root".LASTNAME is null) as "unionalias_0"',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME is distinct from \'hello\') as "unionalias_0"',
       $result->sqlRemoveFormatting());
 }
 
@@ -172,7 +172,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
 
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" <> \'hello\' or "unionalias_0"."lastName" is null',
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" union all select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0" where "unionalias_0"."lastName" is distinct from \'hello\'',
       $result->sqlRemoveFormatting());
 }
 

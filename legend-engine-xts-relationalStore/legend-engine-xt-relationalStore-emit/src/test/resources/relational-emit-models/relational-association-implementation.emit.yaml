@@ -1,0 +1,40 @@
+name: relational-association-implementation
+title: "Association Implementation in a Relational Mapping"
+description: |
+  Person and Firm are mapped independently onto the shared FirmDB tables, and
+  the Employment association between them is implemented by its own mapping
+  element containing an `AssociationMapping ( employees: [db]@PersonFirm, firm:
+  [db]@PersonFirm )` block. Proves the association-implementation form, in which
+  both ends of the association are declared once on the association itself —
+  as distinct from `relational-joins`, which attaches `[db]@JoinName` property
+  mappings inside each class mapping instead. Both directions are queried.
+
+modelSources:
+  model:
+    root: relational-association-implementation
+    files:
+      - data/testData.pure
+      - mapping/associationMapping.pure
+  dependencies:
+    - source: relational-shared-domain.emit.yaml
+    - source: relational-shared-firm-db.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:association
+  - mapping:relational-association-implementation
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - association-mapping
+  - h2
+  - join
+  - mapping-test
+  - shared-domain
+  - shared-store

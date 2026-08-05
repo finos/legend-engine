@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
@@ -23,6 +24,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ServiceTestSuite;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElementsData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
@@ -4092,5 +4099,771 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      }\n" +
                 "    ]\n" +
                 ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithTestSuiteCompiles()
+    {
+        test(RELATION_PK_DB +
+                RELATION_PK_CLASS +
+                "###Pure\n" +
+                "function my::personFunc():meta::pure::metamodel::relation::Relation<Any>[1]\n" +
+                "{\n" +
+                "  #>{my::db.personTable}#->filter(x | $x.AGE > 25)\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    personSuite:\n" +
+                "    {\n" +
+                "      function: |my::Person.all()->project(~['First Name': x|$x.firstName, 'Age': x|$x.age]);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            my::db:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                default.personTable:\n" +
+                "                  ID,FIRSTNAME,AGE,FIRMID\n" +
+                "                  1,John,30,100\n" +
+                "                  2,Jane,20,100;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            shouldPass:\n" +
+                "              Relation\n" +
+                "              #{\n" +
+                "                First Name, Age\n" +
+                "                John      , 30;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationalServiceTestSuiteWithRelationReturnType()
+    {
+        test("###Relational\n" +
+                "Database test::store::FirmDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::FirmDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::FirmDB]FIRM_TABLE\n" +
+                "    id: [test::store::FirmDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::FirmDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  store: test::store::FirmDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::FirmDB:\n" +
+                "    [\n" +
+                "      connection_1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/testFirm';\n" +
+                "  title: 'title';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~['name': f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::store::FirmDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.FIRM_TABLE:\n" +
+                "            ID,NAME\n" +
+                "            1,Alice\n" +
+                "            2,Bob;\n" +
+                "        }#;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice\n" +
+                "          Bob;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarWithBaseDataResolver()
+    {
+        test("###Relational\n" +
+                "Database test::store::FirmDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::FirmDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::FirmDB]FIRM_TABLE\n" +
+                "    id: [test::store::FirmDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::FirmDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  store: test::store::FirmDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::FirmDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::store::FirmDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.FIRM_TABLE:\n" +
+                "            ID,NAME\n" +
+                "            1,Alice\n" +
+                "            2,Bob;\n" +
+                "        }#;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice\n" +
+                "          Bob;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarWithMultipleTablesSameDatabase()
+    {
+        test("###Relational\n" +
+                "Database test::store::TestDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                "  Table PERSON_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRST_NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::TestDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::TestDB]FIRM_TABLE\n" +
+                "    id: [test::store::TestDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::TestDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::TestConnection\n" +
+                "{\n" +
+                "  store: test::store::TestDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::TestRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::TestDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::TestConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::TestRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::store::TestDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.FIRM_TABLE:\n" +
+                "            ID,NAME\n" +
+                "            1,Alice;\n" +
+                "          default.PERSON_TABLE:\n" +
+                "            ID,FIRST_NAME\n" +
+                "            10,Zoe;\n" +
+                "        }#;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarWithReferenceToDataElement()
+    {
+        test("###Relational\n" +
+                "Database test::store::FirmDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::FirmDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::FirmDB]FIRM_TABLE\n" +
+                "    id: [test::store::FirmDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::FirmDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  store: test::store::FirmDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::FirmDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Data\n" +
+                "Data test::data::FirmData\n" +
+                "{\n" +
+                "  test::store::FirmDB:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.FIRM_TABLE:\n" +
+                "        ID,NAME\n" +
+                "        1,Alice;\n" +
+                "    }#;\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::data::FirmData;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarMixedReferenceAndBaseMerges()
+    {
+        PureModel pureModel = test("###Relational\n" +
+                "Database test::store::TestDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                "  Table PERSON_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    FIRST_NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::TestDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::TestDB]FIRM_TABLE\n" +
+                "    id: [test::store::TestDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::TestDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::TestConnection\n" +
+                "{\n" +
+                "  store: test::store::TestDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::TestRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::TestDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::TestConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Data\n" +
+                "Data test::data::PersonSeed\n" +
+                "{\n" +
+                "  test::store::TestDB:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.PERSON_TABLE:\n" +
+                "        ID,FIRST_NAME\n" +
+                "        10,Zoe;\n" +
+                "    }#;\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::TestRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::data::PersonSeed;\n" +
+                "      test::store::TestDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.FIRM_TABLE:\n" +
+                "            ID,NAME\n" +
+                "            1,Alice;\n" +
+                "        }#;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n").getTwo();
+
+        Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("test::service::FirmService");
+        Root_meta_legend_service_metamodel_ServiceTestSuite pureSuite = (Root_meta_legend_service_metamodel_ServiceTestSuite) pureService._tests().getOnly();
+        MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> resolved = pureSuite._serviceTestData()._resolvedData().getMap();
+        Assert.assertEquals(1, resolved.size());
+        Root_meta_pure_data_EmbeddedData embeddedData = resolved.get(pureModel.getPackageableElement("test::store::TestDB"));
+        Assert.assertTrue(embeddedData instanceof Root_meta_pure_data_RelationElementsData);
+        Root_meta_pure_data_RelationElementsData relationElementsData = (Root_meta_pure_data_RelationElementsData) embeddedData;
+        Assert.assertEquals(2, relationElementsData._relationElements().size());
+        java.util.List<String> paths = relationElementsData._relationElements().collect(re -> String.join(".", re._paths())).toList();
+        Assert.assertTrue(paths.contains("default.FIRM_TABLE"));
+        Assert.assertTrue(paths.contains("default.PERSON_TABLE"));
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarBaseOverridesReferenceForSamePath()
+    {
+        PureModel pureModel = test("###Relational\n" +
+                "Database test::store::TestDB\n" +
+                "(\n" +
+                "  Table PERSON_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::TestDB]PERSON_TABLE.ID)\n" +
+                "    ~mainTable [test::store::TestDB]PERSON_TABLE\n" +
+                "    id: [test::store::TestDB]PERSON_TABLE.ID,\n" +
+                "    name: [test::store::TestDB]PERSON_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::TestConnection\n" +
+                "{\n" +
+                "  store: test::store::TestDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::TestRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::TestDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::TestConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Data\n" +
+                "Data test::data::Seed\n" +
+                "{\n" +
+                "  test::store::TestDB:\n" +
+                "    Relation\n" +
+                "    #{\n" +
+                "      default.PERSON_TABLE:\n" +
+                "        ID\n" +
+                "        2;\n" +
+                "    }#;\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.name]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::TestRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::data::Seed;\n" +
+                "      test::store::TestDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.PERSON_TABLE:\n" +
+                "            ID\n" +
+                "            1;\n" +
+                "        }#;\n" +
+                "      test_1 =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n").getTwo();
+
+        Root_meta_legend_service_metamodel_Service pureService = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("test::service::FirmService");
+        Root_meta_legend_service_metamodel_ServiceTestSuite pureSuite = (Root_meta_legend_service_metamodel_ServiceTestSuite) pureService._tests().getOnly();
+        MutableMap<PackageableElement, Root_meta_pure_data_EmbeddedData> resolved = pureSuite._serviceTestData()._resolvedData().getMap();
+        Assert.assertEquals(1, resolved.size());
+        Root_meta_pure_data_EmbeddedData embeddedData = resolved.get(pureModel.getPackageableElement("test::store::TestDB"));
+        Assert.assertTrue(embeddedData instanceof Root_meta_pure_data_RelationElementsData);
+        Root_meta_pure_data_RelationElementsData relationElementsData = (Root_meta_pure_data_RelationElementsData) embeddedData;
+        Assert.assertEquals(1, relationElementsData._relationElements().size());
+        Root_meta_pure_data_RelationElement relationElement = relationElementsData._relationElements().getOnly();
+        Assert.assertEquals("default.PERSON_TABLE", String.join(".", relationElement._paths()));
+        Assert.assertEquals("1", relationElement._rows().getOnly()._values().getOnly());
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarMultiExecutionWithBaseResolver()
+    {
+        test("###Relational\n" +
+                "Database test::store::FirmDB\n" +
+                "(\n" +
+                "  Table FIRM_TABLE\n" +
+                "  (\n" +
+                "    ID INTEGER PRIMARY KEY,\n" +
+                "    NAME VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey ([test::store::FirmDB]FIRM_TABLE.ID)\n" +
+                "    ~mainTable [test::store::FirmDB]FIRM_TABLE\n" +
+                "    id: [test::store::FirmDB]FIRM_TABLE.ID,\n" +
+                "    name: [test::store::FirmDB]FIRM_TABLE.NAME\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  store: test::store::FirmDB;\n" +
+                "  type: H2;\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::FirmDB:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmServiceMulti\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: nameFilter: String[1] | test::model::Firm.all()->filter(f | $f.name->startsWith($nameFilter))->project(~[name: f | $f.name]);\n" +
+                "    key: 'env';\n" +
+                "    executions['prod']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping::FirmMapping;\n" +
+                "      runtime: test::runtime::FirmRuntime;\n" +
+                "    }\n" +
+                "    executions['qa']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping::FirmMapping;\n" +
+                "      runtime: test::runtime::FirmRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test::store::FirmDB:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.FIRM_TABLE:\n" +
+                "            ID,NAME\n" +
+                "            1,Alice;\n" +
+                "        }#;\n" +
+                "      test_prod (nameFilter = 'A') ['prod'] =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "      test_qa (nameFilter = 'A') ['qa'] =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          name\n" +
+                "          Alice;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
     }
 }

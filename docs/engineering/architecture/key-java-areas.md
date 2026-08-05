@@ -36,6 +36,9 @@ rest of the engine.
 **Extension point:** Implement `PureGrammarParserExtension` + `PureGrammarComposerExtension`
 and register in `META-INF/services/`.
 
+> **Literal syntax** (including multi-line `'''…'''` strings) follows Legend Pure — see
+> [Type System](type-system.md) for what is inherited and where the engine currently diverges.
+
 ---
 
 ## 2. Compiler — PureModel

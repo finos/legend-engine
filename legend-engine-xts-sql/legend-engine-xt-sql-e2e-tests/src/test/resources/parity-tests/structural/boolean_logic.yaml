@@ -1,0 +1,107 @@
+tests:
+  # Boolean literals
+  - id: bool_literal_true
+    sql: "SELECT name FROM persons WHERE TRUE ORDER BY 1"
+    feature: "TRUE literal"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_literal_false
+    sql: "SELECT name FROM persons WHERE FALSE ORDER BY 1"
+    feature: "FALSE literal"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_select_literal
+    sql: "SELECT name, TRUE AS always_true, FALSE AS always_false FROM persons WHERE id <= 3 ORDER BY 1"
+    feature: "boolean literals in SELECT"
+    category: "boolean_logic"
+
+  # Boolean column without explicit comparison
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_column_implicit
+    sql: "SELECT name FROM persons WHERE active ORDER BY 1"
+    feature: "boolean column without = TRUE"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: bool_column_not
+    sql: "SELECT name FROM persons WHERE NOT active ORDER BY 1"
+    feature: "NOT boolean column"
+    category: "boolean_logic"
+
+  # IS TRUE / IS FALSE / IS UNKNOWN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_is_true
+    sql: "SELECT name FROM persons WHERE active IS TRUE ORDER BY 1"
+    feature: "IS TRUE"
+    category: "boolean_logic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: bool_is_false
+    sql: "SELECT name FROM persons WHERE active IS FALSE ORDER BY 1"
+    feature: "IS FALSE"
+    category: "boolean_logic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: bool_is_not_true
+    sql: "SELECT name FROM persons WHERE active IS NOT TRUE ORDER BY 1"
+    feature: "IS NOT TRUE"
+    category: "boolean_logic"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: bool_is_not_false
+    sql: "SELECT name FROM persons WHERE active IS NOT FALSE ORDER BY 1"
+    feature: "IS NOT FALSE"
+    category: "boolean_logic"
+
+  # Boolean expressions in SELECT
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: bool_expression_select
+    sql: "SELECT name, salary > 50000 AS high_earner FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "boolean expression in SELECT"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_comparison_select
+    sql: "SELECT name, (age > 30 AND salary > 50000) AS senior_high FROM persons WHERE age IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
+    feature: "compound boolean in SELECT"
+    category: "boolean_logic"
+
+  # Boolean with NULL (three-valued logic)
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_null_and_true
+    sql: "SELECT (NULL AND TRUE) AS result FROM persons WHERE id = 1"
+    feature: "NULL AND TRUE"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_null_and_false
+    sql: "SELECT (NULL AND FALSE) AS result FROM persons WHERE id = 1"
+    feature: "NULL AND FALSE"
+    category: "boolean_logic"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: bool_null_or_true
+    sql: "SELECT (NULL OR TRUE) AS result FROM persons WHERE id = 1"
+    feature: "NULL OR TRUE"
+    category: "boolean_logic"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: bool_null_or_false
+    sql: "SELECT (NULL OR FALSE) AS result FROM persons WHERE id = 1"
+    feature: "NULL OR FALSE"
+    category: "boolean_logic"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: bool_not_null
+    sql: "SELECT (NOT NULL) AS result FROM persons WHERE id = 1"
+    feature: "NOT NULL (boolean)"
+    category: "boolean_logic"
+
+    expected_tds_status: PASS
+    expected_rel_status: PASS

@@ -1,0 +1,13 @@
+tests:
+  - id: num_nonnulls__variadic__from_table
+    sql: "SELECT NUM_NONNULLS(int_val, float_val, numeric_val) AS result FROM numbers ORDER BY 1"
+    function: num_nonnulls
+    signature: 'num_nonnulls(VARIADIC "any") → integer'
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: num_nulls__variadic__from_table
+    sql: "SELECT NUM_NULLS(int_val, float_val, numeric_val) AS result FROM numbers ORDER BY 1"
+    function: num_nulls
+    signature: 'num_nulls(VARIADIC "any") → integer'
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

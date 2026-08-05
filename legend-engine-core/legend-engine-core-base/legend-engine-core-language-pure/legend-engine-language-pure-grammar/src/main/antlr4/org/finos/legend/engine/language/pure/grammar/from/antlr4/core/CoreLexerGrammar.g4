@@ -13,7 +13,7 @@ ISLAND_OPEN:                                '#'  (~[#{])* '{'-> pushMode (ISLAND
 
 // -------------------------------------- TYPE --------------------------------------
 
-STRING:                                     String;
+STRING:                                     TextBlock | String;
 BOOLEAN:                                    Boolean;
 TRUE:                                       True;
 FALSE:                                      False;

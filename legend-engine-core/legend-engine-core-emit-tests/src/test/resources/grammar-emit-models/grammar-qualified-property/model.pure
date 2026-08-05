@@ -1,0 +1,73 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Enum demo::qualified::Currency
+{
+  USD,
+  EUR,
+  GBP
+}
+
+Class demo::qualified::Firm
+{
+  legalName: String[1];
+  employees: demo::qualified::Employee[*];
+
+  // Single-parameter qualified property filtering an owned collection.
+  employeesByDepartment(department: String[1])
+  {
+    $this.employees->filter(e | $e.department == $department)
+  }: demo::qualified::Employee[*];
+
+  // Two parameters of different types, combined in one predicate.
+  employeesAbove(department: String[1], threshold: Integer[1])
+  {
+    $this.employees->filter(e | ($e.department == $department) && ($e.salary > $threshold))
+  }: demo::qualified::Employee[*];
+
+  // A multi-statement body with a let, returning a scalar rather than a collection.
+  headcountIn(department: String[1])
+  {
+    let matching = $this.employees->filter(e | $e.department == $department);
+    $matching->size();
+  }: Integer[1];
+
+  // An enum-typed parameter, so parameter binding is not purely primitive.
+  employeesPaidIn(currency: demo::qualified::Currency[1])
+  {
+    $this.employees->filter(e | $e.payCurrency == $currency)
+  }: demo::qualified::Employee[*];
+
+  // A qualified property calling another qualified property on the same class.
+  hasStaffIn(department: String[1])
+  {
+    $this.headcountIn($department) > 0
+  }: Boolean[1];
+}
+
+Class demo::qualified::Employee
+{
+  firstName: String[1];
+  lastName: String[1];
+  department: String[1];
+  salary: Integer[1];
+  payCurrency: demo::qualified::Currency[1];
+
+  // An optional parameter, exercising a non-[1] parameter multiplicity.
+  displayName(prefix: String[0..1])
+  {
+    if($prefix->isEmpty(), | $this.firstName + ' ' + $this.lastName, | $prefix->toOne() + ' ' + $this.firstName + ' ' + $this.lastName)
+  }: String[1];
+}

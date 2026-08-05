@@ -1,0 +1,69 @@
+###Relational
+Database store::TypedDB
+(
+  Table AccountTable
+  (
+    id INTEGER PRIMARY KEY,
+    accountCode VARCHAR(20),
+    balance INTEGER
+  )
+)
+
+
+###Pure
+import meta::pure::precisePrimitives::*;
+
+function model::AccountQuery(): meta::pure::metamodel::relation::Relation<(accountCode: Varchar(20), balance: Integer)>[1]
+{
+  #>{store::TypedDB.AccountTable}#->select(
+    ~[
+       accountCode,
+       balance
+     ]
+  )->from(
+    execution::TypedRuntime
+  )
+}
+{
+  testSuite_1
+  (
+    test_1 | AccountQuery() => Relation
+    #{
+        accountCode, balance
+        1234, 100
+        99, 250
+        007, 42;
+    }#;
+  )
+}
+
+
+###Connection
+RelationalDatabaseConnection model::TypedConnection
+{
+  store: store::TypedDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists AccountTable;\nCreate Table AccountTable(id INT, accountCode VARCHAR(20), balance INT);\nInsert into AccountTable (id, accountCode, balance) values (1, \'1234\', 100);\nInsert into AccountTable (id, accountCode, balance) values (2, \'99\', 250);\nInsert into AccountTable (id, accountCode, balance) values (3, \'007\', 42);\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::TypedRuntime
+{
+  mappings: [];
+  connections:
+  [
+    store::TypedDB:
+    [
+      connection_1: model::TypedConnection
+    ]
+  ];
+}
+
+

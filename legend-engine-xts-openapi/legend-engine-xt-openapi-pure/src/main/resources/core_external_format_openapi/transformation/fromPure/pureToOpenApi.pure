@@ -133,52 +133,34 @@ function <<access.private>> meta::external::function::description::openapi::tran
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::generateComponent(funcInfos: FunctionInfo[*], elements: PackageableElement[*]):Components[1]
 {
-  let schema = $funcInfos->map(f| if($f->getReturnType()->instanceOf(RootGraphFetchTree),
-                        |let allClasses =  $elements->filter(e|$e->instanceOf(Class));
-                         $allClasses->map(
-                                          c|pair(
-                                            $c.name->toOne(),
-                                            ^Schema
-                                            (
-                                              type='object',
-                                              properties=newMap(
-                                                $c->cast(@Class<Any>).properties
-                                                  ->filter(p|$p.name!='elementOverride' && $p.name!='classifierGenericType')
-                                                  ->map(p|
-                                                          pair
-                                                          (
-                                                            $p.name->toOne(),
-                                                            $p->functionReturnType()->buildComponent($p.multiplicity)
-                                                          )
-                                                      )
-                                              )
-                                            )
-                                          );
-                                    );,
-                        |let allClasses = $funcInfos->returnTypesFromFunctions();
-                         $allClasses->map(
-                                  c|pair(
-                                    $c.rawType.name->toOne(),
-                                    ^Schema
-                                    (
-                                      type='object',
-                                      properties=newMap(
-                                        $c.rawType->cast(@Class<Any>).properties
-                                          ->filter(p|!$p.name->in(['elementOverride', 'classifierGenericType', 'generalizations', 'specializations']))
-                                          ->map(p|
-                                                  pair
-                                                  (
-                                                    $p.name->toOne(),
-                                                    $p->functionReturnType()->buildComponent($p.multiplicity)
-                                                  )
-                                              )
-                                      )
-                                    )
-                                  )
-                                );
-                      );
-                 );
+  let functionClasses = $funcInfos->returnTypesFromFunctions();
+  let allClasses = if($funcInfos->exists(f|$f->getReturnType()->instanceOf(RootGraphFetchTree)),
+                      |$functionClasses
+                          ->concatenate($elements->filter(e|$e->instanceOf(Class))->map(e|^GenericType(rawType=$e->cast(@Class<Any>))))
+                          ->removeDuplicates(cmpGenericType_GenericType_1__GenericType_1__Boolean_1_),
+                      |$functionClasses
+                   );
 
+  let schema = $allClasses->map(
+                              c|pair(
+                                $c.rawType.name->toOne(),
+                                ^Schema
+                                (
+                                  type='object',
+                                  properties=newMap(
+                                    $c.rawType->cast(@Class<Any>).properties
+                                      ->filter(p|!$p.name->in(['elementOverride', 'classifierGenericType', 'generalizations', 'specializations']))
+                                      ->map(p|
+                                              pair
+                                              (
+                                                $p.name->toOne(),
+                                                $p->functionReturnType()->buildComponent($p.multiplicity)
+                                              )
+                                        )
+                                  )
+                                )
+                              )
+                            );
 
   ^Components(schemas = newMap($schema));
 }

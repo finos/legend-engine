@@ -1,0 +1,92 @@
+tests:
+  # RANK over SUM
+  - id: window_over_agg_rank_sum
+    sql: "SELECT dept_id, SUM(salary) AS total, RANK() OVER (ORDER BY SUM(salary) DESC) AS salary_rank FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "RANK over GROUP BY aggregate"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_dense_rank
+    sql: "SELECT dept_id, COUNT(*) AS cnt, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS cnt_rank FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "RANK over GROUP BY aggregate"
+    category: "compositions"
+
+  # Cumulative percentage across groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_cum_pct
+    sql: "SELECT dept_id, SUM(salary) AS total, ROUND(SUM(salary) * 100.0 / SUM(SUM(salary)) OVER (), 2) AS pct FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Percentage of total across groups"
+    category: "compositions"
+
+  # Running total over grouped data
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_running
+    sql: "SELECT dept_id, SUM(salary) AS total, SUM(SUM(salary)) OVER (ORDER BY dept_id) AS running_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Running total over groups"
+    category: "compositions"
+
+  # LAG/LEAD over aggregated result
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_lag
+    sql: "SELECT dept_id, SUM(salary) AS total, LAG(SUM(salary)) OVER (ORDER BY dept_id) AS prev_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "LAG over GROUP BY result"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_lead
+    sql: "SELECT dept_id, COUNT(*) AS cnt, LEAD(COUNT(*)) OVER (ORDER BY dept_id) AS next_cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "LEAD over GROUP BY result"
+    category: "compositions"
+
+  # ROW_NUMBER over aggregation for top-N groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_topn
+    sql: "SELECT dept_id, total FROM (SELECT dept_id, SUM(salary) AS total, ROW_NUMBER() OVER (ORDER BY SUM(salary) DESC) AS rn FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id) sub WHERE rn <= 2 ORDER BY 1"
+    feature: "Top-N groups via window over aggregate"
+    category: "compositions"
+
+  # NTILE over groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_ntile
+    sql: "SELECT dept_id, SUM(salary) AS total, NTILE(2) OVER (ORDER BY SUM(salary) DESC) AS bucket FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "NTILE over GROUP BY aggregate"
+    category: "compositions"
+
+  # MIN/MAX over grouped counts
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_minmax
+    sql: "SELECT dept_id, COUNT(*) AS cnt, MIN(COUNT(*)) OVER () AS min_cnt, MAX(COUNT(*)) OVER () AS max_cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "MIN/MAX over GROUP BY aggregate"
+    category: "compositions"
+
+  # AVG over grouped sums
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_avg
+    sql: "SELECT dept_id, SUM(salary) AS total, AVG(SUM(salary)) OVER () AS avg_total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "AVG over GROUP BY aggregate"
+    category: "compositions"
+
+  # FIRST_VALUE over groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_first_value
+    sql: "SELECT dept_id, SUM(salary) AS total, FIRST_VALUE(SUM(salary)) OVER (ORDER BY SUM(salary) DESC) AS highest FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "FIRST_VALUE over GROUP BY aggregate"
+    category: "compositions"
+
+  # LAST_VALUE over groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: window_over_agg_last_value
+    sql: "SELECT dept_id, SUM(salary) AS total, LAST_VALUE(SUM(salary)) OVER (ORDER BY SUM(salary) DESC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS lowest FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "LAST_VALUE over GROUP BY aggregate"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

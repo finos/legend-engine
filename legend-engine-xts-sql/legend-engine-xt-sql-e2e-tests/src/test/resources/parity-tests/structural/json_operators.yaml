@@ -1,0 +1,277 @@
+tests:
+  # JSON extract operator ->  (get JSON object field by key)
+  - id: json_extract_field
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb -> 'a' AS result FROM persons WHERE id = 1"
+    feature: "JSON field extract (->)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_extract_field_nested
+    sql: "SELECT '{\"a\":{\"b\":3}}'::jsonb -> 'a' -> 'b' AS result FROM persons WHERE id = 1"
+    feature: "JSON nested field extract (->)(->)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_extract_array_index
+    sql: "SELECT '[10,20,30]'::jsonb -> 1 AS result FROM persons WHERE id = 1"
+    feature: "JSON array index extract (-> int)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: FAIL
+  - id: json_extract_array_negative_index
+    sql: "SELECT '[10,20,30]'::jsonb -> -1 AS result FROM persons WHERE id = 1"
+    feature: "JSON array negative index extract (-> -1)"
+    category: "json_operators"
+
+  # JSON extract as text operator ->>
+    expected_tds_status: ERROR
+    expected_rel_status: FAIL
+  - id: json_extract_text_field
+    sql: "SELECT '{\"a\":\"hello\",\"b\":2}'::jsonb ->> 'a' AS result FROM persons WHERE id = 1"
+    feature: "JSON field extract as text (->>)"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: json_extract_text_number
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ->> 'a' AS result FROM persons WHERE id = 1"
+    feature: "JSON field extract number as text (->>)"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: json_extract_text_array_index
+    sql: "SELECT '[\"a\",\"b\",\"c\"]'::jsonb ->> 1 AS result FROM persons WHERE id = 1"
+    feature: "JSON array index extract as text (->> int)"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: json_extract_text_null_key
+    sql: "SELECT '{\"a\":1}'::jsonb ->> 'missing' AS result FROM persons WHERE id = 1"
+    feature: "JSON extract text missing key returns NULL (->>)"
+    category: "json_operators"
+
+  # JSON path extract operator #>
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: json_path_extract
+    sql: "SELECT '{\"a\":{\"b\":{\"c\":42}}}'::jsonb #> '{a,b}' AS result FROM persons WHERE id = 1"
+    feature: "JSON path extract (#>)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_path_extract_array
+    sql: "SELECT '{\"a\":[1,2,3]}'::jsonb #> '{a,1}' AS result FROM persons WHERE id = 1"
+    feature: "JSON path extract into array (#>)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_path_extract_deep
+    sql: "SELECT '{\"a\":{\"b\":{\"c\":\"deep\"}}}'::jsonb #> '{a,b,c}' AS result FROM persons WHERE id = 1"
+    feature: "JSON deep path extract (#>)"
+    category: "json_operators"
+
+  # JSON path extract as text operator #>>
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_path_extract_text
+    sql: "SELECT '{\"a\":{\"b\":\"hello\"}}'::jsonb #>> '{a,b}' AS result FROM persons WHERE id = 1"
+    feature: "JSON path extract as text (#>>)"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: json_path_extract_text_number
+    sql: "SELECT '{\"a\":{\"b\":42}}'::jsonb #>> '{a,b}' AS result FROM persons WHERE id = 1"
+    feature: "JSON path extract number as text (#>>)"
+    category: "json_operators"
+
+  # JSONB containment operator @>
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: jsonb_contains_right
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb @> '{\"a\":1}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB contains (@>)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_contains_right_array
+    sql: "SELECT '[1,2,3]'::jsonb @> '[1,3]'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB array contains (@>)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_contains_right_false
+    sql: "SELECT '{\"a\":1}'::jsonb @> '{\"a\":2}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB contains false (@>)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_contains_right_nested
+    sql: "SELECT '{\"a\":{\"b\":1}}'::jsonb @> '{\"a\":{\"b\":1}}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB nested contains (@>)"
+    category: "json_operators"
+
+  # JSONB contained by operator <@
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_contained_by
+    sql: "SELECT '{\"a\":1}'::jsonb <@ '{\"a\":1,\"b\":2}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB contained by (<@)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_contained_by_false
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb <@ '{\"a\":1}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB contained by false (<@)"
+    category: "json_operators"
+
+  # JSONB key existence operator ?
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_key
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ? 'a' AS result FROM persons WHERE id = 1"
+    feature: "JSONB has key (?)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_key_false
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ? 'c' AS result FROM persons WHERE id = 1"
+    feature: "JSONB has key false (?)"
+    category: "json_operators"
+
+  # JSONB any key existence operator ?|
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_any_key
+    sql: "SELECT '{\"a\":1,\"b\":2,\"c\":3}'::jsonb ?| array['b','d'] AS result FROM persons WHERE id = 1"
+    feature: "JSONB has any key (?|)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_any_key_false
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ?| array['c','d'] AS result FROM persons WHERE id = 1"
+    feature: "JSONB has any key false (?|)"
+    category: "json_operators"
+
+  # JSONB all keys existence operator ?&
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_all_keys
+    sql: "SELECT '{\"a\":1,\"b\":2,\"c\":3}'::jsonb ?& array['a','b'] AS result FROM persons WHERE id = 1"
+    feature: "JSONB has all keys (?&)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_has_all_keys_false
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb ?& array['a','c'] AS result FROM persons WHERE id = 1"
+    feature: "JSONB has all keys false (?&)"
+    category: "json_operators"
+
+  # JSONB concatenation operator ||
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_concat_objects
+    sql: "SELECT '{\"a\":1}'::jsonb || '{\"b\":2}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB concat objects (||)"
+    category: "json_operators"
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: jsonb_concat_override
+    sql: "SELECT '{\"a\":1}'::jsonb || '{\"a\":2}'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB concat override key (||)"
+    category: "json_operators"
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: jsonb_concat_arrays
+    sql: "SELECT '[1,2]'::jsonb || '[3,4]'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB concat arrays (||)"
+    category: "json_operators"
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: jsonb_concat_value_to_array
+    sql: "SELECT '[1,2]'::jsonb || '3'::jsonb AS result FROM persons WHERE id = 1"
+    feature: "JSONB concat value to array (||)"
+    category: "json_operators"
+
+  # JSONB delete key operator -
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: jsonb_delete_key
+    sql: "SELECT '{\"a\":1,\"b\":2,\"c\":3}'::jsonb - 'b' AS result FROM persons WHERE id = 1"
+    feature: "JSONB delete key (-)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_delete_array_element
+    sql: "SELECT '[\"a\",\"b\",\"c\"]'::jsonb - 1 AS result FROM persons WHERE id = 1"
+    feature: "JSONB delete array element by index (-)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_delete_missing_key
+    sql: "SELECT '{\"a\":1,\"b\":2}'::jsonb - 'z' AS result FROM persons WHERE id = 1"
+    feature: "JSONB delete missing key no-op (-)"
+    category: "json_operators"
+
+  # JSONB delete path operator #-
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_delete_path
+    sql: "SELECT '{\"a\":{\"b\":1,\"c\":2}}'::jsonb #- '{a,b}' AS result FROM persons WHERE id = 1"
+    feature: "JSONB delete path (#-)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_delete_path_array
+    sql: "SELECT '{\"a\":[1,2,3]}'::jsonb #- '{a,1}' AS result FROM persons WHERE id = 1"
+    feature: "JSONB delete path array element (#-)"
+    category: "json_operators"
+
+  # JSONB path exists operator @?
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_path_exists
+    sql: "SELECT '{\"a\":[1,2,3]}'::jsonb @? '$.a[*] ? (@ > 2)' AS result FROM persons WHERE id = 1"
+    feature: "JSONB path exists (@?)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_path_exists_false
+    sql: "SELECT '{\"a\":[1,2,3]}'::jsonb @? '$.a[*] ? (@ > 5)' AS result FROM persons WHERE id = 1"
+    feature: "JSONB path exists false (@?)"
+    category: "json_operators"
+
+  # JSONB path predicate check operator @@
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_path_match
+    sql: "SELECT '{\"a\":10}'::jsonb @@ '$.a > 5' AS result FROM persons WHERE id = 1"
+    feature: "JSONB path match (@@)"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: jsonb_path_match_false
+    sql: "SELECT '{\"a\":3}'::jsonb @@ '$.a > 5' AS result FROM persons WHERE id = 1"
+    feature: "JSONB path match false (@@)"
+    category: "json_operators"
+
+  # Combined / chained operations
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: json_extract_then_text
+    sql: "SELECT '{\"a\":{\"b\":\"value\"}}'::jsonb -> 'a' ->> 'b' AS result FROM persons WHERE id = 1"
+    feature: "JSON extract then text (-> then ->>)"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: json_operator_in_where
+    sql: "SELECT name FROM persons WHERE id = ('{\"id\":1}'::jsonb ->> 'id')::integer ORDER BY 1"
+    feature: "JSON operator in WHERE clause"
+    category: "json_operators"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: jsonb_contains_in_where
+    sql: "SELECT 1 AS result FROM persons WHERE '{\"active\":true}'::jsonb @> '{\"active\":true}'::jsonb AND id = 1"
+    feature: "JSONB containment in WHERE"
+    category: "json_operators"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

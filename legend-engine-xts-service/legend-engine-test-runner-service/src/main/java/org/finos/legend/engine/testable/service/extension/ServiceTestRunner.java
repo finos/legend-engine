@@ -64,6 +64,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.testable.assertion.RelationAssertionColumnTypes;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -71,12 +72,23 @@ import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.engine.testable.service.result.MultiExecutionServiceTestResult;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
+import org.finos.legend.engine.plan.generation.PlanGenerator;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_ExecutionParameters;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_SingleExecutionParameters;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
+import org.finos.legend.pure.generated.core_service_service_helperFunctions;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
 import java.io.Closeable;
 import java.util.List;
@@ -153,25 +165,6 @@ public class ServiceTestRunner implements TestRunner
         throw new UnsupportedOperationException("Execution type : " + protocolService.execution.getClass().getSimpleName() + " not supported with ServiceTestRunner");
     }
 
-    private TestConnectionBuildParameters computeHints(PureModel pureModel)
-    {
-        try
-        {
-            if (this.pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
-            {
-                Root_meta_legend_service_metamodel_PureExecution pureExecution = (Root_meta_legend_service_metamodel_PureExecution) this.pureService._execution();
-                if (TestReturnTypeHelper.isRelationReturnType(pureExecution._func(), pureModel))
-                {
-                    return TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
-                }
-            }
-        }
-        catch (Exception ignored)
-        {
-            // If we can't determine the return type, default to H2
-        }
-        return TestConnectionBuildParameters.NONE;
-    }
 
     private Map<String, String> getAllValidKeysForExecEnv(String execKey, ServiceTestSuite suite, List<String> testIds)
     {
@@ -199,7 +192,7 @@ public class ServiceTestRunner implements TestRunner
         return testWithKey;
     }
 
-    private TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan)
+    private TestResult executeServiceTest(ServiceTest serviceTest, SingleExecutionPlan executionPlan, RelationAssertionColumnTypes relationAssertionColumnTypes)
     {
         SerializationFormat testSerializationFormat = getSerializationFormatForTest(serviceTest);
 
@@ -226,7 +219,7 @@ public class ServiceTestRunner implements TestRunner
             List<AssertionStatus> assertionStatusList = Lists.mutable.empty();
             for (TestAssertion assertion : serviceTest.assertions)
             {
-                AssertionStatus status = assertion.accept(new TestAssertionEvaluator(result, testSerializationFormat));
+                AssertionStatus status = assertion.accept(new TestAssertionEvaluator(result, testSerializationFormat, relationAssertionColumnTypes));
                 if (status == null)
                 {
                     throw new RuntimeException("Can't evaluate the test assertion: '" + assertion.id + "'");
@@ -305,9 +298,30 @@ public class ServiceTestRunner implements TestRunner
 
     private abstract class ServiceTestSuiteSession extends AbstractTestSuiteSessionWithResources<ServiceTestSuite, ServiceTest, TestResult>
     {
+        protected final RelationAssertionColumnTypes relationAssertionColumnTypes;
+        protected final TestConnectionBuildParameters hints;
+
         private ServiceTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, ServiceTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd)
         {
             super(pureSuite, protocolSuite, pureModel, pmcd, ServiceTestSuiteSession::getTestSuiteTests, ServiceTestSuiteSession::getAtomicTestId);
+            TestConnectionBuildParameters computedHints = TestConnectionBuildParameters.NONE;
+            RelationAssertionColumnTypes computedColumnTypes = RelationAssertionColumnTypes.NONE;
+            try
+            {
+                FunctionDefinition<?> func = (ServiceTestRunner.this.pureService._execution() instanceof Root_meta_legend_service_metamodel_PureExecution)
+                        ? ((Root_meta_legend_service_metamodel_PureExecution) ServiceTestRunner.this.pureService._execution())._func()
+                        : null;
+                if (func != null && TestReturnTypeHelper.isRelationReturnType(func, pureModel))
+                {
+                    computedHints = TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
+                    computedColumnTypes = RelationAssertionColumnTypes.of(TestReturnTypeHelper.getRelationReturnColumns(func, pureModel));
+                }
+            }
+            catch (Exception ignored)
+            {
+            }
+            this.hints = computedHints;
+            this.relationAssertionColumnTypes = computedColumnTypes;
         }
 
         @Override
@@ -318,7 +332,7 @@ public class ServiceTestRunner implements TestRunner
 
         protected TestResult runSingleExecTest(ServiceTest atomicTest, SingleExecutionPlan executionPlan)
         {
-            TestResult testResult = executeServiceTest(atomicTest, executionPlan);
+            TestResult testResult = executeServiceTest(atomicTest, executionPlan, this.relationAssertionColumnTypes);
             testResult.testable = testablePath(this.pureModel);
             testResult.testSuiteId = getTestSuiteId();
             return testResult;
@@ -346,24 +360,75 @@ public class ServiceTestRunner implements TestRunner
         @Override
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer) throws Exception
         {
-            TestConnectionBuildParameters hints = computeHints(this.pureModel);
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport()));
             MutableList<PlanTransformer> planTransformers = ServiceTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
             PureSingleExecution testPureSingleExecution = shallowCopySingleExecution(this.execution);
-            if (this.execution.runtime != null)
+
+            boolean legacyConnections = this.protocolSuite.testData != null
+                    && this.protocolSuite.testData.connectionsTestData != null
+                    && !this.protocolSuite.testData.connectionsTestData.isEmpty();
+            boolean newResolvers = !legacyConnections
+                    && this.protocolSuite.testData != null
+                    && this.protocolSuite.testData.serviceTestData != null
+                    && !this.protocolSuite.testData.serviceTestData.isEmpty();
+
+            FunctionDefinition<?> nonStoreRelationFunction = null;
+            StoreResolversPlanInputs storeResolversPlanInputs = null;
+
+            if (legacyConnections)
             {
-                Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(this.execution.runtime, this.protocolSuite.testData, this.pmcd, hints);
-                testPureSingleExecution.runtime = runtimeWithCloseables.getOne();
-                registerCloseables(runtimeWithCloseables.getTwo());
+                if (this.execution.runtime != null)
+                {
+                    Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(this.execution.runtime, this.protocolSuite.testData, this.pmcd, this.hints);
+                    testPureSingleExecution.runtime = runtimeWithCloseables.getOne();
+                    registerCloseables(runtimeWithCloseables.getTwo());
+                }
+                else
+                {
+                    MutableList<Closeable> closeables = Lists.mutable.empty();
+                    testPureSingleExecution.func.body.forEach(func -> func.accept(new TestValueSpecificationBuilder(closeables, this.protocolSuite.testData, this.pmcd)));
+                    registerCloseables(closeables);
+                }
+            }
+            else if (newResolvers)
+            {
+                Root_meta_legend_service_metamodel_PureSingleExecution pureSingleExec =
+                        (Root_meta_legend_service_metamodel_PureSingleExecution) ServiceTestRunner.this.pureService._execution();
+                ServiceTestDataResolverSetup.Result setup = ServiceTestDataResolverSetup.build(
+                        this.protocolSuite.testData.serviceTestData,
+                        pureSingleExec._runtime(),
+                        pureSingleExec._func(),
+                        new ConnectionFirstPassBuilder(this.pureModel.getContext()),
+                        this.pureModel,
+                        this.pmcd,
+                        this.hints,
+                        this.protocolSuite.id);
+                if (setup.modifiedFunction != null)
+                {
+                    nonStoreRelationFunction = setup.modifiedFunction;
+                }
+                registerCloseables(setup.closeables);
+                storeResolversPlanInputs = new StoreResolversPlanInputs(pureSingleExec._func(), pureSingleExec._mapping(), pureSingleExec._runtime());
+            }
+
+            SingleExecutionPlan singleExecutionPlan;
+            if (nonStoreRelationFunction != null)
+            {
+                singleExecutionPlan = org.finos.legend.engine.plan.generation.PlanGenerator.generateExecutionPlan(
+                        nonStoreRelationFunction, null, null, null, this.pureModel,
+                        ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+            }
+            else if (storeResolversPlanInputs != null)
+            {
+                singleExecutionPlan = org.finos.legend.engine.plan.generation.PlanGenerator.generateExecutionPlan(
+                        storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, null,
+                        this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             }
             else
             {
-                MutableList<Closeable> closeables = Lists.mutable.empty();
-                testPureSingleExecution.func.body.forEach(func -> func.accept(new TestValueSpecificationBuilder(closeables, this.protocolSuite.testData, this.pmcd)));
-                registerCloseables(closeables);
+                ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+                singleExecutionPlan = (SingleExecutionPlan) executionPlan;
             }
-            ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
-            SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
             JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
             this.plan = singleExecutionPlan;
         }
@@ -396,7 +461,6 @@ public class ServiceTestRunner implements TestRunner
         @Override
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer) throws Exception
         {
-            TestConnectionBuildParameters hints = computeHints(this.pureModel);
             RichIterable<? extends Root_meta_pure_extension_Extension> routerExtensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(this.pureModel.getExecutionSupport()));
             MutableList<PlanTransformer> planTransformers = ServiceTestRunner.this.extensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
@@ -417,19 +481,71 @@ public class ServiceTestRunner implements TestRunner
                 }
             }
 
+            Root_meta_legend_service_metamodel_PureMultiExecution compiledMulti =
+                    (Root_meta_legend_service_metamodel_PureMultiExecution) ServiceTestRunner.this.pureService._execution();
+
             for (KeyedExecutionParameter param : this.execution.executionParameters)
             {
                 if (envIdsInSuite.contains(param.key))
                 {
+                    Root_meta_legend_service_metamodel_KeyedExecutionParameter compiledParam =
+                            compiledMulti._executionParameters().detect(p -> param.key.equals(p._key()));
+                    if (compiledParam == null)
+                    {
+                        throw new IllegalStateException("Compiled KeyedExecutionParameter for key '" + param.key + "' not found on service " + testablePath(this.pureModel));
+                    }
                     PureSingleExecution pureSingleExecution = new PureSingleExecution();
                     pureSingleExecution.func = this.execution.func;
                     pureSingleExecution.mapping = param.mapping;
-                    Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, this.protocolSuite.testData, this.pmcd, hints);
-                    pureSingleExecution.runtime = runtimeWithCloseables.getOne();
+                    boolean legacyConnections = this.protocolSuite.testData != null
+                            && this.protocolSuite.testData.connectionsTestData != null
+                            && !this.protocolSuite.testData.connectionsTestData.isEmpty();
+                    boolean newResolvers = !legacyConnections
+                            && this.protocolSuite.testData != null
+                            && this.protocolSuite.testData.serviceTestData != null
+                            && !this.protocolSuite.testData.serviceTestData.isEmpty();
+                    StoreResolversPlanInputs storeResolversPlanInputs = null;
+                    if (legacyConnections)
+                    {
+                        Pair<Runtime, List<Closeable>> runtimeWithCloseables = TestRuntimeBuilder.getTestRuntimeAndClosableResources(param.runtime, this.protocolSuite.testData, this.pmcd, this.hints);
+                        pureSingleExecution.runtime = runtimeWithCloseables.getOne();
+                        registerCloseables(runtimeWithCloseables.getTwo());
+                    }
+                    else if (newResolvers)
+                    {
+                        ServiceTestDataResolverSetup.Result setup = ServiceTestDataResolverSetup.build(
+                                this.protocolSuite.testData.serviceTestData,
+                                compiledParam._runtime(),
+                                null,
+                                new ConnectionFirstPassBuilder(this.pureModel.getContext()),
+                                this.pureModel,
+                                this.pmcd,
+                                this.hints,
+                                this.protocolSuite.id);
+                        if (setup.modifiedFunction != null)
+                        {
+                            throw new UnsupportedOperationException("Non-store relation serviceTestData is not yet supported for PureMultiExecution; use PureSingleExecution or connectionsTestData.");
+                        }
+                        registerCloseables(setup.closeables);
+                        storeResolversPlanInputs = new StoreResolversPlanInputs(compiledMulti._func(), compiledParam._mapping(), compiledParam._runtime());
+                    }
+                    else
+                    {
+                        pureSingleExecution.runtime = param.runtime;
+                    }
                     pureSingleExecution.executionOptions = param.executionOptions;
-                    registerCloseables(runtimeWithCloseables.getTwo());
-                    ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
-                    SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
+                    SingleExecutionPlan singleExecutionPlan;
+                    if (storeResolversPlanInputs != null)
+                    {
+                        singleExecutionPlan = PlanGenerator.generateExecutionPlan(
+                                storeResolversPlanInputs.func, storeResolversPlanInputs.mapping, storeResolversPlanInputs.runtime, null,
+                                this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+                    }
+                    else
+                    {
+                        ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(pureSingleExecution, null, this.pureModel, ServiceTestRunner.this.pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
+                        singleExecutionPlan = (SingleExecutionPlan) executionPlan;
+                    }
                     JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
                     this.plansByKey.put(param.key, singleExecutionPlan);
                 }
@@ -486,8 +602,53 @@ public class ServiceTestRunner implements TestRunner
             List<String> allTestIds = this.protocolSuite.tests.stream().map(t -> t.id).collect(Collectors.toList());
             this.validKeyMap = getAllValidKeysForExecEnv(execKey, this.protocolSuite, allTestIds);
             PureMultiExecution multiExecution = shallowCopyMultiExecution(this.execution);
+
+            boolean legacyConnections = this.protocolSuite.testData != null
+                    && this.protocolSuite.testData.connectionsTestData != null
+                    && !this.protocolSuite.testData.connectionsTestData.isEmpty();
+            boolean newResolvers = !legacyConnections
+                    && this.protocolSuite.testData != null
+                    && this.protocolSuite.testData.serviceTestData != null
+                    && !this.protocolSuite.testData.serviceTestData.isEmpty();
+            if (newResolvers)
+            {
+                FunctionDefinition<?> compiledLambda = ((Root_meta_legend_service_metamodel_PureExecution) ServiceTestRunner.this.pureService._execution())._func();
+                Root_meta_legend_service_metamodel_ExecutionEnvironmentInstance compiledEnv =
+                        core_service_service_helperFunctions.Root_meta_legend_service_getExecutionEnvironmentFromFunctionDefinition_FunctionDefinition_1__ExecutionEnvironmentInstance_1_(
+                                compiledLambda, this.pureModel.getExecutionSupport());
+                for (Root_meta_legend_service_metamodel_ExecutionParameters ep : compiledEnv._executionParameters())
+                {
+                    if (!(ep instanceof Root_meta_legend_service_metamodel_SingleExecutionParameters))
+                    {
+                        continue;
+                    }
+                    Root_meta_legend_service_metamodel_SingleExecutionParameters sep =
+                            (Root_meta_legend_service_metamodel_SingleExecutionParameters) ep;
+                    if (sep._runtime() == null)
+                    {
+                        continue;
+                    }
+                    ServiceTestDataResolverSetup.Result setup = ServiceTestDataResolverSetup.build(
+                            this.protocolSuite.testData.serviceTestData,
+                            sep._runtime(),
+                            null,
+                            new ConnectionFirstPassBuilder(this.pureModel.getContext()),
+                            this.pureModel,
+                            this.pmcd,
+                            this.hints,
+                            this.protocolSuite.id);
+                    if (setup.modifiedFunction != null)
+                    {
+                        throw new UnsupportedOperationException("Non-store relation serviceTestData is not yet supported for services that reference an ExecutionEnvironment; use PureSingleExecution or connectionsTestData.");
+                    }
+                    registerCloseables(setup.closeables);
+                }
+            }
             MutableList<Closeable> tempCloseables = Lists.mutable.empty();
-            multiExecution.func.body.forEach(valSpec -> valSpec.accept(new TestValueSpecificationBuilder(Lists.mutable.withAll(this.validKeyMap.values()), tempCloseables, this.protocolSuite.testData, this.pmcd)));
+            if (legacyConnections)
+            {
+                multiExecution.func.body.forEach(valSpec -> valSpec.accept(new TestValueSpecificationBuilder(Lists.mutable.withAll(this.validKeyMap.values()), tempCloseables, this.protocolSuite.testData, this.pmcd)));
+            }
             if (tempCloseables.notEmpty())
             {
                 registerCloseables(tempCloseables);
@@ -513,6 +674,26 @@ public class ServiceTestRunner implements TestRunner
             String key = this.validKeyMap.get(atomicTest.id);
             multiResult.addTestResult(key, runSingleExecTest(atomicTest, this.compositePlan.executionPlans.get(key)));
             return multiResult;
+        }
+    }
+
+    /**
+     * Compiled metamodel bundle used to bypass {@link ServicePlanGenerator} when
+     * the store-resolver path has mutated the compiled runtime in place — calls
+     * {@link PlanGenerator#generateExecutionPlan(FunctionDefinition, Mapping, Root_meta_core_runtime_Runtime, org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext, PureModel, String, PlanPlatform, String, RichIterable, Iterable)}
+     * directly with the mutated runtime so the mocked connections survive.
+     */
+    private static final class StoreResolversPlanInputs
+    {
+        final FunctionDefinition<?> func;
+        final Mapping mapping;
+        final Root_meta_core_runtime_Runtime runtime;
+
+        StoreResolversPlanInputs(FunctionDefinition<?> func, Mapping mapping, Root_meta_core_runtime_Runtime runtime)
+        {
+            this.func = func;
+            this.mapping = mapping;
+            this.runtime = runtime;
         }
     }
 }

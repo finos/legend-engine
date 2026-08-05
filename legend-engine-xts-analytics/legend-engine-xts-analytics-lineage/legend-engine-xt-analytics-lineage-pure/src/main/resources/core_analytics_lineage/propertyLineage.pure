@@ -147,8 +147,9 @@ Class meta::analytics::lineage::property::scanner::ScannerState
   propertyLink:  meta::analytics::lineage::property::PropertyLink[*];
   ownerLink:meta::analytics::lineage::property::OwnerLink[*];
   extensions:Extension[*];
-
+  runtime:meta::core::runtime::Runtime[0..1];
   mapping:Mapping[0..1];
+  additionalContext: PackageableElement[*];
 }
 
 

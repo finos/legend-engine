@@ -3583,6 +3583,53 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 ")\n");
     }
 
+    @Test
+    public void testRelationFunctionUnionMappingCompiles()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  *my::Person: Operation\n" +
+                "  {\n" +
+                "    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)\n" +
+                "  }\n" +
+                "  my::Person[p1]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                "  my::Person[p2]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithIncludedMappingCompiles()
+    {
+        testRelationMapping("###Mapping\n" +
+                "Mapping my::baseMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunction():Relation<Any>[1]\n" +
+                "    ~primaryKey: [FIRSTNAME]\n" +
+                "    firstName: FIRSTNAME,\n" +
+                "    age: AGE\n" +
+                "  }\n" +
+                ")\n" +
+                "###Mapping\n" +
+                "Mapping my::testMapping\n" +
+                "(\n" +
+                "  include my::baseMapping\n" +
+                ")\n");
+    }
 
     @Test
     public void testModelJoinAssociationMapping()

@@ -15,12 +15,14 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
 
 import java.util.List;
 
 public class TestData
 {
     public List<ConnectionTestData> connectionsTestData;
+    public List<DataResolver> serviceTestData;
 
     public SourceInformation sourceInformation;
 }

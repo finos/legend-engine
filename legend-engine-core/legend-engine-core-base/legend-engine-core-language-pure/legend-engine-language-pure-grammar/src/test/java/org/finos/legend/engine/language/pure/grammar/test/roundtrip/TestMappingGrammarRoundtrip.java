@@ -1142,6 +1142,113 @@ public class TestMappingGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void testRelationFunctionMappingWithTestSuite()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName\n" +
+                "  }\n" +
+                "\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    personSuite:\n" +
+                "    {\n" +
+                "      function: |my::Person.all()->graphFetch(#{my::Person{firstName}}#);\n" +
+                "      tests:\n" +
+                "      [\n" +
+                "        test1:\n" +
+                "        {\n" +
+                "          data:\n" +
+                "          [\n" +
+                "            store::TestDB:\n" +
+                "              Reference\n" +
+                "              #{\n" +
+                "                my::data::PersonData\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "          asserts:\n" +
+                "          [\n" +
+                "            shouldMatch:\n" +
+                "              EqualToJson\n" +
+                "              #{\n" +
+                "                expected:\n" +
+                "                  ExternalFormat\n" +
+                "                  #{\n" +
+                "                    contentType: 'application/json';\n" +
+                "                    data: '[{\"firstName\":\"John\"}]';\n" +
+                "                  }#;\n" +
+                "              }#\n" +
+                "          ];\n" +
+                "        }\n" +
+                "      ];\n" +
+                "    }\n" +
+                "  ]\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionUnionMapping()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::unionMapping\n" +
+                "(\n" +
+                "  *my::Person: Operation\n" +
+                "  {\n" +
+                "    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1,p2)\n" +
+                "  }\n" +
+                "  my::Person[p1]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc1():Any[1]\n" +
+                "    firstName: firstName\n" +
+                "  }\n" +
+                "  my::Person[p2]: Relation\n" +
+                "  {\n" +
+                "    ~func my::personFunc2():Any[1]\n" +
+                "    firstName: firstName\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithInclude()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  include mapping mappingPackage::baseMapping\n" +
+                "\n" +
+                "  *my::Person[person]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationFunctionMappingWithExtends()
+    {
+        test("###Mapping\n" +
+                "Mapping mappingPackage::myMapping\n" +
+                "(\n" +
+                "  *my::Person[parent]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    firstName: firstName\n" +
+                "  }\n" +
+                "  *my::Person[child] extends [parent]: Relation\n" +
+                "  {\n" +
+                "    ~func my::testFunc():Any[1]\n" +
+                "    lastName: lastName\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
     public void testModelJoinAssociationMapping()
     {
         test("###Mapping\n" +

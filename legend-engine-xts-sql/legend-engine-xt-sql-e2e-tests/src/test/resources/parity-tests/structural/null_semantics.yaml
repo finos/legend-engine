@@ -1,0 +1,128 @@
+tests:
+  # IS NULL / IS NOT NULL
+  - id: null_is_null
+    sql: "SELECT name, age FROM persons WHERE age IS NULL ORDER BY 1"
+    feature: "IS NULL"
+    category: "null_semantics"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_is_not_null
+    sql: "SELECT name, age FROM persons WHERE age IS NOT NULL ORDER BY 1"
+    feature: "IS NOT NULL"
+    category: "null_semantics"
+
+  # NULL in arithmetic
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_arithmetic
+    sql: "SELECT name, salary + NULL AS result FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "NULL in arithmetic"
+    category: "null_semantics"
+
+  # NULL comparison
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_equals_null
+    sql: "SELECT (NULL = NULL) AS result FROM persons WHERE id = 1"
+    feature: "NULL = NULL"
+    category: "null_semantics"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+  - id: null_not_equals
+    sql: "SELECT (NULL <> 1) AS result FROM persons WHERE id = 1"
+    feature: "NULL in comparison"
+    category: "null_semantics"
+
+  # COALESCE
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+  - id: null_coalesce
+    sql: "SELECT COALESCE(age, -1) AS age_val FROM persons ORDER BY 1"
+    feature: "COALESCE"
+    category: "null_semantics"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_coalesce_multi
+    sql: "SELECT COALESCE(nullable_val, unicode_val, 'fallback') AS result FROM strings ORDER BY 1"
+    feature: "COALESCE multi-arg"
+    category: "null_semantics"
+
+  # NULLIF
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_nullif
+    sql: "SELECT NULLIF(dept_id, 1) AS result FROM persons WHERE dept_id IS NOT NULL ORDER BY 1"
+    feature: "NULLIF"
+    category: "null_semantics"
+
+  # NULL in aggregates
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: null_count_star_vs_col
+    sql: "SELECT COUNT(*) AS cnt_star, COUNT(age) AS cnt_age FROM persons"
+    feature: "NULL in COUNT"
+    category: "null_semantics"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_sum
+    sql: "SELECT SUM(age) AS result FROM persons"
+    feature: "NULL in SUM"
+    category: "null_semantics"
+
+  # CASE with NULL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_case
+    sql: "SELECT CASE WHEN age IS NULL THEN 'unknown' ELSE 'known' END AS result FROM persons ORDER BY 1"
+    feature: "CASE with NULL"
+    category: "null_semantics"
+
+  # IS DISTINCT FROM
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_is_distinct_from
+    sql: "SELECT name FROM persons WHERE age IS DISTINCT FROM 30 ORDER BY 1"
+    feature: "IS DISTINCT FROM"
+    category: "null_semantics"
+
+  # IS NOT DISTINCT FROM
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_is_not_distinct_from
+    sql: "SELECT name FROM persons WHERE age IS NOT DISTINCT FROM NULL ORDER BY 1"
+    feature: "IS NOT DISTINCT FROM"
+    category: "null_semantics"
+
+  # NULL in BETWEEN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_in_between
+    sql: "SELECT name, age FROM persons WHERE age BETWEEN 25 AND 35 ORDER BY 1"
+    feature: "NULL excluded from BETWEEN"
+    category: "null_semantics"
+
+  # NULL in string concatenation
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_concat
+    sql: "SELECT name || ' age=' || CAST(age AS TEXT) AS result FROM persons ORDER BY 1"
+    feature: "NULL in concatenation"
+    category: "null_semantics"
+
+  # NULL in GROUP BY
+    expected_tds_status: FAIL
+    expected_rel_status: ERROR
+  - id: null_group_by
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "NULL in GROUP BY"
+    category: "null_semantics"
+
+  # GREATEST / LEAST with NULL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: null_greatest
+    sql: "SELECT GREATEST(age, 30) AS result FROM persons ORDER BY 1"
+    feature: "GREATEST with NULL"
+    category: "null_semantics"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR

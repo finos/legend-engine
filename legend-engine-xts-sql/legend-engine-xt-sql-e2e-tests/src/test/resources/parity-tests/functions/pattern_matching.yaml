@@ -1,0 +1,165 @@
+tests:
+  - id: like__bytea_bytea__unsupported_type
+    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    function: like
+    signature: "like(bytea, bytea) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: like__name_txt__from_table
+    sql: "SELECT name LIKE '%li%' AS result FROM persons ORDER BY 1"
+    function: like
+    signature: "like(name, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: like__txt_txt__from_table
+    sql: "SELECT val LIKE '%lo%' AS result FROM strings ORDER BY 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: like__txt_txt__func_syntax
+    sql: "SELECT LIKE(val, '%lo%') AS result FROM strings ORDER BY 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_count__txt_txt__from_table
+    sql: "SELECT REGEXP_COUNT(val, '[aeiou]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_count
+    signature: "regexp_count(text, text) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_count__txt_txt_int__from_table
+    sql: "SELECT REGEXP_COUNT(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_count__txt_txt_int_txt__from_table
+    sql: "SELECT REGEXP_COUNT(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[0-9]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt_int__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt_int_int__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt_int_int_int__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer, integer, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt_int_int_int_txt__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer, integer, integer, text) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr__txt_txt_int_int_int_txt_int__from_table
+    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer, integer, integer, text, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_like__txt_txt__from_table
+    sql: "SELECT REGEXP_LIKE(val, '^[A-Z]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_like
+    signature: "regexp_like(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_like__txt_txt_txt__from_table
+    sql: "SELECT REGEXP_LIKE(val, '^[a-z]', 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr__txt_txt__from_table
+    sql: "SELECT REGEXP_SUBSTR(val, '[0-9]+') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr__txt_txt_int__from_table
+    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr__txt_txt_int_int__from_table
+    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr__txt_txt_int_int_txt__from_table
+    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr__txt_txt_int_int_txt_int__from_table
+    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text, integer) → text"
+
+  # === Auto-generated tests for previously UNTESTED signatures ===
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: like_bytea_bytea_cov
+    sql: "SELECT LIKE(NULL) AS result FROM persons WHERE id = 1"
+    function: like
+    signature: "like(bytea, bytea) → boolean"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: regexp_count_text_text_integer_cov
+    sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_count_text_text_integer_text_cov
+    sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr_text_text_integer_cov
+    sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_instr_text_text_integer_integer_cov
+    sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
+    function: regexp_instr
+    signature: "regexp_instr(text, text, integer, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr_text_text_integer_cov
+    sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: regexp_substr_text_text_integer_integer_cov
+    sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

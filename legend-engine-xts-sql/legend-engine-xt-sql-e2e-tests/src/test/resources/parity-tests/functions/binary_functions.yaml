@@ -1,0 +1,55 @@
+tests:
+  - id: convert__bytea_name_name__unsupported
+    sql: "SELECT CONVERT(E'\\x48656c6c6f'::bytea, 'UTF8', 'LATIN1') AS result FROM persons WHERE id = 1"
+    function: convert
+    signature: "convert(bytea, name, name) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: convert_from__bytea_name__unsupported
+    sql: "SELECT CONVERT_FROM(E'\\x48656c6c6f'::bytea, 'UTF8') AS result FROM persons WHERE id = 1"
+    function: convert_from
+    signature: "convert_from(bytea, name) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: convert_to__txt_name__unsupported
+    sql: "SELECT CONVERT_TO('Hello', 'UTF8') AS result FROM persons WHERE id = 1"
+    function: convert_to
+    signature: "convert_to(text, name) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: get_byte__bytea_int__unsupported
+    sql: "SELECT GET_BYTE(E'\\x4142'::bytea, 0) AS result FROM persons WHERE id = 1"
+    function: get_byte
+    signature: "get_byte(bytea, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: set_byte__bytea_int_int__unsupported
+    sql: "SELECT SET_BYTE(E'\\x4142'::bytea, 0, 67) AS result FROM persons WHERE id = 1"
+    function: set_byte
+    signature: "set_byte(bytea, integer, integer) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: sha224__bytea__unsupported
+    sql: "SELECT SHA224(E'\\x48656c6c6f'::bytea) AS result FROM persons WHERE id = 1"
+    function: sha224
+    signature: "sha224(bytea) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: sha256__bytea__unsupported
+    sql: "SELECT SHA256(E'\\x48656c6c6f'::bytea) AS result FROM persons WHERE id = 1"
+    function: sha256
+    signature: "sha256(bytea) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: sha384__bytea__unsupported
+    sql: "SELECT SHA384(E'\\x48656c6c6f'::bytea) AS result FROM persons WHERE id = 1"
+    function: sha384
+    signature: "sha384(bytea) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: sha512__bytea__unsupported
+    sql: "SELECT SHA512(E'\\x48656c6c6f'::bytea) AS result FROM persons WHERE id = 1"
+    function: sha512
+    signature: "sha512(bytea) → bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

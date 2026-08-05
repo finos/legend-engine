@@ -1,0 +1,7 @@
+function test::f(): String[1]
+{
+  '''
+  Hello
+  World
+  '''
+}

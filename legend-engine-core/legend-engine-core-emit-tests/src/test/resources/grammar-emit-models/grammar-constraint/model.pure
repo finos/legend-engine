@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+// Anonymous and named constraints in their short form: a bare boolean expression,
+// and an id-prefixed one. Both compile to a Constraint on the class.
+Class demo::constraint::Account
+[
+  $this.balance >= 0.0,
+  nonEmptyName: $this.accountName->length() > 0
+]
+{
+  accountName: String[1];
+  balance: Float[1];
+}
+
+// The full constraint form, exercising every optional clause the grammar offers:
+// ~owner, ~externalId, ~function, ~enforcementLevel and ~message. The message is a
+// function of $this, so it is compiled as a lambda rather than a literal.
+Class demo::constraint::Trade
+[
+  positiveQuantity
+  (
+    ~owner: RiskDesk
+    ~externalId: 'TRD-001'
+    ~function: $this.quantity > 0
+    ~enforcementLevel: Error
+    ~message: 'quantity must be positive but was ' + $this.quantity->toString()
+  ),
+  settlementAfterTrade
+  (
+    ~externalId: 'TRD-002'
+    ~function: $this.settlementDate >= $this.tradeDate
+    ~enforcementLevel: Warn
+    ~message: 'settlementDate precedes tradeDate for trade ' + $this.tradeId
+  )
+]
+{
+  tradeId: String[1];
+  quantity: Integer[1];
+  tradeDate: StrictDate[1];
+  settlementDate: StrictDate[1];
+}
+
+// A constraint that navigates a property of another class, so constraint
+// compilation has to resolve a reference beyond $this's own properties.
+Class demo::constraint::Order
+[
+  quantityWithinAccountLimit: $this.quantity <= $this.account.dailyLimit
+]
+{
+  quantity: Integer[1];
+  account: demo::constraint::LimitedAccount[1];
+}
+
+Class demo::constraint::LimitedAccount
+{
+  dailyLimit: Integer[1];
+}

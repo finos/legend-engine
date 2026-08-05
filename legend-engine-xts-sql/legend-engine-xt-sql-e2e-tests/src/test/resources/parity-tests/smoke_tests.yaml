@@ -1,0 +1,53 @@
+# Smoke tests — basic SQL operations.
+# Schema is defined separately in schema.yaml.
+tests:
+  - id: smoke_select_literal
+    sql: "SELECT 1 AS num"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_arithmetic
+    sql: "SELECT 1 + 2 AS result"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_column
+    sql: "SELECT id, name FROM persons ORDER BY id"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_where
+    sql: "SELECT id, name FROM persons WHERE age > 30 ORDER BY id"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_count
+    sql: "SELECT COUNT(*) AS cnt FROM persons"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_group_by
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY dept_id"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_order_by
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_join
+    sql: "SELECT p.name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.name"
+    join_func: true
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_aggregate_sum
+    sql: "SELECT dept_id, SUM(salary) AS total_salary FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY dept_id"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: smoke_select_null_handling
+    sql: "SELECT id, name, COALESCE(age, -1) AS age_or_default FROM persons ORDER BY id"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

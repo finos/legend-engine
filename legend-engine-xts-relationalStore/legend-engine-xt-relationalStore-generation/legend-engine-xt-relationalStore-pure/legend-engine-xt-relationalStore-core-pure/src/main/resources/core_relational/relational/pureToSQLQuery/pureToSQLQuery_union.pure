@@ -56,8 +56,8 @@ function meta::relational::functions::pureToSqlQuery::union::addMissingColumnToU
                                        relationalElement = ^$select
                                                            (
                                                               columns = $select.columns->concatenate(
-                                                                $propNames->map({propName | 
-                                                                  if($select.columns->exists(c | $c->cast(@Alias).name == $propName),
+                                                                 $propNames->map({propName |
+                                                                  if($select.columns->exists(c | $c->cast(@Alias).name->stripMatchingQuotes() == $propName->stripMatchingQuotes()),
                                                                      | [],
                                                                      | ^Alias
                                                                         (
@@ -253,13 +253,19 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
                                                             |[]
                                                         );
 
+                                                        // Milestoning columns (e.g. "lake_thru_0") are already in the union via $milestoning.
+                                                        // FK joins can produce columns with the same base name (e.g. lake_thru_0) — filter
+                                                        // them out to prevent duplicate column errors in the UNION ALL.
+                                                        let milestoningNames = $milestoning->map(m|$m.name->stripMatchingQuotes());
+                                                        let dedupedExtraFKs = $extraFKs->filter(fk|!$milestoningNames->contains($fk.name->stripMatchingQuotes()));
+
                                                         let cols = if($fullGet,
                                                                       | $allColumnsName->map(n|let found = $vals->filter(a|$a.name == $n);
                                                                                           if ($found->isEmpty(),|^Alias(name=$n, relationalElement = $sqlNull),|$found);
                                                                                       ),
                                                                       |[]
                                                                   );
-                                                        ^$q(columns = $newKeys->concatenate($cols)->concatenate($milestoning)->concatenate($extraFKs));
+                                                        ^$q(columns = $newKeys->concatenate($cols)->concatenate($milestoning)->concatenate($dedupedExtraFKs));
                                                     )->pushSavedFilteringOperation($extensions);
                                                  );
 
@@ -311,11 +317,21 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
 {
   $element->match(   [
                         c:TableAliasColumn[1]|let col = $c.column;
-                                              let tableInJoin = $c.alias.relationalElement->findMainRelation();
+                                               let tableInJoin = $c.alias.relationalElement->findMainRelation();
+                                              // Milestoning columns in the union are aliased with quotes (e.g. "lake_thru_0").
+                                              // ON clause references must also be quoted to match, otherwise H2 uppercases
+                                              // unquoted identifiers and fails with "Column not found".
+                                              let isSrcMilestoningCol = $sourceTable->match([t:Table[1]|$t.milestoning->getAllTemporalColumns().values->contains($col), r:Relation[1]|false]);
+                                              let isTgtMilestoningCol = $targetTable->match([t:Table[1]|$t.milestoning->getAllTemporalColumns().values->contains($col), r:Relation[1]|false]);
                                               let res = if ($processingSide.source,
                                                              | if (isSameRelation($sourceTable, $tableInJoin) && !(!$targetForSelfJoinFromJoin->isEmpty() &&  $targetForSelfJoinFromJoin->toOne() == $c.alias),
                                                                    |let newColumnName = $srcMap->get($col);
-                                                                    ^$c(alias=$newSourceAlias, column=^$col(name=if(!$newColumnName->isEmpty(),|$newColumnName->toOne(),|$col.name + if($sourceIndex == -1, |'', | '_' + $sourceIndex->toString()))));,
+                                                                    let srcColName = if(!$newColumnName->isEmpty(),
+                                                                                       |$newColumnName->toOne(),
+                                                                                       |let baseName = $col.name + if($sourceIndex == -1, |'', | '_' + $sourceIndex->toString());
+                                                                                        if($isSrcMilestoningCol && $sourceIndex != -1, |'"' + $baseName + '"', |$baseName);
+                                                                                    );
+                                                                    ^$c(alias=$newSourceAlias, column=^$col(name=$srcColName));,
                                                                    |$c
                                                                ),
                                                              | $c
@@ -323,7 +339,12 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                               if ($processingSide.target,
                                                     | if ((isSameRelation($targetTable, $tableInJoin) && $targetForSelfJoinFromJoin->isEmpty()) || (!$targetForSelfJoinFromJoin->isEmpty() && $targetForSelfJoinFromJoin->toOne() == $c.alias),
                                                           |let newColumnName = $targetMap->get($col);
-                                                           ^$res(alias=$newTargetAlias, column=^$col(name=if(!$newColumnName->isEmpty(),|$newColumnName->toOne(),|$col.name + if($targetIndex == -1, |'', | '_' + $targetIndex->toString()))));,
+                                                           let tgtColName = if(!$newColumnName->isEmpty(),
+                                                                              |$newColumnName->toOne(),
+                                                                              |let baseName = $col.name + if($targetIndex == -1, |'', | '_' + $targetIndex->toString());
+                                                                               if($isTgtMilestoningCol && $targetIndex != -1, |'"' + $baseName + '"', |$baseName);
+                                                                           );
+                                                           ^$res(alias=$newTargetAlias, column=^$col(name=$tgtColName));,
                                                           |$res
                                                       ),
                                                     | $res
@@ -431,6 +452,10 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
          let missingFks = $sourceCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$sourceCols->indexOf($c)->toString(), $z))));
          let mappedFkPropertyNames = $sourceCols.first.values.first->removeDuplicates();
 
+         let sourceSetImpls = $sourceSetImplementationIds->map(id| $state->getClassMappingById($id)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+         let srcMilestoningColumns = $sourceSetImpls->map(s|$s.mainTableAlias.relationalElement->findMainNamedRelation()->match([t:Table[1]|$t.milestoning->getAllTemporalColumns(), r:NamedRelation[1]|^List<Column>(values=[])]));
+         let srcMilestoningNames = $sourceSetImpls->map(s| $srcMilestoningColumns->at($sourceSetImpls->indexOf($s)).values->map(c| $c.name->toString() + '_' + $sourceSetImpls->indexOf($s)->toString()))->removeDuplicates();
+
          $srcOperation->addMissingColumnToUnion({q,i|let y = $union.currentTreeNodes->at($i);
 
                                                      let colSet = $sourceCols->at($i);
@@ -449,16 +474,20 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
                                                                                    );
 
 
-                                                     let names = $q.columns->map(m|$m->cast(@Alias).name);
-                                                     let allFks = $mappedOnes->concatenate($col);
-                                                     let partitionedFks = $allFks->partition({c|$names->contains($c.name)});
-                                                      $partitionedFks.first.values->map(f|let col = $q.columns->cast(@Alias)->filter(c|$c.name == $f.name)->toOne(); assertEquals($col.relationalElement,$f.relationalElement,| 'FK column addition failed for column alias: ' + $f.name+ '  , column with same name but different RelationalElement exists in Union'););          
-                                                     ^$q(columns+=$partitionedFks.second.values);
+                                                      let names = $q.columns->map(m|$m->cast(@Alias).name);
+                                                      let allFks = $mappedOnes->concatenate($col);
+                                                      // Filter FK columns that duplicate milestoning aliases already in the union (same logic as buildUnion)
+                                                      let nonMilestoningFks = $allFks->filter(fk|!$srcMilestoningNames->contains($fk.name->stripMatchingQuotes()));
+                                                      let partitionedFks = $nonMilestoningFks->partition({c|$names->contains($c.name)});
+                                                      $partitionedFks.first.values->map(f|let col = $q.columns->cast(@Alias)->filter(c|$c.name == $f.name)->toOne(); assertEquals($col.relationalElement,$f.relationalElement,| 'FK column addition failed for column alias: ' + $f.name+ '  , column with same name but different RelationalElement exists in Union'););
+                                                       
+                                                      ^$q(columns+=$partitionedFks.second.values);
                                                     },
                                                 $sourceRelation->toOne()->isNestedUnion(),
                                                 if($sourceRelation->toOne()->instanceOf(SelectSQLQuery),
                                                    | let selectColNames = $sourceRelation->toOne()->cast(@SelectSQLQuery).columns->cast(@Alias).name;
-                                                     $mappedFkPropertyNames->concatenate($missingFks.values.first)->filter(x | !$selectColNames->contains($x));,
+                                                     let selectColNamesStripped = $selectColNames->map(n|$n->stripMatchingQuotes());
+                                                     $mappedFkPropertyNames->concatenate($missingFks.values.first)->filter(x | !$selectColNames->contains($x) && !$selectColNamesStripped->contains($x->stripMatchingQuotes()));,
                                                    | []
                                                 ),
                                                 $extensions
@@ -708,8 +737,21 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
                                           );,
                                        | $sourceRelationalElement->cast(@Union)->applyChainedJoinsToUnionQueries($relationalPropertyMappings, $mapping, $missingColumns.first, $parentSourceOperation, $nodeId, $state, $debugContext, $extensions););
    
-   let missingColumnsToAddToUnionQueries = $missingColumns->realiasMissingColumnsToAddToUnionQueries($sourceUnionWithJoinsApplied->resolveUnion().currentTreeNodes.alias.name, $sourceSetImplementationIds);
-   let newAlias = addMissingColumnsToUnion($sourceUnionWithJoinsApplied, $missingColumnsToAddToUnionQueries, $sourceAlias, $extensions);
+    let missingColumnsToAddToUnionQueries = $missingColumns->realiasMissingColumnsToAddToUnionQueries($sourceUnionWithJoinsApplied->resolveUnion().currentTreeNodes.alias.name, $sourceSetImplementationIds);
+
+    // Filter out milestoning columns — the union already has quoted milestoning aliases (e.g. "lake_thru_0").
+    // Without this filter, addMissingColumnsToUnion would add unquoted duplicates (e.g. lake_thru_0)
+    // that cause "Column not found" errors on case-sensitive databases like H2.
+    let sourceSetImpls = $sourceSetImplementationIds->map(id| $state->getClassMappingById($id)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+    let milestoningColNames = $sourceSetImpls->map(s| let idx = $sourceSetImpls->indexOf($s);
+                                                       $s.mainTableAlias.relationalElement->findMainNamedRelation()->match([
+                                                          t:Table[1]|$t.milestoning->getAllTemporalColumns().values->map(c| $c.name + '_' + $idx->toString()),
+                                                          r:NamedRelation[1]|[]
+                                                       ]);
+                                                  )->removeDuplicates();
+    let filteredMissingColumns = $missingColumnsToAddToUnionQueries->filter(p| !$milestoningColNames->contains($p.first.column.name + '_' + $p.second->toString()));
+
+    let newAlias = addMissingColumnsToUnion($sourceUnionWithJoinsApplied, $filteredMissingColumns, $sourceAlias, $extensions);
    pair($newAlias, $updatedRelationalPropertyMappings->list());
 }
 
@@ -1233,34 +1275,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::union::
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::union::nullSafeEquals(tac1: TableAliasColumn[1], tac2: TableAliasColumn[1]): DynaFunction[1]
 {
-  ^DynaFunction(
-    name = 'or',
-    parameters = [
-      ^DynaFunction(
-        name = 'group',
-        parameters = ^DynaFunction(
-          name = 'equal',
-          parameters = [$tac1, $tac2]
-        )
-      ),
-      ^DynaFunction(
-        name = 'group',
-        parameters = ^DynaFunction(
-          name = 'and',
-          parameters = [
-            ^DynaFunction(
-              name ='isNull',
-              parameters = $tac1
-            ),
-            ^DynaFunction(
-              name ='isNull',
-              parameters = $tac2
-            )
-          ]
-        )
-      )
-    ]
-  )
+  ^DynaFunction(name = 'nullSafeEqual', parameters = [$tac1, $tac2])
 }
 
 

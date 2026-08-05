@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The Employee class mapping applies NycDeptFilter through the Emp_Dept join:
+// ~filter [db]@Emp_Dept | [db]NycDeptFilter. The filter predicate is on a column
+// of DEPARTMENT (a different table than EMPLOYEE), reached via the join — a
+// cross-table filter. Only employees whose department is in NYC flow through.
+###Mapping
+Mapping demo::joins::CrossTableFilterMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~filter [demo::store::JoinsDB]@Emp_Dept | [demo::store::JoinsDB]NycDeptFilter
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME
+  }
+
+  testSuites:
+  [
+    crossTableFilterSuite:
+    {
+      function: |demo::joins::Employee.all()->sortBy(x | $x.name)->project([x | $x.name], ['Name']);
+      tests:
+      [
+        onlyNycDepartmentEmployees:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::CrossTableFilterData
+              }#
+          ];
+          asserts:
+          [
+            shouldKeepOnlyEmployeesInNycDepartments:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice"},{"Name":"Carol"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,53 @@
+tests:
+  # Qualified table references
+  - id: schema_qualified_table
+    sql: "SELECT name FROM public.persons ORDER BY 1"
+    feature: "schema-qualified table"
+    category: "multiple_schemas"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: schema_qualified_select_star
+    sql: "SELECT * FROM public.departments ORDER BY id"
+    feature: "schema-qualified SELECT *"
+    category: "multiple_schemas"
+
+  # Schema-qualified in JOIN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: schema_qualified_join
+    sql: "SELECT p.name, d.name AS dept FROM public.persons p JOIN public.departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "schema-qualified join"
+    category: "multiple_schemas"
+
+  # Schema-qualified in subquery
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: schema_qualified_subquery
+    sql: "SELECT name FROM public.persons WHERE dept_id IN (SELECT id FROM public.departments WHERE budget > 500000) ORDER BY 1"
+    feature: "schema-qualified subquery"
+    category: "multiple_schemas"
+
+  # Default schema resolution (unqualified should resolve same as public-qualified)
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: schema_default_resolution
+    sql: "SELECT p1.name FROM persons p1 JOIN public.persons p2 ON p1.id = p2.id WHERE p1.id <= 3 ORDER BY 1"
+    feature: "default schema resolution"
+    category: "multiple_schemas"
+
+  # information_schema access
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: schema_information_tables
+    sql: "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY 1"
+    feature: "information_schema.tables"
+    category: "multiple_schemas"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+  - id: schema_information_columns
+    sql: "SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'persons' ORDER BY 1"
+    feature: "information_schema.columns"
+    category: "multiple_schemas"
+
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL

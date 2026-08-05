@@ -1,0 +1,91 @@
+tests:
+  - id: cume_dist__from_table
+    sql: "SELECT name, CUME_DIST() OVER (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL ORDER BY name"
+    function: cume_dist
+    signature: "cume_dist() → double precision"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: dense_rank__from_table
+    sql: "SELECT name, DENSE_RANK() OVER (ORDER BY dept_id) AS result FROM persons WHERE dept_id IS NOT NULL ORDER BY name"
+    function: dense_rank
+    signature: "dense_rank() → bigint"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: first_value__anyelement__from_table
+    sql: "SELECT name, FIRST_VALUE(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: first_value
+    signature: "first_value(anyelement) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: lag__anycompatible_int_anycompatible__from_table
+    sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lag
+    signature: "lag(anycompatible, integer, anycompatible) → anycompatible"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: lag__anyelement__from_table
+    sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lag
+    signature: "lag(anyelement) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: lag__anyelement_int__from_table
+    sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lag
+    signature: "lag(anyelement, integer) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: last_value__anyelement__from_table
+    sql: "SELECT name, LAST_VALUE(name) OVER (ORDER BY name ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: last_value
+    signature: "last_value(anyelement) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: lead__anycompatible_int_anycompatible__from_table
+    sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lead
+    signature: "lead(anycompatible, integer, anycompatible) → anycompatible"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: lead__anyelement__from_table
+    sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lead
+    signature: "lead(anyelement) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: lead__anyelement_int__from_table
+    sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lead
+    signature: "lead(anyelement, integer) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: nth_value__anyelement_int__from_table
+    sql: "SELECT name, NTH_VALUE(name, 2) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: nth_value
+    signature: "nth_value(anyelement, integer) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: ntile__int__from_table
+    sql: "SELECT name, NTILE(3) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: ntile
+    signature: "ntile(integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: percent_rank__from_table
+    sql: "SELECT name, PERCENT_RANK() OVER (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL ORDER BY name"
+    function: percent_rank
+    signature: "percent_rank() → double precision"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: rank__from_table
+    sql: "SELECT name, RANK() OVER (ORDER BY age) AS result FROM persons WHERE age IS NOT NULL ORDER BY name"
+    function: rank
+    signature: "rank() → bigint"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: row_number__from_table
+    sql: "SELECT name, ROW_NUMBER() OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: row_number
+    signature: "row_number() → bigint"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

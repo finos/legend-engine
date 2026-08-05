@@ -58,6 +58,12 @@ function meta::external::query::sql::transformation::utils::getParameters(f:Func
    ]);
 }
 
+
+function meta::external::query::sql::transformation::utils::unsupported(message:String[1]):Boolean[1]
+{
+  fail('Unsupported Operation: ' + $message);
+}
+
 function meta::external::query::sql::transformation::utils::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1]):V[m]
 {
   meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name);

@@ -273,6 +273,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('equal',                     comparisonExpression(ComparisonOperator.EQUAL)),
     pair('notEqual',                  comparisonExpression(ComparisonOperator.NOT_EQUAL)),
     pair('notEqualAnsi',              comparisonExpression(ComparisonOperator.NOT_EQUAL)),
+    pair('nullSafeEqual',             comparisonExpression(ComparisonOperator.IS_NOT_DISTINCT_FROM)),
+    pair('nullSafeNotEqual',          comparisonExpression(ComparisonOperator.IS_DISTINCT_FROM)),
     pair('lessThan',                  comparisonExpression(ComparisonOperator.LESS_THAN)),
     pair('lessThanEqual',             comparisonExpression(ComparisonOperator.LESS_THAN_OR_EQUAL)),
     pair('greaterThan',               comparisonExpression(ComparisonOperator.GREATER_THAN)),
@@ -692,22 +694,8 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertEqualFromFilter(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
 {
-  let params = $d.parameters->map(p|$p->convertElementToExpression($state));
-  let left = $params->at(0);
-  let right = $params->at(1);
-  binaryExpression(
-    LogicalBinaryType.OR,
-    [
-      comparisonExpression(ComparisonOperator.EQUAL, $left, $right),
-      binaryExpression(
-        LogicalBinaryType.AND,
-        [
-          ^IsNullPredicate(value = $left),
-          ^IsNullPredicate(value = $right)
-        ]
-      )
-    ]
-  );
+  // store-authored (non-router) filters emit plain 'equal'; redirect nullable-column comparisons to the central null-safe rendering
+  ^$d(name = 'nullSafeEqual')->convertElementToExpression($state);
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertNot(func:DynaFunction[1], state:ModelConversionState[1]):Node[1]
@@ -716,13 +704,19 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   $parameter->match([
     d: DynaFunction[1]| 
       let functionName = $d.name;
-      if($functionName == 'equal', 
+      if($functionName == 'equal',
         | $d->processNotEqual($state),
-        | if($functionName == 'in', 
-            | $d->processNotIn($state),
-            | if($d->isAndOr() || $d->isNot(), 
-                | ^NotExpression(value = $d->convertElementToExpression($state)),
-                | ^NotExpression(value = $d->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+        | if($functionName == 'nullSafeEqual',
+            | ^$d(name = 'nullSafeNotEqual')->convertElementToExpression($state),
+            | if($functionName == 'nullSafeNotEqual',
+                | ^$d(name = 'nullSafeEqual')->convertElementToExpression($state),
+                | if($functionName == 'in',
+                    | $d->processNotIn($state),
+                    | if($d->isAndOr() || $d->isNot(),
+                        | ^NotExpression(value = $d->convertElementToExpression($state)),
+                        | ^NotExpression(value = $d->convertElementToExpression($state)) // TODO: Wrap potentially boolean operation
+                      );
+                  );
               );
           );
       );,
@@ -733,21 +727,10 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 function <<access.private>> meta::relational::functions::toPostgresModel::processNotEqual(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
 {
   let params = $d.parameters->map(p|$p->convertElementToExpression($state));
-  let left = $params->at(0);
-  let right = $params->at(1);
-  let expr = comparisonExpression(ComparisonOperator.NOT_EQUAL, $left, $right);
-  if($left->isLiteral() && $right->isLiteral(),
-    | $expr,
-    | if(!$left->isLiteral() && ($right->isLiteral() || $right->instanceOf(FreeMarkerOperation)),
-        | binaryExpression(LogicalBinaryType.OR, [$expr, ^IsNullPredicate(value = $left)]),
-        | if (($left->isLiteral() || $left->instanceOf(FreeMarkerOperationHolder)) && !$right->isLiteral(),
-            | binaryExpression(LogicalBinaryType.OR, [$expr, ^IsNullPredicate(value = $right)]),
-            | let leftIsNull  = binaryExpression(LogicalBinaryType.AND, [^IsNullPredicate(value = $left),    ^IsNotNullPredicate(value = $right)]);
-              let rightIsNull = binaryExpression(LogicalBinaryType.AND, [^IsNotNullPredicate(value = $left), ^IsNullPredicate(value = $right)]);
-              binaryExpression(LogicalBinaryType.OR, [$expr, $leftIsNull, $rightIsNull]);
-          )
-      )
-  );
+  if($params->at(0)->isLiteral() && $params->at(1)->isLiteral(),
+    | comparisonExpression(ComparisonOperator.NOT_EQUAL, $params->at(0), $params->at(1)),
+    // null-compensated cases: redirect to the central null-safe rendering
+    | ^$d(name = 'nullSafeNotEqual')->convertElementToExpression($state));
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::isLiteral(n:Node[1]):Boolean[1]

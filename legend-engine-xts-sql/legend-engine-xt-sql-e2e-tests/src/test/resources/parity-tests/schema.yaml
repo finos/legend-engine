@@ -1,0 +1,118 @@
+# Shared schema definition for all parity tests.
+# Loaded explicitly before any test file — not dependent on file ordering.
+schema:
+  tables:
+    - name: persons
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: name, type: "VARCHAR(200)" }
+        - { name: age, type: "INTEGER" }
+        - { name: salary, type: "DECIMAL(10,2)" }
+        - { name: hire_date, type: "DATE" }
+        - { name: active, type: "BOOLEAN" }
+        - { name: dept_id, type: "INTEGER" }
+      rows:
+        - [1, "Alice", 30, 50000.00, "2020-01-15", true, 1]
+        - [2, "Bob", 25, 60000.50, "2021-03-20", true, 1]
+        - [3, "Charlie", 35, 75000.75, "2019-06-10", false, 2]
+        - [4, "Diana", 28, 80000.25, "2022-09-01", true, 2]
+        - [5, "Eve", 45, 95000.00, "2015-11-30", true, 3]
+        - [6, "Frank", 32, 55000.00, "2020-07-22", false, 3]
+        - [7, "Grace", null, 70000.00, "2018-04-15", true, null]
+        - [8, "Hank", 50, null, "2010-01-01", null, 1]
+        - [9, "Ivy", 22, 45000.00, null, true, 2]
+        - [10, "Jack", 38, 120000.00, "2017-12-05", true, 3]
+    - name: departments
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: name, type: "VARCHAR(200)" }
+        - { name: budget, type: "DECIMAL(15,2)" }
+        - { name: created_at, type: "TIMESTAMP" }
+      rows:
+        - [1, "Engineering", 1000000.00, "2015-01-01 09:00:00"]
+        - [2, "Marketing", 500000.00, "2016-06-15 10:30:00"]
+        - [3, "Sales", 750000.00, "2017-03-20 14:00:00"]
+        - [4, "HR", 300000.00, "2018-09-01 08:00:00"]
+        - [5, "Finance", 600000.00, "2019-02-14 11:00:00"]
+        - [6, "Legal", 450000.00, "2020-05-01 08:30:00"]
+        - [7, "Support", 200000.00, "2021-08-10 09:15:00"]
+        - [8, "Research", 900000.00, "2016-11-20 13:45:00"]
+        - [9, "Operations", 550000.00, "2022-01-05 07:00:00"]
+        - [10, "Design", 350000.00, "2023-03-15 10:00:00"]
+    - name: orders
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: person_id, type: "INTEGER" }
+        - { name: amount, type: "DECIMAL(10,2)" }
+        - { name: order_date, type: "TIMESTAMP" }
+        - { name: status, type: "VARCHAR(50)" }
+      rows:
+        - [1, 1, 150.00, "2023-01-10 09:00:00", "completed"]
+        - [2, 1, 250.00, "2023-02-15 14:30:00", "completed"]
+        - [3, 2, 75.50, "2023-03-20 11:00:00", "pending"]
+        - [4, 3, 500.00, "2023-04-05 16:45:00", "completed"]
+        - [5, 5, 1200.00, "2023-05-12 08:15:00", "cancelled"]
+        - [6, 5, 300.00, "2023-06-01 12:00:00", "completed"]
+        - [7, 10, 99.99, "2023-07-20 10:30:00", "pending"]
+        - [8, 4, 450.00, "2023-08-15 09:30:00", "completed"]
+        - [9, 6, 175.25, "2023-09-10 15:00:00", "pending"]
+        - [10, 2, 620.00, "2023-10-05 11:45:00", "completed"]
+    - name: numbers
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: int_val, type: "INTEGER" }
+        - { name: float_val, type: "DOUBLE PRECISION" }
+        - { name: numeric_val, type: "DECIMAL(20,5)" }
+        - { name: small_val, type: "INTEGER" }
+        - { name: big_val, type: "BIGINT" }
+      rows:
+        - [1, 42, 3.14159, 12345.67890, 1, 9999999999]
+        - [2, -10, -2.71828, -99999.99999, -128, -9999999999]
+        - [3, 0, 0.0, 0.00000, 0, 0]
+        - [4, 2147483647, 1.7976931, 99999999999999.99999, 127, 9223372036854775807]
+        - [5, null, null, null, null, null]
+        - [6, 1, 0.1, 0.00001, 1, 1]
+        - [7, -1, -0.1, -0.00001, -1, -1]
+        - [8, 100, 99.99, 50000.12345, 50, 1000000]
+        - [9, 7, 2.23607, 333.33333, 7, 49]
+        - [10, -999, -0.00001, -1.00000, -99, -12345678]
+    - name: strings
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: val, type: "VARCHAR(500)" }
+        - { name: nullable_val, type: "VARCHAR(500)" }
+        - { name: unicode_val, type: "VARCHAR(500)" }
+        - { name: empty_val, type: "VARCHAR(500)" }
+      rows:
+        - [1, "hello", "world", "héllo", ""]
+        - [2, "WORLD", "test", "日本語", ""]
+        - [3, "MiXeD CaSe", null, "émoji 🎉", " "]
+        - [4, "  spaces  ", "has spaces", "über", null]
+        - [5, "special!@#$%", "12345", "naïve", "x"]
+        - [6, "abcdefghij", "ABCDEFGHIJ", "café", "abc"]
+        - [7, "", null, "", ""]
+        - [8, "repeat", "repeat", "straße", "test"]
+        - [9, "UPPERCASE", "lowercase", "résumé", "A"]
+        - [10, "the quick brown fox", "jumps over", "piñata", null]
+    - name: dates
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: d, type: "DATE" }
+        - { name: ts, type: "TIMESTAMP" }
+        - { name: tsz, type: "TIMESTAMP" }
+      rows:
+        - [1, "2023-01-15", "2023-01-15 10:30:00", "2023-01-15 10:30:00"]
+        - [2, "2020-02-29", "2020-02-29 00:00:00", "2020-02-29 00:00:00"]
+        - [3, "2000-01-01", "2000-01-01 12:00:00", "2000-01-01 12:00:00"]
+        - [4, "1999-12-31", "1999-12-31 23:59:59", "1999-12-31 23:59:59"]
+        - [5, null, null, null]
+        - [6, "2024-06-15", "2024-06-15 08:30:00", "2024-06-15 08:30:00"]
+        - [7, "2025-12-25", "2025-12-25 18:00:00", "2025-12-25 18:00:00"]
+        - [8, "1970-01-01", "1970-01-01 00:00:00", "1970-01-01 00:00:00"]
+        - [9, "2023-07-04", "2023-07-04 12:00:00", "2023-07-04 12:00:00"]
+        - [10, "2026-01-01", "2026-01-01 06:00:00", "2026-01-01 06:00:00"]
+    - name: empty_table
+      columns:
+        - { name: id, type: "INTEGER" }
+        - { name: val, type: "VARCHAR(200)" }
+      rows: []

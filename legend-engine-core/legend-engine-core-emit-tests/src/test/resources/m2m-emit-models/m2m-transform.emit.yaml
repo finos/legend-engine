@@ -1,0 +1,33 @@
+name: m2m-transform
+title: "Model-to-Model Transform Expressions"
+description: |
+  A model-to-model mapping whose every property is produced by a different shape of
+  transform expression rather than a straight property copy: string concatenation,
+  nested function application (substring then concatenate), arithmetic over two
+  source properties, a collection function chain (split then at), and a conditional
+  selecting between two literals. The embedded test suite executes the mapping over
+  ModelStore test data for an active and an inactive employee, so each transform
+  shape is proven to survive plan generation and in-memory execution — not merely to
+  compile. This is the distributed counterpart to the framework's own m2m fixtures,
+  which only exercise a single concatenation.
+
+modelSources:
+  model:
+    root: m2m-transform
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/employeeMapping.pure
+
+features:
+  - execution:test-data
+  - mapping:m2m-transform
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - transform
+  - mapping-test

@@ -343,7 +343,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::
 {
    let result = toSQLString(|Interaction.all()->filter(a | $a.id != 1 && $a.active)->project([i | $i.id],['id']),
                               simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".ID as "id" from interactionTable as "root" where (("root".ID <> 1 OR "root".ID is null) and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
+   assertEquals('select "root".ID as "id" from interactionTable as "root" where ((not ("root".ID = 1) or ("root".ID is null and 1 is not null) or ("root".ID is not null and 1 is null)) and case when "root"."active" = \'Y\' then \'true\' else \'false\' end = \'true\')', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::sybaseIQ::testToSqlGenerationForConstanNumInFilterWithNotEqual_SybaseIQ():Boolean[1]

@@ -157,7 +157,7 @@ public class NavigationParseTreeWalker
 
     private CString getInstanceString(String string)
     {
-        return new CString(PureGrammarParserUtility.fromGrammarString(string, true));
+        return PureGrammarParserUtility.toCString(string);
     }
 
     private Multiplicity getMultiplicityOneOne()

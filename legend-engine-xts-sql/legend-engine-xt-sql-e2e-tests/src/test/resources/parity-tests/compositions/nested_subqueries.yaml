@@ -1,0 +1,93 @@
+tests:
+  # Correlated subquery in SELECT
+  - id: nested_corr_in_select
+    sql: "SELECT p.name, p.salary, (SELECT COUNT(*) FROM orders o WHERE o.person_id = p.id) AS order_count, (SELECT COALESCE(SUM(o.amount), 0) FROM orders o WHERE o.person_id = p.id) AS total_spent FROM persons p WHERE p.salary IS NOT NULL ORDER BY 1"
+    feature: "Correlated subquery in SELECT"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_corr_dept_avg
+    sql: "SELECT p.name, p.salary, (SELECT AVG(salary) FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.salary IS NOT NULL) AS dept_avg FROM persons p WHERE p.salary IS NOT NULL AND p.dept_id IS NOT NULL ORDER BY 1"
+    feature: "Correlated subquery in SELECT"
+    category: "compositions"
+
+  # Multi-level nesting
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_two_levels
+    sql: "SELECT name, salary FROM persons WHERE dept_id IN (SELECT dept_id FROM persons WHERE salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) AND dept_id IS NOT NULL GROUP BY dept_id) ORDER BY 1"
+    feature: "Multi-level nesting"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_derived_in_derived
+    sql: "SELECT sub2.dept_id, sub2.high_cnt FROM (SELECT dept_id, COUNT(*) AS high_cnt FROM (SELECT dept_id, salary FROM persons WHERE salary > 60000 AND dept_id IS NOT NULL) sub1 GROUP BY dept_id) sub2 ORDER BY 1"
+    feature: "Multi-level nesting"
+    category: "compositions"
+
+  # Subquery + JOIN
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: nested_subquery_join
+    sql: "SELECT p.name, p.salary, d.name AS dept FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
+    feature: "Subquery + JOIN"
+    category: "compositions"
+
+  # EXISTS + aggregate
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_exists_agg
+    sql: "SELECT d.name, d.budget FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id GROUP BY p.dept_id HAVING COUNT(*) > 2) ORDER BY 1"
+    feature: "EXISTS with aggregate"
+    category: "compositions"
+
+  # Subquery as filter + derived table
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_filter_derived
+    sql: "SELECT sub.name, sub.salary FROM (SELECT name, salary, dept_id FROM persons WHERE salary IS NOT NULL) sub WHERE sub.dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
+    feature: "Subquery filter + derived table"
+    category: "compositions"
+
+  # Scalar subquery with arithmetic
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_scalar_arithmetic
+    sql: "SELECT p.name, p.salary - (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) AS diff_from_avg FROM persons p WHERE p.salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery arithmetic"
+    category: "compositions"
+
+  # IN subquery with JOIN
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_in_with_join
+    sql: "SELECT p.name, p.salary FROM persons p WHERE p.id IN (SELECT o.person_id FROM orders o INNER JOIN departments d ON d.id = p.dept_id WHERE o.amount > 50) ORDER BY 1"
+    feature: "IN subquery + JOIN"
+    category: "compositions"
+
+  # Derived table with window
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_derived_window
+    sql: "SELECT name, salary, rnk FROM (SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rnk FROM persons WHERE salary IS NOT NULL) sub WHERE rnk <= 5 ORDER BY 1"
+    feature: "Derived table with window function"
+    category: "compositions"
+
+  # NOT EXISTS + derived table
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: nested_not_exists_derived
+    sql: "SELECT d.name FROM departments d WHERE NOT EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id AND p.salary > 90000) ORDER BY 1"
+    feature: "NOT EXISTS"
+    category: "compositions"
+
+  # Subquery in SELECT with COALESCE
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: nested_scalar_coalesce
+    sql: "SELECT p.name, COALESCE((SELECT SUM(o.amount) FROM orders o WHERE o.person_id = p.id), 0) AS total_spent FROM persons p ORDER BY 1"
+    feature: "Scalar subquery + COALESCE"
+    category: "compositions"
+
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

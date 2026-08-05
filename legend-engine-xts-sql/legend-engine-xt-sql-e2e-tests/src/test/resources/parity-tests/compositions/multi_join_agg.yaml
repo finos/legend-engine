@@ -1,0 +1,72 @@
+tests:
+  # 3-table join with aggregation
+  - id: comp_three_table_agg
+    sql: "SELECT d.name AS dept_name, COUNT(DISTINCT p.id) AS emp_count, COALESCE(SUM(o.amount), 0) AS total_orders FROM departments d LEFT JOIN persons p ON p.dept_id = d.id LEFT JOIN orders o ON o.person_id = p.id GROUP BY d.name ORDER BY 1"
+    feature: "3-table JOIN + aggregation"
+    category: "compositions"
+
+  # LEFT JOIN preserving empty groups
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_left_join_empty_groups
+    sql: "SELECT d.name AS dept_name, COUNT(p.id) AS emp_count, AVG(p.salary) AS avg_salary FROM departments d LEFT JOIN persons p ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
+    feature: "LEFT JOIN preserving empty groups"
+    category: "compositions"
+
+  # HAVING on joined aggregate
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: comp_join_having
+    sql: "SELECT d.name AS dept_name, SUM(p.salary) AS total_salary FROM departments d INNER JOIN persons p ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name HAVING SUM(p.salary) > 100000 ORDER BY 1"
+    feature: "JOIN + HAVING"
+    category: "compositions"
+
+  # COUNT(DISTINCT) across join
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: comp_count_distinct_join
+    sql: "SELECT d.name AS dept_name, COUNT(DISTINCT o.status) AS unique_statuses FROM departments d INNER JOIN persons p ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id GROUP BY d.name ORDER BY 1"
+    feature: "COUNT(DISTINCT) across JOIN"
+    category: "compositions"
+
+  # Self-join with aggregation
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: comp_self_join_agg
+    sql: "SELECT a.dept_id, COUNT(*) AS pair_count FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id WHERE a.dept_id IS NOT NULL GROUP BY a.dept_id ORDER BY 1"
+    feature: "Self-join + aggregation"
+    category: "compositions"
+
+  # JOIN + CASE + aggregation
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: comp_join_case_agg
+    sql: "SELECT d.name AS dept, SUM(CASE WHEN p.salary > 70000 THEN 1 ELSE 0 END) AS high, SUM(CASE WHEN p.salary <= 70000 THEN 1 ELSE 0 END) AS low FROM departments d INNER JOIN persons p ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
+    feature: "JOIN + CASE + aggregation"
+    category: "compositions"
+
+  # LEFT JOIN with COALESCE and multiple aggs
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: comp_left_join_coalesce_multi
+    sql: "SELECT d.name, COUNT(p.id) AS emps, COALESCE(MIN(p.salary), 0) AS min_sal, COALESCE(MAX(p.salary), 0) AS max_sal FROM departments d LEFT JOIN persons p ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
+    feature: "LEFT JOIN + COALESCE + multi-agg"
+    category: "compositions"
+
+  # 3-table join with filter
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_three_table_filter
+    sql: "SELECT p.name, d.name AS dept, o.amount FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id WHERE o.amount > 100 AND d.budget > 500000 ORDER BY 1, 3"
+    feature: "3-table JOIN + filter"
+    category: "compositions"
+
+  # JOIN with derived table
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_join_derived
+    sql: "SELECT p.name, sub.order_total FROM persons p INNER JOIN (SELECT person_id, SUM(amount) AS order_total FROM orders GROUP BY person_id) sub ON p.id = sub.person_id ORDER BY 1"
+    feature: "JOIN with derived table"
+    category: "compositions"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR

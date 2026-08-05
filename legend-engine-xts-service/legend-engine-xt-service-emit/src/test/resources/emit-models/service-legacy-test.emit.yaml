@@ -1,0 +1,40 @@
+name: service-legacy-test
+title: "Service Tested Through the Deprecated ServiceTest Block"
+description: |
+  A relational-backed service carrying the deprecated `test: Single { data;
+  asserts }` block instead of a modern `testSuites` block. EMIT Phase 5 runs
+  three test runners — Testable, legacy Mapping and legacy Service — and this
+  is the only distributed example of the third: it drives `ServiceTestRunner`,
+  which turns the CSV `data` string into H2 setup SQL through
+  `meta::relational::functions::database::setUpData`, generates and compiles a
+  plan, then compiles the assert lambdas to Java and evaluates them against the
+  `Result`. Both the runner and that CSV-to-SQL path are otherwise unexercised
+  by the catalog.
+
+modelSources:
+  model:
+    root: service-legacy-test
+    files:
+      - runtime/personRuntime.pure
+      - service/personService.pure
+  dependencies:
+    - source: service-shared-domain.emit.yaml
+
+features:
+  - execution:legacy-service-test
+  - execution:plan-generation
+  - execution:service
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - legacy-service-test
+  - deprecated
+  - h2
+  - shared-domain

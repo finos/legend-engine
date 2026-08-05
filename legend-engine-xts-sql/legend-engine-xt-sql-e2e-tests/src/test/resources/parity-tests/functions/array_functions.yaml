@@ -1,0 +1,161 @@
+tests:
+  - id: array_append__anycompatiblearray_anycompatible__from_table
+    sql: "SELECT ARRAY_APPEND(ARRAY[1,2,3], int_val) AS result FROM numbers WHERE int_val IS NOT NULL AND id <= 3 ORDER BY 1"
+    function: array_append
+    signature: "array_append(anycompatiblearray, anycompatible) → anycompatiblearray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_cat__anycompatiblearray_anycompatiblearray__from_table
+    sql: "SELECT ARRAY_CAT(ARRAY[1,2], ARRAY[3,4]) AS result FROM numbers WHERE id = 1"
+    function: array_cat
+    signature: "array_cat(anycompatiblearray, anycompatiblearray) → anycompatiblearray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_dims__anyarray__from_table
+    sql: "SELECT ARRAY_DIMS(ARRAY[[1,2],[3,4]]) AS result FROM numbers WHERE id = 1"
+    function: array_dims
+    signature: "array_dims(anyarray) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_fill__anyelement_int[]__from_table
+    sql: "SELECT ARRAY_FILL(0, ARRAY[3]) AS result FROM numbers WHERE id = 1"
+    function: array_fill
+    signature: "array_fill(anyelement, integer[]) → anyarray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_fill__anyelement_int[]_int[]__from_table
+    sql: "SELECT ARRAY_FILL(0, ARRAY[3]) AS result FROM numbers WHERE id = 1"
+    function: array_fill
+    signature: "array_fill(anyelement, integer[], integer[]) → anyarray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_length__anyarray_int__from_table
+    sql: "SELECT ARRAY_LENGTH(ARRAY[1,2,3], 1) AS result FROM numbers WHERE id = 1"
+    function: array_length
+    signature: "array_length(anyarray, integer) → integer"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: array_lower__anyarray_int__from_table
+    sql: "SELECT ARRAY_LOWER(ARRAY[10,20,30], 1) AS result FROM numbers WHERE id = 1"
+    function: array_lower
+    signature: "array_lower(anyarray, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_ndims__anyarray__from_table
+    sql: "SELECT ARRAY_NDIMS(ARRAY[[1,2],[3,4]]) AS result FROM numbers WHERE id = 1"
+    function: array_ndims
+    signature: "array_ndims(anyarray) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_position__anycompatiblearray_anycompatible__from_table
+    sql: "SELECT ARRAY_POSITION(ARRAY[1,2,3], 2) AS result FROM numbers WHERE id = 1"
+    function: array_position
+    signature: "array_position(anycompatiblearray, anycompatible) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_position__anycompatiblearray_anycompatible_int__with_start
+    sql: "SELECT ARRAY_POSITION(ARRAY[1,2,3,2], 2, 2) AS result FROM numbers WHERE id = 1"
+    function: array_position
+    signature: "array_position(anycompatiblearray, anycompatible, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_positions__anycompatiblearray_anycompatible__from_table
+    sql: "SELECT ARRAY_POSITIONS(ARRAY[1,2,3,2,1], 2) AS result FROM numbers WHERE id = 1"
+    function: array_positions
+    signature: "array_positions(anycompatiblearray, anycompatible) → integer[]"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_prepend__anycompatible_anycompatiblearray__from_table
+    sql: "SELECT ARRAY_PREPEND(0, ARRAY[1,2,3]) AS result FROM numbers WHERE id = 1"
+    function: array_prepend
+    signature: "array_prepend(anycompatible, anycompatiblearray) → anycompatiblearray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_remove__anycompatiblearray_anycompatible__from_table
+    sql: "SELECT ARRAY_REMOVE(ARRAY[1,2,3,2], 2) AS result FROM numbers WHERE id = 1"
+    function: array_remove
+    signature: "array_remove(anycompatiblearray, anycompatible) → anycompatiblearray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_replace__anycompatiblearray_anycompatible_anycompatible__from_table
+    sql: "SELECT ARRAY_REPLACE(ARRAY[1,2,3,2], 2, 99) AS result FROM numbers WHERE id = 1"
+    function: array_replace
+    signature: "array_replace(anycompatiblearray, anycompatible, anycompatible) → anycompatiblearray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_sample__anyarray_int__from_table
+    sql: "SELECT ARRAY_LENGTH(ARRAY_SAMPLE(ARRAY[1,2,3,4,5], 3), 1) AS result FROM numbers WHERE id = 1"
+    function: array_sample
+    signature: "array_sample(anyarray, integer) → anyarray"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: array_shuffle__anyarray__from_table
+    sql: "SELECT ARRAY_LENGTH(ARRAY_SHUFFLE(ARRAY[1,2,3,4,5], 3), 1) AS result FROM numbers WHERE id = 1"
+    function: array_shuffle
+    signature: "array_shuffle(anyarray) → anyarray"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: array_upper__anyarray_int__from_table
+    sql: "SELECT ARRAY_UPPER(ARRAY[10,20,30], 1) AS result FROM numbers WHERE id = 1"
+    function: array_upper
+    signature: "array_upper(anyarray, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: cardinality__anyarray__from_table
+    sql: "SELECT CARDINALITY(ARRAY[1,2,3]) AS result FROM numbers WHERE id = 1"
+    function: cardinality
+    signature: "cardinality(anyarray) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: unnest__anyarray__from_table
+    sql: "SELECT UNNEST(ARRAY[1,2,3]) AS result"
+    function: unnest
+    signature: "unnest(anyarray) → SETOF anyelement"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: unnest__anymultirange__unsupported_type
+    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    function: unnest
+    signature: "unnest(anymultirange) → SETOF anyrange"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: unnest__tsvectortsvector_OUTlexemetxt_OUTpositionssmall[]_OUTweightstxt[]__unsupported_type
+    sql: "SELECT 1 AS result FROM persons WHERE id = 1"
+    function: unnest
+    signature: "unnest(tsvector tsvector, OUT lexeme text, OUT positions smallint[], OUT weights text[]) → SETOF record"
+
+  # === Auto-generated tests for previously UNTESTED signatures ===
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: array_sample_anyarray_integer_cov
+    sql: "SELECT ARRAY_SAMPLE(NULL) AS result FROM persons WHERE id = 1"
+    function: array_sample
+    signature: "array_sample(anyarray, integer) → anyarray"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: array_shuffle_anyarray_cov
+    sql: "SELECT ARRAY_SHUFFLE(NULL) AS result FROM persons WHERE id = 1"
+    function: array_shuffle
+    signature: "array_shuffle(anyarray) → anyarray"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: unnest_anyarray_cov
+    sql: "SELECT UNNEST(NULL) AS result FROM persons WHERE id = 1"
+    function: unnest
+    signature: "unnest(anyarray) → SETOF anyelement"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: unnest_anymultirange_cov
+    sql: "SELECT UNNEST(NULL) AS result FROM persons WHERE id = 1"
+    function: unnest
+    signature: "unnest(anymultirange) → SETOF anyrange"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: unnest_tsvector_tsvector_OUT_lexeme_cov
+    sql: "SELECT UNNEST(NULL) AS result FROM persons WHERE id = 1"
+    function: unnest
+    signature: "unnest(tsvector tsvector, OUT lexeme text, OUT positions smallint[], OUT weights text[]) → SETOF record"
+
+  # === Auto-generated tests for previously UNTESTED signatures ===
+    expected_tds_status: BUG
+    expected_rel_status: BUG

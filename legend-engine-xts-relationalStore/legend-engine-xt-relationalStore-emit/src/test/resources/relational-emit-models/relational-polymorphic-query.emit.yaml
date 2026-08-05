@@ -1,0 +1,38 @@
+name: relational-polymorphic-query
+title: "Polymorphic Query with Subtype Downcast"
+description: |
+  A Payment hierarchy mapped table-per-class and dispatched through an
+  `inheritance` operation, queried two ways: once projecting only properties
+  declared on the root — which must return rows from every leaf table — and
+  once projecting `$x->subType(@CardPayment).cardLast4`, a property that exists
+  on only one branch. Proves polymorphic dispatch of a root-class query and
+  that a downcast column yields the subtype's value where the row belongs to
+  that subtype and null where it does not.
+
+modelSources:
+  model:
+    root: relational-polymorphic-query
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/paymentMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:operation-mapping
+  - mapping:relational-polymorphic-query
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - downcast
+  - h2
+  - mapping-test
+  - polymorphic
+  - subtype

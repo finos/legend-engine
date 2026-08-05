@@ -1,0 +1,37 @@
+name: relational-aggregation-aware
+title: "Aggregation-Aware Mapping with a Pre-Aggregated View"
+description: |
+  A Sale class mapped with `AggregationAware`: a `~mainMapping` over the
+  row-level sales table, plus one View whose `~modelOperation` declares it can
+  answer queries grouped by `salesPerson` with `sum` over `revenue`, backed by a
+  pre-aggregated table. Two suites prove both arms — a row-level projection must
+  read the main table, while the equivalent grouped query is eligible for the
+  aggregate view. The aggregate table is seeded with the same totals the main
+  table would produce, so the assertions hold whichever set the router picks.
+
+modelSources:
+  model:
+    root: relational-aggregation-aware
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/saleMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:aggregation-aware-mapping
+  - mapping:relational-group-by
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - aggregation-aware
+  - h2
+  - mapping-test
+  - pre-aggregated

@@ -1,0 +1,154 @@
+tests:
+  # ORDER BY ASC
+  - id: order_asc_default
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary"
+    feature: "ORDER BY ASC"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_asc_explicit
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary ASC"
+    feature: "ORDER BY ASC"
+    category: "order_limit_offset"
+
+  # ORDER BY DESC
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_desc
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC"
+    feature: "ORDER BY DESC"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_desc_name
+    sql: "SELECT name FROM persons WHERE name IS NOT NULL ORDER BY name DESC"
+    feature: "ORDER BY DESC"
+    category: "order_limit_offset"
+
+  # ORDER BY multiple columns
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_multi_col
+    sql: "SELECT name, dept_id, salary FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY dept_id, salary DESC"
+    feature: "ORDER BY multiple columns"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_multi_col_mixed
+    sql: "SELECT name, dept_id, age FROM persons WHERE dept_id IS NOT NULL AND age IS NOT NULL ORDER BY dept_id ASC, age DESC"
+    feature: "ORDER BY multiple columns"
+    category: "order_limit_offset"
+
+  # Positional ORDER BY
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_positional
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY 2 DESC"
+    feature: "Positional ORDER BY"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_positional_multi
+    sql: "SELECT dept_id, name FROM persons WHERE dept_id IS NOT NULL ORDER BY 1, 2"
+    feature: "Positional ORDER BY"
+    category: "order_limit_offset"
+
+  # ORDER BY expression
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_expression
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary * 1.1 DESC"
+    feature: "ORDER BY expression"
+    category: "order_limit_offset"
+
+  # LIMIT
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: limit_basic
+    sql: "SELECT name FROM persons ORDER BY 1 LIMIT 5"
+    feature: "LIMIT"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: limit_one
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC LIMIT 1"
+    feature: "LIMIT"
+    category: "order_limit_offset"
+
+  # LIMIT + OFFSET
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: offset_basic
+    sql: "SELECT name FROM persons ORDER BY 1 LIMIT 3 OFFSET 2"
+    feature: "LIMIT + OFFSET"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: offset_pagination
+    sql: "SELECT name FROM persons ORDER BY 1 LIMIT 2 OFFSET 4"
+    feature: "LIMIT + OFFSET"
+    category: "order_limit_offset"
+
+  # NULLS FIRST / LAST
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_nulls_first
+    sql: "SELECT name, age FROM persons ORDER BY age NULLS FIRST"
+    feature: "NULLS FIRST"
+    category: "order_limit_offset"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: order_nulls_last
+    sql: "SELECT name, age FROM persons ORDER BY age NULLS LAST"
+    feature: "NULLS LAST"
+    category: "order_limit_offset"
+
+  # FETCH FIRST
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: fetch_first
+    sql: "SELECT name FROM persons ORDER BY 1 FETCH FIRST 5 ROWS ONLY"
+    feature: "FETCH FIRST"
+    category: "order_limit_offset"
+
+  # LIMIT 0
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: limit_zero
+    sql: "SELECT name FROM persons ORDER BY 1 LIMIT 0"
+    feature: "LIMIT 0"
+    category: "order_limit_offset"
+
+  # OFFSET without LIMIT
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: offset_without_limit
+    sql: "SELECT name FROM persons ORDER BY 1 OFFSET 5"
+    feature: "OFFSET without LIMIT"
+    category: "order_limit_offset"
+
+  # ORDER BY CASE expression
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+  - id: order_case
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY CASE WHEN salary > 70000 THEN 0 ELSE 1 END, name"
+    feature: "ORDER BY CASE"
+    category: "order_limit_offset"
+
+  # ORDER BY alias
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: order_by_alias
+    sql: "SELECT name, salary * 1.1 AS adjusted FROM persons WHERE salary IS NOT NULL ORDER BY adjusted DESC"
+    feature: "ORDER BY alias"
+    category: "order_limit_offset"
+
+  # LIMIT with large OFFSET
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+  - id: limit_large_offset
+    sql: "SELECT name FROM persons ORDER BY 1 LIMIT 2 OFFSET 8"
+    feature: "LIMIT + large OFFSET"
+    category: "order_limit_offset"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

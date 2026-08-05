@@ -1,0 +1,36 @@
+name: relational-otherwise-embedded
+title: "Otherwise-Embedded Relational Mapping"
+description: |
+  An Employee's `firm` property carries an embedded mapping covering only
+  `legalName` from a denormalized column, plus an `Otherwise ( [firmSet]:
+  [db]@EmployeeFirmJoin )` fallback pointing at a full Firm set implementation.
+  Two test suites prove both arms of the choice: a query needing only
+  `firm.legalName` is answered from the denormalized column, while a query
+  needing `firm.otherInformation` — absent from the embedded block — falls back
+  through the join to the standalone Firm mapping.
+
+modelSources:
+  model:
+    root: relational-otherwise-embedded
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/employeeMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:relational-otherwise-embedded
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - denormalized
+  - h2
+  - mapping-test
+  - otherwise-embedded

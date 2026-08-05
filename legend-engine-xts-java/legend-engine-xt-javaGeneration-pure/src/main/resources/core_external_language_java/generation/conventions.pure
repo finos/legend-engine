@@ -55,6 +55,7 @@ Class meta::external::language::java::transform::Conventions
    libraries                   : ConventionsLibrary[*];
    newFunctionProhibitedList   : meta::pure::metamodel::type::Class<Any>[*];
    providedVariables           : Map<String, Code>[1];
+   variablesInScope            : String[*];
    visitedFunctions            : FunctionExpression[*];
 
    extensions : meta::pure::extension::Extension[*];
@@ -1162,6 +1163,23 @@ function meta::external::language::java::transform::addProvidedVariables(convent
    assert($codes->forAll(c|$c->isVariable()));
    let namesToCodes = $codes->map(c|pair($c->variableName(), $c));
    ^$conventions(providedVariables=$conventions.providedVariables->putAll($namesToCodes));
+}
+
+function meta::external::language::java::transform::addProvidedVariablesRenamed(conventions:Conventions[1], keyed:Pair<String, Code>[*]): Conventions[1]
+{
+   assert($keyed->forAll(kp|$kp.second->isVariable()));
+   ^$conventions(
+      providedVariables = $conventions.providedVariables->putAll($keyed),
+      variablesInScope  = $conventions.variablesInScope->concatenate($keyed->map(kp|$kp.second->variableName()))->removeDuplicates()
+   );
+}
+
+function <<access.private>> meta::external::language::java::transform::uniqueVariableName(base:String[1], taken:String[*]):String[1]
+{
+   if(!$taken->contains($base),
+      | $base,
+      | range($taken->size() + 1)->map(i | $base + '_' + ($i + 1)->toString())->filter(c | !$taken->contains($c))->first()->toOne()
+   );
 }
 
 function meta::external::language::java::transform::registerClassCoder(conventions: Conventions[1], purpose: Any[1], coder: Function<{meta::pure::metamodel::type::Type[1],Conventions[1],DebugContext[1]->meta::external::language::java::metamodel::Class[1]}>[1]): Conventions[1]

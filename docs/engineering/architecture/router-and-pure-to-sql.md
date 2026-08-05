@@ -371,6 +371,25 @@ After `processQuery` completes, several post-processors are applied:
 - Milestoning post-processors add temporal WHERE clauses.
 - `PostProcessor` chain (registered via `RelationalExecutionContext`) can apply user-defined
   SQL transformations (e.g. add schema prefixes, apply row-level-security policies).
+- Alias-limit column renaming — for dialects that set `aliasLimit` on their `DbExtension`
+  (e.g. Snowflake, see §5.3), `dbSpecificProcessor` runs
+  `meta::relational::postProcessor::reAliasColumnName::trimColumnName`, which shortens any
+  column alias longer than the dialect's limit while preserving output. It runs in two passes:
+  `search` collects the over-long names (computing the limit once via `lengthConfig` — see the
+  performance note below), and `replace` rebuilds the AST with the shortened aliases substituted.
+
+> **Performance note (why `replace` is memoized).** The `SQLQuery` AST is a **DAG, not a tree**:
+> a `Union` of many set-implementations doing many `SemiStructuredPropertyAccess` navigations
+> shares common base operands, so one node is reachable by many paths. A naive recursive rebuild
+> re-materializes each shared node once *per reaching path*, which is exponential in the sharing
+> depth and can exhaust even a large heap. `reAliasColumnName::replace` therefore threads an
+> **identity-keyed cache** (`Map<RelationalOperationElement, RelationalOperationElement>`, mirroring
+> `meta::relational::postProcessor::transform`): each distinct node is rebuilt once and reused by
+> identity, keeping the result a DAG. `search` similarly hoists `lengthConfig` (which builds the
+> full `DbExtension` registry) out of the per-node recursion so it runs once rather than per leaf.
+> If you add another AST-walking post-processor over this graph, follow the same two patterns —
+> memoize by node identity and hoist any per-dialect config lookups — or you will reintroduce the
+> same blow-up. See `trimColumnNamePostProcessor.pure`.
 
 ---
 
@@ -429,6 +448,7 @@ overridden by a dialect's extension implementation:
 | `ddlCommandsTranslator` | — | CREATE TABLE / DROP TABLE / LOAD TABLE DDL |
 | `isBooleanLiteralSupported` | true | Whether `TRUE`/`FALSE` literals are valid |
 | `isDbReservedIdentifier` | empty list | Whether an identifier needs quoting |
+| `aliasLimit` | empty (no limit) | Max column-alias length; when set, triggers the alias-limit column-rename post-processor (§4.6) |
 
 ### 5.4 DynaFunction Dispatch
 
@@ -505,6 +525,86 @@ This means **adding a new SQL dialect requires only**:
 | `SparkSQL` | `legend-engine-xt-relationalStore-sparksql` |
 | `Athena` | `legend-engine-xt-relationalStore-athena` |
 | `MemSQL` | `legend-engine-xt-relationalStore-memsql` |
+
+### 5.7 Null-safe equality (`nullSafeEqual` / `nullSafeNotEqual`)
+
+Pure equality follows *value* semantics: `null == null` is **true** and `null == x` is
+**false**. SQL's `=` follows *three-valued logic*: if either operand is `NULL` the result is
+`NULL` (unknown), never `true`/`false`. The two disagree exactly when an operand can be null —
+i.e. when comparing **optional** (`[0..1]`) columns.
+
+Where the mismatch bites depends on context:
+
+- **Filter context** (`WHERE`): a `NULL` predicate excludes the row, which happens to match Pure
+  semantics for the one-side-null case — but `null = null` yielding `NULL` (row dropped) does **not**
+  match Pure's `true`.
+- **Projection context** (`SELECT` list): a projected boolean column must be strictly two-valued.
+  A leaked `NULL` shows up directly in the result set (`true`/`false` expected, `null` produced) and
+  is always wrong.
+
+To make both contexts correct on every backend, optional-operand comparisons are lowered to two
+dedicated dynafunctions instead of a bare `=`. They replaced an earlier hand-rolled `OR`-expansion
+in `processEquals` and a set of FreeMarker `optionalVarPlaceHolder` selector branches.
+
+**Target truth table** (both `nullSafeEqual` and its negation):
+
+| operands | `nullSafeEqual` | `nullSafeNotEqual` |
+|----------|-----------------|--------------------|
+| both null | `true` | `false` |
+| both present, equal | `true` | `false` |
+| both present, differ | `false` | `true` |
+| exactly one null | `false` | `true` |
+
+**Default (portable) rendering** — `extensionDefaults.pure`, using only `not`/`=`/`is null` so it
+carries no dialect-sensitive `<>`/`!=` tokens:
+
+```
+nullSafeEqual(a, b)    -> (a = b or (a is null and b is null))
+nullSafeNotEqual(a, b) -> (not (a = b) or (a is null and b is not null) or (a is not null and b is null))
+```
+
+`nullSafeNotEqual` needs three disjuncts: a bare `not(<equal-expansion>)` would itself yield `NULL`
+for the one-side-null case instead of the required `true`.
+
+**Native per-dialect rendering.** Dialects that expose a null-safe operator override the default so
+the result is intrinsically two-valued (safe in a `SELECT` list without extra wrapping):
+
+| Rendering | Dialects |
+|-----------|----------|
+| `a IS NOT DISTINCT FROM b` | H2, Postgres, DuckDB, Databricks, Presto, Trino, BigQuery |
+| `a <=> b` | MemSQL, SparkSQL |
+| `equal_null(a, b)` | Snowflake |
+| `coalesce(a = b, false) or (a is null and b is null)` | Spanner; ClickHouse (projection only) |
+| default expansion, wrapped in `CASE WHEN` for projected booleans | SqlServer, Oracle (`isBooleanLiteralSupported = false`) |
+
+Two mechanisms keep projection safe where the plain expansion would leak `NULL`:
+
+- **Context-sensitive rendering** — ClickHouse registers the `coalesce(...)` form only for the
+  `selectOutsideWhen` generation state (projection) and the plain form elsewhere (filter), so it pays
+  for the wrap only when needed.
+- **Boolean-projection wrapping** — SqlServer/Oracle declare `isBooleanLiteralSupported = false`, so
+  their select processor wraps any projected boolean predicate in `CASE WHEN <pred> THEN 1 ELSE 0 END`,
+  coercing the (possibly `NULL`) expansion to two values.
+
+**Routing.** In `dbExtension.pure`, `processEquals` emits `nullSafeEqual` for optional-vs-optional
+comparisons; store-authored filter comparisons are redirected through `processEqualFromFilter`; and
+`[] == []` degenerates to an `is null` check on the other side (statically `true`). Negation is kept
+symmetric in both SQL stacks: `processNot` rewrites `not(nullSafeEqual)` to `nullSafeNotEqual` (and
+vice versa), and `processNotEqual` redirects null-compensated cases to `nullSafeNotEqual`. The two
+functions are also registered in the DynaFunction registry, the boolean-operation list, `Bit` type
+inference, and the Postgres-model bridge (`IS_NOT_DISTINCT_FROM` / `IS_DISTINCT_FROM`).
+
+**Why dynafunctions rather than runtime compensation.** Function activators (e.g. the Snowflake
+UDTF activator) deploy **static SQL** — there is no FreeMarker/runtime templating at activation-execution
+time. The prior FreeMarker selector approach could not produce a correct null-safe artifact for an
+activator; pushing the compensation into `sqlQueryToString` dynafunctions makes the generated SQL
+self-contained and deployable (the Snowflake activator now renders `not equal_null(...)` instead of the
+verbose runtime `OR`-expansion).
+
+**Behaviour is locked by PCT.** The relation-function PCT suite exercises this across every store via
+`testJoinOnNullKey`, `testFilterEqualOnNullableColumns`, `testFilterNotEqualOnNullableColumns`,
+`testProjectEqualityOnNullableColumns`, and `testProjectNotEqualityOnNullableColumns` (see
+[testing-strategy.md §5](../testing/testing-strategy.md#5-pct-pure-compatibility-tests)).
 
 ---
 

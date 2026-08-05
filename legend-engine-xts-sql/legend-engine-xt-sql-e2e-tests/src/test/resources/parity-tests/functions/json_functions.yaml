@@ -1,0 +1,379 @@
+tests:
+- id: array_to_json__anyarray__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: array_to_json
+  signature: array_to_json(anyarray) → json
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: array_to_json__anyarray_bool__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: array_to_json
+  signature: array_to_json(anyarray, boolean) → json
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: json_array_elements__from_jsonjson_OUTvaluejson__from_table
+  sql: SELECT JSON_ARRAY_ELEMENTS('[1,2,3]'::json) AS result
+  function: json_array_elements
+  signature: json_array_elements(from_json json, OUT value json) → SETOF json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_array_elements_text__from_jsonjson_OUTvaluetxt__from_table
+  sql: SELECT JSON_ARRAY_ELEMENTS_TEXT('[1,2,3]'::json) AS result
+  function: json_array_elements_text
+  signature: json_array_elements_text(from_json json, OUT value text) → SETOF text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: json_array_length__json__from_table
+  sql: SELECT JSON_ARRAY_LENGTH('[1,2,3]'::json) AS result FROM strings WHERE id = 1
+  function: json_array_length
+  signature: json_array_length(json) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_build_array__empty
+  sql: SELECT JSON_BUILD_ARRAY() AS result FROM strings WHERE id = 1
+  function: json_build_array
+  signature: json_build_array() → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_build_array__variadic__from_table
+  sql: SELECT JSON_BUILD_ARRAY(id, val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: json_build_array
+  signature: json_build_array(VARIADIC "any") → json
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: json_build_object__empty
+  sql: SELECT JSON_BUILD_OBJECT() AS result FROM strings WHERE id = 1
+  function: json_build_object
+  signature: json_build_object() → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_build_object__variadic__from_table
+  sql: SELECT JSON_BUILD_OBJECT('id', id, 'name', val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: json_build_object
+  signature: json_build_object(VARIADIC "any") → json
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: json_each__from_jsonjson_OUTkeytxt_OUTvaluejson__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: json_each
+  signature: json_each(from_json json, OUT key text, OUT value json) → SETOF record
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: json_each_text__from_jsonjson_OUTkeytxt_OUTvaluetxt__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: json_each_text
+  signature: json_each_text(from_json json, OUT key text, OUT value text) → SETOF record
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: json_extract_path__from_jsonjson_variadicpath_elemstxt[]__from_table
+  sql: SELECT JSON_EXTRACT_PATH('{"a":{"b":1}}'::json, 'a', 'b') AS result FROM strings WHERE id = 1
+  function: json_extract_path
+  signature: json_extract_path(from_json json, VARIADIC path_elems text[]) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_extract_path_text__from_jsonjson_variadicpath_elemstxt[]__from_table
+  sql: SELECT JSON_EXTRACT_PATH_TEXT('{"a":{"b":"hello"}}'::json, 'a', 'b') AS result FROM strings WHERE id = 1
+  function: json_extract_path_text
+  signature: json_extract_path_text(from_json json, VARIADIC path_elems text[]) → text
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+- id: json_object__txt[]__from_table
+  sql: SELECT JSON_OBJECT(ARRAY['a', '1', 'b', '2']) AS result FROM strings WHERE id = 1
+  function: json_object
+  signature: json_object(text[]) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_object__txt[]_txt[]__from_table
+  sql: SELECT JSON_OBJECT(ARRAY['a','b'], ARRAY['1','2']) AS result FROM strings WHERE id = 1
+  function: json_object
+  signature: json_object(text[], text[]) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_object_keys__json__from_table
+  sql: SELECT JSON_OBJECT_KEYS('{"a":1,"b":2}'::json) AS result
+  function: json_object_keys
+  signature: json_object_keys(json) → SETOF text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: json_strip_nulls__json__from_table
+  sql: SELECT JSON_STRIP_NULLS('{"a":1,"b":null}'::json) AS result FROM strings WHERE id = 1
+  function: json_strip_nulls
+  signature: json_strip_nulls(json) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_typeof__json__from_table
+  sql: SELECT JSON_TYPEOF('42'::json) AS result FROM strings WHERE id = 1
+  function: json_typeof
+  signature: json_typeof(json) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_array_elements__from_jsonjsonb_OUTvaluejsonb__from_table
+  sql: SELECT JSONB_ARRAY_ELEMENTS('[1,2,3]'::jsonb) AS result
+  function: jsonb_array_elements
+  signature: jsonb_array_elements(from_json jsonb, OUT value jsonb) → SETOF jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_array_elements_text__from_jsonjsonb_OUTvaluetxt__from_table
+  sql: SELECT JSONB_ARRAY_ELEMENTS_TEXT('[1,2,3]'::jsonb) AS result
+  function: jsonb_array_elements_text
+  signature: jsonb_array_elements_text(from_json jsonb, OUT value text) → SETOF text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_array_length__jsonb__from_table
+  sql: SELECT JSONB_ARRAY_LENGTH('[1,2,3]'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_array_length
+  signature: jsonb_array_length(jsonb) → integer
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_build_array__empty
+  sql: SELECT JSONB_BUILD_ARRAY() AS result FROM strings WHERE id = 1
+  function: jsonb_build_array
+  signature: jsonb_build_array() → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_build_array__variadic__from_table
+  sql: SELECT JSONB_BUILD_ARRAY(id, val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: jsonb_build_array
+  signature: jsonb_build_array(VARIADIC "any") → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_build_object__empty
+  sql: SELECT JSONB_BUILD_OBJECT() AS result FROM strings WHERE id = 1
+  function: jsonb_build_object
+  signature: jsonb_build_object() → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_build_object__variadic__from_table
+  sql: SELECT JSONB_BUILD_OBJECT('id', id, 'name', val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: jsonb_build_object
+  signature: jsonb_build_object(VARIADIC "any") → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_each__from_jsonjsonb_OUTkeytxt_OUTvaluejsonb__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_each
+  signature: jsonb_each(from_json jsonb, OUT key text, OUT value jsonb) → SETOF record
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_each_text__from_jsonjsonb_OUTkeytxt_OUTvaluetxt__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_each_text
+  signature: jsonb_each_text(from_json jsonb, OUT key text, OUT value text) → SETOF record
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_extract_path__from_jsonjsonb_variadicpath_elemstxt[]__from_table
+  sql: SELECT JSONB_EXTRACT_PATH('{"a":{"b":1}}'::jsonb, 'a', 'b') AS result FROM strings WHERE id = 1
+  function: jsonb_extract_path
+  signature: jsonb_extract_path(from_json jsonb, VARIADIC path_elems text[]) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_extract_path_text__from_jsonjsonb_variadicpath_elemstxt[]__from_table
+  sql: SELECT JSONB_EXTRACT_PATH_TEXT('{"a":{"b":"hello"}}'::jsonb, 'a', 'b') AS result FROM strings WHERE id = 1
+  function: jsonb_extract_path_text
+  signature: jsonb_extract_path_text(from_json jsonb, VARIADIC path_elems text[]) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_insert__jsonb_injsonb_pathtxt[]_replacementjsonb_insert_afterboolfalse__from_table
+  sql: SELECT JSONB_INSERT('{"a":1}'::jsonb, '{b}', '2'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_insert
+  signature: jsonb_insert(jsonb_in jsonb, path text[], replacement jsonb, insert_after boolean DEFAULT false) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_object__txt[]__from_table
+  sql: SELECT JSONB_OBJECT(ARRAY['a', '1', 'b', '2']) AS result FROM strings WHERE id = 1
+  function: jsonb_object
+  signature: jsonb_object(text[]) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_object__txt[]_txt[]__from_table
+  sql: SELECT JSONB_OBJECT(ARRAY['a','b'], ARRAY['1','2']) AS result FROM strings WHERE id = 1
+  function: jsonb_object
+  signature: jsonb_object(text[], text[]) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_object_keys__jsonb__from_table
+  sql: SELECT JSONB_OBJECT_KEYS('{"a":1,"b":2}'::jsonb) AS result
+  function: jsonb_object_keys
+  signature: jsonb_object_keys(jsonb) → SETOF text
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_path_exists__targetjsonb_pathjsonpath_varsjsonb{}jsonb_silentboolfalse__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_path_exists
+  signature: jsonb_path_exists(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_path_match__targetjsonb_pathjsonpath_varsjsonb{}jsonb_silentboolfalse__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_path_match
+  signature: jsonb_path_match(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_path_query__targetjsonb_pathjsonpath_varsjsonb{}jsonb_silentboolfalse__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_path_query
+  signature: jsonb_path_query(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → SETOF jsonb
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_path_query_array__targetjsonb_pathjsonpath_varsjsonb{}jsonb_silentboolfalse__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: jsonb_path_query_array
+  signature: jsonb_path_query_array(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → jsonb
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: jsonb_pretty__jsonb__from_table
+  sql: SELECT JSONB_PRETTY('{"a":1}'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_pretty
+  signature: jsonb_pretty(jsonb) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_set__jsonb_injsonb_pathtxt[]_replacementjsonb_create_if_missingbooltrue__from_table
+  sql: SELECT JSONB_SET('{"a":1}'::jsonb, '{b}', '2'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_set
+  signature: jsonb_set(jsonb_in jsonb, path text[], replacement jsonb, create_if_missing boolean DEFAULT true) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_strip_nulls__jsonb__from_table
+  sql: SELECT JSONB_STRIP_NULLS('{"a":1,"b":null}'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_strip_nulls
+  signature: jsonb_strip_nulls(jsonb) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_typeof__jsonb__from_table
+  sql: SELECT JSONB_TYPEOF('42'::jsonb) AS result FROM strings WHERE id = 1
+  function: jsonb_typeof
+  signature: jsonb_typeof(jsonb) → text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: row_to_json__record__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: row_to_json
+  signature: row_to_json(record) → json
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: row_to_json__record_bool__unsupported_type
+  sql: SELECT 1 AS result FROM persons WHERE id = 1
+  function: row_to_json
+  signature: row_to_json(record, boolean) → json
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+- id: to_json__anyelement__from_table
+  sql: SELECT TO_JSON(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: to_json
+  signature: to_json(anyelement) → json
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: to_jsonb__anyelement__from_table
+  sql: SELECT TO_JSONB(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+  function: to_jsonb
+  signature: to_jsonb(anyelement) → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: array_to_json_anyarray_cov
+  sql: SELECT ARRAY_TO_JSON(NULL) AS result FROM persons WHERE id = 1
+  function: array_to_json
+  signature: array_to_json(anyarray) → json
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: array_to_json_anyarray_boolean_cov
+  sql: SELECT ARRAY_TO_JSON(NULL) AS result FROM persons WHERE id = 1
+  function: array_to_json
+  signature: array_to_json(anyarray, boolean) → json
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: json_array_elements_from_json_json_OUT_value_json_cov
+  sql: SELECT JSON_ARRAY_ELEMENTS(NULL) AS result FROM persons WHERE id = 1
+  function: json_array_elements
+  signature: json_array_elements(from_json json, OUT value json) → SETOF json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_array_elements_text_from_json_json_OUT_value_text_cov
+  sql: SELECT JSON_ARRAY_ELEMENTS_TEXT(NULL) AS result FROM persons WHERE id = 1
+  function: json_array_elements_text
+  signature: json_array_elements_text(from_json json, OUT value text) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_each_from_json_json_OUT_key_text_cov
+  sql: SELECT JSON_EACH(NULL) AS result FROM persons WHERE id = 1
+  function: json_each
+  signature: json_each(from_json json, OUT key text, OUT value json) → SETOF record
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_each_text_from_json_json_OUT_key_text_cov
+  sql: SELECT JSON_EACH_TEXT(NULL) AS result FROM persons WHERE id = 1
+  function: json_each_text
+  signature: json_each_text(from_json json, OUT key text, OUT value text) → SETOF record
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: json_object_keys_json_cov
+  sql: SELECT JSON_OBJECT_KEYS(NULL) AS result FROM persons WHERE id = 1
+  function: json_object_keys
+  signature: json_object_keys(json) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_array_elements_from_json_jsonb_OUT_value_jso_cov
+  sql: SELECT JSONB_ARRAY_ELEMENTS(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_array_elements
+  signature: jsonb_array_elements(from_json jsonb, OUT value jsonb) → SETOF jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_array_elements_text_from_json_jsonb_OUT_value_tex_cov
+  sql: SELECT JSONB_ARRAY_ELEMENTS_TEXT(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_array_elements_text
+  signature: jsonb_array_elements_text(from_json jsonb, OUT value text) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_each_from_json_jsonb_OUT_key_text_cov
+  sql: SELECT JSONB_EACH(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_each
+  signature: jsonb_each(from_json jsonb, OUT key text, OUT value jsonb) → SETOF record
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_each_text_from_json_jsonb_OUT_key_text_cov
+  sql: SELECT JSONB_EACH_TEXT(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_each_text
+  signature: jsonb_each_text(from_json jsonb, OUT key text, OUT value text) → SETOF record
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_object_keys_jsonb_cov
+  sql: SELECT JSONB_OBJECT_KEYS(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_object_keys
+  signature: jsonb_object_keys(jsonb) → SETOF text
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: jsonb_path_exists_target_jsonb_path_jsonpath_v_cov
+  sql: SELECT JSONB_PATH_EXISTS(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_path_exists
+  signature: jsonb_path_exists(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: jsonb_path_match_target_jsonb_path_jsonpath_v_cov
+  sql: SELECT JSONB_PATH_MATCH(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_path_match
+  signature: jsonb_path_match(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → boolean
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: jsonb_path_query_target_jsonb_path_jsonpath_v_cov
+  sql: SELECT JSONB_PATH_QUERY(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_path_query
+  signature: jsonb_path_query(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → SETOF jsonb
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: jsonb_path_query_array_target_jsonb_path_jsonpath_v_cov
+  sql: SELECT JSONB_PATH_QUERY_ARRAY(NULL) AS result FROM persons WHERE id = 1
+  function: jsonb_path_query_array
+  signature: jsonb_path_query_array(target jsonb, path jsonpath, vars jsonb DEFAULT '{}'::jsonb, silent boolean DEFAULT false) → jsonb
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+- id: row_to_json_record_cov
+  sql: SELECT ROW_TO_JSON(NULL) AS result FROM persons WHERE id = 1
+  function: row_to_json
+  signature: row_to_json(record) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+- id: row_to_json_record_boolean_cov
+  sql: SELECT ROW_TO_JSON(NULL) AS result FROM persons WHERE id = 1
+  function: row_to_json
+  signature: row_to_json(record, boolean) → json
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR

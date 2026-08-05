@@ -243,6 +243,17 @@ public class TestFunctionTestSuite
     }
 
     @Test
+    public void testRelationFunctionTestWithTypedStringAssertion()
+    {
+        List<TestResult> results = executeFunctionTest("legend-testable-function-test-relation-typed-string-assertion.pure", "model::AccountQuery__Relation_1_");
+        Assert.assertEquals(1, results.size());
+        TestResult only = results.get(0);
+        Assert.assertTrue(only instanceof TestExecuted);
+        TestExecuted executed = (TestExecuted) only;
+        Assert.assertEquals(TestExecutionStatus.PASS, executed.testExecutionStatus);
+    }
+
+    @Test
     public void testModelRelationFunctionTestWithRelationAccessor()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-relation-model-relationDatabaseAccessor.pure", "model::PersonQuery__TabularDataSet_1_");

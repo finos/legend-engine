@@ -22,6 +22,7 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
 import meta::relational::tests::postProcessor::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::postProcessor::*;
@@ -38,6 +39,50 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testSn
    let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.Snowflake)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet2 as "root") as "unionBase"',$result);
+}
+
+function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testSnowflakeColumnRenameSemiStructuredUnion():Boolean[1]
+{
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.Snowflake)));
+   let query = meta::relational::tests::postProcessor::snowflake::semiStructuredUnionQuery();
+   let result = $query->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
+   assertEquals('select "unionBase"."firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_0" as col0, "unionBase"."firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_1" as col1, "unionBase"."firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_2" as col2 from (select "root".FIRM_DETAILS[\'firm\'][\'prop0\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_0", "root".FIRM_DETAILS[\'firm\'][\'prop1\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_1", "root".FIRM_DETAILS[\'firm\'][\'prop2\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_2" from PERSON_TABLE_1 as "root" UNION ALL select "root".FIRM_DETAILS[\'firm\'][\'prop0\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_0", "root".FIRM_DETAILS[\'firm\'][\'prop1\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_1", "root".FIRM_DETAILS[\'firm\'][\'prop2\']::varchar as "firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenamingfirmDetailsSemiStructuredPropertyAliasIntentional_2" from PERSON_TABLE_2 as "root") as "unionBase"', $result);
+}
+
+// Builds a Union of set-implementations whose projected columns share a common semi-structured operand, mirroring
+// shape from many SemiStructuredPropertyAccess chains over one VARIANT column
+function <<access.private>> meta::relational::tests::postProcessor::snowflake::semiStructuredUnionQuery():SelectSQLQuery[1]
+{
+   let seg = 'firmDetailsSemiStructuredPropertyAliasIntentionallyLongerThanTheSnowflakeAliasLimitToForceRenaming';
+   let longNames = [0, 1, 2]->map(j | $seg + $seg + $seg + $j->toString());
+   let sub1 = meta::relational::tests::postProcessor::snowflake::semiStructuredUnionBranch('PERSON_TABLE_1', $longNames);
+   let sub2 = meta::relational::tests::postProcessor::snowflake::semiStructuredUnionBranch('PERSON_TABLE_2', $longNames);
+   let union = ^UnionAll(queries = [$sub1, $sub2]);
+   let unionAlias = ^TableAlias(name = 'unionBase', relationalElement = $union);
+   let outerColumns = range($longNames->size())->map(j | ^Alias(name = 'col' + $j->toString(), relationalElement = ^TableAliasColumnName(alias = $unionAlias, columnName = $longNames->at($j))));
+   ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $unionAlias), columns = $outerColumns);
+}
+
+function <<access.private>> meta::relational::tests::postProcessor::snowflake::semiStructuredUnionBranch(tableName:String[1], longNames:String[*]):SelectSQLQuery[1]
+{
+   let rootAlias = ^TableAlias(name = 'root', relationalElement = ^Table(name = $tableName, schema = ^Schema(name = 'default', database = ^Database(name = 'testDB'))));
+   let variant = ^TableAliasColumn(alias = $rootAlias, column = ^Column(name = 'FIRM_DETAILS', type = ^meta::relational::metamodel::datatype::DataType()));
+   let firm = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = 'firm'), avoidCastIfPrimitive = true);
+   let columns = range($longNames->size())->map(j | ^Alias(name = $longNames->at($j), relationalElement = ^SemiStructuredPropertyAccess(operand = $firm, property = ^Literal(value = 'prop' + $j->toString()), returnType = String)));
+   ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $rootAlias), columns = $columns);
+}
+
+// Regression test for the reAliasColumnName::replace OOM: a 30-node shared DAG (each node referenced twice) reachable
+// by 2^30 paths. Without the identity cache replace re-materializes it per path and OOMs
+function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testReplaceSharedDagMemoization():Boolean[1]
+{
+   let rootAlias = ^TableAlias(name = 'root', relationalElement = ^Table(name = 'PERSON_TABLE_1', schema = ^Schema(name = 'default', database = ^Database(name = 'testDB'))));
+   let variant = ^TableAliasColumn(alias = $rootAlias, column = ^Column(name = 'FIRM_DETAILS', type = ^meta::relational::metamodel::datatype::DataType()));
+   let base = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = 'firm'), returnType = String)->cast(@RelationalOperationElement);
+   let expr = range(30)->fold({i, e | ^DynaFunction(name = 'concat', parameters = [$e, $e])->cast(@RelationalOperationElement)}, $base);
+   let result = $expr->meta::relational::postProcessor::reAliasColumnName::replace(^Map<String, String>());
+   assertEquals('concat', $result->cast(@DynaFunction).name);
+   assertEquals(2, $result->cast(@DynaFunction).parameters->size());
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOp():Boolean[1]
