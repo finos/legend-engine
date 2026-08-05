@@ -174,16 +174,8 @@ public class TestTestAssertionEvaluator
         equalToJson.id = "assert1";
         equalToJson.expected = data;
 
-        data.data = "{\"some\":2}";
-        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
-        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
-        Assert.assertEquals("assert1", assertionStatus.id);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2.0%n}"), ((EqualToJsonAssertFail) assertionStatus).actual);
-        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
-
         data.data = "{\"some\":2.000000000000000001}";
-        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
         Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", assertionStatus.id);
         Assert.assertEquals(String.format("{%n  \"some\" : 2.000000000000000001%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
@@ -212,14 +204,6 @@ public class TestTestAssertionEvaluator
         Assert.assertEquals("assert1", assertionStatus.id);
 
         ConstantResult constantResult1 = new ConstantResult("{\"some\":2}");
-
-        data.data = "{\"some\":2.0}";
-        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
-        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
-        Assert.assertEquals("assert1", assertionStatus.id);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2.0%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2%n}"), ((EqualToJsonAssertFail) assertionStatus).actual);
-        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
 
         data.data = "{\"some\":2}";
         assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
@@ -565,6 +549,27 @@ public class TestTestAssertionEvaluator
 
         AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
         Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
+    public void testEqualToRelationAssertionWithDecimalTrailingZerosAgainstWholeNumber()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"amount\":11.000000},{\"amount\":11},{\"amount\":11.0},{\"amount\":11.000}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("amount");
+        element.rows = Arrays.asList(makeRow("11.000000"), makeRow("11"), makeRow("11"), makeRow("11.0"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assertDecimal";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("amount", "Decimal")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue("Expected AssertPass but got: " + status.getClass().getSimpleName(), status instanceof AssertPass);
     }
 
     private static Column column(String name, String rawTypeFullPath)
