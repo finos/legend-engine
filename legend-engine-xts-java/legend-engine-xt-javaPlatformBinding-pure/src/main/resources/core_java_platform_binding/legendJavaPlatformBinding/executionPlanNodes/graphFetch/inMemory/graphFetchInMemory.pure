@@ -154,7 +154,13 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
       let mapField = $jThis->j_field($mapName, javaMap($keyType, $fieldType));
       let keyVar = $keyType->j_variable('qualifierKey$');
 
-      let body = $q.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+      let rawBody = $q.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+      let body = if($q->hasGeneratedMilestoningPropertyStereotype() && $q->functionReturnMultiplicity()->isZeroOne(),
+                    | let stmts = $rawBody->cast(@Block).statements;
+                      let lastReturn = $stmts->last()->toOne()->cast(@Return);
+                      let wrappedExpr = $conventions->className(Library)->j_invoke('first', $lastReturn.expression->toOne(), $fieldType);
+                      $stmts->init()->concatenate($wrappedExpr->j_return())->j_block();,
+                    | $rawBody);
 
       let updatedClass = $implClass
          ->addMethod(
