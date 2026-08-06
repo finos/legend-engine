@@ -53,7 +53,7 @@ function <<test.Test>> meta::external::query::sql::server::schema::testTransform
     assertEquals('doc', $protocolCol.taggedValues->at(0).tag.value);
     assertEquals('column documentation', $protocolCol.taggedValues->at(0).value);
 
-    assertEquals('meta::pure::profiles::doc', $protocolCol.stereotypes->at(0).profile)
+    assertEquals('meta::pure::profiles::doc', $protocolCol.stereotypes->at(0).profile);
 }
 
 
