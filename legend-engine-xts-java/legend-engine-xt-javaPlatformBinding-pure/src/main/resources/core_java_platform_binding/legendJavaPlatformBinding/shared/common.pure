@@ -131,9 +131,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::createQ
    let qualifiedClass = $qualifiedProperties->fold(
       {qp, project|
          let params     = $qp->functionType().parameters->evaluateAndDeactivate()->tail()->map(p | javaParam($conventions->pureTypeToJavaType($p.genericType.rawType->toOne(), $p.multiplicity), $p.name));
-         let body       = $qp.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+         let returnType = $conventions->pureTypeToJavaType($qp);
+         let rawBody    = $qp.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+         let body       = if($qp->hasGeneratedMilestoningPropertyStereotype() && $qp->functionReturnMultiplicity()->isZeroOne(),
+                             | let stmts = $rawBody->cast(@Block).statements;
+                               let lastReturn = $stmts->last()->toOne()->cast(@Return);
+                               let wrappedExpr = $conventions->className(Library)->j_invoke('first', $lastReturn.expression->toOne(), $returnType);
+                               $stmts->init()->concatenate($wrappedExpr->j_return())->j_block();,
+                             | $rawBody);
          let newProject = newProject()->addClass($class->addMethod(
-            javaMethod('public', $conventions->pureTypeToJavaType($qp), $conventions->getterName($qp), $params, $body)
+            javaMethod('public', $returnType, $conventions->getterName($qp), $params, $body)
          ));
 
          mergeProjects($project->concatenate($newProject)->concatenate($body->dependencies()->resolveAndGetProjects())->toOneMany());
