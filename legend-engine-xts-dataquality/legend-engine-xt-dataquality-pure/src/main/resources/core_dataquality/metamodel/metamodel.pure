@@ -49,7 +49,7 @@ Class meta::external::dataquality::DataQualityRule
   propertyPath: String[1];
 }
 
-Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement
+Class meta::external::dataquality::DataQualityRelationValidation extends PackageableElement, meta::pure::metamodel::testable::Testable
 {
   query: LambdaFunction<Any>[1];                                         // should return a relation - enforced in compiler
   validations: RelationValidation[*];
@@ -87,7 +87,7 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   enrichDQColumns: Boolean[1] = false; //whether to add DQ columns to the response
 }
 
-Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement
+Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement, meta::pure::metamodel::testable::Testable
 [
   sourceMustReturnRelation: $this.source->functionReturnType().rawType->toOne()->subTypeOf(Relation),
   targetMustReturnRelation: $this.target->functionReturnType().rawType->toOne()->subTypeOf(Relation)
@@ -110,4 +110,41 @@ Class meta::external::dataquality::MD5HashStrategy extends meta::external::dataq
   sourceHashColumn: String[0..1];
   targetHashColumn: String[0..1];
   aggregatedHash: Boolean[1];
+}
+
+// -------------------- Testable model --------------------
+
+Class meta::external::dataquality::DataQualityRelationValidationTestSuite extends meta::pure::test::TestSuite
+{
+  testData: meta::external::dataquality::DataQualityRelationValidationTestData[0..1];
+}
+
+Class meta::external::dataquality::DataQualityRelationValidationTest extends meta::pure::test::AtomicTest
+{
+}
+
+Class meta::external::dataquality::DataQualityRelationValidationTestData
+{
+  testData: meta::external::dataquality::DataQualityStoreTestData[*];
+}
+
+Class meta::external::dataquality::DataQualityRelationComparisonTestSuite extends meta::pure::test::TestSuite
+{
+  testData: meta::external::dataquality::DataQualityRelationComparisonTestData[0..1];
+}
+
+Class meta::external::dataquality::DataQualityRelationComparisonTest extends meta::pure::test::AtomicTest
+{
+}
+
+Class meta::external::dataquality::DataQualityRelationComparisonTestData
+{
+  testData: meta::external::dataquality::DataQualityStoreTestData[*];
+}
+
+Class meta::external::dataquality::DataQualityStoreTestData
+{
+  doc: String[0..1];
+  element: meta::pure::metamodel::PackageableElement[1];
+  data: meta::pure::data::EmbeddedData[1];
 }

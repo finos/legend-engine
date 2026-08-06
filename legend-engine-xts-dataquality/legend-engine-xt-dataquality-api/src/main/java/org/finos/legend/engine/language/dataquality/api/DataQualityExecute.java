@@ -25,7 +25,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
@@ -38,6 +37,7 @@ import org.finos.legend.engine.generation.dataquality.DataQualityReconLambdaGene
 import org.finos.legend.engine.generation.dataquality.DataQualitySampleValuesLambdaGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -80,6 +80,7 @@ import org.finos.legend.pure.generated.Root_meta_external_dataquality_rule_sugge
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_dataquality_generation_dataquality;
 import org.finos.legend.pure.generated.core_dataquality_generation_datarecon;
+import org.finos.legend.pure.generated.core_dataquality_generation_lambda_relation_type;
 import org.finos.legend.pure.generated.core_dataquality_generation_rule_suggestions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
@@ -547,6 +548,35 @@ public class DataQualityExecute
         return ManageConstantResult.manageResult(identity.getName(), lambda, objectMapper);
     }
 
+
+    @POST
+    @Path("relationType")
+    @ApiOperation(value = "Get the relation type (output columns) of the engine-generated lambda for a DQ element. Dispatches by element type at the given package path: DataQualityRelationValidation uses the breaks lambda; DataQualityRelationComparison uses the reconciliation lambda.")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response relationType(DataQualityExecuteTrialInput dataQualityExecuteInput, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_RELATION_TYPE_START).toString());
+        try (Scope scope = GlobalTracer.get().buildSpan("DataQuality: relationType").startActive(true))
+        {
+            PureModel pureModel = this.modelManager.loadModel(dataQualityExecuteInput.model, dataQualityExecuteInput.clientVersion, identity, null);
+            PackageableElement packageableElement = pureModel.getPackageableElement(dataQualityExecuteInput.packagePath);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> pureRelationType =
+                    core_dataquality_generation_lambda_relation_type.Root_meta_external_dataquality_lambdaRelationType_getLambdaRelationType_PackageableElement_1__Function_1__RelationType_1_(
+                            packageableElement, DataQualityProfilingLambdaGenerator.getLambdaCompiler(pureModel), pureModel.getExecutionSupport());
+            org.finos.legend.engine.protocol.pure.m3.relation.RelationType relationType =
+                    RelationTypeHelper.convert(pureRelationType, pureModel);
+            LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_RELATION_TYPE_END, System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), relationType, objectMapper);
+        }
+        catch (Exception ex)
+        {
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
 
     @POST
     @Path("executeArtifacts")

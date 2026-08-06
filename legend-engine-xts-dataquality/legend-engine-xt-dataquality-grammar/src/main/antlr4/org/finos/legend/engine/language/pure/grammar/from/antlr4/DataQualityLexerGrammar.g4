@@ -45,3 +45,9 @@ RECON_EXPECTED_MATCH:                    'expectedMatch';
 
 // -------------------- PERSISTENCE STRATEGY ----------------------------------------------
 PERSISTENCE_STRATEGY:                    'persistenceStrategy';
+
+// -------------------- TESTABLE ----------------------------------------------------------
+DQ_TEST_SUITES:                          'testSuites';
+DQ_TEST_DATA:                            'data';
+DQ_TEST_TESTS:                           'tests';
+DQ_TEST_ASSERTS:                         'asserts';
