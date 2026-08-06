@@ -1,0 +1,213 @@
+###Relational
+Database showcase::store::NorthwindDatabase
+(
+  Schema NORTHWIND
+  (
+    Table CUSTOMERS
+    (
+      CUSTOMER_ID VARCHAR(5) PRIMARY KEY,
+      COMPANY_NAME VARCHAR(40) NOT NULL,
+      CONTACT_NAME VARCHAR(30),
+      CONTACT_TITLE VARCHAR(30),
+      ADDRESS VARCHAR(60),
+      CITY VARCHAR(15),
+      REGION VARCHAR(15),
+      POSTAL_CODE VARCHAR(10),
+      COUNTRY VARCHAR(15),
+      PHONE VARCHAR(24),
+      FAX VARCHAR(24)
+    )
+    Table ORDERS
+    (
+      ORDER_ID SMALLINT PRIMARY KEY,
+      CUSTOMER_ID VARCHAR(5),
+      ORDER_DATE DATE,
+      REQUIRED_DATE DATE,
+      SHIPPED_DATE DATE,
+      SHIP_VIA SMALLINT,
+      FREIGHT OTHER,
+      SHIP_NAME VARCHAR(40),
+      SHIP_ADDRESS VARCHAR(60),
+      SHIP_CITY VARCHAR(15),
+      SHIP_REGION VARCHAR(15),
+      SHIP_POSTAL_CODE VARCHAR(10),
+      SHIP_COUNTRY VARCHAR(15)
+    )
+    Table ORDER_DETAILS
+    (
+      ORDER_ID SMALLINT PRIMARY KEY,
+      PRODUCT_ID SMALLINT PRIMARY KEY,
+      UNIT_PRICE OTHER NOT NULL,
+      QUANTITY SMALLINT NOT NULL,
+      DISCOUNT OTHER NOT NULL
+    )
+  )
+
+  Join ORDERS_ORDER_DETAILS(NORTHWIND.ORDERS.ORDER_ID = NORTHWIND.ORDER_DETAILS.ORDER_ID)
+  Join ORDERS_CUSTMERS(NORTHWIND.ORDERS.CUSTOMER_ID = NORTHWIND.CUSTOMERS.CUSTOMER_ID)
+)
+
+
+###Pure
+Class showcase::model::Customer
+[
+  idNotBlank: $this.id->length() > 0
+]
+{
+  id: String[1];
+  companyName: String[1];
+  contactName: String[0..1];
+  companyTitle: String[0..1];
+  address: showcase::model::Address[0..1];
+  telephoneNumber: String[0..1];
+  faxNumber: String[0..1];
+}
+
+Class showcase::model::Address
+{
+  address: String[0..1];
+  city: String[0..1];
+  postalCode: String[0..1];
+  region: String[0..1];
+  country: String[0..1];
+}
+
+Class showcase::model::Order
+{
+  id: Integer[1];
+  createdDate: StrictDate[0..1];
+  requiredDate: StrictDate[0..1];
+  shippedDate: StrictDate[0..1];
+  shipToName: String[0..1];
+  shipToAddress: showcase::model::Address[0..1];
+  itemCount() {$this.lineItems->count()}: Integer[1];
+}
+
+Class showcase::model::OrderLineItem
+{
+  quantity: Integer[1];
+  unitPrice: Float[1];
+  unitPriceCurrency: String[1];
+}
+
+Association showcase::model::associations::Order_OrderLineItem
+{
+  order: showcase::model::Order[1];
+  lineItems: showcase::model::OrderLineItem[*];
+}
+
+Association showcase::model::associations::Order_Customer
+{
+  orders: showcase::model::Order[*];
+  customer: showcase::model::Customer[0..1];
+}
+
+
+###Mapping
+Mapping showcase::mapping::NorthwindMapping
+(
+  showcase::model::Customer[Customer]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.CUSTOMER_ID
+    )
+    ~mainTable [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS
+    id: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.CUSTOMER_ID,
+    companyName: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.COMPANY_NAME,
+    contactName: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.CONTACT_NAME,
+    companyTitle: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.CONTACT_TITLE,
+    address
+    (
+      address: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.ADDRESS,
+      city: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.CITY,
+      region: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.REGION,
+      postalCode: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.POSTAL_CODE,
+      country: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.COUNTRY
+    ),
+    telephoneNumber: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.PHONE,
+    faxNumber: [showcase::store::NorthwindDatabase]NORTHWIND.CUSTOMERS.FAX
+  }
+  showcase::model::Order[Order]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_ID
+    )
+    ~mainTable [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS
+    id: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_ID,
+    createdDate: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.ORDER_DATE,
+    requiredDate: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.REQUIRED_DATE,
+    shippedDate: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIPPED_DATE,
+    shipToName: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_NAME,
+    shipToAddress
+    (
+      address: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_ADDRESS,
+      city: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_CITY,
+      region: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_REGION,
+      postalCode: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_POSTAL_CODE,
+      country: [showcase::store::NorthwindDatabase]NORTHWIND.ORDERS.SHIP_COUNTRY
+    )
+  }
+  showcase::model::OrderLineItem[OrderLineItem]: Relational
+  {
+    ~primaryKey
+    (
+      [showcase::store::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.ORDER_ID,
+      [showcase::store::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.PRODUCT_ID
+    )
+    ~mainTable [showcase::store::NorthwindDatabase]NORTHWIND.ORDER_DETAILS
+    quantity: [showcase::store::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.QUANTITY,
+    unitPrice: [showcase::store::NorthwindDatabase]NORTHWIND.ORDER_DETAILS.UNIT_PRICE,
+    unitPriceCurrency: 'USD'
+  }
+
+  showcase::model::associations::Order_OrderLineItem: Relational
+  {
+    AssociationMapping
+    (
+      order[OrderLineItem,Order]: [showcase::store::NorthwindDatabase]@ORDERS_ORDER_DETAILS,
+      lineItems[Order,OrderLineItem]: [showcase::store::NorthwindDatabase]@ORDERS_ORDER_DETAILS
+    )
+  }
+  showcase::model::associations::Order_Customer: Relational
+  {
+    AssociationMapping
+    (
+      orders[Customer,Order]: [showcase::store::NorthwindDatabase]@ORDERS_CUSTMERS,
+      customer[Order,Customer]: [showcase::store::NorthwindDatabase]@ORDERS_CUSTMERS
+    )
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection showcase::connection::NorthwindConnection
+{
+  store: showcase::store::NorthwindDatabase;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'call loadNorthwindData()'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime showcase::runtime::ModelNorthWindRuntime
+{
+  mappings:
+  [
+    showcase::mapping::NorthwindMapping
+  ];
+  connections:
+  [
+    showcase::store::NorthwindDatabase:
+    [
+      connection_1: showcase::connection::NorthwindConnection
+    ]
+  ];
+}
