@@ -148,13 +148,13 @@ that only shows up in one arrangement is caught.
 
 ### 2. Which SQL clause a filter becomes
 
-Where a `filter` sits, and which columns it names, decides what it compiles to. Two tests say so in
-their own `doc.doc`:
+Where a `filter` sits, and which columns it names, decides what it compiles to. Two tests were
+written to pin exactly that, and say so in their own documentation:
 
 | Test | Filter references | Recorded intent |
 |---|---|---|
-| `testExtendWindowFilter` | a window (`over`) output column | *"Qualify grammar should be produced instead of subselect."* |
-| `testGroupByFilterExtendFilter` | a `groupBy` output **and** a window output, in one pipeline | *"Produces qualify and having grammar together."* |
+| `testExtendWindowFilter` | a window (`over`) output column | *"Filtering on a window column produces qualify grammar rather than a sub-select."* |
+| `testGroupByFilterExtendFilter` | a `groupBy` output **and** a window output, in one pipeline | *"A pipeline that filters an aggregate and then filters a window column produces having and qualify grammar together."* |
 
 `test_GroupBy_Filter` is the minimal version of the first half — `groupBy` then a filter on the
 aggregate column, nothing else — and `test_GroupBy_Distinct_Filter` and `test_Distinct_GroupBy_Filter`

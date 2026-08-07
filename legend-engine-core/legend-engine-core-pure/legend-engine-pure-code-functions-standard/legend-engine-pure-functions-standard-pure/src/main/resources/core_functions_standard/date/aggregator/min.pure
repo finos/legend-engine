@@ -69,6 +69,12 @@ the `[1..*]` variant below returns `[1]` and needs no `toOne`.
 
 **Returns** the smallest date, or empty when there are none.
 
+**Examples**
+```pure
+min([%2025-02-10T20:10:20, %2025-02-10])   // %2025-02-10
+min([]->cast(@Date))                       // empty
+```
+
 **See also** `min(Date[1..*]):Date[1]`,
 `min(Date[1], Date[1]):Date[1]`,
 `max(Date[*]):Date[0..1]`

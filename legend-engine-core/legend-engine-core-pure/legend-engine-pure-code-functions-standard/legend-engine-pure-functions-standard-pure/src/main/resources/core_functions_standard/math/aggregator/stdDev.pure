@@ -30,6 +30,12 @@ Takes `[1..*]`, so an empty collection will not compile rather than failing at r
 
 **Returns** the standard deviation.
 
+**Examples**
+```pure
+stdDev([1, 2, 3], true)    // 1.0, the sample form
+stdDev([1, 2], false)      // 0.5, the population form
+```
+
 **See also** `stdDevSample(Number[1..*]):Number[1]`,
 `stdDevPopulation(Number[1..*]):Number[1]`,
 `variance(Number[*], Boolean[1]):Number[1]`

@@ -33,6 +33,13 @@ the coefficient is undefined**, which includes the case where either series has 
 
 **Returns** the correlation, between -1 and 1, or empty when undefined.
 
+**Examples**
+```pure
+corr([1, 2], [10, 20])   // 1.0, they rise together
+corr([1, 2], [30, 10])   // -1.0, one rises as the other falls
+corr([1], [])            // empty, nothing to pair
+```
+
 **See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
 `covarPopulation(Number[*], Number[*]):Number[0..1]`
 '''

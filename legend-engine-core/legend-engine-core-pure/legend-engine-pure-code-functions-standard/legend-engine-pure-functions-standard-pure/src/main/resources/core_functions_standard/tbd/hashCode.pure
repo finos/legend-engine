@@ -32,6 +32,12 @@ be equal.
 
 **Returns** the hash code.
 
+**Examples**
+```pure
+hashCode([10]) == hashCode([[10]])   // true, nesting is flattened away
+hashCode([])                         // a value, not empty
+```
+
 **See also** `hash(String[1], HashType[1]):String[1]`
 '''
 native function <<PCT.function>>
