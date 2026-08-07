@@ -14,6 +14,26 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The standard deviation of a collection, sample or population depending on the flag.
+
+The square root of `variance(Number[*], Boolean[1]):Number[1]`, and `isBiasCorrected` means the same
+thing: `true` divides by `n - 1` for a **sample** standard deviation, `false` by `n` for a
+**population** one. Prefer the named `stdDevSample(Number[1..*]):Number[1]` and
+`stdDevPopulation(Number[1..*]):Number[1]`, which say which they mean.
+
+Takes `[1..*]`, so an empty collection will not compile rather than failing at runtime.
+
+**Parameters**
+- `numbers` — the values, at least one.
+- `isBiasCorrected` — `true` for the sample standard deviation, `false` for the population one.
+
+**Returns** the standard deviation.
+
+**See also** `stdDevSample(Number[1..*]):Number[1]`,
+`stdDevPopulation(Number[1..*]):Number[1]`,
+`variance(Number[*], Boolean[1]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::stdDev(numbers:Number[1..*], isBiasCorrected: Boolean[1]):Number[1]
 {
     sqrt(variance($numbers, $isBiasCorrected));

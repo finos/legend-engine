@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Bitwise NOT of an integer.
+
+Inverts every bit. Integers are signed and two's complement, so **the result of inverting a
+non-negative number is negative**: `bitNot(n)` is `-n - 1`, not a positive number with the low bits
+flipped.
+
+**Parameters**
+- `arg` — the operand.
+
+**Returns** the bitwise complement.
+
+**Examples**
+```pure
+bitNot(0)    // -1
+bitNot(5)    // -6
+bitNot(25)   // -26
+```
+
+**See also** `bitAnd(Integer[1], Integer[1]):Integer[1]`,
+`bitXor(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise NOT operator returns a Number representing the bitwise NOT of the Number input param'
-    }
 meta::pure::functions::math::bitNot(arg:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitNot::testBitNot_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

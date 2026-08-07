@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Bitwise OR of two integers.
+
+Each bit of the result is 1 where that bit is 1 in either argument — the way to set flags in a bit
+field without disturbing the others.
+
+**Parameters**
+- `arg1` — the first operand.
+- `arg2` — the second operand.
+
+**Returns** the bitwise OR.
+
+**Examples**
+```pure
+bitOr(5, 6)     // 7, binary 101 OR 110
+bitOr(25, 11)   // 27
+```
+
+**See also** `bitAnd(Integer[1], Integer[1]):Integer[1]`,
+`bitOr(Integer[1], Integer[1]):Integer[1]`,
+`bitXor(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise OR operator returns an Number representing the bitwise OR of the Number input params'
-    }
 meta::pure::functions::math::bitOr(arg1:Integer[1], arg2:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitOr::testBitOr_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

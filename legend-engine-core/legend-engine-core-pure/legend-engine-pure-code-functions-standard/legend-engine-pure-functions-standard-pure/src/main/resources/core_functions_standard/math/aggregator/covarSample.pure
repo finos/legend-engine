@@ -14,11 +14,26 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The sample covariance of two series.
+
+`covariance(Number[*], Number[*], Integer[1], Boolean[1]):Number[0..1]` with the bias correction on,
+dividing by one fewer than the number of pairs. Use it when the pairs are a sample and you are
+estimating the covariance of the population they came from.
+
+Returns empty when there are fewer than two pairs, since the divisor would be zero.
+
+**Parameters**
+- `numbersA` — the first series.
+- `numbersB` — the second series, paired by position.
+
+**Returns** the sample covariance, or empty.
+
+**See also** `covarPopulation(Number[*], Number[*]):Number[0..1]`,
+`corr(Number[*], Number[*]):Number[0..1]`
+'''
 function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the sample covariance for non-null pairs in a group.'
-    }
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::covarSample(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
 {
   covariance($numbersA, $numbersB, min($numbersA->size(),$numbersB->size()), true);

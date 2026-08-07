@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Bitwise AND of two integers.
+
+Each bit of the result is 1 only where that bit is 1 in both arguments. The usual use is masking —
+keeping the bits a flag word sets and clearing the rest.
+
+**Parameters**
+- `arg1` — the first operand.
+- `arg2` — the second operand.
+
+**Returns** the bitwise AND.
+
+**Examples**
+```pure
+bitAnd(5, 6)     // 4, binary 101 AND 110
+bitAnd(1, 0)     // 0
+```
+
+**See also** `bitAnd(Integer[1], Integer[1]):Integer[1]`,
+`bitOr(Integer[1], Integer[1]):Integer[1]`,
+`bitXor(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise AND operator returns a Number representing the bitwise AND of the Number input params'
-    }
 meta::pure::functions::math::bitAnd(arg1:Integer[1], arg2:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitAnd::testBitAnd_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

@@ -14,11 +14,28 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Shifts an integer's bits left by a given number of places.
+
+Each place doubles the value, so shifting left by `n` multiplies by 2 to the power `n` — until bits
+run off the top of a signed 64-bit integer, where the result wraps rather than saturating.
+
+**Parameters**
+- `arg` — the value to shift.
+- `n` — how many places to shift.
+
+**Returns** the shifted value.
+
+**Examples**
+```pure
+bitShiftLeft(1, 0)   // 1
+bitShiftLeft(1, 3)   // 8
+```
+
+**See also** `bitShiftRight(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise LEFT SHIFT operator returns a Number representing the arg Number input shifted by n bits to the LEFT'
-    }
 meta::pure::functions::math::bitShiftLeft(arg:Integer[1], n:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_UpTo62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

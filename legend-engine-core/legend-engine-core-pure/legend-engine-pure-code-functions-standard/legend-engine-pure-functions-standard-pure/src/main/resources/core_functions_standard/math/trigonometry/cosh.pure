@@ -14,11 +14,28 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The hyperbolic cosine of a number.
+
+`(e^x + e^-x) / 2`. Unlike the circular cosine it is unbounded, and **never returns less than 1** —
+`cosh(0)` is its minimum.
+
+**Parameters**
+- `number` — the argument, in radians.
+
+**Returns** the hyperbolic cosine.
+
+**Examples**
+```pure
+cosh(0)   // 1.0
+```
+
+**See also** `sinh(Number[1]):Float[1]`,
+`cosh(Number[1]):Float[1]`,
+`tanh(Number[1]):Float[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='cosh returns the hyperbolic cosine of a number'
-    }
 meta::pure::functions::math::cosh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

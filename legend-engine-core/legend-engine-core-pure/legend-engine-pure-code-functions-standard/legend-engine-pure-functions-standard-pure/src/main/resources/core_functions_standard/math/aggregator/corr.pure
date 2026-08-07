@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The Pearson correlation coefficient of two series.
+
+**Bounded between -1 and 1**: 1 is a perfect positive linear relationship, -1 a perfect negative one,
+and 0 no linear relationship. Being normalised, it is comparable across pairs of series in a way that
+`covarSample(Number[*], Number[*]):Number[0..1]` is not.
+
+It measures only *linear* association — a strong non-linear relationship can still give a
+correlation near zero.
+
+The two collections are positional and are paired by index. **Returns empty rather than failing when
+the coefficient is undefined**, which includes the case where either series has no variance.
+
+**Parameters**
+- `numbersA` — the first series.
+- `numbersB` — the second series, paired by position.
+
+**Returns** the correlation, between -1 and 1, or empty when undefined.
+
+**See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
+`covarPopulation(Number[*], Number[*]):Number[0..1]`
+'''
 function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the correlation coefficient for non-null pairs in a group.'
-    }
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::corr(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
 {
   if( covarPopulation($numbersA, $numbersB)->equal([]),

@@ -14,6 +14,27 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Exclusive or: true when exactly one of the two operands is true.
+
+Differs from `||` in rejecting the case where both are true, which makes it the test for "one or the
+other, but not both".
+
+**Parameters**
+- `first` — the first operand.
+- `second` — the second operand.
+
+**Returns** `true` when exactly one operand is `true`.
+
+**Examples**
+```pure
+xor(true, false)   // true
+xor(true, true)    // false, unlike ||
+xor(false, false)  // false
+```
+
+**See also** `meta::pure::functions::collection::or(Boolean[*]):Boolean[1]`
+'''
 function <<PCT.function>> meta::pure::functions::boolean::xor(first:Boolean[1], second:Boolean[1]):Boolean[1]
 {
    and(or($first, $second), or(!$first, !$second));

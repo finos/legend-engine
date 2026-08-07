@@ -15,11 +15,38 @@
 import meta::pure::functions::collection::tests::in::*;
 import meta::pure::test::pct::*;
 
+'''
+Whether a value appears in a collection.
+
+Membership by equality. **An absent `value` gives `false` rather than empty or an error**, so a
+missing value is never considered a member even if the collection is empty too — the emptiness is
+tested explicitly before the search.
+
+**Parameters**
+- `value` — the value to look for, possibly absent.
+- `collection` — the values to search.
+
+**Returns** `true` when the value appears in the collection.
+
+**Examples**
+```pure
+1->in([1, 2, 3])    // true
+4->in([1, 2, 3])    // false
+[]->in([1, 2, 3])   // false, an absent value is never a member
+```
+
+**See also** `in(Any[1], Any[*]):Boolean[1]`,
+`count(Any[*]):Integer[1]`
+'''
 function <<PCT.function>> meta::pure::functions::collection::in(value:Any[0..1], collection:Any[*]):Boolean[1]
 {
     $value->isNotEmpty() && $collection->exists(x | $value == $x)
 }
 
+'''
+As `in(Any[0..1], Any[*]):Boolean[1]`, for a value known to be present, so the absent case cannot
+arise.
+'''
 function <<PCT.function>> meta::pure::functions::collection::in(value:Any[1], collection:Any[*]):Boolean[1]
 {
     $collection->exists(x | $value == $x)

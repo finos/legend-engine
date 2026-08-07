@@ -15,7 +15,26 @@
 import meta::pure::test::pct::*;
 import meta::pure::functions::hash::*;
 
-native function <<PCT.function>> {doc.doc = ''}
+'''
+A hash code for a collection of values.
+
+For bucketing, partitioning and cheap equality pre-checks — not for cryptographic use, where
+`meta::pure::functions::hash::hash(String[1], HashType[1]):String[1]` is the right tool.
+
+**Nesting does not affect the result**: a collection is flattened before hashing, so `[10]` and
+`[[10]]` hash alike.
+
+Equal values hash alike, but the converse does not hold — a collision means only that two inputs may
+be equal.
+
+**Parameters**
+- `vals` — the values to hash.
+
+**Returns** the hash code.
+
+**See also** `hash(String[1], HashType[1]):String[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::hash::hashCode(vals:Any[*]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::hashCode::tests::testHashCode<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
