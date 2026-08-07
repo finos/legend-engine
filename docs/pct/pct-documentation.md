@@ -3,18 +3,26 @@
 This standard governs the `'''…'''` documentation on `<<PCT.function>>` declarations and
 `<<PCT.test>>` cases in the engine-side Pure function repositories:
 
-| Repository | Module |
-|---|---|
-| `core_functions_standard` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure` |
-| `core_functions_relation` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure` |
-| `core_functions_unclassified` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure` |
-| `core_functions_variant` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-variant/legend-engine-pure-functions-variant-pure` |
-| `core_scenario_quant` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-scenario-quant-pure` |
-| `core` | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core` |
-| `core_dataquality` | `legend-engine-xts-dataquality/legend-engine-xt-dataquality-pure` |
+| Repository | Signatures | Module | Emits a report |
+|---|---|---|---|
+| `core_functions_standard` | 115 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-standard/legend-engine-pure-functions-standard-pure` | yes |
+| `core_functions_relation` | 95 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-relation/legend-engine-pure-functions-relation-pure` | yes |
+| `core_functions_unclassified` | 37 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-unclassified/legend-engine-pure-functions-unclassified-pure` | yes |
+| `core_functions_variant` | 9 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-functions-variant/legend-engine-pure-functions-variant-pure` | yes |
+| `core_scenario_quant` | 6 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-scenario-quant-pure` | yes |
+| `core_dataquality` | 7 | `legend-engine-xts-dataquality/legend-engine-xt-dataquality-pure` | **no** |
+| `core` | 1 | `legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core` | **no** |
 
 These strings are **published to end users**. Write for someone using Pure to get work done, not for
 someone maintaining the compiler.
+
+> **The last two modules declare no `generate-pct-functions` execution**, so their eight signatures are
+> documented but never reach a `FUNCTIONS_*.json`. Document them anyway — the text is right where a
+> reader of the source will look, and it costs nothing to be ready — but do not expect to verify them
+> through the report. Wiring `core_dataquality` up is not just a `pom.xml` line: all seven of its
+> functions share `dataquality_relation_helper.pure`, and `FunctionsGeneration` permits only one PCT
+> function name per source file, so the file would have to be split first. The same gap affects
+> composition tests for a different reason — see [Composition Tests](composition-tests.md).
 
 For the language mechanics — where documentation attaches, how content is processed, the conflict
 with an explicit `doc.doc` — see
@@ -316,3 +324,30 @@ print(json.dumps([f for f in d['functionDefinitions'] if f.get('name')=='toJson'
 
 Confirm `signatures[].documentation` holds the intended Markdown with newlines preserved, and — at
 `legend.pure.version` ≥ 5.94.0 — that tests appear under `tests` with their documentation attached.
+
+> **A populated `documentation` field is not evidence that a signature was converted.** The literal
+> and the legacy `doc.doc` both land in the same place, so a report reading *95 of 95 documented* says
+> nothing about which form produced it. Counting coverage from the report is how a first pass at this
+> left 25 relation signatures — every overload in `groupBy.pure`, `pivot.pure`, `rows.pure` and
+> `range.pure` — on their original one-line tagged value while reporting the module complete.
+>
+> Count the literals instead, and confirm nothing is left behind:
+>
+> ```bash
+> grep -c "^'''$" <file>                                    # two lines per literal
+> grep -rn "doc\.doc" --include='*.pure' <module>/src/main/resources
+> ```
+>
+> The `doc.doc` grep should come back empty for a converted repository. Where it does not, check each
+> hit: `PCT.grammarDoc` is a different tag and stays, and a `doc.doc` on a declaration carrying no PCT
+> stereotype is out of scope.
+
+Two failure modes hide in files holding several overloads, and both were found by review of the
+equivalent legend-pure change:
+
+- **A whole overload left undocumented**, because the eye stops at the first signature. Documentation
+  is per signature; there is no inheritance between them.
+- **The full text on a secondary variant**, with the primary carrying a delta that points *forwards* to
+  text the reader has not reached. `Signature.documentation` is per signature and the REPL shows the
+  first one that has any, so a file whose first declaration is a delta reads back-to-front. Reorder the
+  file rather than duplicating the text.

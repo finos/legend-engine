@@ -18,46 +18,86 @@ Class meta::pure::functions::relation::Rows extends Frame
 {
 }
 
+'''
+Builds a window frame counted in **rows**: a fixed number of rows either side of the current one.
+
+Offsets are relative to the current row, which is `0`. A negative offset counts backwards
+(`PRECEDING`) and a positive one forwards (`FOLLOWING`), so `rows(-3, 0)` is
+`ROWS BETWEEN 3 PRECEDING AND CURRENT ROW`. `offsetFrom` may not exceed `offsetTo`; the function
+fails if it does.
+
+Pass the frame to `over`. **Without a frame the window runs from the start of the partition to the
+current row**, so pass one explicitly whenever you want something narrower or the whole partition.
+
+A row frame counts positions and ignores the ordering values, so rows that tie on the sort key are
+**not** kept together — the first of two equal rows sees only itself.
+`_range(Number[1], Number[1]):_Range[1]` frames by value and does keep them together.
+
+**Parameters**
+- `offsetFrom` — first row of the frame, relative to the current row.
+- `offsetTo` — last row of the frame, relative to the current row.
+
+**Returns** the frame, to hand to `over`.
+
+**Examples**
+```pure
+// the two rows before this one, this one excluded
+$rel->extend(over(~p, ~o->ascending(), rows(-2, -1)), ~sum:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+
+// the current row alone
+$rel->extend(over(~p, ~o->ascending(), rows(0, 0)), ~self:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+```
+
+**See also** `rows(UnboundedFrameValue[1], Integer[1]):Rows[1]`,
+`_range(Number[1], Number[1]):_Range[1]`,
+`over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*], Rows[1]):_Window<T>[1]`
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(-3, 0) means start 3 rows before the current row and include all rows up to and including the current one, which is equivalent to ROWS BETWEEN 3 PRECEDING AND CURRENT ROW. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
-    }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:Integer[1]):Rows[1]
 {
   assert($offsetFrom <= $offsetTo, 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
   ^Rows(offsetFrom = ^FrameIntValue(value=$offsetFrom), offsetTo = ^FrameIntValue(value=$offsetTo));
 }
 
+'''
+As `rows(Integer[1], Integer[1]):Rows[1]`, but the frame starts at the **first row of the partition**
+— `ROWS BETWEEN UNBOUNDED PRECEDING AND n`. Write the lower bound as
+`meta::pure::functions::relation::unbounded()`.
+
+`rows(unbounded(), 0)` is the running frame: everything up to and including the current row.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), -2) means start from the very first row in the partition and include all rows up to 2 rows before current row, which is equivalent to ROWS BETWEEN UNBOUNDED PRECEDING AND 2 PRECEDING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
-    }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Integer[1]):Rows[1]
 {
   ^Rows(offsetFrom = $offsetFrom, offsetTo = ^FrameIntValue(value=$offsetTo));
 }
 
+'''
+As `rows(Integer[1], Integer[1]):Rows[1]`, but the frame ends at the **last row of the partition** —
+`ROWS BETWEEN n AND UNBOUNDED FOLLOWING`. Write the upper bound as
+`meta::pure::functions::relation::unbounded()`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(3, meta::pure::functions::relation::unbounded()) means start counting 3 rows after the current row and include all rows after that, all the way to the end of the partition, which is equivalent to ROWS BETWEEN 3 FOLLOWING AND UNBOUNDED FOLLOWING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
-    }
     meta::pure::functions::relation::rows(offsetFrom:Integer[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
   ^Rows(offsetFrom = ^FrameIntValue(value=$offsetFrom), offsetTo = $offsetTo);
 }
 
+'''
+As `rows(Integer[1], Integer[1]):Rows[1]`, but the frame is the **whole partition** —
+`ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING` — so the value computed over it is the
+same on every row, whatever the ordering. This is the frame to pass when you want a partition total
+rather than a running one.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a physical number of rows specified by starting and ending points. For example, rows(meta::pure::functions::relation::unbounded(), meta::pure::functions::relation::unbounded()) means include every row in the partition - from the very first row to the very last row - no matter which row you are currently on, which is equivalent to ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING. Note that negative numbers represent N PRECEDING, positive numbers represent N FOLLOWING, and 0 represents CURRENT ROW.'
-    }
     meta::pure::functions::relation::rows(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):Rows[1]
 {
   ^Rows(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
