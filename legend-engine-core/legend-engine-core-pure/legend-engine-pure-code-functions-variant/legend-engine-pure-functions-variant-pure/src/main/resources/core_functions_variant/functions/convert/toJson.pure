@@ -16,11 +16,28 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 
+'''
+Renders a variant as JSON text.
+
+The output is compact: insignificant whitespace in the JSON the variant was parsed from is not
+preserved.
+
+**Parameters**
+- `variant` — the variant to render.
+
+**Returns** the JSON representation of the variant.
+
+**Examples**
+```pure
+fromJson('{ "Hello" : null }')->toJson()               // '{"Hello":null}'
+fromJson('{ "Hello" : [ "World", "!" ] }')->toJson()   // '{"Hello":["World","!"]}'
+```
+
+**See also** `fromJson(String[1]):Variant[1]`,
+`toVariant(Any[*]):Variant[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='Returns the json representation of the given variant.'
-    }
 meta::pure::functions::variant::convert::toJson(variant: Variant[1]): String[1];
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toJson::testObjectToJson<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

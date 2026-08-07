@@ -17,22 +17,63 @@ import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 
+'''
+Reads a key out of a variant holding a JSON object.
+
+The result stays a variant, so calls chain to walk a nested payload, mixing this with
+`get(Variant[0..1], Integer[1]):Variant[0..1]` to step through arrays. **A key that is absent yields
+empty rather than failing**, and an empty variant yields empty too, so navigating a path that does
+not exist is not an error. The variant must hold an object; anything else fails.
+
+**Parameters**
+- `variant` — the variant to read, holding a JSON object.
+- `key` — the key to look up.
+
+**Returns** the value at that key, or empty when the key is absent.
+
+**Examples**
+```pure
+fromJson('{"hello":"world"}')->get('hello')                       // a variant holding "world"
+fromJson('{"hello":"world"}')->get('nonExisting')                 // empty
+fromJson('{"hello":["world", "moon", "sun"]}')->get('hello')->get(2)   // a variant holding "sun"
+```
+
+**See also** `get(Variant[0..1], Integer[1]):Variant[0..1]`,
+`meta::pure::functions::variant::convert::to(Variant[0..1], T[0..1]):T[0..1]`
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='Returns the value for the given key out of an structure variant. failing if the variant .\n' +
-                 'This will fail if array values cannot be coerced.'
-    }
 meta::pure::functions::variant::navigation::get(variant: Variant[0..1], key: String[1]): Variant[0..1]
 {
     $variant->to(@Map<String, Variant>)->map(x | $x->meta::pure::functions::collection::get($key));
 }
 
+'''
+Reads a zero-based position out of a variant holding a JSON array.
+
+As with `get(Variant[0..1], String[1]):Variant[0..1]`, the result stays a variant so calls chain.
+Unlike the key form, **an index outside the array fails rather than yielding empty** — this reads
+the array through `meta::pure::functions::collection::at(T[*], Integer[1]):T[1]`. The variant must
+hold an array; anything else fails.
+
+**Parameters**
+- `variant` — the variant to read, holding a JSON array.
+- `index` — the zero-based position to read.
+
+**Returns** the value at that position.
+
+**Examples**
+```pure
+fromJson('[1,2,3]')->get(1)                                            // a variant holding 2
+fromJson('[{"hello":"world"}, {"hello":"moon"}]')->get(1)->get('hello')  // a variant holding "moon"
+fromJson('[1,2,3]')->get(7)                                            // fails: The system is trying to get an element at offset 7 where the collection is of size 3
+```
+
+**See also** `get(Variant[0..1], String[1]):Variant[0..1]`,
+`meta::pure::functions::variant::convert::toMany(Variant[0..1], T[0..1]):T[*]`
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc=''
-    }
 meta::pure::functions::variant::navigation::get(variant: Variant[0..1], index: Integer[1]): Variant[0..1]
 {
     $variant->toMany(@Variant)->at($index);
@@ -43,6 +84,10 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
     assertEquals('"world"', $f->eval(|fromJson('{"hello":"world"}')->get('hello')->toOne())->toString());
 }
 
+'''
+A key that is absent yields empty rather than failing, so navigating a path that does not exist is
+not an error.
+'''
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyDoesNotExists<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|fromJson('{"hello":"world"}')->get('nonExisting')));

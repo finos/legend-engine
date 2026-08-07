@@ -21,14 +21,26 @@ For "**cosh**", we created a *.pure file here:
 ![cosh-file-taxonomy](assets/howto-cosh.pure.PNG)
 
 The function signature in the file looks like this:
-```Java
+````Java
+'''
+The hyperbolic cosine of a number.
+
+**Parameters**
+- `number` — the angle, in radians.
+
+**Returns** the hyperbolic cosine.
+
+**Examples**
+```pure
+cosh(0)   // 1.0
+```
+'''
 native function
     <<PCT.function>>
-        {
-            doc.doc='cosh returns the hyperbolic cosine of a number'
-        }
 meta::pure::functions::math::trigonometry::cosh(number:Number[1]):Float[1];
-```
+````
+
+See [Writing PCT function documentation](pct-documentation.md) for the full template and rules.
 
 ## How to Run your Native Function
 Before we dig into the implementation of the function, it is important to know how can use Pure to call your native function
