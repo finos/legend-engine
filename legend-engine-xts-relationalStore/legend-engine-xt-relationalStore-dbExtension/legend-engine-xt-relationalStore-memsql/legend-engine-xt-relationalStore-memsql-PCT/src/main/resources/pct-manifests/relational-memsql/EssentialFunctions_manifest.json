@@ -1,6 +1,9 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEmpty_Function_1__Boolean_1_",
+    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+  }, {
     "test" : "meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'add_T_MANY__Integer_1__T_1__T_$1_MANY$_'."
   }, {
