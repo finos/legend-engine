@@ -465,15 +465,6 @@ function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTr
    $updatedSubTreeWithBaseClass->concatenate($subTreesWithSubTypes->map(st|^$st(subTrees = $st.subTrees->concatenate($subTreeWithBaseClass->cast(@PropertyGraphFetchTree).subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur())));
 }
 
-function <<access.private>> meta::pure::graphFetch::sourceClassesAreRelatedForM2MConditional(first:Class<Any>[1], second:Class<Any>[1]):Boolean[1]
-{
-   let firstPath = $first->elementToPath();
-   let secondPath = $second->elementToPath();
-   $firstPath == $secondPath
-      || $first->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($secondPath)
-      || $second->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($firstPath);
-}
-
 function <<access.private>> meta::pure::graphFetch::sourceClassForM2MConditionalPath(path:List<PropertyPathNode>[1], owner:Class<Any>[1]):Class<Any>[0..1]
 {
    if($path.values->isEmpty(),
@@ -496,7 +487,8 @@ function <<access.private>> meta::pure::graphFetch::m2mCurrentPathsForChildSetIm
                ->map(pathState | if($pathState.conditionalTerminalPaths->isNotEmpty(), |$pathState.conditionalTerminalPaths->toOne().paths, |$pathState.current))
                ->removeDuplicates()
                ->filter(path | $path->sourceClassForM2MConditionalPath($owner)
-                  ->exists(c | $c->sourceClassesAreRelatedForM2MConditional($childSourceClass->toOne())))
+                  ->exists(c | $c->meta::pure::functions::meta::_subTypeOf($childSourceClass->toOne())
+                            || $childSourceClass->toOne()->meta::pure::functions::meta::_subTypeOf($c)))
          );
       }
    );
