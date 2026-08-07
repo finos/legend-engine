@@ -15,6 +15,26 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The number of rows in a relation.
+
+Counts rows, not distinct values, and takes no account of the columns — an empty relation gives 0
+rather than empty. Combine with `distinct(Relation<T>[1]):Relation<T>[1]` to count distinct rows.
+
+**Parameters**
+- `rel` — the relation to count.
+
+**Returns** the row count.
+
+**Examples**
+```pure
+// val: 1, 3, 4
+$rel->size()   // 3
+```
+
+**See also** `distinct(Relation<T>[1]):Relation<T>[1]`,
+`filter(Relation<T>[1], Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::size<T>(rel:Relation<T>[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::size::testSimpleSize<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

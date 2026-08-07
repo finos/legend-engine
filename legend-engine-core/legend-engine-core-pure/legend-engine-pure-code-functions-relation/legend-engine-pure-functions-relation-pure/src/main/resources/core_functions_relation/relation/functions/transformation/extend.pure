@@ -17,34 +17,111 @@ import meta::pure::functions::variant::navigation::*;
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Adds a column to a relation, computed from each row.
+
+The workhorse for derived columns. **Every input column is kept** — the result type is the input
+plus the new column, which is what separates this from
+`project(Relation<T>[1], FuncColSpecArray<{T[1]->Any[*]}, Z>[1]):Relation<Z>[1]`, which keeps only
+what it is given. Row count is unchanged.
+
+The column is written as a named function over the row: `~newCol : x | $x.a + $x.b`.
+
+There are eight overloads, in three families. This one and the next compute **per row**. Those taking
+an `AggColSpec` compute an **aggregate** over the whole relation and repeat it on every row. Those
+taking a `_Window` compute over a window, and their column function receives three arguments —
+partition, window and current row — rather than one.
+
+**Parameters**
+- `r` — the relation to extend.
+- `f` — the new column, as a named function over a row.
+
+**Returns** the relation with the new column added.
+
+**Examples**
+```pure
+$rel->extend(~total : x | $x.price * $x.quantity)
+```
+
+**See also** `extend(Relation<T>[1], FuncColSpecArray<{T[1]->Any[*]}, Z>[1]):Relation<T+Z>[1]`,
+`extend(Relation<T>[1], _Window<T>[1], FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<T+R>[1]`,
+`project(Relation<T>[1], FuncColSpecArray<{T[1]->Any[*]}, Z>[1]):Relation<Z>[1]`
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Extend the given relation with a new column, and its value is computed with the given function'
-}
 meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], f:FuncColSpec<{T[1]->Any[0..1]},Z>[1]):Relation<T+Z>[1];
 
+'''
+As `extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`, adding several
+columns in one call: `$rel->extend(~[total : x | $x.a * $x.b, flag : x | $x.a > 0])`.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Extend the given relation with a set of new columns, and their values is computed with their associated function'
-}
 meta::pure::functions::relation::extend<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<T+Z>[1];
 
+'''
+As `extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`, but the new
+column is an **aggregate over the whole relation**, repeated identically on every row — a grand
+total to compare each row against, without a join. The spec has two parts: a map from each row to a
+value, and a function reducing the collected values.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
+
+'''
+As `extend(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<T+R>[1]`,
+adding several aggregate columns in one call.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
+'''
+Adds a column computed over a window — the form every window function is called through.
+
+**The column function takes three arguments, not one**: the partition, the window and the current
+row, conventionally written `{p, w, r| ...}`. Pass those on to `rank`, `lag`, `first` and the rest,
+which all expect them.
+
+Build the window with `over`. Remember that a window with no explicit frame runs from the start of
+the partition to the current row, which is what makes an unframed aggregate a running one.
+
+**Parameters**
+- `r` — the relation to extend.
+- `window` — the window, from `over`.
+- `f` — the new column, as a function of partition, window and row.
+
+**Returns** the relation with the new column added.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~rnk : {p, w, r| $p->rank($w, $r)})
+$rel->extend(over(~grp, ~id->ascending()),  ~prev : {p, w, r| $p->lag($r).name})
+```
+
+**See also** `over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`,
+`rank(Relation<T>[1], _Window<T>[1], T[1]):Integer[1]`,
+`reduce(Relation<T>[1], _Window<T>[1], T[1], Function<{T[1]->V[*]}>[1], Function<{V[*]->U[m]}>[1]):U[m]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpec<{Relation<T>[1],_Window<T>[1],T[1]->Any[0..1]},R>[1]):Relation<T+R>[1];
+
+'''
+As `extend(Relation<T>[1], _Window<T>[1], FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<T+R>[1]`,
+adding several window columns in one call.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::extend<T,Z,W,R>(r:Relation<T>[1], window:_Window<T>[1], f:FuncColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->Any[*]},R>[1]):Relation<T+R>[1];
 
+'''
+As `extend(Relation<T>[1], _Window<T>[1], FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<T+R>[1]`,
+but the column **aggregates the values within the window** rather than picking a row out of it. The
+spec has two parts: a map from each row of the window to a value, and a function reducing the
+collected values — `~total : {p, w, r| $r.value} : y | $y->sum()`.
+
+With no frame on the window this gives a running aggregate, since the window ends at the current row.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='OLAP - Extend the given relation with a new column, and its value is aggregated using the given function using the values collected from the given window'
-}
 meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpec<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
+'''
+As `extend(Relation<T>[1], _Window<T>[1], AggColSpec<{Relation<T>[1], _Window<T>[1], T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<T+R>[1]`,
+adding several aggregated window columns in one call.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='OLAP - Extend the given relation with a set of new columns, and their values are aggregated using their associated function using the values collected from the given window'
-}
 meta::pure::functions::relation::extend<T,K,V,R>(r:Relation<T>[1], window:_Window<T>[1], agg:AggColSpecArray<{Relation<T>[1],_Window<T>[1],T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<T+R>[1];
 
 

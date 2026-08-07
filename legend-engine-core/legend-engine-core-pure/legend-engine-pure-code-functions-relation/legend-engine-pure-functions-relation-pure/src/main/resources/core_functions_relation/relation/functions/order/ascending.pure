@@ -15,6 +15,27 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+An ascending sort key on a column.
+
+Produces the `SortInfo` that `sort(Relation<T>[1], SortInfo<X⊆T>[*]):Relation<T>[1]` and the ordering
+part of `over` consume — it does not sort anything on its own. Written against a column reference:
+`~val->ascending()`.
+
+**Parameters**
+- `column` — the column to order by.
+
+**Returns** an ascending sort key for that column.
+
+**Examples**
+```pure
+$rel->sort(~val->ascending())
+$rel->extend(over(~grp, ~id->ascending()), ~n:{p,w,r| $p->rowNumber($r)})
+```
+
+**See also** `descending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`sort(Relation<T>[1], SortInfo<X⊆T>[*]):Relation<T>[1]`
+'''
 function <<PCT.function,
            functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::ascending<T> (column:ColSpec<T>[1]):SortInfo<T>[1]
 {

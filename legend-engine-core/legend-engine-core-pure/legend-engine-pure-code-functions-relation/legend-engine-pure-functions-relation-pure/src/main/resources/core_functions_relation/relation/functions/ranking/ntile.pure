@@ -15,6 +15,34 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Distributes a partition's rows into buckets of near-equal size, numbering them from 1.
+
+The way to compute quartiles, deciles and the like: pass 4 or 10 as `tileCount`. Buckets are filled
+in the window's order, so bucket 1 holds the rows that sort first.
+
+**Bucketing is by position, not by value**, so tied rows may land in different buckets — this splits
+a partition into equal counts, not into equal value ranges.
+
+Note the signature takes no window: it is called as `$p->ntile($r, 4)`.
+
+**Parameters**
+- `rel` — the partition, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+- `tileCount` — how many buckets to distribute into.
+
+**Returns** the bucket number, counting from 1.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~name->descending()), ~half:{p,w,r| $p->ntile($r, 2)})
+
+// a seven-row partition split in two: four rows in bucket 1, three in bucket 2
+```
+
+**See also** `cumulativeDistribution(Relation<T>[1], _Window<T>[1], T[1]):Float[1]`,
+`rowNumber(Relation<T>[1], T[1]):Integer[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::ntile<T>(rel:Relation<T>[1], row:T[1], tileCount:Integer[1]):Integer[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::ntile::testOLAPWithPartitionAndOrderNTile<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

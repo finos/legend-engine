@@ -16,12 +16,50 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
+'''
+The previous row within the partition.
+
+Returns a whole row, so read a column off it: `$p->lag($r).name`. The standard way to compare a row
+against the one before it — a change since the last reading, a gap between consecutive events —
+without a self join.
+
+**The first row of each partition returns empty**, since it has no predecessor. Combine with
+`meta::pure::functions::flow::coalesce(T[0..1], T[1]):T[1]` to supply a default, which is what the
+quant functions do to make a first-row return zero.
+
+Unlike `first` and `last`, this takes no window argument: it is positional relative to the current
+row and does not depend on the frame.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `r` — the current row, supplied by `extend`.
+
+**Returns** the preceding row, or empty at the start of a partition.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r| $p->lag($r).name})
+
+// id  grp  name  newCol
+//  8    1    H    null     no predecessor within grp 1
+//  6    1    F    H
+//  2    1    B    F
+```
+
+**See also** `lag(Relation<T>[1], T[1], Integer[1]):T[0..1]`,
+`lead(Relation<T>[1], T[1]):T[0..1]`,
+`offset(Relation<T>[1], T[1], Integer[1]):T[0..1]`
+'''
 function <<functionType.NormalizeRequiredFunction,
            PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1]):T[0..1]
 {
   lag($w, $r, 1);
 }
 
+'''
+As `lag(Relation<T>[1], T[1]):T[0..1]`, going back `offset` rows rather than one. `lag($r, 1)` is the
+one-argument form.
+'''
 function <<functionType.NormalizeRequiredFunction,
            PCT.function>> meta::pure::functions::relation::lag<T>(w:Relation<T>[1],r:T[1], offset:Integer[1]):T[0..1]
 {

@@ -15,6 +15,30 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Applies a function to each row and returns the results as a collection.
+
+**This leaves the relational world**: the result is a plain `V[*]`, not a relation, so it is the way
+out of a relation into ordinary Pure values. To derive a new column and stay in a relation, use
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]` instead.
+
+Because the row function may return any multiplicity, the results are flattened into one collection
+rather than kept one-per-row.
+
+**Parameters**
+- `rel` — the relation to walk.
+- `f` — the function applied to each row.
+
+**Returns** the results, flattened into a single collection.
+
+**Examples**
+```pure
+$rel->map(r | $r.name)   // the names, as a String collection
+```
+
+**See also** `extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`,
+`filter(Relation<T>[1], Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]`
+'''
 native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::map<T,V>(rel:Relation<T>[1], f:Function<{T[1]->V[*]}>[1]):V[*];
 
 function <<test.Test>> meta::pure::functions::relation::tests::map::testSimpleMap():Boolean[1]

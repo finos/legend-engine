@@ -15,6 +15,35 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The position of a row within its partition, counting from 1, without gaps after ties.
+
+As `rank(Relation<T>[1], _Window<T>[1], T[1]):Integer[1]`, rows that tie on the ordering columns
+share a rank — but **the next rank continues from the next integer rather than skipping**, so three
+rows tied at 1 are followed by 2. The result counts distinct ordering values rather than rows.
+
+Called from inside an `extend` with a window; the window must specify an ordering.
+
+**Parameters**
+- `rel` — the partition, supplied by `extend`.
+- `w` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+
+**Returns** the dense rank, counting from 1 within each partition.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~rnk:{p,w,r| $p->denseRank($w, $r)})
+
+// id  grp  rnk
+//  8    1    1
+//  8    1    1     tied, so the same rank
+//  2    1    2     and the next rank does not skip, where rank would give 3
+```
+
+**See also** `rank(Relation<T>[1], _Window<T>[1], T[1]):Integer[1]`,
+`rowNumber(Relation<T>[1], T[1]):Integer[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::denseRank<T>(rel:Relation<T>[1], w:_Window<T>[1], row:T[1]):Integer[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::denseRank::testOLAPWithPartitionAndOrderDenseRank<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
