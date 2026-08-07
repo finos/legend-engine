@@ -1099,7 +1099,6 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   atan,
   atan2,
   between,
-  binFloor,
   bitAnd,
   bitNot,
   bitOr,
