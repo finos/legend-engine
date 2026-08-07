@@ -482,6 +482,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Reverse, simpleFunctionProcessor('reverse')),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StringToArray, simpleFunctionProcessor('string_split')),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),

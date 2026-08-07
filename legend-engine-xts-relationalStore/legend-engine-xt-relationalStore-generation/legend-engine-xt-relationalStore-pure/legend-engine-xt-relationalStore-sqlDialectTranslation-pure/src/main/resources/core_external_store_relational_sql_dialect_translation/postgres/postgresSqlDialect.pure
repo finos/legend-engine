@@ -143,7 +143,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'FuncTests - tanh(3/3)',
       'Postgres SQL Dialect does not support the function - tanh'
-    ),        
+    ),
     pair(
       'FuncTests - jarowinkler_similarity(0/2)',
       'Postgres SQL Dialect does not support the function - jarowinkler_similarity'
@@ -163,6 +163,16 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(
       'SQLStructureTests - Qualify',
       'Execution error at (resource:/core_external_store_relational_sql_dialect_translation/sqlDialect.pure line:154 column:47), \"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"Postgres\"\"'
+    ),
+    pair(
+      'FuncTests - string_to_array(0/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc,def,ghi]"]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":["{abc,def,ghi}"]}]}'
+    ),
+    pair(
+      'FuncTests - string_to_array(1/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc]"]}]}\n'+
+      'Actual - {"columnNames":["result"],"rows":[{"values":["{abc}"]}]}'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -525,6 +535,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     Chr->nativeFunctionMapEntry(),
     Reverse->nativeFunctionMapEntry(),
     SplitPart->nativeFunctionMapEntry(),
+    pair(StringToArray, simpleFunctionProcessor('string_to_array')),
     Substring->nativeFunctionMapEntry(),
     Left->nativeFunctionMapEntry(),
     Right->nativeFunctionMapEntry(),

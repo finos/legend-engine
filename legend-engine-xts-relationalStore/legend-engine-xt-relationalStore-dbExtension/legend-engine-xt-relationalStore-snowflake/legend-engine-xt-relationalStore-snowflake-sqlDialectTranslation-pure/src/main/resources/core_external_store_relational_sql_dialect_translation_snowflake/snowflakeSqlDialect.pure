@@ -507,6 +507,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Rpad, simpleFunctionProcessor('rpad')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StringToArray, simpleFunctionProcessor('split')),
     pair(StrPos, argTransformFunctionProcessor('position', {n:Node[*]| $n->reverse()})),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Upper, simpleFunctionProcessor('upper')),
