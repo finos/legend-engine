@@ -1,15 +1,6 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: true\nactual:   false"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: true\nactual:   false"
-  }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
   }, {
@@ -51,9 +42,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: true\nactual:   false"
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
