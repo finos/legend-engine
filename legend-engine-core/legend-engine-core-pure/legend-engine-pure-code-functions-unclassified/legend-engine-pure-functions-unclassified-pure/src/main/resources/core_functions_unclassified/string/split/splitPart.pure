@@ -14,7 +14,39 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>>{doc.doc = 'Split the string and select the part.'}
+'''
+Splits a string on a separator and returns one part by position.
+
+`part` is zero-based, so 0 is the text before the first separator. A separator that never occurs
+means there is one part, the whole string, so part 0 gives back the input; an empty `token` splits
+nothing and does the same. **Empty in, empty out** — an absent `str` gives an absent result rather
+than an error, which is what makes the return `[0..1]`.
+
+**Pass a single-character separator.** A multi-character `token` is treated as a set of characters to
+split on rather than as a sequence, so `'Hello World'->splitPart('or', 0)` splits at `o` and at `r`
+independently and gives `'Hell'`. This is a defect in the underlying `split`, not intended behaviour.
+
+**Parameters**
+- `str` — the string to split.
+- `token` — the separator.
+- `part` — the zero-based position of the part to return.
+
+**Returns** the requested part, or empty when `str` is empty.
+
+**Examples**
+```pure
+'Hello World'->splitPart(' ', 0)          // 'Hello'
+'Hello World'->splitPart(' ', 1)          // 'World'
+'a;b;c;d;e'->splitPart(';', 4)            // 'e'
+'super-duper-looper'->splitPart('-', 0)   // 'super'
+'Hello World'->splitPart(';', 0)          // 'Hello World', the separator never occurs
+'Hello World'->splitPart('', 0)           // 'Hello World'
+[]->splitPart(' ', 0)                     // empty
+```
+
+**See also** `repeatString(String[0..1], Integer[1]):String[0..1]`
+'''
+function <<PCT.function>>
    meta::pure::functions::string::splitPart(str:String[0..1], token:String[1], part:Integer[1]):String[0..1]
 {
   if ($str->isEmpty(),

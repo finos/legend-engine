@@ -22,7 +22,33 @@ Enum meta::pure::functions::hash::HashType
     SHA256
 }
 
-native function <<PCT.function>> {doc.doc = 'Computes the hash of the given text using the specified hash algorithm (MD5, SHA1, or SHA256) and returns the resulting hash as a string.'}
+'''
+Hashes text with MD5, SHA1 or SHA256.
+
+The digest comes back as **lower case** hexadecimal, so compare against a lower cased expectation or
+case-fold both sides. Its length is fixed by the algorithm: 32 characters for MD5, 40 for SHA1, 64
+for SHA256.
+
+MD5 and SHA1 are here for interoperating with systems that already use them — checksums, cache keys,
+partitioning. Neither is collision resistant, so do not use them where an adversary chooses the
+input.
+
+**Parameters**
+- `text` — the text to hash.
+- `hashType` — the algorithm: `HashType.MD5`, `HashType.SHA1` or `HashType.SHA256`.
+
+**Returns** the digest as lower case hexadecimal.
+
+**Examples**
+```pure
+'Hello, World!'->hash(HashType.MD5)      // '65a8e27d8879283831b664bd8b7f0ad4'
+'Hello, World!'->hash(HashType.SHA1)     // '0a0a9f2a6772942557ab5355d76af442f8f65e01'
+'Hello, World!'->hash(HashType.SHA256)   // 'dffd6021bb2bd5b0af676290809ec3a53191dd81c7f70a4b28688a362182986f'
+```
+
+**See also** `meta::pure::functions::string::encodeBase64(String[1]):String[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::hash::hash(text: String[1], hashType: meta::pure::functions::hash::HashType[1]):String[1];
 
 function <<PCT.test>> meta::pure::functions::hash::tests::testMD5Hash<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
