@@ -141,6 +141,16 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       'CastOperation - Decimal',
       'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
+    ),
+    pair(
+      'FuncTests - string_to_array(0/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc,def,ghi]"]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":["[\"abc\",\"def\",\"ghi\"]"]}]}'
+    ),
+    pair(
+      'FuncTests - string_to_array(1/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc]"]}]}\n'+
+      'Actual - {"columnNames":["result"],"rows":[{"values":["[\"abc\"]"]}]}'
     )
   ]->newMap()->cast(@Map<String, String>)
 }

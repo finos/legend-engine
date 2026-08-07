@@ -290,6 +290,8 @@ public class TestPostgresParity
     @TestFactory
     Collection<DynamicTest> parityTests()
     {
+        // Set this system property to filter tests: -Dtest.filter=string_to_array__txt_txt__from_table
+        String testFilter = System.getProperty("test.filter");
         List<DynamicTest> tests = new ArrayList<>();
         for (String testFile : TEST_FILES)
         {
@@ -301,6 +303,11 @@ public class TestPostgresParity
             String category = testFile.replace("parity-tests/", "").replace(".yaml", "");
             for (TestCaseLoader.TestCase tc : file.tests)
             {
+                // Apply filter if specified
+                if (testFilter != null && !tc.id.contains(testFilter))
+                {
+                    continue;
+                }
                 tests.add(DynamicTest.dynamicTest(tc.id + " [TDS]", () -> runTest(tc, category, "TDS")));
                 tests.add(DynamicTest.dynamicTest(tc.id + " [Relation]", () -> runTest(tc, category, "Relation")));
             }
@@ -344,9 +351,10 @@ public class TestPostgresParity
         }
         catch (Exception e)
         {
-            report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, null, "Rewrite failed: " + e.getMessage(), null));
+            String errorMsg = "Rewrite failed: " + e.getMessage();
+            report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, null, errorMsg, null));
             statusUpdater.recordResult(tc.id, path, "ERROR");
-            assertNoRegression(tc, path, "ERROR");
+            assertNoRegression(tc, path, "ERROR", errorMsg);
             return;
         }
         ResultMatrix actual;
@@ -356,9 +364,10 @@ public class TestPostgresParity
         }
         catch (Exception e)
         {
-            report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, rewrittenSql, e.getMessage(), null));
+            String errorMsg = e.getMessage();
+            report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, rewrittenSql, errorMsg, null));
             statusUpdater.recordResult(tc.id, path, "ERROR");
-            assertNoRegression(tc, path, "ERROR");
+            assertNoRegression(tc, path, "ERROR", errorMsg);
             return;
         }
         boolean hasOrderBy = tc.sql.toUpperCase().contains("ORDER BY");
@@ -369,27 +378,32 @@ public class TestPostgresParity
         {
             report.record(new ParityReport.TestResult(tc.id, category, path, "PASS", tc.sql, rewrittenSql, null, null));
             statusUpdater.recordResult(tc.id, path, "PASS");
-            assertNoRegression(tc, path, "PASS");
+            assertNoRegression(tc, path, "PASS", null);
         }
         else
         {
             report.record(new ParityReport.TestResult(tc.id, category, path, "FAIL", tc.sql, rewrittenSql, null, comparison.getDiffs(), expectedCmp, actualCmp));
             statusUpdater.recordResult(tc.id, path, "FAIL");
-            assertNoRegression(tc, path, "FAIL");
+            assertNoRegression(tc, path, "FAIL", null);
         }
     }
 
-    private void assertNoRegression(TestCaseLoader.TestCase tc, String path, String actualStatus)
+    private void assertNoRegression(TestCaseLoader.TestCase tc, String path, String actualStatus, String errorMessage)
     {
         String expectedStatus = "TDS".equals(path) ? tc.expected_tds_status : tc.expected_rel_status;
         if (expectedStatus == null || expectedStatus.equals(actualStatus))
         {
             return;
         }
+        
+        // Simplify error message for display - extract the meaningful part
+        String simplifiedError = errorMessage != null ? simplifyErrorForDisplay(errorMessage) : null;
+        
         if ("PASS".equals(expectedStatus))
         {
+            String errorInfo = simplifiedError != null ? " Error: " + simplifiedError : "";
             throw new AssertionError("REGRESSION: " + tc.id + "|" + path + " was expected PASS, now " + actualStatus +
-                    ". If this is intentional, update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
+                    "." + errorInfo + " If this is intentional, update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
         }
         if ("PASS".equals(actualStatus) && !Boolean.getBoolean("parity.ignoreFixDetection"))
         {
@@ -397,9 +411,104 @@ public class TestPostgresParity
                     ", now PASS. Update the test's expected_" + path.toLowerCase() + "_status in the YAML file to PASS.");
         }
         // Exact-status mismatch (e.g. expected FAIL but got ERROR, or expected ERROR but got FAIL)
+        String errorInfo = simplifiedError != null ? "\n  Error: " + simplifiedError : "";
         throw new AssertionError("STATUS MISMATCH: " + tc.id + "|" + path + " was expected " + expectedStatus +
-                ", but got " + actualStatus +
-                ". Update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
+                ", but got " + actualStatus + "." + errorInfo +
+                "\n  Update the test's expected_" + path.toLowerCase() + "_status in the YAML file.");
+    }
+    
+    /**
+     * Simplifies verbose error messages for display in test assertions.
+     * Extracts the meaningful part of Legend SQL error messages.
+     */
+    private String simplifyErrorForDisplay(String error)
+    {
+        if (error == null)
+        {
+            return null;
+        }
+
+        // Strategy 1: Find the "message" field in embedded JSON and extract the meaningful part
+        int msgIdx = error.indexOf("\"message\"");
+        if (msgIdx >= 0)
+        {
+            int colonIdx = error.indexOf(':', msgIdx + 9);
+            if (colonIdx >= 0)
+            {
+                int openQuote = error.indexOf('"', colonIdx + 1);
+                if (openQuote >= 0)
+                {
+                    // Find the closing quote — must handle escaped quotes
+                    StringBuilder msgContent = new StringBuilder();
+                    boolean escaped = false;
+                    for (int i = openQuote + 1; i < error.length(); i++)
+                    {
+                        char c = error.charAt(i);
+                        if (escaped)
+                        {
+                            msgContent.append(c);
+                            escaped = false;
+                        }
+                        else if (c == '\\')
+                        {
+                            escaped = true;
+                        }
+                        else if (c == '"')
+                        {
+                            // Found closing quote
+                            String msg = msgContent.toString();
+                            // Strip "PureAssertFailException: Assert failure at (...), " prefix
+                            int assertComma = msg.indexOf("), ");
+                            if (assertComma >= 0 && msg.contains("Assert failure at"))
+                            {
+                                String inner = msg.substring(assertComma + 3);
+                                // Remove wrapping escaped quotes if present
+                                if (inner.startsWith("\\\""))
+                                {
+                                    inner = inner.substring(2);
+                                }
+                                if (inner.endsWith("\\\""))
+                                {
+                                    inner = inner.substring(0, inner.length() - 2);
+                                }
+                                return inner.replace("\\\"", "\"");
+                            }
+                            // Strip exception class prefix
+                            msg = msg.replaceFirst("^\\w+Exception:\\s*", "");
+                            return msg.replace("\\\"", "\"");
+                        }
+                        else
+                        {
+                            msgContent.append(c);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Strategy 2: Strip "Where: org.finos..." stack trace suffix
+        int whereIdx = error.indexOf("\n  Where:");
+        if (whereIdx < 0)
+        {
+            whereIdx = error.indexOf("\nWhere:");
+        }
+        if (whereIdx > 0)
+        {
+            return error.substring(0, whereIdx).trim();
+        }
+
+        // Strategy 3: Return first line only if very long
+        if (error.length() > 300)
+        {
+            int newlineIdx = error.indexOf('\n');
+            if (newlineIdx > 0 && newlineIdx < 300)
+            {
+                return error.substring(0, newlineIdx).trim();
+            }
+            return error.substring(0, 300) + "...";
+        }
+
+        return error;
     }
 
     private ResultMatrix executeLegendQuery(String sql) throws Exception

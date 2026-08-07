@@ -6,12 +6,14 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_date_plus_months
     sql: "SELECT d + INTERVAL '1 month' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
     feature: "date + interval"
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_date_plus_years
     sql: "SELECT d + INTERVAL '1 year' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
     feature: "date + interval"
@@ -26,6 +28,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_date_minus_months
     sql: "SELECT d - INTERVAL '3 months' AS result FROM dates WHERE d IS NOT NULL ORDER BY 1"
     feature: "date - interval"
@@ -40,12 +43,14 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_ts_plus_minutes
     sql: "SELECT ts + INTERVAL '30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
     feature: "timestamp + interval"
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_ts_plus_seconds
     sql: "SELECT ts + INTERVAL '90 seconds' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
     feature: "timestamp + interval"
@@ -60,6 +65,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_ts_minus_minutes
     sql: "SELECT ts - INTERVAL '30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
     feature: "timestamp - interval"
@@ -90,6 +96,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
   - id: interval_divide_scalar
     sql: "SELECT INTERVAL '1 day' / 2 AS result FROM dates WHERE id = 1"
     feature: "interval / scalar"
@@ -104,6 +111,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: FAIL
     expected_rel_status: FAIL
+
   - id: interval_compound_time
     sql: "SELECT ts + INTERVAL '1 day 2 hours 30 minutes' AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
     feature: "compound interval literal"
@@ -118,6 +126,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_in_where_ts
     sql: "SELECT ts AS result FROM dates WHERE ts > NOW() - INTERVAL '10 years' AND ts IS NOT NULL ORDER BY 1"
     feature: "interval in WHERE"
@@ -132,6 +141,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
   - id: interval_extract_days
     sql: "SELECT EXTRACT(DAY FROM ts - TIMESTAMP '2020-01-01') AS result FROM dates WHERE ts IS NOT NULL ORDER BY 1"
     feature: "EXTRACT from interval"
@@ -146,6 +156,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
   - id: interval_min_date_minus
     sql: "SELECT MIN(d - INTERVAL '1 month') AS result FROM dates WHERE d IS NOT NULL"
     feature: "aggregate on date-interval"
@@ -160,6 +171,7 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: BUG
     expected_rel_status: BUG
+
   - id: interval_column_plus_ts
     sql: "SELECT ts + i AS result FROM dates WHERE ts IS NOT NULL AND i IS NOT NULL ORDER BY 1"
     feature: "timestamp + interval column"
@@ -174,4 +186,3 @@ tests:
     category: "interval_arithmetic"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
-

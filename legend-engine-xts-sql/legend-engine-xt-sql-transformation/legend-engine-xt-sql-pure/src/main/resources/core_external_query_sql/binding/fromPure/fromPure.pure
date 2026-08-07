@@ -917,8 +917,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let relation = $context.relation->isTrue();
 
 
-  assert($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
-  assert($window.windowFrame->isEmpty() || $context.relation->isTrue(), | 'window frame not yet supported');
+  unsupported($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
+  assertRelation($window.windowFrame->isEmpty() || $context.relation->isTrue(), 'window frame');
 
   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
   let sorts = $window.orderBy->map(si | $si->createSortItemFunction($context));
@@ -966,7 +966,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
           let map = $extacted.map->match([
             q:QualifiedNameReference[1] | $q.name,
-            e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression'); ^QualifiedName();
+            e:meta::external::query::sql::metamodel::Expression[1] | unsupported('unsupported window aggregation expression'); ^QualifiedName();
           ]);
 
           let mapColumn = $context.columnByNameParts($map.parts, true).name;
@@ -1070,7 +1070,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     i:DoubleLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
     i:IntervalLiteral[1] | fail('interval range not currently supported'); [];,
     i:meta::external::query::sql::metamodel::Expression[0] | if ($f.type == FrameBoundType.CURRENT_ROW, | iv(0), | []),
-    i:meta::external::query::sql::metamodel::Expression[*] | fail('unsupported frame bound value'); [];
+    i:meta::external::query::sql::metamodel::Expression[*] | unsupported('unsupported frame bound value'); [];
   ]);
 }
 
@@ -1102,7 +1102,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(e:meta::external::query::sql::metamodel::Expression[1]):Boolean[1]
 {
-  assert($e->instanceOf(FunctionCall), 'unsupported aggregation');
+  unsupported($e->instanceOf(FunctionCall), | 'unsupported aggregation');
   let functionCall = $e->cast(@FunctionCall);
   let processor = functionProcessor($functionCall.name);
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name, []) + ' is not currently supported as aggregate function');
@@ -1312,16 +1312,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   assertRelation($context.relation, 'values');
   assert($values.rows->forAll(r | $r.values->size() == 1), | 'only single value values currently supported');
-  assertEquals(1, $context.columns->size(), | ' a single column must be present in scope for values support');
+  assertEquals(1, $context.aliasColumns->size(), | ' a single column must be present in scope for values support');
 
   let table = $values.rows->map(r | $r.values->toOne()->processExpression(rowExpressionContext($context), $context));
 
-  let column = $context.columns->at(0).name;
+  let column = $context.aliasColumns->toOne();
 
   let commonType = $table.genericType.rawType->bestCommonType();
   let type = buildRelationType(newRelationColumn($column, $commonType, ZeroOne));
 
-  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $type, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $column))]);
+  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $type, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $context.aliasColumns->toOne()))]);
 
   clone(^$context(expression = $flatten), $context);
 }
@@ -1372,7 +1372,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let context = ^$_context(debug = $_context.debug->indent());
 
   // 1. Process the left side normally
-  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('join_' + toString($context.id + 2)), root = false, id = $context.id + 2));
+  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('lateral_' + toString($context.id + 2)), root = false, id = $context.id + 2));
   let left = wrapWithFrom($leftContext);
 
   // 2. Create lateral lambda variable with the left relation's type
@@ -1388,12 +1388,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   // 4. Unwrap LateralRelation (preserving alias) and process with lateral scope
   let unwrapped = $join.right->unwrapLateral();
+  let contexts = $context.contexts->concatenate($left)->concatenate($left.contexts);
   let lateralContext = ^$context(
-    name = $context.name->orElse('join_' + toString($context.id + 3)),
+    name = $context.name->orElse('lateral_' + toString($context.id + 3)),
     root = false,
     id = $context.id + 3,
     lateralOuterAliases = $outerAliases,
-    contexts = $context.contexts->concatenate($left)->concatenate($left.contexts)
+    contexts = $contexts,
+    columns = $contexts.columns
   );
 
   let rightContext = processRelation($unwrapped, $lateralContext);
@@ -1442,13 +1444,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     r:Relation[1] | $context.name
   ]);
 
-  let columns = if ($aliased.columnNames->isEmpty(), | $context.columns, | $aliased.columnNames->map(c | ^QueryColumn(name = $c)));
+  let processed = processRelation($aliased.relation, ^$context(name = $name, aliasColumns = if ($aliased.columnNames->isEmpty(), | $name, | $aliased.columnNames)));
 
-  let processed = processRelation($aliased.relation, ^$context(name = $name, columns = $columns));
-
+  let columns = if ($aliased.columnNames->isEmpty(), | $processed.columns, | $aliased.columnNames->map(c | ^QueryColumn(name = $c)));
   let aliases = if ($aliased.columnNames->isEmpty(), | $processed.aliases, | $aliased.columnNames->map(c | ^SQLColumnAlias(name = $c)));
 
-  ^$processed(name = $aliased.alias, aliases = $aliases);
+  ^$processed(name = $aliased.alias, aliases = $aliases, columns = $columns);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processDuplicateRenames(names:String[*], suffix:String[1], context:SqlTransformContext[1]): SqlTransformContext[1]
@@ -1546,7 +1547,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER),
     pair(JoinType.CROSS, | meta::pure::functions::relation::JoinKind.INNER),
     pair(JoinType.FULL, | meta::pure::functions::relation::JoinKind.FULL)
-  ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
+  ]->getValue($joinType, | unsupported('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1763,7 +1764,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
         assert($processor->isNotEmpty(), 'No source or known table function found for type ' + $type);
 
-        let expContext = expressionContext([], ^Map<String, VariableExpression>(), $_context.relation->isTrue());
+        let expContext = if ($_context.lateralOuterAliases->isNotEmpty(),
+          | let lateralVar = $_context.lateralOuterAliases->first().second;
+            expressionContext($lateralVar, $_context.lateralOuterAliases->newMap(), $_context.relation->isTrue());,
+          | expressionContext([], ^Map<String, VariableExpression>(), $_context.relation->isTrue()));
 
         let args = $tableFunc.functionCall.arguments->map(a | $a->processExpression($expContext, $context));
         let expression = $processor->toOne().transform->eval($args->evaluateAndDeactivate(), $tableFunc.functionCall, $expContext, $context);
@@ -2016,7 +2020,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let lambda = lambda($functionType, $expression);
         pair($lambda, $name);,
       s:SelectItem[1] |
-        fail('Unsupported SelectItem type');
+        unsupported('Select item type');
         pair(lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Any)), iv(1)), '');
     ])
   );
@@ -2345,7 +2349,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLikePredicate(l:LikePredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   assert($l.escape->isEmpty() || $l.escape->toOne()->instanceOf(StringLiteral), | 'like escape must be string literal');
-  assertFalse($l.ignoreCase, | 'ilike currently not supported');
+  unsupported($l.ignoreCase->isFalse(), | 'ilike currently not supported');
   assert($l.pattern->instanceOf(StringLiteral), | 'like pattern must be string literal');
 
   let pattern = $l.pattern->cast(@StringLiteral).value;
@@ -2362,14 +2366,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                             ->replace($escape + '_', $escapedUnderscorePlaceholder);
 
   // Validate: no unescaped _ allowed
-  assert(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
+  unsupported(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
 
   let hasLeading = $neutralized->startsWith('%');
   let hasTrailing = $neutralized->endsWith('%') && ($neutralized->length() > if($hasLeading, |1, |0));
 
   // Strip leading/trailing unescaped % and assert none remain in the middle
   let inner = $neutralized->substring(if($hasLeading, |1, |0), $neutralized->length() - if($hasTrailing, |1, |0));
-  assert(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
+  unsupported(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
 
   // Build the literal by resolving placeholders back to their unescaped characters
   let literal = $inner->replace($escapedEscapePlaceholder, $escape)
@@ -2439,7 +2443,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCurrentTime(c:CurrentTime[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug(|'processCurrentTime', $context.debug);
-  assert($c.precision->isEmpty(), | ' precision currently unsupported');
+  unsupported($c.precision->isEmpty(), | ' current time precision');
 
   let func = [
     pair(CurrentTimeType.DATE, today__StrictDate_1_),
@@ -2528,6 +2532,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processQualififedNameReference', $context.debug);
 
+
   createTdsColumn($q.name, $expContext.var($q.name), $expContext, $context);
 }
 
@@ -2549,7 +2554,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($expression.genericType.rawType == Variant,
     |
-      fail('casting variant currently unsupported');
+      unsupported('casting variant');
       //TODO this technically works, but in postgres you cannot cast a variant array
       let pureType = getCastType($type.innerType.name);
 
@@ -2982,7 +2987,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   $args->match([
     v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
-    a:Any[*] | fail('Unsupported arg type'); Any;
+    a:Any[*] | unsupported('Unsupported arg type'); Any;
   ]);
 }
 
@@ -3021,7 +3026,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::assertRelation(relation:Boolean[0..1], func:String[1]):Boolean[1]
 {
-  assert($relation->isTrue(), | 'function ' + $func + ' only supported on relation inputs');
+  unsupported($relation->isTrue(), | $func + ' only supported on relation inputs');
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getNonNullArguments(args:ValueSpecification[*]):ValueSpecification[*]
@@ -3180,7 +3185,7 @@ function <<access.private>>  meta::external::query::sql::transformation::queryTo
 
 function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toCharUnsupported(func:String[1]):ValueSpecification[1]
 {
-  fail($func + ' is not supported to_char token');
+  unsupported($func + ' is not supported to_char token');
   iv(1);
 }
 
@@ -3586,7 +3591,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let value = $c.right->match([
     s:StringLiteral[1] | $enum->extractEnumValue($s.value),
-    a:meta::external::query::sql::metamodel::Expression[0..1] | fail('unsupported enumeration comparison, right hand side must be a literal value'); [];
+    a:meta::external::query::sql::metamodel::Expression[0..1] | unsupported('unsupported enumeration comparison, right hand side must be a literal value'); [];
   ]);
 
   let index = $enumValues->indexOf($value->toOne().name);
@@ -4117,6 +4122,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   failOnInvalidColumns: Boolean[1] = false;
   compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1];
   lateralOuterAliases: Pair<String, VariableExpression>[*];
+  aliasColumns:String[*];
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);

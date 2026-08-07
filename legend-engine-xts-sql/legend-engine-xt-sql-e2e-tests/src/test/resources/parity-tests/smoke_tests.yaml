@@ -1,6 +1,5 @@
-# Smoke tests — basic SQL operations.
-# Schema is defined separately in schema.yaml.
 tests:
+# Schema is defined separately in schema.yaml.
   - id: smoke_select_literal
     sql: "SELECT 1 AS num"
     expected_tds_status: PASS

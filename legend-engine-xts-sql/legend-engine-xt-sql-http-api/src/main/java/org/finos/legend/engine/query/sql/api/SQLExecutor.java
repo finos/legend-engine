@@ -500,14 +500,7 @@ public class SQLExecutor
 
         MutableMultimap<String, TableSource> grouped = Iterate.groupBy(tables, TableSource::getType);
 
-        boolean schemasValid = Iterate.allSatisfy(grouped.keySet(), providers::containsKey);
-
-        if (!schemasValid)
-        {
-            throw new IllegalArgumentException("Unsupported schema types [" + String.join(", ", grouped.keySet().select(k -> !providers.containsKey(k))) + "], supported types: [" + String.join(", ", providers.keySet()) + "]");
-        }
-
-        RichIterable<SQLSourceResolvedContext> resolved = grouped.keySet().collect(k -> resolve(grouped.get(k), context, providers.get(k), identity));
+        RichIterable<SQLSourceResolvedContext> resolved = grouped.keySet().select(providers::containsKey).collect(k -> resolve(grouped.get(k), context, providers.get(k), identity));
 
         MutableList<PureModelContext> allContexts = IterableIterate.flatCollect(resolved, SQLSourceResolvedContext::getPureModelContexts);
         boolean allCompatiblePointers = allContexts.allSatisfy(p -> p instanceof PureModelContextPointer && allContexts.allSatisfy(p2 -> ((PureModelContextPointer) p).safeEqual(p, p2)));
