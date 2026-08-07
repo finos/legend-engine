@@ -34,6 +34,7 @@ meta::pure::functions::date::tests::testTimeBucketSeconds_Function_1__Boolean_1_
 - [ ] Test organization - tests should be granular such that a failure can be easily isolated. E.g. testing Float inputs should be declared in a separate
 test from one that tests for Integer inputs. That way, the test failure clearly isolates what may be wrong.
 - [ ] Did you account for edge cases? e.g. if testing Number inputs, did you try very large/small numbers?
+- [ ] Is the test really about one function? A test that only fails when two functions are combined belongs in a `composition.pure` file instead — see [Composition Tests](composition-tests.md). Those tests still carry a `'''...'''` literal, but note that they are neither counted nor published, so record anything cross-cutting on that page as well.
 
 #### Error Messages
 PCT measure the level of cross-target support for a given Platform Function. When contributing to PCT on Legend, keep this preference order in mind:

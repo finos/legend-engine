@@ -10,6 +10,8 @@ we specify expectations around the api. This guide enables you to contribute pla
 | Add a function implemented in Java (native) | [Native How-To](native-howto.md) |
 | Make my function work on databases | [Wiring How-To](wiring-howto.md) |
 | Run PCT tests and handle failures | [Expected Failures How-To](expected-failures-howto.md) |
+| Document a function I added | [PCT Function Documentation](pct-documentation.md) |
+| Understand a test in a `composition.pure` file | [Composition Tests](composition-tests.md) |
 | Understand concepts like routing, DynaFunction | [Concepts & Glossary](concepts-glossary.md) |
 
 ## Development Setup
