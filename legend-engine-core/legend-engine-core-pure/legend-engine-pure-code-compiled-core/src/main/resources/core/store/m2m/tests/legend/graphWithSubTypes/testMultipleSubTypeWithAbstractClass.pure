@@ -1,0 +1,126 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::extension::*;
+import meta::core::runtime::*;
+import meta::pure::graphFetch::execution::*;
+import meta::external::store::model::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::TData
+{
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::TPayment extends TData
+{
+ paymentField: String[0..1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::TAdjust extends TPayment
+{
+ adjustField: String[1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::TWrapper
+{
+ data: TData[0..1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SData
+{
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SPayment extends SData
+{
+ paymentField: String[0..1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SAdjust extends SPayment
+{
+ adjustField: String[1];
+}
+Class meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SWrapper
+{
+ data: SData[1];
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_29_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::mostSpecific::testMostSpecificWins():Boolean[1]
+{
+ let tree = #{
+    TWrapper {
+       data->subType(@TAdjust) {
+          paymentField,
+          adjustField
+       }
+    }
+ }#;
+ let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::testMappingMostSpecific;
+ let query   = {|TWrapper.all()->graphFetch($tree)->serialize($tree)};
+ let runtime = ^Runtime(
+    connectionStores = [
+       ^ConnectionStore(
+          element = ^ModelStore(),
+          connection = ^JsonModelConnection(
+             class = SWrapper,
+             url = 'data:application/json,[{"data":{"paymentField":"P1","adjustField":"A1","@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SAdjust"}}]'
+          )
+       )]);
+ let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
+ assertJsonStringsEqual('[{"data":{"paymentField":"P1","adjustField":"A1"}}]', $result);
+}
+
+// Abstract 'data' routes for a single-match base input
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_29_0'}
+meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::mostSpecific::testAbstractPropertyRoutes():Boolean[1]
+{
+ let tree = #{
+    TWrapper {
+       data->subType(@TPayment) {
+          paymentField
+       }
+    }
+ }#;
+ let mapping = meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::testMappingMostSpecific;
+ let query   = {|TWrapper.all()->graphFetch($tree)->serialize($tree)};
+ let runtime = ^Runtime(
+    connectionStores = [
+       ^ConnectionStore(
+          element = ^ModelStore(),
+          connection = ^JsonModelConnection(
+             class = SWrapper,
+             url = 'data:application/json,[{"data":{"paymentField":"P1","@type":"meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::SPayment"}}]'
+          )
+       )]);
+ let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
+ assertJsonStringsEqual('[{"data":{"paymentField":"P1"}}]', $result);
+}
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::mostSpecific::testMappingMostSpecific
+(
+ *TWrapper: Pure
+ {
+    ~src SWrapper
+    data[PAY]: if($src.data->instanceOf(SPayment), | $src.data->cast(@SPayment), | []),
+    data[ADJ]: if($src.data->instanceOf(SAdjust), | $src.data->cast(@SAdjust), | [])
+ }
+ TPayment[PAY]: Pure
+ {
+    ~src SPayment
+    paymentField: $src.paymentField
+ }
+ TAdjust[ADJ]: Pure
+ {
+    ~src SAdjust
+    paymentField: $src.paymentField,
+    adjustField: $src.adjustField
+ }
+)
