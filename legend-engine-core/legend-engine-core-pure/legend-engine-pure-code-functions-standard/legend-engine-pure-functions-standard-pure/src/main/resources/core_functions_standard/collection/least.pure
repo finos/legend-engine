@@ -15,16 +15,6 @@
 import meta::pure::test::pct::*;
 
 '''
-As `least(X[1..*]):X[1]`, for a collection that may be empty — an empty collection gives empty.
-'''
-function
-  <<PCT.function>>
-meta::pure::functions::collection::least<X>(values : X[*]):X[0..1]
-{
-    min($values);
-}
-
-'''
 The smallest value in a collection, by the type's natural order.
 
 A synonym for `min(X[1..*]):X[1]`, named after the SQL function of the same name. Supports every
@@ -47,6 +37,16 @@ least([1, 5, 3])   // 1
 function
   <<PCT.function>>
 meta::pure::functions::collection::least<X>(values : X[1..*]):X[1]
+{
+    min($values);
+}
+
+'''
+As `least(X[1..*]):X[1]`, for a collection that may be empty — an empty collection gives empty.
+'''
+function
+  <<PCT.function>>
+meta::pure::functions::collection::least<X>(values : X[*]):X[0..1]
 {
     min($values);
 }
