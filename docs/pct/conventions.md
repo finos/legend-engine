@@ -12,7 +12,7 @@ It is critical that utmost care is taken when deciding on:
     - All PCT tests for the PCT function belong in the same file
 - package names are all lower-case
 - function names are camelCase, with the first letter lower-case
-- function signatures **must be documented** with a `'''...'''` documentation literal — see [Writing PCT function documentation](pct-documentation.md) for the template and rules. The older `doc.doc` tagged value form is being replaced; a declaration may not carry both.
+- function signatures **must be documented** with a `'''...'''` documentation literal — see [Writing PCT function documentation](pct-documentation.md) for the template and rules. The older `doc.doc` tagged value form has been converted across every PCT declaration in the engine repositories; a declaration may not carry both, so adding a literal to a signature that still has one means deleting the tagged value in the same edit. `grep -rn "doc\.doc" --include='*.pure' <module>/src/main/resources` should come back empty for a converted repository.
 
 ### Practices
 #### PCT Tests

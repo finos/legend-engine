@@ -30,6 +30,13 @@ empty when there are no pairs.
 
 **Returns** the population covariance, or empty.
 
+**Examples**
+```pure
+covarPopulation([1, 2], [10, 20])   // 2.5
+covarPopulation([1, 2], [30, 10])   // -5.0
+covarPopulation([1], [])            // empty, no pairs
+```
+
 **See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
 `corr(Number[*], Number[*]):Number[0..1]`
 '''

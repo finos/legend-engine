@@ -29,6 +29,13 @@ Returns empty when there are fewer than two pairs, since the divisor would be ze
 
 **Returns** the sample covariance, or empty.
 
+**Examples**
+```pure
+covarSample([1, 2], [10, 20])   // 5.0, twice the population figure over two pairs
+covarSample([1, 2], [30, 10])   // -10.0
+covarSample([1], [10])          // empty, one pair is not enough
+```
+
 **See also** `covarPopulation(Number[*], Number[*]):Number[0..1]`,
 `corr(Number[*], Number[*]):Number[0..1]`
 '''

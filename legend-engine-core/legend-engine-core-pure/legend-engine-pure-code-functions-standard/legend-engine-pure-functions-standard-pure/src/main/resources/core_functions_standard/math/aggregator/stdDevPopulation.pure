@@ -28,6 +28,12 @@ Takes `[1..*]`, so an empty collection will not compile.
 
 **Returns** the population standard deviation.
 
+**Examples**
+```pure
+stdDevPopulation([1, 2])   // 0.5
+stdDevPopulation([2, 4])   // 1.0
+```
+
 **See also** `stdDevSample(Number[1..*]):Number[1]`,
 `variancePopulation(Number[*]):Number[1]`
 '''
@@ -63,6 +69,11 @@ the current row, making this a running figure.
 - `colToAgg` — the column to measure.
 
 **Returns** the population standard deviation within the window.
+
+**Examples**
+```pure
+$rel->extend(over(~grp), ~spread : {p, w, r| $p->stdDevPopulation($w, $r, ~value)})
+```
 
 **See also** `stdDevPopulation(Number[1..*]):Number[1]`,
 `zScore(Relation<T>[1], _Window<T>[1], T[1], ColSpec<(?:Number)⊆T>[1]):Float[1]`

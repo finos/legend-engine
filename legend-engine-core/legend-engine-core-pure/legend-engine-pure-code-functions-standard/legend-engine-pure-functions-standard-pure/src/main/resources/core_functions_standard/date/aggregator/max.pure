@@ -73,6 +73,12 @@ the `[1..*]` variant below returns `[1]` and needs no `toOne`.
 
 **Returns** the largest date, or empty when there are none.
 
+**Examples**
+```pure
+max([%2025-02-10, %2025-02-10T20:10:20])   // %2025-02-10T20:10:20
+max([]->cast(@Date))                       // empty
+```
+
 **See also** `max(Date[1..*]):Date[1]`,
 `max(Date[1], Date[1]):Date[1]`,
 `min(Date[*]):Date[0..1]`

@@ -79,6 +79,11 @@ row, making this a running average rather than a partition-wide one.
 
 **Returns** the mean of the column within the window.
 
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->ascending()), ~runningAvg : {p, w, r| $p->average($w, $r, ~value)})
+```
+
 **See also** `average(Number[*]):Float[1]`,
 `meta::pure::functions::relation::over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`
 '''

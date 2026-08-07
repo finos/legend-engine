@@ -37,6 +37,13 @@ there is nothing to divide by** — a `count` of 0, or of 1 with the bias correc
 
 **Returns** the covariance, or empty when it is undefined.
 
+**Examples**
+```pure
+covariance([1, 2], [10, 20], 2, true)    // 5.0,  the sample form
+covariance([1, 2], [10, 20], 2, false)   // 2.5,  the population form
+covariance([1], [10], 1, true)           // empty, count 1 with the correction on
+```
+
 **See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
 `covarPopulation(Number[*], Number[*]):Number[0..1]`,
 `corr(Number[*], Number[*]):Number[0..1]`

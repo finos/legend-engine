@@ -27,6 +27,16 @@ one. **An absent value renders as the text `null`**, not as an empty string.
 
 **Returns** the value as `#TDS` text.
 
+**Examples**
+```pure
+s('abc')   // 'abc', a plain string is passed through unquoted
+s(1)       // '1'
+s([])      // 'null', the four characters, not an empty string
+```
+
+A string containing `{` or `[` is the exception: it is wrapped in single quotes and its backslashes
+and quotes escaped, so that JSON-looking text survives being read back out of `#TDS`.
+
 **See also** `s(Any[0..1], Type[0..1]):String[1]`,
 `toString(Relation<T>[1]):String[1]`
 '''

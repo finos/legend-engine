@@ -33,6 +33,11 @@ backwards.
 
 **Returns** the row at that offset, or empty when it falls outside the partition.
 
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->ascending()), ~twoBack : {p, w, r| $p->offset($r, -2).name})
+```
+
 **See also** `lag(Relation<T>[1], T[1]):T[0..1]`,
 `lead(Relation<T>[1], T[1]):T[0..1]`,
 `nth(Relation<T>[1], _Window<T>[1], T[1], Integer[1]):T[0..1]`

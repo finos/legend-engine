@@ -24,6 +24,12 @@ the same result.
 
 **Returns** a new GUID, as a string.
 
+**Examples**
+```pure
+// no example can pin an output — every call gives a different one
+$rel->extend(~uid : x | generateGuid())   // a distinct identifier on each row
+```
+
 **See also** `meta::pure::functions::hash::hashCode(Any[*]):Integer[1]`
 '''
 native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::functions::string::generation::generateGuid():String[1];
