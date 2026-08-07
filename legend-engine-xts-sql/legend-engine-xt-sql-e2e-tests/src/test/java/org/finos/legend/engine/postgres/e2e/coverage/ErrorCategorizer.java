@@ -39,6 +39,8 @@ public class ErrorCategorizer
 
     static
     {
+        // Order matters: more specific patterns first
+        PATTERNS.put(Pattern.compile("^Unsupported"), UNSUPPORTED_SYNTAX);
         PATTERNS.put(Pattern.compile("No function matches the given name"), FUNCTION_NOT_SUPPORTED);
         PATTERNS.put(Pattern.compile("No SQL translation exists for the PURE function"), FUNCTION_NO_SQL_TRANSLATION);
         PATTERNS.put(Pattern.compile("function \\S+ is not yet supported"), FUNCTION_NO_SQL_TRANSLATION);

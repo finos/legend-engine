@@ -6,54 +6,228 @@ tests:
     category: "lateral_joins"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
   - id: lateral_cross_subquery
     sql: "SELECT p.name, sub.colleague FROM persons p CROSS JOIN LATERAL (SELECT p2.name AS colleague FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.id != p.id) sub WHERE p.id <= 3 ORDER BY 1, 2"
     feature: "CROSS JOIN LATERAL subquery"
     category: "lateral_joins"
-
-  # LEFT JOIN LATERAL
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # LEFT JOIN LATERAL
   - id: lateral_left_join
     sql: "SELECT p.name, sub.top_sal FROM persons p LEFT JOIN LATERAL (SELECT MAX(salary) AS top_sal FROM persons p2 WHERE p2.dept_id = p.dept_id) sub ON TRUE WHERE p.id <= 5 ORDER BY 1"
     feature: "LEFT JOIN LATERAL"
     category: "lateral_joins"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
   - id: lateral_left_join_no_match
     sql: "SELECT p.name, sub.colleague FROM persons p LEFT JOIN LATERAL (SELECT p2.name AS colleague FROM persons p2 WHERE p2.dept_id = p.dept_id AND p2.id != p.id AND p2.salary > 999999) sub ON TRUE WHERE p.id <= 3 ORDER BY 1, 2"
     feature: "LEFT JOIN LATERAL with no match"
     category: "lateral_joins"
-
-  # LATERAL with LIMIT (top-N per group)
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # LATERAL with LIMIT (top-N per group)
   - id: lateral_top_n
     sql: "SELECT d.name AS dept, sub.person_name FROM departments d CROSS JOIN LATERAL (SELECT p.name AS person_name FROM persons p WHERE p.dept_id = d.id ORDER BY p.salary DESC LIMIT 2) sub ORDER BY 1, 2"
     feature: "LATERAL top-N per group"
     category: "lateral_joins"
-
-  # Function in FROM (implicit LATERAL)
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # Function in FROM (implicit LATERAL)
   - id: lateral_function_in_from
     sql: "SELECT g.val FROM GENERATE_SERIES(1, 5) AS g(val) ORDER BY 1"
     feature: "function in FROM"
     category: "lateral_joins"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
   - id: lateral_function_cross_join
     sql: "SELECT p.name, g.val FROM persons p, GENERATE_SERIES(1, 2) AS g(val) WHERE p.id <= 2 ORDER BY 1, 2"
     feature: "function in FROM with cross join"
     category: "lateral_joins"
-
-  # LATERAL with aggregation
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # LATERAL with aggregation
   - id: lateral_aggregate
     sql: "SELECT p.name, sub.dept_count FROM persons p CROSS JOIN LATERAL (SELECT COUNT(*) AS dept_count FROM persons p2 WHERE p2.dept_id = p.dept_id) sub WHERE p.id <= 5 ORDER BY 1"
     feature: "LATERAL with aggregation"
     category: "lateral_joins"
-
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # LATERAL UNNEST with array literals
+  - id: lateral_unnest_array_literal
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, 2, 3]) AS u(val) WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with array literal"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_string_array
+    sql: "SELECT p.name, u.skill FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY['Java', 'SQL', 'Python']) AS u(skill) WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with string array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_with_ordinality
+    sql: "SELECT p.name, u.val, u.ord FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[10, 20, 30]) WITH ORDINALITY AS u(val, ord) WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST with ordinality"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with correlated references
+  - id: lateral_unnest_correlated_size
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[p.age, p.age * 2, p.age * 3]) AS u(val) WHERE p.id <= 2 AND p.age IS NOT NULL ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with correlated column reference"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_correlated_conditional
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(CASE WHEN p.dept_id = 1 THEN ARRAY[1, 2] ELSE ARRAY[3, 4] END) AS u(val) WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with conditional array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LEFT JOIN LATERAL UNNEST
+  - id: lateral_unnest_left_join
+    sql: "SELECT p.name, u.val FROM persons p LEFT JOIN LATERAL UNNEST(ARRAY[1, 2]) AS u(val) ON TRUE WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "LEFT JOIN LATERAL UNNEST"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_left_join_empty_array
+    sql: "SELECT p.name, u.val FROM persons p LEFT JOIN LATERAL UNNEST(ARRAY[]::INTEGER[]) AS u(val) ON TRUE WHERE p.id = 1 ORDER BY 1, 2"
+    feature: "LEFT JOIN LATERAL UNNEST with empty array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with filtering
+  - id: lateral_unnest_with_where
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, 2, 3, 4, 5]) AS u(val) WHERE p.id = 1 AND u.val > 2 ORDER BY 2"
+    feature: "LATERAL UNNEST with WHERE clause on unnested value"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_with_join_condition
+    sql: "SELECT p.name, u.val FROM persons p LEFT JOIN LATERAL UNNEST(ARRAY[1, 2, 3]) AS u(val) ON u.val = p.dept_id WHERE p.id <= 3 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with join condition"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with aggregation
+  - id: lateral_unnest_aggregate_count
+    sql: "SELECT p.name, COUNT(*) AS cnt FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, 2, 3]) AS u(val) WHERE p.id <= 2 GROUP BY p.name ORDER BY 1"
+    feature: "LATERAL UNNEST with aggregation"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_aggregate_sum
+    sql: "SELECT p.name, SUM(u.val) AS total FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[p.dept_id, p.dept_id * 2]) AS u(val) WHERE p.id <= 3 AND p.dept_id IS NOT NULL GROUP BY p.name ORDER BY 1"
+    feature: "LATERAL UNNEST with SUM aggregation"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST multiple arrays
+  - id: lateral_unnest_multiple_arrays
+    sql: "SELECT p.name, u1.val AS val1, u2.val AS val2 FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, 2]) AS u1(val) CROSS JOIN LATERAL UNNEST(ARRAY['A', 'B']) AS u2(val) WHERE p.id = 1 ORDER BY 2, 3"
+    feature: "LATERAL UNNEST multiple arrays"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_nested
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL (SELECT val FROM UNNEST(ARRAY[1, 2, 3]) AS t(val) WHERE val > 1) AS u WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST in subquery"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with different data types
+  - id: lateral_unnest_decimal_array
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1.5, 2.5, 3.5]) AS u(val) WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST with decimal array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_mixed_expressions
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[p.id, p.id + 10, p.id + 20]) AS u(val) WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with expression array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST advanced patterns
+  - id: lateral_unnest_top_n_per_array_element
+    sql: "SELECT u.val, p.name FROM UNNEST(ARRAY[1, 2, 3]) AS u(val) CROSS JOIN LATERAL (SELECT name FROM persons WHERE dept_id = u.val ORDER BY salary DESC LIMIT 1) p ORDER BY 1"
+    feature: "LATERAL UNNEST for top-N per array element"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_with_case
+    sql: "SELECT p.name, u.val, CASE WHEN u.val > 2 THEN 'high' ELSE 'low' END AS category FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, 2, 3, 4]) AS u(val) WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST with CASE expression"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_self_join
+    sql: "SELECT p1.name, p2.name, u.val FROM persons p1 CROSS JOIN persons p2 CROSS JOIN LATERAL UNNEST(ARRAY[1, 2]) AS u(val) WHERE p1.id = 1 AND p2.id = 2 ORDER BY 3"
+    feature: "LATERAL UNNEST with self-join"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with NULL handling
+  - id: lateral_unnest_array_with_nulls
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, NULL, 3]) AS u(val) WHERE p.id = 1 ORDER BY 2 NULLS LAST"
+    feature: "LATERAL UNNEST with NULL values in array"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_coalesce
+    sql: "SELECT p.name, COALESCE(u.val, 0) AS val FROM persons p CROSS JOIN LATERAL UNNEST(ARRAY[1, NULL, 3]) AS u(val) WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST with COALESCE on unnested nulls"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # LATERAL UNNEST with STRING_TO_ARRAY
+  - id: lateral_unnest_string_to_array
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(STRING_TO_ARRAY('a,b,c', ',')) AS u(val) WHERE p.id = 1 ORDER BY 2"
+    feature: "LATERAL UNNEST with STRING_TO_ARRAY"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_string_to_array_correlated
+    sql: "SELECT p.name, u.val FROM persons p CROSS JOIN LATERAL UNNEST(STRING_TO_ARRAY(p.name, '')) AS u(val) WHERE p.id <= 2 ORDER BY 1, 2"
+    feature: "LATERAL UNNEST with STRING_TO_ARRAY on correlated column"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: lateral_unnest_string_to_array_delimiter
+    sql: "SELECT u.val FROM UNNEST(STRING_TO_ARRAY('one|two|three|four', '|')) AS u(val) ORDER BY 1"
+    feature: "LATERAL UNNEST with STRING_TO_ARRAY custom delimiter"
+    category: "lateral_joins"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

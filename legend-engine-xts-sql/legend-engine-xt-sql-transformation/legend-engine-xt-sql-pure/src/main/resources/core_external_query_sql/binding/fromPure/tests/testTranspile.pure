@@ -3177,7 +3177,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathUnsupported():Boolean[1]
 {
 
-  error('SELECT log(4, 10)', 'only base 10 supported for log function');
+  error('SELECT log(4, 10)', 'Unsupported: only base 10 supported for log function');
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMathFunctionsNullable():Boolean[1]
@@ -3632,10 +3632,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLikeUnsupported():Boolean[1]
 {
 
-  error('SELECT String like \'ab_cd\' FROM service."/service/service1"', 'currently unsupported like pattern: unescaped _ not supported, pattern: ab_cd');
-  error('SELECT String like \'ab%cd\' FROM service."/service/service1"', 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab%cd');
-  error('SELECT String like \'ab\\%cd\' ESCAPE \'!\' FROM service."/service/service1"', 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab\\%cd');
-  error('SELECT String like \'ab\\_cd\' ESCAPE \'!\' FROM service."/service/service1"', 'currently unsupported like pattern: unescaped _ not supported, pattern: ab\\_cd');
+  error('SELECT String like \'ab_cd\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: unescaped _ not supported, pattern: ab_cd');
+  error('SELECT String like \'ab%cd\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab%cd');
+  error('SELECT String like \'ab\\%cd\' ESCAPE \'!\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab\\%cd');
+  error('SELECT String like \'ab\\_cd\' ESCAPE \'!\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: unescaped _ not supported, pattern: ab\\_cd');
 }
 
 //PATTERN MATCHING
@@ -4319,15 +4319,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralTableFunction():Boolean[1]
 {
-  test(
-    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(ARRAY[5,1,2]) AS a',
+  test([
+    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(string_to_array(String, \',\')) AS value',
+    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(string_to_array(String, \',\')) AS a(value)'
+    ],
 
     [
       c({|
         meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
           ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
           ->lateral(r |
-              [5, 1, 2]->meta::pure::functions::relation::variant::flatten(~a)
+              $r.String->split(',')->meta::pure::functions::relation::variant::flatten(~value)
           )
           ->select(~[Boolean])
       })

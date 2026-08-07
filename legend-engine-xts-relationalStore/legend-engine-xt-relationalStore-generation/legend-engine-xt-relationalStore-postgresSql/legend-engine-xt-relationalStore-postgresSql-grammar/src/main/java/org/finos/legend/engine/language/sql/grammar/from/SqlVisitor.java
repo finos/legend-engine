@@ -1480,7 +1480,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         if (context.TRY_CAST() != null)
         {
-            return unsupported("Cast");
+            return unsupported("Try Cast");
         }
         else
         {

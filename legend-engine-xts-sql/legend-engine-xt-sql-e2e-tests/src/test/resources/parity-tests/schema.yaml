@@ -1,5 +1,3 @@
-# Shared schema definition for all parity tests.
-# Loaded explicitly before any test file — not dependent on file ordering.
 schema:
   tables:
     - name: persons

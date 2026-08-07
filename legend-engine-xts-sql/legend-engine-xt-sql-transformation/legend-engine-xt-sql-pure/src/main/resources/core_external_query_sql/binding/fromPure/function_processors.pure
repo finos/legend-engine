@@ -25,7 +25,7 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
       let commonType = $args.genericType.rawType->bestCommonType();
       let relationType = buildRelationType(newRelationColumn($ctx.name->toOne(), $commonType, ZeroOne));
 
-      sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $relationType, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.name->toOne()))]);
+      sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $relationType, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.aliasColumns->toOne()))]);
     }),
 
     misc('var', Relation, {args, fc, expCtx, ctx |
@@ -145,8 +145,8 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       math('floor', floor_Number_1__Integer_1_),
       math('ln', log_Number_1__Float_1_),
       math('log', Float, {args, fc, expCtx, ctx | 
-        assert($args->size() <=2, | 'invalid arguments to log function');
-        assert($args->size() == 1 || $args->at(0)->instanceOf(InstanceValue) && $args->at(0)->cast(@InstanceValue).values == 10, | 'only base 10 supported for log function');
+        unsupported($args->size() <= 2, | 'invalid arguments to log function');
+        unsupported($args->size() == 1 || $args->at(0)->instanceOf(InstanceValue) && $args->at(0)->cast(@InstanceValue).values == 10, | 'only base 10 supported for log function');
 
         let value = $args->match([
           v:ValueSpecification[1] | $v,
@@ -168,7 +168,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       math('tanh', tanh_Number_1__Float_1_),
       math('trunc', Integer, {args, fc, expCtx, ctx |
         //TODO replace with pure trunc function when implemented;
-        assert($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
+        unsupported($args->size() == 1, | 'trunc with defined decimal places is not currently supported');
 
         let condition = nullOrSfe(greaterThan_Number_1__Number_1__Boolean_1_, [$args->at(0), iv(0)])->evaluateAndDeactivate();
         let truth = nullOrSfe(floor_Number_1__Integer_1_, $args->at(0))->evaluateAndDeactivate();
@@ -296,12 +296,12 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         nullOrSfe($func, $args->at(1));
       }),
       date('localtimestamp', Date, {args, fc, expCtx, ctx |
-        assertEquals(0, $args->size(), 'only zero arg localtimestamp supported');
+        unsupported($args->size() == 0, | 'only zero arg localtimestamp supported');
 
         sfe(now__DateTime_1_, []);
       }),
       date('make_date', Date, {args, fc, expCtx, ctx |
-        assertEquals(3, $args->size(), 'incorrect number of args for make_date');
+        unsupported($args->size() == 3, | 'incorrect number of args for make_date');
 
         let year = $args->at(0)->reactivate()->toOne()->cast(@Integer);
         let month = $args->at(1)->reactivate()->toOne()->cast(@Integer);
@@ -313,7 +313,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
 
       date('make_timestamp', Date, {args, fc, expCtx, ctx |
-        assertEquals(6, $args->size(), 'incorrect number of args for make_timestamp');
+        assertEquals(6, $args->size(), | 'incorrect number of args for make_timestamp');
 
         let year = $args->at(0)->reactivate()->toOne()->cast(@Integer);
         let month = $args->at(1)->reactivate()->toOne()->cast(@Integer);
@@ -336,7 +336,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         if ($expCtx.relation->isTrue(),
           |
-            assert($filteredArgs->size() < 4, | 'maximum 3 non null arguments supported for coalesce ' + $filteredArgs->size()->toString() + ' supplied');
+            unsupported($filteredArgs->size() < 4, | 'maximum 3 non null arguments supported for coalesce ' + $filteredArgs->size()->toString() + ' supplied');
 
             let newArgs = if ($filteredArgs->isEmpty(), | $empty, | $filteredArgs);
 
@@ -378,33 +378,33 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
       array('array_position', Integer, {args, fc, expCtx, ctx |
         assertRelation($expCtx.relation, 'array_position');
-        assertEquals(2, $args->size(), 'only two arg array_position supported');
+        unsupported($args->size() == 2, | 'only two arg array_position supported');
 
         sfe(indexOf_T_MANY__T_1__Integer_1_, $args);
       }),
       array('array_length', Integer, {args, fc, expCtx, ctx |
         $args->at(1)->match([
-          i:InstanceValue[1] | assert($i.values == 1, 'only array_length with arg 1 supported')
+          i:InstanceValue[1] | unsupported($i.values == 1, | 'only array_length with arg 1 supported')
         ]);
 
         sfe(size_Any_MANY__Integer_1_, $args->at(0));
       }),
 
       array('string_to_array', String, {args, fc, expCtx, ctx | 
-        assertEquals(2, $args->size(), 'only string_to_array with arg 2 supported');
+        unsupported($args->size() == 2, | 'only string_to_array with arg 2 supported');
 
         sfe(split_String_1__String_1__String_MANY_, [$args->at(0), $args->at(1)]);
       }),
 
       //FORMAT
       format('to_char', String, {args, fc, expCtx, ctx |
-        assertEquals(2, $args->size(), 'incorrect number of args for to_char');
+        assertEquals(2, $args->size(), | 'incorrect number of args for to_char');
 
         let arg = $args->at(0);
         let type = $arg.genericType.rawType;
         let format = $args->at(1)->reactivate()->toOne()->cast(@String);
 
-        assert($type->isNotEmpty() && $type->toOne()->normalizeType() == Date, 'to_char currently only supported for date inputs');
+        unsupported($type->isNotEmpty() && $type->toOne()->normalizeType() == Date, | 'to_char currently only supported for date inputs');
 
         toChar($format, [], $arg->evaluateAndDeactivate());
       }),
@@ -714,7 +714,7 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
 function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   assert($aggregate.group->isNotEmpty(), 'percentile must be within group');
-  assert($aggregate.orderBy->isEmpty(), 'aggregate order by not supported');
+  unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
 
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.group.orderBy.sortKey->toOne(),
@@ -724,8 +724,8 @@ function meta::external::query::sql::transformation::queryToPure::percentilePreP
 
 function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
 {
-  assert($aggregate.group->isEmpty(), 'aggregate within group not supported');
-  assert($aggregate.orderBy->isEmpty(), 'aggregate order by not supported');
+  unsupported($aggregate.group->isEmpty(), | 'aggregate within group not supported');
+  unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
 
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.arguments->first(),
@@ -748,7 +748,7 @@ function meta::external::query::sql::transformation::queryToPure::replaceAggrega
           | ^$f(arguments = $f.arguments->match([
               a:meta::external::query::sql::metamodel::Expression[0..1] | $var,
               a:meta::external::query::sql::metamodel::Expression[1..*] | $var->concatenate($a->tail()),
-              a:meta::external::query::sql::metamodel::Expression[*] | fail('aggregation type currently not supported'); [];
+              a:meta::external::query::sql::metamodel::Expression[*] | unsupported('aggregation type currently not supported'); [];
           ])),
           | $f);
     ])->toOne()
