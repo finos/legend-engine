@@ -1,8 +1,17 @@
 {
   "adapter" : "meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEmpty_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_\""
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorExactBoundary_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorNegative_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorPositive_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorWidthOne_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_\""
