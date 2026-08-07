@@ -20,10 +20,33 @@ import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::navigation::*;
 import meta::pure::functions::relation::variant::*;
 
+'''
+Turns a collection of values into a one-column relation, one row per value.
+
+The way into relational processing from a plain collection: `[1, 2, 3, 4]->flatten(~integer)` is a
+relation of four rows. The column takes the name given and the type of the values flattened, so the
+result can be filtered, joined and aggregated like any other relation.
+
+**One row per element of the input, not per element of a nested array.** Flattening
+`fromJson('[[1, 2], [3, 4], [5, 6]]')->toMany(@Variant)` gives three rows, each holding the array
+`[1,2]`, `[3,4]`, `[5,6]` as a variant — the inner arrays are untouched. Flatten again to open them.
+
+**Parameters**
+- `valueToFlatten` — the values, one row each.
+- `columnWithFlattenedValue` — the name for the single output column.
+
+**Returns** a relation with that one column and one row per input value.
+
+**Examples**
+```pure
+[1, 2, 3, 4]->flatten(~integer)                                       // 4 rows
+fromJson('[[1, 2], [3, 4]]')->toMany(@Variant)->flatten(~variant)     // 2 rows, each an array
+```
+
+**See also** `meta::pure::functions::relation::lateral(Relation<T>[1], Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1]`,
+`meta::pure::functions::variant::convert::toMany(Variant[0..1], T[0..1]):T[*]`
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Flatten the given variant values into a relation with a single column containing the flattened values.  The output relation will have a column of the given name (2nd parameter), the column type will be of the values flattened, and will have onw row per value on the input.'
-}
 meta::pure::functions::relation::variant::flatten<T,Z>(valueToFlatten: T[*], columnWithFlattenedValue: ColSpec<Z=(?:T)>[1]):Relation<Z>[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

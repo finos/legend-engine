@@ -1375,10 +1375,12 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->sort([~grp->ascending(), ~id->descending()])->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
-{
-  doc.doc='Extends a given TDS where the new column value is pass thru of a variant column'
-}
+'''
+A variant column carried through `extend` unchanged. The copy prints as the same JSON text as the
+original, so a variant survives the round trip through a relational store rather than degrading to a
+string.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
 meta::pure::functions::relation::tests::extend::testVariantColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1406,10 +1408,12 @@ meta::pure::functions::relation::tests::extend::testVariantColumn<T|m>(f:Functio
                 '#', $res->toString());
 }
 
+'''
+Indexing into a variant array column with `get`, one `extend` per position. The extracted values are
+themselves variants — the result prints `'1'`, not `1` — so unpack with `to(@Integer)` before doing
+arithmetic on them.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
-{
-  doc.doc='Extends a given TDS where the new column value is extracted from a variant array using the value\'s index number'
-}
 meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1438,10 +1442,12 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtractio
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
-{
-  doc.doc='Extends a given TDS where the new column value is extracted from a variant map using the value\'s key name'
-}
+'''
+Reading named keys out of a variant object column, three in one `extend`. Each result stays a
+variant, which is why the string key prints with its JSON quotes intact — `'"hello"'` rather than
+`hello`.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
 meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1469,10 +1475,12 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction<
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
-{
-  doc.doc='Extends a given TDS where the new column is computed transforming a variant array by filtering its content using a given expression'
-}
+'''
+Filtering inside a variant array column: `toMany(@Integer)` opens the array into a collection,
+`filter` narrows it, and `toVariant` packs the survivors back into a variant. The column stays one
+variant per row throughout — the collection exists only within the expression.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
 meta::pure::functions::relation::tests::extend::testVariantColumn_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1500,10 +1508,11 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_filter<T|m>(f:
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
-{
-  doc.doc='Extends a given TDS where the new column is computed transforming a variant array by mapping its values to new values using a given expression'
-}
+'''
+Mapping over a variant array column. Unlike the filter case the result keeps one entry per input
+entry, so `[1,2,3]` becomes `[1,0,1]` — same length, transformed values.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
 meta::pure::functions::relation::tests::extend::testVariantColumn_map<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1531,10 +1540,12 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_map<T|m>(f:Fun
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> 
-{
-  doc.doc='Extends a given TDS where the new column is computed transforming a variant array by folding its values to a new value using a given expression'
-}
+'''
+Folding a variant array column down to a scalar — here the product of the entries, seeded at `1`.
+The result column is an `Integer`, not a variant, because `fold` returns the accumulator's type and
+the seed is a plain integer; no `toVariant` is needed to close the expression.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
 meta::pure::functions::relation::tests::extend::testVariantColumn_fold<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS

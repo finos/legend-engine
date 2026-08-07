@@ -15,16 +15,48 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> 
-{
-    doc.doc='Aggregates the entire given relation and adds new column where its value is aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
+'''
+Collapses a whole relation to **one row** holding an aggregate over every input row.
+
+The aggregate spec has two parts, written `~name : row | expr : values | reduction` — a map from
+each row to a value, and a function reducing everything collected. `~idSum : x | $x.id : y |
+$y->plus()` over ten rows gives a single `idSum`.
+
+**Only the aggregated columns survive**, since there is nothing to group by: the result type is `R`,
+not `T+R`. That is what separates this from
+`extend(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<T+R>[1]`, which
+computes the same value and repeats it across every original row, and from
+`groupBy(Relation<T>[1], ColSpec<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+which is this function per group.
+
+**Parameters**
+- `r` — the relation to aggregate.
+- `agg` — the aggregate column, as a map and a reduction.
+
+**Returns** a relation of one row and one column.
+
+**Examples**
+```pure
+$rel->aggregate(~idSum : x | $x.id : y | $y->plus())
+```
+
+**See also** `aggregate(Relation<T>[1], AggColSpecArray<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<R>[1]`,
+`groupBy(Relation<T>[1], ColSpec<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+`extend(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<T+R>[1]`
+'''
+native function <<PCT.function>>
 meta::pure::functions::relation::aggregate<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
 
+'''
+As `aggregate(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<R>[1]`,
+computing several aggregates over the same relation in one pass — still a single result row, now
+with one column per spec:
+
+```pure
+$rel->aggregate(~[idSum : x | $x.id : y | $y->plus(), codes : x | $x.code : y | $y->joinStrings(':')])
+```
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Aggregates the entire given relation and adds new column(s) where their values are aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
 meta::pure::functions::relation::aggregate<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
 
 
