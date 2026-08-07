@@ -1,44 +1,8 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: true\nactual:   false"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: false\nactual:   true"
-  }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
     "expectedError" : "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: true\nactual:   false"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
-    "expectedError" : "NullPointer exception"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
@@ -69,18 +33,6 @@
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_",
     "expectedError" : "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"

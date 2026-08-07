@@ -454,9 +454,6 @@
     "test" : "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
-    "test" : "meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'truesentence'\nactual:   'falsesentence'\""
-  }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""
   }, {
