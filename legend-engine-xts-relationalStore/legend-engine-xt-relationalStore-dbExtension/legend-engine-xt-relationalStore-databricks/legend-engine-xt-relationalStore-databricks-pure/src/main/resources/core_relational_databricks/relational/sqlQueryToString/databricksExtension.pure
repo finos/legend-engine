@@ -80,6 +80,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    newMap([
       // escape single quotes in string
       pair(String,         ^LiteralProcessor(format = '\'%s\'',               transform = {s:String[1], a:String[0..1] | $s->replace('\'','\\\'')})),
+      // the default processor quotes these; Spark would coerce the string back to a boolean, but
+      // emitting the keyword keeps the column a real BOOLEAN over JDBC instead of a VARCHAR
+      pair(Boolean,        ^LiteralProcessor(format = '%s',                   transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))

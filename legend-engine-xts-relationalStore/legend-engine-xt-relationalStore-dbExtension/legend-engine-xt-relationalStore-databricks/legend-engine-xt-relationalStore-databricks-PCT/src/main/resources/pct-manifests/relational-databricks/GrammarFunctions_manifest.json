@@ -1,29 +1,8 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_",
-    "expectedError" : "Cannot resolve \"(true AND true)\" due to data type mismatch"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"
-  }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND false)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 12"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_",
-    "expectedError" : "Cannot resolve \"(true OR true)\" due to data type mismatch"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
     "expectedError" : "Ensure the target system understands Year or Year-month semantic."

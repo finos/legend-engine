@@ -1,15 +1,6 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\"."
-  }, {
-    "test" : "meta::pure::functions::collection::tests::and::testAnd_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
@@ -29,10 +20,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::least::testLeast_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES]"
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
@@ -51,9 +39,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::date::tests::formatDate::testFormatDate_ISO8601_NanoSecondPrecision_Function_1__Boolean_1_",
     "expectedError" : "Error running query: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] org.apache.spark.SparkRuntimeException: [INVALID_DATETIME_PATTERN.WITH_SUGGESTION] Unrecognized datetime pattern: 'yyyy-MM-ddTHH:mm:ss.SSSSSSSSS'."
