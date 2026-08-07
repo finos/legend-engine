@@ -14,35 +14,65 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Rounds a timestamp down to the start of the bucket it falls in.
+
+The way to group events into fixed intervals — five-minute bars, hourly counts, monthly totals —
+without computing boundaries by hand. The result is the **start** of the containing bucket, so all
+timestamps in the same interval collapse to the same value and can be grouped on directly.
+
+**Buckets are measured from the Unix epoch**, not from the earliest value in the data, so the same
+timestamp always lands in the same bucket regardless of what else is in the relation. That is what
+makes buckets comparable across queries, but it also means a bucket boundary need not align with a
+natural calendar start when `quantity` is greater than 1.
+
+**Parameters**
+- `date` — the timestamp to bucket.
+- `quantity` — how many units wide the bucket is.
+- `unit` — the unit, as a `DurationUnit`.
+
+**Returns** the start of the containing bucket.
+
+**Examples**
+```pure
+$t->timeBucket(5, DurationUnit.MINUTES)
+$t->timeBucket(1, DurationUnit.MONTHS)    // the first instant of the month
+```
+
+**See also** `timeBucket(StrictDate[1], Integer[1], DurationUnit[1]):StrictDate[1]`,
+`meta::pure::functions::date::dayOfWeek(Date[1]):DayOfWeek[1]`
+'''
 native function
     <<PCT.function>>
-    {
-         doc.doc='calculates a time bucket for DateTime, where the bucket is of size quantity unit (e.g. 5 Hours). Uses unix Epoch as the origin for the calculation.'
-    }
 meta::pure::functions::date::timeBucket(date:DateTime[1], quantity:Integer[1], unit:DurationUnit[1]):DateTime[1];
 
+'''
+As `timeBucket(DateTime[1], Integer[1], DurationUnit[1]):DateTime[1]`, for a timestamp that may be
+absent — empty in, empty out.
+'''
 function
     <<PCT.function>>
-    {
-         doc.doc='calculates a time bucket for DateTime, where the bucket is of size quantity unit (e.g. 5 Hours). Uses unix Epoch as the origin for the calculation. Multiplicity 0..1 is allowed.'
-    }
 meta::pure::functions::date::timeBucket(date:DateTime[0..1], quantity:Integer[1], unit:DurationUnit[1]):DateTime[0..1]
 {
   if($date->isEmpty(),|[],|$date->toOne()->timeBucket($quantity, $unit));
 }
 
+'''
+As `timeBucket(DateTime[1], Integer[1], DurationUnit[1]):DateTime[1]`, for a calendar day.
+
+**Only `YEARS`, `MONTHS`, `WEEKS` and `DAYS` are accepted** — a `StrictDate` has no time of day, so a
+sub-day unit has nothing to round.
+'''
 native function
     <<PCT.function>>
-    {
-         doc.doc='calculates a time bucket for StrictDate, where the bucket is of size quantity unit (e.g. 5 Months). Only units in the set (YEARS, DAYS, MONTHS, WEEKS) are allowed.'
-    }
 meta::pure::functions::date::timeBucket(date:StrictDate[1], quantity:Integer[1], unit:DurationUnit[1]):StrictDate[1];
 
+'''
+As `timeBucket(StrictDate[1], Integer[1], DurationUnit[1]):StrictDate[1]`, for a date that may be
+absent — empty in, empty out.
+'''
 function
     <<PCT.function>>
-    {
-         doc.doc='calculates a time bucket for StrictDate, where the bucket is of size quantity unit (e.g. 5 months). Only units in the set (YEARS, DAYS, MONTHS, WEEKS) are allowed. Multiplicity 0..1 is allowed.'
-    }
 meta::pure::functions::date::timeBucket(date:StrictDate[0..1], quantity:Integer[1], unit:DurationUnit[1]):StrictDate[0..1]
 {
   if($date->isEmpty(),|[],|$date->toOne()->timeBucket($quantity, $unit));

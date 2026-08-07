@@ -15,41 +15,66 @@
 import meta::pure::test::pct::*;
 import meta::pure::functions::boolean::*;
 
+'''
+Whether a value falls within an inclusive range.
+
+**Both bounds are inclusive**, so a value equal to `lower` or to `upper` is between them. Written out
+it is `($value >= $lower) && ($value <= $upper)`; the point of the function is that it names the
+intent and evaluates the value once.
+
+There are four overloads, one per comparable type — `Number`, `String`, `StrictDate` and `DateTime`.
+All three arguments are `[0..1]`, and an absent operand makes the comparison false rather than
+propagating emptiness, so a missing value is never reported as being in range.
+
+**Parameters**
+- `value` — the value to test.
+- `lower` — the inclusive lower bound.
+- `upper` — the inclusive upper bound.
+
+**Returns** `true` when the value lies within the bounds.
+
+**Examples**
+```pure
+between(5, 0, 10)   // true
+between(0, 0, 10)   // true, the bounds are inclusive
+between(5, 0, 2)    // false
+```
+
+**See also** `between(String[0..1], String[0..1], String[0..1]):Boolean[1]`,
+`between(StrictDate[0..1], StrictDate[0..1], StrictDate[0..1]):Boolean[1]`
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports numeric values and bounds'
-    }
 meta::pure::functions::boolean::between(value:Number[0..1], lower:Number[0..1], upper:Number[0..1]):Boolean[1]
 {
   ($value >= $lower) && ($value <= $upper);
 }
 
+'''
+As `between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]`, for `String` values, ordering strings lexicographically.
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports string values and bounds'
-    }
 meta::pure::functions::boolean::between(value:String[0..1], lower:String[0..1], upper:String[0..1]):Boolean[1]
 {
   ($value >= $lower) && ($value <= $upper);
 }
 
+'''
+As `between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]`, for `StrictDate` values, ordering by calendar day.
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports StrictDate (e.g. 2025-04-09) values and bounds'
-    }
 meta::pure::functions::boolean::between(value:StrictDate[0..1], lower:StrictDate[0..1], upper:StrictDate[0..1]):Boolean[1]
 {
   ($value >= $lower) && ($value <= $upper);
 }
 
+'''
+As `between(Number[0..1], Number[0..1], Number[0..1]):Boolean[1]`, for `DateTime` values, ordering by instant.
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports DateTime values and bounds'
-    }
 meta::pure::functions::boolean::between(value:DateTime[0..1], lower:DateTime[0..1], upper:DateTime[0..1]):Boolean[1]
 {
   ($value >= $lower) && ($value <= $upper);

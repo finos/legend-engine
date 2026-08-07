@@ -14,11 +14,38 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Whether any value in a collection is true.
+
+The collection form of `||`. **An empty collection gives `false`**, the identity for disjunction and
+the mirror of `and(Boolean[*]):Boolean[1]` returning `true`.
+
+This is an aggregate: it is what a relational `groupBy` or a window aggregation calls to fold a
+boolean column.
+
+**Parameters**
+- `vals` — the values.
+
+**Returns** `true` when any value is `true`; `false` for an empty collection.
+
+**Examples**
+```pure
+or([false, true])    // true
+or([false, false])   // false
+```
+
+**See also** `and(Boolean[*]):Boolean[1]`,
+`meta::pure::functions::boolean::xor(Boolean[1], Boolean[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::pure::functions::collection::or(vals:Boolean[*]):Boolean[1]
 {
    $vals->fold({i,a|$i || $a}, false)
 }
 
+'''
+As `or(Boolean[*]):Boolean[1]`, for a collection known to hold at least one value, so the
+empty-collection case cannot arise.
+'''
 function <<PCT.function>> meta::pure::functions::collection::or(vals:Boolean[1..*]):Boolean[1]
 {
    $vals->fold({i,a|$i || $a}, false)

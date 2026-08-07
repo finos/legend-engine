@@ -14,21 +14,38 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The largest value in a collection, by the type's natural order.
+
+A synonym for `max(X[1..*]):X[1]`, named after the SQL function of the same name so that a query
+translated from SQL reads the same. Supports every primitive type, not only numbers.
+
+**Parameters**
+- `values` — the values, at least one.
+
+**Returns** the largest value.
+
+**Examples**
+```pure
+greatest([1, 5, 3])   // 5
+```
+
+**See also** `greatest(X[*]):X[0..1]`,
+`max(X[1..*]):X[1]`,
+`least(X[1..*]):X[1]`
+'''
 function
   <<PCT.function>>
-  {
-      doc.doc='greatest returns largest value from the list by type order; supports all primitive data types'
-  }
 meta::pure::functions::collection::greatest<X>(values : X[1..*]):X[1]
 {
     max($values);
 }
 
+'''
+As `greatest(X[1..*]):X[1]`, for a collection that may be empty — an empty collection gives empty.
+'''
 function
   <<PCT.function>>
-  {
-      doc.doc='greatest returns largest value from the list by type order; supports all primitive data types'
-  }
 meta::pure::functions::collection::greatest<X>(values : X[*]):X[0..1]
 {
     max($values);

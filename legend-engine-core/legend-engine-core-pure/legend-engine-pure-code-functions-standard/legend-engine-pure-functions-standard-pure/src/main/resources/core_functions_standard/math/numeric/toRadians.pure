@@ -14,6 +14,26 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Converts an angle from degrees to radians.
+
+The trigonometric functions all take radians, so this is the usual first step when an angle arrives
+in degrees.
+
+**Parameters**
+- `degrees` — the angle in degrees.
+
+**Returns** the angle in radians.
+
+**Examples**
+```pure
+180->toRadians()   // pi()
+90->toRadians()    // pi() / 2
+```
+
+**See also** `toDegrees(Number[1]):Float[1]`,
+`pi():Float[1]`
+'''
 function <<PCT.function>> meta::pure::functions::math::toRadians(degrees:Number[1]):Float[1]
 {
     $degrees * pi() / 180;

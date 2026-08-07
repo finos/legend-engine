@@ -14,22 +14,62 @@
 
 import meta::pure::test::pct::*;
 
+'''
+As `stdDevPopulation(Number[1..*]):Number[1]`, accepting a collection that may be empty.
+'''
 function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the population standard deviation (square root of variance) of non-NULL values.'
-    }
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::stdDevPopulation(numbers:Number[*]):Number[1]
 {
     meta::pure::functions::math::stdDev($numbers->toOneMany(), false);
 }
 
+'''
+The population standard deviation of a collection.
+
+`stdDev(Number[1..*], Boolean[1]):Number[1]` with the bias correction off — the square root of the
+population variance, dividing by `n`. Use it when the values are the whole population rather than a
+sample.
+
+Takes `[1..*]`, so an empty collection will not compile.
+
+**Parameters**
+- `numbers` — the values, at least one.
+
+**Returns** the population standard deviation.
+
+**See also** `stdDevSample(Number[1..*]):Number[1]`,
+`variancePopulation(Number[*]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::stdDevPopulation(numbers:Number[1..*]):Number[1]
 {
     meta::pure::functions::math::stdDev($numbers, false);
 }
 
-function <<PCT.function>> {doc.doc='Returns the population standard deviation (square root of variance) of non-NULL values on the given column of the current window, and frame for the current row'} meta::pure::functions::math::stdDevPopulation<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Number[1]
+'''
+The population standard deviation of a column's values within the current window.
+
+This is the window form: it is called from inside an `extend` with a window, receiving the partition,
+the window and the current row, and reads its values from `colToAgg` rather than from a collection
+argument.
+
+Absent values are skipped. As elsewhere, an unframed window runs from the start of the partition to
+the current row, making this a running figure.
+
+**Parameters**
+- `partition` — the partition, supplied by `extend`.
+- `window` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+- `colToAgg` — the column to measure.
+
+**Returns** the population standard deviation within the window.
+
+**See also** `stdDevPopulation(Number[1..*]):Number[1]`,
+`zScore(Relation<T>[1], _Window<T>[1], T[1], ColSpec<(?:Number)⊆T>[1]):Float[1]`
+'''
+function
+  <<PCT.function>>
+meta::pure::functions::math::stdDevPopulation<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Number[1]
 {
     reduce($partition, $window, $row, x|eval($colToAgg, $x), y|$y->stdDevPopulation());
 }

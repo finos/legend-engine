@@ -14,6 +14,33 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The value below which a given proportion of a collection falls.
+
+`percentile` is a **fraction between 0 and 1**, not a number out of 100 — pass 0.5 for the median,
+0.95 for the 95th percentile. Values outside that range fail the declared constraint rather than
+being clamped.
+
+Interpolates between the two neighbouring values when the requested position falls between them, and
+reads the collection in ascending order. Pass
+`percentile(Number[*], Float[1], Boolean[1], Boolean[1]):Number[0..1]` to change either.
+
+**Returns empty for an empty collection**, which is why the result is `[0..1]`.
+
+**Parameters**
+- `numbers` — the values.
+- `percentile` — the proportion, between 0 and 1.
+
+**Returns** the value at that percentile, or empty.
+
+**Examples**
+```pure
+percentile([1, 2, 3, 4], 0.5)   // the median
+```
+
+**See also** `percentile(Number[*], Float[1], Boolean[1], Boolean[1]):Number[0..1]`,
+`median(Number[*]):Float[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1]): Number[0..1]
 [
   ($percentile >= 0) && ($percentile <= 1)
@@ -22,6 +49,23 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
   percentile($numbers, $percentile, true, true)
 }
 
+'''
+As `percentile(Number[*], Float[1]):Number[0..1]`, with the ordering and the interpolation given
+explicitly rather than left at their defaults of ascending and interpolating.
+
+Set `ascending` to `false` to read the collection from the top, so 0.95 asks for the 95th percentile
+from the largest end. Set `continuous` to `false` to take the nearest actual value rather than
+interpolating between the two neighbours — a discrete percentile always returns a value that appears
+in the collection.
+
+**Parameters**
+- `numbers` — the values.
+- `percentile` — the proportion, between 0 and 1.
+- `ascending` — `true` to read from the smallest end.
+- `continuous` — `true` to interpolate, `false` to take the nearest value.
+
+**Returns** the value at that percentile, or empty.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::percentile(numbers: Number[*], percentile: Float[1], ascending: Boolean[1], continuous: Boolean[1]): Number[0..1]
 [
   ($percentile >= 0) && ($percentile <= 1)

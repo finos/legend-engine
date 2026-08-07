@@ -14,22 +14,77 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The arithmetic mean of a collection of numbers.
+
+**The result is always `Float`**, even for `Integer` input, so an exact average is not silently
+truncated. `mean(Number[*]):Float[1]` is a synonym.
+
+An empty collection has no average, and the division by zero fails rather than returning empty —
+guard with `isEmpty` where the collection may have no rows.
+
+This is an aggregate: it is what a relational `groupBy` or a window aggregation calls.
+
+**Parameters**
+- `numbers` — the values to average.
+
+**Returns** the mean, as a `Float`.
+
+**Examples**
+```pure
+average([1, 2, 3, 4])   // 2.5
+```
+
+**See also** `mean(Number[*]):Float[1]`,
+`median(Number[*]):Float[1]`,
+`sum(Number[*]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::average(numbers:Number[*]):Float[1]
 {
     if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
 }
 
+'''
+As `average(Number[*]):Float[1]`, for `Integer` values. The result is still a `Float`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::average(numbers:Integer[*]):Float[1]
 {
     if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
 }
 
+'''
+As `average(Number[*]):Float[1]`, for `Float` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::average(numbers:Float[*]):Float[1]
 {
     if($numbers->isEmpty(),|fail('Error: Mean of an empty set.');0.0;,|$numbers->sum() / $numbers->size())
 }
 
-function <<PCT.function>> {doc.doc='Returns the average of the non-NULL values on the given column of the current window, and frame for the current row'} meta::pure::functions::math::average<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Float[1]
+'''
+The mean of a column's values within the current window.
+
+This is the window form: it is called from inside an `extend` with a window, receiving the partition,
+the window and the current row, and reads its values from `colToAgg` rather than from a collection
+argument.
+
+Absent values are skipped rather than counted as zero, so the divisor is the number of values present.
+Remember that a window with no explicit frame runs from the start of the partition to the current
+row, making this a running average rather than a partition-wide one.
+
+**Parameters**
+- `partition` — the partition, supplied by `extend`.
+- `window` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+- `colToAgg` — the column to average.
+
+**Returns** the mean of the column within the window.
+
+**See also** `average(Number[*]):Float[1]`,
+`meta::pure::functions::relation::over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`
+'''
+function
+  <<PCT.function>>
+meta::pure::functions::math::average<T>(partition: meta::pure::metamodel::relation::Relation<T>[1], window: meta::pure::functions::relation::_Window<T>[1], row: T[1], colToAgg:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Float[1]
 {
     reduce($partition, $window, $row, x|eval($colToAgg, $x), y|$y->average());
 }

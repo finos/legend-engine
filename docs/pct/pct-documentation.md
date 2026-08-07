@@ -280,32 +280,31 @@ function by source id.
 
 ## Verifying
 
-Documentation is parse-time sugar, so **no PCT result should change**. Treat any diff as a real
-regression.
+Documentation is parse-time sugar over a tagged value, so **a documentation-only change cannot alter
+behaviour**. The module build is the whole verification; **do not run the relational PCT suites for
+it**, which costs minutes for a guaranteed-green result.
 
-A parse error — including the `doc.doc` conflict above — surfaces when the Pure repository compiles:
+Building the Pure repository is what catches everything that can actually break — a malformed literal,
+and the parse error raised when a declaration carries both a literal and an explicit `doc.doc`:
 
 ```bash
-mvn clean install -pl <the -pure module> -am
+mvn clean install -pl <the -pure module>
 ```
 
-That is not enough on its own. The PCT tests do not run in the `-pure` module; they run in the
-runtime-extension modules beside it, and **they load this code as bytecode from those jars**. Always
-reinstall both, or the whole suite runs against the previous build:
+**Do not verify with `-DskipTests`.** The `-pure` module's own tests include the compiled-state
+integrity check, and the runtime-extension modules beside it run the `<<PCT.test>>` functions against
+this code — worth building too when a change is large, since **they load it as bytecode from their
+jars** rather than from source:
 
 ```bash
 mvn clean install -pl <…-runtime-java-extension-compiled-functions-X>,<…-runtime-java-extension-interpreted-functions-X>
 ```
 
-Then confirm no behaviour changed, with the full suites rather than a filtered `-Dtest`:
-
-```bash
-mvn clean install -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT
-mvn clean install -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-PCT
-```
-
-**Never verify with `-DskipTests`** — it proves the documentation parses and serializes, nothing more.
-Do not run two Maven `clean`s concurrently against a shared `~/.m2`.
+The exception that would justify a PCT run is a manifest whose `expectedError` embeds a source
+position from a file you are documenting — added lines shift it and break the match. The engine
+corpus carries none today; the greps in the section above are how you confirm that before a large
+pass. Note also that a shared `~/.m2` is contended, so a build there may pick up artifacts from
+another checkout; `-Dmaven.repo.local` pointed at a scratch copy avoids it.
 
 Finally check the emitted JSON, which is the thing actually published:
 
