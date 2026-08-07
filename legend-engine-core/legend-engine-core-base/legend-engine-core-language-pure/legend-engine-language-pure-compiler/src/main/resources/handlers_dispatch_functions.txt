@@ -356,6 +356,7 @@ meta::pure::functions::math::acos_Number_1__Float_1_
 meta::pure::functions::math::asin_Number_1__Float_1_
 meta::pure::functions::math::atan2_Number_1__Number_1__Float_1_
 meta::pure::functions::math::atan_Number_1__Float_1_
+meta::pure::functions::math::binFloor_Integer_1__Integer_1__Integer_1_
 meta::pure::functions::math::average_Float_MANY__Float_1_
 meta::pure::functions::math::average_Integer_MANY__Float_1_
 meta::pure::functions::math::average_Number_MANY__Float_1_
@@ -613,6 +614,8 @@ meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__Stri
 meta::pure::functions::string::split_String_1__String_1__String_MANY_
 meta::pure::functions::string::startsWith_String_$0_1$__String_1__Boolean_1_
 meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_
+meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_
+meta::pure::functions::string::substr_String_1__Integer_1__String_1_
 meta::pure::functions::string::substringAfter_String_1__String_1__String_1_
 meta::pure::functions::string::substringBefore_String_1__String_1__String_1_
 meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_
