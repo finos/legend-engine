@@ -508,18 +508,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "No error was thrown"
   }, {
-    "test" : "meta::pure::functions::string::tests::contains::testFalseContains_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::contains::testTrueContains_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testFalseEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testTrueEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
   }, {
@@ -601,12 +589,6 @@
     "test" : "meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 9999999999999992\nactual:   1874919416\""
   }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   ''"
   }, {
@@ -648,9 +630,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""

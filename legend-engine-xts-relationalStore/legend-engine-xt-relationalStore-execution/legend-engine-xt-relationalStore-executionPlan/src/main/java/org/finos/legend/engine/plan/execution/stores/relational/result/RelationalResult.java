@@ -352,10 +352,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         }
         else
         {
+            Function<Object, Object> transformer = "Boolean".equals(node.getDataTypeResultType())
+                    ? SetImplTransformers::toBoolean
+                    : SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER;
             SetImplTransformers setImpl = new SetImplTransformers();
             for (int i = 1; i <= this.columnCount; i++)
             {
-                setImpl.transformers.add(SetImplTransformers.TEMPORARY_DATATYPE_TRANSFORMER);
+                setImpl.transformers.add(transformer);
             }
             setTransformers.add(setImpl);
             this.builder = new DataTypeBuilder(node);

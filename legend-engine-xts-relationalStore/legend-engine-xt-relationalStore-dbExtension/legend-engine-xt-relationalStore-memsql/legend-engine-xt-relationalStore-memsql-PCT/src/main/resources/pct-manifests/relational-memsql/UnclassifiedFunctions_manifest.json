@@ -19,12 +19,6 @@
     "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: ['abcd']\nactual:   []\""
   }, {
-    "test" : "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
   }, {
