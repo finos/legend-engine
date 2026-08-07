@@ -15,10 +15,45 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Narrows a relation to a chosen set of columns.
+
+Projection, and only projection: rows are neither filtered nor deduplicated, so the result has the
+same number of rows as the input. The result's type is the chosen columns, which is what lets the
+compiler reject a later reference to a column that was dropped.
+
+Columns come back in the order given, so this reorders as well as narrows. To drop duplicate rows at
+the same time, use `distinct(Relation<T>[1], ColSpecArray<X⊆T>[1]):Relation<X>[1]`.
+
+**Parameters**
+- `r` — the relation to narrow.
+- `cols` — the columns to keep.
+
+**Returns** a relation of just those columns.
+
+**Examples**
+```pure
+$rel->select(~[id, name])
+```
+
+**See also** `select(Relation<T>[1], ColSpec<Z⊆T>[1]):Relation<Z>[1]`,
+`distinct(Relation<T>[1], ColSpecArray<X⊆T>[1]):Relation<X>[1]`,
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1]):Relation<Z>[1];
 
+'''
+As `select(Relation<T>[1], ColSpecArray<Z⊆T>[1]):Relation<Z>[1]`, for a single column:
+`$rel->select(~name)`.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::select<T,Z>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1]):Relation<Z>[1];
 
+'''
+As `select(Relation<T>[1], ColSpecArray<Z⊆T>[1]):Relation<Z>[1]`, keeping every column — a genuine
+no-op, useful as an explicit step in a generated or composed pipeline. Note it does **not**
+deduplicate despite sharing a signature shape with
+`distinct(Relation<T>[1]):Relation<T>[1]`: duplicate rows survive.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::select<T>(r:Relation<T>[1]):Relation<T>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::select::testMultiColsSelectShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

@@ -15,4 +15,26 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The row a given number of positions away from the current one.
+
+The primitive behind `lag(Relation<T>[1], T[1]):T[0..1]` and `lead(Relation<T>[1], T[1]):T[0..1]`,
+which are defined as negative and positive offsets respectively. A negative `offset` looks backwards
+and a positive one forwards; 0 is the current row.
+
+Returns empty when the offset falls outside the partition, so the first rows have no predecessor and
+the last no successor. Prefer `lag` and `lead` in ordinary code — the sign convention is easy to get
+backwards.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `r` — the current row, supplied by `extend`.
+- `offset` — how many rows to move, negative backwards and positive forwards.
+
+**Returns** the row at that offset, or empty when it falls outside the partition.
+
+**See also** `lag(Relation<T>[1], T[1]):T[0..1]`,
+`lead(Relation<T>[1], T[1]):T[0..1]`,
+`nth(Relation<T>[1], _Window<T>[1], T[1], Integer[1]):T[0..1]`
+'''
 native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::offset<T>(w:Relation<T>[1], r:T[1], offset:Integer[1]):T[0..1];

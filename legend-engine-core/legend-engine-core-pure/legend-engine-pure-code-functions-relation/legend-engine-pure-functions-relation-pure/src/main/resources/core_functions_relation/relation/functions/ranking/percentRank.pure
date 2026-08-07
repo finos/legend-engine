@@ -15,6 +15,38 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+A row's rank within its partition, rescaled to run from 0.0 to 1.0.
+
+`(rank - 1) / (rowCount - 1)`, so **the first row is always 0.0 and the last is always 1.0**, and
+tied rows share a value just as they share a rank. A partition of one row gives 0.0.
+
+Because it anchors at both ends, it answers "how far through the ordering is this row" rather than
+"what proportion is at or below it" — that second question is
+`cumulativeDistribution(Relation<T>[1], _Window<T>[1], T[1]):Float[1]`, which never returns 0.0.
+
+**Parameters**
+- `rel` — the partition, supplied by `extend`.
+- `w` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+
+**Returns** the rank rescaled to between 0.0 and 1.0.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~pr:{p,w,r| $p->percentRank($w, $r)})
+
+// a six-row partition, ids 8, 6, 3, 3, 3, 1
+// id  pr
+//  8  0.0     first
+//  6  0.2
+//  3  0.4     three-way tie, all rank 3
+//  1  1.0     last
+```
+
+**See also** `cumulativeDistribution(Relation<T>[1], _Window<T>[1], T[1]):Float[1]`,
+`rank(Relation<T>[1], _Window<T>[1], T[1]):Integer[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::percentRank<T>(rel:Relation<T>[1], w:_Window<T>[1], row:T[1]):Float[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::percentRank::testOLAPWithPartitionAndOrderPercentRank<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

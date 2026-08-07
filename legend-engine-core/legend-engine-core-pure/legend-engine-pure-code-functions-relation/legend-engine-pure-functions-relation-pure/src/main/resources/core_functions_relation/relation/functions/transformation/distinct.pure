@@ -15,7 +15,37 @@
 import meta::pure::metamodel::relation::*;
 import meta::pure::test::pct::*;
 
+'''
+Narrows a relation to the given columns and removes duplicate rows.
+
+**It projects as well as deduplicates** — the result holds only `columns`, so this is a `select` and
+a dedup in one step, not a dedup that preserves the other columns. Rows count as duplicates when
+they agree on every one of the chosen columns; a column left out cannot keep two rows apart.
+
+Where several rows collapse into one, which of them survived is not observable, since only the
+chosen columns remain.
+
+**Parameters**
+- `rel` — the relation.
+- `columns` — the columns to keep and to compare on.
+
+**Returns** the distinct rows, holding only those columns.
+
+**Examples**
+```pure
+$rel->distinct(~[grp, region])   // the distinct group-and-region pairs
+```
+
+**See also** `distinct(Relation<T>[1]):Relation<T>[1]`,
+`select(Relation<T>[1], ColSpecArray<Z⊆T>[1]):Relation<Z>[1]`,
+`groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::distinct<X,T>(rel:Relation<T>[1], columns:ColSpecArray<X⊆T>[1]):Relation<X>[1];
+
+'''
+As `distinct(Relation<T>[1], ColSpecArray<X⊆T>[1]):Relation<X>[1]`, comparing on every column and
+keeping them all — whole-row deduplication.
+'''
 native function <<PCT.function>> meta::pure::functions::relation::distinct<T>(rel:Relation<T>[1]):Relation<T>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::distinct::testDistinctSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

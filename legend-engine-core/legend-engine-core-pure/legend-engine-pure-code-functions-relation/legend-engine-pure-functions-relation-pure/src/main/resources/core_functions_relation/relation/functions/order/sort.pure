@@ -15,6 +15,33 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Orders a relation's rows by one or more columns.
+
+A relation has no inherent row order, so this is what makes row position meaningful — and what the
+positional functions `limit`, `drop` and `slice` need in front of them to be deterministic. Build the
+sort keys with `ascending(ColSpec<T>[1]):SortInfo<T>[1]` and
+`descending(ColSpec<T>[1]):SortInfo<T>[1]`; several may be given, and they apply in the order
+written, each breaking ties left by the one before.
+
+Rows that tie on every key keep no guaranteed order relative to each other.
+
+**Parameters**
+- `rel` — the relation to order.
+- `sortInfo` — the sort keys, applied left to right.
+
+**Returns** the relation, ordered.
+
+**Examples**
+```pure
+$rel->sort(~val->ascending())
+$rel->sort([~grp->ascending(), ~val->descending()])   // by group, then by value within it
+```
+
+**See also** `ascending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`descending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`limit(Relation<T>[1], Integer[1]):Relation<T>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::sort<X,T>(rel:Relation<T>[1], sortInfo:SortInfo<X⊆T>[*]):Relation<T>[1];
 
 
