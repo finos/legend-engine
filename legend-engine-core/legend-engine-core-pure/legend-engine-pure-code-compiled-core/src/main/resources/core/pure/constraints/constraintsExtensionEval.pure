@@ -14,7 +14,37 @@
 
 import meta::pure::test::pct::*;
 
-function 
+'''
+Evaluates one named constraint on an object and returns its failure message, or empty if it holds.
+
+**Empty means the constraint passed**, so the result reads as a per-row explanation of what is wrong
+rather than as a boolean: project it alongside the data and every non-empty cell is a violation with
+the reason attached. The message is the constraint's own message function, which defaults to
+`Constraint failed: <name>`.
+
+`name` must be the name of a constraint declared on the object's class or inherited from anywhere in
+its hierarchy; the constraint is looked up by name at evaluation time.
+
+**Parameters**
+- `item` — the object to check.
+- `name` — the name of the constraint to evaluate.
+
+**Returns** the failure message, or empty when the constraint holds.
+
+**Examples**
+```pure
+// SimplePerson declares a constraint 'ageMustBePositive'
+$people->project(~[
+  name: x | $x.name,
+  ageValid: x | $x->createConstraintFailureMessage('ageMustBePositive')
+])
+
+// name      ageValid
+// Alex      null                                    age 12, the constraint holds
+// Bad Alex  Constraint failed: ageMustBePositive     age -20
+```
+'''
+function
   <<access.public, PCT.function,
 
   // TODO: this should not really be required, but is needed for routing issues
@@ -23,7 +53,6 @@ function
 
   functionType.NormalizeRequiredFunction
   >>
-  {doc.doc = 'Evaluate if the given object meets the specified constraint, if it fails return a message else empty'}
   meta::pure::constraints::functions::createConstraintFailureMessage<X>(item:X[1], name:String[1]):String[0..1]
 {
     if (meta::pure::constraints::functions::evaluateConstraint($item, $name), 

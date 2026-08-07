@@ -16,6 +16,35 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::precisePrimitives::*;
 import meta::pure::test::pct::*;
 
+'''
+The five-day simple moving average of the closing price, per symbol.
+
+Each row's `SMA` averages the close of that row and of the four rows before it, ordered by `time`
+within each `symbol`. **The window does not have to be full**: the first row of a symbol averages one
+value, the second two, and only from the fifth row on is the figure a true five-day average. Rows for
+different symbols never mix. The result is rounded to five decimal places.
+
+**Parameters**
+- `rel` — a relation of OHLCV bars: `time`, `symbol`, `open`, `high`, `low`, `close`, `volume`.
+
+**Returns** `symbol`, `time`, `close`, and the average as `SMA`.
+
+**Examples**
+```pure
+// AAPL closing at 100.00, 101.50, 102.00, 100.80 and 103.00 on five consecutive days
+$bars->simpleMovingAverage5Days()
+
+// symbol  time        close   SMA
+// AAPL    2026-01-07  100.00  100.0        one value in the window
+// AAPL    2026-01-08  101.50  100.75       two
+// AAPL    2026-01-09  102.00  101.16667
+// AAPL    2026-01-10  100.80  101.075
+// AAPL    2026-01-11  103.00  101.46       the first genuine five-day average
+```
+
+**See also** `meta::external::scenario::quant::vwap::monthlyVWAP`,
+`meta::external::scenario::quant::return::logReturn::logReturn`
+'''
 function <<PCT.function>> meta::external::scenario::quant::sma::simpleMovingAverage5Days(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], close:Numeric(19,2)[1], SMA:Float[1])>[1]
 {
     // The expression that should be written (but DBs can't perform a direct operation i.e. round on an aggregate value).
