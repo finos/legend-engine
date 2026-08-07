@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.Vocabulary;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
@@ -22,6 +24,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -566,5 +569,91 @@ public class TestRelationalGrammarParser extends TestGrammarParser.TestGrammarPa
         Assert.assertEquals(103, mapping.associationMappings.get(0).association.sourceInformation.startLine);
         Assert.assertEquals(103, mapping.associationMappings.get(0).association.sourceInformation.endLine);
         Assert.assertEquals(20, mapping.associationMappings.get(0).association.sourceInformation.endColumn);
+    }
+
+    /**
+     * The relational protocol omits `taggedValues` from the database, schema, table, column and view when the
+     * declaration carries none. The grammar round trips never see the intermediate protocol, so the shape is pinned
+     * here: an extra `"taggedValues": []` on every table and column of every model is a protocol change, and it broke
+     * legend-studio's round-trip suite once already.
+     */
+    @Test
+    public void testAbsentAnnotationsAreOmittedFromTheProtocol() throws Exception
+    {
+        JsonNode database = parsedDatabase("###Relational\n" +
+                "Database model::store::ProductDatabase\n" +
+                "(\n" +
+                "  Schema productSchema\n" +
+                "  (\n" +
+                "    Table productTable\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                "  View productView\n" +
+                "  (\n" +
+                "    id: productSchema.productTable.ID PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n");
+        JsonNode schema = database.get("schemas").get(0);
+        JsonNode table = schema.get("tables").get(0);
+        // a view declared outside a schema lands in the synthesized `default` schema
+        JsonNode view = database.get("schemas").get(1).get("views").get(0);
+        Assert.assertFalse(database.toString(), database.has("taggedValues"));
+        Assert.assertFalse(database.toString(), schema.has("taggedValues"));
+        Assert.assertFalse(database.toString(), schema.has("stereotypes"));
+        Assert.assertFalse(database.toString(), table.has("taggedValues"));
+        Assert.assertFalse(database.toString(), table.has("stereotypes"));
+        Assert.assertFalse(database.toString(), table.get("columns").get(0).has("taggedValues"));
+        Assert.assertFalse(database.toString(), table.get("columns").get(0).has("stereotypes"));
+        Assert.assertFalse(database.toString(), view.has("taggedValues"));
+        Assert.assertFalse(database.toString(), view.has("stereotypes"));
+    }
+
+    /**
+     * A `'''...'''` documentation block desugars into a doc tagged value flagged as authored multi-line, which is what
+     * the composer reads back to decide it renders as a block rather than as an ordinary tagged value.
+     */
+    @Test
+    public void testDocumentationIsRecordedAsAMultiLineDocTaggedValue() throws Exception
+    {
+        JsonNode database = parsedDatabase("###Relational\n" +
+                "Database model::store::ProductDatabase\n" +
+                "(\n" +
+                "  Schema productSchema\n" +
+                "  (\n" +
+                "    '''\n" +
+                "    One row per product.\n" +
+                "    Keyed by ID.\n" +
+                "    '''\n" +
+                "    Table productTable\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n");
+        JsonNode schema = database.get("schemas").get(0);
+        JsonNode taggedValue = schema.get("tables").get(0).get("taggedValues").get(0);
+        Assert.assertEquals("meta::pure::profiles::doc", taggedValue.get("tag").get("profile").asText());
+        Assert.assertEquals("doc", taggedValue.get("tag").get("value").asText());
+        Assert.assertEquals("One row per product.\nKeyed by ID.", taggedValue.get("value").get("value").asText());
+        Assert.assertTrue(taggedValue.get("value").get("multiLine").asBoolean());
+        // the field appears only where the documentation was written
+        Assert.assertFalse(database.toString(), database.has("taggedValues"));
+        Assert.assertFalse(database.toString(), schema.has("taggedValues"));
+    }
+
+    private static JsonNode parsedDatabase(String code) throws Exception
+    {
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+        JsonNode elements = objectMapper.readTree(objectMapper.writeValueAsString(test(code))).get("elements");
+        for (JsonNode element : elements)
+        {
+            if ("relational".equals(element.get("_type").asText()))
+            {
+                return element;
+            }
+        }
+        throw new AssertionError("No database in " + elements);
     }
 }

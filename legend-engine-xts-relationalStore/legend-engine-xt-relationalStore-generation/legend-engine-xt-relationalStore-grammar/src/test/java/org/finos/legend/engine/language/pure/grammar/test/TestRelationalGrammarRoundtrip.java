@@ -989,6 +989,73 @@ public class TestRelationalGrammarRoundtrip extends TestToPureGrammarRoundtrip
                 ")\n");
     }
 
+    /**
+     * Documentation (`'''...'''`) is sugar over the doc.doc tagged value on every declaration that carries
+     * annotations. Relational is the one place where the block is not at column 0 - it is emitted at the
+     * declaration's own indentation, which is also the indentation the parser strips back off.
+     */
+    @Test
+    public void testRelationalElementsWithDocumentation()
+    {
+        test("###Relational\n" +
+                "'''\n" +
+                "Product reference data.\n" +
+                "Loaded nightly.\n" +
+                "'''\n" +
+                "Database model::store::ProductDatabase\n" +
+                "(\n" +
+                "  '''\n" +
+                "  The product schema.\n" +
+                "  Owned by reference data.\n" +
+                "  '''\n" +
+                "  Schema productSchema\n" +
+                "  (\n" +
+                "    '''\n" +
+                "    One row per product.\n" +
+                "    Keyed by ID.\n" +
+                "    '''\n" +
+                "    Table productTable\n" +
+                "    (\n" +
+                "      '''\n" +
+                "      The product identifier.\n" +
+                "      Assigned upstream.\n" +
+                "      '''\n" +
+                "      ID INTEGER PRIMARY KEY,\n" +
+                "      NAME VARCHAR(200)\n" +
+                "    )\n" +
+                "  )\n" +
+                "\n" +
+                "  '''\n" +
+                "  Products, flattened.\n" +
+                "  For reporting only.\n" +
+                "  '''\n" +
+                "  View productView\n" +
+                "  (\n" +
+                "    id: productSchema.productTable.ID PRIMARY KEY\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testRelationalElementsWithDocumentationAndOtherAnnotations()
+    {
+        test("###Relational\n" +
+                "'''\n" +
+                "Product reference data.\n" +
+                "Loaded nightly.\n" +
+                "'''\n" +
+                "Database <<equality.Key>> {doc.version = '1.0'} model::store::ProductDatabase\n" +
+                "(\n" +
+                "  Schema productSchema\n" +
+                "  (\n" +
+                "    Table productTable\n" +
+                "    (\n" +
+                "      ID INTEGER PRIMARY KEY\n" +
+                "    )\n" +
+                "  )\n" +
+                ")\n");
+    }
+
 
     @Test
     public void testFunctionTest()
