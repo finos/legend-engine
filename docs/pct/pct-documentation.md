@@ -224,6 +224,22 @@ both `meta::pure::functions::variant::navigation` and `meta::pure::functions::co
 separated, return type after the colon. Strip the package when the target is in the same package as the
 function you are documenting; keep it otherwise.
 
+**Exception — you may drop to a fully qualified path when the signature is unwieldy.** The signature
+exists to disambiguate, and a path already does that when nothing shares the name. Some relation
+functions take a wide row type: `simpleMovingAverage5Days`'s `simple` field runs past 300 characters,
+and pasting it into a `See also` line buries the reference it is supposed to make. `core_scenario_quant`
+therefore references by path alone — `meta::external::scenario::quant::sma::simpleMovingAverage5Days`.
+This is a readability escape hatch, not a second convention: keep full signatures wherever they fit on a
+line, as `core_dataquality` does with `rowCountEqual(Relation<T>[1], Number[1]):Boolean[1]`. Confirm the
+name really is unique rather than assuming it:
+
+```bash
+python3 -c "
+import json,collections; d=json.load(open('<module>/target/classes/pct-reports/FUNCTIONS_<repository>.json'))
+c=collections.Counter(s['simple'].split('(')[0] for f in d['functionDefinitions'] for s in f['signatures'])
+print([n for n,k in c.items() if k>1] or 'all unique')"
+```
+
 **Do not hand-write signatures.** Copy them from the generated JSON:
 
 ```bash
