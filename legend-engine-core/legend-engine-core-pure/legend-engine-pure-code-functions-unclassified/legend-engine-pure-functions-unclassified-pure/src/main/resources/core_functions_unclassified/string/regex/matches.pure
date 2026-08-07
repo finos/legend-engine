@@ -14,7 +14,32 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. It only succeeds if its pattern matches the entire string. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+Whether a regular expression matches a string in full.
+
+**The pattern must match the entire string**, not merely occur somewhere in it, so `'abc'` does not
+match `'[a-z][a-z][a-z][a-z]'` and would not match a bare `'a'` either. Reach for
+`regexpLike(String[1], String[1]):Boolean[1]` when a containment search is what you want; it also
+takes matching options, which this does not.
+
+Patterns are full POSIX ERE (Extended Regular Expression) syntax.
+
+**Parameters**
+- `string` — the string to test.
+- `regexp` — the POSIX ERE pattern, which must match the whole string.
+
+**Returns** `true` when the pattern matches the entire string.
+
+**Examples**
+```pure
+'hello'->matches('hello')                 // true
+'abc'->matches('[a-z][a-z][a-z]')         // true
+'abc'->matches('[a-z][a-z][a-z][a-z]')    // false, the pattern must cover the whole string
+```
+
+**See also** `regexpLike(String[1], String[1]):Boolean[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::matches(string:String[1], regexp:String[1]):Boolean[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatches<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

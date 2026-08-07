@@ -14,25 +14,90 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns the substring that matches a regular expression within a string. If extractAll is true, then it returns an array that contains all substrings that match a regular expression within a string. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+Pulls out the text a regular expression matches.
+
+`extractAll` chooses between the first match and every match, and there is no default. The return is
+`[*]` either way, so a call with `extractAll` set to `false` yields at most one value and still needs
+`toOne` where a single value is required.
+
+Matching is case sensitive, and `.` does not cross a newline; pass one of the `RegexpParameter`
+overloads to change either. Use
+`regexpExtract(String[1], String[1], Boolean[1], Integer[1]):String[*]` to pull out a capture group
+instead of the whole match.
+
+Patterns are full POSIX ERE (Extended Regular Expression) syntax.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to match.
+- `extractAll` — `true` to return every match, `false` for only the first.
+
+**Returns** the matched text: one value, or every match, or nothing when the pattern does not match.
+
+**Examples**
+```pure
+'abc'->regexpExtract('([a-z])(b)', false)          // 'ab'
+'abcccbbacb'->regexpExtract('([a-z])(b)', true)    // 'ab', 'cb', 'cb'
+```
+
+**See also** `regexpExtract(String[1], String[1], Boolean[1], Integer[1]):String[*]`,
+`regexpIndexOf(String[1], String[1]):Integer[1]`,
+`regexpReplace(String[1], String[1], String[1], Boolean[1]):String[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpExtract(string:String[1], regexp:String[1], extractAll:Boolean[1]):String[*]
 {
   $string->regexpExtract($regexp, $extractAll, 0, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the substring that matches a regular expression within a string. If extractAll is true, then it returns an array that contains all substrings that match a regular expression within a string. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpExtract(String[1], String[1], Boolean[1]):String[*]`, but returns a capture group rather
+than the whole match.
+
+Groups are the parenthesised parts of the pattern, numbered from 1 in the order their opening
+parentheses appear; group 0 is the whole match and is what the three-argument form uses. With
+`extractAll` set to `true` the chosen group is taken from each match in turn, so the result has one
+value per match rather than one per group.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to match.
+- `extractAll` — `true` to return the group from every match, `false` for only the first.
+- `groupNumber` — the capture group to extract, or 0 for the whole match.
+
+**Returns** the extracted group, once or once per match.
+
+**Examples**
+```pure
+'abc'->regexpExtract('([a-z])(b)', false, 0)         // 'ab', the whole match
+'abc'->regexpExtract('([a-z])(b)', false, 1)         // 'a'
+'abc'->regexpExtract('([a-z])(b)', false, 2)         // 'b'
+'abcccbbacb'->regexpExtract('([a-z])(b)', true, 1)   // 'a', 'c', 'c', one per match
+```
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpExtract(string:String[1], regexp:String[1], extractAll:Boolean[1], groupNumber:Integer[1]):String[*]
 {
   $string->regexpExtract($regexp, $extractAll, $groupNumber, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the substring that matches a regular expression within a string. If extractAll is true, then it returns an array that contains all substrings that match a regular expression within a string. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpExtract(String[1], String[1], Boolean[1]):String[*]`, with the matching options given
+explicitly rather than left at the `CASE_SENSITIVE` default. The options are those described on
+`regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]`.
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpExtract(string:String[1], regexp:String[1], extractAll:Boolean[1], regexpParameters:RegexpParameter[1..*]):String[*]
 {
   $string->regexpExtract($regexp, $extractAll, 0, $regexpParameters);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns the substring that matches a regular expression within a string. If extractAll is true, then it returns an array that contains all substrings that match a regular expression within a string. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpExtract(String[1], String[1], Boolean[1], Integer[1]):String[*]`, with the matching options
+given explicitly as well as the capture group.
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::regexpExtract(string:String[1], regexp:String[1], extractAll:Boolean[1], groupNumber:Integer[1], regexpParameters:RegexpParameter[1..*]):String[*];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpExtract::testRegexpExtract<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

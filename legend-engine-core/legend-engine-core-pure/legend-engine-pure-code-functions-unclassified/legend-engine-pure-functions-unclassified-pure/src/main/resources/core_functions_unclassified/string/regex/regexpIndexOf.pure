@@ -14,25 +14,79 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+The zero-based position where a regular expression first matches.
+
+Reports where the **first** occurrence begins; use
+`regexpCount(String[1], String[1]):Integer[1]` if you need to know how many there are. Matching is
+case sensitive, and `.` does not cross a newline; pass one of the `RegexpParameter` overloads to
+change either.
+
+Patterns are full POSIX ERE (Extended Regular Expression) syntax.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to locate.
+
+**Returns** the zero-based position at which the pattern first matches.
+
+**Examples**
+```pure
+'It was the best of times, it was the worst of times'->regexpIndexOf('was')   // 3
+'abc123def'->regexpIndexOf('([a-z]+)([0-9]+)')                                // 0
+```
+
+**See also** `regexpIndexOf(String[1], String[1], Integer[1]):Integer[1]`,
+`regexpCount(String[1], String[1]):Integer[1]`,
+`regexpExtract(String[1], String[1], Boolean[1]):String[*]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1]):Integer[1]
 {
   $string->regexpIndexOf($regexp, 0, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpIndexOf(String[1], String[1]):Integer[1]`, but reports where a particular capture group
+begins rather than the whole match.
+
+Groups are the parenthesised parts of the pattern, numbered from 1 in the order their opening
+parentheses appear; group 0 is the whole match and is what the two-argument form uses.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to locate.
+- `groupNumber` — the capture group whose position to report, or 0 for the whole match.
+
+**Returns** the zero-based position at which that group begins.
+
+**Examples**
+```pure
+'abc123def'->regexpIndexOf('([a-z]+)([0-9]+)', 2)   // 3, where the digits start
+```
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1]):Integer[1]
 {
   $string->regexpIndexOf($regexp, $groupNumber, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpIndexOf(String[1], String[1]):Integer[1]`, with the matching options given explicitly
+rather than left at the `CASE_SENSITIVE` default. The options are those described on
+`regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]`.
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Integer[1]
 {
   $string->regexpIndexOf($regexp, 0, $regexpParameters);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns the position of the specified occurrence of the regular expression pattern in the string subject. Group number specifies which group to extract. Groups are specified by using parentheses in the regular expression. The group number defaults to 0. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpIndexOf(String[1], String[1], Integer[1]):Integer[1]`, with the matching options given
+explicitly as well as the capture group.
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::regexpIndexOf(string:String[1], regexp:String[1], groupNumber:Integer[1], regexpParameters:RegexpParameter[1..*]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
