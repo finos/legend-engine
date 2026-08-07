@@ -12,7 +12,7 @@ It is critical that utmost care is taken when deciding on:
     - All PCT tests for the PCT function belong in the same file
 - package names are all lower-case
 - function names are camelCase, with the first letter lower-case
-- function signatures **must have docstring (doc.doc)**
+- function signatures **must be documented** with a `'''...'''` documentation literal — see [Writing PCT function documentation](pct-documentation.md) for the template and rules. The older `doc.doc` tagged value form is being replaced; a declaration may not carry both.
 
 ### Practices
 #### PCT Tests

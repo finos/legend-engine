@@ -17,27 +17,64 @@ import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::variant::convert::tests::to::*;
 
-native function
-    <<PCT.function>>
-    {
-        doc.doc='Converts the $variant to the given $type.\n' +
-                 'This allows to extract the variant actual value, like primitives.\n' +
-                 'The type key name and type lookup are leveraged when coercing a complex type (ie Class).\n' +
-                 'This will fail if value cannot be coerced.'
-    }
-meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[0..1];
+'''
+Reads a variant back out as a value of the given type.
 
+Coercion is across JSON types, not merely a check: a JSON string parses into the target primitive
+where it can, so `'"1"'` reads as `1` for `@Integer` and `'"1.25"'` reads as `1.25` for `@Float`.
+It does not truncate — a JSON number with a fractional part fails against `@Integer`. **Anything
+that cannot be coerced fails rather than returning empty**; the one empty result is JSON `null`,
+which reads back as empty for every target type.
+
+Complex targets are supported as well as primitives: a JSON object reads into a `Class`, a
+`Map<String, …>` or a `List<…>`, resolving a subtype from a `_type` key in the payload. Use
+`toMany(Variant[0..1], T[0..1]):T[*]` when the variant holds an array whose elements you want
+individually rather than as a `List`.
+
+**Parameters**
+- `variant` — the variant to read.
+- `type` — the target type, given as a type literal such as `@Integer`.
+
+**Returns** the value, or empty when the variant holds JSON `null`.
+
+**Examples**
+```pure
+fromJson('1')->to(@Integer)                            // 1
+fromJson('"1"')->to(@Integer)                          // 1, a string coerces
+fromJson('1')->to(@Float)                              // 1.0
+fromJson('null')->to(@Integer)                         // empty
+fromJson('"false"')->to(@Boolean)                      // false
+fromJson('"2020-01-01"')->to(@StrictDate)              // %2020-01-01
+fromJson('{"hello":1}')->to(@Map<String, Integer>)     // a map holding 'hello' -> 1
+fromJson('1.25')->to(@Integer)                         // fails: Integer is not managed yet!
+```
+
+**See also** `to(Variant[0..1], T[0..1], String[1], Pair<String, Class<Any>>[*]):T[0..1]`,
+`toMany(Variant[0..1], T[0..1]):T[*]`,
+`toVariant(Any[*]):Variant[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='Converts the $variant to the given $type.\n' +
-                 'This allows to extract the variant actual value, like primitives.\n' +
-                 'This will fail if value cannot be coerced.'
-    }
 meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1]): T[0..1];
 //{
 //  to($variant, $type, '_type', [])
 //}
+
+'''
+As `to(Variant[0..1], T[0..1]):T[0..1]`, but resolves a subtype using `typeKeyName` and `typeLookup`
+rather than the defaults that variant applies, which are the key `_type` and an empty lookup.
+
+**Parameters**
+- `variant` — the variant to read.
+- `type` — the target type, given as a type literal such as `@Integer`.
+- `typeKeyName` — the payload key naming the concrete subtype.
+- `typeLookup` — the subtype names to resolve against, paired with their classes.
+
+**Returns** the value, or empty when the variant holds JSON `null`.
+'''
+native function
+    <<PCT.function>>
+meta::pure::functions::variant::convert::to<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[0..1];
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
@@ -54,6 +91,10 @@ function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::
     assertEquals(1, $f->eval(|fromJson('"1"')->to(@Integer)));
 }
 
+'''
+Coercion does not truncate: a JSON number with a fractional part fails against `@Integer` rather
+than rounding towards zero.
+'''
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertError(|$f->eval(|fromJson('1.25')->to(@Integer)), 'Integer is not managed yet!');
