@@ -111,12 +111,25 @@ public class Test_Relational_Databricks_Semistructured
             {
                 return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
+            catch (AssertionError e)
+            {
+                String reason = failures.get(test);
+                if (reason != null)
+                {
+                    if (e.getMessage() == null || !e.getMessage().contains(reason))
+                    {
+                        throw new AssertionError("Expect failure to contains: " + reason, e);
+                    }
+                    return true;
+                }
+                throw e;
+            }
             catch (Exception e)
             {
                 String reason = failures.get(test);
                 if (reason != null)
                 {
-                    if (!e.getMessage().contains(reason))
+                    if (e.getMessage() == null || !e.getMessage().contains(reason))
                     {
                         throw new AssertionError("Expect failure to contains: " + reason, e);
                     }
