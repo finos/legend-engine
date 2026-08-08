@@ -121,6 +121,27 @@
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'cume_dist' does not exist"
   }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsInExtend_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+    "expectedError" : "\\nexpected: '#TDS\\\\n   id,parentId\\\\n   2,1\\\\n   3,1\\\\n   5,5\\\\n#'\\nactual:   '#TDS\\\\n   id,parentId\\\\n   1,0\\\\n   2,1\\\\n   3,1\\\\n   4,9\\\\n   5,5\\\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'concatWithSeparator' does not exist."
   }, {
@@ -226,6 +247,9 @@
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,null\\n   8,1,H,null\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,null\\n   1,2,A,E\\n   7,3,G,null\\n   3,3,C,G\\n   4,4,D,null\\n   9,5,I,null\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,J\\n   8,1,H,H\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,E\\n   1,2,A,E\\n   7,3,G,G\\n   3,3,C,G\\n   4,4,D,D\\n   9,5,I,I\\n#'"
   }, {
@@ -234,6 +258,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: ClickHouse\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: ClickHouse"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: ClickHouse\""

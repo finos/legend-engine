@@ -641,7 +641,13 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpression(
 function meta::relational::functions::pureToSqlQuery::findColumnOnOperationHierarchy(colFuncName: String[1], operation:SelectWithCursor[1]): RelationalOperationElement[0..1]
 {
   let foundColumnInSelect = $operation.select->findColumn($colFuncName);
-  let foundColumn = if($foundColumnInSelect->isEmpty() && $operation.select.data->isNotEmpty(), |$operation.select.data->toOne().alias.relation()->findColumn($colFuncName), |$foundColumnInSelect);
+  let foundColumn = if($foundColumnInSelect->isEmpty() && $operation.select.data->isNotEmpty(),
+                       | let tableAlias = $operation.select.data->toOne().alias;
+                         // This branch reaches past the select into the table behind it, so it yields a bare Column.
+                         // The caller uses the result verbatim and a Column has no rendering of its own -- attach the
+                         // alias it came from, as processColumnFunctionExpression does for its own local lookup.
+                         $tableAlias.relation()->findColumn($colFuncName)->map(c | $c->match([col:Column[1] | ^TableAliasColumn(alias = $tableAlias, column = $col), r:RelationalOperationElement[1] | $r]));,
+                       | $foundColumnInSelect);
 
   if ($foundColumn->isEmpty() && $operation.parent->isNotEmpty(),
      | $colFuncName->findColumnOnOperationHierarchy($operation.parent->toOne()),

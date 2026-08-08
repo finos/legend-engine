@@ -160,6 +160,30 @@
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsInExtend_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsUncorrelated_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
@@ -307,6 +331,27 @@
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_String_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
     "test" : "meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
@@ -323,6 +368,9 @@
     "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
+    "expectedError" : "Common table expression not supported on DB Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",

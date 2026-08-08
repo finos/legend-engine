@@ -160,6 +160,35 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Correla
                  '#', $res->sort(~id->ascending())->toString());
 }
 
+// Projected rather than filtered, so the subquery lands in `columns` instead of `filteringOperation`.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExtend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->extend(~isStaffed : d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName,isStaffed\n'+
+                 '   1,Engineering,true\n'+
+                 '   2,Support,false\n'+
+                 '   3,Sales,true\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_DerivedRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
