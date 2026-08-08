@@ -447,6 +447,36 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
   assertConversion($expected, $query);
 }
 
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertSubqueryPredicates(): Boolean[1]
+{
+  let subQuery = ^SelectSQLQuery(
+    distinct = false,
+    columns = getColumn('firmTable', 'ID'),
+    data = ^RootJoinTreeNode(alias = ^TableAlias(relationalElement = getTable('firmTable'), name = 'root'))
+  );
+
+  let subQueryBody = ^ExtendedQuerySpecification(
+    select = ^Select(distinct = false, selectItems = ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'ID'])))),
+    from = ^AliasedRelation(alias = '"root"', relation = ^meta::external::query::sql::metamodel::Table(name = ^QualifiedName(parts = 'firmTable')))
+  );
+
+  // The dyna function is the root of this conversion but its operands are not, so the nested query has to come
+  // back as a TableSubquery. Convert it as a root select instead and it stays an ExtendedQuerySpecification,
+  // which fails the cast below.
+  assertConversion(
+    ^ExistsPredicate(query = ^TableSubquery(query = ^Query(queryBody = $subQueryBody))),
+    ^DynaFunction(name = 'exists', parameters = $subQuery)
+  );
+
+  assertConversion(
+    ^InPredicate(
+      value = ^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'FIRMID'])),
+      valueList = ^SubqueryExpression(query = ^Query(queryBody = $subQueryBody))
+    ),
+    ^DynaFunction(name = 'in', parameters = [getColumn('personTable', 'FIRMID'), $subQuery])
+  );
+}
+
 function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertSelectSQLQueryWithCTE(): Boolean[1]
 {
   let query = ^SelectSQLQuery(
