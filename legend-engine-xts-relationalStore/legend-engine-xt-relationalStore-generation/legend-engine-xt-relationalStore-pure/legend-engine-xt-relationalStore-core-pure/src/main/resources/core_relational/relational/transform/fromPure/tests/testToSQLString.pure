@@ -210,6 +210,35 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
    assertEquals('select reverse("root".FIRSTNAME) as "reverse" from personTable as "root"', $db2Sql);
 }
 
+// substr corrects Pure's 0-based, exclusive-end indexes to SQL's 1-based start and length.
+// The correction happens in processSubstr, on the operation tree, so a literal index is folded
+// away here rather than emitted as '4 + 1'.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSubstrFoldsLiteralIndexes():Boolean[1]
+{
+   let startOnly = toSQLString(|Person.all()->project(p|substr($p.firstName, 4), 'slice'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select substring("root".FIRSTNAME, 5) as "slice" from personTable as "root"', $startOnly);
+
+   let startAndEnd = toSQLString(|Person.all()->project(p|substr($p.firstName, 4, 9), 'slice'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select substring("root".FIRSTNAME, 5, 5) as "slice" from personTable as "root"', $startAndEnd);
+}
+
+// substring keeps its historical translation by default, and is corrected only under the
+// CORRECT_SQL_SUBSTRING_INDEXING feature flag.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSubstringIsUncorrectedByDefault():Boolean[1]
+{
+   let s = toSQLString(|Person.all()->project(p|substring($p.firstName, 4, 9), 'slice'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select substring("root".FIRSTNAME, 4, 9) as "slice" from personTable as "root"', $s);
+}
+
+// A computed index cannot be folded, so the correction becomes a plus/minus operation on the tree.
+// This is the case the Oracle and ClickHouse substring helpers cannot express at all - they call
+// parseInteger() on rendered SQL and raise on anything that is not a literal.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSubstrWithComputedIndex():Boolean[1]
+{
+   let computed = toSQLString(|Person.all()->project(p|substr($p.firstName, length($p.lastName)), 'slice'), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEquals('select substring("root".FIRSTNAME, char_length("root".LASTNAME) + 1) as "slice" from personTable as "root"', $computed);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringSplitPart():Boolean[1]
 {
    let sql = toSQLString({|Person.all()

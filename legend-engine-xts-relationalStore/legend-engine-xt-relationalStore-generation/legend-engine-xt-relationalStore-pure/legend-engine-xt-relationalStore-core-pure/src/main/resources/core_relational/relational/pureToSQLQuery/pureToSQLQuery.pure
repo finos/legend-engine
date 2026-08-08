@@ -117,6 +117,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    graphFetchProperties : Property<Nil,Any|*>[*];
    pushDownEnumTransformations :Boolean[1] = false;
    legacyNullUnsafeEquals : Boolean[1] = false;
+   correctSubstringIndexing :Boolean[1] = false;
    currentWindow : WindowColumn[0..1];
    idToClassMapping : Map<String, List<SetImplementation>>[1];
    colName : String[0..1];
@@ -335,7 +336,8 @@ function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mappi
              | $initialState,
              | ^$initialState(
                   pushDownEnumTransformations = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),
-                  legacyNullUnsafeEquals = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS)
+                  legacyNullUnsafeEquals = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS),
+                  correctSubstringIndexing = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.CORRECT_SQL_SUBSTRING_INDEXING)
                 )
            );
 }
@@ -4401,6 +4403,48 @@ function meta::relational::functions::pureToSqlQuery::processWindowFunction(f:Fu
 function meta::relational::functions::pureToSqlQuery::processDivideRound(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   processDynaFunction('divideRound', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+// Pure indexes are 0-based with an exclusive end; SQL's are 1-based with a length.
+function meta::relational::functions::pureToSqlQuery::processSubstr(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('substring', correctSubstrIndices_RelationalOperationElement_MANY__RelationalOperationElement_MANY_, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+// Correcting substring unconditionally would change the results of existing queries, hence the flag.
+function meta::relational::functions::pureToSqlQuery::processSubstring(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  if($state.correctSubstringIndexing,
+     | processSubstr($f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+     | processDynaFunction('substring', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::substrIntLiteral(op:RelationalOperationElement[1]):Integer[0..1]
+{
+  $op->unwrapAlias()->toOne()->match([
+    l:Literal[1]                     | $l.value->match([i:Integer[1] | $i, a:Any[1] | []]),
+    r:RelationalOperationElement[1]  | []
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::correctSubstrIndices(params:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  let str = $params->at(0);
+  let start = $params->at(1);
+  let startLiteral = $start->substrIntLiteral();
+
+  let newStart = if($startLiteral->isNotEmpty(),
+                    | ^Literal(value = $startLiteral->toOne() + 1),
+                    | newDynaFunction('plus', [$start, ^Literal(value = 1)]));
+
+  if($params->size() == 2,
+     | [$str, $newStart],
+     | let end = $params->at(2);
+       let endLiteral = $end->substrIntLiteral();
+       let length = if($startLiteral->isNotEmpty() && $endLiteral->isNotEmpty(),
+                       | ^Literal(value = $endLiteral->toOne() - $startLiteral->toOne()),
+                       | newDynaFunction('minus', [$end, $start]));
+       [$str, $newStart, $length];);
 }
 
 function meta::relational::functions::pureToSqlQuery::processTimeBucket(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -10100,8 +10144,8 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::contains_String_1__String_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substring_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstring_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substring_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstring_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::length_String_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::plus_String_MANY__String_1_,second=meta::relational::functions::pureToSqlQuery::processStringPlus_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
@@ -10115,6 +10159,8 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::rtrim_String_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::left_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::right_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substr_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstr_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstr_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lpad_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lpad_String_1__Integer_1__String_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::rpad_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

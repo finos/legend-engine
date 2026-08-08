@@ -1,6 +1,18 @@
 {
   "adapter" : "meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorExactBoundary_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorNegative_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorPositive_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorWidthOne_Function_1__Boolean_1_",
+    "expectedError" : "\"Cannot cast a collection of size 2 to multiplicity [1]\""
+  }, {
     "test" : "meta::pure::functions::collection::tests::add::testAddWithOffset_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::collection::add_T_MANY__Integer_1__T_1__T_$1_MANY$_\""
   }, {
@@ -697,6 +709,21 @@
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_"
   }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeftExactLength_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeftTooShortString_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeftZeroLength_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::left::testLeft_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
     "test" : "meta::pure::functions::string::tests::length::testEmptyLength_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::length_String_1__Integer_1_"
   }, {
@@ -745,6 +772,24 @@
     "test" : "meta::pure::functions::string::tests::reverse::testReverseString_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::reverseString_String_1__String_1_\""
   }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightExactLength_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightIsTheMirrorOfLeft_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRightZeroLength_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::right::testRight_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
+  }, {
     "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::split_String_1__String_1__String_MANY_"
   }, {
@@ -756,6 +801,15 @@
   }, {
     "test" : "meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::startsWith_String_1__String_1__Boolean_1_"
+  }, {
+    "test" : "meta::pure::functions::string::tests::substr::testSubstrEmptyResult_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::substr_String_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::substr::testSubstrStartEnd_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::substr::testSubstrStart_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::substr_String_1__Integer_1__String_1_\""
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_\""

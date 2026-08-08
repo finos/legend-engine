@@ -3583,7 +3583,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "       }\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:20 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
+                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:44 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +

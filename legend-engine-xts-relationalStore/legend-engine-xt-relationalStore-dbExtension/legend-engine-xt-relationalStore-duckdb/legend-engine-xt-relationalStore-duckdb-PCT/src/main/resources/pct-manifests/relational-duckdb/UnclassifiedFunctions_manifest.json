@@ -30,11 +30,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'Hello World'\nactual:   'H'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""
   } ]
 }

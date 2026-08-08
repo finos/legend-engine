@@ -73,15 +73,6 @@
     "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1_\""
   }, {
-    "test" : "meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::left::testLeftTooShortString_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::left::testLeft_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
-  }, {
     "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::levenshteinDistance_String_1__String_1__Integer_1_\""
   }, {
@@ -169,15 +160,6 @@
     "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatString_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::repeatString_String_$0_1$__Integer_1__String_$0_1$_\""
   }, {
-    "test" : "meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::right::testRight_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::right_String_1__Integer_1__String_1_\""
-  }, {
     "test" : "meta::pure::functions::string::tests::rpad::testRpadDefaultCharacter_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::rpad_String_1__Integer_1__String_1_\""
   }, {
@@ -211,6 +193,9 @@
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_\""
   }, {
+    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterSingleCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
     "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterAlreadyLower_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
   }, {
@@ -221,6 +206,9 @@
     "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
   }, {
     "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterSingleCharacter_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
   }, {
     "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterAlreadyLower_Function_1__Boolean_1_",

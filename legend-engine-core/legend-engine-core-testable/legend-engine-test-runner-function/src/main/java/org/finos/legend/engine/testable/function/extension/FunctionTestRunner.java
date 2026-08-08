@@ -63,6 +63,7 @@ import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestSuiteSession;
+import org.finos.legend.engine.testable.helper.TestExecutionContextHelper;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -205,7 +206,7 @@ public class FunctionTestRunner implements TestRunner
             try
             {
                 FunctionDefinition<?> effectiveFunction = this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : FunctionTestRunner.this.functionDefinition;
-                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, null, this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
+                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, TestExecutionContextHelper.executionContextFor(this.hints, this.context.getPureModel()), this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
                 TestAssertion assertion = functionTest.assertions.get(0);
                 PlanExecutor.ExecuteArgsBuilder executeArgs = this.context.getExecuteBuilder().withPlan(executionPlan);
                 MutableMap<String, Object> parameters = Maps.mutable.empty();

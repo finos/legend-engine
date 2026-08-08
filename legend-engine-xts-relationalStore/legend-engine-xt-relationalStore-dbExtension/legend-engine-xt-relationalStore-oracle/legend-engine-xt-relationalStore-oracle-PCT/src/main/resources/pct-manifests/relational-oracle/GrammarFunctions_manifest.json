@@ -94,6 +94,9 @@
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_",
     "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean"
   }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEmpty_Function_1__Boolean_1_",
+    "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean (java.lang.String and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+  }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "class java.lang.String cannot be cast to class java.lang.Boolean"
   }, {
@@ -212,10 +215,10 @@
     "expectedError" : "\"type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType\""
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:63cc79-83); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:52cc64-68); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
     "expectedError" : "\"Error during dynamic reactivation: Error dynamically evaluating value specification"

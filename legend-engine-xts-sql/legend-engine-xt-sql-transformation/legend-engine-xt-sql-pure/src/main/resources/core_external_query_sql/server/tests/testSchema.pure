@@ -40,6 +40,7 @@ function <<test.Test>> meta::external::query::sql::server::schema::testTransform
     let baseCol     = $baseRelType.columns->toOne();
 
     let annotatedCol = ^$baseCol(
+      stereotypes = meta::pure::profiles::doc->stereotype('deprecated'),
       taggedValues = ^meta::pure::metamodel::extension::TaggedValue(
                         tag   = meta::pure::profiles::doc->tag('doc'),
                         value = 'column documentation'

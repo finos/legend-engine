@@ -41,6 +41,7 @@
                             <!-- The dependency plugin analyzer raises these as false positives -->
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.eclipse.collections:eclipse-collections</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

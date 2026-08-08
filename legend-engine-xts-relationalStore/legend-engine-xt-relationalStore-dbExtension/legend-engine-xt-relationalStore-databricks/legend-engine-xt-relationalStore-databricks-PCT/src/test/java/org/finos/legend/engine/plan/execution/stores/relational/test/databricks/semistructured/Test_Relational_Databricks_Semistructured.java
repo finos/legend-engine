@@ -111,12 +111,14 @@ public class Test_Relational_Databricks_Semistructured
             {
                 return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
-            catch (Exception e)
+            // Throwable rather than Exception: a wrong-result test fails with an AssertionError.
+            // Anything not named in pathToReason is still rethrown untouched.
+            catch (Throwable e)
             {
                 String reason = failures.get(test);
                 if (reason != null)
                 {
-                    if (!e.getMessage().contains(reason))
+                    if (e.getMessage() == null || !e.getMessage().contains(reason))
                     {
                         throw new AssertionError("Expect failure to contains: " + reason, e);
                     }

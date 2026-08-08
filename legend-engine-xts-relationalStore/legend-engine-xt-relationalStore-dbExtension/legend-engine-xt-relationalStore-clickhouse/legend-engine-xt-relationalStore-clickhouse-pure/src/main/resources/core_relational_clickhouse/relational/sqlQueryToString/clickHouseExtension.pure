@@ -134,7 +134,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(SHA256(%s)))')), 
     dynaFnToSql('split',                  $allStates,            ^ToSql(format='splitByString(%s, %s)', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='splitByString(%s, %s)[%s]', transform={p:String[*] | $p->at(1)->concatenate($p->at(0))->concatenate($p->at(2))})),
-    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->transformSubstringForClickHouse()})),
+    // Index correction lives in processSubstring/processSubstr, so the parameters pass through here.
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevPop', $p)})),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevSamp', $p)})),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='cast(toStartOfInterval(%s) as DateTime64)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
@@ -308,16 +309,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
        let second = $secondParam->floor();
        let nanoseconds = ($secondParam - $second) * 1000000000;
        'makeDateTime64(' + $params->take(5)->joinStrings(',') + ',' + $second->toString() + ',' + $nanoseconds->toString() + ')';);
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformSubstringForClickHouse(params:String[*]):String[1]
-{
-  let paramsSize = $params->size();
-  let start = ($params->at(1)->parseInteger() + 1)->toString();
-  if ($paramsSize == 2,
-  | [$params->at(0), $start]->joinStrings(', '),
-  | let length = ($params->at(2)->parseInteger() - $params->at(1)->parseInteger())->toString();
-    [$params->at(0), $start, $length]->joinStrings(', '););
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformPercentileForClickHouse(params:String[*]):String[1]

@@ -58,6 +58,13 @@ function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testTo
    assertEquals('select strptime("root".stringDateFormat, \'%Y-%m-%d\')::DATE as "convertToDate" from dataTable as "root"', $s);
 }
 
+// substr is always correctly indexed, on every dialect, with no flag involved.
+function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testSubstrOnDuckDB(): Boolean[1]
+{
+   let s = toSQLString(|Person.all()->project([p | $p.firstName->substr(4, 9)], ['slice']), simpleRelationalMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());
+   assertEquals('select substring("root".FIRSTNAME, 5, 5) as "slice" from personTable as "root"', $s);
+}
+
 function <<test.Test>> meta::relational::tests::sqlQueryToString::duckDB::testToSQLStringConvertDateMMMyyyyFormatInDuckDB(): Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.convertToDateUserDefinedFormat], ['convertToDate']), testMapping, meta::relational::runtime::DatabaseType.DuckDB, meta::relational::extension::relationalExtensions());

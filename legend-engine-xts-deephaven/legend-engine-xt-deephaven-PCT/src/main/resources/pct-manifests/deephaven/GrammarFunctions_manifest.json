@@ -94,6 +94,9 @@
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_\""
   }, {
+    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEmpty_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_\""
+  }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_\""
   }, {

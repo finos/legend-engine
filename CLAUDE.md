@@ -102,6 +102,7 @@ Protocol classes are versioned (`v1_24_0`, `v1_25_0`, …). Breaking changes req
 - **Copyright header:** every new file (including `.pure`) needs the Apache 2.0 header — Checkstyle enforces this.
 - **Logging:** SLF4J only — never `System.out.println`. For `INFO`-level operational events use `LogInfo` wrapper + `LoggingEventType` enum (in `legend-shared`); add new event types to the enum rather than free-text strings. Never log credentials/tokens, not even at DEBUG.
 - **Errors:** user-facing errors throw `EngineException` with `SourceInformation` and an `EngineErrorType` (`COMPILATION`/`EXECUTION`/`PARSER`/`INTERNAL`). Don't swallow exceptions. Pure-level: `assert(cond, | 'msg')` or `fail('msg')` — the Java layer converts `PureException` → `EngineException`.
+- **Comments:** don't narrate the code. Never add a comment that restates what the next line does — the code says it already, and the comment goes stale when the line changes. Comment only what the code *can't* say: a non-obvious "why", a spec/dialect quirk being worked around, or a link to an issue. Match the surrounding file's comment density; most functions here have none.
 - **Grammar changes:** update both parser and composer, and add a round-trip test.
 - **Tests:** use `JsonUnit.assertJsonEquals` for JSON comparison (not `String.equals`). Pure test resources go under `src/test/resources/` mirroring the production package.
 
