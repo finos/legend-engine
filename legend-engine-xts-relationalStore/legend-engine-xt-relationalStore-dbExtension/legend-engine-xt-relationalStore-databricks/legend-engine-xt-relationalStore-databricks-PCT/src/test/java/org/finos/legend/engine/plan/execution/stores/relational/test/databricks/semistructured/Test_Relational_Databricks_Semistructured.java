@@ -100,18 +100,7 @@ public class Test_Relational_Databricks_Semistructured
                 // VARIANT (not STRING) for the qualified-property join filter.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]")
-                // [needsInvestigation] A union mapping whose branches hold different JSON
-                // shapes - firm.firmName nested in one root table, firmName flat in the other -
-                // extracts with a single path across both branches, so the rows of whichever
-                // branch does not match come back null. Snowflake excludes the same two tests;
-                // there the mismatch surfaces as GET over a VARCHAR instead of silent nulls.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "firm_D\nfirm_E\nfirm_F\nnull\nnull\nnull")
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "expected: 'Firm/FirmName\nfirm_A\nfirm_B\nfirm_D'");
+                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
