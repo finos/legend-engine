@@ -17,7 +17,7 @@
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "(id INT NULL,col VARCHAR(1024) NULL,user VARCHAR(1024) NULL);"
+    "expectedError" : "Error while executing: Create Table leSchema"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
