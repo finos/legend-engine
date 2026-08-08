@@ -55,6 +55,9 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,parentId\\n   2,1\\n   3,1\\n   5,5\\n#'\nactual:   '#TDS\\n   id,parentId\\n   1,0\\n   2,1\\n   3,1\\n   4,9\\n   5,5\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[MISSING_GROUP_BY]"
   }, {
@@ -93,6 +96,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
     "expectedError" : "The third parameter requires the \"INT\" type"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   personId,ref,itemId\\n   1,10,10\\n#'\nactual:   '#TDS\\n   personId,ref,itemId\\n\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
