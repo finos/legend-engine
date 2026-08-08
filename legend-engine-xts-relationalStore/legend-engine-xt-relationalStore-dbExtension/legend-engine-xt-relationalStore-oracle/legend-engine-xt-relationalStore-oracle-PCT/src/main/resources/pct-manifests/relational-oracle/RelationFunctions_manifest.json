@@ -92,7 +92,7 @@
     "expectedError" : "\"pivot is not supported\""
   }, {
     "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
-    "expectedError" : "\\nexpected: '#TDS\\\\n   id,parentId\\\\n   2,1\\\\n   3,1\\\\n   5,5\\\\n#'\\nactual:   '#TDS\\\\n   id,parentId\\\\n   1,0\\\\n   2,1\\\\n   3,1\\\\n   4,9\\\\n   5,5\\\\n#'"
+    "expectedError" : "\nexpected: '#TDS\\n   id,parentId\\n   2,1\\n   3,1\\n   5,5\\n#'\nactual:   '#TDS\\n   id,parentId\\n   1,0\\n   2,1\\n   3,1\\n   4,9\\n   5,5\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
