@@ -2621,8 +2621,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let relContext = processSubRelation($s.query, $expContext, $context);
       let rel = $relContext.expression->toOne();
 
+      //a source whose schema is only known at compile time (a table function, say) resolves to no
+      //columns here, which means unknown rather than zero - leave those to the compiler to reject
       let columns = $rel->resolveRelationColumns();
-      assert($columns->size() == 1, | 'in (subquery) requires the subquery to return exactly one column, got ' + $columns->size()->toString());
+      assert($columns->size() <= 1, | 'in (subquery) requires the subquery to return exactly one column, got ' + $columns->size()->toString());
 
       sfe(in_U_$0_1$__Relation_1__Boolean_1_, [$value, $rel]);,
     e:meta::external::query::sql::metamodel::Expression[1] |

@@ -20,14 +20,14 @@ tests:
     feature: "Subquery with IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_in_dept
     sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
     feature: "Subquery with IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery with NOT IN
   - id: subquery_not_in
@@ -35,14 +35,14 @@ tests:
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_not_in_dept
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery in WHERE with EXISTS
   - id: subquery_exists
@@ -198,7 +198,7 @@ tests:
     feature: "Uncorrelated IN (subquery)"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Correlated IN (subquery)
   - id: subquery_in_correlated
@@ -214,4 +214,4 @@ tests:
     feature: "IN (subquery) with empty result"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

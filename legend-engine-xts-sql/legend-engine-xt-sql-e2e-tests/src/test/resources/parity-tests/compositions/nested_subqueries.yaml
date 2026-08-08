@@ -51,7 +51,7 @@ tests:
     feature: "Subquery filter + derived table"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Scalar subquery with arithmetic
   - id: nested_scalar_arithmetic

@@ -41,14 +41,14 @@ tests:
     feature: "IN (subquery)"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: where_not_in_subquery
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE name = 'Engineering') ORDER BY 1"
     feature: "NOT IN (subquery)"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   - id: where_in_strings
     sql: "SELECT name FROM persons WHERE name IN ('Alice', 'Bob', 'Charlie') ORDER BY 1"
