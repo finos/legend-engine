@@ -1,0 +1,233 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+function <<PCT.function>>
+{
+    doc.doc='Returns true if at least one row of the given relation satisfies the given predicate. On relational stores this generates an EXISTS subquery, correlated when the predicate closes over a row of an enclosing relation.'
+}
+meta::pure::functions::relation::exists<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Boolean[1]
+{
+   $rel->meta::pure::functions::relation::filter($f)->meta::pure::functions::relation::size() > 0
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testSimpleExists<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                  |#TDS
+                     val
+                     1
+                     3
+                     4
+                   #->exists(x | $x.val > 3)
+               };
+
+    assert($f->eval($expr)->toOne());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testSimpleExists_NoMatch<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                  |#TDS
+                     val
+                     1
+                     3
+                     4
+                   #->exists(x | $x.val > 100)
+               };
+
+    assertFalse($f->eval($expr)->toOne());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsCorrelated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->filter(d | $employees->exists(e | $e.department == $d.departmentId));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->filter(d | !$employees->exists(e | $e.department == $d.departmentId));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department, salary
+                                    101, 1, 100
+                                    102, 1, 900
+                                    103, 3, 100
+                                  #;
+                  $departments->filter(d | $employees->exists(e | ($e.department == $d.departmentId) && ($e.salary > 500)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #->filter(e | $e.employeeId > 1000);
+                  $departments->filter(d | !$employees->exists(e | $e.department == $d.departmentId));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsUncorrelated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #;
+                  $departments->filter(d | $employees->exists(e | $e.employeeId == 101));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsSelfReferencing<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let nodes = #TDS
+                                id, parentId
+                                1, 0
+                                2, 1
+                                3, 1
+                                4, 9
+                                5, 5
+                              #;
+                  $nodes->filter(n | $nodes->exists(p | $p.id == $n.parentId));
+               };
+
+    let res = $f->eval($expr);
+
+    // Row 5 is its own parent, so a subquery that lost its correlation (comparing a row to itself)
+    // would return only row 5 -- which distinguishes that from a correct self-join.
+    assertEquals('#TDS\n'+
+                 '   id,parentId\n'+
+                 '   2,1\n'+
+                 '   3,1\n'+
+                 '   5,5\n'+
+                 '#', $res->sort(~id->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let payroll = #TDS
+                                  employeeId, department, salary
+                                  101, 1, 900
+                                  102, 1, 900
+                                  103, 2, 100
+                                  104, 3, 100
+                                #->groupBy(~department, ~total : x | $x.salary : y | $y->plus());
+                  $departments->filter(d | $payroll->exists(p | ($p.department == $d.departmentId) && ($p.total > 500)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}

@@ -6444,6 +6444,63 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   pair($alias,$path);
 }
 
+function meta::relational::functions::pureToSqlQuery::processRelationExists(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let subSelect = buildRelationSubSelect($expression, 0, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+
+   // A correlated EXISTS never needs the inner columns, and `select 1` keeps it valid when the inner relation is a group-by.
+   let existsSelect = ^$subSelect(columns = [^Literal(value = 1)]);
+
+   $operation->attachPredicate(^DynaFunction(name = 'exists', parameters = $existsSelect), $state);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationIn(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let valueCursor = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, ^$state(inFilter = true), JoinType.LEFT_OUTER, buildNodeId($nodeId, '_v'), $aggFromMap, $context, $extensions)
+                       ->toOne()->cast(@SelectWithCursor);
+   let value = $valueCursor.select.filteringOperation->toOne();
+
+   let subSelect = buildRelationSubSelect($expression, 1, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+
+   // The Relation<Z=(?:U)> signature guarantees a single column, so the sub-select already projects exactly what IN needs.
+   assert($subSelect.columns->size() == 1, | 'in(..., Relation) expects a single-column relation, got ' + $subSelect.columns->size()->toString());
+
+   $operation->attachPredicate(^DynaFunction(name = 'in', parameters = [$value, $subSelect]), $state);
+}
+
+// Builds the relation argument as a query of its own, parented to the enclosing cursor so that columns of the
+// outer row resolve through findColumnOnOperationHierarchy -- this is what makes the subquery correlated.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRelationSubSelect(expression:FunctionExpression[1], relationParamIndex:Integer[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+   let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(parent = $operation), $vars, ^$state(inFilter = false, shouldIsolate = false), JoinType.INNER, buildNodeId($nodeId, '_e' + $relationParamIndex->toString()), $aggFromMap, $context, $extensions)
+                 ->toOne()->cast(@SelectWithCursor);
+
+   let innerSelect = $inner.select->pushExtraFilteringOperation($extensions);
+
+   if($expression.parametersValues->size() <= $relationParamIndex + 1,
+      | $innerSelect,
+      | let predicateParamIndex = $relationParamIndex + 1;
+
+        // The lambda is processed against the inner query with the outer one as its parent, so a column of the
+        // outer row resolves through findColumnOnOperationHierarchy. That is name-based, so a correlated column
+        // whose name also exists on the inner relation resolves to the inner one -- see the self-referencing
+        // exclusion in the RelationFunctions manifests. Basing this on the outer cursor instead does not help:
+        // the inner cursor then wins for both sides.
+        let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], ^$inner(select = $innerSelect, parent = $operation), $vars, ^$state(inFilter = true), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
+                          ->toOne()->cast(@SelectWithCursor);
+        let predicateSelect = $predicate.select;
+        ^$predicateSelect(filteringOperation = $predicateSelect.filteringOperation->concatenate($innerSelect.filteringOperation)->andFilters($extensions));
+   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::attachPredicate(operation:SelectWithCursor[1], predicate:RelationalOperationElement[1], state:State[1]):SelectWithCursor[1]
+{
+   let select = $operation.select;
+   ^$operation(select = if($state.inFilter, | ^$select(filteringOperation = $predicate), | ^$select(columns = $predicate)),
+               currentTreeNode = [],
+               positionBeforeLastApplyJoinTreeNode = []);
+}
+
 function <<access.private>> meta::relational::functions::pureToSqlQuery::getProjectColNamesForProjectRestrict(f:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]) : String[*]
 {
   $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
@@ -10349,6 +10406,8 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processRelationAsOfJoin_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::asOfJoin_Relation_1__Relation_1__Function_1__Function_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processRelationAsOfJoin_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsFilter_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationExists_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationIn_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinct_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinctByColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processConcatenate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
