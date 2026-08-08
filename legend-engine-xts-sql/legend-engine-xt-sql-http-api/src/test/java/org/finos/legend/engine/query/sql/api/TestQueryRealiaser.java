@@ -73,6 +73,15 @@ public class TestQueryRealiaser
     }
 
     @Test
+    public void testCorrelatedSubQuery()
+    {
+        test("select p.a from myTable as p where exists (select 1 from myTable2 as o where o.b = p.a)",
+                "select p.a from myTable as p where exists (select 1 from myTable2 as o_1 where o_1.b = p.a)");
+
+        test("select p.a from myTable as p where p.a in (select o.b from myTable2 as o where o.c = p.a)");
+    }
+
+    @Test
     public void testNonExistingReferencedAlias()
     {
         String error = "no named relation found for 't1', ensure you have aliased the correct table/subquery";
