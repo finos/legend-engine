@@ -2154,6 +2154,8 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     f:FunctionCall[1] | $f.name->extractNameFromQualifiedName($context) + '(' + if ($f.distinct, | 'DISTINCT ', | '') +  $f.arguments->map(a | $a->extractNameFromExpression($context))->joinStrings(', ') + ')',
     i:InListExpression[1] | $i.values->map(v | $v->extractNameFromExpression($context))->joinStrings('(', ', ', ')'),
     i:InPredicate[1] | $i.value->extractNameFromExpression($context) + ' IN ' + $i.valueList->extractNameFromExpression($context),
+    s:SubqueryExpression[1] | '(subquery)',
+    e:ExistsPredicate[1] | 'EXISTS (subquery)',
     i:IsNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NULL',
     i:IsNotNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NOT NULL',
     l:Literal[1] | $l->extractNameFromLiteral($context),
@@ -2206,7 +2208,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::rowExpressionContext(context:SqlTransformContext[1]):SqlTransformExpressionContext[1]
 {
   if ($context.relation->isTrue(),
-    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne)->evaluateAndDeactivate(), $context.lateralOuterAliases->newMap(), $context.relation->isTrue()),
+    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = $context.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate(), $context.lateralOuterAliases->newMap(), $context.relation->isTrue()),
     | expressionContext(^VariableExpression(genericType = ^GenericType(rawType = TDSRow),name = 'row', multiplicity = PureOne), ^Map<String, VariableExpression>(), $context.relation->isTrue()))
 
 }
@@ -2257,6 +2259,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     c:ComparisonExpression[1] | processComparisonExpression($c, $expContext, $context),
     c:CurrentTime[1] | processCurrentTime($c, $expContext, $context),
     c:CurrentUser[1] | processCurrentUser($c, $context),
+    e:ExistsPredicate[1] | processExistsPredicate($e, $expContext, $context),
     e:Extract[1] | processExtract($e, $functionalContext, $context),
     f:FunctionCall[1] | processFunctionCall($f, $functionalContext, $context),
     i:InListExpression[1] | processInListExpression($i, $expContext, $context),
@@ -2513,13 +2516,120 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExistsPredicate(e:ExistsPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
+  debug(|'processExistsPredicate', $context.debug);
+  assertRelation($context.relation, 'exists');
+
+  let query = $e.query.query;
+  let where = hoistableWhere($query);
+
+  let relContext = processSubRelation(if ($where->isEmpty(), | $query, | existsSource($query)), $expContext, $context);
+  let rel = $relContext.expression->toOne();
+
+  let lambda = if ($where->isEmpty(),
+    | alwaysTrueLambda($relContext.rowVarName),
+    | createExistsLambda($where->toOne(), $expContext, $relContext));
+
+  sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv($lambda)]);
+}
+
+// The predicate belongs in the exists lambda, matching relation::exists(rel, f). WHERE can only be
+// hoisted out of the subquery when nothing between it and the result reorders or collapses rows -
+// with GROUP BY/HAVING/LIMIT/OFFSET the predicate applies before that step, so it has to stay a
+// filter inside the sub-relation and the lambda degenerates to x | true.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hoistableWhere(query:Query[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  $query.queryBody->match([
+    q:QuerySpecification[1] |
+      if ($q.groupBy->isEmpty() && $q.having->isEmpty() && $q.limit->isEmpty() && $q.offset->isEmpty(),
+          | $q.where,
+          | []),
+    b:QueryBody[1] | []
+  ]);
+}
+
+// EXISTS only asks whether a row survives, so the subquery's select list is discarded rather than
+// hoisted past - SQL applies WHERE before the projection, so a predicate on a column the projection
+// drops (SELECT id ... WHERE other = ...) would otherwise not resolve. Discarding it also makes the
+// idiomatic EXISTS (SELECT 1 FROM ...) form work.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::existsSource(query:Query[1]):Query[1]
+{
+  let spec = $query.queryBody->cast(@QuerySpecification);
+  let select = $spec.select;
+
+  ^$query(queryBody = ^$spec(where = [], select = ^$select(selectItems = ^AllColumns())));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::alwaysTrueLambda(varName:String[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $varName, multiplicity = PureOne)->evaluateAndDeactivate();
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)), iv(true));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createExistsLambda(where:meta::external::query::sql::metamodel::Expression[1], outerExpContext:SqlTransformExpressionContext[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $relContext.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate();
+
+  let expContext = expressionContext($var, $relContext.lateralOuterAliases->newMap(), $relContext.relation->isTrue());
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)),
+         processExpression($where, $expContext, $relContext));
+}
+
+// The subquery row variable must not shadow the enclosing one, or the correlated reference
+// cannot survive the grammar round-trip the compile step performs.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::subQueryVarName(outerExpContext:SqlTransformExpressionContext[1]):String[1]
+{
+  let taken = $outerExpContext.defaultVar.name->concatenate($outerExpContext.varMap->values().name);
+
+  ['e', 'e1', 'e2', 'e3', 'e4', 'e5']->filter(n | !$n->in($taken))->first()->toOne();
+}
+
+// A nested query used as an operand (EXISTS / IN) stays a relation rather than being materialised,
+// so the store can generate a correlated subquery. Outer aliases are mapped onto the enclosing row
+// variable using the same mechanism LATERAL uses.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSubRelation(query:Query[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SqlTransformContext[1]
+{
+  debug(|'processSubRelation', $context.debug);
+
+  let outerNames = $context.name->concatenate($context.contexts->filter(c | $c.name->isNotEmpty()).name)->removeDuplicates();
+  let outerAliases = $outerNames->map(n | pair($n, $expContext.var()));
+
+  let subContext = ^$context(
+    debug = $context.debug->indent(),
+    root = false,
+    lateralOuterAliases = $context.lateralOuterAliases->concatenate($outerAliases),
+    contexts = $context.contexts,
+    rowVarName = subQueryVarName($expContext)
+  );
+
+  wrapWithFrom(processQuery($query, $subContext));
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInPredicate(i:InPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug(|'processInPredicate', $context.debug);
   let value = $i.value->processExpression($expContext, $context);
-  let values = $i.valueList->processExpression(^$expContext(type = $value.genericType.rawType), $context);
 
-  sfe(in_Any_1__Any_MANY__Boolean_1_, [$value, $values]);
+  $i.valueList->match([
+    //unlike EXISTS the select list is the column being compared, so the subquery is processed as-is
+    s:SubqueryExpression[1] |
+      assertRelation($context.relation, 'in (subquery)');
+
+      let relContext = processSubRelation($s.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      let columns = $rel->resolveRelationColumns();
+      assert($columns->size() == 1, | 'in (subquery) requires the subquery to return exactly one column, got ' + $columns->size()->toString());
+
+      sfe(in_U_$0_1$__Relation_1__Boolean_1_, [$value, $rel]);,
+    e:meta::external::query::sql::metamodel::Expression[1] |
+      let values = $e->processExpression(^$expContext(type = $value.genericType.rawType), $context);
+
+      sfe(in_Any_1__Any_MANY__Boolean_1_, [$value, $values]);
+  ]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInListExpression(i:InListExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3356,6 +3466,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair(CurrentTimeType.TIMESTAMP, DateTime)
       ]->getValue($c.type),
     c:CurrentUser[1] | String,
+    e:ExistsPredicate[1] | Boolean,
     e:Extract[1] | Integer,
     f:FunctionCall[1] |
       let processor = functionProcessor($f.name);
@@ -3933,6 +4044,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let w2 = walk($f.arguments, $f.filter, $accumulator, $extras);
       $w1->concatenate($w2);,
     i:InListExpression[1] | walk($i.values, $accumulator, $extras),
+    //a subquery operand carries its own column scope, so it is opaque here - callers such as
+    //checkReferencedColumnsAreValid only reason about the current query
+    i:InPredicate[1] | walk($i.value, $i.valueList->filter(v | !$v->instanceOf(SubqueryExpression)), $accumulator, $extras),
     i:IsNotNullPredicate[1] | walk($i.value, $accumulator, $extras),
     i:IsNullPredicate[1] | walk($i.value, $accumulator, $extras),
     l:LikePredicate[1] | walk($l.value, $l.pattern, $l.escape, $accumulator, $extras),
@@ -4144,6 +4258,8 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1];
   lateralOuterAliases: Pair<String, VariableExpression>[*];
   aliasColumns:String[*];
+  //renamed inside a correlated subquery so its rows do not shadow the enclosing row variable
+  rowVarName: String[1] = 'x';
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);
