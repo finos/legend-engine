@@ -195,8 +195,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExists
 
     let res = $f->eval($expr);
 
-    // Row 5 is its own parent, so a subquery that lost its correlation (comparing a row to itself)
-    // would return only row 5 -- which distinguishes that from a correct self-join.
+    // Row 5 is its own parent, so a subquery that lost its correlation degenerates to
+    // `p.id == p.parentId` -- true for every outer row, returning all five. That is what
+    // distinguishes a lost correlation from a correct self-join here.
     assertEquals('#TDS\n'+
                  '   id,parentId\n'+
                  '   2,1\n'+

@@ -6489,9 +6489,9 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRe
 
         // The lambda is processed against the inner query with the outer one as its parent, so a column of the
         // outer row resolves through findColumnOnOperationHierarchy. That is name-based, so a correlated column
-        // whose name also exists on the inner relation resolves to the inner one -- see the self-referencing
-        // exclusion in the RelationFunctions manifests. Basing this on the outer cursor instead does not help:
-        // the inner cursor then wins for both sides.
+        // whose name also exists on the inner relation resolves to the inner one -- shared with lateral, tracked
+        // as https://github.com/finos/legend-engine/issues/5048. Basing this on the outer cursor instead does not
+        // help: the inner cursor then wins for both sides.
         let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], ^$inner(select = $innerSelect, parent = $operation), $vars, ^$state(inFilter = true), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
                           ->toOne()->cast(@SelectWithCursor);
         let predicateSelect = $predicate.select;
