@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.QuoteMode;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
@@ -21,9 +24,12 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestSnowflakeCommands
 {
@@ -47,5 +53,33 @@ public class TestSnowflakeCommands
                 "DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE"
         );
         assertEquals(expectedSQLStatements, sqlStatements);
+    }
+
+    @Test
+    public void testCsvFormatForTempFileUsesAllNonNullQuoteMode()
+    {
+        CSVFormat format = new SnowflakeCommands().getCsvFormatForTempFile();
+
+        assertNotNull(format);
+        assertEquals(QuoteMode.ALL_NON_NULL, format.getQuoteMode());
+        assertEquals(Character.valueOf('"'), format.getQuoteCharacter());
+    }
+
+    @Test
+    public void testCsvFormatForTempFileQuotesNonNullValuesAndPreservesEmbeddedNewlines() throws IOException
+    {
+        CSVFormat format = new SnowflakeCommands().getCsvFormatForTempFile();
+
+        StringWriter out = new StringWriter();
+        try (CSVPrinter printer = new CSVPrinter(out, format))
+        {
+            printer.printRecord(Arrays.asList("hello", "", null, 42, "line1\nline2,\"still one field\""));
+            printer.printRecord(Arrays.asList("x", "y", "z", 0, "plain"));
+        }
+
+        String expected =
+                "\"hello\",\"\",,\"42\",\"line1\nline2,\"\"still one field\"\"\"\r\n"
+                        + "\"x\",\"y\",\"z\",\"0\",\"plain\"\r\n";
+        assertEquals(expected, out.toString());
     }
 }
