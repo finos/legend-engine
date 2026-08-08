@@ -498,6 +498,23 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testExists()
+    {
+        check("SELECT * FROM myTable WHERE EXISTS (SELECT * FROM myTable2)");
+        check("SELECT * FROM myTable WHERE EXISTS (SELECT myTable2.id FROM myTable2 WHERE myTable2.id = myTable.id)");
+        check("SELECT * FROM myTable WHERE NOT EXISTS (SELECT * FROM myTable2)");
+    }
+
+    @Test
+    public void testInSubquery()
+    {
+        check("SELECT * FROM myTable WHERE myTable.id IN (SELECT myTable2.id FROM myTable2)");
+        //the parser lifts NOT into a NotExpression wrapping the whole predicate, so it composes prefixed
+        check("SELECT * FROM myTable WHERE myTable.id NOT IN (SELECT myTable2.id FROM myTable2)",
+                "SELECT * FROM myTable WHERE NOT myTable.id IN (SELECT myTable2.id FROM myTable2)");
+    }
+
+    @Test
     public void testLateralSubquery()
     {
         check("SELECT * FROM myTable, LATERAL (SELECT * FROM myTable2 WHERE myTable2.id = myTable.id) AS t");

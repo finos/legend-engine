@@ -43,6 +43,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.With;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.ExistsPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Extract;
 import org.finos.legend.engine.protocol.sql.metamodel.FrameBound;
@@ -249,6 +250,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(Except val)
     {
         return visit((SetOperation) val);
+    }
+
+    @Override
+    public T visit(ExistsPredicate val)
+    {
+        return collect(val.query);
     }
 
     @Override

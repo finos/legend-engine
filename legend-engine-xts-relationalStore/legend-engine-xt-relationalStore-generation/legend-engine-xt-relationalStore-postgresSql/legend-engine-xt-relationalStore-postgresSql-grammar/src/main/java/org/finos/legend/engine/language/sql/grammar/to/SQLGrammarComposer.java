@@ -284,6 +284,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(ExistsPredicate val)
+            {
+                return "EXISTS " + val.query.accept(this);
+            }
+
+            @Override
             public String visit(Expression val)
             {
                 return val.accept(this);
@@ -315,7 +321,10 @@ public class SQLGrammarComposer
             @Override
             public String visit(InPredicate val)
             {
-                return val.value.accept(this) + " IN (" + val.valueList.accept(this) + ")";
+                //a subquery valueList already renders its own brackets
+                return val.valueList instanceof SubqueryExpression
+                        ? val.value.accept(this) + " IN " + val.valueList.accept(this)
+                        : val.value.accept(this) + " IN (" + val.valueList.accept(this) + ")";
             }
 
             @Override

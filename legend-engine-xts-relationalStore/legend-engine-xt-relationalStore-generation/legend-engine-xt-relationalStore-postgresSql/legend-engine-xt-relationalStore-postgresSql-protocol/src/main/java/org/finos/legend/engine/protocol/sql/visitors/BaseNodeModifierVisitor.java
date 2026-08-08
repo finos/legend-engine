@@ -34,6 +34,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.Except;
+import org.finos.legend.engine.protocol.sql.metamodel.ExistsPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Extract;
 import org.finos.legend.engine.protocol.sql.metamodel.FrameBound;
@@ -241,6 +242,14 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     public Node visit(Except val)
     {
         return visit((SetOperation) val);
+    }
+
+    @Override
+    public Node visit(ExistsPredicate val)
+    {
+        val.query = _visit(val.query);
+
+        return val;
     }
 
     @Override
