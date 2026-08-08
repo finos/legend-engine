@@ -1271,6 +1271,10 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   stdDevPopulation,
   stdDevSample,
   sub,
+  // No dialect translates substr: the TDS path names a dyna after the Pure function it
+  // could not push down, and registering the name turns that into "no SQL translation"
+  // rather than an assertion out of the registry.
+  substr,
   substring,
   sum,
   pair,
