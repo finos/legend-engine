@@ -211,5 +211,5 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    )};
 
    let memSql = toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   assertSameSQL('select `root`.LEGALNAME as `LegalName`, count(distinct(`personTable_d#4_d_m1`.FIRSTNAME)) = count(`personTable_d#4_d_m1`.FIRSTNAME) as `IsDistinctFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `LegalName`', $memSql);
+   assertSameSQL('select `root`.LEGALNAME as `LegalName`, case when (count(distinct(`personTable_d#4_d_m1`.FIRSTNAME)) = count(`personTable_d#4_d_m1`.FIRSTNAME)) then \'true\' else \'false\' end as `IsDistinctFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `LegalName`', $memSql);
 }
