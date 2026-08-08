@@ -59,7 +59,7 @@ public class SetImplTransformers
         transformers = Lists.mutable.empty();
     }
 
-    private Boolean toBoolean(Object o)
+    public static Boolean toBoolean(Object o)
     {
         if (o == null)
         {
@@ -95,7 +95,7 @@ public class SetImplTransformers
             switch (transformerInput.type)
             {
                 case "Boolean":
-                    return this::toBoolean;
+                    return SetImplTransformers::toBoolean;
                 case "StrictDate":
                 case "DateTime":
                 case "Date":

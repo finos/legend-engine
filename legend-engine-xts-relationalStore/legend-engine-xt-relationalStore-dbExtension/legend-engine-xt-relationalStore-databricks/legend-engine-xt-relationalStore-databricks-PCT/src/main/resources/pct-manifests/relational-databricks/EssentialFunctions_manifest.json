@@ -26,7 +26,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES] Cannot resolve \"(1 IN (1, 2, 5, 2, a, true, to_date(2014-02-01), c))\" due to data type mismatch: Input to `in` should all be the same type, but it's [\"INT\", \"INT\", \"INT\", \"INT\", \"INT\", \"STRING\", \"STRING\", \"DATE\", \"STRING\"]. SQLSTATE: 42K09; line 1 pos 9"
+    "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES]"
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
@@ -267,9 +267,6 @@
   }, {
     "test" : "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
     "expectedError" : "Ensure the target system understands Year or Year-month semantic."
-  }, {
-    "test" : "meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE] Cannot resolve \"CASE WHEN true THEN truesentence ELSE falsesentence END\" due to data type mismatch"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""
