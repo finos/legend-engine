@@ -275,6 +275,25 @@ jobs:
           mkdir central-publishing
           cd central-staging && zip -r ../central-publishing/central-bundle.zip org
 
+      - name: Report bundle size
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          bundle=central-publishing/central-bundle.zip
+          bytes=$(stat -c %s "$bundle")
+          human=$(numfmt --to=iec --suffix=B "$bytes")
+          entries=$(unzip -l "$bundle" | tail -1 | awk '{print $2}')
+          echo "central-bundle.zip: $human ($bytes bytes), $entries entries"
+          {
+            echo "### Release bundle ($RELEASE_VERSION)"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | --- |"
+            echo "| Compressed size | $human ($bytes bytes) |"
+            echo "| Entries | $entries |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
       - name: Publish bundle
         working-directory: central-publishing
         run: |
