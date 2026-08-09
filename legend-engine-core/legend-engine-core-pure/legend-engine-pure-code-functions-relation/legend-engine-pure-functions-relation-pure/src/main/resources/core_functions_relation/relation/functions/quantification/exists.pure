@@ -206,6 +206,40 @@ function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExists
                  '#', $res->sort(~id->ascending())->toString());
 }
 
+// Three relations nested two subqueries deep, all sharing the column name `id`, so each reference has to
+// resolve to its own level: $d.id is two scopes out from where it is written, $e.id one.
+function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsWithNestedIn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      id, name
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    id, deptId
+                                    101, 1
+                                    102, 2
+                                    103, 3
+                                  #;
+                  let badges = #TDS
+                                 id
+                                 101
+                                 103
+                               #;
+                  $departments->filter(d | $employees->exists(e | $e.deptId == $d.id && $e.id->in($badges->select(~id))));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   id,name\n'+
+                 '   1,Engineering\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~id->ascending())->toString());
+}
+
 // Projected rather than filtered, so the subquery lands in `columns` instead of `filteringOperation`.
 function <<PCT.test>> meta::pure::functions::relation::tests::exists::testExistsInExtend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {

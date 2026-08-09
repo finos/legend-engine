@@ -133,6 +133,9 @@
     "test" : "meta::pure::functions::relation::tests::exists::testExistsUncorrelated_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsWithNestedIn_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {

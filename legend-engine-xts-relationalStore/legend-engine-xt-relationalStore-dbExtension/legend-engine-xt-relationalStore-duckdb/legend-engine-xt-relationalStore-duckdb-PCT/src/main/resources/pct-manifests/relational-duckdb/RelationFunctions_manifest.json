@@ -1,12 +1,6 @@
 {
   "adapter" : "meta::relational::tests::pct::duckDB::testAdapterForRelationalWithDuckDBExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   id,parentId\\n   2,1\\n   3,1\\n   5,5\\n#'\nactual:   '#TDS\\n   id,parentId\\n   1,0\\n   2,1\\n   3,1\\n   4,9\\n   5,5\\n#'"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   personId,ref,itemId\\n   1,10,10\\n#'\nactual:   '#TDS\\n   personId,ref,itemId\\n\\n#'"
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
   } ]

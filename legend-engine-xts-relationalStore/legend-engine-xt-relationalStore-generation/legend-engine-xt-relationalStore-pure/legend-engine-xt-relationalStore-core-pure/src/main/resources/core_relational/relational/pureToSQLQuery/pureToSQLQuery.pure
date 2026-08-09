@@ -125,6 +125,14 @@ Class meta::relational::functions::pureToSqlQuery::State
    aliases : RelationalOperationElement[*];
    inAgg : Boolean[1] = false;
    disableAutoFlatten : Boolean[0..1];
+   // Lambda parameter name -> the relation it ranges over. Kept apart from functionReferenceScope because
+   // processVariableExpression re-parents whatever that resolves, which would change the select a column
+   // reference is attached to. This one is read only to pick the relation a name is looked up on.
+   relationVarScope : Map<String, SelectWithCursor>[0..1];
+   // Set only while building a correlated subquery, which is the one place a cursor's parent is a genuinely
+   // enclosing query rather than another link within the same one (processColSpec, for instance, parents a
+   // cursor to its own query). Without it a relation reference cannot tell shadowing from ordinary reuse.
+   correlatedScopeId : String[0..1];
 }
 
 Class meta::relational::functions::pureToSqlQuery::FunctionParamScope
@@ -161,6 +169,19 @@ function meta::relational::functions::pureToSqlQuery::updateFunctionParamsScope(
    let varToSelect=newMap($values);
    let newScope = ^FunctionParamScope(parent=$state.functionReferenceScope, varToSelect=$varToSelect);
    ^$state(functionReferenceScope=$newScope);
+}
+
+function meta::relational::functions::pureToSqlQuery::withRelationVarScope(state:State[1], functionType:FunctionType[1], cursor:SelectWithCursor[1]):State[1]
+{
+   let bindings = $functionType.parameters->evaluateAndDeactivate().name->map(p | pair($p, $cursor));
+   ^$state(relationVarScope = if($state.relationVarScope->isEmpty(), |newMap($bindings), |$state.relationVarScope->toOne()->putAll(newMap($bindings))));
+}
+
+function meta::relational::functions::pureToSqlQuery::withRelationVarScope(state:State[1], lambda:ValueSpecification[1], cursor:SelectWithCursor[1]):State[1]
+{
+   let unwrapped = $lambda->match([e:StoreMappingRoutedValueSpecification[1] | $e.value, v:ValueSpecification[1] | $v])->cast(@ValueSpecification)->toOne();
+   let functionType = $unwrapped.genericType.typeArguments.rawType->filter(t | $t->instanceOf(FunctionType))->cast(@FunctionType);
+   if($functionType->isEmpty(), |$state, |$state->withRelationVarScope($functionType->toOne(), $cursor));
 }
 
 function meta::relational::functions::pureToSqlQuery::withFunctionParamScope(state:State[1], newScope: FunctionParamScope[0..1]):State[1]
@@ -442,7 +463,7 @@ function meta::relational::functions::pureToSqlQuery::processVariableExpression(
 
                             let resolvedOperation = if($state.functionReferenceScope->isNotEmpty(), //attempt to resolve the variable name to a SelectWithCursor recorded in either this or a parent scope
                                                             | let resolvedOperation = $state.functionReferenceScope->toOne().resolveFunctionReferenceByName($v.name);
-                                                              $resolvedOperation->map(ro | ^$ro(parent = $operation.parent))->orElse($operation);,
+                                                              $resolvedOperation->map(ro | ^$ro(parent = $operation.parent)->deShadowRelationReference($operation, $state.correlatedScopeId))->orElse($operation);,
                                                             | $operation);
 
                             let nres = if($res->isNotEmpty() && $res->toOne()->instanceOf(InstanceValue) && $res->cast(@InstanceValue).values->size() == 1 && $res->cast(@InstanceValue).values->at(0)->instanceOf(VarPlaceHolder) &&
@@ -476,6 +497,40 @@ function meta::relational::functions::pureToSqlQuery::processVariableExpression(
   print(if(!$context.debug || $res.element->size() != 1 || !$res.element->toOne()->instanceOf(SelectWithCursor), |'', | $context.space + 'Result of Variable Expression, name:' + $v.name + ' - ' + $res.element->toOne()->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
 
   $res;                          
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::aliasNamesInScope(operation:SelectWithCursor[0..1]):String[*]
+{
+   if($operation->isEmpty(),
+      | [],
+      | let data = $operation->toOne().select.data;
+        if($data->isEmpty(), |[], |$data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias.name)
+          ->concatenate(aliasNamesInScope($operation->toOne().parent));
+   );
+}
+
+// A relation variable resolves to one shared cursor with one TableAlias, so referencing the same relation
+// both inside and outside a correlated subquery emits that alias twice and the inner one shadows the outer.
+// Renaming only has to make the name distinct, not meaningful: the name that reaches the SQL is assigned by
+// the reAlias post-processor, which numbers aliases per relation after de-duplicating them by name.
+// Only a single-node reference is renamed; one with a join tree underneath keeps its aliases and an outer
+// column referenced through it is caught by assertOuterColumnNotShadowed.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::deShadowRelationReference(resolved:SelectWithCursor[1], enclosing:SelectWithCursor[1], scopeId:String[0..1]):SelectWithCursor[1]
+{
+   let root = $resolved.select.data;
+   if($scopeId->isEmpty() || $root->isEmpty() || $root.childrenData->isNotEmpty() || !$root.alias.name->in($enclosing->aliasNamesInScope()),
+      | $resolved,
+      | let select = $resolved.select;
+        let oldRoot = $root->toOne();
+        let oldAlias = $oldRoot.alias;
+        let newAlias = ^$oldAlias(name = $oldAlias.name + $scopeId->toOne());
+        let aliasMap = ^OldAliasToNewAlias(first = $oldAlias.name, second = $newAlias);
+        let newRoot = ^$oldRoot(alias = $newAlias);
+        ^$resolved(select = ^$select(columns = $select.columns->reprocessAliases($aliasMap),
+                                     filteringOperation = $select.filteringOperation->map(f | $f->reprocessAliases($aliasMap)),
+                                     data = $newRoot),
+                   currentTreeNode = if($resolved.currentTreeNode->isEmpty(), |[], |$newRoot));
+   );
 }
 
 function meta::relational::functions::pureToSqlQuery::validate(s:SelectWithCursor[1], v:ValueSpecification[0..1], extensions:Extension[*]):Boolean[1]
@@ -655,6 +710,39 @@ function meta::relational::functions::pureToSqlQuery::findColumnOnOperationHiera
   );
 }
 
+// Resolves a column against one specific relation rather than searching the cursor hierarchy by name.
+// Same lookup and same normalisation as the local branch of processColumnFunctionExpression, so the result
+// is always alias-qualified and renders inside a predicate.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveColumnOnCursor(colName:String[1], cursor:SelectWithCursor[1]):RelationalOperationElement[0..1]
+{
+  let tableAlias = $cursor.select.data.alias;
+  let foundInSelect = $cursor.select->findColumn($colName);
+  let found = if($foundInSelect->isEmpty() && $tableAlias->isNotEmpty(),
+                 | $tableAlias->toOne().relation()->findColumn($colName),
+                 | $foundInSelect);
+
+  $found->map(c | $c->match([
+     col:Column[1] | ^TableAliasColumn(alias = $tableAlias->toOne(), column = $col),
+     a:Alias[1] | $a.relationalElement,
+     tcn:TableAliasColumn[1] | ^$tcn(alias = $tableAlias->toOne())
+  ]));
+}
+
+// A column taken from an enclosing query is emitted as <alias>.<column>. If the query being built uses that
+// same alias, the reference silently binds to the inner relation instead and the query returns wrong rows
+// rather than failing, so stop here instead. Only reached where the lambda variable named a relation other
+// than the one being built; an outer reference that got there by name search alone is not covered.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::assertOuterColumnNotShadowed(column:RelationalOperationElement[1], colName:String[1], select:SelectSQLQuery[1]):RelationalOperationElement[1]
+{
+   let outerAlias = $column->match([t:TableAliasColumn[1] | $t.alias.name, r:RelationalOperationElement[1] | []]);
+   let localAliases = if($select.data->isEmpty(), |[], |$select.data->toOne()->getAllNodes()->cast(@RelationalTreeNode).alias.name);
+
+   assert($outerAlias->isEmpty() || !$outerAlias->toOne()->in($localAliases),
+          | 'Column \'' + $colName + '\' of the enclosing query cannot be referenced from this subquery: both use the table alias \'' + $outerAlias->toOne() + '\'');
+
+   $column;
+}
+
 function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpression(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
@@ -663,19 +751,43 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
   let leftSelect = $leftCursor.select;
 
   let colFuncName = $fe.func.name->toOne();
+
+  // $x.col and $y.col are indistinguishable once reduced to a name, and the search below is inner-first, so a
+  // correlated reference whose name also exists on the inner relation would bind to the inner one. When the
+  // lambda variable is on record and names a relation other than the one being built, go straight to it.
+  let boundCursor = $state.relationVarScope->map(s | $fe.parametersValues->at(0)->evaluateAndDeactivate()->match([
+                                                       v:VariableExpression[1] | $s->get($v.name),
+                                                       a:Any[1] | []->cast(@SelectWithCursor)
+                                                    ]));
+  // Compared on the root of the relation rather than the select: a select is rebuilt as it is processed
+  // (columns cleared, filters moved), so the same relation reaches here as a different select each time.
+  let leftRoot = $leftSelect.data;
+  let boundRoot = $boundCursor.select.data;
+  let outerColumn = if($boundRoot->isNotEmpty() && $leftRoot->isNotEmpty() && $boundRoot->toOne() != $leftRoot->toOne(),
+                       | resolveColumnOnCursor($colFuncName, $boundCursor->toOne()),
+                       | []);
+
   let tableAlias = $leftSelect.data.alias;
   let foundColumnInSelect = $leftSelect->findColumn($colFuncName);
   let foundAlias = if($foundColumnInSelect->isEmpty(), |findAlias($fe.func.name->toOne(), $operation->cast(@SelectWithCursor).parent.select.columns), |$foundColumnInSelect);
   let foundColumn = if($foundAlias->isEmpty() && $tableAlias->isNotEmpty(), |$tableAlias->toOne().relation()->findColumn($colFuncName), |$foundAlias);
-  let colAlias = if ($foundColumn->isNotEmpty(),
+  let colAlias = if ($outerColumn->isNotEmpty(),
     |
-      $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias->toOne(), column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias->toOne())]);
+      $outerColumn->toOne();
     ,
     |
-      $colFuncName->findColumnOnOperationHierarchy($leftCursor)->toOne('Column not found on query or hierarchy: ' + $colFuncName);
+      if ($foundColumn->isNotEmpty(),
+        |
+          $foundColumn->toOne()->match([c:Column[1]|^TableAliasColumn(alias = $tableAlias->toOne(), column = $c), a:Alias[1]|$a.relationalElement, tcn:TableAliasColumn[1]|^$tcn(alias = $tableAlias->toOne())]);
+        ,
+        |
+          $colFuncName->findColumnOnOperationHierarchy($leftCursor)->toOne('Column not found on query or hierarchy: ' + $colFuncName);
+      );
   );
 
-  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
+  let checkedColAlias = if($outerColumn->isNotEmpty(), |assertOuterColumnNotShadowed($colAlias, $colFuncName, $leftSelect), |$colAlias);
+
+  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$checkedColAlias),|^$leftSelect(columns=$checkedColAlias));
 
   let paths = $operation.select->filter(s | $s->instanceOf(TdsSelectSqlQuery))->cast(@TdsSelectSqlQuery).paths;
   let name = $fe.func.name->toOne();
@@ -3733,7 +3845,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsFilter(f:Functio
 
    if($state.insertDriverTablePkInTempTable->isNotEmpty(),
       | $mainQuery->cast(@SelectWithCursor),
-      | let res = processValueSpecification($f.parametersValues->at(1), [], ^$mainQuery(select=^$mainSelect(filteringOperation=[], extraFilteringOperation=[])), $vars, ^$state(inFilter=true), $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+      | let filterCursor = ^$mainQuery(select=^$mainSelect(filteringOperation=[], extraFilteringOperation=[]));
+        let res = processValueSpecification($f.parametersValues->at(1), [], $filterCursor, $vars, ^$state(inFilter=true)->withRelationVarScope($f.parametersValues->at(1), $filterCursor), $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
         let select = $res.select;
         let mainQueryFilter=$mainSelect.filteringOperation->concatenate($mainQuery.select.extraFilteringOperation)->andFilters($extensions);
         let mainQueryColumns = $mainSelect.columns;
@@ -6343,7 +6456,9 @@ function meta::relational::functions::pureToSqlQuery::processLateral(expression:
    let lateralInputSelect = $lateralInput.select->pushExtraFilteringOperation($extensions)->cast(@TdsSelectSqlQuery);
    let lateralInputRootNode = $lateralInput.select.data->toOne();
 
-   let lateral = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, ^$operation(parent = $lateralInput), $vars, $state, $joinType, buildNodeId($nodeId,'_d1'), $aggFromMap, $context, $extensions)
+   let lateralNodeId = buildNodeId($nodeId,'_d1');
+   let lateralState = $state->withRelationVarScope($expression.parametersValues->at(1), $lateralInput);
+   let lateral = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, ^$operation(parent = $lateralInput), $vars, ^$lateralState(correlatedScopeId = $lateralNodeId), $joinType, $lateralNodeId, $aggFromMap, $context, $extensions)
                   ->toOne()
                   ->cast(@SelectWithCursor);
 
@@ -6424,8 +6539,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let expressionToRoute = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
   let select = $mainQuery.select;
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
+  let colSpecCursor = ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery);
+  let colSpecState = $state->withRelationVarScope($f->cast(@FunctionDefinition<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType), $colSpecCursor);
   let newElement = $expressionToRoute->match([
-                                              f:FunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                              f:FunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
                                               i:InstanceValue[1] | let transformedValues = $i.values->map(v | $v->match([
                                                                                                                           s:String[1] | ^Literal(value=$s),
                                                                                                                           n:Number[1] | ^Literal(value=$n),
@@ -6433,8 +6550,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                                                                                                           b:Boolean[1] | ^Literal(value=$b),
                                                                                                                           e:Enum[1] | ^Literal(value=$e),
                                                                                                                           e:Enumeration<Any>[1] | ^Literal(value=$e),
-                                                                                                                          f:SimpleFunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
-                                                                                                                          i:InstanceValue[1] | $i->processInstanceValue($currentPropertyMapping, ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery), $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0),
+                                                                                                                          f:SimpleFunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                                                                                                          i:InstanceValue[1] | $i->processInstanceValue($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0),
                                                                                                                           v:PlanVarPlaceHolder[1] | ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
                                                                                                                         ])
                                                                                                           );
@@ -6474,11 +6591,13 @@ function meta::relational::functions::pureToSqlQuery::processRelationIn(expressi
    $operation->attachPredicate(^DynaFunction(name = 'in', parameters = [$value, $subSelect]), $state);
 }
 
-// Builds the relation argument as a query of its own, parented to the enclosing cursor so that columns of the
-// outer row resolve through findColumnOnOperationHierarchy -- this is what makes the subquery correlated.
+// Builds the relation argument as a query of its own, parented to the enclosing cursor. A column of the outer
+// row resolves through the lambda variable it was written on, falling back to a name search up the parent
+// chain -- that is what makes the subquery correlated.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRelationSubSelect(expression:FunctionExpression[1], relationParamIndex:Integer[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
-   let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(parent = $operation), $vars, ^$state(inFilter = false, shouldIsolate = false), JoinType.INNER, buildNodeId($nodeId, '_e' + $relationParamIndex->toString()), $aggFromMap, $context, $extensions)
+   let innerNodeId = buildNodeId($nodeId, '_e' + $relationParamIndex->toString());
+   let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(parent = $operation), $vars, ^$state(inFilter = false, shouldIsolate = false, correlatedScopeId = $innerNodeId), JoinType.INNER, $innerNodeId, $aggFromMap, $context, $extensions)
                  ->toOne()->cast(@SelectWithCursor);
 
    let innerSelect = $inner.select->pushExtraFilteringOperation($extensions);
@@ -6488,11 +6607,10 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRe
       | let predicateParamIndex = $relationParamIndex + 1;
 
         // The lambda is processed against the inner query with the outer one as its parent, so a column of the
-        // outer row resolves through findColumnOnOperationHierarchy. That is name-based, so a correlated column
-        // whose name also exists on the inner relation resolves to the inner one -- shared with lateral, tracked
-        // as https://github.com/finos/legend-engine/issues/5048. Basing this on the outer cursor instead does not
-        // help: the inner cursor then wins for both sides.
-        let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], ^$inner(select = $innerSelect, parent = $operation), $vars, ^$state(inFilter = true), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
+        // outer row resolves through findColumnOnOperationHierarchy; its own parameter is recorded so that a
+        // column named on both relations still binds to the inner one.
+        let predicateCursor = ^$inner(select = $innerSelect, parent = $operation);
+        let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], $predicateCursor, $vars, ^$state(inFilter = true)->withRelationVarScope($expression.parametersValues->at($predicateParamIndex), $predicateCursor), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
                           ->toOne()->cast(@SelectWithCursor);
         let predicateSelect = $predicate.select;
         ^$predicateSelect(filteringOperation = $predicateSelect.filteringOperation->concatenate($innerSelect.filteringOperation)->andFilters($extensions));

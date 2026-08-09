@@ -106,9 +106,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Column ''2000__|__newcol'' cannot be resolved"
   }, {
-    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   id,parentId\\n   2,1\\n   3,1\\n   5,5\\n#'\nactual:   '#TDS\\n   id,parentId\\n   1,0\\n   2,1\\n   3,1\\n   4,9\\n   5,5\\n#'"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {

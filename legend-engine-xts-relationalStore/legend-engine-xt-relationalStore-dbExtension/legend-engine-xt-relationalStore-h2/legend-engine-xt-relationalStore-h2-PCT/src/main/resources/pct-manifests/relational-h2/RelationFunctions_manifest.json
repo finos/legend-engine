@@ -82,9 +82,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {
-    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   id,parentId\\n   2,1\\n   3,1\\n   5,5\\n#'\nactual:   '#TDS\\n   id,parentId\\n   1,0\\n   2,1\\n   3,1\\n   4,9\\n   5,5\\n#'"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {
