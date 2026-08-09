@@ -29,6 +29,11 @@ on:
       releaseVersion:
         description: "New release version"
         required: true
+      dryRun:
+        description: "Upload and validate bundles, then drop them without publishing to Central"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -236,7 +241,7 @@ jobs:
     steps:
 
       - name: Checkout Release Tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
           fetch-depth: 1
@@ -248,66 +253,91 @@ jobs:
           name: m2-repo
           path: ~/.m2/repository/org/finos/legend/engine
 
-      - name: Create bundle to publish
+      # The full artifact set is over 1.7GB, well past the Portal's 1GiB
+      # per-bundle cap, which nginx rejects with a bare "413 Payload Too Large"
+      # before the API sees it. Split it, never separating a jar from its pom,
+      # signature and checksums.
+      - name: Stage and split bundles
         env:
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
-          # Defensive guard: keep only directories whose name is exactly the
-          # release version under each artifact path. Should be a no-op when
-          # the build job already purged stale artifacts, but protects the
-          # publish step against any future regression that lets prior-release
-          # jars slip into ~/.m2/repository/org/finos/legend/engine.
-          find ~/.m2/repository/org/finos/legend/engine -mindepth 2 -type d \
-            -regextype posix-extended \
-            -regex '.*/[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.+-]+)?$' \
-            ! -name "$RELEASE_VERSION" -prune -exec rm -rf {} +
+          .github/scripts/stage-and-split.sh \
+            ~/.m2/repository/org/finos/legend/engine "$RELEASE_VERSION" "$PWD"
+          cat central-publishing/bundle-report.md >> "$GITHUB_STEP_SUMMARY"
 
-          mkdir -p central-staging/org/finos/legend
-          cp -R ~/.m2/repository/org/finos/legend/engine central-staging/org/finos/legend
-          find central-staging -type f \( -name "*.xml" -o -name "*.repositories" \) -delete
-          find central-staging -type f ! -name "*.md5" ! -name "*.sha1" ! -name "*.sha256" ! -name "*.sha512" ! -name "*.asc" | while read -r file; do
-            md5sum "$file" | awk '{print $1}' > "$file.md5"
-            sha1sum "$file" | awk '{print $1}' > "$file.sha1"
-            sha256sum "$file" | awk '{print $1}' > "$file.sha256"
-            sha512sum "$file" | awk '{print $1}' > "$file.sha512"
-          done
-          
-          mkdir central-publishing
-          cd central-staging && zip -r ../central-publishing/central-bundle.zip org
-
-      - name: Publish bundle
-        working-directory: central-publishing
+      - name: Upload bundles to Central
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
-          token=$(printf "$CI_DEPLOY_USERNAME:$CI_DEPLOY_PASSWORD" | base64)
-          httpCode=$(curl -s -o response.json -w "%{http_code}" -X POST -H "Authorization: Bearer $token" --form bundle=@central-bundle.zip https://central.sonatype.com/api/v1/publisher/upload?publishingType=AUTOMATIC)
-          
-          if [[ "$httpCode" == 2* ]]; then
-            deploymentId=$(cat response.json)
-            echo "Uploaded bundle. Deployment id is: $deploymentId"
-            echo "DEVELOPMENT_ID=${deploymentId}" >> $GITHUB_ENV
-          else
-            echo "Failed to upload bundle. Got status code $httpCode"
-            echo "Got the following response body:"
-            cat response.json
-            exit 1
-          fi
-
-      - name: Verify deployment status
-        run: |
-          token=$(printf "$CI_DEPLOY_USERNAME:$CI_DEPLOY_PASSWORD" | base64)
-          deploymentId=${{ env.DEVELOPMENT_ID }}
-          
-          deploymentState=""
-          
-          while [ "$deploymentState" != "PUBLISHED" ]; do
-            sleep 1m
-            response=$(curl -s -X POST -H "Authorization: Bearer $token" https://central.sonatype.com/api/v1/publisher/status?id=$deploymentId)
-            deploymentState=$(echo "$response" | jq -r '.deploymentState')
-            echo "Deployment state for id $deploymentId is $deploymentState"
-          
-            if [[ "$deploymentState" == "FAILED" ]]; then
-              echo "The deployment failed with the following response"
-              echo "$response"
-              exit 1
-            fi
+          : > deployment-ids.txt
+          : > bundle-deployments.tsv
+          {
+            echo
+            echo "### Central deployments"
+            echo
+            echo "| Bundle | Upload size | Deployment ID |"
+            echo "|---|---:|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for bundle in central-publishing/central-bundle-*.zip; do
+            suffix=$(basename "$bundle" .zip | sed 's/^central-bundle-//')
+            bytes=$(stat -c%s "$bundle")
+            echo "uploading $bundle ($bytes bytes)"
+            id=$(.github/scripts/central-publish.sh upload "$bundle" \
+                   "legend-engine-${RELEASE_VERSION}-central-bundle-${suffix}")
+            echo "$id" >> deployment-ids.txt
+            printf '%s\t%s\t%s\n' "$(basename "$bundle")" "$bytes" "$id" >> bundle-deployments.tsv
+            echo "uploaded $bundle as deployment $id"
+            printf '| %s | %s MB | `%s` |\n' \
+              "$(basename "$bundle")" "$((bytes / 1000000))" "$id" >> "$GITHUB_STEP_SUMMARY"
           done
+
+      # Kept even when the release fails: the sizes and the bundle-to-deployment
+      # mapping are exactly what a post-mortem needs, and the runner is gone.
+      - name: Upload bundle size report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: central-bundle-report
+          path: |
+            central-publishing/bundle-report.md
+            central-publishing/*.tsv
+            bundle-deployments.tsv
+          retention-days: 30
+          if-no-files-found: warn
+
+      # Every bundle must validate before any of them is published. Publishing
+      # bundle 1 and then discovering bundle 5 is invalid leaves a partial
+      # release on Central, and Central is immutable.
+      - name: Wait for all bundles to validate
+        run: |
+          while read -r id; do
+            .github/scripts/central-publish.sh await "$id" VALIDATED < /dev/null
+          done < deployment-ids.txt
+
+      - name: Publish all bundles
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: |
+          while read -r id; do
+            .github/scripts/central-publish.sh publish "$id" < /dev/null
+          done < deployment-ids.txt
+          while read -r id; do
+            .github/scripts/central-publish.sh await "$id" PUBLISHED < /dev/null
+          done < deployment-ids.txt
+
+      - name: Drop unpublished deployments
+        if: ${{ always() && (failure() || cancelled() || github.event.inputs.dryRun == 'true') }}
+        run: |
+          [ -f deployment-ids.txt ] || exit 0
+          while read -r id; do
+            state=$(.github/scripts/central-publish.sh state "$id" < /dev/null)
+            case "$state" in
+              VALIDATED|PENDING|VALIDATING)
+                .github/scripts/central-publish.sh drop "$id" < /dev/null
+                ;;
+              *)
+                # FAILED deployments are left in place on purpose: Sonatype
+                # support needs their files to diagnose the failure.
+                echo "leaving deployment $id in state $state"
+                ;;
+            esac
+          done < deployment-ids.txt
