@@ -38,12 +38,16 @@ tests:
     expected_rel_status: ERROR
 
   # EXISTS + aggregate
+  # Correlated EXISTS transpiles and executes, but the rows are wrong: where the outer column
+  # name also exists on the inner relation, the inner one wins during Pure -> SQL generation.
+  # Same defect as the meta::pure::functions::relation::tests::exists::testExistsSelfReferencing
+  # exclusion in the Postgres PCT manifest, which reproduces it from hand-written Pure.
   - id: nested_exists_agg
     sql: "SELECT d.name, d.budget FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id GROUP BY p.dept_id HAVING COUNT(*) > 2) ORDER BY 1"
     feature: "EXISTS with aggregate"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   # Subquery as filter + derived table
   - id: nested_filter_derived
@@ -83,7 +87,7 @@ tests:
     feature: "NOT EXISTS"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   # Subquery in SELECT with COALESCE
   - id: nested_scalar_coalesce
