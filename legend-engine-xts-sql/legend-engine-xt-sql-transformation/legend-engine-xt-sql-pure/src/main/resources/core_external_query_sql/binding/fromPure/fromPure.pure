@@ -1503,16 +1503,20 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //all of the child contexts are in scope for joining on so the new context needs to know about them
   let leftContexts = if ($join.left->instanceOf(Join), | $left.contexts, | $left);
   let rightContexts = if ($join.right->instanceOf(Join), | $right.contexts, | $right);
-  let newContext = ^$context(contexts = $leftContexts->concatenate($rightContexts));
+  //inside a correlated subquery or a lateral body the enclosing relation is in scope too
+  let outerContexts = if ($context.lateralOuterAliases->isEmpty(), | [], | $context.contexts);
+  let newContext = ^$context(contexts = $outerContexts->concatenate($leftContexts)->concatenate($rightContexts));
 
   let row1 = ^VariableExpression(multiplicity = PureOne, name = 'row1', genericType = ^GenericType(rawType = TDSRow));
   let row2 = ^VariableExpression(multiplicity = PureOne, name = 'row2', genericType = ^GenericType(rawType = TDSRow));
 
-  //all of the child contexts are in scope for joining on so the new context needs to know about them
-  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->map(c | pair($c.name->toOne(), $row1)));
-  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->map(c | pair($c.name->toOne(), $row2)));
+  //all of the child contexts are in scope for joining on so the new context needs to know about them.
+  //an enclosing relation visible for correlation is not a join side, so it keeps its own row variable
+  let outerNames = $context.lateralOuterAliases.first;
+  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
+  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
 
-  let expContext = expressionContext([], $leftRows->concatenate($rightRows)->newMap(), $context.relation->isTrue());
+  let expContext = expressionContext([], $context.lateralOuterAliases->concatenate($leftRows)->concatenate($rightRows)->newMap(), $context.relation->isTrue());
 
   let newExp = ^TDSBuilder().join($join, $row1, $row2, $left.expression->toOne(), $right.expression->toOne(), $expContext, $newContext, $newContext.relation->isTrue());
 
@@ -2529,7 +2533,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let lambda = if ($where->isEmpty(),
     | alwaysTrueLambda($relContext.rowVarName),
-    | createExistsLambda($where->toOne(), $expContext, $relContext));
+    | createExistsLambda($where->toOne(), $relContext));
 
   sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv($lambda)]);
 }
@@ -2568,7 +2572,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)), iv(true));
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createExistsLambda(where:meta::external::query::sql::metamodel::Expression[1], outerExpContext:SqlTransformExpressionContext[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createExistsLambda(where:meta::external::query::sql::metamodel::Expression[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
 {
   let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $relContext.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate();
 
@@ -2601,7 +2605,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     debug = $context.debug->indent(),
     root = false,
     lateralOuterAliases = $context.lateralOuterAliases->concatenate($outerAliases),
-    contexts = $context.contexts,
+    //the enclosing relation joins the visible contexts so columnByNameParts can resolve a
+    //correlated 'outer.col' against it rather than falling back to the sub-relation
+    contexts = $context.contexts->concatenate($context),
     rowVarName = subQueryVarName($expContext)
   );
 
