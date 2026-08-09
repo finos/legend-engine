@@ -51,16 +51,11 @@ rm -rf "$STAGING" "$BUNDLES"
 mkdir -p "$STAGING/$ROOT" "$BUNDLES"
 cp -R "$M2_ENGINE_DIR/." "$STAGING/$ROOT/"
 
-# Keep only directories whose name is exactly the release version. Defensive:
-# the build job already purges the local repo before building the release tag,
-# but a stale version leaking in here would be published irreversibly.
 find "$STAGING/$ROOT" -mindepth 2 -type d \
   -regextype posix-extended \
   -regex '.*/[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.+-]+)?$' \
   ! -name "$RELEASE_VERSION" -prune -exec rm -rf {} +
 
-# Local-repo bookkeeping, never part of a deployment. Targeted by name rather
-# than by "*.xml" so a real .xml artifact could never be swept up.
 find "$STAGING" -type f \
   \( -name '_remote.repositories' \
      -o -name 'maven-metadata-local.xml' \
@@ -75,9 +70,6 @@ done
 
 find "$STAGING/$ROOT" -mindepth 1 -type d -empty -delete
 
-# An artifact coordinate is one <artifactId>/<version> directory. It is the
-# unit of splitting: a jar must never be separated from its .pom, .asc and
-# checksums, or the bundle validates but leaves a broken artifact on Central.
 cd "$STAGING"
 mapfile -t COORDS < <(find "$ROOT" -mindepth 2 -maxdepth 2 -type d -name "$RELEASE_VERSION" | sort)
 
@@ -86,25 +78,19 @@ if [ ${#COORDS[@]} -eq 0 ]; then
   exit 1
 fi
 
-# Central requires md5 and sha1; sha256 and sha512 are optional but are already
-# published for prior releases, so they are kept for parity.
-find "$STAGING" -type f \
-  ! -name '*.md5' ! -name '*.sha1' ! -name '*.sha256' \
-  ! -name '*.sha512' ! -name '*.asc' -print0 | while IFS= read -r -d '' file; do
-  md5sum    "$file" | awk '{print $1}' > "$file.md5"
-  sha1sum   "$file" | awk '{print $1}' > "$file.sha1"
+while IFS= read -r -d '' file; do
+  md5sum "$file" | awk '{print $1}' > "$file.md5"
+  sha1sum "$file" | awk '{print $1}' > "$file.sha1"
   sha256sum "$file" | awk '{print $1}' > "$file.sha256"
   sha512sum "$file" | awk '{print $1}' > "$file.sha512"
-done
+done < <(find "$STAGING" -type f \
+  ! -name '*.md5' ! -name '*.sha1' ! -name '*.sha256' \
+  ! -name '*.sha512' ! -name '*.asc' -print0)
 
 STAGED_BYTES=$(du -sb "$STAGING" | cut -f1)
 STAGED_FILES=$(find "$STAGING" -type f | wc -l)
 echo "staged ${#COORDS[@]} coordinates: $((STAGED_BYTES / 1000000)) MB, $STAGED_FILES files"
 
-# --- split ---------------------------------------------------------------
-# Everything measured here is written to bundle-report.md / *.tsv as well as
-# the log. When a release fails at the Portal the first question is always
-# "how big was it and what was in it", and the runner is gone by then.
 BUNDLES_TSV="$BUNDLES/bundles.tsv"
 CONTENTS_TSV="$BUNDLES/bundle-contents.tsv"
 COORDS_TSV="$BUNDLES/coordinates.tsv"
@@ -203,18 +189,19 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo
   echo "| Coordinate | Size | % of packing target |"
   echo "|---|---:|---:|"
-  tail -n +2 "$COORDS_TSV" | sort -t$'\t' -k2 -rn | head -20 |
-    awk -F'\t' -v tgt="$MAX_BYTES" '{
-      flag = (100 * $2 / tgt >= 80) ? " :warning:" : ""
-      printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
-    }'
+  tmp_sorted=$(mktemp)
+  tail -n +2 "$COORDS_TSV" | sort -t$'\t' -k2 -rn > "$tmp_sorted"
+  head -20 "$tmp_sorted" | awk -F'\t' -v tgt="$MAX_BYTES" '{
+    flag = (100 * $2 / tgt >= 80) ? " :warning:" : ""
+    printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
+  }'
+  rm -f "$tmp_sorted"
   echo
   echo "A coordinate cannot be split across bundles, so any single one reaching"
   echo "$(mb "$MAX_BYTES") MB fails the release outright."
 } > "$REPORT"
 
 echo
-cat "$REPORT"
-echo
 echo "wrote $NBUNDLES bundle(s) to $BUNDLES"
 echo "report: $REPORT"
+cat "$REPORT"
