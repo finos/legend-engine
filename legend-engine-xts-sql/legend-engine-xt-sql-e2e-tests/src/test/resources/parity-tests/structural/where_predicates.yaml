@@ -99,14 +99,14 @@ tests:
     feature: "EXISTS"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: where_not_exists
     sql: "SELECT name FROM persons p WHERE NOT EXISTS (SELECT 1 FROM departments d WHERE d.id = p.dept_id AND d.name = 'Engineering') ORDER BY 1"
     feature: "NOT EXISTS"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ANY / ALL
   - id: where_any

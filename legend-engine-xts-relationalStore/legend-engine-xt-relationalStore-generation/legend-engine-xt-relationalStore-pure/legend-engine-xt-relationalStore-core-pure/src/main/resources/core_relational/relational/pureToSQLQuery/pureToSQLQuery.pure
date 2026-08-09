@@ -533,6 +533,85 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::deShado
    );
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::freshAliasName(old:String[1], scopeId:String[1], taken:String[*]):String[1]
+{
+   let candidate = $old + $scopeId;
+   assert(!$candidate->in($taken), | 'Cannot de-shadow subquery alias \'' + $old + '\': \'' + $candidate + '\' is already in use');
+   $candidate;
+}
+
+// The class mapping path names the relation behind every query 'root', so a subquery and the query
+// enclosing it collide by construction. Renaming has to happen once the subquery is fully built, not
+// while it is being built: nestFilters, buildAndTransformJoinMetaData, processExists and the
+// milestoning temporal column all key off that literal and have already run by then.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::deShadowSubSelect(select:SelectSQLQuery[1], enclosing:String[*], scopeId:String[1]):SelectSQLQuery[1]
+{
+   let root = $select.data;
+   let nodes = if($root->isEmpty(), |[], |$root->toOne()->getAllNodes()->cast(@RelationalTreeNode));
+   let colliding = $nodes.alias->filter(a | $a.name->in($enclosing))->removeDuplicatesBy(a | $a.name);
+
+   if($colliding->isEmpty(),
+      | $select,
+      | let taken = $enclosing->concatenate($nodes.alias.name);
+        let aliasMap = $colliding->map(a | ^OldAliasToNewAlias(first = $a.name, second = ^$a(name = freshAliasName($a.name, $scopeId, $taken))));
+        let oldRoot = $root->toOne();
+        let newRoot = $oldRoot->renameTreeAliases($aliasMap, $enclosing, $scopeId)->cast(@RootJoinTreeNode);
+        let newPivot = $select.pivot->map(p | ^$p(pivotColumns = $p.pivotColumns->reprocessAliases($aliasMap), aggColumns = $p.aggColumns->reprocessAliases($aliasMap)));
+
+        ^$select(data = $newRoot,
+                 columns = $select.columns->reprocessAliases($aliasMap),
+                 filteringOperation = $select.filteringOperation->reprocessAliases($aliasMap),
+                 extraFilteringOperation = $select.extraFilteringOperation->reprocessAliases($aliasMap),
+                 groupBy = $select.groupBy->reprocessAliases($aliasMap),
+                 havingOperation = $select.havingOperation->reprocessAliases($aliasMap),
+                 qualifyOperation = $select.qualifyOperation->reprocessAliases($aliasMap),
+                 orderBy = $select.orderBy->map(o | ^$o(column = $o.column->reprocessAliases($aliasMap))),
+                 pivot = $newPivot,
+                 savedFilteringOperation = $select.savedFilteringOperation->map(p | pair($p.first->findOneNode($oldRoot, $newRoot), $p.second->reprocessAliases($aliasMap))),
+                 leftSideOfFilter = $select.leftSideOfFilter->map(n | $n->findOneNode($oldRoot, $newRoot)),
+                 preIsolationCurrentTreeNode = $select.preIsolationCurrentTreeNode->map(n | $n->findOneNode($oldRoot, $newRoot))
+        );
+   );
+}
+
+// reprocessAliases has no tree-node case to reuse -- RelationalTreeNode is a TreeNode, not a
+// RelationalOperationElement -- so the tree is walked here. joinName is left alone deliberately:
+// findNode matches children by it, which is what keeps the node re-pointing above valid.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::renameTreeAliases(node:RelationalTreeNode[1], aliasMap:OldAliasToNewAlias[*], enclosing:String[*], scopeId:String[1]):RelationalTreeNode[1]
+{
+   let mapped = $aliasMap->filter(m | $m.first == $node.alias.name)->first();
+   let baseAlias = $mapped.second->orElse($node.alias);
+
+   // A select sitting behind an alias is its own namespace, but it can collide with the enclosing
+   // query on its own account, so it is de-shadowed rather than alias-mapped.
+   let relationalElement = $baseAlias.relationalElement->match([
+      s:SelectSQLQuery[1] | $s->deShadowSubSelect($enclosing, buildNodeId($scopeId, '_n')),
+      r:RelationalOperationElement[1] | $r
+   ]);
+   let newAlias = ^$baseAlias(relationalElement = $relationalElement);
+   let children = $node.childrenData->cast(@RelationalTreeNode)->map(c | $c->renameTreeAliases($aliasMap, $enclosing, $scopeId));
+
+   $node->match([
+      j:JoinTreeNode[1] | ^$j(alias = $newAlias, join = $j.join->reprocessJoin($aliasMap, []), childrenData = $children),
+      r:RelationalTreeNode[1] | ^$r(alias = $newAlias, childrenData = $children)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::deShadowSubSelect(cursor:SelectWithCursor[1], enclosing:String[*], scopeId:String[1]):SelectWithCursor[1]
+{
+   let oldSelect = $cursor.select;
+   let newSelect = $oldSelect->deShadowSubSelect($enclosing, $scopeId);
+
+   if($oldSelect.data->isEmpty() || $newSelect.data->toOne() == $oldSelect.data->toOne(),
+      | ^$cursor(select = $newSelect),
+      | let oldRoot = $oldSelect.data->toOne();
+        let newRoot = $newSelect.data->toOne();
+        ^$cursor(select = $newSelect,
+                 currentTreeNode = $cursor.currentTreeNode->map(n | $n->findOneNode($oldRoot, $newRoot)),
+                 positionBeforeLastApplyJoinTreeNode = $cursor.positionBeforeLastApplyJoinTreeNode->map(n | $n->findOneNode($oldRoot, $newRoot)));
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::validate(s:SelectWithCursor[1], v:ValueSpecification[0..1], extensions:Extension[*]):Boolean[1]
 {
    let allNodes = if($s.select.data->isEmpty(),|[],|$s.select.data->toOne()->getAllNodes())->cast(@RelationalTreeNode);
@@ -3907,7 +3986,7 @@ function meta::relational::functions::pureToSqlQuery::nestFilters(newQuery:Selec
    let data = $newQuery.data->toOne()->cast(@RootJoinTreeNode);
    let alias = $data.alias;
    let nestedSelect = $alias.relationalElement->cast(if($alias.relationalElement->instanceOf(TdsSelectSqlQuery),|@TdsSelectSqlQuery,|@SelectSQLQuery));
-   let oldToNew = ^OldAliasToNewAlias(first = 'root',second = $nestedSelect.data->cast(@RootJoinTreeNode)->toOne().alias);
+   let oldToNew = ^OldAliasToNewAlias(first = $alias.name, second = $nestedSelect.data->cast(@RootJoinTreeNode)->toOne().alias);
    let newFilters = $filters->reprocessAliases($oldToNew);
    let newHaving = $having->reprocessAliases($oldToNew);
    ^$newQuery(data = ^$data(alias = ^$alias(relationalElement =^$nestedSelect(filteringOperation = $newFilters, havingOperation = $newHaving))));
@@ -6600,7 +6679,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRe
    let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(parent = $operation), $vars, ^$state(inFilter = false, shouldIsolate = false, correlatedScopeId = $innerNodeId), JoinType.INNER, $innerNodeId, $aggFromMap, $context, $extensions)
                  ->toOne()->cast(@SelectWithCursor);
 
-   let innerSelect = $inner.select->pushExtraFilteringOperation($extensions);
+   // Renamed here rather than while the sub-relation was being built: everything that keys off the
+   // literal alias 'root' has run by now, and the predicate has not, so its column references resolve
+   // against the names that will actually be emitted.
+   let deShadowed = ^$inner(select = $inner.select->pushExtraFilteringOperation($extensions))->deShadowSubSelect($operation->aliasNamesInScope(), $innerNodeId);
+   let innerSelect = $deShadowed.select;
 
    if($expression.parametersValues->size() <= $relationParamIndex + 1,
       | $innerSelect,
@@ -6609,8 +6692,8 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRe
         // The lambda is processed against the inner query with the outer one as its parent, so a column of the
         // outer row resolves through findColumnOnOperationHierarchy; its own parameter is recorded so that a
         // column named on both relations still binds to the inner one.
-        let predicateCursor = ^$inner(select = $innerSelect, parent = $operation);
-        let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], $predicateCursor, $vars, ^$state(inFilter = true)->withRelationVarScope($expression.parametersValues->at($predicateParamIndex), $predicateCursor), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
+        let predicateCursor = ^$deShadowed(parent = $operation);
+        let predicate = processValueSpecification($expression.parametersValues->at($predicateParamIndex), [], $predicateCursor, $vars, ^$state(inFilter = true, correlatedScopeId = [])->withRelationVarScope($expression.parametersValues->at($predicateParamIndex), $predicateCursor), JoinType.INNER, buildNodeId($nodeId, '_p'), $aggFromMap, $context, $extensions)
                           ->toOne()->cast(@SelectWithCursor);
         let predicateSelect = $predicate.select;
         ^$predicateSelect(filteringOperation = $predicateSelect.filteringOperation->concatenate($innerSelect.filteringOperation)->andFilters($extensions));
