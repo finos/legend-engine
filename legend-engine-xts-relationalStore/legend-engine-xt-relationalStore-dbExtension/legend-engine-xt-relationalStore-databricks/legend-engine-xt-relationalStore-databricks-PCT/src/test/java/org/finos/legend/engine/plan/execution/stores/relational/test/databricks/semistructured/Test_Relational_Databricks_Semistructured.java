@@ -22,6 +22,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.test.shared.framework.TestServerResource;
@@ -128,6 +129,8 @@ public class Test_Relational_Databricks_Semistructured
             }
         };
 
+        TestConnectionIntegration databricks = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst();
+
         return wrapSuite(
                 () -> true,
                 () -> PureTestBuilder.buildSuite(
@@ -139,7 +142,9 @@ public class Test_Relational_Databricks_Semistructured
                         executionSupport
                 ),
                 () -> false,
-                Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst())
+                // The reset must follow the integration in this list: ServersState.start() runs the
+                // resources in order, and it needs the connection the integration builds in start().
+                Lists.mutable.with((TestServerResource) databricks, new DatabricksFixtureSchemaReset(databricks))
         );
     }
 }
