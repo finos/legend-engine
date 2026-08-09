@@ -118,7 +118,8 @@ idx=1
 size=0
 list=$(mktemp)
 coordlist=$(mktemp)
-trap 'rm -f "$list" "$coordlist"' EXIT
+sorted_coords=""
+trap 'rm -f "$list" "$coordlist"; [ -n "${sorted_coords:-}" ] && rm -f "$sorted_coords"' EXIT
 
 mb()  { awk -v b="$1" 'BEGIN { printf "%.1f", b / 1000000 }'; }
 pct() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.1f", 100 * a / b }'; }
@@ -210,6 +211,7 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
     printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
   }'
   rm -f "$sorted_coords"
+  sorted_coords=""
   echo
   echo "A coordinate cannot be split across bundles, so any single one reaching"
   echo "$(mb "$MAX_BYTES") MB fails the release outright."
