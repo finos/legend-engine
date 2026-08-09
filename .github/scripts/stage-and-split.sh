@@ -88,14 +88,14 @@ fi
 
 # Central requires md5 and sha1; sha256 and sha512 are optional but are already
 # published for prior releases, so they are kept for parity.
-find "$STAGING" -type f \
-  ! -name '*.md5' ! -name '*.sha1' ! -name '*.sha256' \
-  ! -name '*.sha512' ! -name '*.asc' -print0 | while IFS= read -r -d '' file; do
+while IFS= read -r -d '' file; do
   md5sum    "$file" | awk '{print $1}' > "$file.md5"
   sha1sum   "$file" | awk '{print $1}' > "$file.sha1"
   sha256sum "$file" | awk '{print $1}' > "$file.sha256"
   sha512sum "$file" | awk '{print $1}' > "$file.sha512"
-done
+done < <(find "$STAGING" -type f \
+  ! -name '*.md5' ! -name '*.sha1' ! -name '*.sha256' \
+  ! -name '*.sha512' ! -name '*.asc' -print0)
 
 STAGED_BYTES=$(du -sb "$STAGING" | cut -f1)
 STAGED_FILES=$(find "$STAGING" -type f | wc -l)
@@ -203,11 +203,13 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo
   echo "| Coordinate | Size | % of packing target |"
   echo "|---|---:|---:|"
-  tail -n +2 "$COORDS_TSV" | sort -t$'\t' -k2 -rn | head -20 |
-    awk -F'\t' -v tgt="$MAX_BYTES" '{
-      flag = (100 * $2 / tgt >= 80) ? " :warning:" : ""
-      printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
-    }'
+  sorted_coords=$(mktemp)
+  tail -n +2 "$COORDS_TSV" | sort -t$'\t' -k2 -rn > "$sorted_coords"
+  head -20 "$sorted_coords" | awk -F'\t' -v tgt="$MAX_BYTES" '{
+    flag = (100 * $2 / tgt >= 80) ? " :warning:" : ""
+    printf "| `%s` | %.1f MB | %.1f%%%s |\n", $1, $2 / 1000000, 100 * $2 / tgt, flag
+  }'
+  rm -f "$sorted_coords"
   echo
   echo "A coordinate cannot be split across bundles, so any single one reaching"
   echo "$(mb "$MAX_BYTES") MB fails the release outright."
