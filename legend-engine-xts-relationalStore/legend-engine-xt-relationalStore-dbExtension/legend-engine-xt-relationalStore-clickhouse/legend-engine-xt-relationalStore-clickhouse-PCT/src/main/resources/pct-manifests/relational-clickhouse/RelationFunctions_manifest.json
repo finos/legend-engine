@@ -430,12 +430,6 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
     "expectedError" : "'RANGE' frame must be a nonnegative 32-bit integer, '0.5' of type 'Float64' given."
   }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {

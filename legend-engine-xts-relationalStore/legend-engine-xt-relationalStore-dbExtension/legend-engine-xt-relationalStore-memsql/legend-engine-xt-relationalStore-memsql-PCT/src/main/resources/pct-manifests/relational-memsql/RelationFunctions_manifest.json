@@ -59,10 +59,10 @@
     "expectedError" : "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
@@ -522,9 +522,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB MemSQL"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Common table expression not supported on DB MemSQL"
