@@ -375,4 +375,54 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
                 mappingModelMap,
                 true);
     }
+
+    @Test
+    public void testAnalyticsForDataSpaceWithoutExecutionContextsButWithExecutable() throws Exception
+    {
+        String pureModel =
+                "###Pure\n" +
+                        "Class model::Firm { name: String[1]; }\n" +
+                        "###Mapping\n" +
+                        "Mapping model::MyMapping ()\n" +
+                        "###Runtime\n" +
+                        "Runtime model::MyRuntime\n" +
+                        "{\n" +
+                        "  mappings: [model::MyMapping];\n" +
+                        "  connections: [];\n" +
+                        "}\n" +
+                        "###DataSpace\n" +
+                        "DataSpace model::MySpace\n" +
+                        "{\n" +
+                        "  title: 'title';\n" +
+                        "  executables:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      id: 1;\n" +
+                        "      title: 'exec';\n" +
+                        "      query: |model::Firm.all()->project([x|$x.name], ['name'])->from(model::MyMapping, model::MyRuntime);\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "}\n";
+        testDataSpaceAnalyticsArtifactGenerationExtensionForAnalysisOnly(pureModel, "model::MySpace", "{\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[{\"info\":{\"_type\":\"templateExecutableInfo\",\"id\":\"1\",\"query\":\"|model::Firm.all()->project([x: model::Firm[1]|$x.name], ['name'])->from(model::MyMapping, model::MyRuntime)\"},\"title\":\"exec\"}],\"executionContexts\":[],\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"MySpace\",\"package\":\"model\",\"path\":\"model::MySpace\",\"stereotypes\":[],\"taggedValues\":[],\"title\":\"title\"}");
+    }
+
+    private void testDataSpaceAnalyticsArtifactGenerationExtensionForAnalysisOnly(String pureModelString, String dataSpacePath, String expectedAnalysisResult) throws Exception
+    {
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement(dataSpacePath);
+        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace);
+        Assert.assertTrue(extension.canGenerate(packageableElement));
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json artifact was not produced"));
+            Assert.assertEquals("json", analyticsResult.format);
+            Assert.assertEquals(expectedAnalysisResult, analyticsResult.content);
+        }
+    }
+
+
 }

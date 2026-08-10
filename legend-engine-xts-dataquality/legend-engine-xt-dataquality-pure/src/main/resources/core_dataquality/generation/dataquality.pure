@@ -399,7 +399,7 @@ function meta::external::dataquality::getMappingAndRuntime(context: DataQualityE
       | let mappingAndRuntimeContext = $context->cast(@MappingAndRuntimeDataQualityExecutionContext);
         ^Pair<Mapping, Runtime>(first=$mappingAndRuntimeContext.mapping, second=$mappingAndRuntimeContext.runtime);,
       | let dataSpaceDataQualityExecutionContext = $context->cast(@DataSpaceDataQualityExecutionContext);
-        let dataSpaceExecutionContext = $dataSpaceDataQualityExecutionContext.dataSpace.executionContexts->filter(execContext| $execContext.name == $dataSpaceDataQualityExecutionContext.contextName)->toOne();
+        let dataSpaceExecutionContext = $dataSpaceDataQualityExecutionContext.dataSpace.executionContexts->filter(execContext | $execContext.name == $dataSpaceDataQualityExecutionContext.contextName)->toOne('Data quality execution requires an execution context that matches the configured context name. Data spaces without execution contexts (or without a matching context) are not yet supported by this generator.');
         let dataSpaceExecutionContextRuntime = $dataSpaceExecutionContext.defaultRuntime->toOne('Data quality execution requires a default runtime on execution context \'' + $dataSpaceExecutionContext.name + '\' of data space \'' + $dataSpaceDataQualityExecutionContext.dataSpace->elementToPath() + '\'. Runtime-less execution contexts are not yet supported.').runtimeValue;
         ^Pair<Mapping, Runtime>(first=$dataSpaceExecutionContext.mapping, second=$dataSpaceExecutionContextRuntime);
     );

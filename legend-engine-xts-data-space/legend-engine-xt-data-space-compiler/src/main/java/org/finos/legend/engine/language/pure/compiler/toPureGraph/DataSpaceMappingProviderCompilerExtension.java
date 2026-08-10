@@ -17,12 +17,20 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceMappingProvider;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 public interface DataSpaceMappingProviderCompilerExtension
 {
     Optional<Mapping> resolveMapping(PackageableElement element, DataSpaceMappingProvider provider, CompileContext context);
+
+    default List<PackageableElement> extractMappingProviderElementsFromQuery(FunctionDefinition<?> query, CompileContext context)
+    {
+        return Collections.emptyList();
+    }
 }
 
 

@@ -30,8 +30,8 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   title: String[0..1];
   description: String[0..1];
 
-  executionContexts: DataSpaceExecutionContext[1..*];
-  defaultExecutionContext: DataSpaceExecutionContext[1];
+  executionContexts: DataSpaceExecutionContext[0..*];
+  defaultExecutionContext: DataSpaceExecutionContext[0..1];
 
   diagrams: DataSpaceDiagram[*];
   elements: PackageableElement[*];

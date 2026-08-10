@@ -175,9 +175,11 @@ function <<access.private>> meta::external::powerbi::transformation::fromPure::g
   $dataSpaceExecutionContext.defaultRuntime->toOne('Power BI artifact generation requires a default runtime on execution context \'' + $dataSpaceExecutionContext.name + '\' (executable \'' + $executableId + '\'). Runtime-less execution contexts are not yet supported by this generator.').runtimeValue;
 }
 
-function <<access.private>> meta::external::powerbi::transformation::fromPure::getDataSpaceExecutionContext(executionContextKey: String[0..1], executionContexts: DataSpaceExecutionContext[1..*], defaultExecutionContext: DataSpaceExecutionContext[1]): DataSpaceExecutionContext[1]
+function <<access.private>> meta::external::powerbi::transformation::fromPure::getDataSpaceExecutionContext(executionContextKey: String[0..1], executionContexts: DataSpaceExecutionContext[*], defaultExecutionContext: DataSpaceExecutionContext[0..1]): DataSpaceExecutionContext[1]
 {
-  if($executionContextKey->isEmpty(), | $defaultExecutionContext, | $executionContexts->filter(ec | $ec.name->equal($executionContextKey))->last()->toOne('Invalid execution context key'));
+  if($executionContextKey->isEmpty(),
+    | $defaultExecutionContext->toOne('Power BI artifact generation requires a default execution context on the data space. Data spaces without execution contexts are not yet supported by this generator.'),
+    | $executionContexts->filter(ec | $ec.name->equal($executionContextKey))->last()->toOne('Invalid execution context key'));
 }
 
 function <<access.private>> meta::external::powerbi::transformation::fromPure::getCustomExecutionContext(engineRuntime : EngineRuntime[1], extensions: meta::pure::extension::Extension[*]) : ExecutionContext[1]

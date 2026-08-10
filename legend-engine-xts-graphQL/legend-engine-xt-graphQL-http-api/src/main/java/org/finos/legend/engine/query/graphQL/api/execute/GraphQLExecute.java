@@ -468,15 +468,20 @@ public class GraphQLExecute extends GraphQL
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(dataspacePath);
         Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace, () -> "Can't find data space '" + dataspacePath + "'");
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
         if (executionContext.equals("defaultExecutionContext"))
         {
-            return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
+            if (dataSpace._defaultExecutionContext() == null)
+            {
+                throw new RuntimeException("GraphQL execution against data space '" + dataspacePath + "' requires a defaultExecutionContext to be defined. Data spaces without a default execution context are not yet supported.");
+            }
+            return dataSpace._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(dataSpace._defaultExecutionContext()._name())).toList().get(0);
         }
         else
         {
             try
             {
-                return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
+                return dataSpace._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
             }
             catch (Exception e)
             {

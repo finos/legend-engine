@@ -86,13 +86,13 @@ public class DataSpaceParseTreeWalker
                 ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
                 this.walkerSourceInformation);
 
-        // Execution contexts
-        DataSpaceParserGrammar.ExecutionContextsContext executionContextsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executionContexts(), "executionContexts", dataSpace.sourceInformation);
-        dataSpace.executionContexts = ListIterate.collect(executionContextsContext.executionContext(), executionContext -> this.visitDataSpaceExecutionContext(executionContext));
+        // Execution contexts (optional)
+        DataSpaceParserGrammar.ExecutionContextsContext executionContextsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executionContexts(), "executionContexts", dataSpace.sourceInformation);
+        dataSpace.executionContexts = executionContextsContext != null ? ListIterate.collect(executionContextsContext.executionContext(), executionContext -> this.visitDataSpaceExecutionContext(executionContext)) : Lists.mutable.empty();
 
-        // Default execution context
-        DataSpaceParserGrammar.DefaultExecutionContextContext defaultExecutionContextContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.defaultExecutionContext(), "defaultExecutionContext", dataSpace.sourceInformation);
-        dataSpace.defaultExecutionContext = PureGrammarParserUtility.fromGrammarString(defaultExecutionContextContext.STRING().getText(), true);
+        // Default execution context (optional)
+        DataSpaceParserGrammar.DefaultExecutionContextContext defaultExecutionContextContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.defaultExecutionContext(), "defaultExecutionContext", dataSpace.sourceInformation);
+        dataSpace.defaultExecutionContext = defaultExecutionContextContext != null ? PureGrammarParserUtility.fromGrammarString(defaultExecutionContextContext.STRING().getText(), true) : null;
 
         // Title (optional)
         DataSpaceParserGrammar.TitleContext titleContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.title(), "title", dataSpace.sourceInformation);
@@ -343,7 +343,7 @@ public class DataSpaceParseTreeWalker
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, this.context);
         if (valueSpecification instanceof LambdaFunction)
         {
             return (LambdaFunction) valueSpecification;

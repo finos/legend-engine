@@ -137,9 +137,9 @@ public class DataSpaceAnalyticsHelper
                     templateExecutableInfo.query = executableV1.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                             dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.executionContextKey = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : executable._executionContextKey();
+                    templateExecutableInfo.executionContextKey = executable._executionContextKey() != null ? executable._executionContextKey() : (executionContext == null ? null : executionContext._name());
                     executableAnalysisResult.info = templateExecutableInfo;
-                    if (buildResult)
+                    if (buildResult && executionContext != null)
                     {
                         executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
                                 ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
@@ -232,8 +232,8 @@ public class DataSpaceAnalyticsHelper
                             lambdaFunc = pureModel.getConcreteFunctionDefinition_safe(executablePath);
                             Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                                     dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
-                            mapping = executionContext._mapping();
-                            runtime = executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue();
+                            mapping = executionContext == null ? null : executionContext._mapping();
+                            runtime = executionContext == null || executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue();
                             LambdaFunction lambda = new LambdaFunction();
                             lambda.body = new ArrayList<>();
                             lambda.body.addAll(((Function) _el).body);
@@ -246,7 +246,7 @@ public class DataSpaceAnalyticsHelper
                         {
                             throw new RuntimeException("Can't find protocol for service or function '" + executablePath + "'");
                         }
-                        if (buildResult)
+                        if (buildResult && mapping != null)
                         {
                             executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
                                     lambdaFunc,
@@ -390,7 +390,7 @@ public class DataSpaceAnalyticsHelper
             }
             return excResult;
         });
-        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext() == null ? null : dataSpace._defaultExecutionContext()._name();
         // executables
         result.executables = buildDataSpaceExecutableAnalysisResult(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, entitlementServiceExtensions, generatorExtensions, false);
         // elements
@@ -501,7 +501,7 @@ public class DataSpaceAnalyticsHelper
             }
             return excResult;
         });
-        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext() == null ? null : dataSpace._defaultExecutionContext()._name();
 
         // diagrams
         result.diagrams = dataSpace._diagrams() != null ? ListIterate.collect(dataSpace._diagrams().toList(), diagram ->
