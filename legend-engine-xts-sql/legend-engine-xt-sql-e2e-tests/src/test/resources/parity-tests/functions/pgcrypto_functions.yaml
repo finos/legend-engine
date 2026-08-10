@@ -1,0 +1,87 @@
+tests:
+  # digest-only tests (return bytea)
+  - id: digest_sha1__bytea
+    sql: "SELECT digest('Hello, World!', 'sha1') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: digest_sha256__bytea
+    sql: "SELECT digest('Hello, World!', 'sha256') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: digest_md5__bytea
+    sql: "SELECT digest('Hello, World!', 'md5') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: digest_sha1_column__bytea
+    sql: "SELECT digest(name, 'sha1') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: digest_sha256_column__bytea
+    sql: "SELECT digest(name, 'sha256') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: digest_md5_column__bytea
+    sql: "SELECT digest(name, 'md5') AS result FROM persons WHERE id = 1"
+    function: digest
+    signature: "digest(text, text) ? bytea"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # encode(digest(...)) tests (return hex text)
+  - id: encode_digest_sha1__text
+    sql: "SELECT encode(digest('Hello, World!', 'sha1'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: encode_digest_sha256__text
+    sql: "SELECT encode(digest('Hello, World!', 'sha256'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: encode_digest_md5__text
+    sql: "SELECT encode(digest('Hello, World!', 'md5'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: encode_digest_sha1_column__text
+    sql: "SELECT encode(digest(name, 'sha1'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: encode_digest_sha256_column__text
+    sql: "SELECT encode(digest(name, 'sha256'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: encode_digest_md5_column__text
+    sql: "SELECT encode(digest(name, 'md5'), 'hex') AS result FROM persons WHERE id = 1"
+    function: encode
+    signature: "encode(bytea, text) ? text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+

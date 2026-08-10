@@ -2765,9 +2765,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   test(
         'SELECT ascii(String) AS "ASCII", chr(Integer) AS "CHR", concat(String, \'abc\') AS "CONCAT", String || \'abc\' AS "CONCAT2", concat_ws(\'|\', String, \'abc\') as "CONCAT_WS", regexp_like(String, \'^test$\') AS "MATCH", ' +
-        'char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", md5(String) AS "MD5", upper(String) AS "UPPER", ' +
+        'char_length(String) AS "CHAR_LENGTH", length(String) AS "LENGTH", ltrim(String) AS "LTRIM", ltrim(String, \' \') AS "LTRIM2", upper(String) AS "UPPER", ' +
         'lower(String) AS "LOWER", initcap(String) as "UPPER_FIRST", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
-        'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
+        'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", split_part(String, \',\', 1) AS "SPLITPART", ' +
         'split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2",' +
         'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' +
         'decode(String, \'base64\') AS "DECODE", encode(String, \'base64\') AS "ENCODE", ' +
@@ -2792,7 +2792,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | length($row.getString('String')), 'LENGTH'),
                   col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM'),
                   col(row:TDSRow[1] | ltrim($row.getString('String')), 'LTRIM2'),
-                  col(row:TDSRow[1] | hash($row.getString('String'), HashType.MD5), 'MD5'),
                   col(row:TDSRow[1] | toUpper($row.getString('String')), 'UPPER'),
                   col(row:TDSRow[1] | toLower($row.getString('String')), 'LOWER'),
                   col(row:TDSRow[1] | toUpperFirstCharacter($row.getString('String')), 'UPPER_FIRST'),
@@ -2803,7 +2802,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | reverseString($row.getString('String')), 'REVERSE'),
                   col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM'),
                   col(row:TDSRow[1] | rtrim($row.getString('String')), 'RTRIM2'),
-                  col(row:TDSRow[1] | hash($row.getString('String'), HashType.SHA256), 'SHA256'),
                   col(row:TDSRow[1] | splitPart($row.getString('String'), ',', 0), 'SPLITPART'),
                   col(row:TDSRow[1] | splitPart($row.getString('String'), ',', $row.getInteger('Integer') - 1), 'SPLITPART2'),
                   col(row:TDSRow[1] | substring($row.getString('String'), 1), 'SUBSTRING'),
@@ -2834,8 +2832,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 {
   test(
       'SELECT ascii(NULL) AS "ASCII", chr(NULL) AS "CHR", regexp_like(NULL, \'^test$\') AS "MATCH", char_length(NULL) AS "CHAR_LENGTH", length(NULL) AS "LENGTH", ltrim(NULL) AS "LTRIM", ' +
-      'ltrim(NULL, \' \') AS "LTRIM2", md5(NULL) AS "MD5", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
-      'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", sha256(NULL) AS "SHA256", substring(NULL, 1) AS "SUBSTRING", ' +
+      'ltrim(NULL, \' \') AS "LTRIM2", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
+      'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", substring(NULL, 1) AS "SUBSTRING", ' +
       'substr(NULL, 1, 2) AS "SUBSTR", btrim(NULL) AS "TRIM", btrim(NULL, \' \') AS "TRIM2", lpad(NULL, 2) AS "LPAD", lpad(String, NULL) AS "LPAD2", lpad(String, 2, NULL) AS "LPAD3",' +
       'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3", left(NULL, 1) AS "LEFT", left(String, NULL) AS "LEFT2", right(NULL, 1) AS "RIGHT", right(String, NULL) AS "RIGHT2", ' +
       'decode(NULL, \'base64\') AS "DECODE", encode(NULL, \'base64\') AS "ENCODE", trim(BOTH from NULL) AS "TRIM3" ' +
@@ -2855,7 +2853,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | []->cast(@Integer), 'LENGTH'),
                   col(row:TDSRow[1] | []->cast(@String), 'LTRIM'),
                   col(row:TDSRow[1] | []->cast(@String), 'LTRIM2'),
-                  col(row:TDSRow[1] | []->cast(@String), 'MD5'),
                   col(row:TDSRow[1] | []->cast(@String), 'UPPER'),
                   col(row:TDSRow[1] | []->cast(@String), 'LOWER'),
                   col(row:TDSRow[1] | []->cast(@String), 'REPLACE'),
@@ -2864,7 +2861,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | []->cast(@String), 'REVERSE'),
                   col(row:TDSRow[1] | []->cast(@String), 'RTRIM'),
                   col(row:TDSRow[1] | []->cast(@String), 'RTRIM2'),
-                  col(row:TDSRow[1] | []->cast(@String), 'SHA256'),
                   col(row:TDSRow[1] | []->cast(@String), 'SUBSTRING'),
                   col(row:TDSRow[1] | []->cast(@String), 'SUBSTR'),
                   col(row:TDSRow[1] | []->cast(@String), 'TRIM'),
@@ -2886,6 +2882,38 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         }
       ]
   )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEncodeDigestFunctions():Boolean[1]
+{
+  test(
+        'SELECT ' +
+        'encode(digest(String, \'md5\'), \'hex\') AS "MD5", ' +
+        'encode(digest(String, \'sha1\'), \'hex\') AS "SHA1", ' +
+        'encode(digest(String, \'sha256\'), \'hex\') AS "SHA256", ' +
+        'md5(String) AS "MD5_DIRECT" ' +
+        'FROM service."/service/service1"',
+
+      [
+          {|
+              FlatInput.all()->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )->project(~[
+                MD5: x | hash($x.String, HashType.MD5),
+                SHA1: x | hash($x.String, HashType.SHA1),
+                SHA256: x | hash($x.String, HashType.SHA256),
+                MD5_DIRECT: x | hash($x.String, HashType.MD5)
+              ])
+        }
+      ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEncodeDigestErrors():Boolean[1]
+{
+  error('SELECT encode(digest(String, \'sha256\'), \'base64\') AS "RESULT" FROM service."/service/service1"', 'SHA256 function must be wrapped with encode(func, \'hex\')');
+  error('SELECT digest(String, \'sha256\') AS "RESULT" FROM service."/service/service1"', 'SHA256 function must be wrapped with encode(func, \'hex\')');
+  error('SELECT sha256(String) AS "RESULT" FROM service."/service/service1"', 'SHA256 function must be wrapped with encode(func, \'hex\')');
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testStringConcatenate():Boolean[1]

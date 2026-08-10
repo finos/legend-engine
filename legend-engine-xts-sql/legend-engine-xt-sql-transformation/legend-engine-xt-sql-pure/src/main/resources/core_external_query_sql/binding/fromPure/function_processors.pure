@@ -198,13 +198,16 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('encode', String, {args, fc, expCtx, ctx |
         assert($args->size() == 2, | 'incorrect number of args to encode');
 
-        let type = $args->at(1)->reactivate()->cast(@String)->toOne();
+        //we handle encode of digest separately
+        if ($fc.arguments->at(0)->instanceOf(FunctionCall) && $fc.arguments->at(0)->cast(@FunctionCall)->isFunctionCallName('digest'),
+          | $args->at(0),
+          | let type = $args->at(1)->reactivate()->cast(@String)->toOne();
+            let func = [
+              pair('base64', encodeBase64_String_1__String_1_)
+            ]->getValue($type->toLower());
 
-        let func = [
-          pair('base64', encodeBase64_String_1__String_1_)
-        ]->getValue($type->toLower());
-
-        nullOrSfe($func, $args->at(0));
+            nullOrSfe($func, $args->at(0));
+        );
       }),
       string('initcap', toUpperFirstCharacter_String_1__String_1_),
       string('length', length_String_1__Integer_1_),
@@ -212,7 +215,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('lpad', String, {args, fc, expCtx, ctx | processPad($args, true)}),
       string('ltrim', String, {args, fc, expCtx, ctx | processTrim(ltrim_String_1__String_1_, $args)}),
       string('left', left_String_1__Integer_1__String_1_),
-      string('md5', String, {args, fc, expCtx, ctx | processHash($args, meta::pure::functions::hash::HashType.MD5)}),
+      string('md5', String, {args, fc, expCtx, ctx | processHash($args, meta::pure::functions::hash::HashType.MD5, $expCtx, false)}),
       string('regexp_like', Boolean, {args, fc, expCtx, ctx |
         assert($args->size() == 2 || $args->size() == 3, 'incorrect number of args to regexp_like');
 
@@ -229,7 +232,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('right', right_String_1__Integer_1__String_1_),
       string('rpad', String, {args, fc, expCtx, ctx | processPad($args, false)}),
       string('rtrim', String, {args, fc, expCtx, ctx | processTrim(rtrim_String_1__String_1_, $args)}),
-      string('sha256', String, {args, fc, expCtx, ctx | processHash($args, meta::pure::functions::hash::HashType.SHA256)}),
+      string('sha256', String, {args, fc, expCtx, ctx | processHash($args, meta::pure::functions::hash::HashType.SHA256, $expCtx, true)}),
       string('split_part', String, {args, fc, expCtx, ctx |
         assertEquals(3, $args->size(), 'split_part must specify three arguments');
 
@@ -528,7 +531,23 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
       misc('var', Any, {args, fc, expCtx, ctx |
         getVariableReference($args, $ctx);
-      }) 
+      }),
+
+      misc('digest', String, {args, fc, expCtx, ctx |
+        assertEquals(2, $args->size());
+
+        let value = $args->at(0);
+        let type = $args->at(1)->reactivate()->match([
+          s:String[1] | getValue([
+            pair('md5', meta::pure::functions::hash::HashType.MD5),
+            pair('sha1', meta::pure::functions::hash::HashType.SHA1),
+            pair('sha256', meta::pure::functions::hash::HashType.SHA256)
+          ], $s);,
+          a:Any[1] | fail('invalid digest argument'); meta::pure::functions::hash::HashType.MD5;
+        ]);
+
+        processHash($value, $type, $expCtx, true);
+      })      
   ]
 }
 
