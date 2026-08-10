@@ -86,6 +86,56 @@ if [ ${#COORDS[@]} -eq 0 ]; then
   exit 1
 fi
 
+# Central validates every deployment independently and builds an effective POM
+# for each artifact, which means resolving its <parent>. A parent that is
+# neither in the same bundle nor already on Central cannot be resolved and the
+# whole deployment fails validation -- which is exactly how the 4.139.1 release
+# failed once the bundle was first split.
+#
+# So the release goes out in two waves. Wave 1 is every coordinate that is
+# somebody's parent (aggregator POMs, a few hundred KB in total). Once it is
+# published, wave 2 can be split arbitrarily: each bundle resolves its parents
+# from Central instead of from a sibling bundle.
+PARENTS=$(mktemp)
+list=$(mktemp)
+coordlist=$(mktemp)
+sorted_coords=""
+trap 'rm -f "$list" "$coordlist" "$PARENTS"; [ -n "${sorted_coords:-}" ] && rm -f "$sorted_coords"' EXIT
+
+while IFS= read -r pom; do
+  # awk rather than head so the upstream greps never take SIGPIPE under pipefail
+  # `|| true` because a POM without a <parent> makes grep exit 1, which under
+  # `set -e` with pipefail would abort the whole run. The root POM is exactly
+  # such a POM, so this is the normal case, not an edge case.
+  tr '\n' ' ' < "$pom" \
+    | grep -o '<parent>.*</parent>' \
+    | grep -o '<artifactId>[^<]*</artifactId>' \
+    | awk 'NR == 1' \
+    | sed 's|<[^>]*>||g' || true
+done < <(find "$ROOT" -mindepth 3 -maxdepth 3 -type f -name '*.pom') | sort -u > "$PARENTS"
+
+WAVE1=()
+WAVE2=()
+for dir in "${COORDS[@]}"; do
+  artifact=$(basename "$(dirname "$dir")")
+  if grep -qxF "$artifact" "$PARENTS"; then
+    WAVE1+=("$dir")
+  else
+    WAVE2+=("$dir")
+  fi
+done
+
+# With more than one coordinate there is always at least a root POM that others
+# inherit from. An empty wave 1 means the parent scan broke, and publishing on
+# that basis would repeat the validation failure this split exists to avoid.
+if [ ${#WAVE1[@]} -eq 0 ] && [ ${#COORDS[@]} -gt 1 ]; then
+  echo "ERROR: no parent coordinates found among ${#COORDS[@]} coordinates." >&2
+  echo "ERROR: refusing to split, every bundle would fail parent resolution." >&2
+  exit 1
+fi
+
+echo "wave 1: ${#WAVE1[@]} parent coordinates; wave 2: ${#WAVE2[@]} coordinates"
+
 # Central requires md5 and sha1; sha256 and sha512 are optional but are already
 # published for prior releases, so they are kept for parity.
 while IFS= read -r -d '' file; do
@@ -116,18 +166,14 @@ printf 'coordinate\tbytes\n' > "$COORDS_TSV"
 
 idx=1
 size=0
-list=$(mktemp)
-coordlist=$(mktemp)
-sorted_coords=""
-trap 'rm -f "$list" "$coordlist"; [ -n "${sorted_coords:-}" ] && rm -f "$sorted_coords"' EXIT
-
+wave=wave1
 mb()  { awk -v b="$1" 'BEGIN { printf "%.1f", b / 1000000 }'; }
 pct() { awk -v a="$1" -v b="$2" 'BEGIN { printf "%.1f", 100 * a / b }'; }
 
 flush() {
   [ -s "$list" ] || return 0
   local name out zipsize sha files
-  name="central-bundle-$(printf '%02d' "$idx")"
+  name="$wave-bundle-$(printf '%02d' "$idx")"
   out="$BUNDLES/$name.zip"
   zip -q -X "$out" -@ < "$list"
   zipsize=$(stat -c%s "$out")
@@ -143,38 +189,50 @@ flush() {
   printf '%s\t%s\t%s\t%s\t%s\n' "$name" "$files" "$zipsize" "$size" "$sha" >> "$BUNDLES_TSV"
   awk -v b="$name" -F'\t' '{ printf "%s\t%s\t%s\n", b, $1, $2 }' "$coordlist" >> "$CONTENTS_TSV"
 
-  echo "bundle $idx: $files files, $(mb "$zipsize") MB zipped ($(pct "$zipsize" "$HARD_LIMIT")% of Portal limit), sha256 $sha"
+  echo "$name: $files files, $(mb "$zipsize") MB zipped ($(pct "$zipsize" "$HARD_LIMIT")% of Portal limit), sha256 $sha"
   idx=$((idx + 1))
   size=0
   : > "$list"
   : > "$coordlist"
 }
 
-for dir in "${COORDS[@]}"; do
-  dirsize=$(du -sb "$dir" | cut -f1)
-  printf '%s\t%s\n' "$dir" "$dirsize" >> "$COORDS_TSV"
+pack() { # pack <wave-name> <coordinate-dir>...
+  wave=$1
+  shift
+  idx=1
+  size=0
+  : > "$list"
+  : > "$coordlist"
 
-  if [ "$dirsize" -gt "$MAX_BYTES" ]; then
-    echo "ERROR: $dir alone is $(mb "$dirsize") MB, above the ${MAX_BYTES}-byte" >&2
-    echo "ERROR: bundle target. A single coordinate cannot be split across bundles." >&2
-    echo "ERROR: shrink the artifact, stop publishing it, or request a Portal limit" >&2
-    echo "ERROR: increase from central-support@sonatype.com." >&2
-    exit 1
-  fi
-  if [ $((dirsize * 100)) -gt $((MAX_BYTES * 80)) ]; then
-    echo "WARNING: $dir is $(mb "$dirsize") MB, $(pct "$dirsize" "$MAX_BYTES")% of the bundle target." >&2
-    echo "WARNING: it will hard-fail the release once it exceeds $((MAX_BYTES / 1000000)) MB." >&2
-  fi
-  if [ "$size" -gt 0 ] && [ $((size + dirsize)) -gt "$MAX_BYTES" ]; then
-    flush
-  fi
-  find "$dir" -type f >> "$list"
-  printf '%s\t%s\n' "$dir" "$dirsize" >> "$coordlist"
-  size=$((size + dirsize))
-done
-flush
+  for dir in "$@"; do
+    dirsize=$(du -sb "$dir" | cut -f1)
+    printf '%s\t%s\n' "$dir" "$dirsize" >> "$COORDS_TSV"
 
-NBUNDLES=$((idx - 1))
+    if [ "$dirsize" -gt "$MAX_BYTES" ]; then
+      echo "ERROR: $dir alone is $(mb "$dirsize") MB, above the ${MAX_BYTES}-byte" >&2
+      echo "ERROR: bundle target. A single coordinate cannot be split across bundles." >&2
+      echo "ERROR: shrink the artifact, stop publishing it, or request a Portal limit" >&2
+      echo "ERROR: increase from central-support@sonatype.com." >&2
+      exit 1
+    fi
+    if [ $((dirsize * 100)) -gt $((MAX_BYTES * 80)) ]; then
+      echo "WARNING: $dir is $(mb "$dirsize") MB, $(pct "$dirsize" "$MAX_BYTES")% of the bundle target." >&2
+      echo "WARNING: it will hard-fail the release once it exceeds $((MAX_BYTES / 1000000)) MB." >&2
+    fi
+    if [ "$size" -gt 0 ] && [ $((size + dirsize)) -gt "$MAX_BYTES" ]; then
+      flush
+    fi
+    find "$dir" -type f >> "$list"
+    printf '%s\t%s\n' "$dir" "$dirsize" >> "$coordlist"
+    size=$((size + dirsize))
+  done
+  flush
+}
+
+pack wave1 "${WAVE1[@]}"
+[ ${#WAVE2[@]} -eq 0 ] || pack wave2 "${WAVE2[@]}"
+
+NBUNDLES=$(($(wc -l < "$BUNDLES_TSV") - 1))
 TOTAL_ZIP=$(awk -F'\t' 'NR > 1 { s += $3 } END { print s + 0 }' "$BUNDLES_TSV")
 LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUNDLES_TSV")
 
@@ -188,6 +246,8 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo "| Files staged | $STAGED_FILES |"
   echo "| Staged size | $(mb "$STAGED_BYTES") MB |"
   echo "| Bundles produced | $NBUNDLES |"
+  echo "| Wave 1 (parent POMs) | ${#WAVE1[@]} coordinates |"
+  echo "| Wave 2 (everything else) | ${#WAVE2[@]} coordinates |"
   echo "| Total upload size | $(mb "$TOTAL_ZIP") MB |"
   echo "| Largest bundle | $(mb "$LARGEST_ZIP") MB ($(pct "$LARGEST_ZIP" "$HARD_LIMIT")% of the ${HARD_LIMIT}-byte Portal limit) |"
   echo "| Packing target | $(mb "$MAX_BYTES") MB per bundle |"
@@ -215,6 +275,10 @@ LARGEST_ZIP=$(awk -F'\t' 'NR > 1 && $3 > m { m = $3 } END { print m + 0 }' "$BUN
   echo
   echo "A coordinate cannot be split across bundles, so any single one reaching"
   echo "$(mb "$MAX_BYTES") MB fails the release outright."
+  echo
+  echo "Wave 1 must be published to Central before wave 2 is uploaded: every"
+  echo "wave-2 bundle resolves its parent POMs from Central, not from a sibling"
+  echo "bundle."
 } > "$REPORT"
 
 echo

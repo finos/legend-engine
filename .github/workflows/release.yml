@@ -234,6 +234,10 @@ jobs:
   release:
     name: Create and Publish Release Bundle
     runs-on: ubuntu-latest
+    # Raw Portal responses land here and are uploaded with the bundle report:
+    # validation errors are far too large to survive the Actions log.
+    env:
+      CENTRAL_STATUS_DIR: ${{ github.workspace }}/central-publishing/status
     needs:
       - build
       - test
@@ -255,8 +259,14 @@ jobs:
 
       # The full artifact set is over 1.7GB, well past the Portal's 1GiB
       # per-bundle cap, which nginx rejects with a bare "413 Payload Too Large"
-      # before the API sees it. Split it, never separating a jar from its pom,
-      # signature and checksums.
+      # before the API sees it. So it ships as several bundles -- but Central
+      # validates each deployment independently and has to resolve every POM's
+      # <parent> to build an effective POM. A parent sitting in a sibling
+      # bundle is resolvable from neither, which is how 4.139.1 failed.
+      #
+      # Hence two waves. Wave 1 is every coordinate that is somebody's parent
+      # (a few hundred KB of aggregator POMs) and is published first; wave 2 is
+      # everything else and resolves its parents from Central.
       - name: Stage and split bundles
         env:
           RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
@@ -264,11 +274,6 @@ jobs:
           .github/scripts/stage-and-split.sh \
             ~/.m2/repository/org/finos/legend/engine "$RELEASE_VERSION" "$PWD"
           cat central-publishing/bundle-report.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload bundles to Central
-        env:
-          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
-        run: |
           : > deployment-ids.txt
           : > bundle-deployments.tsv
           {
@@ -278,21 +283,70 @@ jobs:
             echo "| Bundle | Upload size | Deployment ID |"
             echo "|---|---:|---|"
           } >> "$GITHUB_STEP_SUMMARY"
-          for bundle in central-publishing/central-bundle-*.zip; do
-            suffix=$(basename "$bundle" .zip | sed 's/^central-bundle-//')
-            bytes=$(stat -c%s "$bundle")
-            echo "uploading $bundle ($bytes bytes)"
-            id=$(.github/scripts/central-publish.sh upload "$bundle" \
-                   "legend-engine-${RELEASE_VERSION}-central-bundle-${suffix}")
-            echo "$id" >> deployment-ids.txt
-            printf '%s\t%s\t%s\n' "$(basename "$bundle")" "$bytes" "$id" >> bundle-deployments.tsv
-            echo "uploaded $bundle as deployment $id"
-            printf '| %s | %s MB | `%s` |\n' \
-              "$(basename "$bundle")" "$((bytes / 1000000))" "$id" >> "$GITHUB_STEP_SUMMARY"
-          done
 
-      # Kept even when the release fails: the sizes and the bundle-to-deployment
-      # mapping are exactly what a post-mortem needs, and the runner is gone.
+      - name: Upload wave 1 (parent POMs)
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: .github/scripts/upload-wave.sh wave1 "$RELEASE_VERSION"
+
+      - name: Validate wave 1
+        run: .github/scripts/await-wave.sh wave1-ids.txt VALIDATED
+
+      # Wave 2 cannot validate until these are resolvable, so a dry run stops
+      # here: there is no way to rehearse wave 2 without really publishing
+      # wave 1, and Central is immutable.
+      - name: Publish wave 1
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: |
+          while read -r id; do
+            .github/scripts/central-publish.sh publish "$id" < /dev/null
+          done < wave1-ids.txt
+          .github/scripts/await-wave.sh wave1-ids.txt PUBLISHED
+
+      # Reaching PUBLISHED on the Portal is not the same as being readable on
+      # repo1, and it is the read side that wave 2's validation resolves against.
+      - name: Wait for wave 1 to be readable on Central
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          awk -F'\t' '$1 ~ /^wave1-bundle-/ { n = split($2, p, "/"); print p[n - 1] }' \
+            central-publishing/bundle-contents.tsv | sort -u > wave1-coords.txt
+          echo "waiting for $(wc -l < wave1-coords.txt) parent coordinates"
+          while read -r artifact; do
+            .github/scripts/central-publish.sh await-central "$artifact" "$RELEASE_VERSION" < /dev/null
+          done < wave1-coords.txt
+
+      - name: Upload wave 2
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: .github/scripts/upload-wave.sh wave2 "$RELEASE_VERSION"
+
+      # Every wave-2 bundle must validate before any is published: publishing
+      # bundle 1 and then finding bundle 3 invalid leaves a partial release,
+      # and nothing on Central can be changed or withdrawn.
+      - name: Validate wave 2
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: .github/scripts/await-wave.sh wave2-ids.txt VALIDATED
+
+      - name: Publish wave 2
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        run: |
+          while read -r id; do
+            .github/scripts/central-publish.sh publish "$id" < /dev/null
+          done < wave2-ids.txt
+          .github/scripts/await-wave.sh wave2-ids.txt PUBLISHED
+
+      - name: Note that a dry run stops after wave 1
+        if: ${{ github.event.inputs.dryRun == 'true' }}
+        run: |
+          echo "Dry run: wave 1 validated and will be dropped. Wave 2 was not"
+          echo "uploaded -- it can only validate once wave 1 is really published."
+
+      # Kept even when the release fails: sizes, the bundle-to-deployment
+      # mapping and the raw Portal responses are exactly what a post-mortem
+      # needs, and the runner is gone by then.
       - name: Upload bundle size report
         if: always()
         uses: actions/upload-artifact@v7
@@ -301,43 +355,15 @@ jobs:
           path: |
             central-publishing/bundle-report.md
             central-publishing/*.tsv
+            central-publishing/status/*.json
             bundle-deployments.tsv
           retention-days: 30
           if-no-files-found: warn
 
-      # Every bundle must validate before any of them is published. Publishing
-      # bundle 1 and then discovering bundle 5 is invalid leaves a partial
-      # release on Central, and Central is immutable.
-      - name: Wait for all bundles to validate
-        run: |
-          while read -r id; do
-            .github/scripts/central-publish.sh await "$id" VALIDATED < /dev/null
-          done < deployment-ids.txt
-
-      - name: Publish all bundles
-        if: ${{ github.event.inputs.dryRun != 'true' }}
-        run: |
-          while read -r id; do
-            .github/scripts/central-publish.sh publish "$id" < /dev/null
-          done < deployment-ids.txt
-          while read -r id; do
-            .github/scripts/central-publish.sh await "$id" PUBLISHED < /dev/null
-          done < deployment-ids.txt
-
       - name: Drop unpublished deployments
         if: ${{ always() && (failure() || cancelled() || github.event.inputs.dryRun == 'true') }}
         run: |
-          [ -f deployment-ids.txt ] || exit 0
+          [ -s deployment-ids.txt ] || exit 0
           while read -r id; do
-            state=$(.github/scripts/central-publish.sh state "$id" < /dev/null)
-            case "$state" in
-              VALIDATED|PENDING|VALIDATING)
-                .github/scripts/central-publish.sh drop "$id" < /dev/null
-                ;;
-              *)
-                # FAILED deployments are left in place on purpose: Sonatype
-                # support needs their files to diagnose the failure.
-                echo "leaving deployment $id in state $state"
-                ;;
-            esac
+            .github/scripts/central-publish.sh cleanup "$id" < /dev/null
           done < deployment-ids.txt
