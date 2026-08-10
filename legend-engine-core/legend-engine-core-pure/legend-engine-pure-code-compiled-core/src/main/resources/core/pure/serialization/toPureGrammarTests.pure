@@ -118,3 +118,100 @@ function meta::pure::metamodel::serialization::grammar::tests::testAnd():Boolean
   [$x, $y, false]->and();
   [$x, $y, false]->map(x|!$x)->and();
 }
+
+Class meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee extends meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson
+{
+  employeeId : String[1];
+}
+
+function <<access.private>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(class:meta::pure::metamodel::type::Class<Any>[1], name:String[1]):AbstractProperty<Any>[1]
+{
+  $class.properties->filter(p | $p.name == $name)->toOne();
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintRootGraphFetchTree_simple():Boolean[1]
+{
+  let tree = ^meta::pure::graphFetch::RootGraphFetchTree<Any>(
+    class    = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson,
+    subTrees = [
+      ^meta::pure::graphFetch::PropertyGraphFetchTree(property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson, 'firstName')),
+      ^meta::pure::graphFetch::PropertyGraphFetchTree(property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson, 'lastName'))
+    ]
+  );
+  assertEquals(
+    '#{meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson{firstName,lastName}}#',
+    printRootGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintRootGraphFetchTree_empty():Boolean[1]
+{
+  // An empty root tree still emits `{}` (matches Java Alloy composer behaviour).
+  let tree = ^meta::pure::graphFetch::RootGraphFetchTree<Any>(
+    class = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson
+  );
+  assertEquals(
+    '#{meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson{}}#',
+    printRootGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintPropertyGraphFetchTree_withAlias():Boolean[1]
+{
+  let tree = ^meta::pure::graphFetch::PropertyGraphFetchTree(
+    property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson, 'firstName'),
+    alias    = 'given'
+  );
+  assertEquals(
+    '\'given\':firstName',
+    printPropertyGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintPropertyGraphFetchTree_withSubType():Boolean[1]
+{
+  let tree = ^meta::pure::graphFetch::PropertyGraphFetchTree(
+    property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson, 'firstName'),
+    subType  = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee
+  );
+  assertEquals(
+    'firstName->subType(@meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee)',
+    printPropertyGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintSubTypeGraphFetchTree():Boolean[1]
+{
+  let tree = ^meta::pure::graphFetch::SubTypeGraphFetchTree(
+    subTypeClass = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee,
+    subTrees     = [
+      ^meta::pure::graphFetch::PropertyGraphFetchTree(property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee, 'employeeId'))
+    ]
+  );
+  assertEquals(
+    '->subType(@meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee){employeeId}',
+    printSubTypeGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
+
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::graphFetch::testPrintRootGraphFetchTree_withSubTypeTrees():Boolean[1]
+{
+  let tree = ^meta::pure::graphFetch::RootGraphFetchTree<Any>(
+    class    = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson,
+    subTrees = [^meta::pure::graphFetch::PropertyGraphFetchTree(property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson, 'firstName'))],
+    subTypeTrees = [^meta::pure::graphFetch::SubTypeGraphFetchTree(
+      subTypeClass = meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee,
+      subTrees     = [^meta::pure::graphFetch::PropertyGraphFetchTree(property = meta::pure::metamodel::serialization::grammar::tests::graphFetch::propertyByName(meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee, 'employeeId'))]
+    )]
+  );
+  assertEquals(
+    '#{meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFPerson{firstName,->subType(@meta::pure::metamodel::serialization::grammar::tests::graphFetch::GFEmployee){employeeId}}}#',
+    printRootGraphFetchTree($tree, [], ^GContext(space=''))
+  );
+}
