@@ -78,6 +78,19 @@ public class FunctionCatalogExtractor
      */
     private String classifyFunction(String name, String kind)
     {
+        return classifyFunctionByNameAndKind(name, kind);
+    }
+
+    /**
+     * Static classification by function name only (assumes normal function kind).
+     */
+    public static String classifyFunctionStatic(String name)
+    {
+        return classifyFunctionByNameAndKind(name, "f");
+    }
+
+    private static String classifyFunctionByNameAndKind(String name, String kind)
+    {
         if ("a".equals(kind))
         {
             return CAT_AGGREGATE;
@@ -152,6 +165,11 @@ public class FunctionCatalogExtractor
         {
             return CAT_SET_RETURNING;
         }
+        // Cryptographic (pgcrypto extension)
+        if (CRYPTOGRAPHIC_FUNCTIONS.contains(name))
+        {
+            return CAT_CRYPTOGRAPHIC;
+        }
 
         // Only include functions that match a known documentation category.
         // Unclassified functions are internal Postgres implementation details
@@ -177,13 +195,14 @@ public class FunctionCatalogExtractor
     public static final String CAT_SYSTEM = "System Information Functions (9.26)";
     public static final String CAT_SEQUENCE = "Sequence Manipulation Functions (9.17)";
     public static final String CAT_SET_RETURNING = "Set Returning Functions (9.25)";
+    public static final String CAT_CRYPTOGRAPHIC = "Cryptographic Functions (pgcrypto)";
     public static final String CAT_OTHER = "Other Functions";
 
     private static final String[] DOC_CATEGORIES = {
             CAT_MATH, CAT_STRING, CAT_BINARY, CAT_PATTERN, CAT_FORMAT,
             CAT_DATETIME, CAT_CONDITIONAL, CAT_JSON, CAT_ARRAY,
             CAT_AGGREGATE, CAT_WINDOW, CAT_NETWORK, CAT_SYSTEM,
-            CAT_SEQUENCE, CAT_SET_RETURNING, CAT_OTHER
+            CAT_SEQUENCE, CAT_SET_RETURNING, CAT_CRYPTOGRAPHIC, CAT_OTHER
     };
 
     // ============ Function Classification Sets ============
@@ -300,6 +319,13 @@ public class FunctionCatalogExtractor
             "generate_series", "generate_subscripts", "unnest"
     ));
 
+    private static final java.util.Set<String> CRYPTOGRAPHIC_FUNCTIONS = new java.util.HashSet<>(java.util.Arrays.asList(
+            "digest", "hmac", "crypt", "gen_salt",
+            "pgp_sym_encrypt", "pgp_sym_decrypt",
+            "pgp_pub_encrypt", "pgp_pub_decrypt",
+            "armor", "dearmor", "gen_random_bytes", "gen_random_uuid"
+    ));
+
     /**
      * Refined catalog query that returns only PUBLIC-API Postgres functions.
      * Excludes:
@@ -316,7 +342,7 @@ public class FunctionCatalogExtractor
                     "p.prokind AS kind " +
                     "FROM pg_proc p " +
                     "JOIN pg_namespace n ON p.pronamespace = n.oid " +
-                    "WHERE n.nspname = 'pg_catalog' " +
+                    "WHERE (n.nspname = 'pg_catalog' OR p.oid IN (SELECT objid FROM pg_depend WHERE deptype = 'e')) " +
                     // Basic name filters
                     "AND p.proname NOT LIKE 'pg\\_%' ESCAPE '\\' " +
                     "AND substring(p.proname, 1, 1) <> '_' " +

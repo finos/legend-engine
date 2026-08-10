@@ -1,3 +1,4 @@
+
 // Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -2968,11 +2969,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processFunctionCallAsFunction', $context.debug);
 
-  let args = $f.arguments->map(a | $a->processExpression($expContext, $context));
+  let childExpContext = ^$expContext(functionCallStack = $f->concatenate($expContext.functionCallStack));
 
   if ($f.distinct,
     | processFunctionCallAsFunction(^$f(distinct = false, arguments = [^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $f.arguments->first(), distinct = false)]->concatenate($f.arguments->tail())), $expContext, $context),
-    | functionCall($f.name, $args, $f, $expContext, $context));
+    |
+      let args = $f.arguments->map(a | $a->processExpression($childExpContext, $context));
+      functionCall($f.name, $args, $f, $expContext, $context);
+  );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:QualifiedName[1], args:ValueSpecification[*], f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3253,11 +3257,28 @@ function meta::external::query::sql::transformation::queryToPure::processPad(arg
   nullOrSfe($func, $args);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1]):ValueSpecification[1]
+function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1], expContext:SqlTransformExpressionContext[1], requireEncode:Boolean[1]):ValueSpecification[1]
 {
   assert($args->size() == 1, 'incorrect number of args');
+  assert(!$requireEncode || isHexEncode($expContext.parentFunctionCall()), $type.name + ' function must be wrapped with encode(func, \'hex\')');
+
   nullOrSfe(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, [$args->at(0), processExtractEnumValue(meta::pure::functions::hash::HashType, $type.name->toOne())]);
 }
+
+//is encode(any, 'hex');
+function meta::external::query::sql::transformation::queryToPure::isHexEncode(f:FunctionCall[0..1]):Boolean[1]
+{
+  isFunctionCallName($f, 'encode')
+  && $f.arguments->size() == 2 
+  && $f.arguments->at(1)->instanceOf(StringLiteral) 
+  && $f.arguments->at(1)->cast(@StringLiteral).value->toLower() == 'hex'
+}
+
+function meta::external::query::sql::transformation::queryToPure::isFunctionCallName(f:FunctionCall[0..1], name:String[1]):Boolean[1]
+{
+    $f.name.parts->size() == 1 && $f.name.parts->at(0)->toLower() == $name->toLower();
+}
+
 
 function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):ValueSpecification[1]
 {
@@ -4289,6 +4310,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
   doCastNonPrimitiveColumnAccessor: Boolean[1];
   type: Type[0..1];
   relation:Boolean[1];
+  functionCallStack: FunctionCall[*];
 
   var() {
     assert($this.defaultVar->isNotEmpty(), | 'no var present');
@@ -4300,6 +4322,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
     let var = if ($name.parts->size() == 2, | $this.varMap->get($name.parts->first()->toOne()), | []);
     if ($var->isEmpty(), | $this.var, | $var->toOne());
   }:VariableExpression[1];
+
+  parentFunctionCall()
+  {
+    $this.functionCallStack->first();
+  }:FunctionCall[0..1];
 }
 
 Class meta::external::query::sql::transformation::queryToPure::QueryColumn extends TDSColumn

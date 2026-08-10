@@ -106,6 +106,7 @@ public class TestPostgresParity
             "parity-tests/functions/math_functions.yaml",
             "parity-tests/functions/string_functions.yaml",
             "parity-tests/functions/binary_functions.yaml",
+            "parity-tests/functions/pgcrypto_functions.yaml",
             "parity-tests/functions/pattern_matching.yaml",
             "parity-tests/functions/formatting_functions.yaml",
             "parity-tests/functions/datetime_functions.yaml",
@@ -192,6 +193,7 @@ public class TestPostgresParity
         try (Connection conn = pgDataSource.getConnection();
              Statement stmt = conn.createStatement())
         {
+            stmt.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto");
             stmt.execute("CREATE SEQUENCE IF NOT EXISTS test_seq START 1");
         }
         PureModelContextData modelData = GrammarParseTestUtils.loadPureModelContextFromResource(

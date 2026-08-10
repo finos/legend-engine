@@ -254,7 +254,51 @@ public class FunctionCoverageMapper
             cov.relSkip = skipRel;
         }
 
-        // Step 4: Apply to catalog entries
+        // Step 4: Inject synthetic catalog entries for extension functions that have test coverage
+        // but are not present in the catalog (e.g., pgcrypto functions not in pg_catalog)
+        for (Map.Entry<String, SignatureCoverage> entry : signatureCoverageMap.entrySet())
+        {
+            String sig = entry.getKey();
+            boolean foundInCatalog = false;
+            for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
+            {
+                for (FunctionCatalogExtractor.PgFunction fn : fns)
+                {
+                    if (sig.equals(fn.signature))
+                    {
+                        foundInCatalog = true;
+                        break;
+                    }
+                }
+                if (foundInCatalog)
+                {
+                    break;
+                }
+            }
+            if (!foundInCatalog)
+            {
+                // Extract function name from signature (everything before the first '(')
+                String funcName = sig.contains("(") ? sig.substring(0, sig.indexOf('(')) : sig;
+                String category = FunctionCatalogExtractor.classifyFunctionStatic(funcName);
+                if (category == null)
+                {
+                    category = FunctionCatalogExtractor.CAT_OTHER;
+                }
+                String args = sig.contains("(") && sig.contains(")")
+                        ? sig.substring(sig.indexOf('(') + 1, sig.indexOf(')'))
+                        : "";
+                String retType = sig.contains("?") ? sig.substring(sig.indexOf('?') + 2).trim() : "unknown";
+                FunctionCatalogExtractor.PgFunction syntheticFn = new FunctionCatalogExtractor.PgFunction(
+                        funcName, sig, args, retType, "f", category);
+                SignatureCoverage cov = entry.getValue();
+                syntheticFn.tdsStatus = cov.tdsStatus();
+                syntheticFn.relStatus = cov.relStatus();
+                syntheticFn.coverage = cov;
+                catalog.computeIfAbsent(category, k -> new ArrayList<>()).add(syntheticFn);
+            }
+        }
+
+        // Step 5: Apply to catalog entries
         for (Map.Entry<String, List<FunctionCatalogExtractor.PgFunction>> catEntry : catalog.entrySet())
         {
             String categoryName = catEntry.getKey();
