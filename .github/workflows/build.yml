@@ -189,7 +189,7 @@ jobs:
         env:
           MAVEN_OPTS: "-Xmx8g"
         run: |
-          mvn -B -e -DskipTests=true -DskipShade=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
+          mvn -B -e -DskipTests=true install ${{ steps.pureVersion.outputs.arg }} ${{ steps.requiredSecrets.outputs.PROFILES }}
 
       - name: Build (Master + Docker Snapshot)
         if: github.ref == 'refs/heads/master'
@@ -281,12 +281,6 @@ jobs:
   test-modules:
     name: Test Module - ${{ matrix.name }}
     runs-on: ubuntu-latest
-    # Cloud PCT modules share one fixed workspace per store, so runs on different refs
-    # corrupt each other's fixtures. Scope the group per module - a group constant across
-    # the matrix would serialise every module against every other one.
-    concurrency:
-      group: test-module-${{ matrix.name }}
-      cancel-in-progress: false
     if: "!cancelled() && needs.build.result == 'success'"
     needs:
       - build
