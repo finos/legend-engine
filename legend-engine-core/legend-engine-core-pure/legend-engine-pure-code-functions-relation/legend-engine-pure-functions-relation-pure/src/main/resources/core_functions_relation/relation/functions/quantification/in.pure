@@ -18,6 +18,13 @@ import meta::pure::functions::relation::*;
 
 // An empty value is never in the relation, matching meta::pure::functions::collection::in(Any[0..1], Any[*]).
 // This is also SQL's `null in (...)` -> UNKNOWN -> row dropped.
+//
+// A null *inside* the relation is where this body and SQL part company, and Boolean[1] cannot carry
+// the difference: SQL leaves an unmatched row UNKNOWN, so both `in` and `not in` drop it, while this
+// returns false and `not in` therefore keeps it. Relational stores emit a real IN and get SQL's
+// answer; the in-memory bindings get this one. testIn_Negated_NullInRelation pins the split and is
+// excluded on core-compiled and core-interpreted for that reason. Same two-valued logic as
+// collection::in -- see the pre-existing where_not_in_list parity failure.
 function <<PCT.function, functionType.NormalizeRequiredFunction>>
 {
     doc.doc='Returns true if the given value appears in the single column of the given relation. On relational stores this generates an IN (subquery) predicate.'
@@ -127,6 +134,84 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_EmptyRe
     assertEquals('#TDS\n'+
                  '   departmentId,departmentName\n'+
                  '\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// A null in the searched column is UNKNOWN in SQL, so the relational stores drop row 3 while the
+// Pure body returns false for it. The divergence is recorded per adapter rather than reconciled --
+// `in` returns Boolean[1] and cannot carry UNKNOWN.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// The negated form is where two-valued and three-valued logic part company: SQL leaves every
+// unmatched row UNKNOWN once the searched column holds a null, so `not in` keeps nothing.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// A null on the left is UNKNOWN in SQL and empty in Pure; both drop the row, so this one agrees.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #;
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
                  '#', $res->sort(~departmentId->ascending())->toString());
 }
 
