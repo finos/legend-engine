@@ -256,22 +256,13 @@
     "test" : "meta::pure::functions::relation::tests::in::testIn_EmptyRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_InExtend_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_InExtend_NullValueAndNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "cannot appear in the definition of common table expression."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull_Function_1__Boolean_1_",
-    "expectedError" : "cannot appear in the definition of common table expression."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_InExtend_NullValueAndNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "cannot appear in the definition of common table expression."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "cannot appear in the definition of common table expression."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_NullInRelation_Function_1__Boolean_1_",
@@ -287,7 +278,7 @@
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
-    "expectedError" : "cannot appear in the definition of common table expression."
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   }, {
     "test" : "meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
