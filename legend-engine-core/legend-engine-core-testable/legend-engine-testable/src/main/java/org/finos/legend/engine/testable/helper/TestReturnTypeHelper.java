@@ -14,11 +14,15 @@
 
 package org.finos.legend.engine.testable.helper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.RelationTypeHelper;
 import org.finos.legend.engine.protocol.pure.m3.relation.Column;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType;
+import org.finos.legend.pure.generated.core_pure_protocol_protocol;
+import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationTypeCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
@@ -36,7 +40,31 @@ public class TestReturnTypeHelper
     {
     }
 
-    private static GenericType getReturnGenericType(FunctionDefinition<?> functionDefinition, PureModel pureModel)
+    public static org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType getReturnGenericType(FunctionDefinition<?> functionDefinition, PureModel pureModel)
+    {
+        GenericType metamodelReturnType = getReturnGenericTypeCoreInstance(functionDefinition, pureModel);
+        if (metamodelReturnType == null)
+        {
+            return null;
+        }
+        try
+        {
+            Root_meta_protocols_pure_vX_X_X_metamodel_m3_type_generics_GenericType intermediate =
+                    core_pure_protocol_vX_X_X_transfers_metamodel.Root_meta_protocols_pure_vX_X_X_transformation_fromPureGraph_domain_transformGenericType_GenericType_1__GenericType_1_(metamodelReturnType, pureModel.getExecutionSupport());
+            String json = core_pure_protocol_protocol.Root_meta_alloy_metadataServer_alloyToJSON_Any_1__String_1_(intermediate, pureModel.getExecutionSupport());
+            return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(json, org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType.class);
+        }
+        catch (JsonProcessingException e)
+        {
+            return null;
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    private static GenericType getReturnGenericTypeCoreInstance(FunctionDefinition<?> functionDefinition, PureModel pureModel)
     {
         if (functionDefinition == null || pureModel == null)
         {
@@ -69,19 +97,17 @@ public class TestReturnTypeHelper
 
     public static boolean isRelationReturnType(FunctionDefinition<?> functionDefinition, PureModel pureModel)
     {
-        GenericType returnType = getReturnGenericType(functionDefinition, pureModel);
+        GenericType returnType = getReturnGenericTypeCoreInstance(functionDefinition, pureModel);
         return returnType != null && isRelationSubtype(returnType._rawType(), pureModel);
     }
 
-   // pre-req - the return type is Relation
     public static List<Column> getRelationReturnColumns(FunctionDefinition<?> functionDefinition, PureModel pureModel)
     {
-        List<Column> declared = extractColumnsFromRelationGenericType(getReturnGenericType(functionDefinition, pureModel), pureModel);
+        List<Column> declared = extractColumnsFromRelationGenericType(getReturnGenericTypeCoreInstance(functionDefinition, pureModel), pureModel);
         if (!declared.isEmpty())
         {
             return declared;
         }
-        // extract the columns from the body
         return extractColumnsFromBody(functionDefinition, pureModel);
     }
 
@@ -116,7 +142,7 @@ public class TestReturnTypeHelper
             {
                 return Collections.emptyList();
             }
-            RelationType<?> relationType = RelationTypeCoreInstanceWrapper.toRelationType(rowType);
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType<?> relationType = RelationTypeCoreInstanceWrapper.toRelationType(rowType);
             List<Column> columns = RelationTypeHelper.convert(relationType, pureModel).columns;
             return columns == null ? Collections.emptyList() : columns;
         }

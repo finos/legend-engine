@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
+
 public class DataSpaceExecutableAnalysisResult
 {
     public String title;
@@ -21,4 +23,5 @@ public class DataSpaceExecutableAnalysisResult
     public String executable;
     public DataSpaceExecutableInfo info;
     public DataSpaceExecutableResult result;
+    public GenericType executableReturnType;
 }

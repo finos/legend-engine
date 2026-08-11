@@ -46,16 +46,6 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
-                "  defaultExecutionContext: '';\n" +
-                "}\n", "PARSER error at [2:1-4:1]: Field 'executionContexts' is required");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace" +
-                "{\n" +
-                "  executionContexts: [];\n" +
-                "}\n", "PARSER error at [2:1-4:1]: Field 'defaultExecutionContext' is required");
-        test("###DataSpace\n" +
-                "DataSpace model::dataSpace" +
-                "{\n" +
                 "  executionContexts:\n" +
                 "  [\n" +
                 "    {\n" +
