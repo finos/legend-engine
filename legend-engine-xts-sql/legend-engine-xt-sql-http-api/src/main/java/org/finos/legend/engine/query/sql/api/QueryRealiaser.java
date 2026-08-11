@@ -147,12 +147,14 @@ public class QueryRealiaser extends BaseNodeModifierVisitor
     {
         //store the current state
         boolean inRoot = root;
-        Map<String, String> nodes = UnifiedMap.newMap(realiases);
+        Map<String, String> nodes = realiases;
 
-        //reset the state for recurse
+        //the inner scope keeps the enclosing aliases visible so a correlated subquery can reference
+        //them; it needs its own map because aliasIfRequired registers in place, so anything the
+        //subquery declares shadows the outer alias and is discarded on the way out
         root = false;
         currentAlias = null;
-        realiases = UnifiedMap.newMap();
+        realiases = UnifiedMap.newMap(nodes);
         Node result = super.visit(val);
 
         //restore the state

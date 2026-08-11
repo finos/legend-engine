@@ -1386,6 +1386,52 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                 "}\n", "COMPILATION error at [28:5-34:9]: Each RelationElement for a database accessor must be of the form schema.table");
     }
 
+    @Test
+    public void testInWithSingleColumnRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->in(#>{a::A.tb}#->select(~id)))\n" +
+                        "}");
+    }
+
+
+
+    @Test
+    public void testInWithMultiColumnRelationError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->in(#>{a::A.tb}#->select(~[id, name])))\n" +
+                        "}", "COMPILATION error at [7:51-56]: in(..., Relation) expects a relation with a single column, got (id:Int, name:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testInWithMismatchedColumnTypeError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->in(#>{a::A.tb}#->select(~name)))\n" +
+                        "}", "COMPILATION error at [7:51-56]: in(..., Relation) expects the value and the relation column to be of the same type, got Int and (name:Varchar(200))"
+        );
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {

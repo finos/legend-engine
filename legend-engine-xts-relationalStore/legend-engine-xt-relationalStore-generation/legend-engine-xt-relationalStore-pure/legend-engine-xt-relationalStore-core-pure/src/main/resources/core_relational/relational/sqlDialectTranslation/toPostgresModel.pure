@@ -250,9 +250,12 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertDynaFunction(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
 {
+  // Operands sit inside an expression, so a nested query among them is a subquery even when the dyna function
+  // itself is the root of the generated query -- convertSelectSQLQuery only yields a TableSubquery when !isRootSelect.
+  let operandState = ^$state(isRootSelect = false);
   if(
     [
-      pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($state)->cast(@TableSubquery))),
+      pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($operandState)->cast(@TableSubquery))),
       pair(| $d.name == 'not',                    | convertNot($d, $state)),
       pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
       pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
@@ -260,7 +263,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       pair(| $d.name == 'extractFromSemiStructured', | convertExtractFromSemiStructured($d, $state))
     ],
     | 
-      let params = $d.parameters->map(p|$p->convertElementToExpression($state));
+      let params = $d.parameters->map(p|$p->convertElementToExpression($operandState));
       $state.dynaFunctionConverterMap->get($d.name)->toOne('Couldn\'t find DynaFunction to Postgres model translation for ' + $d.name + '().')->eval($params);
   );
 }

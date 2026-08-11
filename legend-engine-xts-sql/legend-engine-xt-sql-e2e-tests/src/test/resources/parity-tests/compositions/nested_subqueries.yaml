@@ -38,6 +38,13 @@ tests:
     expected_rel_status: ERROR
 
   # EXISTS + aggregate
+  # Not an aliasing problem, so de-shadowing the subquery does not reach it. The GROUP BY stops the WHERE
+  # being hoisted into the exists lambda (hoistableWhere in fromPure.pure), so the correlated predicate is
+  # built into the sub-relation, and the HAVING then isolates that sub-relation into a derived table:
+  #   exists(select 1 from (select ... from persons where <correlated> group by ... having ...) as persons_0)
+  # An outer reference is not legal there however the aliases are named -- it needs the grouped
+  # sub-relation not to be isolated under a correlated scope (or to be emitted as LATERAL).
+  # Pure -> SQL rejects it rather than returning wrong rows. Same shape as subquery_exists_grouped.
   - id: nested_exists_agg
     sql: "SELECT d.name, d.budget FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id GROUP BY p.dept_id HAVING COUNT(*) > 2) ORDER BY 1"
     feature: "EXISTS with aggregate"
@@ -51,7 +58,7 @@ tests:
     feature: "Subquery filter + derived table"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Scalar subquery with arithmetic
   - id: nested_scalar_arithmetic
@@ -83,7 +90,7 @@ tests:
     feature: "NOT EXISTS"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery in SELECT with COALESCE
   - id: nested_scalar_coalesce

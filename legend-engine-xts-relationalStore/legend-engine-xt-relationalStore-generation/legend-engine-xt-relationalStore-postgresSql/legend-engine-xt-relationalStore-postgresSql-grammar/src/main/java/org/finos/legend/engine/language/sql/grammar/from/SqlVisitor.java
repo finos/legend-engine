@@ -1315,8 +1315,13 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitExists(SqlBaseParser.ExistsContext context)
     {
-//        return new ExistsPredicate((Query) visit(context.query()));
-        return unsupported("Exists");
+        TableSubquery subquery = new TableSubquery();
+        subquery.query = (Query) visit(context.queryStatement());
+
+        ExistsPredicate exists = new ExistsPredicate();
+        exists.query = subquery;
+
+        return exists;
     }
 
     @Override

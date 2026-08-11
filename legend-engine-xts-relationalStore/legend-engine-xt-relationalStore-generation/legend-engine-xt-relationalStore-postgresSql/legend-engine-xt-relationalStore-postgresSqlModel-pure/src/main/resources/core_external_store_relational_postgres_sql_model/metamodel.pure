@@ -409,6 +409,11 @@ Class meta::external::query::sql::metamodel::InPredicate extends meta::external:
   <<equality.Key>> valueList: meta::external::query::sql::metamodel::Expression[1];
 }
 
+Class meta::external::query::sql::metamodel::ExistsPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> query: meta::external::query::sql::metamodel::TableSubquery[1];
+}
+
 Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> min: meta::external::query::sql::metamodel::Expression[1];

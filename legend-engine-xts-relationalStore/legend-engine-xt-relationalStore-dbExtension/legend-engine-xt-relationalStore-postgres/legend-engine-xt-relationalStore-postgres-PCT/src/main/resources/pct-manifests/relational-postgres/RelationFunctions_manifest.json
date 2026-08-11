@@ -100,6 +100,9 @@
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Postgres"
   }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Postgres"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Postgres"
   }, {

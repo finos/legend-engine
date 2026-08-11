@@ -20,14 +20,14 @@ tests:
     feature: "Subquery with IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_in_dept
     sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
     feature: "Subquery with IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery with NOT IN
   - id: subquery_not_in
@@ -35,14 +35,14 @@ tests:
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_not_in_dept
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery in WHERE with EXISTS
   - id: subquery_exists
@@ -50,14 +50,14 @@ tests:
     feature: "Subquery with EXISTS"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_exists_dept
     sql: "SELECT d.name FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id AND p.salary > 70000) ORDER BY 1"
     feature: "Subquery with EXISTS"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery with NOT EXISTS
   - id: subquery_not_exists
@@ -65,7 +65,7 @@ tests:
     feature: "Subquery with NOT EXISTS"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Derived table (subquery in FROM)
   - id: subquery_derived_table
@@ -150,7 +150,7 @@ tests:
     feature: "EXISTS with multiple conditions"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery in CASE
   - id: subquery_in_case
@@ -159,3 +159,59 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # Uncorrelated EXISTS
+  - id: subquery_exists_uncorrelated
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM departments d WHERE d.budget > 900000) ORDER BY 1"
+    feature: "Uncorrelated EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Uncorrelated EXISTS with no matching row
+  - id: subquery_exists_uncorrelated_empty
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM departments d WHERE d.budget > 99999999) ORDER BY 1"
+    feature: "Uncorrelated EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # EXISTS selecting a real column rather than a literal
+  - id: subquery_exists_select_column
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT o.id FROM orders o WHERE o.person_id = p.id AND o.amount > 400) ORDER BY 1"
+    feature: "EXISTS selecting a column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # EXISTS over a grouped subquery - the predicate cannot be hoisted past the grouping
+  - id: subquery_exists_grouped
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT o.person_id, COUNT(*) AS cnt FROM orders o WHERE o.person_id = p.id GROUP BY o.person_id) ORDER BY 1"
+    feature: "EXISTS over grouped subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Uncorrelated IN (subquery) against a filtered relation
+  - id: subquery_in_uncorrelated_filtered
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id IN (SELECT d.id FROM departments d WHERE d.budget > 500000) ORDER BY 1"
+    feature: "Uncorrelated IN (subquery)"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Correlated IN (subquery)
+  - id: subquery_in_correlated
+    sql: "SELECT p.name FROM persons p WHERE p.id IN (SELECT o.person_id FROM orders o WHERE o.amount > p.salary / 1000) ORDER BY 1"
+    feature: "Correlated IN (subquery)"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # IN (subquery) where no row matches
+  - id: subquery_in_empty
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id IN (SELECT d.id FROM departments d WHERE d.budget > 99999999) ORDER BY 1"
+    feature: "IN (subquery) with empty result"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

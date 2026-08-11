@@ -45,11 +45,6 @@ Class meta::external::query::sql::metamodel::extension::ProcessedStringLiteral e
   <<equality.Key>> value: String[1];
 }
 
-Class meta::external::query::sql::metamodel::extension::ExistsPredicate extends meta::external::query::sql::metamodel::Expression
-{
-  <<equality.Key>> query: TableSubquery[1];
-}
-
 Class meta::external::query::sql::metamodel::extension::BitwiseNotExpression extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];

@@ -112,6 +112,9 @@
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
   }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
   }, {

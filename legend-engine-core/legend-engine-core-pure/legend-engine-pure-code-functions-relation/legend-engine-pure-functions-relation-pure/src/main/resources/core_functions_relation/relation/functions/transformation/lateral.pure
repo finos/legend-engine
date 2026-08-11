@@ -157,3 +157,27 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLater
                 '   109,David,3,3,Sales\n'+
                 '#', $res->sort([~departmentId->ascending(),~employeeId->ascending()])->toString());
 }
+// The correlated column `ref` also exists on the inner relation. Resolution of an outer column is name based,
+// so this is the shape where the inner one can win and the lateral silently loses its correlation.
+function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let expr = {|
+    let people = #TDS
+                   personId, ref
+                   1, 10
+                   2, 20
+                 #;
+    let items = #TDS
+                  itemId, ref
+                  10, 99
+                  30, 99
+                #;
+    $people->lateral(x | $items->filter(y | $y.itemId == $x.ref)->select(~itemId));
+  };
+  let res =  $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   personId,ref,itemId\n'+
+                '   1,10,10\n'+
+                '#', $res->sort([~personId->ascending()])->toString());
+}

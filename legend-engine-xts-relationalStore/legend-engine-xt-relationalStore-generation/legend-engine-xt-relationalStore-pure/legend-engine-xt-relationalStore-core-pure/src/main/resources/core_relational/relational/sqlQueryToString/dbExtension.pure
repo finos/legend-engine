@@ -116,7 +116,7 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
    selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
    {
      let cte = $s.commonTableExpressions->isNotEmpty()->if(
-             | $this.dbExtension.commonTableExpressionsProcessor->toOne('Common table expression not supported on DB ' + $this.dbType.name)->eval($s.commonTableExpressions, $sgc, $isSubSelect),
+             | $this.dbExtension->processCommonTableExpressions($s.commonTableExpressions, $sgc, $isSubSelect),
              | ''
      );
      $cte + $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
@@ -589,12 +589,19 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
    ^$d(indentStack += $d.indent);
 }
 
+function meta::relational::functions::sqlQueryToString::processCommonTableExpressions(dbExtension:DbExtension[1], ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   $dbExtension.commonTableExpressionsProcessor
+      ->orElse(meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_)
+      ->eval($ctes, $sgc, $isSubSelect);
+}
+
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
      | 
       let cte = $s.commonTableExpressions->isNotEmpty()->if(
-             | $sgc.dbConfig.dbExtension.commonTableExpressionsProcessor->toOne('Common table expression not supported on DB ' + $sgc.dbConfig.dbType.name)->eval($s.commonTableExpressions, $sgc, $isSubSelect),
+             | $sgc.dbConfig.dbExtension->processCommonTableExpressions($s.commonTableExpressions, $sgc, $isSubSelect),
              | ''
       );
       $cte + $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions);

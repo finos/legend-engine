@@ -41,14 +41,18 @@ tests:
     feature: "IN (subquery)"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
+  # Grace has a null dept_id. Postgres leaves NULL NOT IN (1) UNKNOWN and drops her; relation::in
+  # returns Boolean[1] and cannot carry UNKNOWN, so it answers false and NOT keeps her. Same
+  # two-valued logic as the list form in where_not_in_list, which fails here for the same reason and
+  # predates subquery support. Pinned as a PCT test in testIn_Negated_NullInRelation.
   - id: where_not_in_subquery
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE name = 'Engineering') ORDER BY 1"
     feature: "NOT IN (subquery)"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   - id: where_in_strings
     sql: "SELECT name FROM persons WHERE name IN ('Alice', 'Bob', 'Charlie') ORDER BY 1"
@@ -99,14 +103,14 @@ tests:
     feature: "EXISTS"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: where_not_exists
     sql: "SELECT name FROM persons p WHERE NOT EXISTS (SELECT 1 FROM departments d WHERE d.id = p.dept_id AND d.name = 'Engineering') ORDER BY 1"
     feature: "NOT EXISTS"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ANY / ALL
   - id: where_any
