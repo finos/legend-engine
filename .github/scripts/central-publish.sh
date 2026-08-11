@@ -21,6 +21,8 @@
 #   central-publish.sh state  <deployment-id>                 -> prints current state
 #   central-publish.sh publish <deployment-id>
 #   central-publish.sh drop    <deployment-id>
+#   central-publish.sh cleanup <deployment-id>                -> drop if droppable
+#   central-publish.sh await-central <artifactId> <version>   -> wait for repo1
 #
 # Uploads are always USER_MANAGED. With AUTOMATIC, a release split across N
 # bundles has no safe failure mode: if bundle 5 fails validation, bundles 1-4
@@ -33,12 +35,19 @@
 #   CENTRAL_API_BASE                        override for testing
 #   CENTRAL_POLL_INTERVAL                   seconds between status polls (60)
 #   CENTRAL_POLL_TIMEOUT                    seconds before giving up (3600)
+#   CENTRAL_REPO_BASE                       read-side repository (repo1)
+#   CENTRAL_GROUP_PATH                      group as a path, for await-central
+#   CENTRAL_STATUS_DIR                      if set, raw status JSON is kept here
+#   CENTRAL_ERROR_LINES                     max validation errors printed (200)
 
 set -euo pipefail
 
 CENTRAL_API_BASE=${CENTRAL_API_BASE:-https://central.sonatype.com/api/v1/publisher}
 CENTRAL_POLL_INTERVAL=${CENTRAL_POLL_INTERVAL:-60}
 CENTRAL_POLL_TIMEOUT=${CENTRAL_POLL_TIMEOUT:-3600}
+CENTRAL_REPO_BASE=${CENTRAL_REPO_BASE:-https://repo1.maven.org/maven2}
+CENTRAL_GROUP_PATH=${CENTRAL_GROUP_PATH:-org/finos/legend/engine}
+CENTRAL_ERROR_LINES=${CENTRAL_ERROR_LINES:-200}
 
 : "${CI_DEPLOY_USERNAME:?CI_DEPLOY_USERNAME is not set}"
 : "${CI_DEPLOY_PASSWORD:?CI_DEPLOY_PASSWORD is not set}"
@@ -52,6 +61,41 @@ auth_token() {
 
 urlencode() {
   jq -rn --arg v "$1" '$v|@uri'
+}
+
+save_status() {
+  local id=$1 response=$2
+  [ -n "${CENTRAL_STATUS_DIR:-}" ] || return 0
+  mkdir -p "$CENTRAL_STATUS_DIR"
+  printf '%s' "$response" > "$CENTRAL_STATUS_DIR/$id.json"
+}
+
+# The Portal returns every validation error in a single JSON blob. Echoing that
+# raw produces one enormous line, which the Actions runner drops outright: the
+# 4.139.1 release failed validation and the log said only "FAILED", with no
+# indication of why. Print one error per line, capped, and keep the raw
+# response so a post-mortem has the whole thing.
+report_errors() {
+  local id=$1 response=$2 formatted total
+  save_status "$id" "$response"
+  formatted=$(jq -r '
+    if (.errors | type) == "object" then
+      .errors | to_entries[] as $e | $e.value[] | "\($e.key): \(.)"
+    elif (.errors | type) == "array" then
+      .errors[] | tostring
+    else empty end' <<< "$response" 2>/dev/null || true)
+
+  if [ -z "$formatted" ]; then
+    echo "ERROR: the Portal returned no error detail for $id" >&2
+    return 0
+  fi
+
+  total=$(printf '%s\n' "$formatted" | wc -l)
+  printf '%s\n' "$formatted" | awk -v n="$CENTRAL_ERROR_LINES" 'NR <= n { print "ERROR:   " $0 }' >&2
+  if [ "$total" -gt "$CENTRAL_ERROR_LINES" ]; then
+    echo "ERROR:   ... and $((total - CENTRAL_ERROR_LINES)) more errors;" >&2
+    echo "ERROR:   the full response is in the central-bundle-report artifact." >&2
+  fi
 }
 
 cmd_upload() {
@@ -116,8 +160,8 @@ cmd_await() {
         return 0
         ;;
       FAILED)
-        echo "ERROR: deployment $id FAILED" >&2
-        echo "$response" >&2
+        echo "ERROR: deployment $id FAILED validation:" >&2
+        report_errors "$id" "$response"
         # Deliberately not dropped: Sonatype support needs a FAILED
         # deployment's files to diagnose it.
         exit 1
@@ -141,6 +185,65 @@ cmd_state() {
     "$CENTRAL_API_BASE/status?id=$(urlencode "$id")" || true)
   state=$(jq -r 'if type == "object" then (.deploymentState // empty) else empty end' <<< "$response" 2>/dev/null || true)
   echo "${state:-UNKNOWN}"
+}
+
+# Wave 2 bundles can only validate once their parent POMs are resolvable from
+# Central, so the release has to wait for wave 1 to become readable on the
+# read side (repo1) -- reaching PUBLISHED on the Portal happens first, and is
+# not the same thing.
+cmd_await_central() {
+  local artifact=$1 version=$2 url code
+  local deadline=$((SECONDS + CENTRAL_POLL_TIMEOUT))
+  url="$CENTRAL_REPO_BASE/$CENTRAL_GROUP_PATH/$artifact/$version/$artifact-$version.pom"
+
+  while :; do
+    code=$(curl -sS -o /dev/null -w '%{http_code}' "$url" || echo 000)
+    if [ "$code" = "200" ]; then
+      echo "$artifact:$version is readable on Central"
+      return 0
+    fi
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      echo "ERROR: $artifact:$version did not appear on Central within" >&2
+      echo "ERROR: ${CENTRAL_POLL_TIMEOUT}s (last HTTP $code, $url)" >&2
+      exit 1
+    fi
+    echo "$artifact:$version not yet on Central (HTTP $code)"
+    sleep "$CENTRAL_POLL_INTERVAL"
+  done
+}
+
+# `drop` answers HTTP 400 while a deployment is still validating -- that is what
+# happened to bundle 3 of the failed release, which was left behind. Wait for a
+# terminal state, then drop only what is safe to drop. This never returns
+# non-zero: it runs in a failure handler and must not mask the original error.
+cmd_cleanup() {
+  local id=$1 state
+  local deadline=$((SECONDS + CENTRAL_POLL_TIMEOUT))
+
+  while :; do
+    state=$(cmd_state "$id")
+    case "$state" in
+      VALIDATED)
+        cmd_drop "$id"
+        return 0
+        ;;
+      FAILED)
+        # Kept on purpose: Sonatype support needs a FAILED deployment's files.
+        echo "leaving deployment $id in state FAILED"
+        return 0
+        ;;
+      PUBLISHED|PUBLISHING|UNKNOWN)
+        echo "leaving deployment $id in state $state"
+        return 0
+        ;;
+    esac
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      echo "warning: deployment $id still $state after ${CENTRAL_POLL_TIMEOUT}s, not dropped" >&2
+      return 0
+    fi
+    echo "deployment $id is $state, waiting for a terminal state before dropping"
+    sleep "$CENTRAL_POLL_INTERVAL"
+  done
 }
 
 cmd_publish() {
@@ -179,8 +282,11 @@ case "${1:-}" in
   state)   cmd_state   "${2:?missing deployment id}" ;;
   publish) cmd_publish "${2:?missing deployment id}" ;;
   drop)    cmd_drop    "${2:?missing deployment id}" ;;
+  cleanup) cmd_cleanup "${2:?missing deployment id}" ;;
+  await-central)
+           cmd_await_central "${2:?missing artifactId}" "${3:?missing version}" ;;
   *)
-    echo "usage: central-publish.sh {upload <zip> <name>|await <id> [state]|state <id>|publish <id>|drop <id>}" >&2
+    echo "usage: central-publish.sh {upload <zip> <name>|await <id> [state]|state <id>|publish <id>|drop <id>|cleanup <id>|await-central <artifactId> <version>}" >&2
     exit 2
     ;;
 esac
