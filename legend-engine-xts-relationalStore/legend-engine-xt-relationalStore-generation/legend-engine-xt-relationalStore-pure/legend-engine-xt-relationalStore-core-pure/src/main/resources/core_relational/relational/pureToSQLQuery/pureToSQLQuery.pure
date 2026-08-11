@@ -6667,7 +6667,31 @@ function meta::relational::functions::pureToSqlQuery::processRelationIn(expressi
    // The Relation<Z=(?:U)> signature guarantees a single column, so the sub-select already projects exactly what IN needs.
    assert($subSelect.columns->size() == 1, | 'in(..., Relation) expects a single-column relation, got ' + $subSelect.columns->size()->toString());
 
-   $operation->attachPredicate(^DynaFunction(name = 'in', parameters = [$value, $subSelect]), $state);
+   let in = ^DynaFunction(name = 'in', parameters = [$value, $subSelect->excludeNullsFromSearchedColumn($extensions)]);
+
+   // A null value is dropped by WHERE either way, so a filter needs nothing more. Projected, the result is read
+   // rather than tested and has to be false rather than null, which is the isNotEmpty() guard of the Pure body.
+   $operation->attachPredicate(if($state.inFilter,
+                                  | $in,
+                                  | ^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'isNotNull', parameters = $value), $in])),
+                               $state);
+}
+
+// A null in the searched column is what makes SQL's `in` three-valued: `x in (sub)` is UNKNOWN rather than
+// false when nothing matches, and `x not in (sub)` is UNKNOWN for every row. Dropping those rows inside the
+// subquery makes both two-valued -- the answer relation::in gives -- and leaves the predicate a predicate,
+// so it still flattens to a semi-join and needs no boolean-valued wrapper.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::excludeNullsFromSearchedColumn(subSelect:SelectSQLQuery[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+   let column = $subSelect.columns->toOne()->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]);
+   let notNull = ^DynaFunction(name = 'isNotNull', parameters = $column);
+
+   // Dropping a row before a limit would change which rows the limit keeps, so that shape keeps SQL's answer.
+   if(!$subSelect.fromRow->isEmpty() || !$subSelect.toRow->isEmpty(),
+      | $subSelect,
+      | if($subSelect.groupBy->isEmpty(),
+           | ^$subSelect(filteringOperation = $subSelect.filteringOperation->concatenate($notNull)->andFilters($extensions)),
+           | ^$subSelect(havingOperation = $subSelect.havingOperation->concatenate($notNull)->andFilters($extensions))));
 }
 
 // Builds the relation argument as a query of its own, parented to the enclosing cursor. A column of the outer
