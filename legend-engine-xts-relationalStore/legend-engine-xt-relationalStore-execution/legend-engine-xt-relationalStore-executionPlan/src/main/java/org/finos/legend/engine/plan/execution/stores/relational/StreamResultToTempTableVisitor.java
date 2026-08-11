@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import com.google.common.collect.Iterators;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+import org.apache.commons.csv.CSVFormat;
 import org.finos.legend.engine.plan.execution.result.ResultNormalizer;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.tds.TDSBuilder;
@@ -86,13 +87,14 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     {
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
+            CSVFormat csvFormat = dbCommands.getCsvFormatForTempFile();
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
             {
                 CsvSerializer csvSerializer;
                 boolean withHeader = dbCommands.supportsHeaderOnCsvFile();
                 if (result instanceof RelationalResult)
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader);
+                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader, csvFormat);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -112,7 +114,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof RealizedRelationalResult)
                 {
-                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, withHeader, false);
+                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, withHeader, false, csvFormat);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -123,7 +125,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof StreamingObjectResult)
                 {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader);
+                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader, csvFormat);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {
@@ -133,7 +135,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
                 }
                 else if (result instanceof TempTableStreamingResult)
                 {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader);
+                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader, csvFormat);
                     tempFile.writeFile(csvSerializer);
                     try (Statement statement = connection.createStatement())
                     {

@@ -36,11 +36,18 @@ public class StreamingObjectResultCSVSerializer extends CsvSerializer
 {
     private final StreamingObjectResult streamingObjectResult;
     private final boolean withHeader;
+    private final CSVFormat csvFormat;
 
     public StreamingObjectResultCSVSerializer(StreamingObjectResult streamingObjectResult, boolean withHeader)
     {
+        this(streamingObjectResult, withHeader, CSVFormat.DEFAULT);
+    }
+
+    public StreamingObjectResultCSVSerializer(StreamingObjectResult streamingObjectResult, boolean withHeader, CSVFormat csvFormat)
+    {
         this.streamingObjectResult = streamingObjectResult;
         this.withHeader = withHeader;
+        this.csvFormat = csvFormat;
     }
 
     @Override
@@ -48,7 +55,7 @@ public class StreamingObjectResultCSVSerializer extends CsvSerializer
     {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Writer out = new BufferedWriter(new OutputStreamWriter(byteArrayOutputStream));
-        final CSVPrinter csvPrinter = new CSVPrinter(out, withHeader ? CSVFormat.DEFAULT.withFirstRecordAsHeader() : CSVFormat.DEFAULT);
+        final CSVPrinter csvPrinter = new CSVPrinter(out, withHeader ? this.csvFormat.withFirstRecordAsHeader() : this.csvFormat);
         final ObjectMapper objectMapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
         try
         {

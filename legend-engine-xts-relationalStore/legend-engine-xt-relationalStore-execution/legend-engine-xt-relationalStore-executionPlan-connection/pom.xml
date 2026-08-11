@@ -240,6 +240,13 @@
         </dependency>
         <!-- COMMONS CODEC -->
 
+        <!-- COMMONS CSV (temp-table load CSV format) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+        </dependency>
+        <!-- COMMONS CSV -->
+
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>
