@@ -201,6 +201,7 @@ function meta::external::function::activator::hostedService::generation::rebuild
                        e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
                                                              rebuildFromExpressionForExecutionEnv($func, $e->cast(@ExecutionEnvironmentInstance)->toOne());,
                        d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
+                                                              assert($d.executionContexts->isNotEmpty(), 'Hosted service generation requires the data space \'' + $d->toOne()->cast(@DataSpace)->elementToPath() + '\' to declare at least one execution context. Data spaces without execution contexts are not yet supported by this generator.');
                                                               $d.executionContexts->map(
                                                                 ec | let ecRuntime = $ec.defaultRuntime->toOne('Hosted service generation requires a default runtime on execution context \'' + $ec.name + '\'. Runtime-less execution contexts are not yet supported by this generator.').runtimeValue;
                                                                 let newFunc = rebuildFromExpression($func, $ec.mapping, $ecRuntime);

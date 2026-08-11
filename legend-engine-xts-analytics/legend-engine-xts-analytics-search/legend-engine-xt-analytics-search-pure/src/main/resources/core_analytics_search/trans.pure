@@ -94,7 +94,7 @@ function meta::analytics::search::transformation::dataspace::buildDocument(datas
     name = meta::analytics::search::transformation::getName($dataspace),
     package = meta::analytics::search::transformation::getPackage($dataspace),
     description = $dataspace.description,
-    defaultExecutionContext = $dataspace.defaultExecutionContext.name,
+    defaultExecutionContext = $dataspace.defaultExecutionContext->toOne('Analytics-search indexing requires a defaultExecutionContext on the data space \'' + $dataspace->elementToPath() + '\'. Data spaces without a default execution context are not yet supported by this indexer.').name,
     diagrams = $dataspace.diagrams->map(d|$d.diagram->elementToPath()),
     executionContexts = $dataspace.executionContexts->map(c|$c->meta::analytics::search::transformation::dataspace::buildExecutionContextDocument()),
     taxonomies = $dataspace.taggedValues->filter(t|$t.tag.value == 'taxonomyNodes').value,

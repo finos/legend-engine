@@ -122,6 +122,40 @@ public class TestPowerBIArtifactGenerationExtension
         testPowerBIArtifactGenerationOutput("models/powerbi-artifact-generation-dataspaces.pure", "spaces::" + dataSpaceName, expectedArtifactsContent);
     }
 
+    @Test
+    public void testPowerBIArtifactGenerationSkipsDataSpaceWithoutExecutionContexts()
+    {
+        String pureModelString =
+                "###Pure\n" +
+                        "Class model::Firm { name: String[1]; }\n" +
+                        "###Mapping\n" +
+                        "Mapping model::dummyMapping\n" +
+                        "(\n" +
+                        ")\n" +
+                        "\n" +
+                        "###DataSpace\n" +
+                        "DataSpace model::MySpace\n" +
+                        "{\n" +
+                        "  title: 'x';\n" +
+                        "  description: 'y';\n" +
+                        "  executables:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      id: 1;\n" +
+                        "      title: 'Template 1';\n" +
+                        "      query: |model::Firm.all()->withMapping(model::dummyMapping);\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                        "}\n";
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
+        PureModel pureModel = Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity().getName());
+
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("model::MySpace");
+        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace);
+        // No PowerBIArtifactGeneration stereotype -> extension must skip this DataSpace.
+        Assert.assertFalse(extension.canGenerate(packageableElement));
+    }
+
     private String getResourceAsString(String path)
     {
         try

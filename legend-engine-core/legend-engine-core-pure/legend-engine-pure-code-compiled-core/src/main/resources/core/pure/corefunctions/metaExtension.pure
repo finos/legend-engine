@@ -499,6 +499,33 @@ function meta::pure::functions::meta::extractRuntimesFromFunctionDefinition(func
                                    ]));
 }
 
+function meta::pure::functions::meta::extractMappingsFromFunctionDefinition(func:FunctionDefinition<Any>[1]):meta::pure::mapping::Mapping[*]
+{
+  let mappingExprList = $func->findExpressionsForFunctionInFunctionDefinition([from_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                               from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
+                                                                               from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__ExecutionContext_1__TabularDataSet_1_,
+                                                                               with_T_m__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                               with_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                               from_FunctionDefinition_1__Mapping_1__PackageableRuntime_1__T_m_,
+                                                                               from_T_m__Mapping_1__Runtime_1__T_m_,
+                                                                               from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_,
+                                                                               from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_,
+                                                                               withMapping_T_m__Mapping_1__T_m_]);
+  $mappingExprList->evaluateAndDeactivate()->map(exp | $exp.parametersValues->tail()->evaluateAndDeactivate()->filter(p | $p->instanceOf(InstanceValue))->cast(@InstanceValue).values)
+                  ->map(v | $v->match([mapping:meta::pure::mapping::Mapping[1] | $mapping;,
+                                       any:Any[1] | [];
+                                      ]));
+}
+
+function meta::pure::functions::meta::functionDefinitionReferencesClass(func:FunctionDefinition<Any>[1]):Boolean[1]
+{
+  $func->findExpressionsForFunctionInFunctionDefinition([getAll_Class_1__T_MANY_,
+                                                         getAll_Class_1__Date_1__T_MANY_,
+                                                         getAll_Class_1__Date_1__Date_1__T_MANY_,
+                                                         getAllVersions_Class_1__T_MANY_,
+                                                         getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_])->isNotEmpty();
+}
+
 function meta::pure::functions::meta::findPropertiesInValueSpecification(vs:ValueSpecification[1]):AbstractProperty<Any>[*]
 {
    $vs->match([fe:FunctionExpression[1] | let res = $fe.parametersValues->map(v | $v->findPropertiesInValueSpecification());

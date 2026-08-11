@@ -48,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
@@ -57,7 +58,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.shared.core.function.Procedure3;
-import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
@@ -98,7 +98,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
@@ -128,11 +127,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     metamodel._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)));
                     metamodel._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value.value)));
 
-                    // execution context
-                    if (dataSpace.executionContexts.isEmpty())
-                    {
-                        throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                    }
+                    // execution context (optional)
                     MutableSet<String> executionContextSet = Sets.mutable.empty();
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
@@ -159,13 +154,23 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                             throw new EngineException("Data space execution context, " + executionContext.name + ", is not unique", executionContext.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }));
-                    Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
-                    if (defaultExecutionContext == null)
+                    if (dataSpace.defaultExecutionContext != null)
                     {
-                        throw new EngineException("Default execution context '" + dataSpace.defaultExecutionContext + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        if (dataSpace.executionContexts == null || dataSpace.executionContexts.isEmpty())
+                        {
+                            throw new EngineException("Data space without execution contexts cannot specify a default execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
+                        if (defaultExecutionContext == null)
+                        {
+                            throw new EngineException("Default execution context '" + dataSpace.defaultExecutionContext + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                        metamodel._defaultExecutionContext(defaultExecutionContext);
                     }
-                    metamodel._defaultExecutionContext(defaultExecutionContext);
+                    if ((dataSpace.executionContexts == null || dataSpace.executionContexts.isEmpty()) && (dataSpace.executables == null || dataSpace.executables.isEmpty()))
+                    {
+                        throw new EngineException("Data space '" + (dataSpace._package == null || dataSpace._package.isEmpty() ? dataSpace.name : dataSpace._package + "::" + dataSpace.name) + "' must declare at least one execution context or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                    }
                     metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
 
@@ -339,83 +344,145 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
 
                     if (dataSpace.executables != null)
                     {
-                        dataSpace.executables.forEach(executable ->
-                        {
-                            if (executable instanceof DataSpacePackageableElementExecutable)
-                            {
-                                FunctionDefinition<?> executableFunction = null;
-                                try
-                                {
-                                    // function
-                                    executableFunction = (FunctionDefinition<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId((((DataSpacePackageableElementExecutable) executable).executable).path), ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation);
-                                }
-                                catch (Exception e)
-                                {
-                                    // service
-                                }
-                                if (executableFunction != null)
-                                {
-                                    if (executableFunction instanceof Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl)
-                                    {
-                                        Optional<? extends ValueSpecification> fromFunc = executableFunction._expressionSequence().toList().stream()
-                                                .filter(func -> func instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl && ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) func)._functionName.equals("from")).findAny();
-                                        if (fromFunc.isPresent())
-                                        {
-                                            Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl fromFuncExpression = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) fromFunc.get();
-
-                                            // only check mapping and runtime if using ->from() in the most basic way e.g. ->from(model::Mapping, model::Runtime)
-                                            ValueSpecification mappingInstance = fromFuncExpression._parametersValues().toList().get(1);
-                                            if (mappingInstance instanceof Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)
-                                            {
-                                                String executionContextKey = executable.executionContextKey != null ? executable.executionContextKey : dataSpace.defaultExecutionContext;
-                                                DataSpaceExecutionContext executionContext = dataSpace.executionContexts.stream().filter(ec -> ec.name.equals(executionContextKey)).collect(Collectors.toList()).get(0);
-                                                // check if mapping matches to what is used in execution key
-                                                Object mappingImpl = ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) mappingInstance)._values().toList().get(0);
-                                                if (mappingImpl instanceof Root_meta_pure_mapping_Mapping_Impl)
-                                                {
-                                                    String mappingPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_((Root_meta_pure_mapping_Mapping_Impl) mappingImpl, "::", context.pureModel.getExecutionSupport());
-                                                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiledCtx = metamodel._executionContexts().toList().stream().filter(ec -> executionContext.name.equals(ec._name())).findFirst().orElse(null);
-                                                    String expectedMappingPath = compiledCtx == null ? null : effectiveMappingPath(executionContext, compiledCtx, context);
-                                                    if (expectedMappingPath != null && !mappingPath.equals(expectedMappingPath))
-                                                    {
-                                                        throw new EngineException("The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `" + executionContext.name + "`.");
-                                                    }
-                                                }
-                                                // check if runtime matches to what is used in execution key
-                                                RichIterable<? extends Root_meta_core_runtime_Runtime> runtimes = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(executableFunction, context.pureModel.getExecutionSupport());
-                                                Root_meta_core_runtime_Runtime runtimeImpl;
-                                                if (runtimes.isEmpty())
-                                                {
-                                                    runtimeImpl = null;
-                                                }
-                                                else if (runtimes.size() == 1)
-                                                {
-                                                    runtimeImpl = runtimes.getOnly();
-                                                }
-                                                else
-                                                {
-                                                    throw new UnsupportedOperationException("More than one runtime present in from() function");
-                                                }
-                                                if (runtimeImpl != null)
-                                                {
-                                                    String runtimePath = context.pureModel.getRuntimePath(runtimeImpl);
-                                                    if (executionContext.defaultRuntime != null && !runtimePath.equals(executionContext.defaultRuntime.path))
-                                                    {
-                                                        throw new EngineException("The runtime utilized in the function within the curated template query does not align with the runtime applied in the execution context `" + executionContext.name + "`.");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        });
+                        dataSpace.executables.forEach(executable -> validateDataSpaceExecutable(executable, dataSpace, metamodel, context));
                     }
                 },
                 this::dataSpacePrerequisiteElementsPass
         ));
     }
 
+    private void validateDataSpaceExecutable(DataSpaceExecutable executable, DataSpace dataSpace, Root_meta_pure_metamodel_dataSpace_DataSpace metamodel, CompileContext context)
+    {
+        // validate functions and in-line lambda
+        FunctionDefinition<?> query = null;
+        if (executable instanceof DataSpacePackageableElementExecutable)
+        {
+            try
+            {
+                query = (FunctionDefinition<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId((((DataSpacePackageableElementExecutable) executable).executable).path), ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation);
+            }
+            catch (Exception e)
+            {
+                // service or non-function executable
+            }
+        }
+        else if (executable instanceof DataSpaceTemplateExecutable)
+        {
+            query = HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context);
+        }
+        if (query == null)
+        {
+            return;
+        }
+
+        // Resolve the execution context this executable points to (explicit key, else the data space default, else none)
+        String executionContextKey = executable.executionContextKey != null ? executable.executionContextKey : dataSpace.defaultExecutionContext;
+        DataSpaceExecutionContext executionContext = executionContextKey == null ? null : dataSpace.executionContexts.stream().filter(ec -> ec.name.equals(executionContextKey)).findFirst().orElse(null);
+        if (executionContextKey != null && executionContext == null)
+        {
+            // shouldn't reach here as this check has already been done, but to be safe
+            throw new EngineException("Execution context '" + executionContextKey + "' referenced by executable '" + executable.id + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        if (executionContext != null)
+        {
+            validateExecutableAgainstExecutionContext(query, executionContext, metamodel, context, executable.sourceInformation);
+        }
+        else if (core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionDefinitionReferencesClass_FunctionDefinition_1__Boolean_1_(query, context.pureModel.getExecutionSupport())
+                && core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractMappingsFromFunctionDefinition_FunctionDefinition_1__Mapping_MANY_(query, context.pureModel.getExecutionSupport()).isEmpty()
+                && extractMappingProviderElementsFromQuery(query, context).isEmpty())
+        {
+            throw new EngineException("Executable '" + executable.id + "' references a class but has neither an execution context key nor a mapping/mappingProvider", executable.sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
+    private void validateExecutableAgainstExecutionContext(FunctionDefinition<?> executableFunction, DataSpaceExecutionContext executionContext, Root_meta_pure_metamodel_dataSpace_DataSpace metamodel, CompileContext context, SourceInformation executableSourceInformation)
+    {
+        // might be worth extending this also to lambdas
+        if (!(executableFunction instanceof Root_meta_pure_metamodel_function_ConcreteFunctionDefinition_Impl))
+        {
+            return;
+        }
+
+        Optional<? extends ValueSpecification> fromFunc = executableFunction._expressionSequence().toList().stream()
+                .filter(func -> func instanceof Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl && ((Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) func)._functionName.equals("from")).findAny();
+
+        if (fromFunc.isPresent())
+        {
+            Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl fromFuncExpression = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) fromFunc.get();
+
+            // only check mapping and runtime if using ->from() in the most basic way e.g. ->from(model::Mapping, model::Runtime)
+            ValueSpecification mappingInstance = fromFuncExpression._parametersValues().toList().get(1);
+            if (mappingInstance instanceof Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl)
+            {
+                // check if mapping matches to what is used in execution key
+                Object mappingImpl = ((Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl) mappingInstance)._values().toList().get(0);
+                if (mappingImpl instanceof Root_meta_pure_mapping_Mapping_Impl)
+                {
+                    String mappingPath = platform_pure_essential_meta_graph_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_((Root_meta_pure_mapping_Mapping_Impl) mappingImpl, "::", context.pureModel.getExecutionSupport());
+                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext compiledCtx = metamodel._executionContexts().toList().stream().filter(ec -> executionContext.name.equals(ec._name())).findFirst().orElse(null);
+                    String expectedMappingPath = compiledCtx == null ? null : effectiveMappingPath(executionContext, compiledCtx, context);
+                    if (expectedMappingPath != null && !mappingPath.equals(expectedMappingPath))
+                    {
+                        throw new EngineException("The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `" + executionContext.name + "`.", executableSourceInformation, EngineErrorType.COMPILATION);
+                    }
+                }
+                // check if runtime matches to what is used in execution key
+                RichIterable<? extends Root_meta_core_runtime_Runtime> runtimes = core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_extractRuntimesFromFunctionDefinition_FunctionDefinition_1__Runtime_MANY_(executableFunction, context.pureModel.getExecutionSupport());
+                Root_meta_core_runtime_Runtime runtimeImpl;
+                if (runtimes.isEmpty())
+                {
+                    runtimeImpl = null;
+                }
+                else if (runtimes.size() == 1)
+                {
+                    runtimeImpl = runtimes.getOnly();
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("More than one runtime present in from() function");
+                }
+                if (runtimeImpl != null)
+                {
+                    String runtimePath = context.pureModel.getRuntimePath(runtimeImpl);
+                    if (executionContext.defaultRuntime != null && !runtimePath.equals(executionContext.defaultRuntime.path))
+                    {
+                        throw new EngineException("The runtime utilized in the function within the curated template query does not align with the runtime applied in the execution context `" + executionContext.name + "`.");
+                    }
+                }
+            }
+        }
+
+        List<PackageableElement> providerElements = extractMappingProviderElementsFromQuery(executableFunction, context);
+        String expectedMappingProviderElementPath = (executionContext.mappingProvider != null && executionContext.mappingProvider.element != null) ? executionContext.mappingProvider.element.path : null;
+        // only check if exactly one mappingProvider is present
+        if (providerElements.size() == 1)
+        {
+            if (expectedMappingProviderElementPath == null)
+            {
+                // if function contains a mappingProvider, so should the context; doesn't matter even if the mapping in the execution context matches with the one resolved from the provider (we don't do this resolution here)
+                throw new EngineException("Executable references a mappingProvider and can only point to an executionContext with the same mappingProvider", executableSourceInformation, EngineErrorType.COMPILATION);
+            }
+            for (PackageableElement el : providerElements)
+            {
+                String path = getElementFullPath(el, context.pureModel.getExecutionSupport());
+                if (!path.equals(expectedMappingProviderElementPath))
+                {
+                    throw new EngineException("The mapping provider element utilized in the function within the curated template query does not align with the mapping provider element applied in the execution context `" + executionContext.name + "`.", executableSourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
+        }
+    }
+
+    private static List<PackageableElement> extractMappingProviderElementsFromQuery(FunctionDefinition<?> query, CompileContext context)
+    {
+        List<PackageableElement> results = new java.util.ArrayList<>();
+        for (DataSpaceMappingProviderCompilerExtension ext : DataSpaceMappingProviderCompilerExtensionLoader.extensions())
+        {
+            results.addAll(ext.extractMappingProviderElementsFromQuery(query, context));
+        }
+        return results;
+    }
 
     private static void setMappingProviderAndResolvedMapping(Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceMappingProvider provider, CompileContext context)
     {
@@ -548,6 +615,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
             throw new EngineException("Dataspace " + packageAddress + " cannot be found.", storeProviderPointer.sourceInformation, EngineErrorType.COMPILATION);
         }
         Root_meta_pure_metamodel_dataSpace_DataSpace dataspace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
+        if (dataspace._defaultExecutionContext() == null)
+        {
+            throw new EngineException("Dataspace " + packageAddress + " has no default execution context and cannot be used as a store.", storeProviderPointer.sourceInformation, EngineErrorType.COMPILATION);
+        }
         ImmutableList<Store> stores = HelperMappingBuilder.getStoresFromMappingIgnoringIncludedMappings(dataspace._defaultExecutionContext()._mapping(),context);
         String dataSpacePath = getElementFullPath(dataspace, context.pureModel.getExecutionSupport());
         String mappingPath = getElementFullPath(dataspace._defaultExecutionContext()._mapping(), context.pureModel.getExecutionSupport());
@@ -585,6 +656,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
             if (packageableElement != null)
             {
                 Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement;
+                if (dataSpace._defaultExecutionContext() == null)
+                {
+                    throw new EngineException("Dataspace " + dataElementPath + " does not have a default execution context with test data.", data.sourceInformation, EngineErrorType.COMPILATION);
+                }
                 return ((Root_meta_pure_data_DataElementReference) Optional
                         .ofNullable(dataSpace._defaultExecutionContext()._testData())
                         .orElseThrow(() -> new EngineException("Dataspace " + dataElementPath + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
@@ -624,7 +699,12 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 elt ->
                 {
                     DataSpace d = (DataSpace) elt;
-                    return EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement(Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData, pureModelContextData);
+                    DataSpaceExecutionContext defaultContext = d.defaultExecutionContext == null ? null : Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext));
+                    if (defaultContext == null)
+                    {
+                        throw new EngineException("Dataspace " + d.getPath() + " does not have a default execution context with test data.", dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                    return EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement(defaultContext.testData, pureModelContextData);
                 });
     }
 

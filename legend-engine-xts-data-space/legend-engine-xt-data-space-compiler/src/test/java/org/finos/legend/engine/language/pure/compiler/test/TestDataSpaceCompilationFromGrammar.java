@@ -542,7 +542,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     @Test
     public void testProblemWithExecutionContext()
     {
-        // No execution context provided
+        // Default execution context provided but no execution contexts
         test("###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -550,7 +550,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  [\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [2:1-7:1]: Data space must have at least one execution context");
+                "}\n", "COMPILATION error at [2:1-7:1]: Data space without execution contexts cannot specify a default execution context");
 
         // Duplicated execution contexts
         test("###Mapping\n" +
@@ -1126,7 +1126,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      executionContextKey: 'Context 1';\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", " at [44:1-65:1]: Error in 'model::dataSpace': The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `Context 1`.");
+                "}\n", "COMPILATION error at [58:5-63:5]: The mapping utilized in the function within the curated template query does not align with the mapping applied in the execution context `Context 1`.");
 
         test(model +
                 "###DataSpace\n" +
@@ -1432,5 +1432,272 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                         "  defaultExecutionContext: 'default';\n" +
                         "}\n",
                 "COMPILATION error at [12:7-52]: 'model::plainMapping3.someKey' is not a valid mapping provider");
+    }
+
+    @Test
+    public void testDataSpaceWithoutExecutionContexts()
+    {
+        String models = "Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n";
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::element.all()->from(model::dummyMapping, model::dummyRuntime);\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::element.all();\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n" +
+                "###Pure\n" +
+                "Class model::element {}\n", "COMPILATION error at [7:5-11:5]: Executable '1' references a class but has neither an execution context key nor a mapping/mappingProvider");
+    }
+
+    @Test
+    public void testDataSpaceMinimalWithoutExecutionContextsOrExecutables()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "}\n", "COMPILATION error at [2:1-5:1]: Data space 'model::dataSpace' must declare at least one execution context or executable");
+    }
+
+    @Test
+    public void testDataSpaceWithoutExecutionContextsAndExecutableUsingWithMapping()
+    {
+        String models = "Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n";
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::element.all()->withMapping(model::dummyMapping);\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithDefaultExecutionContextButNoExecutionContexts()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "}\n", "COMPILATION error at [2:1-6:1]: Data space without execution contexts cannot specify a default execution context");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutionContextsButNoDefaultExecutionContext()
+    {
+        String models = "Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n";
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  title: 'some title';\n" +
+                "}\n");
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::element.all()->from(model::dummyMapping, model::dummyRuntime);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::element[1]|$src;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutionContextWithoutRuntimeCompiles()
+    {
+        String models = "Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n";
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutableUsingInvalidExecutionContextKey()
+    {
+        String models = "Class model::element {}\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n";
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::element[1]|$src;\n" +
+                "      executionContextKey: 'missing';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [17:1-38:1]: Data space template executable's executionContextKey, missing, is not valid. Please specify one from [Context 1]");
+
+        test(models +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: model::element[1]|$src;\n" +
+                "      executionContextKey: 'missing';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [17:1-29:1]: Data space template executable's executionContextKey, missing, is not valid. Please specify one from []");
     }
 }

@@ -55,6 +55,7 @@ import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -137,22 +138,31 @@ public class DataSpaceAnalyticsHelper
                     templateExecutableInfo.query = executableV1.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                             dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.executionContextKey = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : executable._executionContextKey();
+                    templateExecutableInfo.executionContextKey = executable._executionContextKey() != null ? executable._executionContextKey() : (executionContext == null ? null : executionContext._name());
                     executableAnalysisResult.info = templateExecutableInfo;
-                    if (buildResult)
+                    FunctionDefinition<?> templateQuery = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query();
+                    executableAnalysisResult.executableReturnType = TestReturnTypeHelper.getReturnGenericType(templateQuery, pureModel);
+                    if (buildResult && executionContext != null && executionContext._defaultRuntime() != null)
                     {
-                        executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
-                                ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
-                                executionContext._mapping(),
-                                executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue(),
-                                HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
-                                pureModel,
-                                PureClientVersions.production,
-                                PlanPlatform.JAVA,
-                                null,
-                                PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
-                                generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                        ).rootExecutionNode.resultType);
+                        try
+                        {
+                            executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
+                                    templateQuery,
+                                    executionContext._mapping(),
+                                    executionContext._defaultRuntime()._runtimeValue(),
+                                    HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
+                                    pureModel,
+                                    PureClientVersions.production,
+                                    PlanPlatform.JAVA,
+                                    null,
+                                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
+                                    generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
+                            ).rootExecutionNode.resultType);
+                        }
+                        catch (Exception ignored)
+                        {
+                            //ignore
+                        }
                     }
                     dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                 }
@@ -170,6 +180,7 @@ public class DataSpaceAnalyticsHelper
                         Mapping mapping = null;
                         Root_meta_core_runtime_Runtime runtime = null;
                         FunctionDefinition<?> lambdaFunc = null;
+                        boolean pointsToExecContextWithDefaultRuntime = false;
                         if (_el instanceof Service)
                         {
                             Service serviceProtocol = (Service) _el;
@@ -232,8 +243,9 @@ public class DataSpaceAnalyticsHelper
                             lambdaFunc = pureModel.getConcreteFunctionDefinition_safe(executablePath);
                             Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = executable._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                                     dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(executable._executionContextKey())).findFirst().get();
-                            mapping = executionContext._mapping();
-                            runtime = executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue();
+                            mapping = executionContext == null ? null : executionContext._mapping();
+                            runtime = executionContext == null || executionContext._defaultRuntime() == null ? null : executionContext._defaultRuntime()._runtimeValue();
+                            pointsToExecContextWithDefaultRuntime = executionContext != null && executionContext._defaultRuntime() != null;
                             LambdaFunction lambda = new LambdaFunction();
                             lambda.body = new ArrayList<>();
                             lambda.body.addAll(((Function) _el).body);
@@ -246,20 +258,29 @@ public class DataSpaceAnalyticsHelper
                         {
                             throw new RuntimeException("Can't find protocol for service or function '" + executablePath + "'");
                         }
-                        if (buildResult)
+                        executableAnalysisResult.executableReturnType = TestReturnTypeHelper.getReturnGenericType(lambdaFunc, pureModel);
+                        boolean shouldBuildResult = buildResult && mapping != null && runtime != null &&
+                                ((_el instanceof Function) ? pointsToExecContextWithDefaultRuntime : true);
+                        if (shouldBuildResult)
                         {
-                            executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
-                                    lambdaFunc,
-                                    mapping,
-                                    runtime,
-                                    HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
-                                    pureModel,
-                                    PureClientVersions.production,
-                                    PlanPlatform.JAVA,
-                                    null,
-                                    PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
-                                    generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
-                            ).rootExecutionNode.resultType);
+                            try
+                            {
+                                executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlan(
+                                        lambdaFunc,
+                                        mapping,
+                                        runtime,
+                                        HelperValueSpecificationBuilder.processExecutionContext(new BaseExecutionContext(), pureModel.getContext()),
+                                        pureModel,
+                                        PureClientVersions.production,
+                                        PlanPlatform.JAVA,
+                                        null,
+                                        PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport())),
+                                        generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)
+                                ).rootExecutionNode.resultType);
+                            }
+                            catch (Exception ignored)
+                            {
+                            }
                         }
                         dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                     }
@@ -390,7 +411,7 @@ public class DataSpaceAnalyticsHelper
             }
             return excResult;
         });
-        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext() == null ? null : dataSpace._defaultExecutionContext()._name();
         // executables
         result.executables = buildDataSpaceExecutableAnalysisResult(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, entitlementServiceExtensions, generatorExtensions, false);
         // elements
@@ -501,7 +522,7 @@ public class DataSpaceAnalyticsHelper
             }
             return excResult;
         });
-        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext() == null ? null : dataSpace._defaultExecutionContext()._name();
 
         // diagrams
         result.diagrams = dataSpace._diagrams() != null ? ListIterate.collect(dataSpace._diagrams().toList(), diagram ->
