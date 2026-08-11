@@ -31,16 +31,27 @@ MAX=$((30 * 1000 * 1000))   # 30MB so the test runs fast
 fail=0
 check() { if [ "$2" = "$3" ]; then echo "ok   $1"; else echo "FAIL $1: expected '$3' got '$2'"; fail=1; fi; }
 
-mk() { # mk <artifact> <version> <jar-size-mb>
+pom_xml() { # pom_xml <artifact> <parent-artifact-or-empty>
+  local a=$1
+  local p=${2:-}
+  if [ -n "$p" ]; then
+    printf '<project><parent><groupId>org.finos.legend.engine</groupId><artifactId>%s</artifactId></parent><artifactId>%s</artifactId></project>' "$p" "$a"
+  else
+    printf '<project><artifactId>%s</artifactId></project>' "$a"
+  fi
+}
+
+mk() { # mk <artifact> <version> <jar-size-mb> [parent-artifact]
   # NB: separate `local` statements on purpose -- bash declares all names in a
   # single `local` before assigning, so `local a=$1 d="$M2/$a"` breaks under set -u.
   local a=$1
   local v=$2
   local mb=$3
+  local p=${4:-}
   local d="$M2/$a/$v"
   mkdir -p "$d"
   head -c $((mb * 1000 * 1000)) /dev/urandom > "$d/$a-$v.jar"
-  printf '<project><artifactId>%s</artifactId></project>' "$a" > "$d/$a-$v.pom"
+  pom_xml "$a" "$p" > "$d/$a-$v.pom"
   head -c 2000 /dev/urandom > "$d/$a-$v-sources.jar"
   head -c 2000 /dev/urandom > "$d/$a-$v-javadoc.jar"
   for f in "$d/$a-$v".*; do echo sig > "$f.asc"; done
@@ -48,13 +59,31 @@ mk() { # mk <artifact> <version> <jar-size-mb>
   printf '<metadata/>' > "$d/maven-metadata-local.xml"
 }
 
+mkagg() { # mkagg <artifact> <version> [parent-artifact] -- a pom-only aggregator
+  local a=$1
+  local v=$2
+  local p=${3:-}
+  local d="$M2/$a/$v"
+  mkdir -p "$d"
+  pom_xml "$a" "$p" > "$d/$a-$v.pom"
+  echo sig > "$d/$a-$v.pom.asc"
+  echo '{}' > "$d/_remote.repositories"
+}
+
+# The parent chain. Central validates each deployment independently and cannot
+# build an effective POM for a module whose parent is neither in the bundle nor
+# already published, so these must all land in wave 1.
+mkagg legend-engine        "$VERSION"
+mkagg legend-engine-xts    "$VERSION" legend-engine
+mkagg legend-engine-config "$VERSION" legend-engine
+
 # 12 normal modules at 8MB -> must span multiple 30MB bundles
-for i in $(seq -w 1 12); do mk "legend-engine-xt-mod$i" "$VERSION" 8; done
+for i in $(seq -w 1 12); do mk "legend-engine-xt-mod$i" "$VERSION" 8 legend-engine-xts; done
 # stale version that must be pruned
-mk legend-engine-xt-mod01 "$STALE" 8
+mk legend-engine-xt-mod01 "$STALE" 8 legend-engine-xts
 # the server module: carries a large shaded jar plus a tests jar, both of which
 # are published to Central today and must survive staging untouched
-mk legend-engine-server-http-server "$VERSION" 1
+mk legend-engine-server-http-server "$VERSION" 1 legend-engine-config
 head -c $((20 * 1000 * 1000)) /dev/urandom > "$M2/legend-engine-server-http-server/$VERSION/legend-engine-server-http-server-$VERSION-shaded.jar"
 head -c 3000 /dev/urandom > "$M2/legend-engine-server-http-server/$VERSION/legend-engine-server-http-server-$VERSION-tests.jar"
 
@@ -141,11 +170,51 @@ check "report sha256 matches the zips on disk" \
        [ "$(sha256sum "$BUNDLES/$name.zip" | cut -d' ' -f1)" = "$sha" ] || echo bad
      done | wc -l)" 0
 check "every coordinate accounted for in the report" \
-  "$(tail -n +2 "$BUNDLES/coordinates.tsv" | wc -l)" 13
+  "$(tail -n +2 "$BUNDLES/coordinates.tsv" | wc -l)" 16
 check "every coordinate assigned to exactly one bundle" \
   "$(tail -n +2 "$BUNDLES/bundle-contents.tsv" | cut -f2 | sort | uniq -d | wc -l)" 0
 check "bundle-contents covers all coordinates" \
-  "$(tail -n +2 "$BUNDLES/bundle-contents.tsv" | cut -f2 | sort -u | wc -l)" 13
+  "$(tail -n +2 "$BUNDLES/bundle-contents.tsv" | cut -f2 | sort -u | wc -l)" 16
+
+# --- two-wave split ------------------------------------------------------
+# Wave 1 carries every coordinate that is somebody's parent. Once it is on
+# Central, wave 2 can be split any way at all: each bundle resolves its
+# parents from Central rather than from a sibling bundle.
+check "wave 1 bundle produced" \
+  "$(find "$BUNDLES" -name 'wave1-bundle-*.zip' | wc -l)" 1
+nwave2=$(find "$BUNDLES" -name 'wave2-bundle-*.zip' | wc -l)
+if [ "$nwave2" -gt 1 ]; then echo "ok   wave 2 split into $nwave2 bundles"; else echo "FAIL wave 2 produced $nwave2 bundles"; fail=1; fi
+
+wave_coords() { # wave_coords <wave1|wave2>
+  awk -F'\t' -v w="$1" 'NR > 1 && $1 ~ "^"w"-bundle-" { n = split($2, p, "/"); print p[n - 1] }' \
+    "$BUNDLES/bundle-contents.tsv" | sort -u
+}
+wave_coords wave1 > "$TMP/wave1.txt"
+wave_coords wave2 > "$TMP/wave2.txt"
+
+check "wave 1 holds exactly the parent coordinates" \
+  "$(tr '\n' ' ' < "$TMP/wave1.txt")" "legend-engine legend-engine-config legend-engine-xts "
+check "wave 2 holds every remaining coordinate" \
+  "$(wc -l < "$TMP/wave2.txt")" 13
+check "no coordinate appears in both waves" \
+  "$(comm -12 "$TMP/wave1.txt" "$TMP/wave2.txt" | wc -l)" 0
+
+# The invariant the whole scheme rests on: nothing in wave 2 may depend on a
+# parent that is also in wave 2, or that bundle cannot validate on its own.
+orphans=0
+while IFS= read -r coord; do
+  pom=$(find "$STAGING" -path "*/$coord/$VERSION/*.pom" | head -1)
+  parent=$(grep -o '<parent>.*</parent>' "$pom" | grep -o '<artifactId>[^<]*' | head -1 | cut -d'>' -f2)
+  [ -n "$parent" ] || continue
+  grep -qx "$parent" "$TMP/wave1.txt" && continue
+  grep -qx "$parent" "$TMP/wave2.txt" || continue
+  echo "  $coord has parent $parent in wave 2"
+  orphans=$((orphans + 1))
+done < "$TMP/wave2.txt"
+check "no wave-2 coordinate has its parent in wave 2" "$orphans" 0
+
+check "report records the wave for every bundle" \
+  "$(tail -n +2 "$BUNDLES/bundles.tsv" | awk -F'\t' '$1 !~ /^wave[12]-bundle-/' | wc -l)" 0
 check "report header names the release version" \
   "$(grep -cF '| Release version | `'"$VERSION"'` |' "$BUNDLES/bundle-report.md")" 1
 # the server module carries the 20MB shaded jar, so it must head the table
