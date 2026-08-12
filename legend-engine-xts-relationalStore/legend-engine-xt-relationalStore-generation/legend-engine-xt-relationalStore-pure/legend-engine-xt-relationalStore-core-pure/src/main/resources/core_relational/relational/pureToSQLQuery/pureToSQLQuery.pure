@@ -3425,7 +3425,24 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
 function meta::relational::functions::pureToSqlQuery::processNot(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions)
+   assert(!$f.parametersValues->at(0)->negatesRelationIn(),
+          | 'Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)');
+
+   processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions);
+}
+
+// Only the boolean connectives are followed: an in() inside a lambda -- exists(r | $r.x->in($other)) under a
+// negation -- is not itself negated, so descending into one would reject a query that is perfectly expressible.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::negatesRelationIn(v:ValueSpecification[1]):Boolean[1]
+{
+   $v->match([
+                f:SimpleFunctionExpression[1] | $f.func == meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_
+                                                  || ($f.func->in([meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_,
+                                                                   meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_,
+                                                                   meta::pure::functions::boolean::not_Boolean_1__Boolean_1_])
+                                                      && $f.parametersValues->exists(p | $p->negatesRelationIn())),
+                a:ValueSpecification[1] | false
+             ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::processPlus(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

@@ -3,5 +3,8 @@
   "exclusions" : [ {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   } ]
 }

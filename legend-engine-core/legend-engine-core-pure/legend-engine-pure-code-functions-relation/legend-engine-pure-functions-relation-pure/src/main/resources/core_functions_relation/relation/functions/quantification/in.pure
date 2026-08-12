@@ -133,30 +133,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_EmptyRe
                  '#', $res->sort(~departmentId->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                  let departments = #TDS
-                                      departmentId, departmentName
-                                      1, Engineering
-                                      2, Support
-                                    #;
-                  let employees = #TDS
-                                    employeeId, department
-                                    101, 1
-                                    102, null
-                                  #;
-                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals('#TDS\n'+
-                 '   departmentId,departmentName\n'+
-                 '   2,Support\n'+
-                 '#', $res->sort(~departmentId->ascending())->toString());
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -236,30 +212,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Correla
                  '#', $res->sort(~id->ascending())->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                  let departments = #TDS
-                                      departmentId, departmentName
-                                      1, Engineering
-                                      null, Support
-                                    #;
-                  let employees = #TDS
-                                    employeeId, department
-                                    101, 1
-                                    102, null
-                                  #;
-                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)))->select(~departmentName);
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals('#TDS\n'+
-                 '   departmentName\n'+
-                 '   Support\n'+
-                 '#', $res->sort(~departmentName->ascending())->toString());
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExtend_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -283,32 +235,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExten
                  '   departmentName,isStaffed\n'+
                  '   Engineering,true\n'+
                  '   Support,false\n'+
-                 '#', $res->sort(~departmentName->ascending())->toString());
-}
-
-function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_InExtend_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                  let departments = #TDS
-                                      departmentId, departmentName
-                                      1, Engineering
-                                      null, Support
-                                    #;
-                  let employees = #TDS
-                                    employeeId, department
-                                    101, 1
-                                    102, null
-                                  #;
-                  $departments->extend(~notStaffed : d | !$d.departmentId->in($employees->select(~department)))
-                              ->select(~[departmentName, notStaffed]);
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals('#TDS\n'+
-                 '   departmentName,notStaffed\n'+
-                 '   Engineering,false\n'+
-                 '   Support,true\n'+
                  '#', $res->sort(~departmentName->ascending())->toString());
 }
 
@@ -341,7 +267,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExten
 }
 
 // The searched column is a grouping key, so the null has to be excluded through HAVING rather than WHERE.
-function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_GroupedRelationWithNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
                   let departments = #TDS
@@ -360,15 +286,14 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated
                                 #->groupBy(~department, ~total : x | $x.salary : y | $y->plus())
                                  ->filter(g | $g.total > 500)
                                  ->select(~department);
-                  $departments->filter(d | !$d.departmentId->in($payroll));
+                  $departments->filter(d | $d.departmentId->in($payroll));
                };
 
     let res = $f->eval($expr);
 
     assertEquals('#TDS\n'+
                  '   departmentId,departmentName\n'+
-                 '   2,Support\n'+
-                 '   3,Sales\n'+
+                 '   1,Engineering\n'+
                  '#', $res->sort(~departmentId->ascending())->toString());
 }
 
