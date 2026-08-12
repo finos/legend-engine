@@ -572,10 +572,14 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
          // the current owner: during union/operation processing the algorithm dispatches
          // one branch's set impl into a sibling subtree, where srcClass != owner is the
          // normal cross-branch shape and the legacy fallback's empty output is correct.
+         // Exclude qualified properties: they are functions (potentially with parameters),
+         // not stored slots, so they must never be synthesized into the source tree as
+         // back-edges - the query/mapping never asked for them and downstream serialize
+         // code generation would call them with no arguments.
          let childProperties = $owner->meta::pure::functions::meta::allNestedProperties()
-                                       ->filter(p | let pt = $p->functionReturnType();
-                                                    $pt.rawType->isNotEmpty()
-                                                    && $pt.rawType->toOne()->instanceOf(Class););
+                                       ->filter(p | !$p->instanceOf(QualifiedProperty)
+                                                    && $p->functionReturnType().rawType->isNotEmpty()
+                                                    && $p->functionReturnType().rawType->toOne()->instanceOf(Class));
          let childPropertiesMap = $childProperties->groupBy(p | $p.genericType.rawType->toOne());
          let propertyTreesBelongingToOwner = meta::pure::graphFetch::findSubTreeWithOwnerOrPropertyTreesFromOwner($inlinedPropertyTree, $owner, $childPropertiesMap);
          let treeClasses = $inlinedPropertyTree->meta::pure::graphFetch::collectPropertyTreeClasses()->removeDuplicates();
