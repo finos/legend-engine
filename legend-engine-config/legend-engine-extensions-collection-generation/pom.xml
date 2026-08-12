@@ -519,6 +519,10 @@
             <artifactId>legend-engine-xt-dataquality-test-runner</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-dataquality-generation</artifactId>
+        </dependency>
         <!-- DataQuality -->
 
         <!-- Dataspace -->
