@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 public class TestDataQualityPlanLoader
 {
@@ -85,6 +86,67 @@ public class TestDataQualityPlanLoader
         dataQualityParameterValue.sdlc = alloySDLC;
         dataQualityParameterValue.elementPath = "meta::dataquality::PersonDataQualityValidation";
         Assert.assertEquals("AlloySDLC info must contain and group and artifact IDs to access metadata services", Assert.assertThrows(EngineException.class, () -> dataQualityPlanLoader.fetchPlanFromSDLC(Identity.getAnonymousIdentity(), dataQualityParameterValue)).getMessage());
+    }
+
+    @Test
+    public void testFetchReconPlanFromSDLC() throws IOException
+    {
+        configureWireMockForReconPlan("master-SNAPSHOT");
+        DataQualityPlanLoader loader = new DataQualityPlanLoader(createServerConnectionConfiguration(), null);
+        SingleExecutionPlan plan = loader.fetchReconPlanFromSDLC(Identity.getAnonymousIdentity(), "meta::dataquality::TestRelationComparison", createAlloySDLC("master-SNAPSHOT"));
+        assertNotNull(plan);
+    }
+
+    @Test
+    public void testFetchReconPlanFromSDLC_NotPresentInArtifacts_Exception() throws IOException
+    {
+        configureWireMockForNoRetries();
+        DataQualityPlanLoader loader = new DataQualityPlanLoader(createServerConnectionConfiguration(), null);
+        EngineException ex = Assert.assertThrows(EngineException.class,
+                () -> loader.fetchReconPlanFromSDLC(Identity.getAnonymousIdentity(), "meta::dataquality::PersonDataQualityValidation", createAlloySDLC("master-SNAPSHOT")));
+        Assert.assertTrue(ex.getMessage(), ex.getMessage().contains(DataQualityPlanLoader.RECON_EXECUTION_PLAN_FILE_NAME));
+    }
+
+    @Test
+    public void testFetchReconPlanFromSDLC_CachedForReleaseVersion() throws IOException
+    {
+        String version = "1.2.3";
+        configureWireMockForReconPlan(version);
+        DataQualityPlanLoader loader = new DataQualityPlanLoader(createServerConnectionConfiguration(), null);
+        SingleExecutionPlan first = loader.fetchReconPlanFromSDLC(Identity.getAnonymousIdentity(), "meta::dataquality::TestRelationComparison", createAlloySDLC(version));
+        assertNotNull(first);
+        // Stop the server; a second call should still succeed if the plan is cached.
+        WireMock.reset();
+        SingleExecutionPlan second = loader.fetchReconPlanFromSDLC(Identity.getAnonymousIdentity(), "meta::dataquality::TestRelationComparison", createAlloySDLC(version));
+        assertSame(first, second);
+    }
+
+    @Test
+    public void testReconPlanCacheKey_SnapshotAndInvalidCoordinatesAreNotCacheable()
+    {
+        Assert.assertNotNull(DataQualityPlanLoader.cacheKey("meta::dataquality::TestRelationComparison", createAlloySDLC("1.2.3")));
+        Assert.assertNull(DataQualityPlanLoader.cacheKey("meta::dataquality::TestRelationComparison", createAlloySDLC("master-SNAPSHOT")));
+        Assert.assertNull(DataQualityPlanLoader.cacheKey(null, createAlloySDLC("1.2.3")));
+        Assert.assertNull(DataQualityPlanLoader.cacheKey("meta::dataquality::TestRelationComparison", null));
+        AlloySDLC missingVersion = createAlloySDLC(null);
+        Assert.assertNull(DataQualityPlanLoader.cacheKey("meta::dataquality::TestRelationComparison", missingVersion));
+    }
+
+    private AlloySDLC createAlloySDLC(String version)
+    {
+        AlloySDLC sdlc = new AlloySDLC();
+        sdlc.groupId = "com.dq.test";
+        sdlc.artifactId = "test-sandbox";
+        sdlc.version = version;
+        return sdlc;
+    }
+
+    private void configureWireMockForReconPlan(String version) throws IOException
+    {
+        URL url = Objects.requireNonNull(TestDataQualityPlanLoader.class.getClassLoader().getResource("inputs/dataQualityReconArtifacts.json"));
+        List<Artifact> response = objectMapper.readValue(url, ARTIFACT_TYPE);
+        WireMock.stubFor(WireMock.get("/api/generations/com.dq.test/test-sandbox/versions/" + version + "/meta::dataquality::TestRelationComparison")
+                .willReturn(WireMock.aResponse().withStatus(200).withBody(objectMapper.writeValueAsString(response))));
     }
 
     private DataQualityExecuteInput createDataQualityParameterValue()

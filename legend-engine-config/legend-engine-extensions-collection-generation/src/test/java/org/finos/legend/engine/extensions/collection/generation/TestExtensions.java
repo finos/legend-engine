@@ -32,6 +32,7 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorArtifactGenerationExtension;
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.dataquality.DataQualityValidationArtifactGenerationExtension;
+import org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.PowerBIArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
@@ -571,7 +572,8 @@ public class TestExtensions
                 .with(HostedServiceArtifactGenerationExtension.class)
                 .with(FunctionActivatorArtifactGenerationExtension.class)
                 .with(PowerBIArtifactGenerationExtension.class)
-                .with(DataQualityValidationArtifactGenerationExtension.class);
+                .with(DataQualityValidationArtifactGenerationExtension.class)
+                .with(DataQualityRelationComparisonArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
