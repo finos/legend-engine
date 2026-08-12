@@ -4563,7 +4563,7 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     if ($distinct,
       | if ($relation,
           | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, buildRelationType($context.columns), $args)),
-          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, $args))),
+          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, ^GenericType(rawType = TabularDataSet), ^GenericType(rawType = TabularDataSet), $args))),
       | if ($relation,
           | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
           | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args)));
