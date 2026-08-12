@@ -35,14 +35,14 @@ tests:
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: PASS
+    expected_rel_status: ERROR
 
   - id: subquery_not_in_dept
     sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
     feature: "Subquery with NOT IN"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: PASS
+    expected_rel_status: ERROR
 
   # Subquery in WHERE with EXISTS
   - id: subquery_exists
