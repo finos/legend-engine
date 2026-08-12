@@ -55,6 +55,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityExecuteInput;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
@@ -105,6 +106,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.DEFAULT_DEFECT_LIMIT;
+import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.ENRICH_DQ_COLUMNS;
+import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.INCLUDE_COLUMN_VALUES;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "DataQuality - Execution")
@@ -343,8 +348,25 @@ public class DataQualityExecute
         long start = System.currentTimeMillis();
         try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
         {
-            PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
-            Result result = getDataReconciliation(request, pureModel, dataQualityReconInput, start, identity);
+            Pair<SingleExecutionPlan, MutableMap<String, Object>> planAndParams = null;
+            //when the request matches the defaults baked into the build-time artifact plan skip model load + plan generation and execute the pre-generated plan.
+            if (matchesReconArtifactDefaults(dataQualityReconInput))
+            {
+                try
+                {
+                    planAndParams = Tuples.pair(this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo), Maps.mutable.empty());
+                }
+                catch (Exception exception)
+                {
+                    LOGGER.warn("Failed to fetch pre-generated recon plan for element {} - falling back to on-the-fly plan generation: {}", dataQualityReconInput.packagePath, exception.getMessage(), exception);
+                }
+            }
+            if (planAndParams == null)
+            {
+                PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
+                planAndParams = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity);
+            }
+            Result result = executePlanToResult(request, identity, planAndParams.getOne(), planAndParams.getTwo());
             return wrapInResponse(identity, format, start, result);
         }
         catch (Exception ex)
@@ -376,7 +398,21 @@ public class DataQualityExecute
         }
     }
 
-    private Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    protected static boolean matchesReconArtifactDefaults(DataQualityReconInput input)
+    {
+        return input.packagePath != null
+                && input.model instanceof PureModelContextPointer
+                && !input.runSourceQuery
+                && !input.runTargetQuery
+                && input.queryLimit == null
+                && input.defectLimit != null && input.defectLimit == DEFAULT_DEFECT_LIMIT //TODO put this defect limit as a parameter into the plan so we can remove this from here and always use cached plan even if someone passes different limit in future
+                && input.includeColumnValues == INCLUDE_COLUMN_VALUES
+                && input.enrichDQColumns == ENRICH_DQ_COLUMNS
+                && isEmpty(input.sourceLambdaParameterValues)
+                && isEmpty(input.targetLambdaParameterValues);
+    }
+
+    protected Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
 
@@ -436,12 +472,6 @@ public class DataQualityExecute
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
         return Tuples.pair(plan, lambdaParameterMap);
-    }
-
-    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
-    {
-        Pair<SingleExecutionPlan, MutableMap<String, Object>> plan = generateDataReconciliationPlan(pureModel, input, start, identity);
-        return executePlanToResult(request, identity, plan.getOne(), plan.getTwo());
     }
 
     private static Root_meta_external_dataquality_datarecon_DataQualityReconInput createReconInput(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationComparison dqComparisonElement, DataQualityReconInput input, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction)
@@ -610,7 +640,7 @@ public class DataQualityExecute
         }
     }
 
-    private Result executePlanToResult(HttpServletRequest request, Identity identity, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
+    protected Result executePlanToResult(HttpServletRequest request, Identity identity, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
     {
         MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
         ExecuteNodeParameterTransformationHelper.buildParameterToConstantResult(singleExecutionPlan, lambdaParameterMap, parametersToConstantResult);
@@ -626,7 +656,7 @@ public class DataQualityExecute
     }
 
 
-    private Response wrapInResponse(Identity identity, SerializationFormat format, long start, Result result)
+    protected Response wrapInResponse(Identity identity, SerializationFormat format, long start, Result result)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
         MetricsHandler.observe("execute", start, System.currentTimeMillis());
