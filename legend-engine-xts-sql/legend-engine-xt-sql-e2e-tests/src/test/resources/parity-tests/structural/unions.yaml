@@ -26,14 +26,14 @@ tests:
     sql: "SELECT dept_id FROM persons WHERE dept_id IS NOT NULL UNION SELECT dept_id FROM persons WHERE salary > 60000 ORDER BY 1"
     feature: "UNION"
     category: "set_operations"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: PASS
 
   - id: union_dedup_strings
     sql: "SELECT name FROM persons WHERE age > 30 UNION SELECT name FROM persons WHERE salary > 70000 ORDER BY 1"
     feature: "UNION"
     category: "set_operations"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: PASS
 
   # Multiple UNIONs
