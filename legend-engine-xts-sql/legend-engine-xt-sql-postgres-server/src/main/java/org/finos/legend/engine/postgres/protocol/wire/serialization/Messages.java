@@ -164,6 +164,54 @@ public class Messages
     }
 
     /**
+     * NoticeResponse (B)
+     * <p>
+     * Byte1('N') Identifies the message as a notice.
+     * <p>
+     * The format is identical to ErrorResponse ('E'). The frontend should display the
+     * message but continue listening for ReadyForQuery or ErrorResponse.
+     * <p>
+     * See https://www.postgresql.org/docs/current/protocol-message-formats.html#PROTOCOL-MESSAGE-FORMAT-NOTICERESPONSE
+     */
+    public ChannelFuture sendNoticeResponse(Channel channel, String level, String message)
+    {
+        byte[] severity = level.getBytes(StandardCharsets.UTF_8);
+        byte[] msg = message.getBytes(StandardCharsets.UTF_8);
+        byte[] code = "00000".getBytes(StandardCharsets.UTF_8);
+
+        int length = 4 +
+                1 + (severity.length + 1) +
+                1 + (msg.length + 1) +
+                1 + (code.length + 1) +
+                1;
+        ByteBuf buffer = channel.alloc().buffer(length + 1);
+        buffer.writeByte('N');
+        buffer.writeInt(length);
+        buffer.writeByte('S');
+        writeCString(buffer, severity);
+        buffer.writeByte('M');
+        writeCString(buffer, msg);
+        buffer.writeByte('C');
+        writeCString(buffer, code);
+        buffer.writeByte(0);
+        ChannelFuture channelFuture = channel.writeAndFlush(buffer);
+        if (LOGGER.isTraceEnabled())
+        {
+            channelFuture.addListener(
+                    (ChannelFutureListener) future -> LOGGER.trace("sentNoticeResponse msg={}", message));
+        }
+        return channelFuture;
+    }
+
+    public void sendTraceIdNotice(Channel channel, String traceId)
+    {
+        if (traceId != null && io.opentelemetry.api.trace.TraceId.isValid(traceId))
+        {
+            sendNoticeResponse(channel, "INFO", "traceId: " + traceId);
+        }
+    }
+
+    /**
      * | 'S' | int32 len | str name | str value
      * <p>
      * See https://www.postgresql.org/docs/9.2/static/protocol-flow.html#PROTOCOL-ASYNC
