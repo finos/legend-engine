@@ -139,6 +139,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     // String types
     pair('varchar', VarcharSqlType),
     pair('character varying', VarcharSqlType),
+    pair('text', VarcharSqlType),
 
     pair('char', CharSqlType),
     pair('character', CharSqlType),

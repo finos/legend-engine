@@ -29,16 +29,16 @@
     "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_",
     "expectedError" : "Invalid Pure Boolean: 'hello'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFromString_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanTrue_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_",
     "expectedError" : "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet"
@@ -50,19 +50,19 @@
     "expectedError" : "DateTime must include time information, got: 2020-01-01"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToDateTime_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Month is not managed yet"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Double'."
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToFloatFromString_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Double'."
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToFloat_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Double'."
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_",
     "expectedError" : "Integer is not managed yet!"
@@ -71,61 +71,58 @@
     "expectedError" : "For input string: \"1.25\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToIntegerFromString_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToInteger_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_",
     "expectedError" : "List<Variant> is not managed yet!"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToListOfIntegers_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToListOfVariants_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_",
     "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Map<String, Variant> is not managed yet!\""
   }, {
-    "test" : "meta::pure::functions::variant::convert::tests::to::testToMapWithVariantValues_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
-  }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Data conversion error converting \"null\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_",
     "expectedError" : "StrictDate must be a calendar day, got: 2020"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStrictDate_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStringFromBoolean_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStringFromNumber_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToString_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toJson::testObjectToJson_Function_1__Boolean_1_",
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toJson()."
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_",
     "expectedError" : "Expect variant that contains an 'ARRAY', but got 'STRING'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyInteger_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toVariant::testEmpty_Function_1__Boolean_1_",
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toVariant()."
@@ -173,16 +170,16 @@
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toVariantList()."
   }, {
     "test" : "meta::pure::functions::variant::navigation::tests::get::testGetFromArray_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::navigation::tests::get::testGetFromObjectWhenKeyExists_Function_1__Boolean_1_",
     "expectedError" : "com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'world': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
   }, {
     "test" : "meta::pure::functions::variant::navigation::tests::get::testNestedGet_arrayToMap_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::navigation::tests::get::testNestedGet_mapToArray_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariantAsPrimitive_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
@@ -211,9 +208,6 @@
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToMany_Function_1__Boolean_1_",
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
   }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_oneToOne_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
-  }, {
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany_Function_1__Boolean_1_",
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
   }, {
@@ -226,14 +220,8 @@
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToOne_Function_1__Boolean_1_",
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
   }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessProperty_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
-  }, {
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessQualifiedProperty_Function_1__Boolean_1_",
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndAccessProperty_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
   }, {
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceAndInstanceOf_Function_1__Boolean_1_",
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
@@ -242,9 +230,9 @@
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
   }, {
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypePropertyAndClassToType_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'TypedSemiStructured'"
   }, {
     "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassWithInheritanceUsingCustomTypeProperty_Function_1__Boolean_1_",
-    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for variantTo()."
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'TypedSemiStructured'"
   } ]
 }

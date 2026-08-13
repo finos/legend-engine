@@ -294,6 +294,12 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('ceiling',                   {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('ceiling', $p), 'bigint')}),
     pair('floor',                     {p:meta::external::query::sql::metamodel::Expression[*]| castExpression(functionCall('floor', $p), 'bigint')}),
     pair('cast',                      {p:meta::external::query::sql::metamodel::Expression[*]| castExpression($p->at(0), $p->at(1)->cast(@ColumnType).name)}),
+    pair('variantTo',                 {p:meta::external::query::sql::metamodel::Expression[*]|
+                                        let targetType = $p->at(1)->cast(@ColumnType).name;
+                                        if ($targetType->toUpper() == 'TEXT',
+                                          | castExpression($p->at(0), $targetType),
+                                          | castExpression(castExpression($p->at(0), 'text'), $targetType));
+                                      }),
     pair('sign',                      functionCall('sign')),
     pair('exp',                       functionCall('exp')),
     pair('log',                       functionCall('ln')),

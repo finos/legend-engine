@@ -21,6 +21,7 @@ import meta::external::store::relational::sqlDialectTranslation::defaults::*;
 import meta::external::store::relational::sqlDialectTranslation::defaults::tests::*;
 import meta::external::store::relational::sqlDialectTranslation::postgres::*;
 import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
 
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testDialect(): SqlDialect[1]
 {
@@ -364,6 +365,39 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
 
   let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['db', 'schema', 'table_a', 'col'])), type = ^ColumnType(name = 'decimal', parameters = [20, 9]));
   assertEquals('CAST(db.schema.table_a.col AS DECIMAL(20, 9))', $dialect->executeNodeProcessor($e, $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testCastToTextInfersAsVarcharSqlType(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testSqlDialectTranslationConfig(false);
+
+  let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['col'])), type = ^ColumnType(name = 'text'));
+  let typed = $e->inferTypes($config.functionRegistry);
+  assertEquals(true, $typed->instanceOf(TypedCastExpression), 'Expected Cast to be inferred to TypedCastExpression');
+  assertEquals(VarcharSqlType, $typed->cast(@TypedCastExpression).sqlType);
+  assertEquals('CAST(col AS TEXT)', $dialect->executeNodeProcessor($typed, $state, $config));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testCastToVarcharInfersAsVarcharSqlType(): Boolean[1]
+{
+  let config = testSqlDialectTranslationConfig(false);
+
+  let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['col'])), type = ^ColumnType(name = 'varchar'));
+  let typed = $e->inferTypes($config.functionRegistry);
+  assertEquals(true, $typed->instanceOf(TypedCastExpression));
+  assertEquals(VarcharSqlType, $typed->cast(@TypedCastExpression).sqlType);
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testCastToParametricTextInfersAsVarcharSqlType(): Boolean[1]
+{
+  let config = testSqlDialectTranslationConfig(false);
+
+  let e = ^Cast(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['col'])), type = ^ColumnType(name = 'varchar', parameters = 32));
+  let typed = $e->inferTypes($config.functionRegistry);
+  assertEquals(true, $typed->instanceOf(TypedCastExpression));
+  assertEquals(VarcharSqlType, $typed->cast(@TypedCastExpression).sqlType);
 }
 
 function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::defaults::tests::testInListExpressionProcessing(): Boolean[1]
