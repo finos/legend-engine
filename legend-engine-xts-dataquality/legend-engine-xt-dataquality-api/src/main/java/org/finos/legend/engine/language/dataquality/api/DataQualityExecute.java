@@ -131,7 +131,7 @@ public class DataQualityExecute
         this.extensions = extensions;
         this.transformers = transformers;
         this.planExecutor = planExecutor;
-        this.dataQualityPlanLoader = new DataQualityPlanLoader(metaDataServerConfiguration.sdlc, httpClientProvider);
+        this.dataQualityPlanLoader = new DataQualityPlanLoader(metaDataServerConfiguration.alloy, httpClientProvider);
         MetricsHandler.createMetrics(this.getClass());
 
     }

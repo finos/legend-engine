@@ -18,11 +18,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -40,6 +42,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class DataQualityRelationComparisonArtifactGenerationExtension implements ArtifactGenerationExtension
 {
@@ -53,6 +56,8 @@ public class DataQualityRelationComparisonArtifactGenerationExtension implements
     public static final boolean INCLUDE_COLUMN_VALUES = true;
     public static final boolean ENRICH_DQ_COLUMNS = true;
     public static final Long DEFAULT_DEFECT_LIMIT = 8000L;
+
+    private static final ListIterable<PlanTransformer> transformers = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)).flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
     @Override
     public String getKey()
@@ -84,7 +89,7 @@ public class DataQualityRelationComparisonArtifactGenerationExtension implements
             LambdaFunction<?> dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
 
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
-            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), LegendPlanTransformers.transformers);
+            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
             artifacts.add(new Artifact(mapper.writeValueAsString(singleExecutionPlan), EXECUTION_PLAN_FILE_NAME, "json"));
         }
         catch (Exception e)

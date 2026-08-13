@@ -18,11 +18,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityMetadata;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityRule;
@@ -40,6 +42,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.ServiceLoader;
 
 public class DataQualityValidationArtifactGenerationExtension implements ArtifactGenerationExtension
 {
@@ -50,6 +53,7 @@ public class DataQualityValidationArtifactGenerationExtension implements Artifac
     public static final String META_DATA_FILE_NAME = "dataQualityRulesMetadata.json";
     public static final String EXECUTION_PLAN_FILE_NAME = "dataQualityValidationExecutionPlan.json";
 
+    private static final ListIterable<PlanTransformer> transformers = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)).flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
     @Override
     public String getKey()
@@ -83,7 +87,7 @@ public class DataQualityValidationArtifactGenerationExtension implements Artifac
             LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, packageableElement, null, false, null, true, false, "generate artifacts for dq");
             // 2. Generate Plan from the lambda generated in the previous step
             SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null,
-                    routerExtensions.apply(pureModel), LegendPlanTransformers.transformers);// since lambda has from function we dont need mapping, runtime and context
+                    routerExtensions.apply(pureModel), transformers);// since lambda has from function we dont need mapping, runtime and context
             artifacts.add(new Artifact(mapper.writeValueAsString(singleExecutionPlan), EXECUTION_PLAN_FILE_NAME, "json"));
         }
         catch (Exception e)
