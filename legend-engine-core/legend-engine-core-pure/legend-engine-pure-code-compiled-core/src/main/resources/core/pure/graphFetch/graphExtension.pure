@@ -465,6 +465,35 @@ function <<access.private>> meta::pure::graphFetch::mergePropertiesFromBaseSubTr
    $updatedSubTreeWithBaseClass->concatenate($subTreesWithSubTypes->map(st|^$st(subTrees = $st.subTrees->concatenate($subTreeWithBaseClass->cast(@PropertyGraphFetchTree).subTrees)->cast(@PropertyGraphFetchTree)->mergeSubTreesRecur())));
 }
 
+function <<access.private>> meta::pure::graphFetch::sourceClassForM2MConditionalPath(path:List<PropertyPathNode>[1], owner:Class<Any>[1]):Class<Any>[0..1]
+{
+   if($path.values->isEmpty(),
+      |$owner,
+      |$path.values->last()->toOne().property->functionReturnType().rawType->filter(t | $t->instanceOf(Class))->first()->cast(@Class<Any>)
+   );
+}
+
+function <<access.private>> meta::pure::graphFetch::m2mCurrentPathsForChildSetImplementation(propertyPaths:ScanPropertiesState[*], owner:Class<Any>[1], childSetImplementation:PureInstanceSetImplementation[1]):List<PropertyPathNode>[*]
+{
+   let legacyPaths = $propertyPaths.current->removeDuplicates();
+   // Metadata is opt-in. Its absence must be an exact fallback to the historical single-current behavior.
+   if(!$propertyPaths->exists(p | $p.conditionalTerminalPaths->isNotEmpty()),
+      |$legacyPaths,
+      {|
+         let childSourceClass = $childSetImplementation.srcClass->filter(c | $c->instanceOf(Class))->cast(@Class<Any>);
+         if($childSourceClass->isEmpty(),
+            |$legacyPaths,
+            |$propertyPaths
+               ->map(pathState | if($pathState.conditionalTerminalPaths->isNotEmpty(), |$pathState.conditionalTerminalPaths->toOne().paths, |$pathState.current))
+               ->removeDuplicates()
+               ->filter(path | $path->sourceClassForM2MConditionalPath($owner)
+                  ->exists(c | $c->meta::pure::functions::meta::_subTypeOf($childSourceClass->toOne())
+                            || $childSourceClass->toOne()->meta::pure::functions::meta::_subTypeOf($c)))
+         );
+      }
+   );
+}
+
 function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForProperty(srcNode:GraphFetchTree[1], mapping:Mapping[1], setImplementation: PureInstanceSetImplementation[1], tgtPgft:PropertyGraphFetchTree[1], extensions:meta::pure::extension::Extension[*], visitedFunctions:Map<String,ScanPropertiesState>[1]): Pair<GraphFetchTree, Map<String, ScanPropertiesState>>[1]
 {
    let srcNodeOwner = $srcNode->match([
@@ -542,7 +571,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                );
             },
             {pms:PurePropertyMapping[*] |
-              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false), $prevRes->last()->getVisitedFunctions());
+              let result = $pms->fold({pm, prevRes | let result = $pm.transform.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(noDebug(), ^ScanConfig(scanClasses=true, explodeMilestonedProperties=false, captureConditionalTerminals=true), $prevRes->last()->getVisitedFunctions());
                                                      $prevRes->concatenate($result);
                                       },
                                       [^ScanPropertiesState(current = emptyPath(), result = [], visitedFunctions = $visitedFunctions)]
@@ -658,7 +687,7 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                   );
 
          let withNextSetImpl     = $childSetImpls->fold({setImpl, res 
-                                                        | let appendAtPaths = $propertyPaths.current->removeDuplicates();
+                                                        | let appendAtPaths = $propertyPaths->m2mCurrentPathsForChildSetImplementation($owner, $setImpl);
                                                           if($appendAtPaths->isEmpty(),
                                                             | $res.first->enrichSourceTreeNode($mapping, $setImpl, $tgtPgft, $extensions, $res.second),
                                                             | $appendAtPaths->fold({path, res1 
