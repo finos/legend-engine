@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.dataquality.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheStats;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -93,6 +94,7 @@ import org.slf4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -101,6 +103,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -389,6 +392,30 @@ public class DataQualityExecute
         {
             LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    @GET
+    @Path("reconciliationCache/stats")
+    @ApiOperation(value = "Provides stats of reconciliation cache")
+    public Response reconciliationCacheStats(@Context HttpServletRequest request)
+    {
+        try
+        {
+            CacheStats cacheStats = DataQualityPlanLoader.RECON_PLAN_CACHE.stats();
+            Map<String, Object> statsMap = new HashMap<>();
+            statsMap.put("requestCount", cacheStats.requestCount());
+            statsMap.put("hitCount", cacheStats.hitCount());
+            statsMap.put("hitRate", cacheStats.hitRate());
+            statsMap.put("missCount", cacheStats.missCount());
+            statsMap.put("missRate", cacheStats.missRate());
+            statsMap.put("evictionCount", cacheStats.evictionCount());
+            statsMap.put("size", DataQualityPlanLoader.RECON_PLAN_CACHE.size());
+            return Response.status(200).type(MediaType.APPLICATION_JSON).entity(objectMapper.writeValueAsString(statsMap)).build();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
         }
     }
 

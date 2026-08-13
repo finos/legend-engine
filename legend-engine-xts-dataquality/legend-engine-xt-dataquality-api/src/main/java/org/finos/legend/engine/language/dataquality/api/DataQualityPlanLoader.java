@@ -58,7 +58,9 @@ public class DataQualityPlanLoader
     public static final String RECON_EXECUTION_PLAN_FILE_NAME = "dataQualityRelationComparisonPlan.json";
 
     // Shared in-memory cache of pre-generated recon plans. Keyed by groupId:artifactId:version:elementPath. SNAPSHOT versions are never cached so dev iteration stays correct.
-    private static final Cache<String, SingleExecutionPlan> RECON_PLAN_CACHE = CacheBuilder.newBuilder()
+    public static final Cache<String, SingleExecutionPlan> RECON_PLAN_CACHE = CacheBuilder.newBuilder()
+            .recordStats()
+            .softValues()
             .maximumSize(1024)
             .expireAfterWrite(24, TimeUnit.HOURS)
             .build();
