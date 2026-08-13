@@ -97,6 +97,14 @@ public class ParityReport
                     {
                         LOGGER.info("    Rewritten: " + r.rewrittenSql);
                     }
+                    if (r.generatedSql != null)
+                    {
+                        LOGGER.info("    Generated: " + r.generatedSql);
+                    }
+                    if (r.generatedLambda != null)
+                    {
+                        LOGGER.info("    Lambda: " + r.generatedLambda);
+                    }
                     if (r.error != null)
                     {
                         LOGGER.info("    Error: " + r.error);
@@ -198,6 +206,8 @@ public class ParityReport
         public String state;   // "PASS", "FAIL", "ERROR", "SKIP", "BUG"
         public String sql;
         public String rewrittenSql;
+        public String generatedSql;
+        public String generatedLambda;
         public String error;
         public List<String> diffs;
         public transient ResultMatrix expectedResult;
@@ -205,11 +215,18 @@ public class ParityReport
 
         public TestResult(String id, String category, String path, String state, String sql, String rewrittenSql, String error, List<String> diffs)
         {
-            this(id, category, path, state, sql, rewrittenSql, error, diffs, null, null);
+            this(id, category, path, state, sql, rewrittenSql, null, null, error, diffs, null, null);
         }
 
         public TestResult(String id, String category, String path, String state, String sql,
                           String rewrittenSql, String error, List<String> diffs,
+                          ResultMatrix expectedResult, ResultMatrix actualResult)
+        {
+            this(id, category, path, state, sql, rewrittenSql, null, null, error, diffs, expectedResult, actualResult);
+        }
+
+        public TestResult(String id, String category, String path, String state, String sql,
+                          String rewrittenSql, String generatedSql, String generatedLambda, String error, List<String> diffs,
                           ResultMatrix expectedResult, ResultMatrix actualResult)
         {
             this.id = id;
@@ -218,6 +235,8 @@ public class ParityReport
             this.state = state;
             this.sql = sql;
             this.rewrittenSql = rewrittenSql;
+            this.generatedSql = generatedSql;
+            this.generatedLambda = generatedLambda;
             this.error = simplifyError(error);
             this.diffs = diffs;
             this.expectedResult = expectedResult;

@@ -83,6 +83,14 @@ public class FailureDetailReport
             {
                 md.append("**SQL (Legend, rewritten):**\n```sql\n").append(r.rewrittenSql).append("\n```\n\n");
             }
+            if (r.generatedSql != null)
+            {
+                md.append("**SQL (Generated, executed against DB):**\n```sql\n").append(r.generatedSql).append("\n```\n\n");
+            }
+            if (r.generatedLambda != null)
+            {
+                md.append("**Lambda (Pure expression):**\n```json\n").append(r.generatedLambda).append("\n```\n\n");
+            }
 
             // Diffs summary
             if (r.diffs != null && !r.diffs.isEmpty())

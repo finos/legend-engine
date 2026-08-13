@@ -19,6 +19,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.grammar.test.GrammarParseTestUtils;
+import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
@@ -35,11 +36,14 @@ import org.finos.legend.engine.postgres.protocol.sql.handler.legend.bridge.sql.L
 import org.finos.legend.engine.postgres.protocol.wire.auth.identity.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.protocol.wire.auth.method.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.protocol.wire.serialization.Messages;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.sql.api.CatchAllExceptionMapper;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
+import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
@@ -384,7 +388,10 @@ public class TestPostgresParity
         }
         else
         {
-            report.record(new ParityReport.TestResult(tc.id, category, path, "FAIL", tc.sql, rewrittenSql, null, comparison.getDiffs(), expectedCmp, actualCmp));
+            String generatedSql = fetchGeneratedSql(rewrittenSql);
+            String generatedLambda = fetchGeneratedLambda(rewrittenSql);
+
+            report.record(new ParityReport.TestResult(tc.id, category, path, "FAIL", tc.sql, rewrittenSql, generatedSql, generatedLambda, null, comparison.getDiffs(), expectedCmp, actualCmp));
             statusUpdater.recordResult(tc.id, path, "FAIL");
             assertNoRegression(tc, path, "FAIL", null);
         }
@@ -536,6 +543,100 @@ public class TestPostgresParity
                 rows.add(row);
             }
             return new ResultMatrix(columnNames, rows);
+        }
+    }
+
+    /**
+     * Calls the Legend SQL lambda API and returns the lambda JSON representation.
+     * Returns null if the lambda cannot be fetched.
+     */
+    private String fetchGeneratedLambda(String legendSql)
+    {
+        try
+        {
+            javax.ws.rs.core.Response response = resourceTestRule.target("sql/v1/execution/lambda")
+                    .request()
+                    .post(javax.ws.rs.client.Entity.text(legendSql));
+
+            if (response.getStatus() != 200)
+            {
+                return null;
+            }
+            LambdaFunction lambda = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(response.readEntity(String.class), LambdaFunction.class);
+            return lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
+        }
+        catch (Exception e)
+        {
+            LOGGER.debug("Failed to fetch generated lambda for: {}", legendSql, e);
+            return null;
+        }
+    }
+
+    /**
+     * Calls the Legend SQL plan API and extracts the generated SQL query from the execution plan.
+     * Returns null if the plan cannot be fetched or no SQL is found.
+     */
+    private String fetchGeneratedSql(String legendSql)
+    {
+        try
+        {
+            javax.ws.rs.core.Response response = resourceTestRule.target("sql/v1/execution/plan")
+                    .request()
+                    .post(javax.ws.rs.client.Entity.text(legendSql));
+            if (response.getStatus() != 200)
+            {
+                return null;
+            }
+            String planJson = response.readEntity(String.class);
+            return extractSqlFromPlan(planJson);
+        }
+        catch (Exception e)
+        {
+            LOGGER.debug("Failed to fetch generated SQL for: {}", legendSql, e);
+            return null;
+        }
+    }
+
+    /**
+     * Recursively searches the execution plan JSON for sqlQuery fields.
+     */
+    private static String extractSqlFromPlan(String planJson)
+    {
+        try
+        {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(planJson);
+            List<String> sqls = new ArrayList<>();
+            collectSqlQueries(root, sqls);
+            return sqls.isEmpty() ? null : String.join(";\n", sqls);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+    }
+
+    private static void collectSqlQueries(com.fasterxml.jackson.databind.JsonNode node, List<String> sqls)
+    {
+        if (node == null)
+        {
+            return;
+        }
+        if (node.isObject())
+        {
+            com.fasterxml.jackson.databind.JsonNode sqlQuery = node.get("sqlQuery");
+            if (sqlQuery != null && sqlQuery.isTextual())
+            {
+                sqls.add(sqlQuery.asText());
+            }
+            node.fields().forEachRemaining(entry -> collectSqlQueries(entry.getValue(), sqls));
+        }
+        else if (node.isArray())
+        {
+            for (com.fasterxml.jackson.databind.JsonNode child : node)
+            {
+                collectSqlQueries(child, sqls);
+            }
         }
     }
 

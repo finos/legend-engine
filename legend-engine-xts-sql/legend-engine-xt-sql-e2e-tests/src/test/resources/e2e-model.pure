@@ -71,6 +71,14 @@ Database e2e::TestDB
       id INTEGER PRIMARY KEY,
       val VARCHAR(200)
     )
+    Table json_data
+    (
+      id INTEGER PRIMARY KEY,
+      json_val JSON,
+      jsonb_val JSON,
+      json_arr JSON,
+      jsonb_arr JSON
+    )
   )
 
   Join PersonDepartment(public.persons.dept_id = public.departments.id)
@@ -223,6 +231,11 @@ function e2e::tds_empty_table(): meta::pure::tds::TabularDataSet[1]
   ])
 }
 
+function e2e::tds_json_data(): meta::pure::tds::TabularDataSet[1]
+{
+  tableToTDS(tableReference(e2e::TestDB,'public','json_data'))
+}
+
 // Relation functions for each table
 function e2e::rel_persons(): meta::pure::metamodel::relation::Relation<(id:Integer, name:String, age:Integer, salary:Float, hire_date:Date, active:Boolean, dept_id:Integer)>[1]
 {
@@ -297,6 +310,11 @@ function e2e::rel_empty_table(): meta::pure::metamodel::relation::Relation<(id:I
     id: x | $x.id,
     val: x | $x.val
   ])
+}
+
+function e2e::rel_json_data(): meta::pure::metamodel::relation::Relation<(id:Integer, json_val:Variant, jsonb_val:Variant, json_arr:Variant, jsonb_arr:Variant)>[1]
+{
+  #>{e2e::TestDB.public.json_data}#
 }
 
 // Joined functions — perform the join inside Pure so SQL only references one func() call
@@ -513,4 +531,3 @@ Runtime e2e::TestRuntime
     ]
   ];
 }
-
