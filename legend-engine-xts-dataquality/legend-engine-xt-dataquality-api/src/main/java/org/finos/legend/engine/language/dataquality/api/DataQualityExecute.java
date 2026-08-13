@@ -106,10 +106,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.ObjectUtils.isEmpty;
-import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.DEFAULT_DEFECT_LIMIT;
-import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.ENRICH_DQ_COLUMNS;
-import static org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension.INCLUDE_COLUMN_VALUES;
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "DataQuality - Execution")
@@ -348,21 +344,41 @@ public class DataQualityExecute
         long start = System.currentTimeMillis();
         try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
         {
+            PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
+            Result result = getDataReconciliation(request, pureModel, dataQualityReconInput, start, identity);
+            return wrapInResponse(identity, format, start, result);
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    @POST
+    @Path("reconciliation/executeArtifacts")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reconciliationUsingPreGeneratedPlan(@Context HttpServletRequest request, DataQualityReconCachedPlanInput dataQualityReconCachedPlanInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        DataQualityReconInput dataQualityReconInput = dataQualityReconCachedPlanInput.toDataQualityReconInput();
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
+        {
             Pair<SingleExecutionPlan, MutableMap<String, Object>> planAndParams = null;
-            //when the request matches the defaults baked into the build-time artifact plan skip model load + plan generation and execute the pre-generated plan.
-            if (matchesReconArtifactDefaults(dataQualityReconInput))
+            try
             {
-                try
-                {
-                    planAndParams = Tuples.pair(this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo), Maps.mutable.empty());
-                }
-                catch (Exception exception)
-                {
-                    LOGGER.warn("Failed to fetch pre-generated recon plan for element {} - falling back to on-the-fly plan generation: {}", dataQualityReconInput.packagePath, exception.getMessage(), exception);
-                }
+                planAndParams = Tuples.pair(this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo), Maps.mutable.empty());
+            }
+            catch (Exception exception)
+            {
+                LOGGER.warn("Failed to fetch pre-generated recon plan for element {} - falling back to on-the-fly plan generation: {}", dataQualityReconInput.packagePath, exception.getMessage(), exception);
             }
             if (planAndParams == null)
             {
+                //for now fall back to generating plan dynamically but once users have migrated projects to having cached plan then throw exception here if no cached plan was found
                 PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
                 planAndParams = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity);
             }
@@ -396,20 +412,6 @@ public class DataQualityExecute
             LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
             return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
         }
-    }
-
-    protected static boolean matchesReconArtifactDefaults(DataQualityReconInput input)
-    {
-        return input.packagePath != null
-                && input.model instanceof PureModelContextPointer
-                && !input.runSourceQuery
-                && !input.runTargetQuery
-                && input.queryLimit == null
-                && input.defectLimit != null && input.defectLimit == DEFAULT_DEFECT_LIMIT //TODO put this defect limit as a parameter into the plan so we can remove this from here and always use cached plan even if someone passes different limit in future
-                && input.includeColumnValues == INCLUDE_COLUMN_VALUES
-                && input.enrichDQColumns == ENRICH_DQ_COLUMNS
-                && isEmpty(input.sourceLambdaParameterValues)
-                && isEmpty(input.targetLambdaParameterValues);
     }
 
     protected Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
@@ -472,6 +474,12 @@ public class DataQualityExecute
         SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, input.clientVersion, PlanPlatform.JAVA, null, this.extensions.apply(pureModel), this.transformers);
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_END, System.currentTimeMillis() - start).toString());
         return Tuples.pair(plan, lambdaParameterMap);
+    }
+
+    private Result getDataReconciliation(HttpServletRequest request, PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    {
+        Pair<SingleExecutionPlan, MutableMap<String, Object>> plan = generateDataReconciliationPlan(pureModel, input, start, identity);
+        return executePlanToResult(request, identity, plan.getOne(), plan.getTwo());
     }
 
     private static Root_meta_external_dataquality_datarecon_DataQualityReconInput createReconInput(PureModel pureModel, Root_meta_external_dataquality_DataQualityRelationComparison dqComparisonElement, DataQualityReconInput input, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> sourceLambdaFunction, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> targetLambdaFunction)

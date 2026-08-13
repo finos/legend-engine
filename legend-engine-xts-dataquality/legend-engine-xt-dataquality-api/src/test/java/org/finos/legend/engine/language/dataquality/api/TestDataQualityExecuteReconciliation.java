@@ -18,7 +18,6 @@ import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.tuple.Tuples;
-import org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
@@ -43,7 +42,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -70,7 +68,7 @@ public class TestDataQualityExecuteReconciliation
         AtomicReference<SingleExecutionPlan> executedPlan = new AtomicReference<>();
         DataQualityExecute execute = newTestExecute(modelManager, planLoader, executedPlan);
 
-        Response response = execute.reconciliation(mock(HttpServletRequest.class), defaultInput(), SerializationFormat.defaultFormat, null);
+        Response response = execute.reconciliationUsingPreGeneratedPlan(mock(HttpServletRequest.class), defaultInput(), SerializationFormat.defaultFormat, null);
 
         assertNotNull(response);
         assertSame("Pre-generated recon plan must be executed as-is", cachedPlan, executedPlan.get());
@@ -79,7 +77,7 @@ public class TestDataQualityExecuteReconciliation
     }
 
     @Test
-    public void testReconciliation_FallsBackToOnTheFlyPlanWhenDefaultsDoNotMatch() throws Exception
+    public void testReconciliation_FallsBackToOnTheFlyPlanWhenCachedPlanNotFound() throws Exception
     {
         when(modelManager.loadModel(any(), any(), any(), any())).thenReturn(pureModel);
         SingleExecutionPlan generatedPlan = new SingleExecutionPlan();
@@ -108,15 +106,14 @@ public class TestDataQualityExecuteReconciliation
         };
         injectPlanLoader(execute, planLoader);
 
-        DataQualityReconInput input = defaultInput();
-        input.runSourceQuery = true; // any single deviation from defaults disqualifies the cache path
+        DataQualityReconCachedPlanInput input = defaultInput();
+        when(planLoader.fetchReconPlanFromSDLC(any(), any(), any())).thenThrow(new RuntimeException("Cached plan not found"));
 
-        Response response = execute.reconciliation(mock(HttpServletRequest.class), input, SerializationFormat.defaultFormat, null);
+        Response response = execute.reconciliationUsingPreGeneratedPlan(mock(HttpServletRequest.class), input, SerializationFormat.defaultFormat, null);
 
         assertNotNull(response);
         assertSame("Freshly generated plan must be executed", generatedPlan, executedPlan.get());
         verify(modelManager).loadModel(any(), any(), any(), any());
-        verify(planLoader, never()).fetchReconPlanFromSDLC(any(), any(), any());
     }
 
     private static DataQualityExecute newTestExecute(ModelManager modelManager, DataQualityPlanLoader planLoader, AtomicReference<SingleExecutionPlan> executedPlanSink) throws Exception
@@ -163,14 +160,11 @@ public class TestDataQualityExecuteReconciliation
         return cfg;
     }
 
-    private static DataQualityReconInput defaultInput()
+    private static DataQualityReconCachedPlanInput defaultInput()
     {
-        DataQualityReconInput input = new DataQualityReconInput();
+        DataQualityReconCachedPlanInput input = new DataQualityReconCachedPlanInput();
         input.packagePath = "meta::dataquality::TestRelationComparison";
         input.model = new PureModelContextPointer();
-        input.defectLimit = DataQualityRelationComparisonArtifactGenerationExtension.DEFAULT_DEFECT_LIMIT;
-        input.includeColumnValues = DataQualityRelationComparisonArtifactGenerationExtension.INCLUDE_COLUMN_VALUES;
-        input.enrichDQColumns = DataQualityRelationComparisonArtifactGenerationExtension.ENRICH_DQ_COLUMNS;
         return input;
     }
 }
