@@ -367,22 +367,22 @@ public class DataQualityExecute
         DataQualityReconInput dataQualityReconInput = dataQualityReconCachedPlanInput.toDataQualityReconInput();
         try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
         {
-            Pair<SingleExecutionPlan, MutableMap<String, Object>> planAndParams = null;
+            SingleExecutionPlan plan = null;
             try
             {
-                planAndParams = Tuples.pair(this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo), Maps.mutable.empty());
+                plan = this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo);
             }
             catch (Exception exception)
             {
                 LOGGER.warn("Failed to fetch pre-generated recon plan for element {} - falling back to on-the-fly plan generation: {}", dataQualityReconInput.packagePath, exception.getMessage(), exception);
             }
-            if (planAndParams == null)
+            if (plan == null)
             {
                 //for now fall back to generating plan dynamically but once users have migrated projects to having cached plan then throw exception here if no cached plan was found
                 PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
-                planAndParams = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity);
+                plan = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity).getOne();
             }
-            Result result = executePlanToResult(request, identity, planAndParams.getOne(), planAndParams.getTwo());
+            Result result = executePlanToResult(request, identity, plan, Maps.mutable.empty());
             return wrapInResponse(identity, format, start, result);
         }
         catch (Exception ex)
