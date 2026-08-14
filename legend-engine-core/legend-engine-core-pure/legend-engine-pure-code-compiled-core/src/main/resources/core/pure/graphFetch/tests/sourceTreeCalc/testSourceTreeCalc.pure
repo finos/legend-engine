@@ -3692,3 +3692,173 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::Phant
     chargedPartyId : $src.executionCommission.payBy.oe.identifier->toOne()
   }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: a class that declares a property returning its own type is legitimate
+// modelling, but it made the back-edge walk non-terminating. buildPropertyPathUptoOwner
+// walks backwards from the intermediate class to the owner - find a property returning
+// target, pick one, set target := picked.ownerClass(), recurse - and kept no record of
+// where it had been. Here the candidates returning SrTx are SrTx.interco (declared on
+// SrTx itself) and SrCollateral.tx; pickIntermediateProperty sorts by name, so 'interco'
+// wins, target never changes, and the walk spun until the 64-level backstop fired with
+// "buildPropertyPathUptoOwner recursion exceeded 64 levels".
+// Derived from a real model in which
+// TripartyRepoCollateralTransaction.intercoContract returns TripartyRepoCollateralTransaction.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx
+{
+  txId    : String[1];
+  interco : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrCollateral
+{
+  tx : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrEvent
+{
+  collateral : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrCollateral[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrPayload
+{
+  event : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut
+{
+  txInfo : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut
+{
+  txId : String[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::testSelfReferencingPropertyBackEdge():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut {
+      txInfo { txId }
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SelfRefMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  // The back-edge must route around the self-reference: SrPayload -> event -> collateral
+  // -> tx -> txId. The self-referencing property must not appear in the source tree.
+  assert($str->contains('event'),      | 'expected event in source tree: '      + $str);
+  assert($str->contains('collateral'), | 'expected collateral in source tree: ' + $str);
+  assert($str->contains('tx'),         | 'expected tx in source tree: '         + $str);
+  assert($str->contains('txId'),       | 'expected txId in source tree: '       + $str);
+  assert(!$str->contains('interco'),   | 'self-referencing property must not be synthesised into the source tree: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SelfRefMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrPayload
+    txInfo[srTxCM] : ^meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx(
+       txId = $src.event.collateral.tx.txId->toOne()
+    )
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut[srTxCM] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx
+    txId : $src.txId
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Boundary case for the visited-set cycle guard. The guard makes the back-edge walk
+// terminate, but the walk is still greedy and does not backtrack, so it can take a wrong
+// turn into a cul-de-sac. Candidates returning McTx are McProfile.altTx and
+// McEvent.transaction; pickIntermediateProperty sorts by name so 'altTx' wins and the walk
+// steps into McProfile, whose only producer (McTx.profile) is already on the path. The
+// walk therefore fails - even though McEvent.transaction -> McPayload.event was a perfectly
+// good route. Before the guard this shape hung on the McTx <-> McProfile 2-cycle until the
+// depth backstop fired; now it fails immediately with an accurate diagnostic.
+//
+// If the DFS-with-backtracking alternative in
+// docs/engineering/architecture/source-tree-calculation.md section 11.6 is ever
+// implemented, this test flips from asserting an error to asserting the source tree
+// McPayload { event { transaction { txId } } }.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile
+{
+  altTx : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx
+{
+  txId    : String[1];
+  profile : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McEvent
+{
+  transaction : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload
+{
+  event : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut
+{
+  txInfo : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut
+{
+  txId : String[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::testMutualCycleGivesClearError():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut {
+      txInfo { txId }
+    }
+  }#;
+  assertError(
+    | meta::pure::graphFetch::calculateSourceTree(
+        $tree,
+        meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping,
+        meta::pure::extension::defaultExtensions());,
+    'Could not build an acyclic path from meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload back to meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile: every property returning it is declared on a class already on the path. The back-edge search does not backtrack - see source-tree-calculation.md section 11.6.'
+  );
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload
+    txInfo[mcTxCM] : ^meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx(
+       txId    = $src.event.transaction.txId->toOne(),
+       profile = ^meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile()
+    )
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut[mcTxCM] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx
+    txId : $src.txId
+  }
+)

@@ -897,13 +897,24 @@ function meta::pure::graphFetch::isTreeRootOwner(pTree:PropertyPathTree[1], owne
 
 function meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1]): PropertyPathTree[1]
 {
-   meta::pure::graphFetch::buildPropertyPathUptoOwner($pTree, $owner, $t, 0)
+   meta::pure::graphFetch::buildPropertyPathUptoOwner($pTree, $owner, $t, [])
 }
 
+// visited carries the element paths of the classes already on the path being built, so
+// that nextIntermediateProperty can reject candidates that would revisit one. Without it
+// a class-graph cycle - a self-referencing property, or a mutually-referencing pair -
+// makes this walk non-terminating. Both are legitimate in a domain model, so the cycle is
+// broken here. Termination is then structural: each level consumes one class from a finite
+// set. Note the walk is greedy and does not backtrack, so it can still fail on a model
+// where the preferred candidate leads into a cul-de-sac; the alternative that closes that
+// gap is recorded in docs/engineering/architecture/source-tree-calculation.md section 11.6.
+// Mirrors meta::pure::functions::meta::allNestedProperties, which is cycle-guarded the
+// same way (public wrapper, private overload with a visited parameter keyed on element path).
 function <<access.private>>
-   meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1], depth:Integer[1]): PropertyPathTree[1]
+   meta::pure::graphFetch::buildPropertyPathUptoOwner(pTree:PropertyPathTree[1], owner:Class<Any>[1], t : Map<Type, List<AbstractProperty<Any>>>[1], visited:String[*]): PropertyPathTree[1]
 {
-   assert($depth <= 64, | 'buildPropertyPathUptoOwner recursion exceeded 64 levels - owner ' + $owner->elementToPath() + ' is not reachable from the intermediate property tree.');
+   // Defensive only - the visited set above already guarantees termination.
+   assert($visited->size() <= 64, | 'buildPropertyPathUptoOwner recursion exceeded 64 levels building a path back to owner ' + $owner->elementToPath() + ' - internal error, the cycle guard should have prevented this.');
    $pTree.value->match(
       [
          p:PropertyPathNode[1] | let prop     = $p.property;
@@ -913,16 +924,14 @@ function <<access.private>>
                                     // or a supertype of owner (inheritance). The supertype-of-owner case relies on
                                     // addPropertyGraphFetchTrees accepting the property under owner via inheritance.
                                     | $pTree,
-                                    | let candidates = meta::pure::graphFetch::lookupIntermediateCandidates($t, $propOwner);
-                                      assert($candidates->isNotEmpty(),
-                                             | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $propOwner->elementToPath() + ' - cannot build path back to owner.');
-                                      let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $propOwner);
+                                    | let visitedNow = $visited->concatenate($propOwner->elementToPath());
+                                      let picked = meta::pure::graphFetch::nextIntermediateProperty($t, $propOwner, $owner, $visitedNow);
                                       let newptree = ^PropertyPathTree(
                                                         display  = $picked.name->toOne(),
                                                         value    = ^PropertyPathNode(class = $picked->meta::pure::functions::meta::ownerClass(), property = $picked),
                                                         children = $pTree
                                                      );
-                                      meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
+                                      meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $visitedNow);
                                  );,
          clz : Class<Any>[1] | if($clz == $owner || $clz->isStrictSubType($owner) || $owner->isStrictSubType($clz),
                                   // Same inheritance case as the PropertyPathNode arm above: owner can
@@ -930,16 +939,14 @@ function <<access.private>>
                                   // `$src->typeName()` transform on _S_PersonC puts a _S_Person Class
                                   // node in the property tree; _S_PersonC instances inherit access).
                                   | $pTree,
-                                  | let candidates = meta::pure::graphFetch::lookupIntermediateCandidates($t, $clz);
-                                    assert($candidates->isNotEmpty(),
-                                           | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $clz->elementToPath() + ' - cannot build path back to owner.');
-                                    let picked = meta::pure::graphFetch::pickIntermediateProperty($candidates, $clz);
+                                  | let visitedNow = $visited->concatenate($clz->elementToPath());
+                                    let picked = meta::pure::graphFetch::nextIntermediateProperty($t, $clz, $owner, $visitedNow);
                                     let newptree = ^PropertyPathTree(
                                                       display  = $picked.name->toOne(),
                                                       value    = ^PropertyPathNode(class = $picked->meta::pure::functions::meta::ownerClass(), property = $picked),
                                                       children = $pTree.children
                                                    );
-                                    meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $depth + 1);
+                                    meta::pure::graphFetch::buildPropertyPathUptoOwner($newptree, $owner, $t, $visitedNow);
                               )
       ]
    );
@@ -951,6 +958,32 @@ function <<access.private>>
    let exact = $candidates->filter(p | $p.genericType.rawType->toOne() == $target);
    let pool  = if($exact->isNotEmpty(), | $exact, | $candidates);
    $pool->sortBy(p | $p.name->toOne())->at(0);
+}
+
+// Choose the next hop of the back-edge walk: a property returning target, declared on a
+// class we have not already stood on. Candidates declared on a class in visited make no
+// progress toward owner - a self-referencing property (Tx.interco : Tx[*]) leaves target
+// unchanged, and a mutually-referencing pair (A.b : B / B.a : A) oscillates between two
+// classes - so the walk would recurse until the depth backstop fired. Both shapes are
+// legitimate modelling, so they are filtered here rather than rejected in the model.
+function <<access.private>>
+   meta::pure::graphFetch::nextIntermediateProperty(t : Map<Type, List<AbstractProperty<Any>>>[1], target:Class<Any>[1], owner:Class<Any>[1], visited:String[*]) : AbstractProperty<Any>[1]
+{
+   let candidates = meta::pure::graphFetch::lookupIntermediateCandidates($t, $target);
+   assert($candidates->isNotEmpty(),
+          | 'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $target->elementToPath() + ' - cannot build path back to owner.');
+
+   // Compare by element path, not object identity: Pure's lazy evaluation can produce
+   // multiple objects for the same Class (see the same treatment at ownerGenPaths above).
+   let progressing = $candidates->filter(c | !$visited->contains($c->meta::pure::functions::meta::ownerClass()->elementToPath()));
+   // Deliberately not a claim that no property returns target - one does, and a valid path
+   // may well exist down a branch this walk did not take. The search is greedy with no
+   // backtracking; see docs/engineering/architecture/source-tree-calculation.md section 11.6.
+   assert($progressing->isNotEmpty(),
+          | 'Could not build an acyclic path from ' + $owner->elementToPath() + ' back to ' + $target->elementToPath()
+            + ': every property returning it is declared on a class already on the path. The back-edge search does not backtrack - see source-tree-calculation.md section 11.6.');
+
+   meta::pure::graphFetch::pickIntermediateProperty($progressing, $target);
 }
 
 function meta::pure::graphFetch::propertyTreeToGraphFetchTree(pTree:PropertyPathTree[1], ownerClass:Class<Any>[1]): RootGraphFetchTree<Any>[1]
