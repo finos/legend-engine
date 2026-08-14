@@ -46,8 +46,9 @@ documentation and qualifiers, and per-adapter results with the failure message b
 unlike the compatibility matrix, it gives no qualifier (including `unsupportedFeature`) special treatment.
 
 Each function is addressable as `PCT_Report_Functions.html#f/<name>` (for example `#f/tan`), so a single function can be linked
-directly. Names used in several packages resolve to a chooser listing them; the `link` in each function's header gives the
-shortest URL that opens that page.
+directly. Adding the parameter types picks out one overload — `#f/times(Decimal)`, or `#f/max(Date[1..*])` where multiplicity is
+what separates them. Names used in several packages resolve to a chooser listing them, unless the overload settles which one was
+meant. The `link` in a function's header and the `#` beside each signature give the shortest URL that opens that page.
 
 Regenerate both locally with:
 ```bash
