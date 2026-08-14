@@ -1,1 +1,2 @@
 org.finos.legend.engine.generation.dataquality.DataQualityValidationArtifactGenerationExtension
+org.finos.legend.engine.generation.dataquality.DataQualityRelationComparisonArtifactGenerationExtension

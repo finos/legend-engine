@@ -522,7 +522,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-dataquality-generation</artifactId>
-            <scope>test</scope>
         </dependency>
         <!-- DataQuality -->
 

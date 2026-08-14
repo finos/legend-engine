@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.dataquality.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.cache.CacheStats;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
@@ -55,6 +56,7 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation;
 import org.finos.legend.engine.protocol.dataquality.model.DataQualityExecuteInput;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
@@ -92,6 +94,7 @@ import org.slf4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -100,6 +103,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -127,7 +131,7 @@ public class DataQualityExecute
         this.extensions = extensions;
         this.transformers = transformers;
         this.planExecutor = planExecutor;
-        this.dataQualityPlanLoader = new DataQualityPlanLoader(metaDataServerConfiguration.sdlc, httpClientProvider);
+        this.dataQualityPlanLoader = new DataQualityPlanLoader(metaDataServerConfiguration.alloy, httpClientProvider);
         MetricsHandler.createMetrics(this.getClass());
 
     }
@@ -355,6 +359,67 @@ public class DataQualityExecute
     }
 
     @POST
+    @Path("reconciliation/executeArtifacts")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response reconciliationUsingPreGeneratedPlan(@Context HttpServletRequest request, DataQualityReconCachedPlanInput dataQualityReconCachedPlanInput, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager() ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = Identity.makeIdentity(profiles);
+        long start = System.currentTimeMillis();
+        DataQualityReconInput dataQualityReconInput = dataQualityReconCachedPlanInput.toDataQualityReconInput();
+        try (Scope ignored = GlobalTracer.get().buildSpan("DataQuality - recon: planGeneration").startActive(true))
+        {
+            SingleExecutionPlan plan = null;
+            try
+            {
+                plan = this.dataQualityPlanLoader.fetchReconPlanFromSDLC(identity, dataQualityReconInput.packagePath, ((PureModelContextPointer) dataQualityReconInput.model).sdlcInfo);
+            }
+            catch (Exception exception)
+            {
+                LOGGER.warn("Failed to fetch pre-generated recon plan for element {} - falling back to on-the-fly plan generation: {}", dataQualityReconInput.packagePath, exception.getMessage(), exception);
+            }
+            if (plan == null)
+            {
+                //for now fall back to generating plan dynamically but once users have migrated projects to having cached plan then throw exception here if no cached plan was found
+                PureModel pureModel = this.modelManager.loadModel(dataQualityReconInput.model, dataQualityReconInput.clientVersion, identity, null);
+                plan = generateDataReconciliationPlan(pureModel, dataQualityReconInput, start, identity).getOne();
+            }
+            Result result = executePlanToResult(request, identity, plan, Maps.mutable.empty());
+            return wrapInResponse(identity, format, start, result);
+        }
+        catch (Exception ex)
+        {
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.GENERATE_PLAN_ERROR, (double) System.currentTimeMillis() - start).toString(), ex);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.GENERATE_PLAN_ERROR, identity.getName());
+        }
+    }
+
+    @GET
+    @Path("reconciliationCache/stats")
+    @ApiOperation(value = "Provides stats of reconciliation cache")
+    public Response reconciliationCacheStats(@Context HttpServletRequest request)
+    {
+        try
+        {
+            CacheStats cacheStats = DataQualityPlanLoader.RECON_PLAN_CACHE.stats();
+            Map<String, Object> statsMap = new HashMap<>();
+            statsMap.put("requestCount", cacheStats.requestCount());
+            statsMap.put("hitCount", cacheStats.hitCount());
+            statsMap.put("hitRate", cacheStats.hitRate());
+            statsMap.put("missCount", cacheStats.missCount());
+            statsMap.put("missRate", cacheStats.missRate());
+            statsMap.put("evictionCount", cacheStats.evictionCount());
+            statsMap.put("size", DataQualityPlanLoader.RECON_PLAN_CACHE.size());
+            return Response.status(200).type(MediaType.APPLICATION_JSON).entity(objectMapper.writeValueAsString(statsMap)).build();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @POST
     @Path("reconciliation/generatePlan")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     @Produces(MediaType.APPLICATION_JSON)
@@ -376,7 +441,7 @@ public class DataQualityExecute
         }
     }
 
-    private Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
+    protected Pair<SingleExecutionPlan, MutableMap<String, Object>> generateDataReconciliationPlan(PureModel pureModel, DataQualityReconInput input, long start, Identity identity)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityLoggingEventType.DATAQUALITY_RECON_START).toString());
 
@@ -610,7 +675,7 @@ public class DataQualityExecute
         }
     }
 
-    private Result executePlanToResult(HttpServletRequest request, Identity identity, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
+    protected Result executePlanToResult(HttpServletRequest request, Identity identity, SingleExecutionPlan singleExecutionPlan, Map<String, Object> lambdaParameterMap)
     {
         MutableMap<String, Result> parametersToConstantResult = Maps.mutable.empty();
         ExecuteNodeParameterTransformationHelper.buildParameterToConstantResult(singleExecutionPlan, lambdaParameterMap, parametersToConstantResult);
@@ -626,7 +691,7 @@ public class DataQualityExecute
     }
 
 
-    private Response wrapInResponse(Identity identity, SerializationFormat format, long start, Result result)
+    protected Response wrapInResponse(Identity identity, SerializationFormat format, long start, Result result)
     {
         LOGGER.info(new LogInfo(identity.getName(), DataQualityExecutionLoggingEventType.DATAQUALITY_EXECUTE_INTERACTIVE_STOP, (double) System.currentTimeMillis() - start).toString());
         MetricsHandler.observe("execute", start, System.currentTimeMillis());

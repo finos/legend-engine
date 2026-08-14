@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -26,17 +26,17 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
-import org.finos.legend.engine.protocol.dataquality.model.DataQualityMetadata;
-import org.finos.legend.engine.protocol.dataquality.model.DataQualityRule;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQuality;
-import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRule;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_DataQualityRelationComparison;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_MD5HashStrategy;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_ReconStrategy;
+import org.finos.legend.pure.generated.Root_meta_external_dataquality_datarecon_DataQualityReconInput;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.core_dataquality_generation_dataquality;
+import org.finos.legend.pure.generated.core_dataquality_generation_datarecon;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.slf4j.Logger;
@@ -44,14 +44,18 @@ import org.slf4j.Logger;
 import java.util.List;
 import java.util.ServiceLoader;
 
-public class DataQualityValidationArtifactGenerationExtension implements ArtifactGenerationExtension
+public class DataQualityRelationComparisonArtifactGenerationExtension implements ArtifactGenerationExtension
 {
-    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataQualityValidationArtifactGenerationExtension.class);
+    private final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(DataQualityRelationComparisonArtifactGenerationExtension.class);
     private final ObjectMapper mapper = ObjectMapperFactory.withStandardConfigurations(PureProtocolObjectMapperFactory.withPureProtocolExtensions(new ObjectMapper()));
 
-    public static final String ROOT_PATH = "dataQualityValidation";
-    public static final String META_DATA_FILE_NAME = "dataQualityRulesMetadata.json";
-    public static final String EXECUTION_PLAN_FILE_NAME = "dataQualityValidationExecutionPlan.json";
+    public static final String ROOT_PATH = "dataQualityRelationComparison";
+    public static final String EXECUTION_PLAN_FILE_NAME = "dataQualityRelationComparisonPlan.json";
+
+    // Canonical defaults - MUST match DataQualityExecute.reconciliation cache-eligibility gate.
+    public static final boolean INCLUDE_COLUMN_VALUES = true;
+    public static final boolean ENRICH_DQ_COLUMNS = true;
+    public static final Long DEFAULT_DEFECT_LIMIT = 8000L;
 
     private static final ListIterable<PlanTransformer> transformers = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)).flatCollect(PlanGeneratorExtension::getExtraPlanTransformers);
 
@@ -64,37 +68,34 @@ public class DataQualityValidationArtifactGenerationExtension implements Artifac
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-       return element instanceof Root_meta_external_dataquality_DataQuality
-                && ((Root_meta_external_dataquality_DataQuality) element)._validationTree() != null;
+        return element instanceof Root_meta_external_dataquality_DataQualityRelationComparison;
     }
 
     @Override
     public List<Artifact> generate(PackageableElement packageableElement, PureModel pureModel, PureModelContextData pureModelContextData, String clientVersion)
     {
         List<Artifact> artifacts = Lists.mutable.empty();
-
         try
         {
-            RichIterable<? extends Root_meta_external_dataquality_DataQualityRule> dataQualityRules =
-                    core_dataquality_generation_dataquality.Root_meta_external_dataquality_generateDQMetaDataForDQValidation_DataQuality_1__DataQualityRule_MANY_((Root_meta_external_dataquality_DataQuality)packageableElement, pureModel.getExecutionSupport());
-            List<DataQualityRule> dataQualityRuleList = Lists.mutable.withAll(dataQualityRules).collect(d -> new DataQualityRule(d._constraintName(), d._constraintType(), d._constraintGrammar(), d._propertyPath()));
-            DataQualityMetadata dataQualityMetadata = new DataQualityMetadata();
-            dataQualityMetadata.dqRules = dataQualityRuleList;
-            artifacts.add(new Artifact(mapper.writeValueAsString(dataQualityMetadata), META_DATA_FILE_NAME, "json"));
+            Root_meta_external_dataquality_DataQualityRelationComparison element = (Root_meta_external_dataquality_DataQualityRelationComparison) packageableElement;
+            Root_meta_external_dataquality_ReconStrategy strategy = element._strategy();
+            boolean aggregatedHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy && ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._aggregatedHash();
+            String sourceHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy ? ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._sourceHashColumn() : null;
+            String targetHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy ? ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._targetHashColumn() : null;
+
+            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__DataQualityReconInput_1_(
+                            element._source(), element._target(), element._keys(), aggregatedHash, element._columnsToCompare(), sourceHash, targetHash, INCLUDE_COLUMN_VALUES, DEFAULT_DEFECT_LIMIT, false, ENRICH_DQ_COLUMNS, pureModel.getExecutionSupport()
+            );
+            LambdaFunction<?> dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
 
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
-            // 1. call DQ PURE func to generate lambda
-            LambdaFunction dqLambdaFunction = DataQualityLambdaGenerator.generateLambda(pureModel, packageableElement, null, false, null, true, false, "generate artifacts for dq");
-            // 2. Generate Plan from the lambda generated in the previous step
-            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null,
-                    routerExtensions.apply(pureModel), transformers);// since lambda has from function we dont need mapping, runtime and context
+            SingleExecutionPlan singleExecutionPlan = PlanGenerator.generateExecutionPlan(dqLambdaFunction, null, null, null, pureModel, clientVersion, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel), transformers);
             artifacts.add(new Artifact(mapper.writeValueAsString(singleExecutionPlan), EXECUTION_PLAN_FILE_NAME, "json"));
         }
         catch (Exception e)
         {
-            LOGGER.error("Unable to compute dataQuality validation artifact for dqValidation: " + packageableElement.getName() + ". Exception:" + e.getMessage());
+            LOGGER.error("Unable to compute dataQualityRelationComparison plan artifact for element: " + packageableElement.getName() + ". Exception: " + e.getMessage(), e);
         }
         return artifacts;
     }
-
 }
