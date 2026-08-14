@@ -39,6 +39,7 @@ Class meta::pure::executionPlan::platformBinding::legendJava::GenerationContext
    nodeInfos                 : NodeInfo[*];
    baseProject               : Project[0..1];
    suppliedClassesForGeneration : meta::pure::metamodel::type::Class<Any>[*];
+   pureM2MRuntime            : Boolean[1] = false;
    resolutionState           : CodeDependencyResolutionState[0..1];
 }
 

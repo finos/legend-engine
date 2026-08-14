@@ -34,6 +34,142 @@ Class <<temporal.businesstemporal>>  meta::pure::mapping::modelToModel::test::al
    personName : String[1];
 }
 
+Class meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner
+{
+   vehicleName : String[1];
+   name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner
+{
+   vehicleName : String[1];
+   personName : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_MilestonedVehicle
+{
+   name : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_MilestonedOwner
+{
+   name : String[1];
+   vehicle : S_MilestonedVehicle[1];
+}
+
+Class <<temporal.processingtemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_ProcessingVehicleOwner
+{
+   vehicleName : String[1];
+   personName : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Vehicle
+{
+   name : String[1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner
+{
+   personName : String[1];
+   vehicle : T_Vehicle[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicle
+{
+   name : String[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner
+{
+   name : String[1];
+   vehicle : S_NonMilestonedVehicle[1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwnerWithVehicles
+{
+   name : String[1];
+   vehicles : S_NonMilestonedVehicle[*];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerOptionalVehicle
+{
+   personName : String[1];
+   vehicle : T_Vehicle[0..1];
+}
+
+Class <<temporal.businesstemporal>> meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerManyVehicles
+{
+   personName : String[1];
+   vehicles : T_Vehicle[*];
+}
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNonMilestonedTargetFromMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner
+    vehicleName: $src.vehicle(%2020-10-15).name,
+    personName : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedMilestonedTargetFromMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_MilestonedOwner
+    personName : $src.name,
+    vehicle : $src.vehicleAllVersions
+  }
+
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Vehicle: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_MilestonedVehicle
+    name : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingProcessingTemporalTargetFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_ProcessingVehicleOwner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner
+    vehicleName: $src.vehicleName,
+    personName : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedMilestonedTargetFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner
+    personName : $src.name,
+    vehicle : $src.vehicle
+  }
+
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Vehicle: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicle
+    name : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner
+    vehicleName: $src.vehicleName,
+    personName : $src.name
+  }
+)
+
 ###Mapping
 Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping
 (
@@ -42,5 +178,50 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MM
     ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner
     vehicleName: $src.vehicle(%2020-10-15).name,
     personName : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNonMilestonedTargetFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner
+    vehicleName: $src.vehicleName,
+    personName : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedOptionalMilestonedTargetFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerOptionalVehicle: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner
+    personName : $src.name,
+    vehicle : $src.vehicle
+  }
+
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Vehicle: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicle
+    name : $src.name
+  }
+)
+
+###Mapping
+Mapping meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedManyMilestonedTargetFromNonMilestonedSource
+(
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerManyVehicles: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwnerWithVehicles
+    personName : $src.name,
+    vehicles : $src.vehicles
+  }
+
+  *meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Vehicle: Pure
+  {
+    ~src  meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicle
+    name : $src.name
   }
 )
