@@ -45,6 +45,10 @@ The function reference page shows, for a single function: every overload with it
 documentation and qualifiers, and per-adapter results with the failure message behind each `×`. It counts every reported test —
 unlike the compatibility matrix, it gives no qualifier (including `unsupportedFeature`) special treatment.
 
+Each function is addressable as `PCT_Report_Functions.html#f/<name>` (for example `#f/tan`), so a single function can be linked
+directly. Names used in several packages resolve to a chooser listing them; the `link` in each function's header gives the
+shortest URL that opens that page.
+
 Regenerate both locally with:
 ```bash
 mvn exec:java -pl org.finos.legend.engine:legend-engine-pure-ide-light-http-server \
