@@ -112,12 +112,12 @@ public class SqlExecuteTest
     @Test
     public void testLambda() throws JsonProcessingException
     {
-        String expectedCode = "{names: String[*], _1: String[1]|demo::employee.all()->filter(\n" +
-                "  p: demo::employee[1]|$names->isEmpty() ||\n" +
-                "    $p.name->in(\n" +
+        String expectedCode = "{names: String[*], _1: String[1]|demo::employee.all()->meta::pure::functions::collection::filter(\n" +
+                "  p|$names->meta::pure::functions::collection::isEmpty() ||\n" +
+                "    $p.name->meta::pure::functions::collection::in(\n" +
                 "    $names\n" +
                 "  )\n" +
-                ")->project(\n" +
+                ")->meta::pure::tds::project(\n" +
                 "  [\n" +
                 "    x: demo::employee[1]|$x.id,\n" +
                 "    x: demo::employee[1]|$x.name,\n" +
@@ -128,10 +128,10 @@ public class SqlExecuteTest
                 "    'Name',\n" +
                 "    'Employee Type'\n" +
                 "  ]\n" +
-                ")->filter(\n" +
+                ")->meta::pure::tds::filter(\n" +
                 "  row: meta::pure::tds::TDSRow[1]|$row.getString('Name') ==\n" +
                 "    $_1\n" +
-                ")->restrict('Name')}";
+                ")->meta::pure::tds::restrict('Name')}";
 
         allLambdaTests("SELECT Name FROM service('/personServiceForNames') where Name = ?", FastList.newList(), expectedCode);
     }
@@ -181,7 +181,7 @@ public class SqlExecuteTest
     {
         allExecuteTests(FastList.newListWith(
                 "SELECT Name FROM service('/personServiceForNames') ORDER BY Name",
-                        "SELECT Name FROM service('/personServiceForNamesRelation') ORDER BY Name"), FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                "SELECT Name FROM service('/personServiceForNamesRelation') ORDER BY Name"), FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
                 .addRow(FastList.newListWith("Bob"))
                 .addRow(FastList.newListWith("Curtis"))
