@@ -165,7 +165,14 @@ public class SqlExecute
         Query q = extractQuery(query);
 
         SQLContext context = new SQLContext(q, query.getPositionalArguments());
-        return executor.lambda(q, context, identity);
+        try
+        {
+            return executor.lambda(q, context, identity);
+        }
+        catch (Exception | Error e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @POST

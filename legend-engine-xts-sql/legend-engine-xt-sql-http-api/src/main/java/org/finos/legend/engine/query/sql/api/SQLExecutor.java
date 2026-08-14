@@ -541,8 +541,8 @@ public class SQLExecutor
 
     private LambdaFunction transformLambda(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction<?> lambda, PureModel pureModel)
     {
-        Object protocol = transformToVersionedModel(lambda, PureClientVersions.production, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
-        return transform(protocol, LambdaFunction.class, pureModel);
+        String grammar = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_printLambdaDefinition_LambdaFunction_1__String_1_(lambda, pureModel.getExecutionSupport());
+        return PureGrammarParser.newInstance().parseLambda(grammar);
     }
 
     private <T> T transform(Object object, java.lang.Class<T> clazz, PureModel pureModel)
