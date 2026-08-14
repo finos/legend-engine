@@ -560,13 +560,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $withWhere);
 
-      let query = $querySpec.limit->processLimitOffset($querySpec.offset,
-        $querySpec.orderBy->processOrderBy($projection.second.selectItems,
-          $querySpec.having->processHaving($projection.second,
-            $projection.first
-          )
-        )
-      );
+      let having = $querySpec.having->processHaving($projection.second,$projection.first);
+      let orderBy = $querySpec.orderBy->processOrderBy($projection.second.selectItems, $having);
+      let query = $querySpec.limit->processLimitOffset($querySpec.offset, $orderBy);
 
       //pair(sql specified name, sql column alias object)
       let expectedWithRealias = $querySpec.select.selectItems->map(si |
@@ -780,7 +776,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let index = $i.value - 1; //0 index offset in sql is 1;
       assert($index < $selectItems->size(), 'No select column at index ' + $i.value->toString());
       assert($selectItems->at($index)->instanceOf(SingleColumn), 'select * not currently supported for index group by');
-      $selectItems->at($index)->cast(@SingleColumn)->extractNameFromSingleColumn($context);,
+      let sc = $selectItems->at($index)->cast(@SingleColumn);
+      let originalName = $sc->extractNameFromSingleColumn([]);
+      let resolved = $context.columnByName($originalName, false);
+      if ($resolved->isEmpty(), | $originalName, | $resolved->toOne().name);,
     e:meta::external::query::sql::metamodel::Expression[1] | $e->extractNameFromExpression($context)
   ]);
 }

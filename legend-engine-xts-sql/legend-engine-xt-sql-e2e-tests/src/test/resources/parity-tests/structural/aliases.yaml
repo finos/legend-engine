@@ -33,8 +33,8 @@ tests:
     sql: "SELECT p1.name, p2.name AS colleague FROM persons p1 JOIN persons p2 ON p1.dept_id = p2.dept_id AND p1.id < p2.id ORDER BY 1, 2"
     feature: "self-join with aliases"
     category: "aliases"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Alias usage in clauses
   - id: alias_in_order_by
