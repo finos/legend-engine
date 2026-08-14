@@ -32,6 +32,28 @@ The final step involves running PCT Tests against database targets for the funct
 to run the tests and record expected failures in the adapter's JSON manifest file.
 
 -------------
+# Published Reports
+Two reports are generated from the same aggregated data (`DocumentationGeneration.buildDocumentation()`, served as
+`pct-docs.json`), and both are published to the Legend docs site by the `pct-report` job in `.github/workflows/build.yml`:
+
+| Report | Served at | Reads best as |
+|---|---|---|
+| `PCT_Report_Compatibility.html` | `/api/pct/form` | One matrix — every function against every adapter |
+| `PCT_Report_Functions.html` | `/api/pct/functions` | A javadoc-style reference — browse by package, then one page per function |
+
+The function reference page shows, for a single function: every overload with its documentation, every test case with its
+documentation and qualifiers, and per-adapter results with the failure message behind each `×`. It counts every reported test —
+unlike the compatibility matrix, it gives no qualifier (including `unsupportedFeature`) special treatment.
+
+Regenerate both locally with:
+```bash
+mvn exec:java -pl org.finos.legend.engine:legend-engine-pure-ide-light-http-server \
+    -Dexec.mainClass="org.finos.legend.engine.server.core.pct.GeneratePCTFiles"
+```
+The output lands in `target/pct/`; serve that directory over HTTP (the pages fetch `pct-docs.json` alongside themselves).
+Adapters appear only when their PCT module is on the classpath, so a local run shows fewer stores than CI.
+
+-------------
 # References
 ## Conventions
 For conventions and best practices, see [this page](conventions.md)
