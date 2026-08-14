@@ -331,6 +331,7 @@
     let byModulePackage = Object.create(null);   // module -> package -> [functionDocumentation]
     let functionIndex = Object.create(null);     // route key -> functionDocumentation
     let nameIndex = Object.create(null);         // function name -> [functionDocumentation]
+    let activeRoute = '';                        // full route of what is on screen, even when reached by a short link
 
     /* ---------------------------------------------------------------- data */
 
@@ -376,6 +377,12 @@
     function functionRoute(fd)
     {
         return fd.reportScope.module + '/' + (fd.functionDefinition.name || 'composition-tests') + '/' + fd.functionDefinition.sourceId;
+    }
+
+    function shareRoute(fd)
+    {
+        const name = fd.functionDefinition.name;
+        return name && nameIndex[name].length === 1 ? name : functionRoute(fd);
     }
 
     function packageOf(fd)
@@ -607,7 +614,7 @@
     function renderSidebar()
     {
         const query = (document.getElementById('search').value || '').trim().toLowerCase();
-        const current = decodeURI(location.hash.replace(/^#[fp]\//, ''));
+        const current = activeRoute;
         const html = [];
 
         Object.keys(byModulePackage).sort().forEach(module =>
@@ -662,6 +669,7 @@
     function route()
     {
         const hash = location.hash;
+        activeRoute = decodeURI(hash.replace(/^#[fp]\//, ''));
         if (hash.startsWith('#f/'))
         {
             renderFunction(decodeURI(hash.substring(3)));
@@ -717,6 +725,16 @@
             return;
         }
 
+        document.getElementById('content').innerHTML =
+            '<h1>' + escapeHtml(pkg) + ' <span class="kind">package</span></h1>'
+            + '<div class="subtitle"><span class="badge">' + escapeHtml(module) + '</span><span class="sep">·</span>' + fns.length + ' functions</div>'
+            + toolbar()
+            + '<h2>Functions</h2>'
+            + functionTable(fns, false);
+    }
+
+    function functionTable(fns, showLocation)
+    {
         const rows = fns.map(fd =>
         {
             const name = fd.functionDefinition.name || 'composition-tests';
@@ -725,28 +743,50 @@
             const summary = adapters.map(a => status(fd, a)).filter(s => s.total > 0);
             const passing = summary.filter(s => s.kind === 'pass').length;
             return '<tr><td><a href="#f/' + encodeURI(functionRoute(fd)) + '"><code>' + escapeHtml(name) + '</code></a></td>'
+                + (showLocation
+                    ? '<td><span class="badge">' + escapeHtml(fd.reportScope.module) + '</span></td>'
+                        + '<td><code>' + escapeHtml(packageOf(fd)) + '</code></td>'
+                    : '')
                 + '<td>' + signatures + '</td><td>' + tests + '</td>'
                 + '<td><span class="mark ' + (summary.length === 0 ? 'none' : passing === summary.length ? 'pass' : passing === 0 ? 'fail' : 'partial') + '">'
                 + (summary.length === 0 ? '—' : passing + '/' + summary.length) + '</span></td></tr>';
         }).join('');
 
-        document.getElementById('content').innerHTML =
-            '<h1>' + escapeHtml(pkg) + ' <span class="kind">package</span></h1>'
-            + '<div class="subtitle"><span class="badge">' + escapeHtml(module) + '</span><span class="sep">·</span>' + fns.length + ' functions</div>'
-            + toolbar()
-            + '<h2>Functions</h2>'
-            + '<table><thead><tr><th>Function</th><th>Overloads</th><th>Tests</th><th>Adapters fully passing</th></tr></thead><tbody>'
+        return '<table><thead><tr><th>Function</th>'
+            + (showLocation ? '<th>Module</th><th>Package</th>' : '')
+            + '<th>Overloads</th><th>Tests</th><th>Adapters fully passing</th></tr></thead><tbody>'
             + rows + '</tbody></table>';
+    }
+
+    function renderNameChoice(name, matches)
+    {
+        document.getElementById('content').innerHTML =
+            '<h1>' + escapeHtml(name) + ' <span class="kind">function</span></h1>'
+            + '<div class="subtitle">' + matches.length + ' functions are named <code>' + escapeHtml(name) + '</code>. Pick the one you meant.</div>'
+            + functionTable(matches, true);
     }
 
     function renderFunction(route)
     {
-        const fd = functionIndex[route];
+        // A route is either the full module/name/sourceId key or just a function name, so that a
+        // shared link can stay short and survive the source file being moved.
+        let fd = functionIndex[route];
+        if (!fd)
+        {
+            const named = nameIndex[route];
+            if (named && named.length > 1)
+            {
+                renderNameChoice(route, named);
+                return;
+            }
+            fd = named && named[0];
+        }
         if (!fd)
         {
             document.getElementById('content').innerHTML = '<h1>Not found</h1><p>No function <code>' + escapeHtml(route) + '</code>.</p>';
             return;
         }
+        activeRoute = functionRoute(fd);
         const def = fd.functionDefinition;
         const name = def.name || 'composition-tests';
         const url = sourceUrl(fd);
@@ -855,6 +895,7 @@
             + '<span class="sep">·</span>' + (url
                 ? '<a href="' + url + '" target="_blank" rel="noopener">' + escapeHtml(def.sourceId) + '</a>'
                 : '<code>' + escapeHtml(def.sourceId) + '</code>')
+            + '<span class="sep">·</span><a href="#f/' + encodeURI(shareRoute(fd)) + '" title="Shortest link that opens this page">link</a>'
             + '</div>'
             + toolbar()
             + '<h2>Compatibility</h2><div class="chips">' + adapters.map(a => chip(adapterName(a), status(fd, a))).join('') + '</div>'
