@@ -3008,6 +3008,96 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAsso
 )
 
 ###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: the intermediate back-edge machinery (calculateSourceTree ->
+// buildPropertyPathUptoOwner) builds its candidate map from allNestedProperties(),
+// which includes qualified properties. A qualified property that takes a parameter
+// must never be synthesized into the source tree - it is not present in the query
+// or the mapping, and downstream Java serialize generation would call it with no
+// arguments. Here QCompanyEmployee.aBetterEmployee(String[1]) returns the same
+// class as the real back-edge property `employee` and sorts alphabetically before
+// it, so pickIntermediateProperty selects it if qualified properties are not
+// filtered out.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QAddress
+{
+  street : String[1];
+  zip    : String[1];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson_QAddress
+{
+  resident : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson[1];
+  address  : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QAddress[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployee
+{
+  employee : QPerson[1];
+
+  aBetterEmployee(suffix : String[1])
+  {
+    $this.employee
+  } : QPerson[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeIntermediate
+{
+  ce : QCompanyEmployee[1];
+  person : QPerson[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeTarget
+{
+  employeeStreet : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::qwrap(ce:QCompanyEmployee[1]) : QCompanyEmployeeIntermediate[*]
+{
+  ^QCompanyEmployeeIntermediate(ce = $ce, person = $ce.employee)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::testIntermediateBackEdgeIgnoresQualifiedProperties():Boolean[1]
+{
+  let tree = #{QCompanyEmployeeTarget {employeeStreet}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QualifiedBackEdgeMapping,
+                      meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+    QCompanyEmployee
+    {
+      employee
+      {
+        address { street }
+      }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QualifiedBackEdgeMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployee
+    employeeStreet : $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::qwrap().person.address.street->toOne()
+  }
+)
+
+###Pure
 import meta::pure::graphFetch::tests::sourceTreeCalc::collide::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
