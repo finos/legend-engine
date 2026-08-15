@@ -27,6 +27,20 @@ native function <<PCT.function>>
 }
 meta::pure::functions::relation::aggregate<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
 
+// See the note on the equivalent groupBy overloads: these hand the whole relation to a single lambda so an
+// aggregate can name columns beyond the one it aggregates.
+native function <<PCT.function>>
+{
+    doc.doc='Aggregates the entire given relation and adds a new column whose value is computed by applying the given function to the relation'
+}
+meta::pure::functions::relation::aggregate<T,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<R>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='Aggregates the entire given relation and adds new columns whose values are computed by applying the given functions to the relation'
+}
+meta::pure::functions::relation::aggregate<T,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1], _Window<T>[1], T[1]->Any[*]}, R>[1]):Relation<R>[1];
+
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpec<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {

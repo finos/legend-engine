@@ -39,6 +39,33 @@ native function <<PCT.function>>
 }
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
+// The forms below hand the whole group to a single lambda rather than splitting it into map and reduce.
+// They exist so an aggregate can name columns other than the one it aggregates -- an ordering, a tie-break --
+// which the map/reduce pair cannot express once the map has narrowed each row to a value.
+native function <<PCT.function>>
+{
+    doc.doc='Groups the given relation with the given columns and adds a new column whose value is computed by applying the given function to the relation of rows in each group'
+}
+meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='Groups the given relation with the given column and adds a new column whose value is computed by applying the given function to the relation of rows in each group'
+}
+meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='Groups the given relation with the given columns and adds new columns whose values are computed by applying the given functions to the relation of rows in each group'
+}
+meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1], _Window<T>[1], T[1]->Any[*]}, R>[1]):Relation<Z+R>[1];
+
+native function <<PCT.function>>
+{
+    doc.doc='Groups the given relation with the given column and adds new columns whose values are computed by applying the given functions to the relation of rows in each group'
+}
+meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1], _Window<T>[1], T[1]->Any[*]}, R>[1]):Relation<Z+R>[1];
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
