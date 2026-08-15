@@ -119,14 +119,14 @@ tests:
     feature: "ANY"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: where_all
     sql: "SELECT name, salary FROM persons WHERE salary > ALL(SELECT salary FROM persons WHERE dept_id = 2) ORDER BY 1"
     feature: "ALL"
     category: "where_predicates"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Compound predicates
   - id: where_and_or

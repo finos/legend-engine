@@ -515,6 +515,19 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testQuantifiedComparison()
+    {
+        check("SELECT * FROM myTable WHERE myTable.id > ANY (SELECT myTable2.id FROM myTable2)");
+        check("SELECT * FROM myTable WHERE myTable.id >= ALL (SELECT myTable2.id FROM myTable2)");
+        check("SELECT * FROM myTable WHERE myTable.id < SOME (SELECT myTable2.id FROM myTable2)");
+        check("SELECT * FROM myTable WHERE myTable.id = ANY (SELECT myTable2.id FROM myTable2 WHERE myTable2.name = myTable.name)");
+        //the composer writes NOT_EQUAL as !=, the form the parser also accepts
+        check("SELECT * FROM myTable WHERE myTable.id <> ALL (SELECT myTable2.id FROM myTable2)",
+                "SELECT * FROM myTable WHERE myTable.id != ALL (SELECT myTable2.id FROM myTable2)");
+        check("SELECT * FROM myTable WHERE NOT myTable.id <= ANY (SELECT myTable2.id FROM myTable2)");
+    }
+
+    @Test
     public void testLateralSubquery()
     {
         check("SELECT * FROM myTable, LATERAL (SELECT * FROM myTable2 WHERE myTable2.id = myTable.id) AS t");

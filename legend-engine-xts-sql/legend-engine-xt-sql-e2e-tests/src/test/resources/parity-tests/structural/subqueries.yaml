@@ -215,3 +215,107 @@ tests:
     category: "subqueries"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+
+  # Quantified comparison - <op> ANY / <op> ALL against a subquery
+  - id: subquery_quant_gt_any
+    sql: "SELECT p.name FROM persons p WHERE p.age > ANY (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_gt_all
+    sql: "SELECT p.name FROM persons p WHERE p.age > ALL (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison ALL"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # SOME is a synonym for ANY
+  - id: subquery_quant_ge_some
+    sql: "SELECT p.name FROM persons p WHERE p.age >= SOME (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison SOME"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_eq_any
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id = ANY (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # != has no relation function of its own - it is the negation of the opposite quantifier
+  - id: subquery_quant_neq_any
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id <> ANY (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_neq_all
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id <> ALL (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ALL"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # a null in the subquery makes ALL unknown, which the relation function alone would answer true - dept 1
+  # holds Hank's null salary, so Postgres returns nothing. This is what the null guard is for: without it
+  # the five higher-paid people come back.
+  - id: subquery_quant_all_null_in_subquery
+    sql: "SELECT p.name FROM persons p WHERE p.salary > ALL (SELECT p2.salary FROM persons p2 WHERE p2.dept_id = 1) ORDER BY 1"
+    feature: "Quantified comparison ALL over a nullable column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # correlated, and vacuously true for the persons with no orders. ERROR for the same reason
+  # subquery_in_correlated is: a correlated column cannot be resolved when the outer and inner relations
+  # share the 'root' alias (#5048), which predates quantified comparison.
+  - id: subquery_quant_all_correlated_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id < ALL (SELECT o.id FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Correlated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_quant_all_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id > ALL (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ALL over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_any_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id > ANY (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ANY over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # known divergence: over an empty subquery SQL performs no comparison at all, so ALL is true even for a
+  # null value, where relation::greaterThanAll answers false for an absent value by definition. Closing it
+  # needs a subquery under OR, the shape that cannot be unnested on Snowflake.
+  - id: subquery_quant_all_empty_null_value
+    sql: "SELECT p.name FROM persons p WHERE p.age > ALL (SELECT p2.age FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ALL over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: FAIL
+
+  # negation has to reproduce when SQL is false rather than true, which moves the null guard from ALL onto ANY
+  - id: subquery_quant_not_gt_any
+    sql: "SELECT p.name FROM persons p WHERE NOT (p.age > ANY (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2)) ORDER BY 1"
+    feature: "Negated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_not_gt_all_null_in_subquery
+    sql: "SELECT p.name FROM persons p WHERE NOT (p.salary > ALL (SELECT p2.salary FROM persons p2 WHERE p2.dept_id = 1)) ORDER BY 1"
+    feature: "Negated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
