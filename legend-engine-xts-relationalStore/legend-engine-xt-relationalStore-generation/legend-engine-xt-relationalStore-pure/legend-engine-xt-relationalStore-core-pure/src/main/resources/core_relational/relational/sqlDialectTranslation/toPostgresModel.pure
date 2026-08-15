@@ -257,6 +257,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     [
       pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($operandState)->cast(@TableSubquery))),
       pair(| $d.name == 'not',                    | convertNot($d, $state)),
+      pair(| isQuantifiedComparison($d),          | convertQuantifiedComparison($d, $state)),
       pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
       pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
       pair(| $d->instanceOf(UnionOrJoin),         | convertDynaFunction($d.parameters->reverse()->orFilters($state.extensions)->toOne()->cast(@DynaFunction), $state)),
@@ -496,6 +497,36 @@ function <<access.private>> meta::relational::functions::toPostgresModel::binary
 function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
 {
   {p:meta::external::query::sql::metamodel::Expression[*]| comparisonExpression($co, $p->at(0), $p->at(1))};
+}
+
+// A quantifier is carried as an anyOf/allOf wrapper around the sub-select rather than being fused into the
+// operator name, so the comparison is recognised by the shape of its right operand.
+function <<access.private>> meta::relational::functions::toPostgresModel::isQuantifiedComparison(d:DynaFunction[1]):Boolean[1]
+{
+  $d.name->in(['equal', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'])
+    && $d.parameters->size() == 2
+    && $d.parameters->at(1)->match([q:DynaFunction[1] | $q.name->in(['anyOf', 'allOf']), a:RelationalOperationElement[1] | false]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertQuantifiedComparison(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let operandState = ^$state(isRootSelect = false);
+  let quantifierFunc = $d.parameters->at(1)->cast(@DynaFunction);
+  let comparator = [
+    pair('equal', ComparisonOperator.EQUAL),
+    pair('lessThan', ComparisonOperator.LESS_THAN),
+    pair('lessThanEqual', ComparisonOperator.LESS_THAN_OR_EQUAL),
+    pair('greaterThan', ComparisonOperator.GREATER_THAN),
+    pair('greaterThanEqual', ComparisonOperator.GREATER_THAN_OR_EQUAL)
+  ]->newMap()->get($d.name)->toOne();
+
+  // The sub-select is converted with isRootSelect = false, so it arrives as a SubqueryExpression already.
+  ^QuantifiedComparisonExpression(
+    operator = $comparator,
+    quantifier = if($quantifierFunc.name == 'anyOf', | Quantifier.ANY, | Quantifier.ALL),
+    value = $d.parameters->at(0)->convertElementToExpression($operandState),
+    subQuery = $quantifierFunc.parameters->toOne()->convertElementToExpression($operandState)->cast(@SubqueryExpression)
+  );
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1], left:meta::external::query::sql::metamodel::Expression[1], right:meta::external::query::sql::metamodel::Expression[1]):ComparisonExpression[1]

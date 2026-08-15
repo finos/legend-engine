@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
@@ -214,7 +215,9 @@ public class Handlers
         }
     }
 
-    public static final ParametersInference InInference = (parameters, valueSpecificationBuilder) ->
+    // Shared by in() and the quantified comparisons, which all take (value, Relation<Z=(?:U)>): the single-column
+    // and matching-type constraints are not expressible in the signature, so they are checked here.
+    public static final Function<String, ParametersInference> SingleColumnRelationInference = functionName -> (parameters, valueSpecificationBuilder) ->
     {
         List<ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
         GenericType gt = processed.get(1)._genericType();
@@ -228,12 +231,12 @@ public class Handlers
                 ProcessorSupport processorSupport = valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport();
                 if (type._columns().size() != 1)
                 {
-                    throw new EngineException("in(..., Relation) expects a relation with a single column, got " + _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException(functionName + "(..., Relation) expects a relation with a single column, got " + _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
                 }
                 GenericType columnType = _Column.getColumnType(type._columns().getOnly());
                 if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(processed.get(0)._genericType(), columnType, processorSupport))
                 {
-                    throw new EngineException("in(..., Relation) expects the value and the relation column to be of the same type, got " +
+                    throw new EngineException(functionName + "(..., Relation) expects the value and the relation column to be of the same type, got " +
                             org.finos.legend.pure.m3.navigation.generictype.GenericType.print(processed.get(0)._genericType(), processorSupport) + " and " +
                             _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
                 }
@@ -241,6 +244,14 @@ public class Handlers
         }
         return processed;
     };
+
+    public static final ParametersInference InInference = SingleColumnRelationInference.apply("in");
+
+    // There is no notEqualAny / notEqualAll: !equalAll is the one and !equalAny is the other, by De Morgan.
+    public static final ImmutableList<String> QUANTIFIED_COMPARISONS = Lists.immutable.of(
+            "equalAny", "equalAll",
+            "greaterThanAny", "greaterThanAll", "greaterThanEqualAny", "greaterThanEqualAll",
+            "lessThanAny", "lessThanAll", "lessThanEqualAny", "lessThanEqualAll");
 
     public static final Function<String, ParametersInference> RelationOlapAggregator = colSpecType -> (parameters, valueSpecificationBuilder) ->
     {
@@ -1570,6 +1581,17 @@ public class Handlers
                         ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity()))));
+
+        // The quantified comparisons share in()'s signature, so they need the same explicit type arguments. None of
+        // them names a collection overload, so each registers on its own rather than in an ordered group.
+        for (String quantified : QUANTIFIED_COMPARISONS)
+        {
+            register(grp(SingleColumnRelationInference.apply(quantified),
+                    h("meta::pure::functions::relation::" + quantified + "_U_$0_1$__Relation_1__Boolean_1_", quantified, false,
+                            ps -> res("Boolean", "one"),
+                            ps -> Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()),
+                            ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
+        }
 
         register(h("meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_", "xor", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2));
 

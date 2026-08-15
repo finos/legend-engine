@@ -251,7 +251,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     bitwiseNotExpressionNodeProcessorForSnowflake(),
     bitwiseShiftExpressionNodeProcessorForSnowflake(),
     likePredicateProcessor_default(),
-    existsPredicateProcessor_default()    
+    existsPredicateProcessor_default(),
+    quantifiedComparisonExpressionProcessor_default()
   ]
 }
 

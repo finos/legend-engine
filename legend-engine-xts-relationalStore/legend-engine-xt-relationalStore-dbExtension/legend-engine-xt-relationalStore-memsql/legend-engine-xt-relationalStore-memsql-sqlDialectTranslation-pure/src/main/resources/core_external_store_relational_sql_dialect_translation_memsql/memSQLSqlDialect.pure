@@ -248,6 +248,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
     existsPredicateProcessor_default(),
+    quantifiedComparisonExpressionProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
