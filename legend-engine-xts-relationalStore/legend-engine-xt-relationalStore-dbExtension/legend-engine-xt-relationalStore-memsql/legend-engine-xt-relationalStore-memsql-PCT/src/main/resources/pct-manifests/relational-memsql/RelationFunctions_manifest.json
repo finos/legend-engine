@@ -109,6 +109,36 @@
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Execution error at (resource:/core_relational/relational/sqlQueryToString/extensionDefaults.pure line:102 column:46), \"Cast exception: TableAliasColumn cannot be cast to Alias\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
@@ -235,6 +265,117 @@
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_LimitedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testSimpleGreaterThanAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testSimpleGreaterThanAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
@@ -297,6 +438,66 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."

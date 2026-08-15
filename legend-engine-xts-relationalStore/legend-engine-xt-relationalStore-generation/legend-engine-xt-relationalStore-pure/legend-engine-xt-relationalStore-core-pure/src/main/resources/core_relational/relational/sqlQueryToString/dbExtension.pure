@@ -1081,6 +1081,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   add,
   adjust,
   and,
+  allOf,
+  anyOf,
   array_first,
   array_last,
   array_init,

@@ -6694,6 +6694,96 @@ function meta::relational::functions::pureToSqlQuery::processRelationIn(expressi
                                $state);
 }
 
+function meta::relational::functions::pureToSqlQuery::processRelationEqualAny(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('equal', 'anyOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationEqualAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('equal', 'allOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationGreaterThanAny(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('greaterThan', 'anyOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationGreaterThanAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('greaterThan', 'allOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationGreaterThanEqualAny(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('greaterThanEqual', 'anyOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationGreaterThanEqualAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('greaterThanEqual', 'allOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationLessThanAny(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('lessThan', 'anyOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationLessThanAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('lessThan', 'allOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationLessThanEqualAny(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('lessThanEqual', 'anyOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processRelationLessThanEqualAll(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processRelationQuantifiedComparison('lessThanEqual', 'allOf', $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processRelationQuantifiedComparison(comparison:String[1], quantifier:String[1], expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let valueCursor = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, ^$state(inFilter = true), JoinType.LEFT_OUTER, buildNodeId($nodeId, '_v'), $aggFromMap, $context, $extensions)
+                       ->toOne()->cast(@SelectWithCursor);
+   let value = $valueCursor.select.filteringOperation->toOne();
+
+   let subSelect = buildRelationSubSelect($expression, 1, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+
+   // The Relation<Z=(?:U)> signature guarantees a single column, so the sub-select already projects exactly
+   // what the quantifier compares against.
+   assert($subSelect.columns->size() == 1, | 'A quantified comparison expects a single-column relation, got ' + $subSelect.columns->size()->toString() + ' columns');
+
+   // The quantifier wraps the sub-select rather than fusing into the operator, so the ordinary comparison dyna
+   // functions render this: greaterThan(value, anyOf(subSelect)) is `value > any (select ...)`.
+   let quantified = ^DynaFunction(name = $quantifier, parameters = $subSelect->excludeNullsFromQuantifiedSubSelect($nodeId, $extensions));
+   let comparisonOp = ^DynaFunction(name = $comparison, parameters = [$value, $quantified]);
+
+   // Unlike `in`, the isNotNull conjunct is emitted in filter position too. An empty value answers false, and
+   // `false and unknown` is false in SQL where the quantifier alone would be unknown -- which is what makes the
+   // negation exact: `not` then sees a decided predicate and needs no `or ... is null` disjunct, so no subquery
+   // ever lands under an OR. `> all` over an empty subquery is true, and this conjunct is also what keeps an
+   // empty value from inheriting that.
+   $operation->attachPredicate(^DynaFunction(name = 'group',
+                                             parameters = ^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'isNotNull', parameters = $value), $comparisonOp])),
+                               $state);
+}
+
+// A limit decides which rows reach the comparison, so the null cannot be dropped inside the limited query the
+// way excludeNullsFromSearchedColumn does elsewhere -- isolate it first and drop the null outside, where the
+// row set is already fixed. Both quantifiers need this: an undecided ANY is false either way, but its negation
+// would be undecided too, and ALL is wrong in both polarities.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::excludeNullsFromQuantifiedSubSelect(subSelect:SelectSQLQuery[1], nodeId:String[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+   if($subSelect.fromRow->isEmpty() && $subSelect.toRow->isEmpty(),
+      | $subSelect->excludeNullsFromSearchedColumn($extensions),
+      | let alias = ^TableAlias(name = buildNodeId($nodeId, '_q'), relationalElement = $subSelect->pushExtraFilteringOperation($extensions));
+        let isolated = ^SelectSQLQuery(data = ^RootJoinTreeNode(alias = $alias), columns = $alias->switchAliasForColumns($subSelect.columns));
+        $isolated->excludeNullsFromSearchedColumn($extensions););
+}
+
 // A null in the searched column is what makes SQL's `in` three-valued: `x in (sub)` is UNKNOWN rather than
 // false when nothing matches, and `x not in (sub)` is UNKNOWN for every row. Dropping those rows inside the
 // subquery makes both two-valued -- the answer relation::in gives -- and leaves the predicate a predicate,
@@ -10656,6 +10746,16 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTdsFilter_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationExists_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationIn_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationEqualAny_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationEqualAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationGreaterThanAny_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::greaterThanAll_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationGreaterThanAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::greaterThanEqualAny_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationGreaterThanEqualAny_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::greaterThanEqualAll_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationGreaterThanEqualAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationLessThanAny_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationLessThanAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationLessThanEqualAny_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_, second=meta::relational::functions::pureToSqlQuery::processRelationLessThanEqualAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinct_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinctByColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processConcatenate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

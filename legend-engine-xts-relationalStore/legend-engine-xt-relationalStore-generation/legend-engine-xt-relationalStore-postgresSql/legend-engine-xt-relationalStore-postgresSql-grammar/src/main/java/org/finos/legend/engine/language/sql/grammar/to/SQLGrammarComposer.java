@@ -290,6 +290,13 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(QuantifiedComparisonExpression val)
+            {
+                //a subquery already renders its own brackets
+                return val.value.accept(this) + " " + COMPARATOR.get(val.operator) + " " + val.quantifier.name() + " " + val.subQuery.accept(this);
+            }
+
+            @Override
             public String visit(Expression val)
             {
                 return val.accept(this);

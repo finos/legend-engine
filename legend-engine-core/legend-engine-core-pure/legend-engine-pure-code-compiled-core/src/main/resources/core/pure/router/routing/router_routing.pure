@@ -1037,7 +1037,17 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     flatten_T_MANY__ColSpec_1__Relation_1_,
     lateral_Relation_1__Function_1__Relation_1_,
     meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_,
-    meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_
+    meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThanAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThanEqualAny_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThanEqualAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 

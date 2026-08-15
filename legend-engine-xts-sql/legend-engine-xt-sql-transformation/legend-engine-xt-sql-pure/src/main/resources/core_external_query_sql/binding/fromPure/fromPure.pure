@@ -2129,26 +2129,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
       $b.value->extractNameFromExpression($context) + ' ' + $operator + ' ' + $b.shift->extractNameFromExpression($context);,
     c:Cast[1] | 'CAST(' + $c.expression->extractNameFromExpression($context) + ' AS ' + $c.type->extractNameFromExpression($context) + ')',
     c:ComparisonExpression[1] |
-      let operator = [
-        pair(ComparisonOperator.EQUAL,                '='),
-        pair(ComparisonOperator.NOT_EQUAL,            '!='),
-        pair(ComparisonOperator.LESS_THAN,            '<'),
-        pair(ComparisonOperator.LESS_THAN_OR_EQUAL,   '<='),
-        pair(ComparisonOperator.GREATER_THAN,         '>'),
-        pair(ComparisonOperator.GREATER_THAN_OR_EQUAL,'>='),
-        pair(ComparisonOperator.IS_DISTINCT_FROM,     'IS DISTINCT FROM'),
-        pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM'),
-        pair(ComparisonOperator.REGEX_MATCH,          '~'),
-        pair(ComparisonOperator.REGEX_MATCH_CI,       '~*'),
-        pair(ComparisonOperator.REGEX_NO_MATCH,       '!~'),
-        pair(ComparisonOperator.REGEX_NO_MATCH_CI,    '!~*'),
-        pair(ComparisonOperator.LIKE,                 '~~'),
-        pair(ComparisonOperator.ILIKE,                '~~*'),
-        pair(ComparisonOperator.NOT_LIKE,             '!~~'),
-        pair(ComparisonOperator.NOT_ILIKE,            '!~~*')
-      ]->getValue($c.operator);
-
-      $c.left->extractNameFromExpression($context) + ' ' + $operator + ' ' + $c.right->extractNameFromExpression($context);,
+      $c.left->extractNameFromExpression($context) + ' ' + $c.operator->comparisonOperatorSymbol() + ' ' + $c.right->extractNameFromExpression($context),
     c:CurrentTime[1] |
       let param = if ($c.precision->isEmpty(), | '', | '(' + $c.precision->toOne()->toString() + ')');
       [
@@ -2185,6 +2166,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     p:ParameterPlaceholderExpression[1] | '?',
     p:PositionalParameterExpression[1] | '$' + $p.index->toString(),
     q:QualifiedNameReference[1] | $q.name->extractNameFromQualifiedName($context),
+    q:QuantifiedComparisonExpression[1] | $q.value->extractNameFromExpression($context) + ' ' + $q.operator->comparisonOperatorSymbol() + ' ' + $q.quantifier.name + ' (subquery)',
     s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractNameFromExpression($context),
     s:SearchedCaseExpression[1] |
       let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
@@ -2199,6 +2181,28 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     w:WhenClause[1] | 'WHEN ' + $w.operand->extractNameFromExpression($context) + ' THEN ' + $w.result->extractNameFromExpression($context),
     e:meta::external::query::sql::metamodel::Expression[1] | ''
   ])
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::comparisonOperatorSymbol(operator:ComparisonOperator[1]):String[1]
+{
+  [
+    pair(ComparisonOperator.EQUAL,                '='),
+    pair(ComparisonOperator.NOT_EQUAL,            '!='),
+    pair(ComparisonOperator.LESS_THAN,            '<'),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,   '<='),
+    pair(ComparisonOperator.GREATER_THAN,         '>'),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL,'>='),
+    pair(ComparisonOperator.IS_DISTINCT_FROM,     'IS DISTINCT FROM'),
+    pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM'),
+    pair(ComparisonOperator.REGEX_MATCH,          '~'),
+    pair(ComparisonOperator.REGEX_MATCH_CI,       '~*'),
+    pair(ComparisonOperator.REGEX_NO_MATCH,       '!~'),
+    pair(ComparisonOperator.REGEX_NO_MATCH_CI,    '!~*'),
+    pair(ComparisonOperator.LIKE,                 '~~'),
+    pair(ComparisonOperator.ILIKE,                '~~*'),
+    pair(ComparisonOperator.NOT_LIKE,             '!~~'),
+    pair(ComparisonOperator.NOT_ILIKE,            '!~~*')
+  ]->getValue($operator);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAliasFromColumn(column:SingleColumn[1]):SQLColumnAlias[1]
@@ -2284,6 +2288,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NotExpression[1] | processNotExpression($n, $expContext, $context),
     p:PositionalParameterExpression[1] | processPositionalParameterExpression($p, $expContext, $context),
     q:QualifiedNameReference[1] | processQualifiedNameReference($q, $expContext, $context),
+    q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, $expContext, $context),
     s:SimpleCaseExpression[1] | processSimpleCaseExpression($s, $expContext, $context),
     s:SearchedCaseExpression[1] | processSearchedCaseExpression($s, $expContext, $context),
     s:StringConcatenate[1] | processStringConcatenate($s, $expContext, $context),
@@ -2650,6 +2655,82 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processInListExpression', $context.debug);
 
   $i.values->map(v | processExpression($v, $expContext, $context))->iv();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuantifiedComparisonExpression(q:QuantifiedComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  processQuantifiedComparisonExpression($q, false, $expContext, $context);
+}
+
+// SQL evaluates a quantified comparison in three-valued logic, and a WHERE drops an unknown exactly as it
+// drops a false, so what has to be reproduced is when the comparison is TRUE. The relation functions are
+// two-valued and ignore nulls in the subquery, which agrees with SQL for ANY - an unknown can only arise
+// there when nothing matched, so the row goes either way - but not for ALL, where a null makes SQL unknown
+// while the function still answers true.
+//
+// Negating swaps that around, because it is now FALSE that has to be reproduced. ALL is false as soon as
+// one row fails, nulls or not, so the guard drops; ANY is only false when every row failed *and* none was
+// null, so the guard appears. The negated forms also need the value present: the functions answer false
+// for an empty value where SQL is unknown, and negating would turn that into a kept row.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuantifiedComparisonExpression(q:QuantifiedComparisonExpression[1], negated:Boolean[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug(|'processQuantifiedComparisonExpression', $context.debug);
+  assertRelation($context.relation, 'quantified comparison');
+
+  //there is no notEqualAny/notEqualAll - != ANY is the negation of = ALL, and != ALL of = ANY
+  if ($q.operator == ComparisonOperator.NOT_EQUAL,
+    | processQuantifiedComparisonExpression(^$q(operator = ComparisonOperator.EQUAL, quantifier = if ($q.quantifier == Quantifier.ALL, | Quantifier.ANY, | Quantifier.ALL)), !$negated, $expContext, $context),
+    |
+      let all = $q.quantifier == Quantifier.ALL;
+      let value = $q.value->processExpression($expContext, $context);
+
+      //unlike EXISTS the select list is the column being compared, so the subquery is processed as-is
+      let relContext = processSubRelation($q.subQuery.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      //the resolved schema rather than the expression's own type arguments, because a source whose schema
+      //is only known at compile time - a table function, say - carries no type arguments to read
+      let columns = $relContext.columns;
+      assert($columns->size() == 1, | 'a quantified comparison requires the subquery to return exactly one column, got ' + $columns->size()->toString());
+
+      let comparison = sfe(quantifiedComparisonFunction($q.operator, $all), [$value, $rel]);
+
+      let parts = if ($negated, | sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value), | [])
+        ->concatenate(if ($negated, | sfe(not_Boolean_1__Boolean_1_, $comparison), | $comparison))
+        ->concatenate(if ($all == $negated, | [], | createNullFreeGuard($rel, $columns->toOne().name, $relContext)));
+
+      $parts->tail()->fold({p, acc | sfe(and_Boolean_1__Boolean_1__Boolean_1_, [$acc, $p])}, $parts->first()->toOne());
+  );
+}
+
+// The guard tests the subquery's output column, so it is a predicate over the already-processed
+// sub-relation rather than a WHERE pushed into the subquery - the latter would apply before a GROUP BY
+// or LIMIT rather than after it, and so would test a different set of values.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullFreeGuard(rel:ValueSpecification[1], columnName:String[1], relContext:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let column = ^QualifiedNameReference(name = ^QualifiedName(parts = $columnName));
+
+  sfe(not_Boolean_1__Boolean_1_,
+      sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv(createExistsLambda(^IsNullPredicate(value = $column), $relContext))]));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::quantifiedComparisonFunction(operator:ComparisonOperator[1], all:Boolean[1]):meta::pure::metamodel::function::Function<Any>[1]
+{
+  if ($all,
+      | [
+          pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThanAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqualAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_)
+        ],
+      | [
+          pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqualAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_)
+        ])->getValue($operator);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQualifiedNameReference(q:QualifiedNameReference[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3431,9 +3512,13 @@ function meta::external::query::sql::transformation::queryToPure::processRound(a
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processNotExpression', $context.debug);
-  let value = $n.value->processExpression($expContext, $context);
 
-  nullOrSfe(not_Boolean_1__Boolean_1_, $value);
+  //a quantified comparison builds its own negation, since negating its two-valued result would keep the
+  //rows SQL leaves unknown
+  $n.value->match([
+    q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, true, $expContext, $context),
+    e:meta::external::query::sql::metamodel::Expression[1] | nullOrSfe(not_Boolean_1__Boolean_1_, $e->processExpression($expContext, $context))
+  ]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNegativeExpression(n:NegativeExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3495,6 +3580,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NotExpression[1] | Boolean,
     p:PositionalParameterExpression[1] | $context.positional($p, [], false)->evaluateAndDeactivate().genericType.rawType->toOne(),
     q:QualifiedNameReference[1] | $context.columnByNameParts($q.name.parts, true).type->toOne(),
+    q:QuantifiedComparisonExpression[1] | Boolean,
     s:SearchedCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
     s:StringConcatenate[1] | String,
     s:SimpleCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
@@ -4066,6 +4152,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     l:LogicalBinaryExpression[1] | walk($l.left, $l.right, $accumulator, $extras),
     n:NegativeExpression[1] | walk($n.value, $accumulator, $extras),
     n:NotExpression[1] | walk($n.value, $accumulator, $extras),
+    q:QuantifiedComparisonExpression[1] | walk($q.value, $accumulator, $extras),
     s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->walk($accumulator, $extras),
     s:SearchedCaseExpression[1] | $s.whenClauses->map(w | walk($w.operand, $w.result, $accumulator, $extras))->concatenate(walk($s.defaultValue, $accumulator, $extras)),
     s:SubqueryExpression[1] | walk($s.query, $accumulator, $extras),

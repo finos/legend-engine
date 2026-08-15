@@ -65,6 +65,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.NullLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.ParameterPlaceholderExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.PositionalParameterExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedNameReference;
+import org.finos.legend.engine.protocol.sql.metamodel.QuantifiedComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
@@ -248,6 +249,15 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     public Node visit(ExistsPredicate val)
     {
         val.query = _visit(val.query);
+
+        return val;
+    }
+
+    @Override
+    public Node visit(QuantifiedComparisonExpression val)
+    {
+        val.value = _visit(val.value);
+        val.subQuery = _visit(val.subQuery);
 
         return val;
     }

@@ -1432,6 +1432,50 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
+    @Test
+    public void testQuantifiedComparisonWithSingleColumnRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThanAny(#>{a::A.tb}#->select(~id)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testQuantifiedComparisonWithMultiColumnRelationError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThanAny(#>{a::A.tb}#->select(~[id, name])))\n" +
+                        "}", "COMPILATION error at [7:63-68]: greaterThanAny(..., Relation) expects a relation with a single column, got (id:Int, name:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testQuantifiedComparisonWithMismatchedColumnTypeError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->lessThanEqualAll(#>{a::A.tb}#->select(~name)))\n" +
+                        "}", "COMPILATION error at [7:65-70]: lessThanEqualAll(..., Relation) expects the value and the relation column to be of the same type, got Int and (name:Varchar(200))"
+        );
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {

@@ -121,6 +121,9 @@
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'cume_dist' does not exist"
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
     "expectedError" : "from parent scope only supported for constants and CTE"
   }, {
@@ -226,6 +229,21 @@
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {
@@ -273,6 +291,12 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'lead' does not exist"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: ClickHouse\""

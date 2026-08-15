@@ -4524,6 +4524,237 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   );
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonAnyUncorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" > ANY (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->greaterThanAny(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->select(~[Integer])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonSomeIsAny():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" <= SOME (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->lessThanEqualAny(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->select(~[Integer])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+//the extra guard is what keeps ALL faithful to SQL: a null in the subquery makes SQL unknown, which a
+//WHERE drops, where the relation function ignores it and answers true
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonAllUncorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" >= ALL (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->greaterThanEqualAll(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->select(~[Integer])
+              )
+              && !(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                    ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                    ->select(~[Integer])
+                    ->exists(e | $e.Integer->isEmpty()))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonAllCorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" < ALL (SELECT t2."Integer" FROM service."/service/service2" t2 WHERE t2."String" = table1."String")',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->lessThanAll(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->filter(e | $e.String == $x.String)
+                  ->select(~[Integer])
+              )
+              && !(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                    ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                    ->filter(e | $e.String == $x.String)
+                    ->select(~[Integer])
+                    ->exists(e | $e.Integer->isEmpty()))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+//there is no notEqualAny, so this is !equalAll - but only once the value is guarded, since equalAll
+//already answers false for an empty value and the negation would turn that into true
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonNotEqualAny():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" <> ANY (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->equalAll(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->select(~[Integer])))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonNotEqualAll():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" <> ALL (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->equalAny(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->select(~[Integer])))
+              && !(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                    ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                    ->select(~[Integer])
+                    ->exists(e | $e.Integer->isEmpty()))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+//negating ANY needs the null guard that the plain form does not: ANY is only false when every row failed
+//and none of them was null
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonNotAny():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE NOT table1."Integer" > ANY (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->greaterThanAny(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->select(~[Integer])))
+              && !(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                    ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                    ->select(~[Integer])
+                    ->exists(e | $e.Integer->isEmpty()))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+//and negating ALL drops it: ALL is false as soon as one row fails, whether or not another holds a null
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonNotAll():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE NOT table1."Integer" > ALL (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->greaterThanAll(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->select(~[Integer])))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonNotNotEqualAll():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE NOT table1."Integer" <> ALL (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->equalAny(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->select(~[Integer])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonMultipleColumnsUnsupported():Boolean[1]
+{
+  error(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" > ANY (SELECT t2."Integer", t2."ID" FROM service."/service/service2" t2)',
+    'a quantified comparison requires the subquery to return exactly one column, got 2'
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
 {
   test(

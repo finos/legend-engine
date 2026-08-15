@@ -70,6 +70,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.NullLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.ParameterPlaceholderExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.PositionalParameterExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedNameReference;
+import org.finos.legend.engine.protocol.sql.metamodel.QuantifiedComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
@@ -256,6 +257,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(ExistsPredicate val)
     {
         return collect(val.query);
+    }
+
+    @Override
+    public T visit(QuantifiedComparisonExpression val)
+    {
+        return collect(val.value, val.subQuery);
     }
 
     @Override

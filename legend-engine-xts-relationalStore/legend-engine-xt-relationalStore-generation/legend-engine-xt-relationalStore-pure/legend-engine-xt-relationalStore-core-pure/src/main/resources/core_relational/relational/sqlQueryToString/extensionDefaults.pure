@@ -177,6 +177,12 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
+// A rendered sub-select already carries its own brackets; a bare operand does not.
+function meta::relational::functions::sqlQueryToString::default::bracketSubQuery(p:String[1]):String[1]
+{
+   if($p->startsWith('(') && $p->endsWith(')'), | $p, | '(' + $p + ')');
+}
+
 function meta::relational::functions::sqlQueryToString::default::getDynaFunctionToSqlDefault(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -187,6 +193,8 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
     dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('anyOf',                  $allStates,            ^ToSql(format='any %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
+    dynaFnToSql('allOf',                  $allStates,            ^ToSql(format='all %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
     dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),
     dynaFnToSql('atan',                   $allStates,            ^ToSql(format='atan(%s)')),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),

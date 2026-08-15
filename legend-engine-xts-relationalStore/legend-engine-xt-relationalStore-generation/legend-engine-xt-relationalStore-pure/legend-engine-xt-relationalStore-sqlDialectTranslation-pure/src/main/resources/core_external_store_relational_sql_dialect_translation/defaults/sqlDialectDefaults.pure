@@ -99,6 +99,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fin
     {i: IsNotNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},
     {i: NegativeExpression[1] | SqlOperatorTypes_default.UNARY_PLUS_MINUS},
     {i: InPredicate[1] | SqlOperatorTypes_default.IN},
+    {q: QuantifiedComparisonExpression[1] | SqlOperatorTypes_default.BASIC_COMPARISON},
     {b: BetweenPredicate[1] | SqlOperatorTypes_default.BETWEEN},
     a: meta::external::query::sql::metamodel::Expression[1] | fail('Unknown expression type - ' + $e->class()->elementToPath()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
   ])->toString()
