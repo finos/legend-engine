@@ -325,6 +325,20 @@ jobs:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
 
+      - name: Stage SQL Parity Report
+        if: ${{ matrix.name == 'sql' }}
+        shell: bash
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/sql-parity
+          cp -v legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests/target/*.html ${GITHUB_WORKSPACE}/sql-parity/
+
+      - name: Upload SQL Parity Report
+        if: ${{ matrix.name == 'sql' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: sql-parity-report
+          path: ${{ github.workspace }}/sql-parity/*.html
+
   pct-report:
     name: PCT Report
     runs-on: ubuntu-latest
@@ -350,6 +364,41 @@ jobs:
           name: pct-html-report
           path: target/ok.html
 
+      - name: Upload PCT Report
+        uses: actions/upload-artifact@v7
+        with:
+          name: pct-report
+          path: target/pct
+
+  legend-docs:
+    name: Update Legend Docs
+    runs-on: ubuntu-latest
+    if: "!cancelled() && needs.pct-report.result == 'success' && github.ref == 'refs/heads/master'"
+    needs:
+      - pct-report
+    steps:
+      # This job carries no build setup, so it configures the commit identity that before-test
+      # would otherwise have set.
+      - name: Configure git
+        shell: bash
+        run: |
+          git config --global committer.email "infra@finos.org"
+          git config --global committer.name "FINOS Admin"
+          git config --global author.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config --global author.name "${GITHUB_ACTOR}"
+
+      - name: Download PCT Report
+        uses: actions/download-artifact@v8
+        with:
+          name: pct-report
+          path: pct
+
+      - name: Download SQL Parity Report
+        uses: actions/download-artifact@v8
+        with:
+          name: sql-parity-report
+          path: sql-parity
+
       - name: Checkout Legend Docs
         uses: actions/checkout@v6
         with:
@@ -364,7 +413,15 @@ jobs:
         shell: bash
         run: |
           mkdir -p legend-docs/website/static/pct/
-          cp -rvT target/pct/. legend-docs/website/static/pct/
+          cp -rvT pct/. legend-docs/website/static/pct/
+          mkdir -p legend-docs/website/static/sql-parity/
+          cp -rvT sql-parity/. legend-docs/website/static/sql-parity/
+          cat > legend-docs/website/static/sql-parity/git-info.json <<EOF
+          {
+            "git.commit.id": "${{ github.sha }}",
+            "git.build.time": "$(date -u +%Y-%m-%dT%H:%M:%S%z)"
+          }
+          EOF
 
       - name: Check for new documentation files
         id: newFiles
