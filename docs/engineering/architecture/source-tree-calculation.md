@@ -296,10 +296,12 @@ tree calculation:
 | `enrichSourceTreeNodeAtPath` | 698–729 | Recursion helper that dives into a specific path in the source tree. |
 | `findSubTreeWithOwnerOrPropertyTreesFromOwner` | 736–755 | Walks the property tree finding owner-belonging subtrees. |
 | `collectPropertyTreeClasses` | 723–734 | Collects all class references in a property tree (used by the owner-reachability precondition). |
-| `isTreeRootOwner` | 818–822 | Decides whether the property tree is "rooted at owner" (legacy fast path). |
-| `buildPropertyPathUptoOwner` | 825–866 | Wraps a subtree with the intermediate-class hops needed to rejoin owner. |
-| `pickIntermediateProperty` | 868–874 | Tie-breaker: picks one of several candidate intermediate properties (prefers exact-return-type match, then alphabetical). |
-| `propertyTreeToGraphFetchTree` | 876–880 | Converts a `PropertyPathTree` to a `RootGraphFetchTree<Any>`. |
+| `isTreeRootOwner` | 863–870 | Decides whether the property tree is "rooted at owner" (legacy fast path). |
+| `lookupIntermediateCandidates` | 833–840 | Finds every property whose return type reaches a target class (equal or subtype). |
+| `buildPropertyPathUptoOwner` | 873–928 | Wraps a subtree with the intermediate-class hops needed to rejoin owner. Public 3-arity wrapper plus a private 4-arity overload carrying the `visited` cycle guard. |
+| `pickIntermediateProperty` | 930–936 | Tie-breaker: picks one of several candidate intermediate properties (prefers exact-return-type match, then alphabetical). |
+| `nextIntermediateProperty` | 938–962 | Chooses the next back-edge hop: looks up candidates, drops those that would revisit a class already on the path, then delegates to `pickIntermediateProperty`. See §11.6. |
+| `propertyTreeToGraphFetchTree` | 964–968 | Converts a `PropertyPathTree` to a `RootGraphFetchTree<Any>`. |
 | `addPropertyGraphFetchTrees` (3-arity) | 889–919 | Walks a `PropertyPathTree`, attaching matching properties to a graph-fetch tree. |
 | `addPropertyGraphFetchTrees` (4-arity) | 929–961 | Inner helper. Builds a `SystemGeneratedPropertyGraphFetchTree` and recurses children. |
 | `removeDummyProperties` | ~963 | Strips `dummyProp` markers left by the property-tree builder. |
@@ -1121,6 +1123,86 @@ the test assertions on substrings pass.
 If a future caller requires the multi-rooted shape, the union arm's
 "first + subTypeTrees" combination logic is the natural place to
 specialise it.
+
+### 11.6 Replace the greedy back-edge walk with a backtracking search
+
+**Background.** `buildPropertyPathUptoOwner` walks *backwards* from an
+intermediate class to the owner: look up every property whose return
+type is `target`, pick one, set `target := picked.ownerClass()`,
+recurse. Originally it kept no record of the classes it had already
+stood on, so any cycle in the class graph made it non-terminating —
+it spun until the 64-level backstop fired with the misleading
+"owner ... is not reachable from the intermediate property tree".
+
+Two shapes trigger this, both legitimate modelling:
+
+- a **self-referencing** property (`Tx.interco : Tx[*]`), which leaves
+  `target` unchanged;
+- a **mutually-referencing** pair (`A.b : B` / `B.a : A`), which
+  oscillates between two classes.
+
+The shipped fix threads a `visited` set of element paths through the
+recursion and has `nextIntermediateProperty` drop candidates declared
+on a class already on the path. Termination becomes structural: each
+level consumes one class from a finite set. It is behaviour-preserving
+— in a run that already terminated, no class repeats, so the candidate
+that run would have picked always survives the filter. (It also cannot
+flip `pickIntermediateProperty`'s exact-return-type pool to its
+fallback branch, since the surviving candidate stays in `exact`.)
+
+**Idea:** go further and make the search backtrack, so a wrong first
+pick is retried rather than fatal:
+
+```pure
+findBackEdgeChain(t, target, owner, visited) : List<AbstractProperty<Any>>[0..1]
+```
+
+`[]` means no path; a present `List` is the chain (possibly empty, when
+`target` is already `owner`). Try candidates in `pickIntermediateProperty`
+preference order, first success wins, backtrack on failure. This is also
+behaviour-preserving — the preferred candidate is still tried first, so
+models that work today follow the identical path — and it closes the one
+gap the visited-set guard leaves.
+
+**Why we didn't do it (yet):** roughly 2–3× the Pure, in three places.
+
+1. `pickIntermediateProperty` has to be recast as an *ordering* rather
+   than a single pick, so the fallback sequence is well-defined.
+2. Pure's `fold` does not short-circuit, so first-success-wins needs
+   explicit recursion over the candidate list or every branch is
+   explored regardless.
+3. Tree construction moves out of the recursion. Today each level wraps
+   as it goes; with a chain returned up front you resolve
+   `startTarget`/`baseChildren` once from the entry arm, run the DFS
+   over the class graph, then fold the chain into wrapper nodes. Note
+   that both match arms set `value = ^PropertyPathNode(...)`, so the
+   `Class` arm — the one that uses `children = $pTree.children` rather
+   than `children = $pTree` — can only ever execute on the *initial*
+   invocation from `enrichSourceTreeNodeForProperty`. The DFS itself
+   never needs to know about that distinction.
+
+**The gap this leaves.** The greedy walk can still take a wrong turn
+into a cul-de-sac and fail on a model where a valid path exists. It
+fails *fast and accurately* rather than hanging — see the distinct
+assertion in `nextIntermediateProperty`, which deliberately does not
+claim that no property returns the target. The trigger is a class whose
+every producer is declared on a class already on the path, reached
+because a better-sorting sibling candidate led elsewhere.
+
+`sourceTreeCalc::mutualCycle::testMutualCycleGivesClearError` in
+`testSourceTreeCalc.pure` pins exactly that shape and is the ready-made
+fixture for this work: if §11.6 is implemented, that test flips from
+asserting an error to asserting the source tree
+`McPayload { event { transaction { txId } } }`.
+
+**Rejected outright: BFS shortest-path.** Replacing greedy with a
+breadth-first search finds a path whenever one exists and removes the
+dependence on candidate ordering, but it is *not* behaviour-preserving.
+Measured against a real 1753-class model (134 classes reachable from the
+owner), BFS changed the selected path for 33 of the 116 back-edges that
+resolve correctly today — silently altering which data the synthesised
+source trees fetch. The visited-set guard left all 116 byte-identical
+while fixing all 17 that looped.
 
 ---
 
