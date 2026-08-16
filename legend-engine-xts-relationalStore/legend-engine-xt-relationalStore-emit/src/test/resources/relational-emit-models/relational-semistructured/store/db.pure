@@ -13,18 +13,26 @@
 // limitations under the License.
 
 ###Pure
-import meta::pure::metamodel::variant::*;
-
 Class demo::ss::Firm
 {
   id: Integer[1];
   legalName: String[1];
   employeeCount: Integer[1];
+  isMnc: Boolean[1];
+  ticker: String[1];
+  sector: String[1];
+  revenue: Float[1];
+  marketCap: Decimal[1];
+  estDate: StrictDate[1];
+  lastUpdate: DateTime[1];
+  auditStamp: DateTime[1];
   firstOrderPrice: Integer[1];
-  detailsJson: String[1];
   nestedCell: Integer[1];
   nestedTag: String[1];
-  details: meta::pure::metamodel::variant::Variant[1];
+  quotedKey: String[1];
+  firstTag: String[1];
+  secondTagLabel: String[1];
+  detailsJson: String[1];
 }
 
 ###Relational
@@ -33,7 +41,10 @@ Database demo::ss::store::FirmDB
   Table FIRM_TABLE
   (
     ID INTEGER PRIMARY KEY,
-    FIRM_DETAILS SEMISTRUCTURED
+    FIRM_DETAILS SEMISTRUCTURED,
+    // Root of this document is a JSON *array*, which is what makes an
+    // index-leading path such as '[1].label' expressible.
+    FIRM_TAGS SEMISTRUCTURED
   )
 
   // Row inclusion decided by a value read out of the document, not by a stored column.
