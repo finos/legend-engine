@@ -1001,10 +1001,44 @@ every one of these.
    *Workaround, used by the model:* declare the fold as a derived property in `###Pure`, where the
    ordinary domain grammar applies, and project the derived property.
 
-2. **`sort` and `distinct` on a semi-structured array fail at the database.**
-   `Binder Error: No function matches the given name and argument types 'array_sort(INTEGER)'` —
-   the element is passed as a scalar where DuckDB needs a LIST. Same defect class as the
-   JSON-vs-LIST cast bugs in §11.7. Neither operation is covered anywhere in the repo.
+2. **Most array functions never reach their `array_*` dyna function — they silently flatten
+   instead.** This is the most consequential finding here, because three of the four affected
+   operations *return the right answer by the wrong route* and therefore look like passes.
+
+   The contract is that an operation on a semi-structured array lowers to the matching
+   `array_*` dyna function (`array_sort`, `array_max`, `array_distinct`, …). Reaching it
+   requires the processor to set `disableAutoFlatten`, so the array survives as one value
+   instead of being fanned into rows. `processVariantSize` does this, with the comment
+   *"disable auto-flatten so the array stays as a scalar column"*
+   (`pureToSQLQuery_variant.pure:354-357`). `processVariantSort` (`:345`),
+   `processVariantReverse` (`:349`) and `processVariantRemoveDuplicates` (`:427`) **do not** —
+   each calls `processDynaFunction` with `$state` unchanged.
+
+   `max`/`min` fail one level earlier: their dispatch entries (`pureToSQLQuery.pure:10101-10122`)
+   pair only with `isVariantInputWithInstanceValue`, and carry no `isSemiStructuredArrayInput`
+   guard of the kind `size` has at `:10163`. So they never reach `processVariantMax` on a bound
+   to-many property at all.
+
+   Observed on DuckDB:
+
+   | Expression | Outcome |
+   |---|---|
+   | `scores->sort()` | **error** — `No function matches ... 'array_sort(INTEGER)'` |
+   | `addresses->map(a\|$a.name)->sort()` | **error** — `array_sort(VARCHAR)` |
+   | `addresses->map(a\|$a.name)->distinct()` | **silent flatten** — 4 fanned rows, no `array_distinct` |
+   | `addresses->map(a\|$a.rank)->max()` | **silent flatten** — right value via SQL `max()` over flattened rows |
+
+   `sort` errors only because `array_sort` rejects a scalar; `distinct`, `max` and `min` are the
+   same defect without the safety net. **A passing result is not evidence the array path ran.**
+
+   Note an earlier reading of this — that the split was primitive vs Class element type
+   (`isClassType` in `isSemiStructuredArrayExpression:187`) — was **refuted by experiment**:
+   `sort` fails identically for `Integer[*]` and for a `String` chain rooted at a Class-typed
+   property. The cause is the missing guard, not the element type.
+
+   Fix shape: give the unguarded processors the same `effectiveState` guard `processVariantSize`
+   has, and add an `isSemiStructuredArrayInput` dispatch pair for `max`/`min`. Any new `array_*`
+   processor needs both, so this is worth a cross-check test rather than a one-off fix.
 
 3. **`first()` and `exists()` do not collapse the flatten** when applied directly to a bound
    to-many property. For a firm with three addresses, `addresses->first().name` returns **three**
@@ -1062,9 +1096,14 @@ before changing anything — the whole model is asserted on DuckDB here, which c
 containing a space and a dot; index-leading paths against an array-rooted document; four-level
 typed navigation through a binding, including an absent optional branch; primitive, object, and
 nested-inside-nested collections via implicit lateral flatten; `size`, `isEmpty`, `isNotEmpty`,
-`at`, `filter`, `map`, `fold` (via a derived property), and — new ground — **`max` and `min`**;
-explosion inside a join with a view supplying the exploded column; a join keyed on a scalar read
-out of a document; and every binding source form in the table above.
+`at`, `filter`, `map` and `fold` (the last via a derived property); explosion inside a join with a
+view supplying the exploded column; a join keyed on a scalar read out of a document; and every
+binding source form in the table above.
+
+`max` and `min` are asserted and return correct values, but per (2) they get there by flattening
+and aggregating in SQL rather than through `array_max`/`array_min`. The assertion is honest about
+the result and says nothing about the mechanism; treat those two as covered end-to-end and
+**uncovered at the dyna-function layer** until the dispatch guard is added.
 
 ---
 
