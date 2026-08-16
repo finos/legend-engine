@@ -22,6 +22,9 @@
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
   }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
+    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
+  }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
   }, {

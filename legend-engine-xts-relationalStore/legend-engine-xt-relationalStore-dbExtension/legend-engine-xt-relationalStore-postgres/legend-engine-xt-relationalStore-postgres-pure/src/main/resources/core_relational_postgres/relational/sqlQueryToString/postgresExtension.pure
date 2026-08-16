@@ -391,9 +391,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
 }
 
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
 {
-   '%s ~ \'^' + $query + '$\''
+   '%s ~ \'^(?:' + $query + ')$\''
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::formatMostRecentPostgres(p: String[1..2], defaultDay: String[1]): String[*]

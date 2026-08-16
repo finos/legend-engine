@@ -17,5 +17,5 @@ Enum meta::pure::functions::string::RegexpParameter
    CASE_SENSITIVE, // Enables case-sensitive matching
    CASE_INSENSITIVE, // Enables case-insensitive matching
    MULTILINE, // Enables multi-line mode (that is, meta-characters ^ and $ mark the beginning and end of any line of the subject). By default, multi-line mode is disabled (that is, ^ and $ mark the beginning and end of the entire subject)
-   NON_NEWLINE_SENSITIVE // Enables the POSIX wildcard character . to match \n. By default, wildcard character matching is disabled
+   NON_NEWLINE_SENSITIVE // Enables the wildcard character . to match \n. By default, wildcard character matching is disabled
 }

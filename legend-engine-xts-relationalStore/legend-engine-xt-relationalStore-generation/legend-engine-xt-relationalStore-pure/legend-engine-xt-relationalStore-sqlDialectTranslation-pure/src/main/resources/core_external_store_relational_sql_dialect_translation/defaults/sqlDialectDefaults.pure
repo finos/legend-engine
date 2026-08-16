@@ -889,9 +889,11 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tri
   )
 }
 
+// The group is required: alternation binds looser than the anchors, so '^a|b$' would parse as
+// (^a)|(b$) and match strings that Pure's full-match `matches` rejects.
 function meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern(regexOperator:String[1]):String[1]
 {
-  '%s ' + $regexOperator + ' \'' + '^%s$' +'\''
+  '%s ' + $regexOperator + ' \'' + '^(?:%s)$' +'\''
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::transformRegexpParams(params: String[*], sqlDialect:SqlDialect[1]):String[*]

@@ -7,12 +7,6 @@
     "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLException: Invalid Input Error: Insufficient padding in LPAD."
   }, {
-    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 3\nactual:   4\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 3\nactual:   4\""
-  }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
     "expectedError" : "\"Assert failed\""
   }, {

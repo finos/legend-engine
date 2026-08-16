@@ -188,3 +188,110 @@ tests:
     signature: "regexp_substr(text, text, integer, integer) → text"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # === Regex match operators (~, !~, ~*, !~*) ===
+  # These are the only regex constructs the SQL->Pure transpiler implements. createRegexMatch
+  # (fromPure.pure) accepts a literal, fully ^...$-anchored, case-sensitive pattern, strips the
+  # anchors, and calls Pure matches(). Everything else is rejected, and the anchor-stripping itself
+  # is unsound for a top-level alternation. The tests below pin both the envelope and the divergence.
+  # See docs/engineering/reference/regex-portability.md and ADR-002.
+
+  - id: regex_match__anchored_literal__supported
+    sql: "SELECT val ~ '^hello$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regex_not_match__anchored_literal__supported
+    sql: "SELECT val !~ '^hello$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_not_match
+    signature: "!~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # DIVERGENCE. Postgres ~ is a substring match, so '^hello|fox$' parses as (^hello)|(fox$) and is
+  # true for 'the quick brown fox'. Legend strips the anchors and calls matches(val,'hello|fox'),
+  # a full-string match, which is false for that row. The transpiler must group the alternation
+  # when it re-anchors, or route unanchored patterns to regexpLike instead.
+  - id: regex_match__alternation__anchor_stripping_diverges
+    sql: "SELECT val ~ '^hello|fox$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  # PASSES, and the reason matters: this suite cannot see a regex *flavor* divergence. Both sides
+  # execute on the same Postgres — the Legend path transpiles to Pure and pushes back down to it —
+  # so the pattern is interpreted by ARE on both sides and agrees with itself. Evaluated on the
+  # normative Java runtime the same expression answers differently, because java.util.regex has no
+  # POSIX bracket expression and reads [[:alpha:]] as the character set {: a l p h}: 'hello' is
+  # true here and false there. What this test pins is that the transpiler round-trips the pattern
+  # unaltered; it is not evidence of portability. Flavor divergence is a PCT concern, not a parity
+  # one. See docs/engineering/reference/regex-portability.md § Traps.
+  - id: regex_match__posix_bracket_class__round_trips_unaltered
+    sql: "SELECT val ~ '^[[:alpha:]]+$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Unanchored patterns are rejected: 'only exact match regex currently supported'.
+  - id: regex_match__unanchored__unsupported
+    sql: "SELECT val ~ 'ell' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Case-insensitive matching is rejected outright: 'case insensitive regex currently not supported'.
+  - id: regex_match_ci__anchored__unsupported
+    sql: "SELECT val ~* '^world$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match_ci
+    signature: "~*(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: regex_not_match_ci__anchored__unsupported
+    sql: "SELECT val !~* '^world$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_not_match_ci
+    signature: "!~*(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # A column-valued pattern fails, but not through createRegexMatch's 'regex must be a string
+  # literal' guard: reactivate() is reached first and the failure surfaces as a generated-Java
+  # compile error naming the column. The guard's message never reaches the user, which is worth
+  # fixing when the transpiler learns to route non-literal patterns to regexpLike.
+  - id: regex_match__non_literal_pattern__unsupported
+    sql: "SELECT val ~ nullable_val AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # regexp_like inside the supported envelope: a fully anchored, case-sensitive literal. The existing
+  # regexp_like cases above all sit outside it, so nothing tested that the envelope works.
+  - id: regexp_like__txt_txt__fully_anchored_supported
+    sql: "SELECT REGEXP_LIKE(val, '^hello$') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_like
+    signature: "regexp_like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # SIMILAR TO is absent from SqlBaseLexer.g4/SqlBaseParser.g4, so it fails while parsing rather
+  # than at function resolution — an earlier tier than the regexp_* misses above. The expected-
+  # function catalog lists similar_to, so this gap was previously untested rather than accepted.
+  - id: similar_to__txt_txt__unsupported
+    sql: "SELECT val SIMILAR TO 'h%' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: similar_to
+    signature: "similar_to(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: not_similar_to__txt_txt__unsupported
+    sql: "SELECT val NOT SIMILAR TO 'h%' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: similar_to
+    signature: "similar_to(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

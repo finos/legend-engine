@@ -79,7 +79,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='substr(%s,1,%s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePatternLegacy('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='date_format(%s, \'%M\')')),

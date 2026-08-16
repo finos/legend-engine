@@ -627,7 +627,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForRegExpLikeSnowflake(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let patternParam = '\'^' + $processedArgs->at(1)->removeQuotes($sqlDialect) + '$\'';
+  // Capturing group, not (?:...), which Snowflake's engine does not accept. See
+  // meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern.
+  let patternParam = '\'^(' + $processedArgs->at(1)->removeQuotes($sqlDialect) + ')$\'';
   $sqlDialect->generateFunctionCallWithArgs('regexp_like', [$processedArgs->at(0), $patternParam], [], $state, $config);
 }
 

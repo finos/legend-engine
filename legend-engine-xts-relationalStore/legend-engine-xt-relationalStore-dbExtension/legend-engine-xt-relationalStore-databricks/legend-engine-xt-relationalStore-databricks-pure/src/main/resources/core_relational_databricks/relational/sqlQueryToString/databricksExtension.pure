@@ -129,6 +129,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='array_join(collect_list(%s), %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformRegexpParamsDatabricks()})),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountDatabricks()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractDatabricks()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfDatabricks()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
@@ -453,9 +458,66 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    'rlike(' + $params->at(0) + ',' + $expression + ')';
 }
 
+// rlike is a substring match, so the pattern must be anchored to give Pure's full-match `matches`.
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpParamsDatabricks(params: String[2]):String[1]
 {
-   'rlike(' + $params->at(0) + ',' + $params->at(1) + ')';
+   'rlike(' + $params->at(0) + ',\'^(?:' + $params->at(1)->removeQuotes() + ')$\')';
+}
+
+// Spark's regex functions take no options argument, but its engine is java.util.regex, so the
+// RegexpParameter flags are emitted as an inline prefix on the pattern instead. That is the same
+// syntax the platform runtime uses, which is why the flag semantics agree rather than approximate.
+// CASE_SENSITIVE is the absence of a flag; there is no inline spelling for it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::regexpInlineFlagsForDatabricks(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::applyInlineFlagsDatabricks(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   '\'' + $regexpParametersAsString->regexpInlineFlagsForDatabricks() + $pattern->removeQuotesIfExist() + '\'';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpLikeDatabricks(params: String[3]):String[1]
+{
+   'rlike(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpCountDatabricks(params: String[3]):String[1]
+{
+   'regexp_count(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpExtractDatabricks(params: String[5]):String[1]
+{
+   let pattern = $params->at(1)->applyInlineFlagsDatabricks($params->at(4));
+   let args = $params->at(0) + ', ' + $pattern + ', ' + $params->at(3);
+   if ($params->at(2) == 'true', | 'regexp_extract_all(' + $args + ')', | 'regexp_extract(' + $args + ')');
+}
+
+// regexp_instr is 1-based and returns 0 for no match; Pure is 0-based and returns -1, so one
+// subtraction converts both. Databricks has no capture-group argument on regexp_instr.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpIndexOfDatabricks(params: String[4]):String[1]
+{
+   assert($params->at(2)->removeQuotesIfExist() == '0', | 'regexpIndexOf with a capture group is not supported on Databricks: regexp_instr takes no group argument');
+   '(regexp_instr(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(3)) + ') - 1)';
+}
+
+// Spark's regexp_replace always replaces every occurrence; its fourth argument is a start position,
+// not an occurrence count, so replaceFirst has no direct equivalent.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpReplaceDatabricks(params: String[5]):String[1]
+{
+   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Databricks: regexp_replace always replaces every occurrence');
+   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(4)) + ', ' + $params->at(2) + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]

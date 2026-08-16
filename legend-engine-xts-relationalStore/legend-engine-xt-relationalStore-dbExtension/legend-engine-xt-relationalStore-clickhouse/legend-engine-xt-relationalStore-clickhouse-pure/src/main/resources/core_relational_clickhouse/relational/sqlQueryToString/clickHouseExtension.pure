@@ -112,7 +112,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')), 
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format='cast(match(%s, %s) as Bool)')), 
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='cast(match(%s, %s) as Bool)', transform={p:String[2]|$p->transformRegexpParamsClickHouse()})),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='argMax(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(hex(MD5(%s)))')), 
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='argMin(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
@@ -151,6 +151,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
   ];
+}
+
+// match() is a substring match, so the pattern must be anchored to give Pure's full-match `matches`.
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformRegexpParamsClickHouse(params:String[2]):String[*]
+{
+   $params->at(0)->concatenate('\'^(?:' + $params->at(1)->removeQuotes() + ')$\'');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformFormatDateClickHouse(params:String[2]):String[1]

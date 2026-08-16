@@ -137,7 +137,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('left',                      $allStates,            ^ToSql(format='left(%s, %s)')),
     dynaFnToSql('length',                    $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('lpad',                      $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
-    dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPatternPosix('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('regexpExtract',             $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractMemSQL()})),
+    dynaFnToSql('regexpIndexOf',             $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfMemSQL()})),
+    dynaFnToSql('regexpLike',                $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeMemSQL()})),
+    dynaFnToSql('regexpReplace',             $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceMemSQL()})),
     dynaFnToSql('minute',                    $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                     $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',                 $allStates,            ^ToSql(format='monthname(%s)')),
@@ -523,4 +527,64 @@ function meta::relational::functions::sqlQueryToString::memsql::buildDummyConnec
                                   ),
         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
     )
+}
+
+// SingleStore takes no options argument on its regex functions, but the engine accepts inline
+// flags, so RegexpParameter is emitted as a prefix on the pattern. CASE_SENSITIVE is the absence
+// of a flag.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::regexpInlineFlagsForMemSQL(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::applyInlineFlagsMemSQL(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   assert($regexpParametersAsString->regexpInlineFlagsForMemSQL() == '', | 'RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with "repetition-operator operand invalid"');
+   '\'' + $pattern->removeQuotesIfExist() + '\'';
+}
+
+// MemSQL sets isBooleanLiteralSupported = false, so a Boolean argument does not reach the transform
+// as a bare true/false the way it does on dialects that support boolean literals.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::isSqlTrueMemSQL(value: String[1]):Boolean[1]
+{
+   let normalized = $value->removeQuotesIfExist()->toLower()->trim();
+   $normalized == 'true' || $normalized == '1';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpLikeMemSQL(params: String[3]):String[1]
+{
+   '(' + $params->at(0) + ' RLIKE ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(2)) + ')';
+}
+
+// REGEXP_SUBSTR takes no group index and returns only the first match.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpExtractMemSQL(params: String[5]):String[1]
+{
+   assert($params->at(3)->removeQuotesIfExist() == '0', | 'regexpExtract with a capture group is not supported on MemSQL: REGEXP_SUBSTR takes no group index');
+   assert(!$params->at(2)->isSqlTrueMemSQL(), | 'regexpExtract with extractAll=true is not supported on MemSQL: REGEXP_SUBSTR returns only the first match');
+   'REGEXP_SUBSTR(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(4)) + ')';
+}
+
+// REGEXP_INSTR is 1-based and returns 0 for no match; Pure is 0-based and returns -1, so one
+// subtraction converts both. It has no capture-group argument.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpIndexOfMemSQL(params: String[4]):String[1]
+{
+   assert($params->at(2)->removeQuotesIfExist() == '0', | 'regexpIndexOf with a capture group is not supported on MemSQL: REGEXP_INSTR takes no group argument');
+   '(REGEXP_INSTR(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(3)) + ') - 1)';
+}
+
+// MemSQL's REGEXP_REPLACE replaces only the first match and takes exactly three arguments -
+// passing an occurrence argument is rejected with "Too many arguments" - so replaceAll has no
+// expressible form. This is the reverse of every other dialect here, which can only replace all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpReplaceMemSQL(params: String[5]):String[1]
+{
+   assert(!$params->at(3)->isSqlTrueMemSQL(), | 'regexpReplace with replaceAll=true is not supported on MemSQL: REGEXP_REPLACE replaces only the first match and accepts no occurrence argument');
+   'REGEXP_REPLACE(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(4)) + ', ' + $params->at(2) + ')';
 }

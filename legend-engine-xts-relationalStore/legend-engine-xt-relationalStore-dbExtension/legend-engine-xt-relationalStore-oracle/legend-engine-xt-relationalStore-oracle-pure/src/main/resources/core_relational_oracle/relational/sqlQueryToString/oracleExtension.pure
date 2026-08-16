@@ -484,9 +484,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    );
 }
 
+// Oracle has no ~ operator; a capturing group is used because Oracle's engine rejects (?:...).
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::regexpMatchOracle(query: String[1]): String[1]
 {
-   '%s ~ \'^' + $query + '$\''
+   'REGEXP_LIKE(%s, \'^(' + $query + ')$\')'
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::formatMostRecentOracle(p: String[1..2], defaultDay: String[1]): String[*]

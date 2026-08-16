@@ -407,11 +407,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   if ($params->at(2) == 'true', | 'regexp_extract_all(' + $transformedParams + ')', | 'regexp_extract(' + $transformedParams + ')');
 }
 
+// Pure reports a 0-based position and -1 for no match; strpos is 1-based and returns 0, which it also
+// returns for the empty string regexp_extract yields when nothing matched. Hence the guard and the -1.
+// DuckDB has no regexp_instr, so the position is found by locating the matched text: that differs from
+// the true match position when the same text occurs earlier in the string. Tracked as a known gap in
+// docs/engineering/reference/regex-portability.md.
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpIndexOf(params:String[4]):String[1]
 {
   let originalString = $params->at(0)->enableEscapeSequence();
   let transformedPatterns = $params->at(3)->regexpParametersToPatternFlagsForDuckDB();
-  'strpos(' + $originalString + ', regexp_extract(' + $originalString + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns + '))';
+  let position = 'strpos(' + $originalString + ', regexp_extract(' + $originalString + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns + ')) - 1';
+  'CASE WHEN regexp_matches(' + $originalString + ', ' + $params->at(1) + ', ' + $transformedPatterns + ') THEN ' + $position + ' ELSE -1 END';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::enableEscapeSequence(originalString:String[1]):String[1]
