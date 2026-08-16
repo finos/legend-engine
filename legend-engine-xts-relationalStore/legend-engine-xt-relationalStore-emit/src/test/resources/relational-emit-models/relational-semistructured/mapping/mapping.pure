@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ss::FirmMapping
+(
+  *demo::ss::Firm: Relational
+  {
+    ~filter [demo::ss::store::FirmDB] LargeFirmFilter
+    ~primaryKey
+    (
+      [demo::ss::store::FirmDB]FIRM_TABLE.ID
+    )
+    ~mainTable [demo::ss::store::FirmDB]FIRM_TABLE
+    id: [demo::ss::store::FirmDB]FIRM_TABLE.ID,
+    legalName: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
+    employeeCount: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER'),
+    firstOrderPrice: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'orders[0].price', 'INTEGER'),
+    detailsJson: toJson([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS),
+    // Consecutive indices into an array of arrays.
+    nestedCell: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'matrix[0][1]', 'INTEGER'),
+    // Index, then property, then index again.
+    nestedTag: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'items[0].tags[1]', 'VARCHAR'),
+    details: [demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS
+  }
+
+  testSuites:
+  [
+    semiStructuredSuite:
+    {
+      // Returning a Relation is what selects the execution target; the TDS form
+      // (->project([...], ['names'])) would silently run somewhere without a
+      // SEMISTRUCTURED type and stop testing anything here. detailsJson keeps that
+      // honest - it has no rendering outside a semi-structured-capable target.
+      function: |demo::ss::Firm.all()
+                  ->project(~[legalName: f | $f.legalName, employeeCount: f | $f.employeeCount, firstOrderPrice: f | $f.firstOrderPrice, nestedCell: f | $f.nestedCell, nestedTag: f | $f.nestedTag, detailsJson: f | $f.detailsJson])
+                  ->sort([~legalName->ascending()]);
+      tests:
+      [
+        extractAndNavigate:
+        {
+          data:
+          [
+            demo::ss::store::FirmDB:
+              Reference
+              #{
+                demo::ss::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldExtractScalarsAndIndexedArrayElement:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Firm X","employeeCount":4,"firstOrderPrice":100,"nestedCell":2,"nestedTag":"b","detailsJson":"{\\"legalName\\":\\"Firm X\\",\\"employeeCount\\":4,\\"orders\\":[{\\"price\\":100},{\\"price\\":250}],\\"matrix\\":[[1,2],[3,4]],\\"items\\":[{\\"tags\\":[\\"a\\",\\"b\\"]}],\\"nums\\":[3,1,2]}"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

@@ -1,0 +1,29 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// JSON payloads are CSV-quoted with doubled double-quotes.
+//   orders  - array of objects, navigated as orders[0].price
+//   matrix  - array of arrays, navigated as matrix[0][1] (consecutive indices)
+//   items   - object array whose element holds an array, navigated as items[0].tags[1]
+###Data
+Data demo::ss::data::FirmData
+{
+  Relation
+  #{
+    default.FIRM_TABLE:
+      ID,FIRM_DETAILS
+      1,"{""legalName"":""Firm X"",""employeeCount"":4,""orders"":[{""price"":100},{""price"":250}],""matrix"":[[1,2],[3,4]],""items"":[{""tags"":[""a"",""b""]}],""nums"":[3,1,2]}"
+      2,"{""legalName"":""Firm A"",""employeeCount"":1,""orders"":[{""price"":50}],""matrix"":[[9,8],[7,6]],""items"":[{""tags"":[""x"",""y""]}],""nums"":[9,7,8]}";
+  }#
+}
