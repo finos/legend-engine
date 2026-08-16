@@ -1018,13 +1018,53 @@ every one of these.
    Counting elements produced by `explodeSemiStructured` works through a TDS `groupBy` but not
    through a relation projection.
 
+5. **A fan-out column and an aggregate over the same collection cannot share one relation
+   projection.** `~[code: r | $r.tags.code, n: r | $r.tags->size()]` fails with
+   `column "REFERENCE" must appear in the GROUP BY clause`. Either alone is fine — this is
+   narrower than (4), which fails even when the aggregate is projected on its own.
+
+**What a binding can be attached to.** The operation on the right of a `Binding` is not limited to
+a bare column, and the bound property is not limited to `[1]`. All of the following are supported
+and now covered:
+
+| Form | Example |
+|---|---|
+| bare column | `firm: Binding B : [db]T.PROFILE` |
+| navigation to a sub-document | `firm: Binding B : extractFromSemiStructured([db]T.PROFILE, 'employment.firm', 'VARCHAR')` |
+| `parseJson` over a plain VARCHAR column | `firm: Binding B : parseJson([db]T.PROFILE_JSON)` |
+| through a join | `managerFirm: Binding B : [db]@Manager \| [db]T.PROFILE` |
+| **to-many — an array of objects** | `tags: Binding TagB : parseJson(extractFromSemiStructured([db]T.CONTENT, 'payload.tags', 'VARCHAR'))` with `tags: Tag[*]` |
+| sibling arrays off one column | as above, plus `participants: Binding ParticipantB : … 'payload.participants' …` |
+
+The navigation form is what lets one class absorb documents of different shapes: a union whose
+legs bind at different depths — one navigating to a sub-document, the other binding the root —
+resolves onto a single class, and the query cannot tell the legs apart.
+
+**Follow-up — the Snowflake `GET` failure is most likely this same cast.**
+`Test_Relational_Snowflake_Semistructured` skips exactly two tests,
+`union::testSemiStructuredUnionMappingWithBinding` and `…WithBindingAndFilter`, both with:
+
+```
+Invalid argument types for function 'GET': (VARCHAR(134217728), VARCHAR(8))
+```
+
+Databricks skips the same pair. That is precisely the **binding-fed-by-a-navigation** form: the
+navigation is declared `'VARCHAR'`, so the renderer emits a primitive cast, and the property
+access the binding then synthesises calls `GET(<varchar>, 'firmName')` — Snowflake's `GET` needs a
+VARIANT/OBJECT, not a string. DuckDB passes because its arrow operator tolerates JSON text.
+
+If that reading holds, the fix is the shape already used for `processVariantInstanceOf`: stamp
+`avoidCastIfPrimitive = true` on a navigation whose result feeds a binding, so no
+`::varchar` is appended and the value stays a document. Worth confirming against a live Snowflake
+before changing anything — the whole model is asserted on DuckDB here, which cannot reproduce it.
+
 **What does work**, and is now asserted: all 10 whitelist target types; bracket-quoted keys
 containing a space and a dot; index-leading paths against an array-rooted document; four-level
 typed navigation through a binding, including an absent optional branch; primitive, object, and
 nested-inside-nested collections via implicit lateral flatten; `size`, `isEmpty`, `isNotEmpty`,
 `at`, `filter`, `map`, `fold` (via a derived property), and — new ground — **`max` and `min`**;
-explosion inside a join with a view supplying the exploded column; and a join keyed on a scalar
-read out of a document.
+explosion inside a join with a view supplying the exploded column; a join keyed on a scalar read
+out of a document; and every binding source form in the table above.
 
 ---
 

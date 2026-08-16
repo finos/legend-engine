@@ -1,0 +1,49 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// RFC-4180: each JSON document is wrapped in " and every internal " is doubled.
+// The two Person tables hold deliberately different shapes - Alice's firm is nested
+// under "employment", Bob's is the whole document - and the union reconciles them.
+// Dan reports to Eve, so Dan's managerFirm resolves to Eve's document. Eve has no
+// manager, and still appears, with no value for it.
+// RECORD_TABLE holds two sibling arrays under one "payload" object; each is typed by
+// its own binding attached to a to-many property.
+###Data
+Data demo::ssn::data::PersonData
+{
+  Relation
+  #{
+    PERSON_SCHEMA.PERSON_NESTED:
+      ID,NAME,PROFILE
+      1,Alice,"{""employment"":{""firm"":{""legalName"":""Firm One""}},""grade"":3}";
+
+    PERSON_SCHEMA.PERSON_ROOT:
+      ID,NAME,PROFILE
+      2,Bob,"{""legalName"":""Firm Two""}";
+
+    PERSON_SCHEMA.PERSON_TEXT:
+      ID,NAME,PROFILE_JSON
+      3,Cara,"{""legalName"":""Firm Three""}";
+
+    PERSON_SCHEMA.STAFF:
+      ID,NAME,MANAGER_ID,PROFILE
+      10,Dan,11,"{""legalName"":""Dan Firm""}"
+      11,Eve,,"{""legalName"":""Eve Firm""}";
+
+    PERSON_SCHEMA.RECORD_TABLE:
+      ID,REFERENCE,CONTENT
+      20,R-1,"{""payload"":{""tags"":[{""code"":""T1"",""category"":""Primary""},{""code"":""T2"",""category"":""Secondary""}],""participants"":[{""party"":""P1""}]}}"
+      21,R-2,"{""payload"":{""tags"":[{""code"":""T9"",""category"":""Primary""}],""participants"":[{""party"":""P8""},{""party"":""P9""}]}}";
+  }#
+}
