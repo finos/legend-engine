@@ -568,7 +568,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Cosh, simpleFunctionProcessor('cosh')),
 
     // String
-    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpFullMatch, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sha1, simpleFunctionProcessor('sha1')),
     pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
     pair(Contains, simpleFunctionProcessor('contains')),

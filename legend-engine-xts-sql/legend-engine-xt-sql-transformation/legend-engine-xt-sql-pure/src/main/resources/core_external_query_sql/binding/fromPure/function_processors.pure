@@ -226,6 +226,27 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         createRegexMatch($args->at(0), $args->at(1), $caseInsensitive, false);
       }),
+      string('regexp_count', Integer, {args, fc, expCtx, ctx |
+        assertEquals(2, $args->size(), 'regexp_count with a start position or flags is not supported');
+        nullOrSfe(regexpCount_String_1__String_1__Integer_1_, [$args->at(0), $args->at(1)]);
+      }),
+      // Postgres REGEXP_INSTR is 1-based and returns 0 for no match; Pure regexpIndexOf is 0-based
+      // and returns -1, so adding one converts both at once.
+      string('regexp_instr', Integer, {args, fc, expCtx, ctx |
+        assertEquals(2, $args->size(), 'regexp_instr with a start position, occurrence or flags is not supported');
+        nullOrSfe(plus_Integer_MANY__Integer_1_,
+                  [iv([nullOrSfe(regexpIndexOf_String_1__String_1__Integer_1_, [$args->at(0), $args->at(1)]), iv(1)])]);
+      }),
+      string('regexp_replace', String, {args, fc, expCtx, ctx |
+        assertEquals(3, $args->size(), 'regexp_replace with a start position, occurrence or flags is not supported');
+        // Postgres replaces only the first match without the 'g' flag, which this arity cannot carry.
+        nullOrSfe(regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_,
+                  [$args->at(0), $args->at(1), $args->at(2), iv(false)]);
+      }),
+      string('regexp_substr', String, {args, fc, expCtx, ctx |
+        assertEquals(2, $args->size(), 'regexp_substr with a start position, occurrence or flags is not supported');
+        nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__String_MANY_, [$args->at(0), $args->at(1), iv(false)]);
+      }),
       string('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       string('replace', replace_String_1__String_1__String_1__String_1_),
       string('reverse', reverseString_String_1__String_1_),

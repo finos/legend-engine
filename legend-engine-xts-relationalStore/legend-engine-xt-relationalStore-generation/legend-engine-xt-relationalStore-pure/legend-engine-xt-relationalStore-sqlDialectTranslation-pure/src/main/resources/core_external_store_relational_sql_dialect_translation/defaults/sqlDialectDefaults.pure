@@ -926,7 +926,33 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::add
   );
 }
 
+// RegexpParameter values are emitted as an inline (?i)(?m)(?s) prefix rather than an options
+// argument, because the ~ operator has no options slot and every engine on this stack accepts the
+// inline form. CASE_SENSITIVE is the absence of a flag.
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpInlineFlags(regexpParametersAsString:String[1], sqlDialect:SqlDialect[1]):String[1]
+{
+  let regexpParameters = $regexpParametersAsString->removeQuotes($sqlDialect)->split(',');
+  let flagMap = newMap([
+    pair('CASE_SENSITIVE', ''),
+    pair('CASE_INSENSITIVE', 'i'),
+    pair('MULTILINE', 'm'),
+    pair('NON_NEWLINE_SENSITIVE', 's')
+  ]);
+  let flags = $regexpParameters->map(p | $flagMap->get($p))->filter(f | $f != '')->joinStrings('');
+  if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+// Substring match, as PostgreSQL's ~ already is - the pattern is emitted unaltered.
 function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpLike(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let inlineFlags = if ($processedArgs->size() > 2, | $processedArgs->at(2)->regexpInlineFlags($sqlDialect), | '');
+  let args = $processedArgs->transformRegexpParams($sqlDialect);
+  $args->at(0) + ' ~ \'' + $inlineFlags + $args->at(1) + '\'';
+}
+
+// Whole-string match: the anchors are added here rather than by each caller.
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpFullMatch(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   regexpLikePattern('~')->format($processedArgs->transformRegexpParams($sqlDialect));

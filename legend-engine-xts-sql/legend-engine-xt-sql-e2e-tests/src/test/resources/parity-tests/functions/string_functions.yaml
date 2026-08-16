@@ -480,29 +480,29 @@ tests:
     sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_replace
     signature: regexp_replace(text, text, text) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_replace__txt_txt_txt_int__from_table
     sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, integer) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_replace__txt_txt_txt_int_int__from_table
     sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, integer, integer) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_replace__txt_txt_txt_int_int_txt__from_table
     sql: SELECT REGEXP_REPLACE(val, '[a-z]', 'X') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, integer, integer, text) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_replace__txt_txt_txt_txt__global
     sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X', 'gi') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
@@ -725,7 +725,7 @@ tests:
     sql: SELECT SUBSTRING(val FROM '[a-z]+') AS result FROM strings WHERE val ~ '[a-z]' ORDER BY 1
     function: substring
     signature: substring(text, text) → text
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: ERROR
 
   - id: substring__txt_txt_txt__from_table

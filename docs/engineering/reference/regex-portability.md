@@ -131,6 +131,21 @@ Where an engine's support is genuinely in doubt and no suite can reach it, prefe
 is universal. `^(…)$` with a plain capturing group matches identically to `^(?:…)$` for a boolean
 test and is accepted by every engine here; that is why Snowflake and MemSQL use it.
 
+## Which stack a dialect actually uses
+
+There are two translation stacks, and a given dialect's regex path goes through exactly one of them.
+Which one decides where a fix belongs, and it is not guessable — read it off the error text:
+
+| Error text | Stack | Fix belongs in |
+|---|---|---|
+| `Couldn't find DynaFunction to Postgres model translation for X()` | newer | `toPostgresModel.pure` + the function registry + `*SqlDialect.pure` |
+| `[unsupported-api] The function 'X' ... is not supported yet` | legacy | `*Extension.pure` under `sqlQueryToString` |
+
+Measured: **H2 uses the newer stack** for the `regexp*` family, while **PostgreSQL uses the legacy
+one** — despite the newer stack being PostgreSQL-shaped. DuckDB and Snowflake implement the family on
+the legacy stack. A dialect can also split: H2's `matches` resolves through the newer stack's
+`processorForRegexpLike` while its `regexp*` family fails at the `toPostgresModel` lookup.
+
 ## Engine flavor by dialect
 
 Determines which Tier 3 features are available and how patterns must be translated.
@@ -183,9 +198,18 @@ form natively.
 | Snowflake | ✅ | ✅ | ✅ | ✅ | ✅ | MULTILINE ✗ |
 | Databricks | ✅ | ✅ | ✅ | all only | group ✗ | ✅ |
 | Trino | ✅ | ✅ | ✅ | all only | group ✗ | ✅ |
-| MemSQL | ✅ | ✗ | first only | all only | group ✗ | ✗ |
+| MemSQL | ✅ | ✗ | first only | first only | group ✗ | ✗ |
 | Spanner | ✅ | ✗ | ✗ | all only | ✗ | ✗ |
-| H2, Postgres, ClickHouse, Oracle, SQLServer | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| PostgreSQL | ✅ | ✅ | first only | ✅ | ✅ **incl. group** | ✅ |
+| H2 | ✅ | ✗ | ✗ | ✗ | ✗ | ✅ |
+| ClickHouse, Oracle, SQLServer | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+
+PostgreSQL is the most complete target: its `regexp_instr` and `regexp_substr` take a `subexpr`
+argument, so it is the only dialect that can answer `regexpIndexOf` with a capture group. Its flags
+need care, though — ARE expresses newline handling as a **single mode letter**, not as independent
+flags, so `MULTILINE` and `NON_NEWLINE_SENSITIVE` cannot be concatenated (`ns` is
+self-contradictory). The four combinations map to `p` (neither, matching the Java default), `n`,
+`s`, and `w` (both).
 
 Recurring engine limits, each now reported with a message naming the cause rather than a generic
 `[unsupported-api]`:
@@ -222,9 +246,9 @@ Each row is a Tier 2 item: our emission is wrong, the engine is capable.
 | D4 | ~~`regexpIndexOf` 1-based and returning `0` for no match~~ **fixed** — Snowflake subtracts one from `regexp_instr` (which converts origin and sentinel together); DuckDB guards with `regexp_matches` and subtracts one | Snowflake, DuckDB | exclusions deleted; `testRegexpIndexOf_NoMatch` added |
 | D4a | **Residual:** DuckDB has no `regexp_instr`, so the position is found by locating the matched *text*. When that text occurs earlier in the string the answer is wrong — `regexpIndexOf('aba', 'a$')` gives `0` where the platform gives `2`. No test covers it. | DuckDB | `duckdbExtension.pure`, `transformRegexpIndexOf` |
 | D5 | `MULTILINE` not honoured — DuckDB ignores the `m` option letter; inline `(?m)` works | Snowflake, DuckDB | manifests: `Assert failed` ×4 each |
-| D6 | `regexp*` family absent from `toPostgresModel`; and its `regexp_like` means full-match, contradicting PostgreSQL | All newer-stack dialects | `toPostgresModel.pure:346-351` |
-| D7 | Transpiler accepts `~` only for fully-anchored case-sensitive string literals; `regexp_*` family absent | SQL front end | `fromPure.pure:4002`, `function_processors.pure:219` |
-| D7a | The transpiler strips `^…$` and calls `matches`, without grouping the alternation — the same defect as D1, on the SQL side. Postgres `val ~ '^hello\|fox$'` is true for `'the quick brown fox'`; Legend returns false. Pinned by the parity suite. | SQL front end | `fromPure.pure`, `createRegexMatch` |
+| D6 | ~~`regexp*` family absent from `toPostgresModel`; its `regexp_like` meant full-match, contradicting PostgreSQL~~ **partly fixed** — `regexp_full_match` now carries the anchored meaning, `regexp_like` is substring, and `regexpLike` has an arm. `regexpCount`/`Extract`/`Replace`/`IndexOf` still have no arm. | newer-stack dialects | `toPostgresModel.pure` |
+| D7 | ~~Transpiler accepts `~` only for fully-anchored case-sensitive string literals; `regexp_*` family absent~~ **fixed** — `createRegexMatch` now routes unanchored, case-insensitive and column-valued patterns to `regexpLike`; `regexp_count`/`instr`/`replace`/`substr` added to the registry | SQL front end | `fromPure.pure`, `function_processors.pure` |
+| D7a | ~~Anchor stripping ignored top-level alternation~~ **fixed** — an anchored literal only takes the `matches` path when it contains no top-level `\|`; otherwise it routes to `regexpLike`, preserving Postgres `~` substring semantics | SQL front end | `createRegexMatch` |
 | D8 | Patterns are never parsed or checked — a dialect-specific literal passes straight through, so a model silently locks to whichever store it was authored against. See [Traps](#traps--constructs-that-differ-silently). | All | no validation exists |
 
 ### What the SQL parity suite can and cannot detect

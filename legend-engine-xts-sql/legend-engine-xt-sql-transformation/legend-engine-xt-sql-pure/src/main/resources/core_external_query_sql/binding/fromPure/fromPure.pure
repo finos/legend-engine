@@ -3999,20 +3999,32 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   processExpression($expression, $expContext, $context);
 }
 
+// ~ is a substring match in Postgres, which is regexpLike, not matches. A fully anchored literal is
+// still routed to matches() because far more stores implement it, and stripping anchors off such a
+// pattern is exact - but only when the anchors span the whole pattern, so the alternation in
+// '^a|b$' (which parses as (^a)|(b$)) must not take that path.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createRegexMatch(left:ValueSpecification[1], right:ValueSpecification[1], caseInsensitive:Boolean[1], not:Boolean[1]):ValueSpecification[1]
 {
-  assertFalse($caseInsensitive, 'case insensitive regex currently not supported');
-
-  let pattern = $right->reactivate()->match([
-    s:String[1] | $s,
-    a:Any[*] | fail('regex must be a string literal'); '';
+  let literalPattern = $right->match([
+    i:InstanceValue[1] | $i.values->match([
+      s:String[1] | $s,
+      a:Any[*] | []
+    ]),
+    a:Any[*] | []
   ]);
 
-  assert($pattern->startsWith('^') && $pattern->endsWith('$'), 'only exact match regex currently supported');
+  let fullyAnchored = !$literalPattern->isEmpty()
+                      && $literalPattern->toOne()->startsWith('^')
+                      && $literalPattern->toOne()->endsWith('$')
+                      && !$literalPattern->toOne()->substring(1, $literalPattern->toOne()->length() - 1)->contains('|');
 
-  let patternIV = $pattern->substring(1, $pattern->length() - 1)->iv();
-
-  let match = nullOrSfe(matches_String_1__String_1__Boolean_1_, [$left, $patternIV]);
+  let match = if (!$caseInsensitive && $fullyAnchored,
+                  | let anchored = $literalPattern->toOne();
+                    nullOrSfe(matches_String_1__String_1__Boolean_1_, [$left, $anchored->substring(1, $anchored->length() - 1)->iv()]);,
+                  | if ($caseInsensitive,
+                        | nullOrSfe(regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_,
+                                    [$left, $right, iv(meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE)]),
+                        | nullOrSfe(regexpLike_String_1__String_1__Boolean_1_, [$left, $right])));
 
   if ($not, | nullOrSfe(not_Boolean_1__Boolean_1_, $match), | $match);
 }
