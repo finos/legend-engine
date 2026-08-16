@@ -463,7 +463,10 @@ function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f
   let keyProp = $variantToMetadata.typeName->orElse('_type');
   let className = $variantToMetadata.typeLookup->filter(p | $p.second == $class)->head().first->orElse($class.name->toOne());
 
-  let typeProp = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = $keyProp), returnType = String);
+  // avoidCastIfPrimitive: the navigation is immediately wrapped in its own variantTo conversion
+  // below, so the renderer must not also cast. Dialects whose unquote is not idempotent (DuckDB
+  // renders variantTo on VARCHAR as ->>'$', which requires JSON input) fail on the double cast.
+  let typeProp = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = $keyProp), returnType = String, avoidCastIfPrimitive = true);
   let typePropCasted = newDynaFunction('variantTo', [$typeProp, ^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Varchar(size=100))]);
   let instanceOf = newDynaFunction('equal', [$typePropCasted, ^Literal(value = $className)]);
 

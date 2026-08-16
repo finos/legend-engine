@@ -866,8 +866,10 @@ dialect remains uncovered.
 
 ### 11.6 Execution layer — EMIT on DuckDB
 
-`legend-engine-xt-relationalStore-emit/src/test/resources/relational-emit-models/duckdb-dyna-semistructured`
-executes dyna functions against a real, in-process DuckDB.
+`legend-engine-xt-relationalStore-emit/src/test/resources/relational-emit-models/relational-semistructured`
+executes dyna functions against a real, in-process DuckDB. The model is named and tagged for the
+capability it covers — modelled semi-structured data — not for the engine that happens to run it
+or the IR node that implements it.
 
 **How DuckDB is selected.** EMIT names no database anywhere — not in the `.emit.yaml`, not in
 the runner. `RelationalConnectionFactory:187-189` picks DuckDB when `hints.isRelation()`, and
