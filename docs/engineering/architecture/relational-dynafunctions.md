@@ -969,6 +969,63 @@ so they cannot be written in a `Filter` or `View`. They are also unreachable fro
 `Error mapping not found for class Map`; the working vehicle is a relation-store accessor
 (`#>{DB.TABLE}#`), where the array work happens inside the relation source.
 
+### 11.8 Semi-structured limitations found by building the EMIT models
+
+Six EMIT models under `relational-emit-models/relational-semistructured*` cover modelled
+semi-structured data end to end on DuckDB. Authoring them turned up limitations that no existing
+test records, listed here with the exact symptom. Each was reproduced against a live DuckDB, not
+inferred from source. **None is fixed** — they are recorded so the next person does not rediscover
+them, and the models deliberately do not assert the broken behaviour.
+
+**Authoring surface** (traced to source, all enforced at SQL-generation time — neither
+`extractFromSemiStructured` nor `explodeSemiStructured` is a grammar keyword, so the compiler
+passes name, arity, path and return type through unchecked, `HelperRelationalBuilder.java:853-856`):
+
+| Constraint | Where |
+|---|---|
+| Path must match `(ident\|[N]\|["quoted"])(.ident\|[N]\|["quoted"])*` — no `[*]`, no `[-1]`, no `..`, no `a."k"`, no `$.a` | `dbExtension.pure:918-921`, asserted `:910` |
+| Return type is one of exactly 10 scalars; **no `ARRAY`/`SEMISTRUCTURED`/`VARIANT`/`JSON`** | `dbExtension.pure:912-913` |
+| Neither check runs on the dialect-translation path | `toPostgresModel.pure:1055-1066` |
+| `explodeSemiStructured` is legal **only inside a Join**; elsewhere it compiles then dies with `[unsupported-api] … is not supported yet` | `pureToSQLQuery.pure:9158`; `dbExtension.pure:1040` |
+| At most one *unique* explode per Join; operand must be a plain `TableAliasColumn` of a table or view; source needs ≥1 primary key | `pureToSQLQuery.pure:9236`, `:9239`, `:9245-9248` |
+| Array operations are unavailable across a **join-based** binding (`prop: Binding … : @Join \| …`) | `pureToSQLQuery_variant.pure:179-200`, in-source comment |
+
+**Behavioural gaps, reproduced on DuckDB.** All four appear only in the *relation* query form
+(`->project(~[...])`), which EMIT requires in order to route to a semi-structured-capable target.
+The equivalent TDS forms work, which is why the parameterised suite passes 151/151 and still misses
+every one of these.
+
+1. **`fold` cannot be written in a relation colSpec.** `->fold({a, acc | $acc + $a.name}, '')`
+   fails to parse — `no viable alternative at input '->project(~[…->fold({a, acc | …'`. The
+   two-parameter *block* lambda is the problem, not `fold`; parenthesising does not help.
+   *Workaround, used by the model:* declare the fold as a derived property in `###Pure`, where the
+   ordinary domain grammar applies, and project the derived property.
+
+2. **`sort` and `distinct` on a semi-structured array fail at the database.**
+   `Binder Error: No function matches the given name and argument types 'array_sort(INTEGER)'` —
+   the element is passed as a scalar where DuckDB needs a LIST. Same defect class as the
+   JSON-vs-LIST cast bugs in §11.7. Neither operation is covered anywhere in the repo.
+
+3. **`first()` and `exists()` do not collapse the flatten** when applied directly to a bound
+   to-many property. For a firm with three addresses, `addresses->first().name` returns **three**
+   rows (`A1`, `B2`, `A3`) instead of one, and `addresses->exists(a | $a.rank > 8)` returns three
+   booleans instead of one. Both were isolated in single-column suites, so this is not an artefact
+   of a co-projected column. Note `addresses->filter(…)->first()` behaves correctly — the defect is
+   specific to the un-filtered form. `at(0)` and `filter(…)->size()` are correct.
+
+4. **`->size()` over a join-backed to-many fails in relation form.**
+   `column "ID" must appear in the GROUP BY clause or must be part of an aggregate function`.
+   Counting elements produced by `explodeSemiStructured` works through a TDS `groupBy` but not
+   through a relation projection.
+
+**What does work**, and is now asserted: all 10 whitelist target types; bracket-quoted keys
+containing a space and a dot; index-leading paths against an array-rooted document; four-level
+typed navigation through a binding, including an absent optional branch; primitive, object, and
+nested-inside-nested collections via implicit lateral flatten; `size`, `isEmpty`, `isNotEmpty`,
+`at`, `filter`, `map`, `fold` (via a derived property), and — new ground — **`max` and `min`**;
+explosion inside a join with a view supplying the exploded column; and a join keyed on a scalar
+read out of a document.
+
 ---
 
 ## 12. Phased roadmap

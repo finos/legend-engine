@@ -12,22 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: relational-semistructured
-title: "Relational Store — Modelled Semi-structured Data"
+name: relational-semistructured-explode
+title: "Relational Store — Exploding a JSON Array into Rows"
 description: |
-  A SEMISTRUCTURED column modelled as ordinary typed properties. One JSON document per
-  row is projected into scalars covering every target type the extraction whitelist
-  accepts, plus the edges of the path grammar: an element of an array of objects, an
-  element of an array of arrays, an array nested inside an object array, bracket-quoted
-  keys containing a space and a dot, and — against a second column whose root is a JSON
-  array — paths that lead with an index.
+  A JSON array fanned out into rows inside a store join, each element's scalar then
+  equi-joined to an ordinary table. The class mapping mentions nothing semi-structured:
+  the to-many property is an ordinary join traversal, and its multiplicity comes from
+  the fan-out.
 
-  Navigation is exercised in two positions: property mappings, and a store filter
-  predicate that reads a value out of the document to decide row inclusion.
+  A view supplies the column being exploded, which is the only way a view participates —
+  explosion is legal solely inside a join operation, and its operand must be a plain
+  column of a table or a view. Elements that fail the join predicate drop out, so the
+  join filters and fans in one step.
 
 modelSources:
   model:
-    root: relational-semistructured
+    root: relational-semistructured-explode
     files:
       - store/db.pure
       - mapping/mapping.pure
@@ -39,15 +39,19 @@ features:
   - scaffolding:class
   - scaffolding:relational-mapping
   - scaffolding:relational-store
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
   - store:relational-semistructured
+  - store:relational-semistructured-explode
   - store:relational-semistructured-navigation
-  - store:relational-semistructured-array-index
-  - store:relational-filter
 stores:
   - relational
 # Distinct non-scaffolding domains: execution, store = 2 -> basic.
 complexity: basic
 tags:
   - semi-structured
-  - variant
+  - explode
+  - view
+  - join
   - json

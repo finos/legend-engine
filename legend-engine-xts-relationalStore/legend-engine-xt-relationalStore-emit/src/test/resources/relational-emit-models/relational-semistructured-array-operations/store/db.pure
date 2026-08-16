@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::ssa::Person
+{
+  firstName: String[1];
+  firm: demo::ssa::Firm[1];
+}
+
+Class demo::ssa::Firm
+{
+  legalName: String[1];
+  scores: Integer[*];
+  addresses: demo::ssa::Address[*];
+  // fold needs a two-parameter block lambda, which the relation colSpec grammar cannot
+  // parse. Declaring it here puts it under the ordinary domain grammar, and the query
+  // projects the derived property instead of the fold expression.
+  concatenatedNames() {$this.addresses->fold({a, acc | $acc + $a.name}, '')}: String[1];
+}
+
+Class demo::ssa::Address
+{
+  name: String[1];
+  rank: Integer[1];
+}
+
+###ExternalFormat
+Binding demo::ssa::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssa::Firm,
+    demo::ssa::Address
+  ];
+}
+
+###Relational
+Database demo::ssa::store::PersonDB
+(
+  Table PERSON_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    FIRST_NAME VARCHAR(100),
+    FIRM_DETAILS SEMISTRUCTURED
+  )
+)

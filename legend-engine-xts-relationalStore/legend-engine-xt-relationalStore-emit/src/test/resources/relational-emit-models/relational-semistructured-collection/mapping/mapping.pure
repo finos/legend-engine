@@ -1,0 +1,141 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssc::PersonMapping
+(
+  *demo::ssc::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssc::store::PersonDB]PERSON_TABLE.ID
+    )
+    ~mainTable [demo::ssc::store::PersonDB]PERSON_TABLE
+    firstName: [demo::ssc::store::PersonDB]PERSON_TABLE.FIRST_NAME,
+    firm: Binding demo::ssc::FirmBinding : [demo::ssc::store::PersonDB]PERSON_TABLE.FIRM_DETAILS
+  }
+
+  // No query below writes a flatten call. Navigating a to-many property through a
+  // binding is what makes the planner emit SemiStructuredArrayFlatten and a lateral
+  // join; the rows fan out as a consequence of the model's multiplicity.
+  testSuites:
+  [
+    // These suites carry no toJson canary, and do not need one: every query here
+    // depends on a lateral flatten, which a non-semi-structured target cannot render
+    // at all. A misroute fails outright rather than passing quietly - H2 skips the
+    // whole array-flattening group for exactly this reason.
+    primitiveCollectionSuite:
+    {
+      function: |demo::ssc::Person.all()
+                  ->project(~[firstName: p | $p.firstName, otherName: p | $p.firm.otherNames])
+                  ->sort([~firstName->ascending(), ~otherName->ascending()]);
+      tests:
+      [
+        flattenPrimitiveArray:
+        {
+          data:
+          [
+            demo::ssc::store::PersonDB:
+              Reference
+              #{
+                demo::ssc::data::PersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldFanOutOneRowPerElement:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","otherName":"FX"},{"firstName":"Alice","otherName":"FirmTen"},{"firstName":"Bob","otherName":"FA"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    complexCollectionSuite:
+    {
+      function: |demo::ssc::Person.all()
+                  ->project(~[firstName: p | $p.firstName, addressName: p | $p.firm.addresses.name])
+                  ->sort([~firstName->ascending(), ~addressName->ascending()]);
+      tests:
+      [
+        flattenObjectArray:
+        {
+          data:
+          [
+            demo::ssc::store::PersonDB:
+              Reference
+              #{
+                demo::ssc::data::PersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldFanOutOneRowPerObject:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","addressName":"Annex"},{"firstName":"Alice","addressName":"HQ"},{"firstName":"Bob","addressName":"Main"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    // A collection inside a collection - two stacked lateral flattens. This shape is
+    // reachable only through a binding; explodeSemiStructured asserts its operand is a
+    // raw column, so it cannot explode an already-exploded element.
+    nestedCollectionSuite:
+    {
+      function: |demo::ssc::Person.all()
+                  ->project(~[firstName: p | $p.firstName, lineDetail: p | $p.firm.addresses.lines.detail])
+                  ->sort([~firstName->ascending(), ~lineDetail->ascending()]);
+      tests:
+      [
+        flattenNestedArray:
+        {
+          data:
+          [
+            demo::ssc::store::PersonDB:
+              Reference
+              #{
+                demo::ssc::data::PersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldFanOutAcrossBothLevels:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","lineDetail":"L1"},{"firstName":"Alice","lineDetail":"L2"},{"firstName":"Alice","lineDetail":"L3"},{"firstName":"Bob","lineDetail":"L9"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)
