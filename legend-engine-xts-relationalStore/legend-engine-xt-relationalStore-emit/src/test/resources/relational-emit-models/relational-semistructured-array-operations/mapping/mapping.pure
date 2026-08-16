@@ -100,8 +100,12 @@ Mapping demo::ssa::PersonMapping
         }
       ];
     },
-    // New ground - max/min over a semi-structured array are exercised nowhere else in
-    // the repo. Kept in their own suite so a failure here isolates from the rest.
+    // max/min over a semi-structured array are exercised nowhere else in the repo. The
+    // values below are correct, but they are reached by flattening and aggregating in
+    // SQL, not through array_max/array_min - max and min carry no semi-structured
+    // dispatch guard, so they never reach their array_* dyna function. This asserts the
+    // result only; it is not evidence the array path ran. See section 11.8 of
+    // docs/engineering/architecture/relational-dynafunctions.md.
     aggregateSuite:
     {
       function: |demo::ssa::Person.all()
