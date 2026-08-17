@@ -456,13 +456,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
   let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);
 
+  // An array extraction converts to an ARRAY. The element type is not applied: a Snowflake
+  // ARRAY holds VARIANT, and VARIANT comparison is type-aware, so array_max on numbers
+  // already orders numerically rather than as text.
+  if ($returnType->endsWith('[]'), | 'to_array(' + $elementAccess + ')', |
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
   if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |
   if ($returnType == 'BOOLEAN', | 'to_boolean(' + $elementAccess + ')', |
   if ($returnType == 'FLOAT', | 'to_double(' + $elementAccess + ')', |
   if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |
-  $elementAccess))))));
+  $elementAccess)))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateSnowflake(params:String[*]):String[1]
