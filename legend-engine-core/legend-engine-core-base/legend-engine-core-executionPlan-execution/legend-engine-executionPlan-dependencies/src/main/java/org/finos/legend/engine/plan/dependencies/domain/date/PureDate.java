@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.plan.dependencies.domain.date;
 
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.StringIterate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
@@ -2005,7 +2005,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         static long getDateDiffWeeks(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate from, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate to)
         {
             long absDateDiffDays = Math.abs(getDiffDays(from, to));
-            int noDaysTillSunday = daysUntilSunday(from.getCalendar(), to.getCalendar());
+            int noDaysTillSunday = daysUntilSunday(from, to);
 
             if (noDaysTillSunday > absDateDiffDays)
             {
@@ -2021,27 +2021,9 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
         static long getDiffDays(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate first, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate second)
         {
-            Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate> thisCalPair = Tuples.pair(first.getCalendar(), first);
-            Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate> otherCalPair = Tuples.pair(second.getCalendar(), second);
-            Pair<Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate>, Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate>> earlierLaterPair = thisCalPair.getOne().before(otherCalPair.getOne()) ? Tuples.pair(thisCalPair, otherCalPair) : Tuples.pair(otherCalPair, thisCalPair);
-            long result = 0;
-            if (first.getYear() != second.getYear())
-            {
-                int fromYear = earlierLaterPair.getOne().getTwo().getYear();
-                int toYear = earlierLaterPair.getTwo().getTwo().getYear();
-                result += DateFunctions.getYearDays(fromYear) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
-                int nextYear = fromYear + 1;
-                for (; nextYear != toYear; nextYear++)
-                {
-                    result += DateFunctions.getYearDays(nextYear);
-                }
-                result += earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR);
-            }
-            else
-            {
-                result = (long) earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
-            }
-            return result;
+            LocalDate firstDate = PureDateToJava.start().toLocalDate(first);
+            LocalDate secondDate = PureDateToJava.start().toLocalDate(second);
+            return Math.abs(ChronoUnit.DAYS.between(firstDate, secondDate));
         }
 
         static long getDiffHours(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate first, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate second)
@@ -2064,23 +2046,17 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
         static long getDiffInMilliseconds(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate date1, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate date2)
         {
-            long time1 = date1.getCalendar().getTimeInMillis();
-            long time2 = date2.getCalendar().getTimeInMillis();
+            long time1 = PureDateToJava.start().toInstant(date1).toEpochMilli();
+            long time2 = PureDateToJava.start().toInstant(date2).toEpochMilli();
             return Math.abs(time1 - time2);
         }
 
-        private static int daysUntilSunday(Calendar start, Calendar end)
+        private static int daysUntilSunday(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate from, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate to)
         {
-            if (start.before(end))
-            {
-                int dayOfWeek = start.get(Calendar.DAY_OF_WEEK);
-                return 7 - (dayOfWeek - 1);
-            }
-            else
-            {
-                int dayOfWeek = start.get(Calendar.DAY_OF_WEEK);
-                return dayOfWeek - 1;
-            }
+            // DayOfWeek runs Monday 1 to Sunday 7, so modulo 7 gives the days elapsed since Sunday.
+            int daysSinceSunday = PureDateToJava.start().toLocalDate(from).getDayOfWeek().getValue() % 7;
+            boolean fromIsEarlier = PureDateToJava.start().toInstant(from).isBefore(PureDateToJava.start().toInstant(to));
+            return fromIsEarlier ? (7 - daysSinceSunday) : daysSinceSunday;
         }
     }
 
