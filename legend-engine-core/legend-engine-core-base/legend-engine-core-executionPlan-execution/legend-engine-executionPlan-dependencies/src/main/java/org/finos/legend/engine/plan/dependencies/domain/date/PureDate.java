@@ -1238,7 +1238,15 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
      * precision greater than millisecond.
      *
      * @return Gregorian calendar for Pure date
+     * @deprecated Use {@link #toInstant()} or {@link #toLocalDate()} instead, or
+     * {@link PureDateToJava} where the date may stop short of a day. A Pure date is a span of time
+     * rather than an instant, and this method resolves it to the start of that span. A
+     * {@link GregorianCalendar} also reads dates before 1582 on the Julian calendar and knows no
+     * time zone history before 1900, neither of which is true of a Pure date. Nothing in this
+     * class calls it any longer; it is retained temporarily for callers that have not moved.
      */
+    @Deprecated
+    @Override
     public GregorianCalendar getCalendar()
     {
         GregorianCalendar calendar = new GregorianCalendar(this.year, (this.month == -1) ? 0 : (this.month - 1), (this.day == -1) ? 1 : this.day);
