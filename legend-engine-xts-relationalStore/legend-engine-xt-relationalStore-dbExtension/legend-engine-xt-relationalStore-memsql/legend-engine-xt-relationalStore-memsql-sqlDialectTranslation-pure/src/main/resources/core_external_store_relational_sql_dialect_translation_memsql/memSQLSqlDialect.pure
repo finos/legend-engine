@@ -75,6 +75,14 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
 {
   [
     pair(
+      'SQLStructureTests - ExceptAll',
+      '[unsupported-api] EXCEPT ALL is not supported for Database Type: MemSQL'
+    ),
+    pair(
+      'SQLStructureTests - IntersectAll',
+      '[unsupported-api] INTERSECT ALL is not supported for Database Type: MemSQL'
+    ),
+    pair(
       // MemSQL always does floating point division (unlike other dbs)
       'NumberArithmetic - divide integer',
       'Expected - {"columnNames":["result"],"rows":[{"values":[0]}]}\n' +
@@ -224,6 +232,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     querySpecificationProcessor_default(),
     queryWithScopeProcessor_default(),
     unionProcessor_default(),
+    exceptProcessor_distinctOnly(),
+    intersectProcessor_distinctOnly(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default()
   ]

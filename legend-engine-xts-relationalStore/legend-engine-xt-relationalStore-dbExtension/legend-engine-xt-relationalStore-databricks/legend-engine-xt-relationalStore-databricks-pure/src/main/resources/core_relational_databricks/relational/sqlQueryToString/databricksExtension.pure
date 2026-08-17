@@ -48,6 +48,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchForDatabricks($sgc, $baseDynaFuncDispatch)};
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 10000,
       aliasLimit = 255,

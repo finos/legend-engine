@@ -46,7 +46,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
     $q->map(a| let alias      = $a.alias;
                let relElement = $alias.relationalElement;
                $relElement->match([
-                                     u:Union[1]               | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
+                                     u:SetOperationQuery[1]        | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
                                      v:ViewSelectSQLQuery[1]  | pair($relElement->cast(@Table).name, $alias.name)->concatenate($v.selectSQLQuery->traverse());,
                                      t:Table[1]               | pair($relElement->cast(@Table).name, $alias.name);,
                                      tf:TabularFunction[1]               | pair($relElement->cast(@TabularFunction).name, $alias.name);,
@@ -79,7 +79,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                                     t:Table[1]                  | pair($t.name,$name);,
                                                                     tf:TabularFunction[1]        | pair($tf.name,$name);,
                                                                     c:CommonTableExpressionReference[1] | pair($c.name,$name);,
-                                                                    u:Union[1]                  | pair('unionAlias', $name)->concatenate($u->traverse());,
+                                                                    u:SetOperationQuery[1]           | pair('unionAlias', $name)->concatenate($u->traverse());,
                                                                     s:SelectSQLQuery[1]         | let children = $s->traverse();
                                                                                                   if($children->isNotEmpty(),
                                                                                                      | pair($children->first()->toOne().first,$name)->concatenate($children),
@@ -89,7 +89,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                                                     ss:SemiStructuredArrayFlatten[1] | pair('ss_flatten', $name)->concatenate($ss.navigation->traverse()),
                                                                     ss:SemiStructuredArrayFlattenRelation[1] | pair('ss_flatten', $name)->concatenate($ss.navigation->traverse())
                                                                ]);,
-                     union:Union[1]         | $union.queries->traverse(),
+                     union:SetOperationQuery[1]  | $union.queries->traverse(),
                      u:UnaryOperation[1]    | $u.nested->traverse(),
                      d:DynaFunction[1]      | $d.parameters->traverse();,
                      b:BinaryOperation[1]   | $b.left->traverse()->concatenate($b.right->traverse());,
@@ -165,7 +165,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
 
                 v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->transformAliasName($m);,
                                           
-                u:Union[1] |^$u(queries = $u.queries->map(q | $q->transformAliasName($m))->cast(@SelectSQLQuery));,
+                u:SetOperationQuery[1] |^$u(queries = $u.queries->map(q | $q->transformAliasName($m))->cast(@SelectSQLQuery));,
       
                 ta: TableAlias[1]| let transformedRelElement = $ta.relationalElement->transformAliasName($m);
                                    let new = $m->get($ta.name);

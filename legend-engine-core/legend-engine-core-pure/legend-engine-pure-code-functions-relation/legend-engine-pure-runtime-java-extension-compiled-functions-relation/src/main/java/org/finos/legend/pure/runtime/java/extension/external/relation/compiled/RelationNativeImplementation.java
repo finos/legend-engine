@@ -183,6 +183,42 @@ public class RelationNativeImplementation
         return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).concatenate(RelationNativeImplementation.getTDS(rel2, es)), ps);
     }
 
+    public static <T> Relation<? extends T> union(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).union(RelationNativeImplementation.getTDS(rel2, es)), ps);
+    }
+
+    public static <T> Relation<? extends T> unionAll(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).unionAll(RelationNativeImplementation.getTDS(rel2, es)), ps);
+    }
+
+    public static <T> Relation<? extends T> except(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).except(RelationNativeImplementation.getTDS(rel2, es), false), ps);
+    }
+
+    public static <T> Relation<? extends T> exceptAll(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).except(RelationNativeImplementation.getTDS(rel2, es), true), ps);
+    }
+
+    public static <T> Relation<? extends T> intersect(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).intersect(RelationNativeImplementation.getTDS(rel2, es), false), ps);
+    }
+
+    public static <T> Relation<? extends T> intersectAll(Relation<? extends T> rel1, Relation<? extends T> rel2, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        return new TDSContainer((TestTDSCompiled) RelationNativeImplementation.getTDS(rel1, es).intersect(RelationNativeImplementation.getTDS(rel2, es), true), ps);
+    }
+
     public static <T> Relation<? extends T> filter(Relation<? extends T> rel, Function2 pureFunction, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();

@@ -128,7 +128,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                                            );
                                           ^$newS(commonTableExpressions = $newS.commonTableExpressions->map(cte | $cte->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@CommonTableExpression)));,
                     a:Alias[1] | ^$a(relationalElement=$a.relationalElement->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
-                    u:Union[1] | ^$u(queries=$u.queries->map(q|$q->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery))),
+                    u:SetOperationQuery[1] | ^$u(queries=$u.queries->map(q|$q->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery))),
                     v:ViewSelectSQLQuery[1] | if($shouldProcessViewSubSelect,|^$v(selectSQLQuery=$v.selectSQLQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),|$v),
                     t:Table[1] | $tableToTable->eval($t),
                     tf:TabularFunction[1] | $tf,
@@ -171,7 +171,7 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                                                                                    |$join.operation);
                                                         let newJoin = ^$join(operation=$newJoinOperation);,
                                            c:CommonTableExpressionReference[1] | $join,
-                                           u:Union[1] | $join,
+                                           u:SetOperationQuery[1] | $join,
                                            s:SelectSQLQuery[1] | $join,
                                            s:SemiStructuredArrayFlatten[1] | $join,
                                            s:SemiStructuredArrayFlattenRelation[1] | $join

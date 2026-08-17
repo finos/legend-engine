@@ -501,6 +501,16 @@ public abstract class TestTDS
 
     public TestTDS concatenate(TestTDS tds2)
     {
+        return this.unionAll(tds2);
+    }
+
+    public TestTDS union(TestTDS tds2)
+    {
+        return this.concatenate(tds2).distinct(this.getColumnNames());
+    }
+
+    public TestTDS unionAll(TestTDS tds2)
+    {
         TestTDS result = newTDS(Lists.mutable.withAll(columnsOrdered), Maps.mutable.withMap(pureTypesByColumnName), (int) (this.rowCount + tds2.rowCount));
 
         dataByColumnName.forEachKey(columnName ->
@@ -514,6 +524,58 @@ public abstract class TestTDS
             result.dataByColumnName.put(columnName, copy);
         });
         return result;
+    }
+
+    public TestTDS except(TestTDS tds2, boolean all)
+    {
+        return this.setOperation(tds2, false, all);
+    }
+
+    public TestTDS intersect(TestTDS tds2, boolean all)
+    {
+        return this.setOperation(tds2, true, all);
+    }
+
+    // ALL variants treat both sides as multisets: a row of tds2 can only be consumed once, so EXCEPT ALL
+    // keeps max(0, countLeft - countRight) copies and INTERSECT ALL keeps min(countLeft, countRight).
+    // The non-ALL variants de-duplicate the left side first, making membership a plain contains check.
+    private TestTDS setOperation(TestTDS tds2, boolean keepMatching, boolean all)
+    {
+        MutableList<String> cols = this.getColumnNames();
+        TestTDS source = all ? this : this.distinct(cols);
+
+        MutableMap<MutableList<Object>, Integer> availableInOther = Maps.mutable.empty();
+        for (int i = 0; i < tds2.rowCount; i++)
+        {
+            availableInOther.updateValue(rowKey(tds2, cols, i), () -> 0, c -> c + 1);
+        }
+
+        MutableIntSet drop = new IntHashSet();
+        for (int i = 0; i < source.rowCount; i++)
+        {
+            MutableList<Object> key = rowKey(source, cols, i);
+            Integer available = availableInOther.get(key);
+            boolean matched = available != null && available > 0;
+            if (matched && all)
+            {
+                availableInOther.put(key, available - 1);
+            }
+            if (matched != keepMatching)
+            {
+                drop.add(i);
+            }
+        }
+        return source.drop(drop);
+    }
+
+    private static MutableList<Object> rowKey(TestTDS tds, MutableList<String> cols, int row)
+    {
+        MutableList<Object> key = Lists.mutable.empty();
+        for (String col : cols)
+        {
+            key.add(((Object[]) tds.dataByColumnName.get(col))[row]);
+        }
+        return key;
     }
 
     public TestTDS addColumn(ColumnValue columnValue)

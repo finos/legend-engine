@@ -2885,15 +2885,21 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpressionF
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::flattenableSetOperationFunctions():meta::pure::metamodel::function::Function<Any>[*]
+{
+   [
+      concatenate_T_MANY__T_MANY__T_MANY_, union_T_MANY__T_MANY__T_MANY_,
+      concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
+      concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_,
+      concatenate_Relation_1__Relation_1__Relation_1_,
+      unionAll_Relation_1__Relation_1__Relation_1_
+   ]
+}
+
 function meta::relational::functions::pureToSqlQuery::flattenConcatenate(f:ValueSpecification[1]):ValueSpecification[*]
 {
    $f->match([
-      fe:FunctionExpression[1] | if ($fe.func->in([
-                                            concatenate_T_MANY__T_MANY__T_MANY_, union_T_MANY__T_MANY__T_MANY_,
-                                            concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_,
-                                            concatenate_TabularDataSet_1__TabularDataSet_MANY__TabularDataSet_1_,
-                                            concatenate_Relation_1__Relation_1__Relation_1_
-                                            ]),
+      fe:FunctionExpression[1] | if ($fe.func->in(flattenableSetOperationFunctions()),
                                        | $fe.parametersValues->at(0)->flattenConcatenate()->concatenate($fe.parametersValues->at(1)->flattenConcatenate()),
                                        | $fe
                                  );,
@@ -2905,13 +2911,81 @@ function meta::relational::functions::pureToSqlQuery::flattenConcatenate(f:Value
    ])
 }
 
+// Operands of a set operation that cannot be flattened into a single n-ary node. EXCEPT and INTERSECT are
+// left-associative and non-commutative; relation union is excluded too because flattenConcatenate would
+// also collapse a nested concatenate into it and silently drop the de-duplication.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::setOperationOperand(f:ValueSpecification[1]):ValueSpecification[*]
+{
+   $f->match([
+      iv:InstanceValue[1]| $iv.values->match([
+                              v:ValueSpecification[*]|$v,
+                              a:Any[*]| $iv
+                                ]),
+      v:ValueSpecification[1] | $v
+   ])
+}
+
+function meta::relational::functions::pureToSqlQuery::buildSetOperationElement(kind:String[1], queries:SelectSQLQuery[*], currentTreeNodes:RelationalTreeNode[*], setImplementations:SetImplementation[*]):SetOperationQuery[1]
+{
+   if([
+        pair(|$kind == 'unionAll',     |^UnionAll(queries = $queries, currentTreeNodes = $currentTreeNodes, setImplementations = $setImplementations)),
+        pair(|$kind == 'union',        |^Union(queries = $queries, currentTreeNodes = $currentTreeNodes, setImplementations = $setImplementations)),
+        pair(|$kind == 'except',       |^Except(queries = $queries)),
+        pair(|$kind == 'exceptAll',    |^ExceptAll(queries = $queries)),
+        pair(|$kind == 'intersect',    |^Intersect(queries = $queries)),
+        pair(|$kind == 'intersectAll', |^IntersectAll(queries = $queries))
+      ],
+      |fail('Unknown set operation \'' + $kind + '\''); ^UnionAll(queries = $queries);
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::processConcatenate(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   // meta::pure::functions::collection::union also routes here and is distinguished by its function name
+   processSetOperation(if($f.functionName == 'union', |'union', |'unionAll'), $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processUnion(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('union', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processUnionAll(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('unionAll', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processExcept(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('except', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processExceptAll(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('exceptAll', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processIntersect(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('intersect', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processIntersectAll(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processSetOperation('intersectAll', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processSetOperation(kind:String[1], f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let targetType =  $f.genericType.rawType->toOne();
    let isDataType = $targetType->instanceOf(DataType);
    assert(!$f.genericType.rawType->toOne()->instanceOf(Enum), 'Enumerations are not yet supported in this context');
 
-   let elements = $f->flattenConcatenate();
+   let flattenable = $f.func->in(flattenableSetOperationFunctions());
+   let elements = if($flattenable,
+                     |$f->flattenConcatenate(),
+                     |$f.parametersValues->at(0)->setOperationOperand()->concatenate($f.parametersValues->at(1)->setOperationOperand())
+                  );
 
    let processed_pre = $elements->map(e|$e->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, ^$state(shouldIsolateNestedFilter=false, importDataFlowCurrentSetOffsetInUnion=$elements->indexOf($e)), $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne(););
 
@@ -2958,14 +3032,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
        let rootTable = ^TableAlias(
                                      name = 'union',
-                                     relationalElement = if($f.functionName == 'union',
-                                                             |^Union(
-                                                                   queries = $selects
-                                                               ),
-                                                             |^UnionAll(
-                                                                   queries = $selects
-                                                              )
-                                                          )
+                                     relationalElement = buildSetOperationElement($kind, $selects, [], [])
                        );
 
        let newRoot = ^RootJoinTreeNode(alias = $rootTable);
@@ -3026,18 +3093,11 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
        let newQueries = $newSelectsWithCutNode.second->map(s | $s->alignJoinAndPkColumnsForUnion($newSelectsWithCutNode.second.columns));
 
+       assert($kind->in(['union', 'unionAll']), | '\'' + $kind + '\' is not supported over property mappings');
+
        let optimized = $newQueries->map(q|if($q.data.alias.relationalElement->toOne()->instanceOf(UnionAll),|$q.data.alias.relationalElement->cast(@UnionAll).queries,|$q));
 
-       let union = if($f.functionName == 'union',
-                      |^Union(queries = $optimized,
-                              currentTreeNodes = $currentTreeNodes,
-                              setImplementations = $setImplementationIds
-                       ),
-                      |^UnionAll(queries = $optimized,
-                                 currentTreeNodes = $currentTreeNodes,
-                                 setImplementations = $setImplementationIds
-                       )
-                   );
+       let union = buildSetOperationElement($kind, $optimized, $currentTreeNodes, $setImplementationIds);
 
        print(if(!$context.debug, |'', | $context.space+' >Union: '+$union->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n'));
 
@@ -5107,7 +5167,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                t:Table[1] | $t,
                f:TabularFunction[1] | $f,
                cte: CommonTableExpressionReference[1] | $cte,
-               u:Union[1] | $u,
+               u:SetOperationQuery[1] | $u,
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $joinType, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
                             let select = $selectWithCursor.select;
                             let selectWithFiltersProcessed = $select->pushExtraFilteringOperation($extensions)->pushSavedFilteringOperation($extensions);
@@ -8165,7 +8225,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          a:Alias[1]|if($alias,|$a.name,|$a.relationalElement->buildUniqueName($alias, $selectColumns, $extensions)),
          c:ColumnName[1]|$c.name,
          n:NamedRelation[1]|$n.name,
-         u:Union[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
+         u:SetOperationQuery[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
          c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.columnName;,
          c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.column.name;,
          sc:CommonTableExpressionReference[1]|$sc.name,
@@ -9351,7 +9411,7 @@ function meta::relational::functions::pureToSqlQuery::findMainTable(relation : R
    $relation->match([
                        t:Table[1]|$t,
                        v:View[1]|$v->mainTable(),
-                       u:Union[1]|$u.queries->at(0).data.alias.relationalElement->toOne()->findMainTable(),
+                       u:SetOperationQuery[1]|$u.queries->at(0).data.alias.relationalElement->toOne()->findMainTable(),
                        s:SelectSQLQuery[1]|if($s.preIsolationCurrentTreeNode->isEmpty(),
                                                   |$s.data->toOne()->findLastJoinTreeNode(),
                                                   |$s.preIsolationCurrentTreeNode->toOne();
@@ -9400,7 +9460,7 @@ function meta::relational::functions::pureToSqlQuery::findTarget(join:Join[1], s
                                                            let j = $join->otherTable($tb);
                                                            if ($j->isEmpty(),
                                                               | fail('Join ' + $join.name + ' not correctly specified/mapped. It does not join to the target table ' + $sourceTableAlias.relation->match([t:Table[1]|$t.name,
-                                                                                                                                                                                                          u:Union[1]|'\'union\'',
+                                                                                                                                                                                                          u:SetOperationQuery[1]|'\''+$u->type().name->toOne()+'\'',
                                                                                                                                                                                                           s:SelectSQLQuery[1]|'\''+$s->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+' (mainTable: '+$tb.name+') \'';
                                                                                                                                                                                                          ])
                                                                                                                                                                                                    );
@@ -9694,7 +9754,7 @@ function meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias(
     tac:TableAliasColumn[1] | $tac.alias.relationalElement->findTableForColumnInAlias($tac.column.name);, // ignore passed columnName
     v:View[1] | let rop = $v.columnMappings->filter(c|$c.columnName == $columnName->toOne())->toOne(); $rop.relationalOperationElement->findTableForColumnInAlias([]);,
     t:Table[1] | assert($t.columns->cast(@Column).name->contains($columnName->toOne()), 'can\'t find ' + $columnName->toOne() + ' in Table: ' + $t.schema.name + '.' + $t.name); pair($t, $columnName->toOne());,
-    u:Union[1] | $u.queries->at(0)->findTableForColumnInAlias($columnName),
+    u:SetOperationQuery[1] | $u.queries->at(0)->findTableForColumnInAlias($columnName),
     r:RelationalOperationElement[1] | $r->extractTableAliasColumns()->toOne('Expected one table alias column in operation')->findTableForColumnInAlias($columnName)
   ]);
 }
@@ -10759,6 +10819,12 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinct_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::distinct_Relation_1__ColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDistinctByColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processConcatenate_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::union_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processUnion_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::unionAll_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processUnionAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::except_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processExcept_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::exceptAll_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processExceptAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::intersect_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processIntersect_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::intersectAll_Relation_1__Relation_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processIntersectAll_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::drop_Relation_1__Integer_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processDrop_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::extend_Relation_1__FuncColSpec_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processTdsExtend_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processTdsExtend_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

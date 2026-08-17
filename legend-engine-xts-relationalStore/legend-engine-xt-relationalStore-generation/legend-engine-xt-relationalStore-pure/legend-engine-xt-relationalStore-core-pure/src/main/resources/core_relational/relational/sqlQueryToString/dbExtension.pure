@@ -304,6 +304,36 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    buildDummyConnection : meta::pure::metamodel::function::Function<{->RelationalDatabaseConnection[1]}>[0..1];
 
    processTestConnectionDatasourceSpecification : meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1], meta::relational::metamodel::Database[*] -> meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]}>[0..1];
+
+   setOperationSupport: SetOperationSupport[0..1];
+}
+
+// UNION / EXCEPT / INTERSECT support and spelling vary by target (MINUS on Oracle, mandatory EXCEPT
+// DISTINCT on BigQuery, no ALL variants on several targets), so each dialect declares the keyword it
+// accepts. An empty field means the target does not support that operation.
+Class meta::relational::functions::sqlQueryToString::SetOperationSupport
+{
+   union: String[0..1];
+   unionAll: String[0..1];
+   except: String[0..1];
+   exceptAll: String[0..1];
+   intersect: String[0..1];
+   intersectAll: String[0..1];
+}
+
+function meta::relational::functions::sqlQueryToString::standardSetOperationSupport(): SetOperationSupport[1]
+{
+   ^SetOperationSupport(union = 'UNION', unionAll = 'UNION ALL', except = 'EXCEPT', exceptAll = 'EXCEPT ALL', intersect = 'INTERSECT', intersectAll = 'INTERSECT ALL');
+}
+
+function meta::relational::functions::sqlQueryToString::distinctOnlySetOperationSupport(): SetOperationSupport[1]
+{
+   ^SetOperationSupport(union = 'UNION', unionAll = 'UNION ALL', except = 'EXCEPT', intersect = 'INTERSECT');
+}
+
+function meta::relational::functions::sqlQueryToString::unionOnlySetOperationSupport(): SetOperationSupport[1]
+{
+   ^SetOperationSupport(union = 'UNION', unionAll = 'UNION ALL');
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
@@ -471,6 +501,12 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
    $relationalOperationElement->processOperation($sgc.dbConfig, $sgc.format, $sgc.generationState, $sgc.config, $sgc.extensions);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::processSetOperation(queries:SelectSQLQuery[*], keyword:String[0..1], operationName:String[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   assert($keyword->isNotEmpty(), | '[unsupported-api] ' + $operationName + ' is not supported for Database Type: ' + $sgc.dbConfig.dbType->toString());
+   '('+$queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' ' + $keyword->toOne() + ' ')+')';
+}
+
 function meta::relational::functions::sqlQueryToString::processOperation(relationalOperationElement:RelationalOperationElement[1], dbConfig : DbConfig[1], format:Format[1], generationState:GenerationState[1], config:Config[1], extensions:Extension[*]):String[1]
 {
    let sgc = ^SqlGenerationContext(dbConfig=$dbConfig, format=$format, generationState=$generationState, config=$config, extensions=$extensions);
@@ -519,8 +555,12 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                               $i.table->processOperation($sgc),
                                               ' ',
                                               $i.selectQuery->processOperation($sgc)]->joinStrings(''),
-                                          u:UnionAll[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ALL ')+')',
-                                          u:Union[1]| '('+$u.queries->map(q|$q->processSelectSQLQuery($sgc, false))->makeString(' UNION ')+')',
+                                          u:UnionAll[1]| processSetOperation($u.queries, $dbConfig.dbExtension.setOperationSupport.unionAll, 'UNION ALL', $sgc),
+                                          u:Union[1]| processSetOperation($u.queries, $dbConfig.dbExtension.setOperationSupport.union, 'UNION', $sgc),
+                                          e:ExceptAll[1]| processSetOperation($e.queries, $dbConfig.dbExtension.setOperationSupport.exceptAll, 'EXCEPT ALL', $sgc),
+                                          e:Except[1]| processSetOperation($e.queries, $dbConfig.dbExtension.setOperationSupport.except, 'EXCEPT', $sgc),
+                                          i:IntersectAll[1]| processSetOperation($i.queries, $dbConfig.dbExtension.setOperationSupport.intersectAll, 'INTERSECT ALL', $sgc),
+                                          i:Intersect[1]| processSetOperation($i.queries, $dbConfig.dbExtension.setOperationSupport.intersect, 'INTERSECT', $sgc),
                                           f:FreeMarkerOperationHolder[1]|processFreeMarkerOperationHolder($f, $dbConfig, $format, $generationState, $config, false, $extensions),
                                           u:meta::relational::functions::pureToSqlQuery::union::UnionOrJoin[1]|processDynaFunction($u.parameters->reverse()->meta::relational::functions::pureToSqlQuery::orFilters($extensions)->toOne()->cast(@DynaFunction), $sgc),
                                           d:DynaFunction[1]|processDynaFunction($d, $sgc),

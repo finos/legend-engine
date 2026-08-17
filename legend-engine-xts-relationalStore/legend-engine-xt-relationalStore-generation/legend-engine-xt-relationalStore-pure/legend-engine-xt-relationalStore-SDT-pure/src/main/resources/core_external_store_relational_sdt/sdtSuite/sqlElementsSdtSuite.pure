@@ -718,6 +718,52 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   )
 }
 
+//Tests on Except / Intersect
+
+// SELECT * FROM testTableA EXCEPT ALL SELECT * FROM testTableB
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testExceptAll(): SqlDialectTest[1]
+{
+  testConfigForSetOperation(
+    {l, r, d| ^Except(left = $l, right = $r, distinct = $d)},
+    false,
+    ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex'])]),
+    'SQLStructureTests - ExceptAll'
+  )
+}
+
+// SELECT * FROM testTableA EXCEPT SELECT * FROM testTableB
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testExcept(): SqlDialectTest[1]
+{
+  testConfigForSetOperation(
+    {l, r, d| ^Except(left = $l, right = $r, distinct = $d)},
+    true,
+    ^TestResult(columnNames = ['student'], rows = []),
+    'SQLStructureTests - Except'
+  )
+}
+
+// SELECT * FROM testTableA INTERSECT ALL SELECT * FROM testTableB
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testIntersectAll(): SqlDialectTest[1]
+{
+  testConfigForSetOperation(
+    {l, r, d| ^Intersect(left = $l, right = $r, distinct = $d)},
+    false,
+    ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex'])]),
+    'SQLStructureTests - IntersectAll'
+  )
+}
+
+// SELECT * FROM testTableA INTERSECT SELECT * FROM testTableB
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testIntersect(): SqlDialectTest[1]
+{
+  testConfigForSetOperation(
+    {l, r, d| ^Intersect(left = $l, right = $r, distinct = $d)},
+    true,
+    ^TestResult(columnNames = ['student'], rows = [^TestResultRow(values = ['Alex'])]),
+    'SQLStructureTests - Intersect'
+  )
+}
+
 // SELECT dateCol AS result FROM testTable WHERE CURRENT_DATE = dateCol
 function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testCurrentDate(): SqlDialectTest[1]
 {
@@ -1161,6 +1207,44 @@ function meta::external::store::relational::sdt::framework::testConfigForUnion(d
             from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTable')), alias = 'table_b')
           ),
           distinct = $distinctFlag
+        )
+    ),
+    expectedResult = $expected
+  );
+}
+
+// testTableA holds 'Alex' twice and testTableB once, so the DISTINCT and ALL variants give different results.
+function meta::external::store::relational::sdt::framework::testConfigForSetOperation(build: Function<{meta::external::query::sql::metamodel::Relation[1], meta::external::query::sql::metamodel::Relation[1], Boolean[1]->meta::external::query::sql::metamodel::SetOperation[1]}>[1], distinctFlag: Boolean[1], expected: TestResult[1], identifier: String[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTableA', isTempTable = true),
+      ^DropTestTable(tableName = 'testTableB', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTableA', columns = [pair('student', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^CreateTestTable(tableName = 'testTableB', columns = [pair('student', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTableA', columns = ['student'], values = [list([literal('Alex')]), list([literal('Alex')])]),
+      ^InsertIntoTestTable(tableName = 'testTableB', columns = ['student'], values = [list([literal('Alex')])])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTableA', isTempTable = true),
+      ^DropTestTable(tableName = 'testTableB', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = $build->eval(
+          ^QuerySpecification(
+            select = ^Select(
+              distinct = false,
+              selectItems = ^AllColumns()),
+            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTableA')), alias = 'table_a')
+          ),
+          ^QuerySpecification(
+            select = ^Select(
+              distinct = false,
+              selectItems = ^AllColumns()),
+            from = ^AliasedRelation(relation = ^Table(name = ^QualifiedName(parts = 'testTableB')), alias = 'table_b')
+          ),
+          $distinctFlag
         )
     ),
     expectedResult = $expected

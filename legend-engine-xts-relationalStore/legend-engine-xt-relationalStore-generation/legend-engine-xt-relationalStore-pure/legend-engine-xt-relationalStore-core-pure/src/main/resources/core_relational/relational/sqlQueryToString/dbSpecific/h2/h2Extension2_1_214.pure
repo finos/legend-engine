@@ -24,6 +24,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
      getDynaFunctionToSqlForH2()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      setOperationSupport = distinctOnlySetOperationSupport(),
       isBooleanLiteralSupported = true,
       aliasLimit = 256,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},

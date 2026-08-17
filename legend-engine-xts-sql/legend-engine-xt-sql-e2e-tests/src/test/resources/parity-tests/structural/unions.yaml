@@ -72,7 +72,7 @@ tests:
     feature: "EXCEPT"
     category: "set_operations"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # INTERSECT
   - id: intersect_basic
@@ -80,7 +80,7 @@ tests:
     feature: "INTERSECT"
     category: "set_operations"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # UNION ALL with NULL values
   - id: union_all_nulls

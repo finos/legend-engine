@@ -79,7 +79,7 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      ta:TableAlias[1]| let name = $ta.name; let relElement = $ta.relationalElement;
                                        $relElement->match([t:Table[1]|[],
                                                            tf:TabularFunction[1]|[],
-                                                           u: Union[1]|$u->search($maxLength),
+                                                           u: SetOperationQuery[1]|$u->search($maxLength),
                                                            s: SelectSQLQuery[1]|$s->search($maxLength);,
                                                            s: SemiStructuredArrayFlatten[1]|$s.navigation->search($maxLength),
                                                            s: SemiStructuredArrayFlattenRelation[1]|$s.navigation->search($maxLength)
@@ -87,7 +87,7 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      tac:TableAliasColumn[1]| $tac.column->search($maxLength);,
                      tacn:TableAliasColumnName[1]| getSanitizedAndOriginalNamePair($tacn.columnName, $maxLength);,
                      cn:ColumnName[1]| getSanitizedAndOriginalNamePair($cn.name, $maxLength);,
-                     union: Union[1]|$union.queries->search($maxLength),
+                     union: SetOperationQuery[1]|$union.queries->search($maxLength),
                      u:UnaryOperation[1]|$u.nested->search($maxLength);,
                      d: DynaFunction[1]| $d.parameters->search($maxLength);,
                      b: BinaryOperation[1] |$b.left->search($maxLength)->concatenate($b.right->search($maxLength));,
@@ -186,7 +186,7 @@ function meta::relational::postProcessor::reAliasColumnName::replace(r:Relationa
 
                 v:ViewSelectSQLQuery[1] | let r = $v.selectSQLQuery->replace($m, $cache);
                                           pair(^$v(selectSQLQuery=$r.first->cast(@SelectSQLQuery)), $r.second);,
-                u:Union[1] | let r = $u.queries->replaceList($m, $cache);
+                u:SetOperationQuery[1] | let r = $u.queries->replaceList($m, $cache);
                              pair(^$u(queries = $r.first.values->cast(@SelectSQLQuery)), $r.second);,
                 ta:TableAlias[1]| let r = $ta.relationalElement->replace($m, $cache);
                                   pair(^$ta(relationalElement = $r.first), $r.second);,
