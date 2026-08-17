@@ -321,6 +321,52 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void testGroupByFuncColSpecOverRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, grp Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~id->ascending()]))\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testAggregateFuncColSpecOverRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->aggregate(~names : g | $g->joinStrings(~name, ',', [~id->descending()]))\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testGroupByFuncColSpecUnknownSortColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, grp Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~nope->ascending()]))\n" +
+                        "}",
+                "COMPILATION error at [7:75-78]: The column 'nope' can't be found in the relation (id:Int, grp:Int, name:Varchar(200))"
+        );
+    }
+
+    @Test
     public void testConcatenate()
     {
         test(

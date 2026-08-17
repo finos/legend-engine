@@ -645,6 +645,35 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
+    // The relation forms of joinStrings name the joined column, and optionally the ordering, as ColSpecs, so
+    // both have to be resolved against the source relation before the arguments are built. The column may
+    // instead be a row function, which just needs its parameter typed.
+    public static final ParametersInference RelationAggregateOverColumnInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType gt = firstProcessedParameter._genericType();
+        if (cc.pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            if (parameters.size() > 1 && parameters.get(1) instanceof ClassInstance)
+            {
+                processColumn(parameters.get(1), gt, cc);
+            }
+            else if (parameters.size() > 1)
+            {
+                updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
+            }
+            if (parameters.size() == 4)
+            {
+                processSort(parameters.get(3), gt, cc, valueSpecificationBuilder, processorSupport);
+            }
+        }
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+        parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+        return result;
+    };
+
     public static final ParametersInference SortColumnInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
@@ -852,11 +881,11 @@ public class Handlers
             Object aggCol = ((ClassInstance) parameters.get(aggSpecParamIndex)).value;
             if (aggCol instanceof ColSpecArray)
             {
-                ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleAggColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
+                ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleGroupColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
             }
             else if (aggCol instanceof ColSpec)
             {
-                processSingleAggColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
+                processSingleGroupColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
             }
             else
             {
@@ -957,6 +986,23 @@ public class Handlers
                 c.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
                 c.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
             });
+        }
+    }
+
+    // A groupBy/aggregate column is either an AggColSpec (map lambda over a row, then a reduce lambda over the
+    // mapped values) or a FuncColSpec (one lambda over the whole group). The protocol tells them apart by
+    // whether a second lambda is present.
+    private static void processSingleGroupColSpec(ColSpec colSpec, ValueSpecification firstProcessedParameter, ValueSpecificationBuilder valueSpecificationBuilder)
+    {
+        if (colSpec.function2 == null)
+        {
+            // The lambda parameter is the group itself, so it takes the relation's own generic type rather
+            // than the row type an AggColSpec map would get.
+            updateSimpleLambda(colSpec.function1, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
+        }
+        else
+        {
+            processSingleAggColSpec(colSpec, firstProcessedParameter, valueSpecificationBuilder);
         }
     }
 
@@ -1078,11 +1124,11 @@ public class Handlers
                 Object aggCol = ((ClassInstance) parameters.get(aggSpecParamIndex)).value;
                 if (aggCol instanceof ColSpecArray)
                 {
-                    ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleAggColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
+                    ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleGroupColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
                 }
                 else if (aggCol instanceof ColSpec)
                 {
-                    processSingleAggColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
+                    processSingleGroupColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
                 }
                 else
                 {
@@ -1383,6 +1429,10 @@ public class Handlers
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__FuncColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__FuncColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         // meta::pure::functions::collection::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
                         h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                 )
@@ -1391,7 +1441,9 @@ public class Handlers
         register(
                 grp(AggregateInference,
                         h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::aggregate_Relation_1__FuncColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
@@ -2447,9 +2499,17 @@ public class Handlers
         register("meta::pure::functions::string::humanize_String_1__String_1_", "humanize", false, ps -> res("String", "one"));
         register("meta::pure::functions::string::isLowerCase_String_1__Boolean_1_", "isLowerCase", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isUpperCase_String_1__Boolean_1_", "isUpperCase", false, ps -> res("Boolean", "one"));
-        register(m(m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> true))));
+        // The string and relation forms of joinStrings share a simple name, and the relation forms need a
+        // ParametersInference to resolve their ColSpecs, so every handler has to sit under one group. The
+        // inference is a no-op unless the first argument is a relation.
+        register(grp(RelationAggregateOverColumnInference,
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2),
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4 && !typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 1),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__ColSpec_1__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 3 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_ColSpec"))),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__ColSpec_1__String_1__SortInfo_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 4 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_ColSpec"))),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 3),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__SortInfo_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 4 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation")))));
         register(m(m(h("meta::pure::functions::string::makeCamelCase_String_1__Boolean_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::makeCamelCase_String_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> true))));
         register(m(m(h("meta::pure::functions::string::isDigit_String_1__Integer_1__Integer_1__Boolean_1_", "isDigit", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),
