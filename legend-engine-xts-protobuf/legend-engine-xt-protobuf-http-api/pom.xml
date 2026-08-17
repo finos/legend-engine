@@ -77,6 +77,19 @@
         </dependency>
         <!-- ENGINE -->
 
+        <!-- PURE -->
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+        <!-- PURE -->
+
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>io.swagger</groupId>

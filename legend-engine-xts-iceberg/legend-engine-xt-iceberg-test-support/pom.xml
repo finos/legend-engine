@@ -87,6 +87,15 @@
             <artifactId>sts</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>aws-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+        </dependency>
+
         <!-- S3 - iceberg storage-->
 
         <!-- Trino - iceberg SQL execution engine-->

@@ -28,10 +28,12 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-logical-plan</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-persistence-component-relational-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- IMMUTABLES -->

@@ -111,6 +111,13 @@
         </dependency>
         <!-- ENGINE -->
 
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <!-- PURE -->
+
         <!-- ANTLR -->
         <dependency>
             <groupId>org.antlr</groupId>

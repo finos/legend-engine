@@ -239,7 +239,7 @@
         <maven.version>3.9.2</maven.version>
         <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
-        <maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
+        <maven.dependency.plugin.version>3.6.0</maven.dependency.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
@@ -253,6 +253,7 @@
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <maven.enforcer.maxJdkVersion>1.8</maven.enforcer.maxJdkVersion>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
         <google.maven.download.plugin.version>1.8.1</google.maven.download.plugin.version>
 
@@ -557,7 +558,7 @@
                         <configuration>
                             <rules>
                                 <enforceBytecodeVersion>
-                                    <maxJdkVersion>1.8</maxJdkVersion>
+                                    <maxJdkVersion>${maven.enforcer.maxJdkVersion}</maxJdkVersion>
                                     <excludes>
 <!--                                        <exclude>io.deephaven:deephaven-proto-backplane-grpc-flight</exclude>-->
 <!--                                        <exclude>io.deephaven:deephaven-java-client-session</exclude>-->
@@ -4347,6 +4348,11 @@
             <dependency>
                 <groupId>org.glassfish.jersey.media</groupId>
                 <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.jersey.test-framework</groupId>
+                <artifactId>jersey-test-framework-core</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
             <dependency>
