@@ -23,6 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
      getDynaFunctionToSqlForDB2()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = false,
       collectionThresholdLimit = 32767,
       aliasLimit = 128,

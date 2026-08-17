@@ -1669,6 +1669,11 @@ public class Handlers
                         ps -> true),
                 h("meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_", "concatenate", true, ps -> res(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel), "zeroMany"), ps -> Lists.fixedSize.of(MostCommonType.mostCommon(Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()), pureModel)), ps -> true));
 
+        register(relationSetOperationHandler("except", "excepted"));
+        register(relationSetOperationHandler("exceptAll", "excepted"));
+        register(relationSetOperationHandler("intersect", "intersected"));
+        register(relationSetOperationHandler("intersectAll", "intersected"));
+
         register(m(h("meta::pure::functions::collection::greatest_X_$1_MANY$__X_1_", "greatest", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> matchOneMany(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::greatest_X_MANY__X_$0_1$_", "greatest", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()), ps -> true)));
 
@@ -1796,7 +1801,9 @@ public class Handlers
                 h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 3),
                 h("meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_", "match", true, ps -> res(funcReturnType(ps.get(1)), funcReturnMul(ps.get(1))), ps -> ps.size() == 2)));
         register("meta::pure::functions::meta::instanceOf_Any_1__Type_1__Boolean_1_", "instanceOf", true, ps -> res("Boolean", "one"));
-        register("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", "union", false, ps -> res(ps.get(0)._genericType(), "zeroMany"));
+        register(relationSetOperationHandler("union", "unioned"),
+                h("meta::pure::functions::collection::union_T_MANY__T_MANY__T_MANY_", "union", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true));
+        register(relationSetOperationHandler("unionAll", "unioned"));
         register("meta::pure::functions::collection::reverse_T_m__T_m_", "reverse", true, ps -> res(ps.get(0)._genericType(), ps.get(0)._multiplicity()));
         register(
                 m(
@@ -3234,6 +3241,29 @@ public class Handlers
     public FunctionHandler h(String fullName, String name, boolean isNative, ReturnInference returnInference, ResolveTypeParameterInference resolvedTypeParametersInference, Dispatch dispatch)
     {
         return new FunctionHandler(this.pureModel, this.fcache, fullName, name, isNative, returnInference, resolvedTypeParametersInference, dispatch);
+    }
+
+    // union / except / exceptAll / intersect / intersectAll on Relation all share concatenate's shape: both
+    // operands must have compatible relation types and the result is their merged type.
+    private FunctionHandler relationSetOperationHandler(String name, String pastParticiple)
+    {
+        return h("meta::pure::functions::relation::" + name + "_Relation_1__Relation_1__Relation_1_", name, true, ps ->
+                {
+                    ProcessorSupport processorSupport = this.pureModel.getExecutionSupport().getProcessorSupport();
+                    GenericType firstRelationType = ps.get(0)._genericType()._typeArguments().getFirst();
+                    GenericType secondRelationType = ps.get(1)._genericType()._typeArguments().getFirst();
+                    if (!_RelationType.canConcatenate(firstRelationType, secondRelationType, processorSupport))
+                    {
+                        throw new EngineException("The two relations are incompatible and can't be " + pastParticiple + " " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(firstRelationType, processorSupport) + " and " + org.finos.legend.pure.m3.navigation.generictype.GenericType.print(secondRelationType, processorSupport), EngineErrorType.COMPILATION);
+                    }
+                    return res(
+                            new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass(M3Paths.GenericType))
+                                    ._rawType(this.pureModel.getType(M3Paths.Relation))
+                                    ._typeArguments(Lists.fixedSize.of(_RelationType.merge(firstRelationType, secondRelationType, true, processorSupport))),
+                            "one"
+                    );
+                },
+                ps -> true);
     }
 
     public UnifiedInferenceFunctionExpressionBuilder grp(ParametersInference parametersInference, FunctionHandler... handlers)

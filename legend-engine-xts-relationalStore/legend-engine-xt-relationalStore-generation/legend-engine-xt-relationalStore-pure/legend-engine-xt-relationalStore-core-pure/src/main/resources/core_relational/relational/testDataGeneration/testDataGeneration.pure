@@ -1263,7 +1263,7 @@ Class <<access.private>> meta::relational::testDataGeneration::executionPlan::Re
 function <<access.private>> meta::relational::testDataGeneration::executionPlan::fixRelations(relationalOperationElement:RelationalOperationElement[1], oldToNewPairs:Pair<RelationPointer, Relation>[*]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
-                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->fixRelations($oldToNewPairs))->cast(@SelectSQLQuery)),
+                    u:SetOperationQuery[1] | ^$u(queries = $u.queries->map(q|$q->fixRelations($oldToNewPairs))->cast(@SelectSQLQuery)),
                     s:SelectSQLQuery[1] | let newS = ^$s(
                                                          data = $s.data->toOne()->replaceRelationsInJoin($oldToNewPairs)->cast(@RootJoinTreeNode),
                                                          columns = $s.columns->map(c|$c->fixRelations($oldToNewPairs)),
@@ -1320,7 +1320,7 @@ function <<access.private>> meta::relational::testDataGeneration::executionPlan:
 function <<access.private>> meta::relational::testDataGeneration::executionPlan::quoteVarPlaceHolderTableAliasColumnsIfNotQuouted(relationalOperationElement:RelationalOperationElement[1]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
-                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())->cast(@SelectSQLQuery)),
+                    u:SetOperationQuery[1] | ^$u(queries = $u.queries->map(q|$q->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted())->cast(@SelectSQLQuery)),
                     s:SelectSQLQuery[1] | let newS = ^$s(
                                                          data=if($s.data->isEmpty(), | [], |$s.data->toOne()->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()->cast(@RootJoinTreeNode)),
                                                          columns = $s.columns->map(c|$c->quoteVarPlaceHolderTableAliasColumnsIfNotQuouted()),

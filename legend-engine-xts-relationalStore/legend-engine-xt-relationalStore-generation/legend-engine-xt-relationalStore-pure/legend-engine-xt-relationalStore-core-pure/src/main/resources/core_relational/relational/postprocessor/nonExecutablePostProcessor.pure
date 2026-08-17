@@ -31,7 +31,7 @@ function meta::relational::postProcessor::nonExecutable(selectSQLQuery:SelectSQL
 function meta::relational::postProcessor::processRelationalOperationForNonExecutable(relationalOperationElement:RelationalOperationElement[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    $relationalOperationElement->match([
-                    u:Union[1] | ^$u(queries = $u.queries->map(q|$q->processRelationalOperationForNonExecutable($extensions))->cast(@SelectSQLQuery)),
+                    u:SetOperationQuery[1] | ^$u(queries = $u.queries->map(q|$q->processRelationalOperationForNonExecutable($extensions))->cast(@SelectSQLQuery)),
                     c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->processRelationalOperationForNonExecutable($extensions)->cast(@SelectSQLQuery)),
                     s:SelectSQLQuery[1] | let nonExecutableOperation = ^DynaFunction(name = 'equal', parameters=[^Literal(value=1),^Literal(value=2)]);
                                           let newS = ^$s(

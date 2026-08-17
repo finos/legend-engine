@@ -75,6 +75,14 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 {
   [
     pair(
+      'SQLStructureTests - ExceptAll',
+      '[unsupported-api] EXCEPT ALL is not supported for Database Type: H2'
+    ),
+    pair(
+      'SQLStructureTests - IntersectAll',
+      '[unsupported-api] INTERSECT ALL is not supported for Database Type: H2'
+    ),
+    pair(
       'FuncTests - average_rank(0/0)',
       'H2 SQL Dialect does not support the function - average_rank'
     ),
@@ -180,6 +188,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     tableProcessor_default(),
     aliasedRelationProcessor_default(),
     unionProcessor_default(),
+    exceptProcessor_distinctOnly(),
+    intersectProcessor_distinctOnly(),
     tableSubqueryProcessor_default(),
     tablePlaceholderProcessor_default(),
     joinProcessorForH2(),

@@ -35,6 +35,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
     getDynaFunctionToSqlForClickHouse()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
   ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,

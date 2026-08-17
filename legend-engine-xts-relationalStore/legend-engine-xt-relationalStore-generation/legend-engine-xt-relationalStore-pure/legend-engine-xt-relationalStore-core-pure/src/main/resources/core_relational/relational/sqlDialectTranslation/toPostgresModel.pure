@@ -103,8 +103,12 @@ function meta::relational::functions::toPostgresModel::convertElement(r:Relation
         f:FreeMarkerOperationHolder[1]|       convertFreeMarkerOperationHolder($f, $state);,
         t:TableFunctionParamPlaceHolder[1] |  fail('SQL Dialect translation for TableFunctionParamPlaceHolder not supported yet!'); literal(1);,
         js:meta::relational::metamodel::operation::JoinStrings[1]|                    convertJoinStrings($js, $state);,
-        u:meta::relational::metamodel::relation::UnionAll[1]|                         convertUnion($u, $state, false);,
-        u:meta::relational::metamodel::relation::Union[1]|                            convertUnion($u, $state, true);,
+        u:meta::relational::metamodel::relation::UnionAll[1]|                         convertSetOperation($u, $state, false, {l, r, d| ^meta::external::query::sql::metamodel::Union(left = $l, right = $r, distinct = $d)});,
+        u:meta::relational::metamodel::relation::Union[1]|                            convertSetOperation($u, $state, true, {l, r, d| ^meta::external::query::sql::metamodel::Union(left = $l, right = $r, distinct = $d)});,
+        e:meta::relational::metamodel::relation::ExceptAll[1]|                        convertSetOperation($e, $state, false, {l, r, d| ^meta::external::query::sql::metamodel::Except(left = $l, right = $r, distinct = $d)});,
+        e:meta::relational::metamodel::relation::Except[1]|                           convertSetOperation($e, $state, true, {l, r, d| ^meta::external::query::sql::metamodel::Except(left = $l, right = $r, distinct = $d)});,
+        i:meta::relational::metamodel::relation::IntersectAll[1]|                     convertSetOperation($i, $state, false, {l, r, d| ^meta::external::query::sql::metamodel::Intersect(left = $l, right = $r, distinct = $d)});,
+        i:meta::relational::metamodel::relation::Intersect[1]|                        convertSetOperation($i, $state, true, {l, r, d| ^meta::external::query::sql::metamodel::Intersect(left = $l, right = $r, distinct = $d)});,
         t:meta::relational::metamodel::relation::Table[1]|                            convertTable($t, $state);,
         l:meta::relational::metamodel::Literal[1]|                                    convertLiteral($l, $state);,
         s:meta::relational::metamodel::relation::SemiStructuredArrayFlatten[1]|       convertSemiStructuredArrayFlatten($s, $state);,
@@ -888,10 +892,10 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   ^meta::external::query::sql::metamodel::Table(name = qualifiedName($schemaName->concatenate($t.name)));
 }
 
-function <<access.private>> meta::relational::functions::toPostgresModel::convertUnion(u:meta::relational::metamodel::relation::Union[1], state:ModelConversionState[1], distinct:Boolean[1]):meta::external::query::sql::metamodel::Relation[1]
+function <<access.private>> meta::relational::functions::toPostgresModel::convertSetOperation(u:meta::relational::metamodel::relation::SetOperationQuery[1], state:ModelConversionState[1], distinct:Boolean[1], build:Function<{meta::external::query::sql::metamodel::Relation[1], meta::external::query::sql::metamodel::Relation[1], Boolean[1]->meta::external::query::sql::metamodel::SetOperation[1]}>[1]):meta::external::query::sql::metamodel::Relation[1]
 {
   let newQueries = $u.queries->map(q|$q->convertElement(newState($state.extensions)))->cast(@meta::external::query::sql::metamodel::Relation);
-  ^TableSubquery(query = ^Query(queryBody = $newQueries->tail()->fold({q,a|^meta::external::query::sql::metamodel::Union(left = $a, right = $q, distinct = $distinct)}, $newQueries->first()->toOne())->cast(@meta::external::query::sql::metamodel::Union)));
+  ^TableSubquery(query = ^Query(queryBody = $newQueries->tail()->fold({q,a|$build->eval($a, $q, $distinct)->cast(@meta::external::query::sql::metamodel::Relation)}, $newQueries->first()->toOne())->cast(@meta::external::query::sql::metamodel::SetOperation)));
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertLiteral(l:meta::relational::metamodel::Literal[1], state:ModelConversionState[1]):Node[1]

@@ -82,6 +82,9 @@
     "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
   }, {
+    "test" : "meta::pure::functions::relation::tests::exceptAll::testSimpleExceptAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] EXCEPT ALL is not supported for Database Type: H2"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {
@@ -105,6 +108,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
     "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::intersectAll::testSimpleIntersectAll_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] INTERSECT ALL is not supported for Database Type: H2"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"

@@ -38,6 +38,7 @@ function meta::relational::functions::sqlQueryToString::postgres::createDbExtens
      getDynaFunctionToSqlForPostgres()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      setOperationSupport = standardSetOperationSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,

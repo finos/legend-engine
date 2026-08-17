@@ -802,13 +802,56 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::uni
 {
   nodeProcessor(
     Union,
-    {sqlDialect, u, state, config |
-      let sep0 = $state.separator(0, $config);
-      let left = $sqlDialect->executeNodeProcessor($u.left, $state, $config);
-      let right = $sqlDialect->executeNodeProcessor($u.right, $state, $config);
-      $left + $sep0 + $sqlDialect->keyword(if($u.distinct, | 'union', | 'union all'), $state, $config) + $sep0 + $right;
+    {sqlDialect, u, state, config | setOperationProcessorHelper_default($sqlDialect, $u, 'union', 'union all', $state, $config);}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::exceptProcessor_default(): NodeProcessor<Except>[1]
+{
+  nodeProcessor(
+    Except,
+    {sqlDialect, e, state, config | setOperationProcessorHelper_default($sqlDialect, $e, 'except', 'except all', $state, $config);}
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::intersectProcessor_default(): NodeProcessor<Intersect>[1]
+{
+  nodeProcessor(
+    Intersect,
+    {sqlDialect, i, state, config | setOperationProcessorHelper_default($sqlDialect, $i, 'intersect', 'intersect all', $state, $config);}
+  )
+}
+
+// Distinct-only targets register this instead of the *_default processors, so an ALL variant fails with a
+// clear message rather than generating SQL the target will reject.
+function meta::external::store::relational::sqlDialectTranslation::defaults::exceptProcessor_distinctOnly(): NodeProcessor<Except>[1]
+{
+  nodeProcessor(
+    Except,
+    {sqlDialect, e, state, config |
+      assert($e.distinct, | '[unsupported-api] EXCEPT ALL is not supported for Database Type: ' + $config.dbConfig.dbType);
+      setOperationProcessorHelper_default($sqlDialect, $e, 'except', 'except all', $state, $config);
     }
   )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::intersectProcessor_distinctOnly(): NodeProcessor<Intersect>[1]
+{
+  nodeProcessor(
+    Intersect,
+    {sqlDialect, i, state, config |
+      assert($i.distinct, | '[unsupported-api] INTERSECT ALL is not supported for Database Type: ' + $config.dbConfig.dbType);
+      setOperationProcessorHelper_default($sqlDialect, $i, 'intersect', 'intersect all', $state, $config);
+    }
+  )
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::setOperationProcessorHelper_default(sqlDialect: SqlDialect[1], setOperation: SetOperation[1], distinctKeyword: String[1], allKeyword: String[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  let sep0 = $state.separator(0, $config);
+  let left = $sqlDialect->executeNodeProcessor($setOperation.left, $state, $config);
+  let right = $sqlDialect->executeNodeProcessor($setOperation.right, $state, $config);
+  $left + $sep0 + $sqlDialect->keyword(if($setOperation.distinct, | $distinctKeyword, | $allKeyword), $state, $config) + $sep0 + $right;
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::queryProcessor_default(): NodeProcessor<Query>[1]
