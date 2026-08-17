@@ -1078,6 +1078,39 @@ every one of these.
    `column "REFERENCE" must appear in the GROUP BY clause`. Either alone is fine — this is
    narrower than (4), which fails even when the aggregate is projected on its own.
 
+**Array functions in the store language — only `array_size` works.** This is the surface that
+matters most for the relational DSL: `array_*` written directly in a `Filter`, a `View` column, a
+`Join` condition or a mapping property, aggregating a JSON array in place with no row expansion.
+Twenty `array_*` names are registered in `DynaFunctionRegistry` and DuckDB renders all twenty, so
+they are all *authorable*. Only one of them executes.
+
+`array_size` works in all three positions, and is asserted in
+`relational-emit-models/relational-semistructured-store-arrays`. It works because its DuckDB
+renderer casts first — `ifnull(json_array_length(cast(%s as JSON)), 0)`
+(`duckdbExtension.pure:180`). Every other `array_*` renderer is a bare format string over the raw
+operand, so a `SEMISTRUCTURED` column reaches it as JSON where DuckDB wants a LIST:
+
+```
+array_max(TEAM_TABLE.SCORES)
+  -> Binder Error: No function matches ... 'array_aggregate(JSON, STRING_LITERAL)'
+```
+
+**The obvious fix is worse than the defect.** Casting to a JSON list inside the format string —
+`array_aggregate(cast(%s as JSON[]), 'max')` — parses and runs, and is **silently wrong**,
+because JSON elements compare lexicographically:
+
+| Rendering | `[9,100,20]` max |
+|---|---|
+| `cast(x as JSON[])` | **9** — lexicographic |
+| `cast(x as DOUBLE[])` | 100.0 — correct |
+
+A correct rendering needs the *element type*, which a `ToSql` format string does not have; its
+`transform` hook receives already-rendered strings and cannot inspect the node. The fix therefore
+belongs in a processing function where the type is known — the shape `asListForDuckDB(element,
+sgc, elementType)` (`duckdbExtension.pure:699`) already uses for the flatten path. Note a numeric
+fixture can hide this: `[30,10,20]` yields the right answer lexicographically and only a case like
+`[9,100,20]` exposes it.
+
 **What a binding can be attached to.** The operation on the right of a `Binding` is not limited to
 a bare column, and the bound property is not limited to `[1]`. All of the following are supported
 and now covered:

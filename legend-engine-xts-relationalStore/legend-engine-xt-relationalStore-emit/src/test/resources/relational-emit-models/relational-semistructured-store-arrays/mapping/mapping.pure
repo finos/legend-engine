@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssd::TeamMapping
+(
+  // Array functions as property mappings. The query below is an ordinary projection of
+  // scalar properties - all of the array work happens in the store language.
+  *demo::ssd::Team: Relational
+  {
+    ~filter [demo::ssd::store::TeamDB] MultiScoreFilter
+    ~primaryKey
+    (
+      [demo::ssd::store::TeamDB]TEAM_TABLE.ID
+    )
+    ~mainTable [demo::ssd::store::TeamDB]TEAM_TABLE
+    id: [demo::ssd::store::TeamDB]TEAM_TABLE.ID,
+    label: [demo::ssd::store::TeamDB]TEAM_TABLE.LABEL,
+    scoreCount: array_size([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES)
+  }
+
+  // Same functions again, this time reached through a view that computes them.
+  demo::ssd::TeamStats: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssd::store::TeamDB]TEAM_STATS.ID
+    )
+    ~mainTable [demo::ssd::store::TeamDB]TEAM_STATS
+    id: [demo::ssd::store::TeamDB]TEAM_STATS.ID,
+    total: [demo::ssd::store::TeamDB]TEAM_STATS.TOTAL
+  }
+
+  testSuites:
+  [
+    mappingArraySuite:
+    {
+      function: |demo::ssd::Team.all()
+                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount])
+                  ->sort([~label->ascending()]);
+      tests:
+      [
+        arrayFunctionsInMappingAndFilter:
+        {
+          data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
+          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3},{"label":"Ravens","scoreCount":3}]'; }#; }# ];
+        }
+      ];
+    },
+    viewArraySuite:
+    {
+      function: |demo::ssd::TeamStats.all()
+                  ->project(~[id: s | $s.id, total: s | $s.total])
+                  ->sort([~id->ascending()]);
+      tests:
+      [
+        arrayFunctionsInViewColumns:
+        {
+          data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
+          asserts: [ shouldComputeViewColumns: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"id":1,"total":3},{"id":2,"total":3},{"id":3,"total":2}]'; }#; }# ];
+        }
+      ];
+    }
+  ]
+)
