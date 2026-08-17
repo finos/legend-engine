@@ -16,6 +16,22 @@ import meta::pure::test::pct::*;
 
 native function <<functionType.SideEffectFunction>> meta::core::runtime::currentUserId():String[1];
 
+'''
+The identity the query is executing as.
+
+Resolved from the execution context rather than from the data, so **it is not a constant**: the same
+query returns different values for different users, and two calls are only guaranteed to agree
+within one execution. That makes it the building block for row-level entitlement — filtering a
+relation down to the rows belonging to the caller — but it also means a query using it cannot be
+cached or compared across users as though it were pure.
+
+**Returns** the current user's identifier.
+
+**Examples**
+```pure
+$orders->filter(o | $o.owner == currentUserId())
+```
+'''
 function <<PCT.function>> meta::pure::functions::runtime::currentUserId():String[1]
 {
   meta::core::runtime::currentUserId();

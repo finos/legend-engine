@@ -15,28 +15,62 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Groups a relation by one or more columns and computes an aggregate per group — one output row per
+distinct combination of the grouping values.
+
+The aggregate spec has two parts, written `~name : row | expr : values | reduction`: a map pulling a
+value out of each row of the group, and a function reducing everything collected.
+
+**The result holds only the grouping columns and the aggregates** — its type is `Z+R`, so every
+column not named in `cols` and not produced by `agg` is gone. Reach for
+`extend(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<T+R>[1]` when
+you want the original rows kept alongside the aggregate.
+
+**Group order is not defined.** Sort the result if you need one. The values collected within a group
+have no defined order either, which is why an order-sensitive reduction such as `joinStrings` gives a
+stable set of characters but not a stable arrangement of them.
+
+**Parameters**
+- `r` — the relation to group.
+- `cols` — the grouping columns.
+- `agg` — the aggregate column, as a map and a reduction.
+
+**Returns** a relation of the grouping columns plus the aggregate, one row per group.
+
+**Examples**
+```pure
+$rel->groupBy(~[grp], ~total : x | $x.value : y | $y->plus())
+```
+
+**See also** `groupBy(Relation<T>[1], ColSpec<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+`aggregate(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<R>[1]`,
+`pivot(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given columns and adds new column where its value is aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+grouping by a single column written without the brackets: `$rel->groupBy(~grp, ~total : x | $x.value
+: y | $y->plus())`.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given column and adds new column where its value is aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+computing several aggregates over the same grouping in one pass — one column per spec, still one row
+per group.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given columns and adds new column(s) where their values are aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpecArray<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+grouping by a single column written without the brackets.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given column and adds new column(s) where their values are aggregated using the reduce (second) function using the values collected from the map (first) function'
-}
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

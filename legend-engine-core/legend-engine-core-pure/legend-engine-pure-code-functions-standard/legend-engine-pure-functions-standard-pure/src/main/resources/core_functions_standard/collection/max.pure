@@ -14,31 +14,58 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The largest value in a collection, by the type's natural order.
+
+Unlike `meta::pure::functions::math::max(Integer[1..*]):Integer[1]`, this is **not restricted to
+numbers** — it orders any primitive type, so it finds the latest date or the last string
+alphabetically as readily as the largest number.
+
+Takes `[1..*]`, so the result is `[1]` and needs no `toOne`; use `max(X[*]):X[0..1]` where the
+collection may be empty.
+
+**Parameters**
+- `values` — the values, at least one.
+
+**Returns** the largest value.
+
+**Examples**
+```pure
+max([1, 5, 3])           // 5
+max(['a', 'c', 'b'])     // 'c'
+```
+
+**See also** `max(X[*]):X[0..1]`,
+`max(T[1..*], Function<{T[1], T[1]->Integer[1]}>[1]):T[1]`,
+`min(X[1..*]):X[1]`
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns largest value from the list by type order'
-  }
 meta::pure::functions::collection::max<X>(values : X[1..*]):X[1]
 {
     $values->sort()->last()->toOne();
 }
 
+'''
+As `max(X[1..*]):X[1]`, for a collection that may be empty — **an empty collection gives empty**,
+which is why the result is `[0..1]`.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns largest value from the list by type order'
-  }
 meta::pure::functions::collection::max<X>(values : X[*]):X[0..1]
 {
     $values->sort()->last();
 }
 
+'''
+As `max(X[1..*]):X[1]`, ordering by a supplied comparator rather than the type's natural order.
+
+`comp` returns a positive number when its first argument sorts after its second, as
+`meta::pure::functions::lang::compare(T[1], T[1]):Integer[1]` does. Use it to find the largest
+by a derived key — the longest string, the record with the latest of two dates.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns largest value from the list by type order based on the supplied comp function'
-  }
 meta::pure::functions::collection::max<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
 {
     $col->tail()->fold({v, m | if($comp->eval($v, $m) > 0, | $v, | $m)}, $col->at(0))

@@ -15,6 +15,30 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Reads a column out of a row, given the column as a value.
+
+Where `$row.name` names a column literally, this takes the column as a `ColSpec` argument — so a
+function can be written once against a column its caller chooses. That is what makes generic
+row-level helpers possible; the data quality functions use it to apply the same check to whichever
+column is passed in.
+
+Returns `[0..1]` regardless of the column's own multiplicity, since a column may hold no value for a
+given row.
+
+**Parameters**
+- `col` — the column to read.
+- `row` — the row to read it from.
+
+**Returns** the value in that column for that row, or empty.
+
+**Examples**
+```pure
+$rel->filter(row | eval(~code, $row)->isEmpty())     // rows with no code
+```
+
+**See also** `columns(Relation<T>[1]):Column<Nil, Any|*>[*]`
+'''
 function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::eval<Z,T>(col:ColSpec<(?:Z)⊆T>[1], row:T[1]) : Z[0..1]
 {
   $col->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,Z|0..1>)->eval($row);

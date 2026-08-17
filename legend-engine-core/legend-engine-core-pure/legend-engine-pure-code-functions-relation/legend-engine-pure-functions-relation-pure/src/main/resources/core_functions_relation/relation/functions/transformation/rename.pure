@@ -15,6 +15,31 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Renames one column, leaving its values and position alone.
+
+Only the name changes — the column keeps its type, which the signature enforces by requiring the old
+and new specs to agree on it. The result type is the input with the old name removed and the new one
+added, so later steps must use the new name.
+
+Renames one column per call; chain calls to rename several.
+
+**Parameters**
+- `r` — the relation.
+- `old` — the column to rename.
+- `new` — the name to give it.
+
+**Returns** the relation with that column renamed.
+
+**Examples**
+```pure
+$rel->rename(~val, ~value)
+$rel->rename(~val, ~value)->rename(~str, ~text)   // chain for several
+```
+
+**See also** `select(Relation<T>[1], ColSpecArray<Z⊆T>[1]):Relation<Z>[1]`,
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::rename<T,Z,K,V>(r:Relation<T>[1], old:ColSpec<Z=(?:K)⊆T>[1], new:ColSpec<V=(?:K)>[1]):Relation<T-Z+V>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::rename::testSimpleRenameShared<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

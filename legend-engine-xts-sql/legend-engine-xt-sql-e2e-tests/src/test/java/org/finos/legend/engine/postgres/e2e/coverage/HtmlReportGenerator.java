@@ -128,7 +128,7 @@ public class HtmlReportGenerator
             Node document = PARSER.parse(markdown);
             String htmlBody = RENDERER.render(document);
             // Rewrite internal .md links to point to the corresponding .html files
-            htmlBody = htmlBody.replaceAll("href=\"([^\"]*)\\.md(#[^\"]*)?\"", "href=\"$1$2\"");
+            htmlBody = htmlBody.replaceAll("href=\"([^\"]*)\\.md(#[^\"]*)?\"", "href=\"$1.html$2\"");
             String html = String.format(HTML_TEMPLATE, title, htmlBody);
             File htmlFile = new File(outputDir, htmlFileName);
             Files.write(htmlFile.toPath(), html.getBytes(StandardCharsets.UTF_8));

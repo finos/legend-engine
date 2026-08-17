@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Shifts an integer's bits right by a given number of places.
+
+Each place halves the value, discarding the bits shifted off the bottom, so it is a division by 2 to
+the power `n` that rounds towards negative infinity rather than towards zero. Shifting by 0 returns
+the value unchanged.
+
+**Parameters**
+- `arg` — the value to shift.
+- `n` — how many places to shift.
+
+**Returns** the shifted value.
+
+**Examples**
+```pure
+bitShiftRight(1, 0)   // 1
+bitShiftRight(1, 1)   // 0, the low bit is discarded
+bitShiftRight(9223372036854775807, 62)   // 1
+```
+
+**See also** `bitShiftLeft(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise RIGHT SHIFT operator returns a Number representing the arg Number input shifted by n bits to the RIGHT'
-    }
 meta::pure::functions::math::bitShiftRight(arg:Integer[1], n:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_UpTo62Bits<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

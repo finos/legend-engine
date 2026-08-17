@@ -20,14 +20,31 @@ DuckDb - https://duckdb.org/docs/stable/sql/expressions/comparison_operators.htm
 ![howto-between.pure](assets/howto-between.pure.PNG)
 
 3. You can now use PureIDE to edit the file you created in step 2 to add the function signature determined in Step 1. E.g.
-```Java
+````Java
+'''
+Whether a value falls within an inclusive range.
+
+All three inputs are cast to the same type before comparing.
+
+**Parameters**
+- `value` — the value to test.
+- `lower` — the inclusive lower bound.
+- `upper` — the inclusive upper bound.
+
+**Returns** `true` when `value` lies between `lower` and `upper`.
+
+**Examples**
+```pure
+between(5, 0, 10)   // true
+between(5, 0, 2)    // false
+```
+'''
 function
     <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is between inputs lower and upper; all inputs are cast to the same type'
-    }
     meta::pure::functions::boolean::between(value:Any[1], lower:Any[1], upper:Any[1]):Boolean[1];
-```
+````
+
+See [Writing PCT function documentation](pct-documentation.md) for the full template and rules.
 4. To help develop the logic for the function body, you can look at similar existing pure functions. Some of these may even be leveraged to implement your new function! E.g. looking at the "essential" functions in PureIDE, we see some similar foundational operators we can use to implement "**between**":
 
 ![between.pure](assets/howto-between-essentials.pure.PNG)

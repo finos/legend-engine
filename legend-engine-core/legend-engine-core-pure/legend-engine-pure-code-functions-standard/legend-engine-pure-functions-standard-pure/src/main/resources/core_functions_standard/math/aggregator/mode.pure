@@ -22,11 +22,30 @@ Class <<access.private>> meta::pure::functions::math::Accumulator
    prevCount: Integer[1];   
 }
 
+'''
+The most frequently occurring value in a collection.
+
+Unlike the mean and the median, the mode is always a value that actually appears. **Where several
+values tie for most frequent, one of them is returned rather than all** — which one is decided by the
+sort the implementation performs first, so treat it as unspecified.
+
+Absent values are ignored rather than counted as a value in their own right.
+
+**Parameters**
+- `numbers` — the values.
+
+**Returns** the most frequent value.
+
+**Examples**
+```pure
+mode([1, 2, 2, 3])   // 2
+```
+
+**See also** `median(Number[*]):Float[1]`,
+`mean(Number[*]):Float[1]`
+'''
 function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the most frequent value for the values within expr1. NULL values are ignored.'
-    }
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();
@@ -40,6 +59,9 @@ meta::pure::functions::math::mode(numbers:Number[*]):Number[1]
     $res.numMax->cast(@Number);
 }
 
+'''
+As `mode(Number[*]):Number[1]`, for `Float` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mode(numbers:Float[*]):Float[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();
@@ -53,6 +75,9 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
 }
 
 
+'''
+As `mode(Number[*]):Number[1]`, for `Integer` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::mode(numbers:Integer[*]):Integer[1]
 {
      let sortedNumbers = $numbers->toOneMany()->sort();

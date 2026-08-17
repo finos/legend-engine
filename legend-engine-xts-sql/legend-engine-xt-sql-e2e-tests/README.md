@@ -172,4 +172,16 @@ After each run, reports are generated in `target/`:
 - **`failure-details.md`** — Full result set comparisons for every FAIL and ERROR test. Shows the original SQL, rewritten SQL, cell-level diffs, and complete Expected (Postgres) vs Actual (Legend) result tables. Both `function-coverage.md` and `structural-parity.md` link directly to entries in this file — click any error category link (e.g. `FUNCTION_NOT_SUPPORTED`, `RESULT_MISMATCH`) to jump to the full details.
 - **`parity-report.json`** — Machine-readable JSON with all test results
 
+Each markdown report is also rendered to a standalone `.html` file beside it.
+
+## Published reports
+
+The four HTML reports are published to the Legend documentation site on every `master` build, at
+<https://legend.finos.org/sql-parity/summary.html>, and are described for users at
+<https://legend.finos.org/docs/reference/legend-sql>.
+
+The `legend-docs` job in `.github/workflows/build.yml` does the publishing: the `sql` group of `test-modules`
+uploads `target/*.html` as the `sql-parity-report` artifact, and `legend-docs` copies it into
+`website/static/sql-parity/` of `finos/legend`, alongside the PCT reports it collects the same way.
+
 

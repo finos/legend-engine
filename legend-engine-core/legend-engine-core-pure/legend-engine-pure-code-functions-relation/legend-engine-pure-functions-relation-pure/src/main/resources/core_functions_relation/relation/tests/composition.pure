@@ -49,6 +49,9 @@ Class meta::pure::functions::relation::tests::composition::SimpleNumbersTypeForC
   val3 : Number[1];
 }
 
+'''
+A filter may reference a column that `extend` created earlier in the same pipeline.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -71,6 +74,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testE
                   '#', $res->toString());
 }
 
+'''
+Projecting a `[*]` property multiplies rows, and a later filter applies to the projected relation
+rather than to the source instances.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testFilterPostProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -112,6 +119,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testF
 }
 
 
+'''
+`distinct` over a subset of columns narrows the relation to those columns before the `groupBy`
+sees it, so `str2` is gone by the time the aggregate runs.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -135,6 +146,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
+'''
+The filter runs against the narrowed relation, so it may only name columns that `distinct` kept.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -158,6 +172,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~val->ascending())->toString());
 }
 
+'''
+An aggregate column may itself be aggregated: the second `groupBy` sums the first one's output.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -181,6 +198,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
+'''
+`distinct` over a subset of the grouping keys discards the aggregate column entirely, leaving
+only those keys.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -204,6 +225,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
+'''
+A filter after a dynamic `pivot` operates on the relation as re-typed by the `cast` that the
+pivot requires.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -231,6 +256,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+'''
+The `groupBy` sums the `year` column, so the sums themselves become the pivoted column names:
+SAN's two 2011 rows give `4022` and NYC's `2011 + 2012 + 2012` gives `6035`. The odd-looking names
+are the point — the pivot column is computed, not read.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -265,6 +295,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+'''
+A seven-step pipeline in which `extend`, `sort` and `limit` all follow the `cast` that a dynamic
+`pivot` requires.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -301,6 +335,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+'''
+Pivoting before grouping: the `groupBy` then has to name the quoted columns the pivot generated.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -337,6 +374,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
 
 // ------------------------------------- TO FIX -------------------------------------
 
+'''
+The minimal aggregate-then-filter case — the filter names the aggregate column, not a source column.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -360,6 +400,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
+'''
+`distinct` between the aggregation and the filter keeps rows that share a grouping key but differ
+in the aggregate, so both `qw` rows survive.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_GroupBy_Distinct_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -383,6 +427,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort([~str->ascending(), ~newCol->ascending()])->toString());
 }
 
+'''
+Deduplicating whole rows before aggregating drops one of the two identical `2, a, b` rows, so
+group `a` sums to 2 rather than 4 and the filter then removes it.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Distinct_GroupBy_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -404,6 +452,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->sort(~str->ascending())->toString());
 }
 
+'''
+`lead` and `lag` over a projection of class instances. The last row of each partition has no lead
+and the first has no lag, so both come back empty.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -433,12 +485,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
-  {
-    doc.doc='Tests map and casting the values of the column before applying the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]{
+'''
+Casting the column values before the aggregate is applied is a no-op — the sums match the uncast
+form.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]{
   let expr = {
               | #TDS
                 id, grp
@@ -468,12 +519,10 @@ meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg<T|
                 '#', $res->sort(~grp->ascending())->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>>
-  {
-    doc.doc='Tests map and casting result of the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]{
+'''
+Casting the aggregate's result is a no-op — the sums match the uncast form.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]{
   let expr = {
               | #TDS
                 id, grp
@@ -503,12 +552,11 @@ meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m
                 '#', $res->sort(~grp->ascending())->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests olap with a partition window and casting result of the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+Casting the aggregate's result inside a partitioned window is a no-op. With no ordering on the
+`over`, the frame is the whole partition, so every row of a group carries that group's total.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -544,12 +592,10 @@ meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitio
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests olap with a partition window and casting the values of the column before applying the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+Casting the extracted values before the windowed aggregate is a no-op.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -585,12 +631,10 @@ meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitio
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests olap with a partition window and casting the values of the extract function before applying the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+Casting inside the window's extraction lambda is a no-op.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -626,12 +670,10 @@ meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithP
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests olap with a partition window, casting the values of the extract function before applying the aggregate function, and casting result of the aggregate function. Cast is treated as a noop in this case.'
-  }
-meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+Casting in both window positions at once is still a no-op.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -667,6 +709,10 @@ meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggW
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
+'''
+`distinct` compares the projected values, not the source rows, so `george` and `George` collapse
+to one row once `toLower` has been applied.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectDistinct<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -694,6 +740,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testP
                   '#', $res->sort([~id->ascending(), ~name->ascending()])->toString());
 }
 
+'''
+Projections on both sides of a join, re-projected afterwards; the final projection may rename
+columns drawn from either side.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testProjectJoinWithProjectProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -722,6 +772,11 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testP
                 '#', $res->sort([~id->ascending(),~name->ascending()])->toString());
 }
 
+'''
+Equality is null-safe, so an INNER join on a nullable key matches empty to empty: two null-keyed
+left rows and two null-keyed right rows produce all four combinations. Under SQL's three-valued
+logic those rows would not match at all.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testJoinOnNullKey<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -758,6 +813,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort([~name->ascending(), ~col->ascending()])->toString());
 }
 
+'''
+`null == null` is true, so the row with both columns empty survives the filter.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterEqualOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -782,6 +840,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort(~name->ascending())->toString());
 }
 
+'''
+`null != 5` is true and `null != null` is false — the exact complement of the equality case.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterNotEqualOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -807,6 +868,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort(~name->ascending())->toString());
 }
 
+'''
+Projecting `==` into a column yields `true` or `false` on every row, never an empty value.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -834,6 +898,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort(~name->ascending())->toString());
 }
 
+'''
+Projecting `!=` likewise yields a total boolean, the negation of the equality column.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectNotEqualityOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -861,6 +928,10 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort(~name->ascending())->toString());
 }
 
+'''
+A variant array can be unpacked with `toMany`, sorted, and packed back with `toVariant`, all
+inside an `extend`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -888,6 +959,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+The same round trip through `reverse`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -915,11 +989,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
-{
-  doc.doc='Extends a given TDS where the new column value is extracted from a variant array using the value\'s index number and then reference the new column in a filter expression.'
-}
-meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+A column extracted from a variant array by index can be filtered on later in the pipeline.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
      id, payload:meta::pure::metamodel::variant::Variant
@@ -944,11 +1017,11 @@ meta::pure::functions::relation::tests::composition::testVariantColumn_extend_in
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>>
-{
-  doc.doc='Filter the given TDS by inspecting the values of a variant array.  The values are inspected calling another function, demonstrating function composition when operating on variants.'
-}
-meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+A filter predicate over a variant array may call a user-defined function on the unpacked
+collection.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
      id, payload:meta::pure::metamodel::variant::Variant
@@ -977,12 +1050,10 @@ function meta::pure::functions::relation::tests::composition::testVariantColumn_
   $val->filter(y | $y->mod(2) == 0)->size() == 2;
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Qualify grammar should be produced instead of subselect.'
-  }
-meta::pure::functions::relation::tests::composition::testExtendWindowFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+Filtering on a window column produces qualify grammar rather than a sub-select.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testExtendWindowFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
                 | #TDS
@@ -1010,12 +1081,11 @@ meta::pure::functions::relation::tests::composition::testExtendWindowFilter<T|m>
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Produces qualify and having grammar together.'
-  }
-meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+A pipeline that filters an aggregate and then filters a window column produces having and qualify
+grammar together.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -1045,6 +1115,10 @@ meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilt
                   '#', $res->sort([~rank->ascending(), ~grp->ascending()])->toString());
 }
 
+'''
+Chained `rename`s over names differing only in case and leading underscores, including renaming a
+column twice; the filter has to resolve the final names.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1076,6 +1150,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testM
                   '#', $res->toString());
 }
 
+'''
+The same renaming with `extend` and `select` interleaved, including renaming a column that
+`extend` had just created.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1112,6 +1190,12 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '#', $res->sort(~col_one_num->ascending())->toString());
 }
 
+'''
+A filter on a source column is applied **before** the window aggregate, so rows the filter removes
+do not contribute to the sum — partition 100 totals 60, not the 110 its five rows would give.
+Contrast `testExtendWindowFilter`, where the filter names the window output and therefore cannot
+move below it. The in-memory Pure engines read the pipeline literally and are excluded here.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testExtendFilterOutNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1155,6 +1239,10 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '#', $res->sort([~p->descending(), ~o->descending(), ~i->descending()])->toString());
 }
 
+'''
+`joinStrings` over a window containing empty values. The assertion re-splits and re-sorts the
+result, so what it pins down is which values survive, not the order they arrive in.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1191,6 +1279,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
+'''
+A windowed sum over a partition whose values are all empty returns an empty value, not zero.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testExtendAddOnNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1226,6 +1317,10 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 
+'''
+`groupBy` treats the empty value as a grouping key in its own right rather than discarding those
+rows.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testGroupByOnNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1253,6 +1348,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testG
                   '#', $res->sort([~grp->ascending()])->toString());
 }
 
+'''
+Either branch of an `if` may be a variant column.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariant_if<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -1280,6 +1378,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+A variant holding JSON `null` unpacks to an empty collection, so it reports empty exactly as `[]`
+does.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1303,6 +1405,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+The complement of the `isEmpty` case.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1326,6 +1431,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+`indexOf` returns `-1` both for a value that is absent and for a variant holding JSON `null`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1349,6 +1457,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+`slice` with negative bounds yields an empty array — it does not index from the end.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_slice<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1372,6 +1483,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+A computed projection column can be narrowed to `Integer[1]` with a `cast`.
+'''
 function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1399,6 +1513,9 @@ function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::rela
                   '#', $res->sort([~val3->ascending()])->toString());
 }
 
+'''
+`contains` is false for a variant holding JSON `null`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_contains<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1420,6 +1537,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+`distinct` and `removeDuplicates` agree on a variant array, including one holding JSON `null`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1442,6 +1562,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+Projecting a variant to a whole model instance is not supported, and fails with an error naming
+the class. Contrast `testVariantColumn_projectModelProperty`, where a property of that same
+conversion does work.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_modelOutputNotSupported<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1457,6 +1582,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 }
 
 
+'''
+Projecting a *property* of the converted model works, unlike projecting the model itself.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1483,6 +1611,9 @@ Class <<access.private>> meta::pure::functions::relation::tests::composition::Pe
   <<equality.Key>> name: String[1];
 }
 
+'''
+The multi-branch `if([pair(...), pair(...)], |default)` form inside an `extend`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testMultiIfTDS<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1504,6 +1635,10 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort([~id->ascending()])->toString());
 }
 
+'''
+A static `pivot` fixes the value list up front, but still generates quoted column names and still
+needs a `cast` before anything downstream can name them.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
 
@@ -1532,6 +1667,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
+'''
+A projection and a filter ahead of a static pivot; the generated names derive from the renamed
+columns, not the originals.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1561,12 +1700,11 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 '#', $res->toString());
 }
 
-function 
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> 
-  {
-    doc.doc='Test when alias name is same as column name across two or more joined tables'
-  }
-meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+A projection alias that collides with a real column on the other side of a join still resolves to
+the projected value.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds1 = #TDS
                 id, grp, name
@@ -1602,12 +1740,11 @@ meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Ali
                 '#', $res->sort(~name2->ascending())->select(~[name2, newCol])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation>>
-  {
-    doc.doc='Verify processing with joins including currentUserId'
-  }
-meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+`currentUserId()` may appear in a join condition. Here it matches nothing, so the LEFT join fills
+the right-hand columns with empty values.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId<T|m> (f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {|
     let t1 = #TDS
@@ -1631,6 +1768,10 @@ meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId<T|m>
                 '#', $res->sort(~id->ascending())->toString());
 }
 
+'''
+Multi-argument `coalesce` in a projection, including a row where every argument is empty and the
+literal default is taken.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -1654,6 +1795,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testM
                   '#', $res->sort([~name->descending()])->toString());
 }
 
+'''
+`coalesce` on the right of a comparison inside `filter`, ahead of any projection.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -1672,6 +1816,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
     assertEquals(2, $res);
 }
 
+'''
+Binary `+`, `*` and `-` on relation columns inside a `project`.
+'''
 function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::relation::tests::composition::testTDSPlusTimesMinus<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1701,6 +1848,10 @@ function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::rela
                   '#', $res->sort([~plus->ascending()])->toString());
 }
 
+'''
+The variadic `plus`/`times`/`minus` forms over a mix of Integer and Float properties, compared
+with a tolerance.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|
@@ -1733,6 +1884,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
     );
 }
 
+'''
+Renaming a `groupBy` result with `project`.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Project<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1773,6 +1927,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~finalId->ascending())->toString());
 }
 
+'''
+Renaming the same `groupBy` result with `extend` and `select` instead.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_GroupBy_Extend_Select<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1819,6 +1976,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~finalId->ascending())->toString());
 }
 
+'''
+Renaming a sorted relation with `project`.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Sort_Project<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1852,6 +2012,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~finalId->ascending())->toString());
 }
 
+'''
+Renaming the same sorted relation with `extend` and `select` instead.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_Extend_Sort_Extend_Select<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -1891,6 +2054,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::test_
                   '#', $res->sort(~finalId->ascending())->toString());
 }
 
+'''
+A LEFT join whose condition combines an equality with an arithmetic inequality; the row matching
+nothing keeps empty values on the right.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
@@ -1944,6 +2111,9 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '#', $res->sort([~id->ascending(), ~order->ascending(), ~val1->ascending(), ~val2->ascending()])->toString());
 }
 
+'''
+Arithmetic on both sides of a comparison inside `filter`.
+'''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterArithmeticComparisonExpression<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {
@@ -1967,12 +2137,10 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                   '#', $res->sort([~val->ascending()])->toString());
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests project followed by extend with an OLAP lead inside a nested if with adjust.'
-  }
-meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+A `lead` inside nested `if` branches, with `adjust` supplying the fallback date.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLeadAdjust<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -2029,12 +2197,10 @@ meta::pure::functions::relation::tests::composition::testProjectExtendNestedIfLe
     );
 }
 
-function
-  <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>>
-  {
-    doc.doc='Tests extend with an OLAP lead inside an if with adjust using a derived offset.'
-  }
-meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+'''
+An `adjust` whose offset is itself read from the row that `lead` returns.
+'''
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
                 | #TDS
@@ -2079,6 +2245,10 @@ meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerived
     );
 }
 
+'''
+A static pivot over a `concatenate`. With no grouping key collapsed, each source row stays its own
+row and the column it did not match is empty.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let expr = {|
@@ -2110,6 +2280,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testS
    );
 }
 
+'''
+A static pivot where the left arm of the `concatenate` computes a window column that the right arm
+supplies as a literal.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let expr = {|
@@ -2147,6 +2321,9 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testS
    );
 }
 
+'''
+`joinStrings` over a variant array, including one holding JSON `null`, which contributes nothing.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -2171,6 +2348,10 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '   4,\'null\',\n'+
                 '#', $res->toString());
 }
+'''
+A `concatenate` whose left arm is a join and whose right arm is not, so the two arms reach the
+common table expression with different column representations.
+'''
 function <<PCT.test>> meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let expr = {|
@@ -2210,6 +2391,10 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testC
                  '#', $res->sort(~id->ascending())->toString());
 }
 
+'''
+`lateral` with `flatten` over the keys of a `Map<String, Variant>`, multiplying each source row by
+its key count.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
@@ -2233,6 +2418,9 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
+'''
+The same over map values, with a `get` applied to each value before flattening.
+'''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS

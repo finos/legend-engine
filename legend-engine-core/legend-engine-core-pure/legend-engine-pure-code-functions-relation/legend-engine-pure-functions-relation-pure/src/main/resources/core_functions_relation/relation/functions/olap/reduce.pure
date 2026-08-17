@@ -16,10 +16,46 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
+'''
+Aggregates the rows of a window in two steps: `map` pulls a value out of each row, then `agg`
+reduces the values it collected.
+
+This is the general window aggregate — `sum`, `average` and the rest are this function with a
+particular `agg`. It is called from inside a window column, where the three arguments `p`, `w` and
+`r` handed to the column function are passed straight through:
+
+```pure
+$rel->extend(over(~p, ~o->ascending()), ~running:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+```
+
+**Which rows take part is decided by the window, not by this function.** With no frame the window
+runs from the start of the partition to the current row, making the result a running aggregate;
+`rows(UnboundedFrameValue[1], UnboundedFrameValue[1]):Rows[1]` makes it a partition total instead.
+
+`map` may return several values per row, or none — it is `V[*]`, and everything it yields across the
+frame is concatenated before `agg` sees it. **The result carries `agg`'s multiplicity**, `U[m]`, so a
+reducer returning a collection gives a collection.
+
+**Parameters**
+- `rel` — the partition, the first argument of the column function.
+- `w` — the window, its second argument.
+- `row` — the current row, its third.
+- `map` — pulls the value to aggregate out of one row.
+- `agg` — reduces the collected values.
+
+**Returns** whatever `agg` returns, with `agg`'s multiplicity.
+
+**Examples**
+```pure
+// sum of the two rows before this one
+$rel->extend(over(~p, ~o->ascending(), rows(-2, -1)), ~prev:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+```
+
+**See also** `extend(Relation<T>[1], _Window<T>[1], FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<T+R>[1]`,
+`over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*], Rows[1]):_Window<T>[1]`,
+`rows(Integer[1], Integer[1]):Rows[1]`
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Computes an aggregate value out of the partition rows by applying a map function to each row, and a reduce function that operates on the output to do the actual reduction operation (e.g. average)'
-}
 meta::pure::functions::relation::reduce<T, V, U|m>(
     rel:Relation<T>[1], 
     w:_Window<T>[1], 

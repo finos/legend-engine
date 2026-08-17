@@ -14,8 +14,31 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Lower cases the first charater of the provided string'}
-  meta::pure::functions::string::toLowerFirstCharacter(str : String[1]) : String[1] 
+'''
+Lower cases a string's first character, leaving the rest alone.
+
+**Only the first character is touched**, so the remainder keeps whatever case it already had — the
+usual reason to reach for this is turning a class name into a property name. A first character with
+no lower case form, such as a digit, is left as it is, and an empty string returns empty rather than
+failing.
+
+**Parameters**
+- `str` — the string to transform.
+
+**Returns** the string with its first character lower cased.
+
+**Examples**
+```pure
+'XoXoXoX'->toLowerFirstCharacter()   // 'xoXoXoX', the rest is untouched
+'xOxOxOx'->toLowerFirstCharacter()   // 'xOxOxOx', already lower
+'1isOne'->toLowerFirstCharacter()    // '1isOne', a digit has no lower case
+''->toLowerFirstCharacter()          // ''
+```
+
+**See also** `toUpperFirstCharacter(String[1]):String[1]`
+'''
+function <<PCT.function>>
+  meta::pure::functions::string::toLowerFirstCharacter(str : String[1]) : String[1]
 {
   if($str->length() == 0,
     |$str,

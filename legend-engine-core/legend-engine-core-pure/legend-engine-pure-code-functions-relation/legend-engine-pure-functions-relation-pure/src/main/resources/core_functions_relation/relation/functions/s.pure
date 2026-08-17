@@ -15,11 +15,41 @@
 import meta::pure::metamodel::variant::*;
 import meta::pure::test::pct::*;
 
+'''
+Renders a single value the way `toString` renders it inside a relation.
+
+The per-cell half of relation printing: `toString(Relation<T>[1]):String[1]` calls this for each
+value, so dates, numbers and strings come out in the `#TDS` spelling rather than their ordinary Pure
+one. **An absent value renders as the text `null`**, not as an empty string.
+
+**Parameters**
+- `a` — the value to render.
+
+**Returns** the value as `#TDS` text.
+
+**Examples**
+```pure
+s('abc')   // 'abc', a plain string is passed through unquoted
+s(1)       // '1'
+s([])      // 'null', the four characters, not an empty string
+```
+
+A string containing `{` or `[` is the exception: it is wrapped in single quotes and its backslashes
+and quotes escaped, so that JSON-looking text survives being read back out of `#TDS`.
+
+**See also** `s(Any[0..1], Type[0..1]):String[1]`,
+`toString(Relation<T>[1]):String[1]`
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a:Any[0..1]):String[1]
-{  
+{
   s($a,[]);
 }
 
+'''
+As `s(Any[0..1]):String[1]`, with the column's declared type supplied so an absent value can be
+rendered as that type requires. It matters for `Variant`, where absence prints as the quoted JSON
+`'null'` rather than the bare `null` used elsewhere.
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::s(a:Any[0..1], type:Type[0..1]):String[1]
 {  
   if ($a->isEmpty(),

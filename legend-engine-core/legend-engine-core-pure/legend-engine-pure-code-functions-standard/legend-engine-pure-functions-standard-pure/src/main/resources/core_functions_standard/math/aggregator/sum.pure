@@ -14,16 +14,47 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The total of a collection of numbers.
+
+**An empty collection gives 0, not empty**, which is why the result is `[1]` — `sum` is defined in
+terms of `plus`, whose identity is zero. That means a sum of no rows is indistinguishable from a sum
+of rows that happen to cancel; test the collection separately if the difference matters.
+
+The `Integer` and `Float` variants keep their type; this one accepts a mix and returns `Number`.
+
+This is an aggregate: it is what a relational `groupBy` or a window aggregation calls.
+
+**Parameters**
+- `numbers` — the values to total.
+
+**Returns** the total, or 0 when there are none.
+
+**Examples**
+```pure
+sum([15, 13, 2.0, 1, 1.0])   // 32.0
+```
+
+**See also** `sum(Integer[*]):Integer[1]`,
+`average(Number[*]):Float[1]`,
+`max(Number[*]):Number[0..1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Number[*]):Number[1]
 {
     $numbers->plus();
 }
 
+'''
+As `sum(Number[*]):Number[1]`, for `Integer` values, returning an `Integer`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Integer[*]):Integer[1]
 {
     $numbers->plus();
 }
 
+'''
+As `sum(Number[*]):Number[1]`, for `Float` values, returning a `Float`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::sum(numbers:Float[*]):Float[1]
 {
     $numbers->plus();

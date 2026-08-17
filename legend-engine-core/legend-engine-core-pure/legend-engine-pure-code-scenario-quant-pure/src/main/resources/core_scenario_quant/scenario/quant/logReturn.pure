@@ -18,6 +18,40 @@ import meta::pure::test::pct::*;
 import meta::pure::functions::flow::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The natural log return of the closing price against the previous bar, per symbol.
+
+`ln(close / previousClose)`, where "previous" is the preceding row for the same `symbol` ordered by
+`time`. **The first bar of a symbol yields exactly `0.0`, not empty** — with no predecessor the close
+is compared against itself, and `ln(1)` is zero. Rows for different symbols never mix, so interleaved
+symbols in the input are handled without pre-partitioning. The result is rounded to ten decimal
+places.
+
+Log returns rather than simple returns because they add over time, which is what makes the rolling
+standard deviation in
+`meta::external::scenario::quant::volatility::close::annualizedRolling10DaysVolatility` meaningful.
+
+**Parameters**
+- `rel` — a relation of OHLCV bars: `time`, `symbol`, `open`, `high`, `low`, `close`, `volume`.
+
+**Returns** `symbol`, `time`, `close`, and the return as `logReturn`.
+
+**Examples**
+```pure
+// AAPL closing at 185.10, 185.35, 185.55, 185.70 and 185.65 on consecutive minutes
+$bars->logReturn()
+
+// symbol  time      close   logReturn
+// AAPL    09:30     185.10   0.0             no predecessor
+// AAPL    09:31     185.35   0.00134971      ln(185.35 / 185.10)
+// AAPL    09:32     185.55   0.001078458
+// AAPL    09:33     185.70   0.0008080808
+// AAPL    09:34     185.65  -0.0002692878    negative when the price falls
+```
+
+**See also** `meta::external::scenario::quant::volatility::close::annualizedRolling10DaysVolatility`,
+`meta::external::scenario::quant::gap::gapAnalysis`
+'''
 function <<PCT.function>> meta::external::scenario::quant::return::logReturn::logReturn(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], close:Numeric(19,2)[1], logReturn:Float[1])>[1]
 {
     $rel->select(~[symbol, time, close])

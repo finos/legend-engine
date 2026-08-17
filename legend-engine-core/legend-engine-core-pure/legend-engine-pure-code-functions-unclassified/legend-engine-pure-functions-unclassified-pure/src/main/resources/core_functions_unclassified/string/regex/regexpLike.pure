@@ -14,13 +14,66 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+Whether a regular expression occurs anywhere in a string.
+
+**Containment, not a full match** — unlike `matches(String[1], String[1]):Boolean[1]`, the pattern
+need only occur somewhere, so `'abc'` satisfies `'a'`. Anchor with `^` and `$` when you do want the
+whole string.
+
+Matching is case sensitive, and `.` does not cross a newline. Pass
+`regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]` to change either.
+
+Patterns are full POSIX ERE (Extended Regular Expression) syntax.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to look for.
+
+**Returns** `true` when the pattern occurs in the string.
+
+**Examples**
+```pure
+'abc'->regexpLike('a')                 // true, containment is enough
+'abcd'->regexpLike('[a-z][a-z][a-z]')  // true
+'abc'->regexpLike('^abc$')             // true, anchored to the whole string
+'abc'->regexpLike('^a$')               // false, the anchors demand the whole string
+'abc'->regexpLike('^(b|c).*')          // false, the match must start at the beginning
+```
+
+**See also** `regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]`,
+`matches(String[1], String[1]):Boolean[1]`,
+`regexpCount(String[1], String[1]):Integer[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1]):Boolean[1]
 {
   $string->regexpLike($regexp, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. Unlike the function, meta::pure::functions::string::matches, it does not require the entire string to match. It succeeds if the string merely contains the pattern, unless the special tokens ^ and $ are used to anchor the regular expression to the start and end of the string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpLike(String[1], String[1]):Boolean[1]`, with the matching options given explicitly rather
+than left at the `CASE_SENSITIVE` default.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the POSIX ERE pattern to look for.
+- `regexpParameters` — one or more of `RegexpParameter.CASE_SENSITIVE`,
+  `RegexpParameter.CASE_INSENSITIVE`, `RegexpParameter.MULTILINE` (`^` and `$` match at every line
+  break, not only at the ends of the string) and `RegexpParameter.NON_NEWLINE_SENSITIVE` (`.` also
+  matches a newline). They combine.
+
+**Returns** `true` when the pattern occurs in the string.
+
+**Examples**
+```pure
+'abc'->regexpLike('A', [RegexpParameter.CASE_INSENSITIVE])                  // true
+'abc\ndef'->regexpLike('^def', [RegexpParameter.MULTILINE])                 // true
+'abc\ndef'->regexpLike('abc.def', [RegexpParameter.NON_NEWLINE_SENSITIVE])  // true
+'Hello\nworld'->regexpLike('^WORLD', [RegexpParameter.CASE_INSENSITIVE, RegexpParameter.MULTILINE])
+```
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::regexpLike(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Boolean[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpLike::testRegexpLike<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

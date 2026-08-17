@@ -15,6 +15,41 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The row at a given position within the current window.
+
+Returns a whole row, so read a column off it: `$p->nth($w, $r, 1).id`. **Positions count from 1**, so
+`nth($w, $r, 1)` is the same row as `first(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`.
+
+The position is measured from the start of the window, not from the current row — for a row relative
+to the current one, use `lag(Relation<T>[1], T[1]):T[0..1]` or
+`lead(Relation<T>[1], T[1]):T[0..1]`. As with the rest of the family, the window's frame decides what
+the window contains; with no frame it runs from the start of the partition to the current row.
+
+Returns empty when the window holds fewer rows than the position asked for.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `f` — the window, supplied by `extend`.
+- `r` — the current row, supplied by `extend`.
+- `offset` — the position within the window, counting from 1.
+
+**Returns** the row at that position, or empty when the window is shorter.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r| $p->nth($w, $r, 1).id})
+
+// id  grp  newCol
+//  8    1     8      position 1 within grp 1
+//  6    1     8
+//  2    1     8
+```
+
+**See also** `first(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`,
+`last(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`,
+`offset(Relation<T>[1], T[1], Integer[1]):T[0..1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::nth<T>(w:Relation<T>[1], f:_Window<T>[1], r:T[1], offset:Integer[1]):T[0..1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

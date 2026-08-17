@@ -14,46 +14,113 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The smaller of two values.
+
+The mirror of `max(Integer[1], Integer[1]):Integer[1]`, with the same two shapes: this and the two
+below compare **two arguments**, the six after them reduce a **collection**. Each comes in `Integer`,
+`Float` and `Number` variants so the result keeps the argument type.
+
+Ordering is numeric, and equal arguments give that value back.
+
+**Parameters**
+- `left` — the first value.
+- `right` — the second value.
+
+**Returns** whichever is smaller.
+
+**Examples**
+```pure
+min(1, 2)   // 1
+min(2, 1)   // 1
+```
+
+**See also** `min(Integer[*]):Integer[0..1]`,
+`max(Integer[1], Integer[1]):Integer[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(left:Integer[1], right:Integer[1]):Integer[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+As `min(Integer[1], Integer[1]):Integer[1]`, for `Float` arguments.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(left:Float[1], right:Float[1]):Float[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+As `min(Integer[1], Integer[1]):Integer[1]`, for `Number` arguments — use this when the two sides may
+be a mix of `Integer` and `Float`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(left:Number[1], right:Number[1]):Number[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+The smallest value in a collection known to hold at least one, so the result is `[1]` and needs no
+`toOne`. Use `min(Integer[*]):Integer[0..1]` where the collection may be empty.
+
+This is the aggregate form: it is what a relational `groupBy` or a window aggregation calls.
+
+**Parameters**
+- `ints` — the values to reduce.
+
+**Returns** the smallest value.
+
+**Examples**
+```pure
+min([1, 5, 3])   // 1
+```
+
+**See also** `min(Integer[*]):Integer[0..1]`,
+`max(Integer[1..*]):Integer[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(ints:Integer[1..*]):Integer[1]
 {
     $ints->fold({i, m | min($i, $m)}, $ints->at(0))
 }
 
+'''
+As `min(Integer[1..*]):Integer[1]`, for a collection that may be empty — **an empty collection gives
+empty**, which is why the result is `[0..1]`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(ints:Integer[*]):Integer[0..1]
 {
     $ints->fold({i, m | min($i, $m->toOne())}, $ints->first())
 }
 
+'''
+As `min(Integer[1..*]):Integer[1]`, for `Float` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(floats:Float[1..*]):Float[1]
 {
     $floats->fold({f, m | min($f, $m)}, $floats->at(0))
 }
 
+'''
+As `min(Integer[*]):Integer[0..1]`, for `Float` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(floats:Float[*]):Float[0..1]
 {
     $floats->fold({f, m | min($f, $m->toOne())}, $floats->first())
 }
 
+'''
+As `min(Integer[1..*]):Integer[1]`, for `Number` values — the form to use when the collection mixes
+`Integer` and `Float`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(numbers:Number[1..*]):Number[1]
 {
     $numbers->fold({n, m | min($n, $m)}, $numbers->at(0))
 }
 
+'''
+As `min(Number[1..*]):Number[1]`, for a collection that may be empty.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::min(numbers:Number[*]):Number[0..1]
 {
     $numbers->fold({n, m | min($n, $m->toOne())}, $numbers->first())

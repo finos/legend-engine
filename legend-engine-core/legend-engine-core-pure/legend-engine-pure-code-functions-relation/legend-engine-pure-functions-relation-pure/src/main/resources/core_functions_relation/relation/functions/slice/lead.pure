@@ -16,12 +16,43 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
+'''
+The next row within the partition.
+
+The mirror of `lag(Relation<T>[1], T[1]):T[0..1]`, looking forwards instead of back. Returns a whole
+row, so read a column off it: `$p->lead($r).name`. Useful for looking ahead — the next event's
+timestamp, the following period's value.
+
+**The last row of each partition returns empty**, since it has no successor.
+
+Like `lag`, this takes no window argument: it is positional relative to the current row and does not
+depend on the frame.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `r` — the current row, supplied by `extend`.
+
+**Returns** the following row, or empty at the end of a partition.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->ascending()), ~next:{p,w,r| $p->lead($r).name})
+```
+
+**See also** `lead(Relation<T>[1], T[1], Integer[1]):T[0..1]`,
+`lag(Relation<T>[1], T[1]):T[0..1]`,
+`offset(Relation<T>[1], T[1], Integer[1]):T[0..1]`
+'''
 function <<functionType.NormalizeRequiredFunction,
            PCT.function>> meta::pure::functions::relation::lead<T>(w:Relation<T>[1],r:T[1]):T[0..1]
 {
   lead($w, $r, 1)
 }
 
+'''
+As `lead(Relation<T>[1], T[1]):T[0..1]`, going forward `offset` rows rather than one. `lead($r, 1)`
+is the one-argument form.
+'''
 function <<functionType.NormalizeRequiredFunction,
            PCT.function>> meta::pure::functions::relation::lead<T>(w:Relation<T>[1],r:T[1], offset:Integer[1]):T[0..1]
 {
