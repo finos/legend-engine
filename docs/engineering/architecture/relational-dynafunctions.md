@@ -1031,14 +1031,35 @@ every one of these.
    `sort` errors only because `array_sort` rejects a scalar; `distinct`, `max` and `min` are the
    same defect without the safety net. **A passing result is not evidence the array path ran.**
 
-   Note an earlier reading of this — that the split was primitive vs Class element type
-   (`isClassType` in `isSemiStructuredArrayExpression:187`) — was **refuted by experiment**:
-   `sort` fails identically for `Integer[*]` and for a `String` chain rooted at a Class-typed
-   property. The cause is the missing guard, not the element type.
+   **Two conditions must both hold**, which took two experiments to separate. The guard is
+   necessary but not sufficient: `isSemiStructuredArrayInput` delegates to
+   `isSemiStructuredArrayExpression:187`, which requires the property's return type to be a
+   **Class**. So a primitive collection — `scores: Integer[*]` — fails the guard even once the
+   processor sets it, and still flattens.
 
-   Fix shape: give the unguarded processors the same `effectiveState` guard `processVariantSize`
-   has, and add an `isSemiStructuredArrayInput` dispatch pair for `max`/`min`. Any new `array_*`
-   processor needs both, so this is worth a cross-check test rather than a one-off fix.
+   | Expression | Before guard | After guard |
+   |---|---|---|
+   | `addresses->map(a\|$a.rank)->sort()` | error `array_sort(VARCHAR)` | **`[3,5,9]`** — array_sort ran |
+   | `addresses->map(a\|$a.rank)->removeDuplicates()` | flattened silently | **`[9,3,5]`** — array_distinct ran |
+   | `scores->sort()` (`Integer[*]`) | error `array_sort(INTEGER)` | error, unchanged |
+
+   An intermediate reading recorded here — that the element type was irrelevant and the missing
+   guard was the whole cause — was itself incomplete. Both readings were half right: the guard
+   explains the Class-rooted case, `isClassType` explains the primitive case.
+
+   Note also that `distinct` is **not** an array operation: it is the TDS-level distinct that
+   de-duplicates result rows. `removeDuplicates` is the one that lowers to `array_distinct`.
+
+   **Fixed** for the ten unconditionally-routed processors (`sort`, `reverse`,
+   `removeDuplicates`, `contains`, `slice`, `take`, `drop`, `last`, `init`, `tail`), which now
+   carry the same `effectiveState` guard `processVariantSize` has. When they engage, the column
+   holds the **whole array** rather than one row per element.
+
+   **Still open:** (a) `max`/`min` need an `isSemiStructuredArrayInput` dispatch pair — a
+   behaviour change, deliberately not bundled with the guard fix; (b) primitive collections are
+   excluded by `isClassType`, so no array function reaches them. Since every future `array_*`
+   processor needs both the guard and a dispatch pair, a cross-check test asserting that is worth
+   more than further one-off fixes.
 
 3. **`first()` and `exists()` do not collapse the flatten** when applied directly to a bound
    to-many property. For a firm with three addresses, `addresses->first().name` returns **three**
