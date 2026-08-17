@@ -23,6 +23,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
@@ -233,6 +234,7 @@ public class DataQualityRelationValidationTestRunner implements TestRunner
                 }
                 Pair<Connection, List<Closeable>> mockConnection = buildTestConnection(storeEmbeddedDataMap);
                 Root_meta_core_runtime_Connection compiledMock = mockConnection.getOne().accept(connectionVisitor);
+                mockConnection.getOne().accept(new ConnectionSecondPassBuilder(this.pureModel.getContext(), compiledMock));
                 connectionStores.forEach(cs ->
                 {
                     originalConnections.add(Tuples.pair(cs, cs._connection()));
