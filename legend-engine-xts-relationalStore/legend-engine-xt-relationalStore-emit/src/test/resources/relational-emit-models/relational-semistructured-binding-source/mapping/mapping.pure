@@ -85,8 +85,8 @@ Mapping demo::ssn::PersonMapping
     )
     ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE
     reference: [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.REFERENCE,
-    tags: Binding demo::ssn::TagBinding : parseJson(extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'VARCHAR')),
-    participants: Binding demo::ssn::ParticipantBinding : parseJson(extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'VARCHAR'))
+    tags: Binding demo::ssn::TagBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'VARCHAR[]'),
+    participants: Binding demo::ssn::ParticipantBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'VARCHAR[]')
   }
 
   testSuites:

@@ -925,7 +925,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
   assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
   let p2 = $params->at(2)->cast(@Literal).value->cast(@String)->toUpper();
   let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP'];
-  assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));
+  // A trailing [] denotes an array of the named type. The element type has to be stated:
+  // it is what lets a dialect cast the extraction to a typed list rather than leave it as
+  // an untyped document, and it is not recoverable from anywhere else.
+  let elementType = if($p2->endsWith('[]'), | $p2->substring(0, $p2->length() - 2), | $p2);
+  assertContains($supportedTypes, $elementType, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', ') + ', each optionally suffixed with [] for an array');
   let processedParams = $result.toSql.transform->toOne()->eval([$p0, $p1, $p2]);
   format($result.toSql.format, $processedParams);
 }

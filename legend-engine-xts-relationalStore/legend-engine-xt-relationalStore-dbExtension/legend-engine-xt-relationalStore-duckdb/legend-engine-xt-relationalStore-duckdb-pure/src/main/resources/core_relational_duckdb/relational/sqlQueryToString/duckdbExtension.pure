@@ -361,13 +361,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
   let elementAccess = format('json_extract(%s, \'%s\')', [$baseRelationalOp, $jsonPath]);
 
+  // An array extraction casts to a typed list, which is what the array_* family needs -
+  // json_extract on its own yields JSON, and DuckDB compares JSON elements as text.
+  if ($returnType->endsWith('[]'),
+      | 'cast(' + $elementAccess + ' as ' + $returnType->substring(0, $returnType->length() - 2)->duckDBSemiStructuredSqlType() + '[])', |
+  // A string is unquoted rather than cast, so the JSON quotes do not survive into the value.
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | format('json_extract_string(%s, \'%s\')', [$baseRelationalOp, $jsonPath]), |
-  if ($returnType == 'DATE', | 'cast(' + $elementAccess + ' as DATE)', |
-  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
-  if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
-  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
-  if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + ' as INTEGER)', |
-  $elementAccess))))));
+  if ($returnType->in(['DATE', 'DATETIME', 'TIMESTAMP', 'BOOLEAN', 'FLOAT', 'INTEGER']),
+      | 'cast(' + $elementAccess + ' as ' + $returnType->duckDBSemiStructuredSqlType() + ')', |
+  $elementAccess)));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::duckDBSemiStructuredSqlType(returnType: String[1]): String[1]
+{
+  if($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'VARCHAR', |
+  if($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
+  if($returnType == 'FLOAT', | 'DOUBLE', |
+  $returnType)));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
