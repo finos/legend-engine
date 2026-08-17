@@ -45,9 +45,10 @@ public class Test_Relational_Snowflake_Semistructured
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
+            Object result;
             try
             {
-                return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
+                result = PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
             catch (Exception e)
             {
@@ -62,6 +63,13 @@ public class Test_Relational_Snowflake_Semistructured
                 }
                 throw e;
             }
+            // Reached only when the test passed. An entry that no longer reproduces is worse
+            // than no entry: it silently suppresses whatever regresses into it next.
+            if (failures.containsKey(test))
+            {
+                throw new AssertionError("Expected this test to fail with: " + failures.get(test) + ", but it passed. Remove the entry.");
+            }
+            return result;
         };
 
         return wrapSuite(
