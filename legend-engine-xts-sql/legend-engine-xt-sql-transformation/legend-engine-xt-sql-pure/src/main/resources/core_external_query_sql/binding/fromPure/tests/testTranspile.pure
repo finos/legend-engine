@@ -884,7 +884,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       'DateTime >= \'2023-01-02 00:00:00\' OR ' +
       'DateTime <= CURRENT_TIMESTAMP OR ' +
       'DateTime > \'2023-01-03 00:00:00\' OR ' +
-      'DateTime > date_trunc(\'month\', DateTime)',
+      'DateTime > date_trunc(\'month\', DateTime) OR ' + 
+      'DateTime > cast(\'2026\' || \'/01\' || \'/01\' as date) OR ' + //testing concat of a date string does not get coerced
+      '\'2026-01-01\' > DateTime', //testing left stringliteral coersion
 
     [
       c({| FlatInput.all()->project(
@@ -903,6 +905,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               || ($row.getDateTime('DateTime') <= now())
               || ($row.getDateTime('DateTime') > %2023-01-03T00:00:00)
               || ($row.getDateTime('DateTime') > firstDayOfMonth($row.getDateTime('DateTime')))
+              || ($row.getDateTime('DateTime') > parseDate('2026' + ('/01' + '/01')))
+              || (%2026-01-01 > $row.getDateTime('DateTime'))
           )
         }, true, false),
 
@@ -919,6 +923,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                  || ($x.DateTime >= %2023-01-02T00:00:00) || ($x.DateTime <= now())
                  || ($x.DateTime > %2023-01-03T00:00:00)
                  || ($x.DateTime > firstDayOfMonth($x.DateTime))
+                 || ($x.DateTime > parseDate('2026' + ('/01' + '/01')))
+                 || (%2026-01-01 > $x.DateTime)
           )
         }, true, false)
     ]
@@ -2971,6 +2977,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       })
     ]
   );
+
+
+  test(
+    'SELECT ' +
+    ' concat(true, false, Boolean) as BOOLEANS, ' + 
+    ' concat(1, 2, \'abc\', 1.1) as MIXED ' + 
+    'FROM service(\'/service/service1\')',
+    [
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+          )->project(~[
+            BOOLEANS: x | 't' + 'f' + if ($x.Boolean, | 't', | if ($x.Boolean->isEmpty(), | '', | 'f')),
+            MIXED: x | 1->toString() + 2->toString() + 'abc' + 1.1->toString()
+          ])
+      })
+    ]
+  );  
 
   error('SELECT \'a\' || case when 1 = 1 then null else \'b\' end as NULLABLE FROM service(\'/service/service1\')', 'string concat not ignoring nullable values not currently supported, if you want to ignore nulls use function concat instead of ||');
 }
