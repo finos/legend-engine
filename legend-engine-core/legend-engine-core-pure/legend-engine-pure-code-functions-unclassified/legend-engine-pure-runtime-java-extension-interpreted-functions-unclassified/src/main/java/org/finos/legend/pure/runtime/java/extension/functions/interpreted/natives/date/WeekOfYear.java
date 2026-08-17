@@ -14,12 +14,14 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.date;
 
-import java.util.Calendar;
-
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.extract.NativeDateElementFunction;
+
+import java.time.temporal.WeekFields;
+import java.util.Locale;
 
 public class WeekOfYear extends NativeDateElementFunction
 {
@@ -35,6 +37,10 @@ public class WeekOfYear extends NativeDateElementFunction
         {
             throw new InvalidDateElementException("Cannot get week of year for " + date);
         }
-        return date.getCalendar().get(Calendar.WEEK_OF_YEAR);
+        // The week a date falls in depends on which day starts the week and how many days January must
+        // contribute for the first week to count as week 1. Both come from the format locale, as they
+        // did when this was a GregorianCalendar, so the answer stays locale dependent.
+        WeekFields weekFields = WeekFields.of(Locale.getDefault(Locale.Category.FORMAT));
+        return PureDateToJava.start().toLocalDate(date).get(weekFields.weekOfWeekBasedYear());
     }
 }
