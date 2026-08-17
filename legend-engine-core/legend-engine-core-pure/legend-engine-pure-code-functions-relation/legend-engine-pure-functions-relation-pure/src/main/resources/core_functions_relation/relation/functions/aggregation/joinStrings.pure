@@ -26,7 +26,7 @@ function <<PCT.function>>
 }
 meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1]):String[1]
 {
-    $rel->meta::pure::functions::relation::map(x|eval($col, $x))->meta::pure::functions::string::joinStrings($separator);
+    $rel->meta::pure::functions::relation::joinStrings(x|eval($col, $x), $separator);
 }
 
 function <<PCT.function>>
@@ -37,7 +37,32 @@ function <<PCT.function>>
 }
 meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
 {
-    $rel->meta::pure::functions::relation::reduce(x|eval($col, $x), y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);
+    $rel->meta::pure::functions::relation::joinStrings(x|eval($col, $x), $separator, $sortInfo);
+}
+
+// The ColSpec overloads above are sugar for the common "one column, as-is" case. These take the row function
+// directly, so the joined value can be composed from more than one column -- $r.first + ' ' + $r.last -- or
+// reshaped before joining. Everything else is identical; the ColSpec forms are written in terms of these.
+function <<PCT.function>>
+{
+    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
+            'separator. The order of the values is not constrained -- use the overload taking a sort spec ' +
+            'when it matters.'
+}
+meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], f:Function<{T[1]->String[*]}>[1], separator:String[1]):String[1]
+{
+    $rel->meta::pure::functions::relation::map($f)->meta::pure::functions::string::joinStrings($separator);
+}
+
+function <<PCT.function>>
+{
+    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
+            'separator, taking the rows in the order given by the sort spec. Generates SQL ' +
+            'LISTAGG/STRING_AGG with a WITHIN GROUP (ORDER BY ...) clause.'
+}
+meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], f:Function<{T[1]->String[*]}>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
+{
+    $rel->meta::pure::functions::relation::reduce($f, y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);
 }
 
 // Exercises the aggregate on its own, without a grouping mechanism in the way. Unlike the PCT tests below it
@@ -56,6 +81,22 @@ function <<test.Test>> meta::pure::functions::relation::tests::joinStrings::test
     assertEquals('A-B-C', $r->joinStrings(~name, '-', [~name->ascending()]));
 }
 
+// The row-function overloads: the joined value is composed rather than read straight off one column.
+function <<test.Test>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_RowFunction():Boolean[1]
+{
+    let r = #TDS
+              id, first, last
+              3, Ada, Zed
+              1, Bo, Yan
+              2, Cy, Xu
+            #;
+
+    assertEquals('Bo Yan,Cy Xu,Ada Zed',
+                 $r->joinStrings(x|$x.first->toOne() + ' ' + $x.last->toOne(), ',', [~id->ascending()]));
+    assertEquals('Ada Zed,Cy Xu,Bo Yan',
+                 $r->joinStrings(x|$x.first->toOne() + ' ' + $x.last->toOne(), ',', [~id->descending()]));
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -66,7 +107,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   1, 2, B
                   2, 2, Y
                   2, 1, X
-                #->groupBy(~grp, ~names : {g, w, r | $g->joinStrings(~name, ',', [~id->ascending()])})
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~id->ascending()]))
                };
 
     let res = $f->eval($expr);
@@ -88,7 +129,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   1, 2, B
                   2, 2, Y
                   2, 1, X
-                #->groupBy(~grp, ~names : {g, w, r | $g->joinStrings(~name, ',', [~id->descending()])})
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~id->descending()]))
                };
 
     let res = $f->eval($expr);
@@ -109,7 +150,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   1, 2, 1, C
                   1, 1, 1, A
                   1, 2, 2, D
-                #->groupBy(~grp, ~names : {g, w, r | $g->joinStrings(~name, ',', [~major->ascending(), ~minor->descending()])})
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~major->ascending(), ~minor->descending()]))
                };
 
     let res = $f->eval($expr);
@@ -128,7 +169,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   1, 30, C
                   1, 10, A
                   1, 20, B
-                #->groupBy(~grp, ~names : {g, w, r | $g->joinStrings(~name, '|', [~rank->descending()])})
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, '|', [~rank->descending()]))
                };
 
     let res = $f->eval($expr);
@@ -149,7 +190,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   1, B
                   2, Y
                   2, X
-                #->groupBy(~grp, ~names : {g, w, r | $g->joinStrings(~name, '')})
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ''))
                };
 
     let res = $f->eval($expr);
@@ -170,7 +211,7 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   3, C
                   1, A
                   2, B
-                #->aggregate(~names : {g, w, r | $g->joinStrings(~name, ',', [~id->ascending()])})
+                #->aggregate(~names : g | $g->joinStrings(~name, ',', [~id->ascending()]))
                };
 
     let res = $f->eval($expr);
