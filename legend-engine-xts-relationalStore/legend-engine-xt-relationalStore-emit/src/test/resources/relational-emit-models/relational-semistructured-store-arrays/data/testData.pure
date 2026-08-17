@@ -23,8 +23,8 @@ Data demo::ssd::data::TeamData
   #{
     default.TEAM_TABLE:
       ID,LABEL,SCORES
-      1,Falcons,"[30,10,20]"
-      2,Ravens,"[5,12,7]"
-      3,Owls,"[40,35]";
+      1,Falcons,"{""values"":[9,100,20]}"
+      2,Ravens,"{""values"":[5,12,7]}"
+      3,Owls,"{""values"":[40,35]}";
   }#
 }

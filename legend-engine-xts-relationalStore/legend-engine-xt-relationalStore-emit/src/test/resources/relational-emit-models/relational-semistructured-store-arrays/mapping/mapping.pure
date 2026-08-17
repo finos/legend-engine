@@ -27,7 +27,9 @@ Mapping demo::ssd::TeamMapping
     ~mainTable [demo::ssd::store::TeamDB]TEAM_TABLE
     id: [demo::ssd::store::TeamDB]TEAM_TABLE.ID,
     label: [demo::ssd::store::TeamDB]TEAM_TABLE.LABEL,
-    scoreCount: array_size([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES)
+    scoreCount: array_size(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    topScore: array_max(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    lowScore: array_min(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
   }
 
   // Same functions again, this time reached through a view that computes them.
@@ -39,7 +41,8 @@ Mapping demo::ssd::TeamMapping
     )
     ~mainTable [demo::ssd::store::TeamDB]TEAM_STATS
     id: [demo::ssd::store::TeamDB]TEAM_STATS.ID,
-    total: [demo::ssd::store::TeamDB]TEAM_STATS.TOTAL
+    total: [demo::ssd::store::TeamDB]TEAM_STATS.TOTAL,
+    top: [demo::ssd::store::TeamDB]TEAM_STATS.TOP
   }
 
   testSuites:
@@ -47,28 +50,28 @@ Mapping demo::ssd::TeamMapping
     mappingArraySuite:
     {
       function: |demo::ssd::Team.all()
-                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount])
+                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount, topScore: t | $t.topScore, lowScore: t | $t.lowScore])
                   ->sort([~label->ascending()]);
       tests:
       [
         arrayFunctionsInMappingAndFilter:
         {
           data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
-          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3},{"label":"Ravens","scoreCount":3}]'; }#; }# ];
+          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3,"topScore":100,"lowScore":9},{"label":"Ravens","scoreCount":3,"topScore":12,"lowScore":5}]'; }#; }# ];
         }
       ];
     },
     viewArraySuite:
     {
       function: |demo::ssd::TeamStats.all()
-                  ->project(~[id: s | $s.id, total: s | $s.total])
+                  ->project(~[id: s | $s.id, total: s | $s.total, top: s | $s.top])
                   ->sort([~id->ascending()]);
       tests:
       [
         arrayFunctionsInViewColumns:
         {
           data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
-          asserts: [ shouldComputeViewColumns: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"id":1,"total":3},{"id":2,"total":3},{"id":3,"total":2}]'; }#; }# ];
+          asserts: [ shouldComputeViewColumns: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"id":1,"total":3,"top":100},{"id":2,"total":3,"top":12},{"id":3,"total":2,"top":40}]'; }#; }# ];
         }
       ];
     }

@@ -18,12 +18,15 @@ Class demo::ssd::Team
   id: Integer[1];
   label: String[1];
   scoreCount: Integer[1];
+  topScore: Integer[1];
+  lowScore: Integer[1];
 }
 
 Class demo::ssd::TeamStats
 {
   id: Integer[1];
   total: Integer[1];
+  top: Integer[1];
 }
 
 ###Relational
@@ -38,13 +41,14 @@ Database demo::ssd::store::TeamDB
   )
 
   // Array function in a filter predicate: row inclusion decided by an aggregate of the
-  // array, with no row expansion. Ravens hold two scores and drop out.
-  Filter MultiScoreFilter(array_size(TEAM_TABLE.SCORES) > 2)
+  // array, with no row expansion.
+  Filter MultiScoreFilter(array_size(extractFromSemiStructured(TEAM_TABLE.SCORES, 'values', 'INTEGER[]')) > 2)
 
   // Array function as a computed view column.
   View TEAM_STATS
   (
     ID: TEAM_TABLE.ID PRIMARY KEY,
-    TOTAL: array_size(TEAM_TABLE.SCORES)
+    TOTAL: array_size(extractFromSemiStructured(TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    TOP: array_max(extractFromSemiStructured(TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
   )
 )

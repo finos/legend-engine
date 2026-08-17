@@ -1078,38 +1078,59 @@ every one of these.
    `column "REFERENCE" must appear in the GROUP BY clause`. Either alone is fine — this is
    narrower than (4), which fails even when the aggregate is projected on its own.
 
-**Array functions in the store language — only `array_size` works.** This is the surface that
-matters most for the relational DSL: `array_*` written directly in a `Filter`, a `View` column, a
-`Join` condition or a mapping property, aggregating a JSON array in place with no row expansion.
-Twenty `array_*` names are registered in `DynaFunctionRegistry` and DuckDB renders all twenty, so
-they are all *authorable*. Only one of them executes.
+### 11.9 Array-typed extraction
 
-`array_size` works in all three positions, and is asserted in
-`relational-emit-models/relational-semistructured-store-arrays`. It works because its DuckDB
-renderer casts first — `ifnull(json_array_length(cast(%s as JSON)), 0)`
-(`duckdbExtension.pure:180`). Every other `array_*` renderer is a bare format string over the raw
-operand, so a `SEMISTRUCTURED` column reaches it as JSON where DuckDB wants a LIST:
+The store language can state that an extraction yields an **array**, by suffixing the target type
+with `[]`:
 
 ```
-array_max(TEAM_TABLE.SCORES)
-  -> Binder Error: No function matches ... 'array_aggregate(JSON, STRING_LITERAL)'
+array_max(extractFromSemiStructured(TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
+tags: Binding TagBinding : extractFromSemiStructured(T.CONTENT, 'payload.tags', 'VARCHAR[]')
 ```
 
-**The obvious fix is worse than the defect.** Casting to a JSON list inside the format string —
-`array_aggregate(cast(%s as JSON[]), 'max')` — parses and runs, and is **silently wrong**,
-because JSON elements compare lexicographically:
+Before this, `extractFromSemiStructured` returned one of ten scalars or nothing. That single
+restriction caused two apparently unrelated failures, because both need a typed list and neither
+could get one:
 
-| Rendering | `[9,100,20]` max |
+- **Every `array_*` function except `array_size` failed.** Twenty are registered with DuckDB
+  renderers, so all twenty are authorable; a `SEMISTRUCTURED` column reached them as JSON where
+  DuckDB wants a LIST — `array_aggregate(JSON, STRING_LITERAL)`. `array_size` was the exception
+  only because its renderer already cast (`json_array_length(cast(%s as JSON))`).
+- **A `[*]` binding needed `parseJson`** to re-type extracted text back into a document;
+  without it the flatten failed with `Cannot mix values of type "NULL"[] and VARCHAR in CASE`.
+
+**Why the element type has to be stated, not inferred.** A `DynaFunction` carries only a name and
+parameters (`HelperRelationalBuilder.java:853-856`) — no return type — and a `ToSql` `transform`
+receives already-rendered strings, so neither layer can recover it. Guessing is not an option
+either: casting blindly to a JSON list parses, runs, and is **silently wrong**, because JSON
+elements compare as text.
+
+| `[9,100,20]` max | |
 |---|---|
 | `cast(x as JSON[])` | **9** — lexicographic |
-| `cast(x as DOUBLE[])` | 100.0 — correct |
+| `cast(x as INTEGER[])` | 100 — correct |
 
-A correct rendering needs the *element type*, which a `ToSql` format string does not have; its
-`transform` hook receives already-rendered strings and cannot inspect the node. The fix therefore
-belongs in a processing function where the type is known — the shape `asListForDuckDB(element,
-sgc, elementType)` (`duckdbExtension.pure:699`) already uses for the flatten path. Note a numeric
-fixture can hide this: `[30,10,20]` yields the right answer lexicographically and only a case like
-`[9,100,20]` exposes it.
+A numeric fixture hides this: `[30,10,20]` gives the right answer lexicographically, and only a
+case like `[9,100,20]` — or `[5,12,7]`, whose text maximum is `"7"` — exposes it. Both are used in
+`relational-semistructured-store-arrays`.
+
+**What changed.** The type gate (`dbExtension.pure:913`) now strips a `[]` suffix and validates
+the element against the same ten scalars, so it stays strict. DuckDB's extraction renderer gained
+an array branch casting to a typed list, and its scalar and array branches now share one type
+mapping so they cannot drift apart.
+
+**What it unlocked, at the source rather than per function:** `array_max`/`array_min`/`array_size`
+are asserted in a mapping property, a filter predicate and a computed view column; and the two
+`[*]` bindings in `relational-semistructured-binding-source` dropped `parseJson` while returning
+byte-identical results.
+
+**Not yet done.** Only DuckDB has the renderer branch — each dialect needs its own, and
+`sqlTextToRelationalDataTypeMap` still maps bare `'ARRAY'` to an element-less `Array()`. An array
+*of objects* is still not expressible: the whitelist admits scalars only, so `Tag[*]` is bound via
+`'VARCHAR[]'` and the elements are re-navigated as JSON text. Admitting a semi-structured element
+type would close that last case. `extractFromSemiStructured` and the `array_*` family also remain
+absent from `getDynaFunctionTypeInferenceMap` (`relationalExtension.pure:189`), so a view column
+built from them carries no inferred datatype — execution is unaffected.
 
 **What a binding can be attached to.** The operation on the right of a `Binding` is not limited to
 a bare column, and the bound property is not limited to `[1]`. All of the following are supported
@@ -1127,6 +1148,12 @@ and now covered:
 The navigation form is what lets one class absorb documents of different shapes: a union whose
 legs bind at different depths — one navigating to a sub-document, the other binding the root —
 resolves onto a single class, and the query cannot tell the legs apart.
+
+**`parseJson` is optional for a `[1]` binding.** Binding a to-one property straight to a
+navigation works — `firm: Binding B : extractFromSemiStructured(COL, 'employment.firm',
+'VARCHAR')` — as the shipped union test does. A `[*]` binding used to require `parseJson` to
+re-type the extracted text into a document; with an array-typed extraction (§11.9) it no longer
+does. `parseJson` remains the right tool for JSON held in an ordinary VARCHAR column.
 
 **Follow-up — the Snowflake `GET` failure is most likely this same cast.**
 `Test_Relational_Snowflake_Semistructured` skips exactly two tests,
