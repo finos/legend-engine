@@ -100,6 +100,12 @@
     "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::matches_String_1__String_1__Boolean_1_\""
   }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesUnanchoredIsFullMatch_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::matches_String_1__String_1__Boolean_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesAlternation_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::matches_String_1__String_1__Boolean_1_\""
+  }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_\""
   }, {

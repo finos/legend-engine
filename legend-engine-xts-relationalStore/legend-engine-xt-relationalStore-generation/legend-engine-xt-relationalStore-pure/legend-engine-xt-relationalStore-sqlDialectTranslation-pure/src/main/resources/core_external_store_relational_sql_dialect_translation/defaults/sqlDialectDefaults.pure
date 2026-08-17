@@ -951,6 +951,18 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::pro
   $args->at(0) + ' ~ \'' + $inlineFlags + $args->at(1) + '\'';
 }
 
+// Builds the (subject, pattern) pair for a substring match, with RegexpParameter flags folded into
+// the pattern as an inline prefix. Dialects whose ~ is not a substring match - DuckDB's is a full
+// match, and Snowflake and MemSQL have no ~ at all - use this to build their own form.
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikeArgs(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[*]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let inlineFlags = if ($processedArgs->size() > 2, | $processedArgs->at(2)->regexpInlineFlags($sqlDialect), | '');
+  let args = $processedArgs->transformRegexpParams($sqlDialect);
+  let pattern = '\'' + $inlineFlags + $args->at(1) + '\'';
+  $args->at(0)->concatenate($pattern);
+}
+
 // Whole-string match: the anchors are added here rather than by each caller.
 function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpFullMatch(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {

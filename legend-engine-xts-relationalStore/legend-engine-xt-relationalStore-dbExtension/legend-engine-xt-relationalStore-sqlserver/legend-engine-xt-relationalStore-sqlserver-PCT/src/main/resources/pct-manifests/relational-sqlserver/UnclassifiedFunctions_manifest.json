@@ -52,6 +52,12 @@
     "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesUnanchoredIsFullMatch_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesAlternation_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
+  }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
   }, {

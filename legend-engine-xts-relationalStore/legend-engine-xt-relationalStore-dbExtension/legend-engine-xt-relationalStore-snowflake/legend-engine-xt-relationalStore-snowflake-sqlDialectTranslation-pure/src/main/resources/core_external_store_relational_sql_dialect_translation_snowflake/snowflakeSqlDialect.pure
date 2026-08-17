@@ -568,7 +568,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Cosh, simpleFunctionProcessor('cosh')),
 
     // String
-    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForSubstringRegexpSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(RegexpFullMatch, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sha1, simpleFunctionProcessor('sha1')),
     pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
@@ -850,3 +850,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 }
 
 // --------------------------------------------------------------------------
+
+// Snowflake has no ~ operator, and its REGEXP_LIKE/RLIKE are implicitly whole-string, so a
+// substring match is expressed positionally.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForSubstringRegexpSnowflake(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let args = regexpLikeArgs($f, $sqlDialect, $state, $config);
+  '(REGEXP_INSTR(' + $args->at(0) + ', ' + $args->at(1) + ') > 0)';
+}
