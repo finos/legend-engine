@@ -22,35 +22,11 @@
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
   }, {
-    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
   }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpLike().\""
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpIndexOf().\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for regexpReplace().\""

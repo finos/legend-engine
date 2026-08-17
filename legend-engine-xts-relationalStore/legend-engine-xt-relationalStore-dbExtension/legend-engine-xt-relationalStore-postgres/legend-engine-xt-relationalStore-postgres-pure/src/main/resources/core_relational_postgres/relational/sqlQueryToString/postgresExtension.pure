@@ -220,6 +220,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchPostgres('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountPostgres()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractPostgres()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfPostgres()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikePostgres()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplacePostgres()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
@@ -391,9 +396,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ' CASCADE;')
 }
 
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
 {
-   '%s ~ \'^' + $query + '$\''
+   '%s ~ \'^(?:' + $query + ')$\''
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::formatMostRecentPostgres(p: String[1..2], defaultDay: String[1]): String[*]
@@ -444,4 +450,63 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     | 
       $elementAccess
   );
+}
+
+// Postgres takes an explicit flags argument on its regex functions, so RegexpParameter maps onto it
+// directly rather than onto an inline prefix. 'n' is newline-sensitive matching, which is what
+// MULTILINE asks for; 's' is non-newline-sensitive, which is DOTALL.
+// Postgres renders literals with a type prefix - Text'abc', Boolean'false' - so a literal argument
+// has to be unwrapped before it can be compared or split.
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::unwrapLiteralPostgres(literal: String[1]):String[1]
+{
+   let withoutType = if ($literal->startsWith('Text'), | $literal->substring(4, $literal->length()),
+                        | if ($literal->startsWith('Boolean'), | $literal->substring(7, $literal->length()), | $literal));
+   $withoutType->removeQuotesIfExist();
+}
+
+// ARE expresses newline handling as a single mode letter rather than as independent flags, so
+// MULTILINE and NON_NEWLINE_SENSITIVE cannot simply be concatenated - 'ns' is self-contradictory.
+// The four combinations map to: p (neither - the Java default), n (^/$ per line), s (. matches
+// newline), w (both).
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpFlagsForPostgres(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->unwrapLiteralPostgres()->split(',');
+   let caseFlag = if ($regexpParameters->contains('CASE_INSENSITIVE'), | 'i', | '');
+   let multiline = $regexpParameters->contains('MULTILINE');
+   let dotAll = $regexpParameters->contains('NON_NEWLINE_SENSITIVE');
+   let newlineFlag = if ($multiline && $dotAll, | 'w',
+                        | if ($multiline, | 'n',
+                             | if ($dotAll, | 's', | 'p')));
+   $caseFlag + $newlineFlag;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformRegexpLikePostgres(params: String[3]):String[1]
+{
+   'regexp_like(' + $params->at(0) + ', ' + $params->at(1) + ', \'' + $params->at(2)->regexpFlagsForPostgres() + '\')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformRegexpCountPostgres(params: String[3]):String[1]
+{
+   'regexp_count(' + $params->at(0) + ', ' + $params->at(1) + ', 1, \'' + $params->at(2)->regexpFlagsForPostgres() + '\')';
+}
+
+// regexp_instr is 1-based and returns 0 for no match; Pure is 0-based and returns -1, so one
+// subtraction converts both. The seventh argument selects the capture group.
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformRegexpIndexOfPostgres(params: String[4]):String[1]
+{
+   '(regexp_instr(' + $params->at(0) + ', ' + $params->at(1) + ', 1, 1, 0, \'' + $params->at(3)->regexpFlagsForPostgres() + '\', ' + $params->at(2) + ') - 1)';
+}
+
+// regexp_substr returns a single match; Postgres has no scalar function returning every match, so
+// extractAll has no expressible form here.
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformRegexpExtractPostgres(params: String[5]):String[1]
+{
+   assert($params->at(2)->unwrapLiteralPostgres() == 'false', | 'regexpExtract with extractAll=true is not supported on Postgres: regexp_substr returns a single match and there is no scalar all-matches function');
+   'regexp_substr(' + $params->at(0) + ', ' + $params->at(1) + ', 1, 1, \'' + $params->at(4)->regexpFlagsForPostgres() + '\', ' + $params->at(3) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::transformRegexpReplacePostgres(params: String[5]):String[1]
+{
+   let flags = $params->at(4)->regexpFlagsForPostgres() + if ($params->at(3)->unwrapLiteralPostgres() == 'true', | 'g', | '');
+   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1) + ', ' + $params->at(2) + ', \'' + $flags + '\')';
 }

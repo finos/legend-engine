@@ -119,7 +119,7 @@ function meta::relational::functions::sqlQueryToString::sybaseIQ::getDynaFunctio
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='list(%s,%s)')),
     dynaFnToSql('least',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] | convertGreatestLeastToCaseStatement('<=', $p)})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPatternLegacy('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='hash(%s, \'MD5\')')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),

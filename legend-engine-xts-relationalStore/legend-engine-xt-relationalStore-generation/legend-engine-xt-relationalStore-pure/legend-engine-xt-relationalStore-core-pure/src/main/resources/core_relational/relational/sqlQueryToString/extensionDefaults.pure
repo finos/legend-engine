@@ -668,7 +668,23 @@ function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType
    ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 }
 
+// The group is required: alternation binds looser than the anchors, so '^a|b$' would parse as
+// (^a)|(b$) and match strings that Pure's full-match `matches` rejects.
 function meta::relational::functions::sqlQueryToString::default::regexpPattern(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^(?:' +$query + ')$' +'\''
+}
+
+// As regexpPattern, with a capturing group for engines that do not accept (?:...).
+function meta::relational::functions::sqlQueryToString::default::regexpPatternPosix(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^(' +$query + ')$' +'\''
+}
+
+// Ungrouped anchoring, kept only for dialects with no PCT module. It mis-handles a top-level
+// alternation exactly as described on regexpPattern, but correcting it there cannot be verified by
+// any suite, so those dialects stay on the behaviour their users have today.
+function meta::relational::functions::sqlQueryToString::default::regexpPatternLegacy(query: String[1]):String[1]
 {
    '%s regexp \'' + '^' +$query + '$' +'\''
 }
@@ -765,7 +781,14 @@ function meta::relational::functions::sqlQueryToString::default::likePatternWith
    '%s not like \'' + $query + '\''
 }
 
+// See regexpPattern for why the group is required.
 function meta::relational::functions::sqlQueryToString::default::regexpLikePattern(query1: String[1], query2: String[1]):String[1]
+{
+   'REGEXP_LIKE(' + $query1 + ', \'' + '^(?:' +$query2 + ')$' +'\')'
+}
+
+// See regexpPatternLegacy — kept for dialects with no PCT module.
+function meta::relational::functions::sqlQueryToString::default::regexpLikePatternLegacy(query1: String[1], query2: String[1]):String[1]
 {
    'REGEXP_LIKE(' + $query1 + ', \'' + '^' +$query2 + '$' +'\')'
 }

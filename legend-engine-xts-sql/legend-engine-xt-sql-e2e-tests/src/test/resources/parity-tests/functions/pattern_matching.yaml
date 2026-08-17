@@ -31,8 +31,8 @@ tests:
     sql: "SELECT REGEXP_COUNT(val, '[aeiou]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
     function: regexp_count
     signature: "regexp_count(text, text) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count__txt_txt_int__from_table
     sql: "SELECT REGEXP_COUNT(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
@@ -52,8 +52,8 @@ tests:
     sql: "SELECT REGEXP_INSTR(val, '[0-9]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
     function: regexp_instr
     signature: "regexp_instr(text, text) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_instr__txt_txt_int__from_table
     sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
@@ -94,22 +94,22 @@ tests:
     sql: "SELECT REGEXP_LIKE(val, '^[A-Z]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
     function: regexp_like
     signature: "regexp_like(text, text) → boolean"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_like__txt_txt_txt__from_table
     sql: "SELECT REGEXP_LIKE(val, '^[a-z]', 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
     function: regexp_like
     signature: "regexp_like(text, text, text) → boolean"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt__from_table
     sql: "SELECT REGEXP_SUBSTR(val, '[0-9]+') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
     function: regexp_substr
     signature: "regexp_substr(text, text) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int__from_table
     sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
@@ -151,40 +151,144 @@ tests:
     sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count_text_text_integer_text_cov
     sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text, integer, text) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_instr_text_text_integer_cov
     sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
     function: regexp_instr
     signature: "regexp_instr(text, text, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_instr_text_text_integer_integer_cov
     sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
     function: regexp_instr
     signature: "regexp_instr(text, text, integer, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr_text_text_integer_cov
     sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr_text_text_integer_integer_cov
     sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # === Regex match operators (~, !~, ~*, !~*) ===
+  # createRegexMatch (fromPure.pure) routes rather than rejects: a literal, fully ^...$-anchored
+  # pattern with no top-level alternation goes to Pure matches(), which far more stores implement;
+  # everything else - unanchored, case-insensitive, column-valued - goes to regexpLike(), which is
+  # what Postgres ~ actually means. See docs/engineering/reference/regex-portability.md and ADR-002.
+
+  - id: regex_match__anchored_literal__supported
+    sql: "SELECT val ~ '^hello$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regex_not_match__anchored_literal__supported
+    sql: "SELECT val !~ '^hello$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_not_match
+    signature: "!~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Postgres ~ is a substring match, so '^hello|fox$' parses as (^hello)|(fox$) and is true for
+  # 'the quick brown fox'. Stripping the anchors and calling matches(val,'hello|fox') would make it
+  # false, so a fully anchored pattern only takes the matches() path when it has no top-level
+  # alternation. This test is what holds that guard in place.
+  - id: regex_match__alternation__preserves_substring_semantics
+    sql: "SELECT val ~ '^hello|fox$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # PASSES, and the reason matters: this suite cannot see a regex *flavor* divergence. Both sides
+  # execute on the same Postgres — the Legend path transpiles to Pure and pushes back down to it —
+  # so the pattern is interpreted by ARE on both sides and agrees with itself. Evaluated on the
+  # normative Java runtime the same expression answers differently, because java.util.regex has no
+  # POSIX bracket expression and reads [[:alpha:]] as the character set {: a l p h}: 'hello' is
+  # true here and false there. What this test pins is that the transpiler round-trips the pattern
+  # unaltered; it is not evidence of portability. Flavor divergence is a PCT concern, not a parity
+  # one. See docs/engineering/reference/regex-portability.md § Traps.
+  - id: regex_match__posix_bracket_class__round_trips_unaltered
+    sql: "SELECT val ~ '^[[:alpha:]]+$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # An unanchored pattern routes to regexpLike, matching Postgres ~ substring semantics.
+  - id: regex_match__unanchored__substring
+    sql: "SELECT val ~ 'ell' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ~* carries RegexpParameter.CASE_INSENSITIVE through to regexpLike.
+  - id: regex_match_ci__anchored__supported
+    sql: "SELECT val ~* '^world$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match_ci
+    signature: "~*(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regex_not_match_ci__anchored__supported
+    sql: "SELECT val !~* '^world$' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_not_match_ci
+    signature: "!~*(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # A column-valued pattern is passed through to regexpLike rather than reactivated, so it no
+  # longer has to be a string literal.
+  - id: regex_match__non_literal_pattern__supported
+    sql: "SELECT val ~ nullable_val AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regex_match
+    signature: "~(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # regexp_like inside the supported envelope: a fully anchored, case-sensitive literal. The existing
+  # regexp_like cases above all sit outside it, so nothing tested that the envelope works.
+  - id: regexp_like__txt_txt__fully_anchored_supported
+    sql: "SELECT REGEXP_LIKE(val, '^hello$') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: regexp_like
+    signature: "regexp_like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # SIMILAR TO is absent from SqlBaseLexer.g4/SqlBaseParser.g4, so it fails while parsing rather
+  # than at function resolution — an earlier tier than the regexp_* misses above. The expected-
+  # function catalog lists similar_to, so this gap was previously untested rather than accepted.
+  - id: similar_to__txt_txt__unsupported
+    sql: "SELECT val SIMILAR TO 'h%' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: similar_to
+    signature: "similar_to(text, text) → boolean"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: not_similar_to__txt_txt__unsupported
+    sql: "SELECT val NOT SIMILAR TO 'h%' AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    function: similar_to
+    signature: "similar_to(text, text) → boolean"
     expected_tds_status: ERROR
     expected_rel_status: ERROR

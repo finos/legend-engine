@@ -26,49 +26,37 @@
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpExtract with extractAll=true is not supported on MemSQL: REGEXP_SUBSTR returns only the first match"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpExtract with a capture group is not supported on MemSQL: REGEXP_SUBSTR takes no group index"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpIndexOf with a capture group is not supported on MemSQL: REGEXP_INSTR takes no group argument"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with \"repetition-operator operand invalid\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpReplace with replaceAll=true is not supported on MemSQL: REGEXP_REPLACE replaces only the first match and accepts no occurrence argument"
   }, {
     "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: ['abcd']\nactual:   []\""
