@@ -252,11 +252,10 @@ public class Library
         {
             throw new IllegalArgumentException("Cannot get week of year for " + date);
         }
-        // The week a date falls in depends on which day starts the week and how many days January must
-        // contribute for the first week to count as week 1. Both come from the format locale, as they
-        // did when this was a GregorianCalendar, so the answer stays locale dependent.
-        WeekFields weekFields = WeekFields.of(Locale.getDefault(Locale.Category.FORMAT));
-        return date.toLocalDate().get(weekFields.weekOfWeekBasedYear());
+        // ISO 8601 numbering: a week starts on Monday, and week 1 is the one holding the year's first
+        // Thursday. Fixed rather than read from the JVM locale, so a query answers the same wherever
+        // it runs, and answers what the relational stores do when it is pushed down to them.
+        return date.toLocalDate().get(WeekFields.ISO.weekOfWeekBasedYear());
     }
 
     public static PureDate mostRecentDayOfWeek(PureDate date, DayOfWeek dayOfWeek)
