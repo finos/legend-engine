@@ -624,9 +624,37 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   $lambda->match([
     map: MapRelationalLambda[1]       | buildMapLambdaForPostgres($map, $sgc),
     filter: FilterRelationalLambda[1] | buildFilterLambdaForPostgres($filter, $sgc),
-    // Postgres has no reduce over an array; a WITH RECURSIVE lowering is possible but not implemented.
-    fold: FoldRelationalLambda[1]     | fail('[unsupported-api] fold over a semi-structured array is not supported in Postgres'); '';
+    fold: FoldRelationalLambda[1]     | buildFoldLambdaForPostgres($fold, $sgc)
   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::buildFoldLambdaForPostgres(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  // Postgres has no reduce over an array, so the fold is walked with a recursive CTE: one row per
+  // step, joined to the element at that position.  Postgres allows this inside a scalar subquery
+  // and lets it correlate to the outer row.
+  //
+  // The CTE column is named after the accumulator parameter and the set-returning function's column
+  // after the element parameter, so the unqualified references the lambda parameter processor emits
+  // resolve to them.  The seed is cast to the accumulator type because the recursive term's column
+  // type is taken from the non-recursive term.
+  let element = $lambda.parameters->at(0);
+  let accumulator = $lambda.parameters->at(1);
+  // A character accumulator is seeded as TEXT rather than VARCHAR(n): concatenation in the recursive
+  // term yields unbounded text, and Postgres requires both terms to agree on the column type.
+  let declaredType = $sgc.dbConfig.dataTypeToSqlText($accumulator.type);
+  let accumulatorType = if($declaredType->startsWith('VARCHAR') || $declaredType->startsWith('CHAR'), |'TEXT', |$declaredType);
+
+  '(with recursive legend_fold("legend_i", "%s") as (select 0, cast(%s as %s) union all select f."legend_i" + 1, %s from legend_fold f join json_array_elements(%s) with ordinality e("%s", "legend_o") on e."legend_o" = f."legend_i" + 1) select "%s" from legend_fold order by "legend_i" desc limit 1)'
+    ->format([
+        $accumulator.name,
+        $accumulator.value->processOperation($sgc),
+        $accumulatorType,
+        $lambda.body->processOperation($sgc),
+        $element.value->processOperation($sgc),
+        $element.name,
+        $accumulator.name
+     ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::buildFilterLambdaForPostgres(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
