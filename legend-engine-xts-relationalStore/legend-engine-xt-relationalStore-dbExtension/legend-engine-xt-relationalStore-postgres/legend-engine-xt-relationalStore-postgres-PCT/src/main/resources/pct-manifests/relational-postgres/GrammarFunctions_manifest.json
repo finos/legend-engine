@@ -37,15 +37,6 @@
     "test" : "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"
   }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Postgres"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Postgres"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Postgres"
-  }, {
     "test" : "meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_",
     "expectedError" : "Expected at most one object, but found many"
   }, {
