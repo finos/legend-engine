@@ -161,7 +161,7 @@ public class TestCompileApi
         Assert.assertEquals("important", column.stereotypes.get(0).value);
         Assert.assertEquals("test::SampleProfile", column.taggedValues.get(0).tag.profile);
         Assert.assertEquals("doc", column.taggedValues.get(0).tag.value);
-        Assert.assertEquals("model documentation", column.taggedValues.get(0).value);
+        Assert.assertEquals("model documentation", column.taggedValues.get(0).value.value);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class TestCompileApi
         Assert.assertEquals("important", nameColumn.stereotypes.get(0).value);
         Assert.assertEquals("test::SampleProfile", nameColumn.taggedValues.get(0).tag.profile);
         Assert.assertEquals("doc", nameColumn.taggedValues.get(0).tag.value);
-        Assert.assertEquals("name documentation", nameColumn.taggedValues.get(0).value);
+        Assert.assertEquals("name documentation", nameColumn.taggedValues.get(0).value.value);
         Column ageColumn = relationType.columns.get(1);
         Assert.assertEquals("Person Age Sum", ageColumn.name);
         Assert.assertEquals("Integer", ((PackageableType) ageColumn.genericType.rawType).fullPath);
@@ -201,7 +201,7 @@ public class TestCompileApi
         Assert.assertEquals("important", ageColumn.stereotypes.get(0).value);
         Assert.assertEquals("test::SampleProfile", ageColumn.taggedValues.get(0).tag.profile);
         Assert.assertEquals("doc", ageColumn.taggedValues.get(0).tag.value);
-        Assert.assertEquals("age documentation", ageColumn.taggedValues.get(0).value);
+        Assert.assertEquals("age documentation", ageColumn.taggedValues.get(0).value.value);
     }
 
     @Test

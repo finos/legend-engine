@@ -315,3 +315,65 @@ When adding tests, ensure:
 - [ ] Testcontainer tests have a Docker availability guard or are in an integration-test profile.
 - [ ] PCT functions include a `{doc.doc='...'}` annotation describing what is being tested.
 - [ ] H2 port numbers used in tests do not conflict (check `TemporaryTestDbConfiguration` usages).
+
+---
+
+## 10. Relation Mapping Testing (Unit Tests + EMIT)
+
+Relation (function) class mappings (`ClassName: Relation { ~func f():Relation<Any>[1]; ... }` —
+see the [Relation Mappings architecture doc](../architecture/relation-mapping.md)) are covered
+by two complementary layers: a Pure unit-test suite and an EMIT integration-test suite. This
+section is a worked example of how the two layers in [§1](#1-testing-philosophy) apply to a
+single feature area.
+
+### Pure unit tests
+
+Location: `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-core-pure/src/main/resources/core_relational/relational/tests/mapping/`
+
+| Area | Key files |
+|------|-----------|
+| Core mechanics (bare columns, `~src`, expressions, distinct, filter, groupBy, dates, enumerations, embedded) | `relation/tests.pure`, `relation/relationCoverage*.pure`, `relation/relationMappingSetup.pure` |
+| Primary-key inference | `relation/pkInferenceTests.pure`, `relation/pkInferenceHelpers.pure` |
+| Aggregation | `relation/aggregation/testRelationFunctionAggregation.pure` |
+| Model-join combinations (relation leaf + relational leaf) | `modelJoin/testModelJoinAdvanced.pure`, `modelJoin/testModelJoinMilestoning.pure` |
+| Union mappings | `union/relation/testRelationUnion.pure`, `union/relation/testRelationUnionAdvanced.pure` |
+
+These run as part of the compiled-mode Pure suite entry point `Test_Pure_Relational`
+(`org.finos.legend.pure.code.core.relational.Test_Pure_Relational`, in the `core-pure` module
+above). A small number of tests only exercise interpreted-mode/Alloy behavior — they are tagged
+`<<test.AlloyOnly>>` (e.g. in `relationCoverageFilter.pure`, `relationCoverageDates.pure`) and are
+excluded from that compiled run.
+
+```bash
+mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-generation/legend-engine-xt-relationalStore-pure/legend-engine-xt-relationalStore-core-pure -Dtest=Test_Pure_Relational
+```
+
+### EMIT tests
+
+Location: `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit/`
+- Runner: `src/test/java/org/finos/legend/engine/test/emit/relation/RelationEMITTests.java`
+- Models: `src/test/resources/relation-emit-models/*.emit.yaml` (one `.pure` source set + one
+  `.emit.yaml` descriptor per scenario)
+
+EMIT exercises relation mappings through the full pipeline — parse, compile, model generation,
+file generation, test execution, plan generation — from raw `.pure` source, the same path a
+Studio or HTTP client takes. It is intentionally a narrower, representative subset: unit tests
+prove correctness breadth across many small variations; EMIT proves the pipeline works
+end-to-end for realistic, often combined-feature scenarios (e.g. a relation mapping combined
+with milestoning and a union in the same model). For the EMIT framework itself (phases, model
+layout, `.emit.yaml` schema, feature taxonomy) see
+[`docs/emit/emit.md`](../../emit/emit.md) and the authoring guide
+[`docs/emit/emit-authoring.md`](../../emit/emit-authoring.md).
+
+```bash
+mvn test -pl legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-emit -Dtest=RelationEMITTests
+```
+
+### Which layer to add a new test to
+
+| Scenario | Add to |
+|----------|--------|
+| New/changed relation-mapping mechanic in isolation, an edge case, or a regression | Pure unit test |
+| Interpreted-mode / Alloy-specific behavior | Pure unit test, tagged `<<test.AlloyOnly>>` |
+| Representative combined-feature scenario exercising the full pipeline end-to-end | EMIT model |
+| Pipeline-level regression (grammar round-trip, protocol transfer, plan generation) not tied to a single function's correctness | EMIT model |

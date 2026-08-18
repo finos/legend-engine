@@ -108,15 +108,15 @@ public abstract class TestJsonNodeComparator
             }
             for (float j : floats)
             {
-                assertComparesLessThan(ShortNode.valueOf(i), FloatNode.valueOf(j));
+                assertCompares(numericCompare(ShortNode.valueOf(i), FloatNode.valueOf(j)), ShortNode.valueOf(i), FloatNode.valueOf(j));
             }
             for (double j : doubles)
             {
-                assertComparesLessThan(ShortNode.valueOf(i), DoubleNode.valueOf(j));
+                assertCompares(numericCompare(ShortNode.valueOf(i), DoubleNode.valueOf(j)), ShortNode.valueOf(i), DoubleNode.valueOf(j));
             }
             for (BigDecimal j : bigDecimals)
             {
-                assertComparesLessThan(ShortNode.valueOf(i), DecimalNode.valueOf(j));
+                assertCompares(numericCompare(ShortNode.valueOf(i), DecimalNode.valueOf(j)), ShortNode.valueOf(i), DecimalNode.valueOf(j));
             }
         }
         for (int i : ints)
@@ -140,15 +140,15 @@ public abstract class TestJsonNodeComparator
             }
             for (float j : floats)
             {
-                assertComparesLessThan(IntNode.valueOf(i), FloatNode.valueOf(j));
+                assertCompares(numericCompare(IntNode.valueOf(i), FloatNode.valueOf(j)), IntNode.valueOf(i), FloatNode.valueOf(j));
             }
             for (double j : doubles)
             {
-                assertComparesLessThan(IntNode.valueOf(i), DoubleNode.valueOf(j));
+                assertCompares(numericCompare(IntNode.valueOf(i), DoubleNode.valueOf(j)), IntNode.valueOf(i), DoubleNode.valueOf(j));
             }
             for (BigDecimal j : bigDecimals)
             {
-                assertComparesLessThan(IntNode.valueOf(i), DecimalNode.valueOf(j));
+                assertCompares(numericCompare(IntNode.valueOf(i), DecimalNode.valueOf(j)), IntNode.valueOf(i), DecimalNode.valueOf(j));
             }
         }
         for (long i : longs)
@@ -172,15 +172,15 @@ public abstract class TestJsonNodeComparator
             }
             for (float j : floats)
             {
-                assertComparesLessThan(LongNode.valueOf(i), FloatNode.valueOf(j));
+                assertCompares(numericCompare(LongNode.valueOf(i), FloatNode.valueOf(j)), LongNode.valueOf(i), FloatNode.valueOf(j));
             }
             for (double j : doubles)
             {
-                assertComparesLessThan(LongNode.valueOf(i), DoubleNode.valueOf(j));
+                assertCompares(numericCompare(LongNode.valueOf(i), DoubleNode.valueOf(j)), LongNode.valueOf(i), DoubleNode.valueOf(j));
             }
             for (BigDecimal j : bigDecimals)
             {
-                assertComparesLessThan(LongNode.valueOf(i), DecimalNode.valueOf(j));
+                assertCompares(numericCompare(LongNode.valueOf(i), DecimalNode.valueOf(j)), LongNode.valueOf(i), DecimalNode.valueOf(j));
             }
         }
         for (BigInteger i : bigInts)
@@ -203,34 +203,34 @@ public abstract class TestJsonNodeComparator
             }
             for (float j : floats)
             {
-                assertComparesLessThan(BigIntegerNode.valueOf(i), FloatNode.valueOf(j));
+                assertCompares(numericCompare(BigIntegerNode.valueOf(i), FloatNode.valueOf(j)), BigIntegerNode.valueOf(i), FloatNode.valueOf(j));
             }
             for (double j : doubles)
             {
-                assertComparesLessThan(BigIntegerNode.valueOf(i), DoubleNode.valueOf(j));
+                assertCompares(numericCompare(BigIntegerNode.valueOf(i), DoubleNode.valueOf(j)), BigIntegerNode.valueOf(i), DoubleNode.valueOf(j));
             }
             for (BigDecimal j : bigDecimals)
             {
-                assertComparesLessThan(BigIntegerNode.valueOf(i), DecimalNode.valueOf(j));
+                assertCompares(numericCompare(BigIntegerNode.valueOf(i), DecimalNode.valueOf(j)), BigIntegerNode.valueOf(i), DecimalNode.valueOf(j));
             }
         }
         for (float i : floats)
         {
             for (short j : shorts)
             {
-                assertComparesGreaterThan(FloatNode.valueOf(i), ShortNode.valueOf(j));
+                assertCompares(numericCompare(FloatNode.valueOf(i), ShortNode.valueOf(j)), FloatNode.valueOf(i), ShortNode.valueOf(j));
             }
             for (int j : ints)
             {
-                assertComparesGreaterThan(FloatNode.valueOf(i), IntNode.valueOf(j));
+                assertCompares(numericCompare(FloatNode.valueOf(i), IntNode.valueOf(j)), FloatNode.valueOf(i), IntNode.valueOf(j));
             }
             for (long j : longs)
             {
-                assertComparesGreaterThan(FloatNode.valueOf(i), LongNode.valueOf(j));
+                assertCompares(numericCompare(FloatNode.valueOf(i), LongNode.valueOf(j)), FloatNode.valueOf(i), LongNode.valueOf(j));
             }
             for (BigInteger j : bigInts)
             {
-                assertComparesGreaterThan(FloatNode.valueOf(i), BigIntegerNode.valueOf(j));
+                assertCompares(numericCompare(FloatNode.valueOf(i), BigIntegerNode.valueOf(j)), FloatNode.valueOf(i), BigIntegerNode.valueOf(j));
             }
             for (float j : floats)
             {
@@ -250,19 +250,19 @@ public abstract class TestJsonNodeComparator
         {
             for (short j : shorts)
             {
-                assertComparesGreaterThan(DoubleNode.valueOf(i), ShortNode.valueOf(j));
+                assertCompares(numericCompare(DoubleNode.valueOf(i), ShortNode.valueOf(j)), DoubleNode.valueOf(i), ShortNode.valueOf(j));
             }
             for (int j : ints)
             {
-                assertComparesGreaterThan(DoubleNode.valueOf(i), IntNode.valueOf(j));
+                assertCompares(numericCompare(DoubleNode.valueOf(i), IntNode.valueOf(j)), DoubleNode.valueOf(i), IntNode.valueOf(j));
             }
             for (long j : longs)
             {
-                assertComparesGreaterThan(DoubleNode.valueOf(i), LongNode.valueOf(j));
+                assertCompares(numericCompare(DoubleNode.valueOf(i), LongNode.valueOf(j)), DoubleNode.valueOf(i), LongNode.valueOf(j));
             }
             for (BigInteger j : bigInts)
             {
-                assertComparesGreaterThan(DoubleNode.valueOf(i), BigIntegerNode.valueOf(j));
+                assertCompares(numericCompare(DoubleNode.valueOf(i), BigIntegerNode.valueOf(j)), DoubleNode.valueOf(i), BigIntegerNode.valueOf(j));
             }
             for (float j : floats)
             {
@@ -282,19 +282,19 @@ public abstract class TestJsonNodeComparator
         {
             for (short j : shorts)
             {
-                assertComparesGreaterThan(DecimalNode.valueOf(i), ShortNode.valueOf(j));
+                assertCompares(numericCompare(DecimalNode.valueOf(i), ShortNode.valueOf(j)), DecimalNode.valueOf(i), ShortNode.valueOf(j));
             }
             for (int j : ints)
             {
-                assertComparesGreaterThan(DecimalNode.valueOf(i), IntNode.valueOf(j));
+                assertCompares(numericCompare(DecimalNode.valueOf(i), IntNode.valueOf(j)), DecimalNode.valueOf(i), IntNode.valueOf(j));
             }
             for (long j : longs)
             {
-                assertComparesGreaterThan(DecimalNode.valueOf(i), LongNode.valueOf(j));
+                assertCompares(numericCompare(DecimalNode.valueOf(i), LongNode.valueOf(j)), DecimalNode.valueOf(i), LongNode.valueOf(j));
             }
             for (BigInteger j : bigInts)
             {
-                assertComparesGreaterThan(DecimalNode.valueOf(i), BigIntegerNode.valueOf(j));
+                assertCompares(numericCompare(DecimalNode.valueOf(i), BigIntegerNode.valueOf(j)), DecimalNode.valueOf(i), BigIntegerNode.valueOf(j));
             }
             for (float j : floats)
             {
@@ -309,6 +309,11 @@ public abstract class TestJsonNodeComparator
                 assertCompares(i.compareTo(j), DecimalNode.valueOf(i), DecimalNode.valueOf(j));
             }
         }
+    }
+
+    private static int numericCompare(JsonNode a, JsonNode b)
+    {
+        return a.decimalValue().compareTo(b.decimalValue());
     }
 
     @Test

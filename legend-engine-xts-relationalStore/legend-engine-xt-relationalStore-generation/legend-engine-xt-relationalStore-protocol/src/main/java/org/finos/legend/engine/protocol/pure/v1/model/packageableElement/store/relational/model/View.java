@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -35,5 +36,6 @@ public class View
     public List<ColumnMapping> columnMappings = Collections.emptyList();
     public SourceInformation sourceInformation;
     public List<StereotypePtr> stereotypes;
-    public List<TaggedValue> taggedValues;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<TaggedValue> taggedValues = Collections.emptyList();
 }

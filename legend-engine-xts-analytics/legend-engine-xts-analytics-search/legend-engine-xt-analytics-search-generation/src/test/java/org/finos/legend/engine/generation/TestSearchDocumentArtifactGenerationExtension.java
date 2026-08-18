@@ -32,6 +32,7 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.junit.Assert;
 import org.junit.Test;
@@ -118,5 +119,41 @@ public class TestSearchDocumentArtifactGenerationExtension
         Assert.assertEquals(FILE_NAME, searchDocumentResult.path);
         Assert.assertNotNull(searchDocumentResult.content);
         Assert.assertEquals("{\"taggedValues\":{},\"package\":\"model\",\"name\":\"Person\",\"description\":\"\",\"projectCoordinates\":{\"versionId\":\"0.0.1-SNAPSHOT\",\"groupId\":\"org.finos.test\",\"artifactId\":\"test-project\"},\"id\":\"model::Person\",\"type\":\"Class\",\"properties\":[{\"taggedValues\":{},\"name\":\"firstName\"},{\"taggedValues\":{},\"name\":\"lastName\"}]}",searchDocumentResult.content);
+    }
+
+    @Test
+    public void testSearchDocumentGenerationHandlesDataSpaceWithoutExecutionContexts()
+    {
+        String pureModelString =
+                "###Pure\n" +
+                "Class model::Firm { name: String[1]; }\n" +
+                        "###Mapping\n" +
+                        "Mapping model::dummyMapping\n" +
+                        "(\n" +
+                        ")\n" +
+                        "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::MySpace\n" +
+                "{\n" +
+                "  title: 'x';\n" +
+                "  description: 'y';\n" +
+                        "  executables:\n" +
+                        "  [\n" +
+                        "    {\n" +
+                        "      id: 1;\n" +
+                        "      title: 'Template 1';\n" +
+                        "      query: |model::Firm.all()->withMapping(model::dummyMapping);\n" +
+                        "    }\n" +
+                        "  ];\n" +
+                "}\n";
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("model::MySpace");
+        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace);
+        Assert.assertTrue(extension.canGenerate(packageableElement));
+        // Must not throw; failures inside the Pure transformer are swallowed and return an empty list.
+        List<Artifact> outputs = extension.generate(packageableElement, pureModel, pureModelContextData, PureClientVersions.production);
+        Assert.assertNotNull(outputs);
     }
 }

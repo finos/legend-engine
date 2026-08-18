@@ -38,17 +38,23 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
 {
     private final SerializationFormat serializationFormat;
     private final Result result;
+    private final RelationAssertionColumnTypes relationColumnTypes;
 
     public TestAssertionEvaluator(Result result)
     {
-        this(result, SerializationFormat.defaultFormat);
+        this(result, SerializationFormat.defaultFormat, RelationAssertionColumnTypes.NONE);
     }
 
     public TestAssertionEvaluator(Result result, SerializationFormat serializationFormat)
     {
+        this(result, serializationFormat, RelationAssertionColumnTypes.NONE);
+    }
+
+    public TestAssertionEvaluator(Result result, SerializationFormat serializationFormat, RelationAssertionColumnTypes relationColumnTypes)
+    {
         this.result = result;
         this.serializationFormat = serializationFormat;
-
+        this.relationColumnTypes = relationColumnTypes == null ? RelationAssertionColumnTypes.NONE : relationColumnTypes;
     }
 
     @Override
@@ -118,7 +124,6 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
         {
             EqualToRelation equalToRelation = (EqualToRelation) testAssertion;
 
-            // 1. Get actual result as JSON
             String actualJson;
             if (this.result instanceof ConstantResult)
             {
@@ -126,7 +131,8 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
             }
             else if (this.result instanceof StreamingResult)
             {
-                actualJson = ((StreamingResult) this.result).flush(((StreamingResult) this.result).getSerializer(this.serializationFormat));
+                StreamingResult streamingResult = (StreamingResult) this.result;
+                actualJson = streamingResult.flush(streamingResult.getSerializer(SerializationFormat.RAW));
             }
             else
             {
@@ -135,8 +141,8 @@ public class TestAssertionEvaluator implements org.finos.legend.engine.protocol.
 
             try
             {
-                // 2. Convert expected RelationElement to JSON
-                String expectedJson = RelationResultHelper.relationElementToJson(equalToRelation.expected);
+                // 2. Convert expected RelationElement to JSON, using column-type hints when available
+                String expectedJson = RelationResultHelper.relationElementToJson(equalToRelation.expected, this.relationColumnTypes.getColumns());
 
                 // 3. Compare as JSON internally
                 ObjectMapper objectMapper = TestAssertionHelper.buildObjectMapperForJSONComparison();

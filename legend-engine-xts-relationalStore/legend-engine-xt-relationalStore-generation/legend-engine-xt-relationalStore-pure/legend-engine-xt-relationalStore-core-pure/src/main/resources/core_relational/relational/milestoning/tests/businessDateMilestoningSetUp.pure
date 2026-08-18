@@ -708,6 +708,54 @@ Mapping meta::relational::tests::milestoning::milestoningmapMultipleJoinOperatio
    }
 )
 
+Mapping meta::relational::tests::milestoning::milestoningmapWithFilterViaJoin
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   }
+
+   meta::relational::tests::milestoning::Product : Relational{
+      ~filter [db]@Product_Exchange | [db]ExchangeInLondon
+      id : [db]ProductTable.id,
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type
+   }
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithInnerFilterViaJoin
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   }
+
+   meta::relational::tests::milestoning::Product : Relational{
+      ~filter [db] (INNER)@Product_Exchange | [db]ExchangeInLondon
+      id : [db]ProductTable.id,
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type
+   }
+)
+
+Mapping meta::relational::tests::milestoning::milestoningmapWithMultiHopFilterViaJoin
+(
+   meta::relational::tests::milestoning::Order : Relational{
+      id : [db]OrderTable.id,
+      orderDate : [db]OrderTable.orderDate,
+      product : [db]@Order_Product
+   }
+
+   meta::relational::tests::milestoning::Product : Relational{
+      ~filter [db]@Product_Exchange > [db]@Classification_Exchange | [db]StockClassificationOnTable
+      id : [db]ProductTable.id,
+      name : [db]ProductTable.name,
+      type : [db]ProductTable.type
+   }
+)
+
 Mapping meta::relational::tests::milestoning::noMilestoningMap
 (
 
@@ -2503,6 +2551,8 @@ Database meta::relational::tests::milestoning::db(
    Filter LNSEProducts(ProductExchangeTable.name='STOCK')
    Filter NewActivityWithValidProduct(NewActivityInfoTable.productId > 0)
    Filter filterById(StockProductTable.id > 152 or StockProductTable.id < 123)
+   Filter StockClassificationOnTable(ProductClassificationTable.type='STOCK')
+   Filter ExchangeInLondon(ProductExchangeTable.city='London')
 )
 
 // Embedded mapping: LeafEntity inline within ChildEntity

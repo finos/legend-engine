@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParserBas
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +41,12 @@ import java.util.stream.Collectors;
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
     private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds|microsecond|microseconds]+))+");
+
+    //cmpOp also covers the regex and like operators, which SQL does not allow a quantifier on
+    private static final EnumSet<ComparisonOperator> QUANTIFIABLE_OPERATORS = EnumSet.of(
+            ComparisonOperator.EQUAL, ComparisonOperator.NOT_EQUAL,
+            ComparisonOperator.LESS_THAN, ComparisonOperator.LESS_THAN_OR_EQUAL,
+            ComparisonOperator.GREATER_THAN, ComparisonOperator.GREATER_THAN_OR_EQUAL);
 
     private long positionalIndex = 1;
 
@@ -791,7 +798,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     }
 
     @Override
-    public Node visitSelectQuery(SqlBaseParser.SelectQueryContext context)
+    public Node visitSelectQueryCore(SqlBaseParser.SelectQueryCoreContext context)
     {
         List<SelectItem> selectItems = visitCollection(context.selectItem(), SelectItem.class);
         Select select = new Select();
@@ -806,6 +813,16 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         specification.groupBy = visitCollection(context.expr(), Expression.class);
         specification.where = visitIfPresent(context.where(), Expression.class).orElse(null);
         specification.having = visitIfPresent(context.having, Expression.class).orElse(null);
+        specification.windows = visitCollection(context.windows, NamedWindow.class);
+
+        return specification;
+    }
+
+    @Override
+    public Node visitSelectQuery(SqlBaseParser.SelectQueryContext context)
+    {
+        QuerySpecification specification = (QuerySpecification) visitSelectQueryCore(context.selectQueryCore());
+
         specification.orderBy = visitCollection(context.sortItem(), SortItem.class);
         specification.limit = visitIfPresent(context.limitClause(), Expression.class).orElse(null);
         specification.offset = visitIfPresent(context.offsetClause(), Expression.class).orElse(null);
@@ -973,41 +990,66 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitQuerySpecOptParens(QuerySpecOptParensContext ctx)
     {
-        return ctx.OPEN_ROUND_BRACKET() != null ? new TableSubquery()._query(new Query()._queryBody((QueryBody) ctx.querySpecWithScope().accept(this))) :
-                ctx.querySpecOptParens() != null ? ctx.querySpecOptParens().accept(this) :
-                        ctx.querySpecWithScope().accept(this);
+        if (ctx.OPEN_ROUND_BRACKET() != null)
+        {
+            if (ctx.querySpecWithScope() != null)
+            {
+                return new TableSubquery()._query(new Query()._queryBody((QueryBody) ctx.querySpecWithScope().accept(this)));
+            }
+            return ctx.querySpecOptParens().accept(this);
+        }
+        return visitSelectQueryCore(ctx.selectQueryCore());
     }
 
     @Override
     public Node visitDefaultQuerySpec(SqlBaseParser.DefaultQuerySpecContext context)
     {
-        Relation left = (Relation) visit(context.selectQuery());
-        Relation result = context.OPEN_ROUND_BRACKET() != null ? new TableSubquery()._query(new Query()._queryBody((QueryBody)left)) : left;
-        for (QueryTermExtensionContext extension : context.queryTermExtension())
+        Relation left = (Relation) visitSelectQueryCore(context.selectQueryCore());
+        Relation result = context.OPEN_ROUND_BRACKET() != null ? new TableSubquery()._query(new Query()._queryBody((QueryBody) left)) : left;
+        for (QueryTermExtensionContext ctx : context.queryTermExtension())
         {
-            if (extension.queryTermIntersectExtension() != null)
+            Relation right = (Relation) visit(ctx.right);
+            boolean isDistinct = ctx.setQuant() == null || ctx.setQuant().ALL() == null;
+            SetOperation setOp;
+            switch (ctx.operator.getType())
             {
-                throw new RuntimeException("Not supported yet");
+                case SqlBaseLexer.UNION:
+                    setOp = new Union();
+                    break;
+                case SqlBaseLexer.INTERSECT:
+                    setOp = new Intersect();
+                    break;
+                case SqlBaseLexer.EXCEPT:
+                    setOp = new Except();
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unsupported set operation: " + ctx.operator.getText());
             }
-            else
-            {
-                QueryTermUnionExtensionContext ctx = extension.queryTermUnionExtension();
-                switch (ctx.operator.getType())
-                {
-                    case SqlBaseLexer.UNION:
-                        Relation right = (Relation) visit(ctx.right);
-                        boolean isDistinct = ctx.setQuant() == null || ctx.setQuant().ALL() == null;
-                        Union union = new Union();
-                        union.left = result;
-                        union.right = right;
-                        union.distinct = isDistinct;
-                        result = union;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported set operation: " + ctx.operator.getText());
-                }
-            }
+            setOp.left = result;
+            setOp.right = right;
+            setOp.distinct = isDistinct;
+            result = setOp;
         }
+
+        List<SortItem> trailingOrderBy = visitCollection(context.sortItem(), SortItem.class);
+        Expression trailingLimit = visitIfPresent(context.limitClause(), Expression.class).orElse(null);
+        Expression trailingOffset = visitIfPresent(context.offsetClause(), Expression.class).orElse(null);
+
+        if (result instanceof SetOperation)
+        {
+            SetOperation setOp = (SetOperation) result;
+            setOp.orderBy = trailingOrderBy;
+            setOp.limit = trailingLimit;
+            setOp.offset = trailingOffset;
+        }
+        else if (result instanceof QuerySpecification)
+        {
+            QuerySpecification spec = (QuerySpecification) result;
+            spec.orderBy = trailingOrderBy;
+            spec.limit = trailingLimit;
+            spec.offset = trailingOffset;
+        }
+
         return result;
     }
 
@@ -1192,6 +1234,13 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         predicate.max = (Expression) visit(context.upper);
         predicate.value = (Expression) visit(context.value);
 
+        if (context.NOT() != null)
+        {
+            NotExpression not = new NotExpression();
+            not.value = predicate;
+            return not;
+        }
+
         return predicate;
     }
 
@@ -1273,15 +1322,47 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitExists(SqlBaseParser.ExistsContext context)
     {
-//        return new ExistsPredicate((Query) visit(context.query()));
-        return unsupported("Exists");
+        TableSubquery subquery = new TableSubquery();
+        subquery.query = (Query) visit(context.queryStatement());
+
+        ExistsPredicate exists = new ExistsPredicate();
+        exists.query = subquery;
+
+        return exists;
     }
 
     @Override
     public Node visitQuantifiedComparison(SqlBaseParser.QuantifiedComparisonContext context)
     {
-        //TODO
-        return unsupported("Quantified Comparison");
+        ComparisonOperator operator = getComparisonOperator(((TerminalNode) context.cmpOp().getChild(0)).getSymbol());
+        if (!QUANTIFIABLE_OPERATORS.contains(operator))
+        {
+            return unsupported("Quantified Comparison with operator " + operator.name());
+        }
+
+        //cmpOp ANY/ALL also accepts an array operand (x = ANY(ARRAY[...])), which has no subquery to compare against
+        Node operand = visit(context.primaryExpression());
+        if (!(operand instanceof SubqueryExpression))
+        {
+            return unsupported("Quantified Comparison against a non-subquery operand");
+        }
+
+        QuantifiedComparisonExpression comparison = new QuantifiedComparisonExpression();
+        comparison.value = (Expression) visit(context.value);
+        comparison.operator = operator;
+        comparison.quantifier = getQuantifier(context.setCmpQuantifier());
+        comparison.subQuery = (SubqueryExpression) operand;
+
+        return comparison;
+    }
+
+    private static Quantifier getQuantifier(SqlBaseParser.SetCmpQuantifierContext context)
+    {
+        if (context.ALL() != null)
+        {
+            return Quantifier.ALL;
+        }
+        return context.SOME() != null ? Quantifier.SOME : Quantifier.ANY;
     }
 
     @Override
@@ -1338,6 +1419,15 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitOver(SqlBaseParser.OverContext context)
     {
         return visit(context.windowDefinition());
+    }
+
+    @Override
+    public Node visitNamedWindow(SqlBaseParser.NamedWindowContext context)
+    {
+        NamedWindow namedWindow = new NamedWindow();
+        namedWindow.name = getIdentText(context.name);
+        namedWindow.window = (Window) visit(context.windowDefinition());
+        return namedWindow;
     }
 
     @Override
@@ -1429,7 +1519,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     {
         if (context.TRY_CAST() != null)
         {
-            return unsupported("Cast");
+            return unsupported("Try Cast");
         }
         else
         {

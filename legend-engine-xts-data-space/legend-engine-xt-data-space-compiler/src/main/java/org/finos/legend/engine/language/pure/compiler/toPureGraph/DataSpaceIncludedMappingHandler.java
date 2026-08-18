@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MappingInclude_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
@@ -26,6 +28,10 @@ public class DataSpaceIncludedMappingHandler implements IncludedMappingHandler
     public Mapping resolveMapping(MappingInclude mappingInclude, CompileContext context)
     {
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = (Root_meta_pure_metamodel_dataSpace_DataSpace) context.pureModel.getPackageableElement(mappingInclude.getFullName());
+        if (dataSpace._defaultExecutionContext() == null)
+        {
+            throw new EngineException("Dataspace " + mappingInclude.getFullName() + " has no default execution context and cannot be included as a mapping.", mappingInclude.sourceInformation, EngineErrorType.COMPILATION);
+        }
         return dataSpace._defaultExecutionContext()._mapping();
     }
 

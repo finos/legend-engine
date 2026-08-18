@@ -58,7 +58,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
@@ -280,8 +279,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
         Schema defaultSchema = ListIterate.select(database.schemas, schema -> "default".equals(schema.name)).getFirst();
         RelationalGrammarComposerContext context = RelationalGrammarComposerContext.Builder.newInstance().withCurrentDatabase(PureGrammarComposerUtility.convertPath(database.getPath())).withNoDynaFunctionNames().withRenderStyle(PUREcontext.getRenderStyle()).build();
         StringBuilder builder = new StringBuilder();
-        builder.append("Database ");
-        builder.append(renderAnnotations(database.stereotypes, database.taggedValues)).append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
+        builder.append(HelperDomainGrammarComposer.renderDeclarationPrefix("Database", database.stereotypes, database.taggedValues)).append(PureGrammarComposerUtility.convertPath(database.getPath())).append("\n(\n");
         boolean nonEmpty = false;
         if (!database.includedStores.isEmpty())
         {

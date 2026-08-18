@@ -173,6 +173,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendEx
    let execMode = meta::protocols::pure::vX_X_X::invocation::execution::execute::ExecutionMode->extractEnumValue($executionMode);
    let mappings = $m->concatenate(getMappingsFromRuntime($pureRuntime));
    let returnGenericType = $f.expressionSequence->evaluateAndDeactivate()->last()->toOne().genericType;
+   // Debug verbosity for local plan generation is controlled by the 'ExecDebug' Pure option; defaults to noDebug() when unset.
+   let debugContext = if(isOptionSet('ExecDebug'), | debug(), | noDebug());
 
    // This choice is made as ExecutionContext information can affect the results computed by the executionPlan endpoint
    // If we have either of the two ExecutionContexts in the conditional - throwing the generated execution plan to the executePlan endpoint does *not* return the same results as hittign execute with function,mapping, and runtime
@@ -181,8 +183,8 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::legendEx
       | let planGenerated = if(isOptionSet('PlanLocal'),
                                {|
                                   let basicPlan = if($m.name->isEmpty(),
-                                                    |meta::pure::executionPlan::executionPlan($f, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, noDebug());,
-                                                    |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, noDebug()););
+                                                    |meta::pure::executionPlan::executionPlan($f, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, $debugContext);,
+                                                    |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, $debugContext););
                                   let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);
                                   let unused    = if(isOptionSet('ShowLocalPlan'), |println($boundPlan->meta::pure::executionPlan::toString::planToString(true, $extensions)), |[]);
                                   $boundPlan->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($extensions)->meta::json::toJSON(1000, meta::json::config(false, false, true, true));

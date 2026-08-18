@@ -1,0 +1,98 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::m2m::derived::PersonMapping
+(
+  *demo::m2m::derived::target::Person: Pure
+  {
+    ~src demo::m2m::derived::source::S_Person
+
+    // Straight read of a derived source property.
+    name: $src.fullName,
+    // Derived source property computed by arithmetic.
+    age: $src.age,
+    // Derived source property that itself reads another derived property.
+    descriptor: $src.descriptor,
+    // Parameterised source property invoked with a literal argument.
+    initials: $src.initial('.')
+  }
+
+  testSuites:
+  [
+    derivedSourceSuite:
+    {
+      function: |demo::m2m::derived::target::Person.all()->graphFetch(#{demo::m2m::derived::target::Person{name, age, descriptor, initials}}#)->serialize(#{demo::m2m::derived::target::Person{name, age, descriptor, initials}}#);
+      tests:
+      [
+        johnSmith:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::derived::source::S_Person:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"John","lastName":"Smith","birthYear":1980,"observationYear":2026}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"John Smith","age":46,"descriptor":"John Smith (46)","initials":"J.S"}';
+                  }#;
+              }#
+          ];
+        },
+        janeDoe:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::derived::source::S_Person:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"firstName":"Jane","lastName":"Doe","birthYear":1995,"observationYear":2026}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"name":"Jane Doe","age":31,"descriptor":"Jane Doe (31)","initials":"J.D"}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

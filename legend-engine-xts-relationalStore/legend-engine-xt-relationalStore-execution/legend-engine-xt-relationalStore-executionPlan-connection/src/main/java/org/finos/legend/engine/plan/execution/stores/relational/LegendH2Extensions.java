@@ -34,6 +34,7 @@ import org.h2.value.ValueNull;
 import org.h2.value.ValueReal;
 import org.h2.value.ValueTimestamp;
 import org.h2.value.ValueVarchar;
+import java.util.regex.Pattern;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -213,6 +214,19 @@ public class LegendH2Extensions
         int readjustedPart = part - 1;
 
         return parts.length > readjustedPart ? parts[readjustedPart] : null;
+    }
+
+    public static String[] legend_h2_extension_split(String string, String delimiter)
+    {
+        if (string == null)
+        {
+            return null;
+        }
+        if (delimiter == null || delimiter.isEmpty())
+        {
+            return new String[]{string};
+        }
+        return string.split(Pattern.quote(delimiter), -1);
     }
 
     private static HashSet<Object> extractProperty(HashSet<Object> resultSet, Object pathToExtract)

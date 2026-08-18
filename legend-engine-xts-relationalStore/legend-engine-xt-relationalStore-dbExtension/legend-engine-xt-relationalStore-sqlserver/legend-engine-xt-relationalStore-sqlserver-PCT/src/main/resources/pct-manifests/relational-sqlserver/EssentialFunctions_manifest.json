@@ -32,7 +32,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'in'."
+    "expectedError" : "Execution error at ??, \"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Conversion failed when converting the varchar value 'c' to data type int.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
@@ -74,7 +74,7 @@
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:38cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[3],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
@@ -83,7 +83,7 @@
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[4],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:47cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: SqlServer"
@@ -442,9 +442,6 @@
     "test" : "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
-    "test" : "meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: An expression of non-boolean type specified in a context where a condition is expected, near 'then'."
-  }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""
   }, {
@@ -486,6 +483,9 @@
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType"
+  }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorNegative_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: -10\nactual:   0"
   }, {
     "test" : "meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 3\nactual:   -2\""
@@ -549,18 +549,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "An invalid floating point operation occurred"
-  }, {
-    "test" : "meta::pure::functions::string::tests::contains::testFalseContains_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::contains::testTrueContains_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testFalseEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testTrueEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
@@ -650,16 +638,10 @@
     "expectedError" : "\"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: The conversion of the varchar value '9999999999999992' overflowed an int column.\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy do'\""
@@ -695,7 +677,7 @@
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'like'."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""

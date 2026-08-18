@@ -81,6 +81,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='code_points_to_string(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
+    // Spanner PG rejects IS [NOT] DISTINCT FROM (DistinctExpr); coalesce keeps projected booleans two-valued (no NULL leak)
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='(coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='not (coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
@@ -113,6 +116,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='substr(%s, 1, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformMatchesSpanner()})),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountSpanner()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractSpanner()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfSpanner()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeSpanner()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceSpanner()})),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s::float)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
@@ -298,4 +307,71 @@ function meta::relational::functions::sqlQueryToString::spanner::loadValuesToDbT
             + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
             + ');';
    );
+}
+
+// Spanner's GoogleSQL regex functions take no options argument, but the engine is RE2, which
+// accepts inline flags, so RegexpParameter is emitted as a prefix on the pattern.
+// CASE_SENSITIVE is the absence of a flag.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::regexpInlineFlagsForSpanner(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+// Spanner renders a String literal as Text'...', so a pattern arrives carrying that prefix and has
+// to be unwrapped before it can be embedded in another literal — leaving it in place closes the
+// quote early and produces a syntax error.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::unwrapStringLiteralSpanner(literal: String[1]):String[1]
+{
+   let withoutType = if ($literal->startsWith('Text'), | $literal->substring(4, $literal->length()), | $literal);
+   $withoutType->removeQuotesIfExist();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::applyInlineFlagsSpanner(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   'Text\'' + $regexpParametersAsString->regexpInlineFlagsForSpanner() + $pattern->unwrapStringLiteralSpanner() + '\'';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformMatchesSpanner(params: String[2]):String[1]
+{
+   '(' + $params->at(0) + ' ~ Text\'^(?:' + $params->at(1)->unwrapStringLiteralSpanner() + ')$\')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformRegexpLikeSpanner(params: String[3]):String[1]
+{
+   '(' + $params->at(0) + ' ~ ' + $params->at(1)->applyInlineFlagsSpanner($params->at(2)) + ')';
+}
+
+// Spanner's PostgreSQL dialect exposes neither regexp_count nor an array function to emulate it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformRegexpCountSpanner(params: String[3]):String[1]
+{
+   fail('regexpCount is not supported on Spanner: its PostgreSQL dialect has no regexp_count and no array aggregate to emulate one');
+   '';
+}
+
+// regexp_extract / regexp_extract_all are GoogleSQL only; the PostgreSQL dialect has neither.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformRegexpExtractSpanner(params: String[5]):String[1]
+{
+   fail('regexpExtract is not supported on Spanner: its PostgreSQL dialect has no regexp_extract');
+   '';
+}
+
+// regexp_instr is GoogleSQL only; the PostgreSQL dialect rejects it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformRegexpIndexOfSpanner(params: String[4]):String[1]
+{
+   fail('regexpIndexOf is not supported on Spanner: its PostgreSQL dialect has no regexp_instr');
+   '';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::transformRegexpReplaceSpanner(params: String[5]):String[1]
+{
+   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Spanner: regexp_replace replaces every occurrence');
+   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsSpanner($params->at(4)) + ', ' + $params->at(2) + ')';
 }

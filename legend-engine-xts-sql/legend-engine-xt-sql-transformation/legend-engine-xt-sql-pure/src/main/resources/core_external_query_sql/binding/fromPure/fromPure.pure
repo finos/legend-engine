@@ -1,3 +1,4 @@
+
 // Copyright 2021 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -151,7 +152,7 @@ function meta::external::query::sql::transformation::queryToPure::getSources():D
     ]->concatenate(meta::pure::extension::runtime::getExtensions().moduleExtensions->filter(x|$x->instanceOf(PureToSQLSourceModule))->cast(@PureToSQLSourceModule).extraDynamicSQLSources);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::assertNoMissingArguments(arguments:SQLSourceArgument[*], func:FunctionDefinition<Any>[1]):Boolean[1]
 {
   let parameters = $func->getParameters()->evaluateAndDeactivate();
   let requiredParameters = $parameters->filter(p | $p.multiplicity == PureOne)->evaluateAndDeactivate().name;
@@ -229,9 +230,14 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 {
   {l:LambdaFunction<Any>[1]| 
-    let code = $l->removeFrom()->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''));
+    let code = $l->removeFrom()->printLambdaDefinition();
     $compiler->eval($code);
   }
+}
+
+function meta::external::query::sql::transformation::queryToPure::printLambdaDefinition(l:LambdaFunction<Any>[1]):String[1]
+{
+  $l->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space=''))
 }
 
 function meta::external::query::sql::transformation::queryToPure::sqlToPure(query:Query[1], sources:SQLSource[*], extraPackages:PackageableElement[*], scopeVariables:Map<String, ValueSpecification>[1], preval:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):Function<Any>[1]
@@ -309,7 +315,12 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
 
 //  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
 
-  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions), 'generating plan');
+  // SQL '=' is null-unsafe (three-valued); transpiled queries keep SQL equality semantics
+  let executionContext = ^meta::pure::executionPlan::ExecutionOptionContext(
+                            executionOptions = ^meta::pure::executionPlan::featureFlag::FeatureFlagOption(
+                                                  flags = meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS));
+
+  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $executionContext, $extensions), 'generating plan');
 }
 
 function meta::external::query::sql::transformation::queryToPure::getMapping(sources: SQLSource[*]):Mapping[0..1]
@@ -482,10 +493,17 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSetOperation(setOperation: SetOperation[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processSetOperation', $context.debug);
-  $setOperation->match([
+  let processed = $setOperation->match([
     u:Union[1] | $u->processUnion($context),
+    i:Intersect[1] | unsupported('Intersect'); $context;,
+    e:Except[1] | unsupported('Except'); $context;,
     s:SetOperation[1] | $context
   ]);
+
+  //we need the select items so that if the order by is by index, we can get the column name
+  let selectItems = $processed.columns->map(c | ^SingleColumn(expression=^IntegerLiteral(value=1), alias = $c.name));
+
+  $setOperation.limit->processLimitOffset($setOperation.offset, $setOperation.orderBy->processOrderBy($selectItems, $processed));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processUnion(union: Union[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -496,7 +514,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let right = wrapWithFrom(processRelation($union.right, ^$context(name = $context.name->orElse('union_' + toString($context.id + 3)), root = false, id = $context.id + 3)));
 
-  let newExp = ^TDSBuilder().concatenate($left.expression->toOne(), $right.expression->toOne(), $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicates()));
+  let newExp = ^TDSBuilder().union($left.expression->toOne(), $right.expression->toOne(), $union.distinct, $context.relation->isTrue(), ^$context(columns = $left.columns->concatenate($right.columns)->removeDuplicatesBy(x | $x.name)));
 
   let aliases = $left.aliases->concatenate($right.aliases)->removeDuplicates();
 
@@ -519,7 +537,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processQuerySpec', $_context.debug);
 
-  let context = ^$_context(debug = $_context.debug->indent());
+  let context = ^$_context(debug = $_context.debug->indent(), windows = $querySpec.windows);
 
   if ($querySpec.from->isEmpty(),
     | let func = $querySpec.select.selectItems->processSelectItems($context, false)->at(0).first;
@@ -654,7 +672,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]))->map(e | ^SingleColumn(expression = $e));
 
   let standardExtensions = $standard->filter(si | !$si->isNonAliasedSelectItemColumnReference() && !$si->isSelectItemAggregate())->cast(@SingleColumn);
-  let windowExtensions = extractWindowExtensionExpressions($windows);
+  let windowExtensions = extractWindowExtensionExpressions($windows, $context);
 
   let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($originalSelect);
   let isWindow = $windows->isNotEmpty();
@@ -882,11 +900,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 //we need to pull out the partition and order expressions and extend the TDS so the call to olapGroupBy can take in the qualified name references of these columns
 //ideally there would be a project/olap implementation which accepts lambdas, instead of column references.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*]):SingleColumn[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*], context:SqlTransformContext[1]):SingleColumn[*]
 {
   let functionCall = $s.expression->cast(@FunctionCall);
-  let window = $functionCall.window;
+  let window = $functionCall.window->map(w | getWindow($w, $context.windows));
   $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->map(e | ^SingleColumn(expression = $e));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindow(window:meta::external::query::sql::metamodel::Window[0..1], windows:NamedWindow[*]):meta::external::query::sql::metamodel::Window[0..1]
+{
+  if ($window.windowRef->isNotEmpty(), | $windows->filter(w | $w.name == $window.windowRef)->first().window, | $window);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWindowSingleColumn(s:SingleColumn[1], input:ValueSpecification[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -896,11 +919,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   assert($s.expression->cast(@FunctionCall).window->isNotEmpty(), | 'window function must not be empty');
 
   let functionCall = $s.expression->cast(@FunctionCall);
-  let window = $functionCall.window;
+  let window = getWindow($functionCall.window, $context.windows);
   let relation = $context.relation->isTrue();
 
-  assert($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
-  assert($window.windowFrame->isEmpty() || $context.relation->isTrue(), | 'window frame not yet supported');
+
+  unsupported($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
+  assertRelation($window.windowFrame->isEmpty() || $context.relation->isTrue(), 'window frame');
 
   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
   let sorts = $window.orderBy->map(si | $si->createSortItemFunction($context));
@@ -948,7 +972,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
           let map = $extacted.map->match([
             q:QualifiedNameReference[1] | $q.name,
-            e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression'); ^QualifiedName();
+            e:meta::external::query::sql::metamodel::Expression[1] | unsupported('unsupported window aggregation expression'); ^QualifiedName();
           ]);
 
           let mapColumn = $context.columnByNameParts($map.parts, true).name;
@@ -1052,7 +1076,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     i:DoubleLiteral[1] | createNumericFrameBoundValue($f.type, $i.value),
     i:IntervalLiteral[1] | fail('interval range not currently supported'); [];,
     i:meta::external::query::sql::metamodel::Expression[0] | if ($f.type == FrameBoundType.CURRENT_ROW, | iv(0), | []),
-    i:meta::external::query::sql::metamodel::Expression[*] | fail('unsupported frame bound value'); [];
+    i:meta::external::query::sql::metamodel::Expression[*] | unsupported('unsupported frame bound value'); [];
   ]);
 }
 
@@ -1084,7 +1108,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(e:meta::external::query::sql::metamodel::Expression[1]):Boolean[1]
 {
-  assert($e->instanceOf(FunctionCall), 'unsupported aggregation');
+  unsupported($e->instanceOf(FunctionCall), | 'unsupported aggregation');
   let functionCall = $e->cast(@FunctionCall);
   let processor = functionProcessor($functionCall.name);
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name, []) + ' is not currently supported as aggregate function');
@@ -1294,16 +1318,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   assertRelation($context.relation, 'values');
   assert($values.rows->forAll(r | $r.values->size() == 1), | 'only single value values currently supported');
-  assertEquals(1, $context.columns->size(), | ' a single column must be present in scope for values support');
+  assertEquals(1, $context.aliasColumns->size(), | ' a single column must be present in scope for values support');
 
   let table = $values.rows->map(r | $r.values->toOne()->processExpression(rowExpressionContext($context), $context));
 
-  let column = $context.columns->at(0).name;
+  let column = $context.aliasColumns->toOne();
 
   let commonType = $table.genericType.rawType->bestCommonType();
   let type = buildRelationType(newRelationColumn($column, $commonType, ZeroOne));
 
-  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $type, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $column))]);
+  let flatten = sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $type, [$table->iv(), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $context.aliasColumns->toOne()))]);
 
   clone(^$context(expression = $flatten), $context);
 }
@@ -1354,7 +1378,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let context = ^$_context(debug = $_context.debug->indent());
 
   // 1. Process the left side normally
-  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('join_' + toString($context.id + 2)), root = false, id = $context.id + 2));
+  let leftContext = processRelation($join.left, ^$context(name = $context.name->orElse('lateral_' + toString($context.id + 2)), root = false, id = $context.id + 2));
   let left = wrapWithFrom($leftContext);
 
   // 2. Create lateral lambda variable with the left relation's type
@@ -1370,12 +1394,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   // 4. Unwrap LateralRelation (preserving alias) and process with lateral scope
   let unwrapped = $join.right->unwrapLateral();
+  let contexts = $context.contexts->concatenate($left)->concatenate($left.contexts);
   let lateralContext = ^$context(
-    name = $context.name->orElse('join_' + toString($context.id + 3)),
+    name = $context.name->orElse('lateral_' + toString($context.id + 3)),
     root = false,
     id = $context.id + 3,
     lateralOuterAliases = $outerAliases,
-    contexts = $context.contexts->concatenate($left)->concatenate($left.contexts)
+    contexts = $contexts,
+    columns = $contexts.columns
   );
 
   let rightContext = processRelation($unwrapped, $lateralContext);
@@ -1424,13 +1450,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     r:Relation[1] | $context.name
   ]);
 
-  let columns = if ($aliased.columnNames->isEmpty(), | $context.columns, | $aliased.columnNames->map(c | ^QueryColumn(name = $c)));
+  let processed = processRelation($aliased.relation, ^$context(name = $name, aliasColumns = if ($aliased.columnNames->isEmpty(), | $name, | $aliased.columnNames)));
 
-  let processed = processRelation($aliased.relation, ^$context(name = $name, columns = $columns));
-
+  let columns = if ($aliased.columnNames->isEmpty(), | $processed.columns, | $aliased.columnNames->map(c | ^QueryColumn(name = $c)));
   let aliases = if ($aliased.columnNames->isEmpty(), | $processed.aliases, | $aliased.columnNames->map(c | ^SQLColumnAlias(name = $c)));
 
-  ^$processed(name = $aliased.alias, aliases = $aliases);
+  ^$processed(name = $aliased.alias, aliases = $aliases, columns = $columns);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processDuplicateRenames(names:String[*], suffix:String[1], context:SqlTransformContext[1]): SqlTransformContext[1]
@@ -1452,8 +1477,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processJoin(join: Join[1], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processJoin', $_context.debug);
-  
-  if ($join.right->isLateral(), 
+
+  if ($join.right->isLateral(),
     | processLateralJoin($join, $_context),
     | processStandardJoin($join, $_context));
 }
@@ -1483,22 +1508,26 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //all of the child contexts are in scope for joining on so the new context needs to know about them
   let leftContexts = if ($join.left->instanceOf(Join), | $left.contexts, | $left);
   let rightContexts = if ($join.right->instanceOf(Join), | $right.contexts, | $right);
-  let newContext = ^$context(contexts = $leftContexts->concatenate($rightContexts));
+  //inside a correlated subquery or a lateral body the enclosing relation is in scope too
+  let outerContexts = if ($context.lateralOuterAliases->isEmpty(), | [], | $context.contexts);
+  let newContext = ^$context(contexts = $outerContexts->concatenate($leftContexts)->concatenate($rightContexts));
 
   let row1 = ^VariableExpression(multiplicity = PureOne, name = 'row1', genericType = ^GenericType(rawType = TDSRow));
   let row2 = ^VariableExpression(multiplicity = PureOne, name = 'row2', genericType = ^GenericType(rawType = TDSRow));
 
-  //all of the child contexts are in scope for joining on so the new context needs to know about them
-  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->map(c | pair($c.name->toOne(), $row1)));
-  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->map(c | pair($c.name->toOne(), $row2)));
+  //all of the child contexts are in scope for joining on so the new context needs to know about them.
+  //an enclosing relation visible for correlation is not a join side, so it keeps its own row variable
+  let outerNames = $context.lateralOuterAliases.first;
+  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
+  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
 
-  let expContext = expressionContext([], $leftRows->concatenate($rightRows)->newMap(), $context.relation->isTrue());
+  let expContext = expressionContext([], $context.lateralOuterAliases->concatenate($leftRows)->concatenate($rightRows)->newMap(), $context.relation->isTrue());
 
   let newExp = ^TDSBuilder().join($join, $row1, $row2, $left.expression->toOne(), $right.expression->toOne(), $expContext, $newContext, $newContext.relation->isTrue());
 
   let allAliases = $left.aliases->concatenate($right.aliases);
 
-  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);  
+  clone(^$newContext(expression = $newExp, aliases = $allAliases), $newContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createJoinOn(e:meta::external::query::sql::metamodel::Expression[1], row1:VariableExpression[1], row2:VariableExpression[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
@@ -1528,7 +1557,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(JoinType.INNER, | meta::pure::functions::relation::JoinKind.INNER),
     pair(JoinType.CROSS, | meta::pure::functions::relation::JoinKind.INNER),
     pair(JoinType.FULL, | meta::pure::functions::relation::JoinKind.FULL)
-  ]->getValue($joinType, | fail('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
+  ]->getValue($joinType, | unsupported('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1693,7 +1722,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           v:Any[1] | $vs->genericType().typeArguments->at(0).rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>).columns
         ]);
 
-
         let queryColumns = $columns->map(c | ^QueryColumn(
                                           name = $c.name->toOne(),
                                           type = $c.classifierGenericType.typeArguments->last().rawType->cast(@Type),
@@ -1703,12 +1731,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ^$context
         (
           columns = $queryColumns,
-          expression = ^InstanceValue
+          expression = $vs->match([
+            v:ValueSpecification[1] | $v,
+            a:Any[*] | ^InstanceValue
                        (
                         genericType=$vs->genericType(),
                         multiplicity = PureOne,
                         values = $vs->toOne()
-                       ),
+                       )
+          ]),
           aliases = $columns->map(c | ^SQLColumnAlias(name = $c.name->toOne()))
         );,
       s:SQLSource[1]|
@@ -1743,7 +1774,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
         assert($processor->isNotEmpty(), 'No source or known table function found for type ' + $type);
 
-        let expContext = expressionContext([], ^Map<String, VariableExpression>(), $_context.relation->isTrue());
+        let expContext = if ($_context.lateralOuterAliases->isNotEmpty(),
+          | let lateralVar = $_context.lateralOuterAliases->first().second;
+            expressionContext($lateralVar, $_context.lateralOuterAliases->newMap(), $_context.relation->isTrue());,
+          | expressionContext([], ^Map<String, VariableExpression>(), $_context.relation->isTrue()));
 
         let args = $tableFunc.functionCall.arguments->map(a | $a->processExpression($expContext, $context));
         let expression = $processor->toOne().transform->eval($args->evaluateAndDeactivate(), $tableFunc.functionCall, $expContext, $context);
@@ -1819,7 +1853,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     ^SQLLambdaParameter(variable = ^$p(name = $name), value = $value);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
+function meta::external::query::sql::transformation::queryToPure::createParameterValue(p:VariableExpression[1], expressions:Any[*], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   if ($expressions->isEmpty(),
       | iv([]),
@@ -1996,7 +2030,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let lambda = lambda($functionType, $expression);
         pair($lambda, $name);,
       s:SelectItem[1] |
-        fail('Unsupported SelectItem type');
+        unsupported('Select item type');
         pair(lambda(^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Any)), iv(1)), '');
     ])
   );
@@ -2095,26 +2129,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
       $b.value->extractNameFromExpression($context) + ' ' + $operator + ' ' + $b.shift->extractNameFromExpression($context);,
     c:Cast[1] | 'CAST(' + $c.expression->extractNameFromExpression($context) + ' AS ' + $c.type->extractNameFromExpression($context) + ')',
     c:ComparisonExpression[1] |
-      let operator = [
-        pair(ComparisonOperator.EQUAL,                '='),
-        pair(ComparisonOperator.NOT_EQUAL,            '!='),
-        pair(ComparisonOperator.LESS_THAN,            '<'),
-        pair(ComparisonOperator.LESS_THAN_OR_EQUAL,   '<='),
-        pair(ComparisonOperator.GREATER_THAN,         '>'),
-        pair(ComparisonOperator.GREATER_THAN_OR_EQUAL,'>='),
-        pair(ComparisonOperator.IS_DISTINCT_FROM,     'IS DISTINCT FROM'),
-        pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM'),
-        pair(ComparisonOperator.REGEX_MATCH,          '~'),
-        pair(ComparisonOperator.REGEX_MATCH_CI,       '~*'),
-        pair(ComparisonOperator.REGEX_NO_MATCH,       '!~'),
-        pair(ComparisonOperator.REGEX_NO_MATCH_CI,    '!~*'),
-        pair(ComparisonOperator.LIKE,                 '~~'),
-        pair(ComparisonOperator.ILIKE,                '~~*'),
-        pair(ComparisonOperator.NOT_LIKE,             '!~~'),
-        pair(ComparisonOperator.NOT_ILIKE,            '!~~*')
-      ]->getValue($c.operator);
-
-      $c.left->extractNameFromExpression($context) + ' ' + $operator + ' ' + $c.right->extractNameFromExpression($context);,
+      $c.left->extractNameFromExpression($context) + ' ' + $c.operator->comparisonOperatorSymbol() + ' ' + $c.right->extractNameFromExpression($context),
     c:CurrentTime[1] |
       let param = if ($c.precision->isEmpty(), | '', | '(' + $c.precision->toOne()->toString() + ')');
       [
@@ -2129,6 +2144,8 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     f:FunctionCall[1] | $f.name->extractNameFromQualifiedName($context) + '(' + if ($f.distinct, | 'DISTINCT ', | '') +  $f.arguments->map(a | $a->extractNameFromExpression($context))->joinStrings(', ') + ')',
     i:InListExpression[1] | $i.values->map(v | $v->extractNameFromExpression($context))->joinStrings('(', ', ', ')'),
     i:InPredicate[1] | $i.value->extractNameFromExpression($context) + ' IN ' + $i.valueList->extractNameFromExpression($context),
+    s:SubqueryExpression[1] | '(subquery)',
+    e:ExistsPredicate[1] | 'EXISTS (subquery)',
     i:IsNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NULL',
     i:IsNotNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NOT NULL',
     l:Literal[1] | $l->extractNameFromLiteral($context),
@@ -2149,6 +2166,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     p:ParameterPlaceholderExpression[1] | '?',
     p:PositionalParameterExpression[1] | '$' + $p.index->toString(),
     q:QualifiedNameReference[1] | $q.name->extractNameFromQualifiedName($context),
+    q:QuantifiedComparisonExpression[1] | $q.value->extractNameFromExpression($context) + ' ' + $q.operator->comparisonOperatorSymbol() + ' ' + $q.quantifier.name + ' (subquery)',
     s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractNameFromExpression($context),
     s:SearchedCaseExpression[1] |
       let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
@@ -2163,6 +2181,28 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     w:WhenClause[1] | 'WHEN ' + $w.operand->extractNameFromExpression($context) + ' THEN ' + $w.result->extractNameFromExpression($context),
     e:meta::external::query::sql::metamodel::Expression[1] | ''
   ])
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::comparisonOperatorSymbol(operator:ComparisonOperator[1]):String[1]
+{
+  [
+    pair(ComparisonOperator.EQUAL,                '='),
+    pair(ComparisonOperator.NOT_EQUAL,            '!='),
+    pair(ComparisonOperator.LESS_THAN,            '<'),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,   '<='),
+    pair(ComparisonOperator.GREATER_THAN,         '>'),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL,'>='),
+    pair(ComparisonOperator.IS_DISTINCT_FROM,     'IS DISTINCT FROM'),
+    pair(ComparisonOperator.IS_NOT_DISTINCT_FROM, 'IS NOT DISTINCT FROM'),
+    pair(ComparisonOperator.REGEX_MATCH,          '~'),
+    pair(ComparisonOperator.REGEX_MATCH_CI,       '~*'),
+    pair(ComparisonOperator.REGEX_NO_MATCH,       '!~'),
+    pair(ComparisonOperator.REGEX_NO_MATCH_CI,    '!~*'),
+    pair(ComparisonOperator.LIKE,                 '~~'),
+    pair(ComparisonOperator.ILIKE,                '~~*'),
+    pair(ComparisonOperator.NOT_LIKE,             '!~~'),
+    pair(ComparisonOperator.NOT_ILIKE,            '!~~*')
+  ]->getValue($operator);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAliasFromColumn(column:SingleColumn[1]):SQLColumnAlias[1]
@@ -2181,7 +2221,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::rowExpressionContext(context:SqlTransformContext[1]):SqlTransformExpressionContext[1]
 {
   if ($context.relation->isTrue(),
-    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = 'x', multiplicity = PureOne)->evaluateAndDeactivate(), $context.lateralOuterAliases->newMap(), $context.relation->isTrue()),
+    | expressionContext(^VariableExpression(genericType = ^InferredGenericType(), name = $context.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate(), $context.lateralOuterAliases->newMap(), $context.relation->isTrue()),
     | expressionContext(^VariableExpression(genericType = ^GenericType(rawType = TDSRow),name = 'row', multiplicity = PureOne), ^Map<String, VariableExpression>(), $context.relation->isTrue()))
 
 }
@@ -2232,6 +2272,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     c:ComparisonExpression[1] | processComparisonExpression($c, $expContext, $context),
     c:CurrentTime[1] | processCurrentTime($c, $expContext, $context),
     c:CurrentUser[1] | processCurrentUser($c, $context),
+    e:ExistsPredicate[1] | processExistsPredicate($e, $expContext, $context),
     e:Extract[1] | processExtract($e, $functionalContext, $context),
     f:FunctionCall[1] | processFunctionCall($f, $functionalContext, $context),
     i:InListExpression[1] | processInListExpression($i, $expContext, $context),
@@ -2247,6 +2288,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NotExpression[1] | processNotExpression($n, $expContext, $context),
     p:PositionalParameterExpression[1] | processPositionalParameterExpression($p, $expContext, $context),
     q:QualifiedNameReference[1] | processQualifiedNameReference($q, $expContext, $context),
+    q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, $expContext, $context),
     s:SimpleCaseExpression[1] | processSimpleCaseExpression($s, $expContext, $context),
     s:SearchedCaseExpression[1] | processSearchedCaseExpression($s, $expContext, $context),
     s:StringConcatenate[1] | processStringConcatenate($s, $expContext, $context),
@@ -2259,7 +2301,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(s:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
-  processStringConcatenate($s.values->map(v | $v->processExpression($expContext, $context)), [], false, $expContext);
+  //we clear the type to ensure things that are concatenating to create a date are not processed as date e.g. where date > cast('2026' || '/01/01' as date)
+  processStringConcatenate($s.values->map(v | $v->processExpression(^$expContext(type = []), $context)), [], false, $expContext);
+}
+
+//in postgres args are coercesed to varchar, Boolean has a very specific handling
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenateWithArgumentTransform(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
+{
+  let processedArgs = $args->map(a | if ($a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),  
+                      | if ($a->instanceOf(InstanceValue) && ($a->cast(@InstanceValue).values == true || $a->cast(@InstanceValue).values == false),
+                          | let value = $a->cast(@InstanceValue).values;
+                            if ($value == true, | iv('t'), | if ($value == false, | iv('f'), | $a));,
+                          | createIfStatement($a, iv('t'), createIfStatement(sfe(isEmpty_Any_$0_1$__Boolean_1_, $a), iv(''), iv('f')))
+                      );,
+                      | $a->possiblyProcessToString()));
+
+  processStringConcatenate($processedArgs, $separator, $ignoreNulls, $expContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
@@ -2275,7 +2332,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       //TODO handle in non relation flow, requires regression testing as breaking change.
   let multiplicityForcedArgs = if ($expContext.relation->isTrue(), | toOneifyCollectionArg($filteredArgs), | $filteredArgs);
-
 
   if ($multiplicityForcedArgs->size() == 1 && $multiplicityForcedArgs->at(0)->isNull(),
       | createNormalizedCast(iv([]), String)->evaluateAndDeactivate(),
@@ -2325,7 +2381,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLikePredicate(l:LikePredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   assert($l.escape->isEmpty() || $l.escape->toOne()->instanceOf(StringLiteral), | 'like escape must be string literal');
-  assertFalse($l.ignoreCase, | 'ilike currently not supported');
+  unsupported($l.ignoreCase->isFalse(), | 'ilike currently not supported');
   assert($l.pattern->instanceOf(StringLiteral), | 'like pattern must be string literal');
 
   let pattern = $l.pattern->cast(@StringLiteral).value;
@@ -2342,14 +2398,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                             ->replace($escape + '_', $escapedUnderscorePlaceholder);
 
   // Validate: no unescaped _ allowed
-  assert(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
+  unsupported(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
 
   let hasLeading = $neutralized->startsWith('%');
   let hasTrailing = $neutralized->endsWith('%') && ($neutralized->length() > if($hasLeading, |1, |0));
 
   // Strip leading/trailing unescaped % and assert none remain in the middle
   let inner = $neutralized->substring(if($hasLeading, |1, |0), $neutralized->length() - if($hasTrailing, |1, |0));
-  assert(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
+  unsupported(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
 
   // Build the literal by resolving placeholders back to their unescaped characters
   let literal = $inner->replace($escapedEscapePlaceholder, $escape)
@@ -2419,7 +2475,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCurrentTime(c:CurrentTime[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug(|'processCurrentTime', $context.debug);
-  assert($c.precision->isEmpty(), | ' precision currently unsupported');
+  unsupported($c.precision->isEmpty(), | ' current time precision');
 
   let func = [
     pair(CurrentTimeType.DATE, today__StrictDate_1_),
@@ -2488,13 +2544,124 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExistsPredicate(e:ExistsPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
+  debug(|'processExistsPredicate', $context.debug);
+  assertRelation($context.relation, 'exists');
+
+  let query = $e.query.query;
+  let where = hoistableWhere($query);
+
+  let relContext = processSubRelation(if ($where->isEmpty(), | $query, | existsSource($query)), $expContext, $context);
+  let rel = $relContext.expression->toOne();
+
+  let lambda = if ($where->isEmpty(),
+    | alwaysTrueLambda($relContext.rowVarName),
+    | createExistsLambda($where->toOne(), $relContext));
+
+  sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv($lambda)]);
+}
+
+// The predicate belongs in the exists lambda, matching relation::exists(rel, f). WHERE can only be
+// hoisted out of the subquery when nothing between it and the result reorders or collapses rows -
+// with GROUP BY/HAVING/LIMIT/OFFSET the predicate applies before that step, so it has to stay a
+// filter inside the sub-relation and the lambda degenerates to x | true.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hoistableWhere(query:Query[1]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  $query.queryBody->match([
+    q:QuerySpecification[1] |
+      if ($q.groupBy->isEmpty() && $q.having->isEmpty() && $q.limit->isEmpty() && $q.offset->isEmpty(),
+          | $q.where,
+          | []),
+    b:QueryBody[1] | []
+  ]);
+}
+
+// EXISTS only asks whether a row survives, so the subquery's select list is discarded rather than
+// hoisted past - SQL applies WHERE before the projection, so a predicate on a column the projection
+// drops (SELECT id ... WHERE other = ...) would otherwise not resolve. Discarding it also makes the
+// idiomatic EXISTS (SELECT 1 FROM ...) form work.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::existsSource(query:Query[1]):Query[1]
+{
+  let spec = $query.queryBody->cast(@QuerySpecification);
+  let select = $spec.select;
+
+  ^$query(queryBody = ^$spec(where = [], select = ^$select(selectItems = ^AllColumns())));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::alwaysTrueLambda(varName:String[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $varName, multiplicity = PureOne)->evaluateAndDeactivate();
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)), iv(true));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createExistsLambda(where:meta::external::query::sql::metamodel::Expression[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $relContext.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate();
+
+  let expContext = expressionContext($var, $relContext.lateralOuterAliases->newMap(), $relContext.relation->isTrue());
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)),
+         processExpression($where, $expContext, $relContext));
+}
+
+// The subquery row variable must not shadow the enclosing one, or the correlated reference
+// cannot survive the grammar round-trip the compile step performs.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::subQueryVarName(outerExpContext:SqlTransformExpressionContext[1]):String[1]
+{
+  let taken = $outerExpContext.defaultVar.name->concatenate($outerExpContext.varMap->values().name);
+
+  ['e', 'e1', 'e2', 'e3', 'e4', 'e5']->filter(n | !$n->in($taken))->first()->toOne();
+}
+
+// A nested query used as an operand (EXISTS / IN) stays a relation rather than being materialised,
+// so the store can generate a correlated subquery. Outer aliases are mapped onto the enclosing row
+// variable using the same mechanism LATERAL uses.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSubRelation(query:Query[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SqlTransformContext[1]
+{
+  debug(|'processSubRelation', $context.debug);
+
+  let outerNames = $context.name->concatenate($context.contexts->filter(c | $c.name->isNotEmpty()).name)->removeDuplicates();
+  let outerAliases = $outerNames->map(n | pair($n, $expContext.var()));
+
+  let subContext = ^$context(
+    debug = $context.debug->indent(),
+    root = false,
+    lateralOuterAliases = $context.lateralOuterAliases->concatenate($outerAliases),
+    //the enclosing relation joins the visible contexts so columnByNameParts can resolve a
+    //correlated 'outer.col' against it rather than falling back to the sub-relation
+    contexts = $context.contexts->concatenate($context),
+    rowVarName = subQueryVarName($expContext)
+  );
+
+  wrapWithFrom(processQuery($query, $subContext));
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInPredicate(i:InPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
 {
   debug(|'processInPredicate', $context.debug);
   let value = $i.value->processExpression($expContext, $context);
-  let values = $i.valueList->processExpression(^$expContext(type = $value.genericType.rawType), $context);
 
-  sfe(in_Any_1__Any_MANY__Boolean_1_, [$value, $values]);
+  $i.valueList->match([
+    //unlike EXISTS the select list is the column being compared, so the subquery is processed as-is
+    s:SubqueryExpression[1] |
+      assertRelation($context.relation, 'in (subquery)');
+
+      let relContext = processSubRelation($s.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      //a source whose schema is only known at compile time (a table function, say) resolves to no
+      //columns here, which means unknown rather than zero - leave those to the compiler to reject
+      let columns = $rel->resolveRelationColumns();
+      assert($columns->size() <= 1, | 'in (subquery) requires the subquery to return exactly one column, got ' + $columns->size()->toString());
+
+      sfe(in_U_$0_1$__Relation_1__Boolean_1_, [$value, $rel]);,
+    e:meta::external::query::sql::metamodel::Expression[1] |
+      let values = $e->processExpression(^$expContext(type = $value.genericType.rawType), $context);
+
+      sfe(in_Any_1__Any_MANY__Boolean_1_, [$value, $values]);
+  ]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInListExpression(i:InListExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -2504,9 +2671,86 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $i.values->map(v | processExpression($v, $expContext, $context))->iv();
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuantifiedComparisonExpression(q:QuantifiedComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  processQuantifiedComparisonExpression($q, false, $expContext, $context);
+}
+
+// SQL evaluates a quantified comparison in three-valued logic, and a WHERE drops an unknown exactly as it
+// drops a false, so what has to be reproduced is when the comparison is TRUE. The relation functions are
+// two-valued and ignore nulls in the subquery, which agrees with SQL for ANY - an unknown can only arise
+// there when nothing matched, so the row goes either way - but not for ALL, where a null makes SQL unknown
+// while the function still answers true.
+//
+// Negating swaps that around, because it is now FALSE that has to be reproduced. ALL is false as soon as
+// one row fails, nulls or not, so the guard drops; ANY is only false when every row failed *and* none was
+// null, so the guard appears. The negated forms also need the value present: the functions answer false
+// for an empty value where SQL is unknown, and negating would turn that into a kept row.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuantifiedComparisonExpression(q:QuantifiedComparisonExpression[1], negated:Boolean[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug(|'processQuantifiedComparisonExpression', $context.debug);
+  assertRelation($context.relation, 'quantified comparison');
+
+  //there is no notEqualAny/notEqualAll - != ANY is the negation of = ALL, and != ALL of = ANY
+  if ($q.operator == ComparisonOperator.NOT_EQUAL,
+    | processQuantifiedComparisonExpression(^$q(operator = ComparisonOperator.EQUAL, quantifier = if ($q.quantifier == Quantifier.ALL, | Quantifier.ANY, | Quantifier.ALL)), !$negated, $expContext, $context),
+    |
+      let all = $q.quantifier == Quantifier.ALL;
+      let value = $q.value->processExpression($expContext, $context);
+
+      //unlike EXISTS the select list is the column being compared, so the subquery is processed as-is
+      let relContext = processSubRelation($q.subQuery.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      //the resolved schema rather than the expression's own type arguments, because a source whose schema
+      //is only known at compile time - a table function, say - carries no type arguments to read
+      let columns = $relContext.columns;
+      assert($columns->size() == 1, | 'a quantified comparison requires the subquery to return exactly one column, got ' + $columns->size()->toString());
+
+      let comparison = sfe(quantifiedComparisonFunction($q.operator, $all), [$value, $rel]);
+
+      let parts = if ($negated, | sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value), | [])
+        ->concatenate(if ($negated, | sfe(not_Boolean_1__Boolean_1_, $comparison), | $comparison))
+        ->concatenate(if ($all == $negated, | [], | createNullFreeGuard($rel, $columns->toOne().name, $relContext)));
+
+      $parts->tail()->fold({p, acc | sfe(and_Boolean_1__Boolean_1__Boolean_1_, [$acc, $p])}, $parts->first()->toOne());
+  );
+}
+
+// The guard tests the subquery's output column, so it is a predicate over the already-processed
+// sub-relation rather than a WHERE pushed into the subquery - the latter would apply before a GROUP BY
+// or LIMIT rather than after it, and so would test a different set of values.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullFreeGuard(rel:ValueSpecification[1], columnName:String[1], relContext:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let column = ^QualifiedNameReference(name = ^QualifiedName(parts = $columnName));
+
+  sfe(not_Boolean_1__Boolean_1_,
+      sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv(createExistsLambda(^IsNullPredicate(value = $column), $relContext))]));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::quantifiedComparisonFunction(operator:ComparisonOperator[1], all:Boolean[1]):meta::pure::metamodel::function::Function<Any>[1]
+{
+  if ($all,
+      | [
+          pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThanAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqualAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_)
+        ],
+      | [
+          pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqualAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_),
+          pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_)
+        ])->getValue($operator);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQualifiedNameReference(q:QualifiedNameReference[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processQualififedNameReference', $context.debug);
+
 
   createTdsColumn($q.name, $expContext.var($q.name), $expContext, $context);
 }
@@ -2529,7 +2773,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($expression.genericType.rawType == Variant,
     |
-      fail('casting variant currently unsupported');
+      unsupported('casting variant');
       //TODO this technically works, but in postgres you cannot cast a variant array
       let pureType = getCastType($type.innerType.name);
 
@@ -2567,6 +2811,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair($type == Variant, | processVariantCast($c, $expression)),
         pair($castName == 'VARCHAR', | processVarcharCast($c, $expression, $expContext, $context)),
         pair($castName == 'NUMERIC' || $castName == 'DECIMAL', | processNumericCast($c, $expression, $expContext, $context)),
+        pair($castName == 'INTEGER' && !$type->subTypeOf(Integer) && $type->subTypeOfExNil(Number), | processRound($expression)),
         pair($castName->in(['DOUBLE PRECISION', 'FLOAT8']), | processDoublePrecisionCast($c, $expression, $expContext, $context)),
         pair($type->preciseToPrimitive() == String || $castName->in(['TEXT', 'JSON', 'JSONB']), | processCastAsParse($c, $expression, $expContext, $context)),
         pair(true, | processCastAsCast($c, $expression, $expContext, $context))
@@ -2644,7 +2889,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::possiblyProcessToString(v:ValueSpecification[1]):ValueSpecification[1]
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType;
-  if ($type->preciseToPrimitive() == String, | $v, | sfe(toString_Any_1__String_1_, $v));
+  if ($type->preciseToPrimitive() == String, | $v, | if ($v.multiplicity != PureZero, | sfe(toString_Any_1__String_1_, $v), | $v));
 }
 
 //TODO revisit to fully push down
@@ -2942,11 +3187,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processFunctionCallAsFunction', $context.debug);
 
-  let args = $f.arguments->map(a | $a->processExpression($expContext, $context));
+  let childExpContext = ^$expContext(functionCallStack = $f->concatenate($expContext.functionCallStack));
 
   if ($f.distinct,
     | processFunctionCallAsFunction(^$f(distinct = false, arguments = [^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $f.arguments->first(), distinct = false)]->concatenate($f.arguments->tail())), $expContext, $context),
-    | functionCall($f.name, $args, $f, $expContext, $context));
+    |
+      let args = $f.arguments->map(a | $a->processExpression($childExpContext, $context));
+      functionCall($f.name, $args, $f, $expContext, $context);
+  );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:QualifiedName[1], args:ValueSpecification[*], f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -2961,7 +3209,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   $args->match([
     v:ValueSpecification[1] | $v.genericType.rawType->toOne(),
-    a:Any[*] | fail('Unsupported arg type'); Any;
+    a:Any[*] | unsupported('Unsupported arg type'); Any;
   ]);
 }
 
@@ -3000,7 +3248,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::assertRelation(relation:Boolean[0..1], func:String[1]):Boolean[1]
 {
-  assert($relation->isTrue(), | 'function ' + $func + ' only supported on relation inputs');
+  unsupported($relation->isTrue(), | $func + ' only supported on relation inputs');
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getNonNullArguments(args:ValueSpecification[*]):ValueSpecification[*]
@@ -3159,7 +3407,7 @@ function <<access.private>>  meta::external::query::sql::transformation::queryTo
 
 function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toCharUnsupported(func:String[1]):ValueSpecification[1]
 {
-  fail($func + ' is not supported to_char token');
+  unsupported($func + ' is not supported to_char token');
   iv(1);
 }
 
@@ -3227,11 +3475,28 @@ function meta::external::query::sql::transformation::queryToPure::processPad(arg
   nullOrSfe($func, $args);
 }
 
-function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1]):ValueSpecification[1]
+function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1], expContext:SqlTransformExpressionContext[1], requireEncode:Boolean[1]):ValueSpecification[1]
 {
   assert($args->size() == 1, 'incorrect number of args');
+  assert(!$requireEncode || isHexEncode($expContext.parentFunctionCall()), $type.name + ' function must be wrapped with encode(func, \'hex\')');
+
   nullOrSfe(meta::pure::functions::hash::hash_String_1__HashType_1__String_1_, [$args->at(0), processExtractEnumValue(meta::pure::functions::hash::HashType, $type.name->toOne())]);
 }
+
+//is encode(any, 'hex');
+function meta::external::query::sql::transformation::queryToPure::isHexEncode(f:FunctionCall[0..1]):Boolean[1]
+{
+  isFunctionCallName($f, 'encode')
+  && $f.arguments->size() == 2 
+  && $f.arguments->at(1)->instanceOf(StringLiteral) 
+  && $f.arguments->at(1)->cast(@StringLiteral).value->toLower() == 'hex'
+}
+
+function meta::external::query::sql::transformation::queryToPure::isFunctionCallName(f:FunctionCall[0..1], name:String[1]):Boolean[1]
+{
+    $f.name.parts->size() == 1 && $f.name.parts->at(0)->toLower() == $name->toLower();
+}
+
 
 function meta::external::query::sql::transformation::queryToPure::processSubstring(args:ValueSpecification[*]):ValueSpecification[1]
 {
@@ -3242,12 +3507,32 @@ function meta::external::query::sql::transformation::queryToPure::processSubstri
   nullOrSfe($func, $args);
 }
 
+function meta::external::query::sql::transformation::queryToPure::processRound(args:ValueSpecification[*]):ValueSpecification[1]
+{
+  assert(($args->size() == 1) || ($args->size() == 2), 'incorrect number of args for round');
+
+  let func = if ($args->size() == 1 || ($args->at(0).genericType.rawType == Integer
+                                        && $args->at(1)->match([i:InstanceValue[1] | $i.values == 0, v:ValueSpecification[1] | false])),
+    |
+      round_Number_1__Integer_1_,
+    | if ($args->at(0).genericType.rawType == Float,
+        | round_Float_1__Integer_1__Float_1_,
+        | round_Decimal_1__Integer_1__Decimal_1_)
+  );
+
+  nullOrSfe($func, $args);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotExpression(n:NotExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processNotExpression', $context.debug);
-  let value = $n.value->processExpression($expContext, $context);
 
-  nullOrSfe(not_Boolean_1__Boolean_1_, $value);
+  //a quantified comparison builds its own negation, since negating its two-valued result would keep the
+  //rows SQL leaves unknown
+  $n.value->match([
+    q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, true, $expContext, $context),
+    e:meta::external::query::sql::metamodel::Expression[1] | nullOrSfe(not_Boolean_1__Boolean_1_, $e->processExpression($expContext, $context))
+  ]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNegativeExpression(n:NegativeExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3293,6 +3578,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair(CurrentTimeType.TIMESTAMP, DateTime)
       ]->getValue($c.type),
     c:CurrentUser[1] | String,
+    e:ExistsPredicate[1] | Boolean,
     e:Extract[1] | Integer,
     f:FunctionCall[1] |
       let processor = functionProcessor($f.name);
@@ -3308,6 +3594,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NotExpression[1] | Boolean,
     p:PositionalParameterExpression[1] | $context.positional($p, [], false)->evaluateAndDeactivate().genericType.rawType->toOne(),
     q:QualifiedNameReference[1] | $context.columnByNameParts($q.name.parts, true).type->toOne(),
+    q:QuantifiedComparisonExpression[1] | Boolean,
     s:SearchedCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
     s:StringConcatenate[1] | String,
     s:SimpleCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
@@ -3529,7 +3816,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processComparisonExpression', $context.debug);
 
-  let left = $c.left->processExpression($expContext, $context);
+  //in postgres a StringLiteral is unknown type by default. In this case, we can try to use the right hand side type to force correct typing
+  let leftExpressionContext = if ($c.left->instanceOf(StringLiteral), 
+    | ^$expContext(type = getExpressionType($c.right, $context)), 
+    | $expContext);
+
+  
+
+  let left = $c.left->processExpression($leftExpressionContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
 
   let leftType = normalizeType($left.genericType.rawType->toOne());
@@ -3549,7 +3843,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let value = $c.right->match([
     s:StringLiteral[1] | $enum->extractEnumValue($s.value),
-    a:meta::external::query::sql::metamodel::Expression[0..1] | fail('unsupported enumeration comparison, right hand side must be a literal value'); [];
+    a:meta::external::query::sql::metamodel::Expression[0..1] | unsupported('unsupported enumeration comparison, right hand side must be a literal value'); [];
   ]);
 
   let index = $enumValues->indexOf($value->toOne().name);
@@ -3726,20 +4020,32 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   processExpression($expression, $expContext, $context);
 }
 
+// ~ is a substring match in Postgres, which is regexpLike, not matches. A fully anchored literal is
+// still routed to matches() because far more stores implement it, and stripping anchors off such a
+// pattern is exact - but only when the anchors span the whole pattern, so the alternation in
+// '^a|b$' (which parses as (^a)|(b$)) must not take that path.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createRegexMatch(left:ValueSpecification[1], right:ValueSpecification[1], caseInsensitive:Boolean[1], not:Boolean[1]):ValueSpecification[1]
 {
-  assertFalse($caseInsensitive, 'case insensitive regex currently not supported');
-
-  let pattern = $right->reactivate()->match([
-    s:String[1] | $s,
-    a:Any[*] | fail('regex must be a string literal'); '';
+  let literalPattern = $right->match([
+    i:InstanceValue[1] | $i.values->match([
+      s:String[1] | $s,
+      a:Any[*] | []
+    ]),
+    a:Any[*] | []
   ]);
 
-  assert($pattern->startsWith('^') && $pattern->endsWith('$'), 'only exact match regex currently supported');
+  let fullyAnchored = !$literalPattern->isEmpty()
+                      && $literalPattern->toOne()->startsWith('^')
+                      && $literalPattern->toOne()->endsWith('$')
+                      && !$literalPattern->toOne()->substring(1, $literalPattern->toOne()->length() - 1)->contains('|');
 
-  let patternIV = $pattern->substring(1, $pattern->length() - 1)->iv();
-
-  let match = nullOrSfe(matches_String_1__String_1__Boolean_1_, [$left, $patternIV]);
+  let match = if (!$caseInsensitive && $fullyAnchored,
+                  | let anchored = $literalPattern->toOne();
+                    nullOrSfe(matches_String_1__String_1__Boolean_1_, [$left, $anchored->substring(1, $anchored->length() - 1)->iv()]);,
+                  | if ($caseInsensitive,
+                        | nullOrSfe(regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_,
+                                    [$left, $right, iv(meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE)]),
+                        | nullOrSfe(regexpLike_String_1__String_1__Boolean_1_, [$left, $right])));
 
   if ($not, | nullOrSfe(not_Boolean_1__Boolean_1_, $match), | $match);
 }
@@ -3839,7 +4145,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let select = walk($q.select, $accumulator, $extras);
         let limit = walk($q.limit, $accumulator, $extras);
         let offset = walk($q.offset, $accumulator, $extras);
-        $from->concatenate($where)->concatenate($groupBy)->concatenate($having)->concatenate($select)->concatenate($limit)->concatenate($offset);,
+        let windows = walk($q.windows, $accumulator, $extras);
+        $from->concatenate($where)->concatenate($groupBy)->concatenate($having)->concatenate($select)->concatenate($limit)->concatenate($offset)->concatenate($windows);,
     s:Select[1] | walk($s.selectItems, $accumulator, $extras);,
     s:SingleColumn[1] |  walk($s.expression, $accumulator, $extras),
     s:SortItem[1] | walk($s.sortKey, $accumulator, $extras),
@@ -3869,12 +4176,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let w2 = walk($f.arguments, $f.filter, $accumulator, $extras);
       $w1->concatenate($w2);,
     i:InListExpression[1] | walk($i.values, $accumulator, $extras),
+    //a subquery operand carries its own column scope, so it is opaque here - callers such as
+    //checkReferencedColumnsAreValid only reason about the current query
+    i:InPredicate[1] | walk($i.value, $i.valueList->filter(v | !$v->instanceOf(SubqueryExpression)), $accumulator, $extras),
     i:IsNotNullPredicate[1] | walk($i.value, $accumulator, $extras),
     i:IsNullPredicate[1] | walk($i.value, $accumulator, $extras),
     l:LikePredicate[1] | walk($l.value, $l.pattern, $l.escape, $accumulator, $extras),
     l:LogicalBinaryExpression[1] | walk($l.left, $l.right, $accumulator, $extras),
     n:NegativeExpression[1] | walk($n.value, $accumulator, $extras),
     n:NotExpression[1] | walk($n.value, $accumulator, $extras),
+    q:QuantifiedComparisonExpression[1] | walk($q.value, $accumulator, $extras),
     s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->walk($accumulator, $extras),
     s:SearchedCaseExpression[1] | $s.whenClauses->map(w | walk($w.operand, $w.result, $accumulator, $extras))->concatenate(walk($s.defaultValue, $accumulator, $extras)),
     s:SubqueryExpression[1] | walk($s.query, $accumulator, $extras),
@@ -4057,6 +4368,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 {
   id: Integer[1];
   contexts: SqlTransformContext[*];
+  windows: NamedWindow[*];
   withQueries: WithQueryContext[*];
   withSupported: Boolean[1] = false; //currently only enable for dynamic source use case as plan generation is incorrect for normal sources
   root:Boolean[1];
@@ -4078,6 +4390,9 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   failOnInvalidColumns: Boolean[1] = false;
   compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1];
   lateralOuterAliases: Pair<String, VariableExpression>[*];
+  aliasColumns:String[*];
+  //renamed inside a correlated subquery so its rows do not shadow the enclosing row variable
+  rowVarName: String[1] = 'x';
 
   scopeVariable(name:String[1]) {
     let value = $this.scopeVariables->get($name);
@@ -4244,6 +4559,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
   doCastNonPrimitiveColumnAccessor: Boolean[1];
   type: Type[0..1];
   relation:Boolean[1];
+  functionCallStack: FunctionCall[*];
 
   var() {
     assert($this.defaultVar->isNotEmpty(), | 'no var present');
@@ -4255,6 +4571,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
     let var = if ($name.parts->size() == 2, | $this.varMap->get($name.parts->first()->toOne()), | []);
     if ($var->isEmpty(), | $this.var, | $var->toOne());
   }:VariableExpression[1];
+
+  parentFunctionCall()
+  {
+    $this.functionCallStack->first();
+  }:FunctionCall[0..1];
 }
 
 Class meta::external::query::sql::transformation::queryToPure::QueryColumn extends TDSColumn
@@ -4312,7 +4633,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   let col = ^meta::pure::metamodel::relation::Column<Nil,Any|*>(name = $name, nameWildCard = false);
   let gt = ^GenericType(rawType = meta::pure::metamodel::relation::Column, typeArguments = [ ^GenericType(rawType = Nil), ^GenericType(rawType = $type)], multiplicityArguments = $multiplicity);
-  ^$col(classifierGenericType = $gt);  
+  ^$col(classifierGenericType = $gt);
 }
 
 
@@ -4346,25 +4667,31 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     let distinct = $columns->removeDuplicates();
 
     if ($relation,
-      | 
+      |
         let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
         let relationType = buildRelationType($distinct->map(d | $relationColumns->get($d).values));
+
         sfe(select_Relation_1__ColSpecArray_1__Relation_1_, $relationType, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $distinct))]);,
       | sfe(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, [$func, iv($distinct)]));
   }:ValueSpecification[1];
 
-  concatenate(
+  union(
     left: ValueSpecification[1],
     right: ValueSpecification[1],
+    distinct: Boolean[1],
     relation: Boolean[1],
     context:SqlTransformContext[1]
   ){
 
     let args = [$left, $right];
 
-    if ($relation,
-      | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
-      | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args));
+    if ($distinct,
+      | if ($relation,
+          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, buildRelationType($context.columns), $args)),
+          | createToOne(sfe(union_T_MANY__T_MANY__T_MANY_, ^GenericType(rawType = TabularDataSet), ^GenericType(rawType = TabularDataSet), $args))),
+      | if ($relation,
+          | sfe(concatenate_Relation_1__Relation_1__Relation_1_, buildRelationType($context.columns), $args),
+          | sfe(concatenate_TabularDataSet_1__TabularDataSet_1__TabularDataSet_1_, $args)));
   }:ValueSpecification[1];
 
   distinct(

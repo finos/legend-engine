@@ -250,6 +250,13 @@ function <<test.Test>> meta::external::function::description::openapi::transform
   assertJsonStringsEqual($expected, $openapi);
 }
 
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testGraphFetchServiceWithoutElementsShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = simpleServiceWithGraphFetch()->serviceToOpenApi(^Server(url='test'), meta::relational::extension::relationalExtensions());
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testGraphFetchOpenApiSpecWithoutElements.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
 function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testServiceWithParamShouldReturnCorrectOpenapiString():Boolean[1]
 {
   let openapi = simpleServiceWithParams()->serviceToOpenApi(packageableElem(), ^Server(url='test'), meta::relational::extension::relationalExtensions());

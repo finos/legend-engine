@@ -14,49 +14,60 @@
 
 name: Docker
 
+# Scans the images we actually publish, rather than rebuilding a stand-in from a
+# Dockerfile. The `snapshot` tag is republished on every master merge, so base
+# image bumps and dependency changes reach this scan without any path triggers.
 on:
   schedule:
     - cron: "0 0 * * 2" # every Tuesday on default/base branch
-  push:
-    branches:
-      - master
-    paths:
-      - "**/Dockerfile"
-  pull_request:
-    paths:
-      - "**/Dockerfile"
   workflow_dispatch: {}
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
-  release:
-    name: Run Image Checks
+  scan:
+    name: Scan Published Images
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - parent: legend-engine-config/legend-engine-server
-            name: legend-engine-server-http-server
-          - parent: legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide
-            name: legend-engine-pure-ide-light-http-server
+        image:
+          - id: engine-server
+            ref: finos/legend-engine-server-http-server:snapshot
+          - id: pure-ide-light
+            ref: finos/legend-engine-pure-ide-light-http-server:snapshot
+          - id: sql-postgres-server
+            ref: finos/legend-engine-xt-sql-postgres-server:snapshot
     steps:
+      # upload-sarif associates the analysis with a commit, so it needs the repo
+      # present even though nothing here is built from source.
       - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Build simplified Docker image for checks
-        # NOTE: if this gets more complicated, consider having this as a bash script
-        run: mkdir -p ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target && touch ./${{ matrix.module.parent }}/${{ matrix.module.name }}/target/${{ matrix.module.name }}-dummy.jar && docker build --quiet --tag local/${{ matrix.module.name }}:${{ github.sha }} ./${{ matrix.module.parent }}/${{ matrix.module.name }}
+        uses: actions/checkout@v6
+
       - name: Scan image for security issues
         uses: aquasecurity/trivy-action@0.34.0
         with:
           # TODO: we should probably also setup misconfiguration scanning
           # See https://github.com/aquasecurity/trivy-action#using-trivy-to-scan-infrastucture-as-code
           scan-type: image
-          image-ref: local/${{ matrix.module.name }}:${{ github.sha }}
-          format: table
-          exit-code: 1
+          image-ref: ${{ matrix.image.ref }}
+          scanners: vuln
+          format: sarif
+          output: trivy-${{ matrix.image.id }}.sarif
           # Ignore unpatched/unfixed vulnerabilities/CVEs
           ignore-unfixed: true
-          severity: CRITICAL
+          severity: CRITICAL,HIGH
+          # Findings are reported to the Security tab rather than failing the
+          # run, so they are triaged alongside Dependabot alerts.
+          exit-code: 0
           # Manually increase timeout as the default 2-minute is not enough
           # See https://github.com/aquasecurity/trivy/issues/802
-          timeout: 10m
+          timeout: 20m
+
+      - name: Upload results to the Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-${{ matrix.image.id }}.sarif
+          category: container-${{ matrix.image.id }}

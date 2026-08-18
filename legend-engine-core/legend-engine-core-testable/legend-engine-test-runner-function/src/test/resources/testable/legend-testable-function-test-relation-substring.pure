@@ -1,0 +1,120 @@
+###Relational
+Database store::TestDB
+(
+  Table PersonTable
+  (
+    id INTEGER PRIMARY KEY,
+    firstName VARCHAR(200)
+  )
+)
+
+
+###Pure
+Class model::Person
+{
+  firstName: String[1];
+}
+
+// 'John'->substring(1, 3) is 'oh' in Pure. Generated without the index correction the SQL reads
+// substring(firstName, 1, 3), which returns 'Joh' - so the asserted value tells the two apart.
+function model::SubstringQuery(): meta::pure::metamodel::relation::Relation<(sliced:String)>[1]
+{
+  model::Person.all()
+    ->project(~[
+        sliced: x | $x.firstName->substring(1, 3)
+     ])
+  ->from(
+    execution::RelationalMapping,
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+        Relational
+        #{
+          default.PersonTable:
+            'id,firstName\n'+
+            '1,John\n';
+        }#;
+    test_1 | SubstringQuery() => (JSON) '[ {\n  "sliced" : "oh"\n} ]';
+  )
+}
+
+// The same expression returning a TabularDataSet is not a relation test, so it runs on H2 without
+// the flag and keeps the historical pass-through indexing. Proves the flag, not constant folding,
+// is what changes the answer above.
+function model::SubstringTdsQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->project(
+    [
+      x | $x.firstName->substring(1, 3)
+    ],
+    [
+      'sliced'
+    ]
+  )->from(
+    execution::RelationalMapping,
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB:
+        Relational
+        #{
+          default.PersonTable:
+            'id,firstName\n'+
+            '1,John\n';
+        }#;
+    test_1 | SubstringTdsQuery() => (JSON) '[ {\n  "sliced" : "Joh"\n} ]';
+  )
+}
+
+###Mapping
+Mapping execution::RelationalMapping
+(
+  *model::Person: Relational
+  {
+    ~primaryKey
+    (
+      [store::TestDB]PersonTable.id
+    )
+    ~mainTable [store::TestDB]PersonTable
+    firstName: [store::TestDB]PersonTable.firstName
+  }
+)
+
+
+###Connection
+RelationalDatabaseConnection model::MyConnection
+{
+  store: store::TestDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'Drop table if exists PersonTable;\nCreate Table PersonTable(id INT, firstName VARCHAR(200));\nInsert into PersonTable (id, firstName) values (1, \'John\');\n\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+
+###Runtime
+Runtime execution::Runtime
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connections:
+  [
+    store::TestDB:
+    [
+      connection_1: model::MyConnection
+    ]
+  ];
+}

@@ -26,7 +26,7 @@ function <<PCT.adapter>> {PCT.adapterName = 'Python - LegendQL'} meta::external:
     | let pythonString = $rev.reverse->toOne();
       let func = getPureLambdaForPythonCodeBlock($pythonString);
       // println($func->meta::pure::router::printer::asString());
-      $func->cast(@Function<{->X[o]}>)->eval();,
+      $func->evaluate([])->toMultiplicity(@[o]);,
     | fail('Should not be supported'); @X->toMultiplicity(@[o]);
       // ('{' + $rev.function + '}')->compileValueSpecification().result->toOne()->cast(@InstanceValue).values->toOne()->cast(@LambdaFunction<{->X[o]}>)->eval()
   );

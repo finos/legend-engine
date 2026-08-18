@@ -34,6 +34,29 @@ function <<test.Test>> meta::external::query::sql::server::schema::testTransform
   assertEquals(^AddressableRelationCollection()->meta::json::toJSON(100), $res->meta::json::toJSON(100));
 }
 
+function <<test.Test>> meta::external::query::sql::server::schema::testTransformColumnPreservesStereotype():Boolean[1]
+{
+    let baseRelType = @(id:Integer)->genericType().rawType->cast(@meta::pure::metamodel::relation::RelationType<Any>)->toOne();
+    let baseCol     = $baseRelType.columns->toOne();
+
+    let annotatedCol = ^$baseCol(
+      stereotypes = meta::pure::profiles::doc->stereotype('deprecated'),
+      taggedValues = ^meta::pure::metamodel::extension::TaggedValue(
+                        tag   = meta::pure::profiles::doc->tag('doc'),
+                        value = 'column documentation'
+                     )
+    );
+    let relType = ^$baseRelType(columns = $annotatedCol);
+
+    let protocolCol = $relType->transformRelationType().columns->toOne();
+
+    assertEquals('meta::pure::profiles::doc', $protocolCol.taggedValues->at(0).tag.profile);
+    assertEquals('doc', $protocolCol.taggedValues->at(0).tag.value);
+    assertEquals('column documentation', $protocolCol.taggedValues->at(0).value);
+
+    assertEquals('meta::pure::profiles::doc', $protocolCol.stereotypes->at(0).profile);
+}
+
 
 ###Relational
 Database meta::external::query::sql::server::schema::TestDB

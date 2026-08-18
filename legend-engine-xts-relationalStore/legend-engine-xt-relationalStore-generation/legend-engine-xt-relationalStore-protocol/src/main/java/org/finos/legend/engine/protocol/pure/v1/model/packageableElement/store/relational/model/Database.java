@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
@@ -28,8 +29,10 @@ public class Database extends Store
     public List<Schema> schemas = Collections.emptyList();
     public List<Join> joins = Collections.emptyList();
     public List<Filter> filters = Collections.emptyList();
+    // deliberately not NON_EMPTY: a database has always serialized `"stereotypes": []`, and clients round trip it
     public List<StereotypePtr> stereotypes = Collections.emptyList();
-    public List<TaggedValue> taggedValues;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<TaggedValue> taggedValues = Collections.emptyList();
     public List<IncludeStore> includedStoreSpecifications;
 
     @Override

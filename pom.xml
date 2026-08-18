@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.135.1-SNAPSHOT</version>
+    <version>4.140.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -118,7 +118,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.89.2</legend.pure.version>
+        <legend.pure.version>5.94.0</legend.pure.version>
         <legend.shared.version>0.35.4</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
@@ -146,12 +146,12 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12),[17,18)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1784315238</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1786968217</project.build.outputTimestamp>
         <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
         <!-- Databases -->
-        <databricks.version>3.1.1</databricks.version>
+        <databricks.version>3.4.1</databricks.version>
         <hikaricp.version>7.0.2</hikaricp.version>
         <h2.version>2.1.214</h2.version>
         <mariadb.version>3.0.6</mariadb.version>
@@ -248,6 +248,8 @@
         <maven.plugin.plugin.version>3.9.0</maven.plugin.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
+        <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
+        <maven.extra.enforcer.rules.version>1.12.0</maven.extra.enforcer.rules.version>
         <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
@@ -350,6 +352,13 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>${maven.enforcer.plugin.version}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.mojo</groupId>
+                            <artifactId>extra-enforcer-rules</artifactId>
+                            <version>${maven.extra.enforcer.rules.version}</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -532,7 +541,107 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>extra-enforcer-rules</artifactId>
+                        <version>${maven.extra.enforcer.rules.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
+                    <execution>
+                        <id>enforce-bytecode-version</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <enforceBytecodeVersion>
+                                    <maxJdkVersion>1.8</maxJdkVersion>
+                                    <excludes>
+<!--                                        <exclude>io.deephaven:deephaven-proto-backplane-grpc-flight</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-java-client-session</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-jpy-config</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-Stats</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-Container</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-context</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-chunk</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-extensions-source-support</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-plugin</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-TableLogger</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-util-processenvironment</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-ssl-kickstart</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-SevenZip</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-updategraph</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-DHProcess</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-api</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-codec-cache</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-java-client-barrage</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-Util</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-base</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-stringset</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-ssl-config</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-table</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-authentication</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-qst-type</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-Configuration</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-tuplesource</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-extensions-csv</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-proto-backplane-grpc</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-DataStructures</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-util-thread</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-util-pool</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-IO</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-log-to-slf4j</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-tuple</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-time</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-vector</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-extensions-barrage</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-rowset</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-qst</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-Base</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-util-function</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-primitive</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-uri</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-clock</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-hotspot</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-jpy-ext</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-log-factory</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-engine-function</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-java-client-flight</exclude>-->
+<!--                                        <exclude>io.deephaven:deephaven-table-api</exclude>-->
+                                        <exclude>io.deephaven:*</exclude>
+
+<!--                                        <exclude>org.apache.arrow:arrow-jdbc</exclude>-->
+<!--                                        <exclude>org.apache.arrow:flight-core</exclude>-->
+<!--                                        <exclude>org.apache.arrow:arrow-format</exclude>-->
+<!--                                        <exclude>org.apache.arrow:arrow-vector</exclude>-->
+<!--                                        <exclude>org.apache.arrow:arrow-memory-core</exclude>-->
+<!--                                        <exclude>org.apache.arrow:arrow-memory-netty</exclude>-->
+<!--                                        <exclude>org.apache.arrow:arrow-memory-netty-buffer-patch</exclude>-->
+                                        <exclude>org.apache.arrow:*</exclude>
+
+                                        <exclude>de.bwaldvogel:mongo-java-server-memory-backend</exclude>
+                                        <exclude>de.bwaldvogel:mongo-java-server-core</exclude>
+
+                                        <exclude>org.commonmark:commonmark</exclude>
+                                        <exclude>org.commonmark:commonmark-ext-gfm-tables</exclude>
+
+                                        <exclude>org.eclipse.jetty:jetty-alpn-java-server</exclude>
+                                        <exclude>org.eclipse.jetty:jetty-alpn-java-client</exclude>
+
+                                        <exclude>com.zaxxer:HikariCP</exclude>
+                                        <exclude>org.threeten:threeten-extra</exclude>
+                                        <exclude>org.jline:jline</exclude>
+                                        <exclude>com.databricks:databricks-jdbc</exclude>
+                                        <exclude>org.mongodb:bson-record-codec</exclude>
+                                        <exclude>com.oracle.database.jdbc:ojdbc11</exclude>
+                                    </excludes>
+                                </enforceBytecodeVersion>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>default</id>
                         <goals>
@@ -2838,6 +2947,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-dataquality-pure-test</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-dataquality-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-dataquality-test-runner</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

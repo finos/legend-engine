@@ -110,12 +110,12 @@ public class OpenTelemetryUtil
 
     public static Tracer getTracer()
     {
-        return OPEN_TELEMETRY.getTracer(LEGEND_ENGINE_XTS_SQL);
+        return GlobalOpenTelemetry.getTracer(LEGEND_ENGINE_XTS_SQL);
     }
 
     public static TextMapPropagator getPropagators()
     {
-        return OPEN_TELEMETRY.getPropagators().getTextMapPropagator();
+        return GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
     }
 
 }

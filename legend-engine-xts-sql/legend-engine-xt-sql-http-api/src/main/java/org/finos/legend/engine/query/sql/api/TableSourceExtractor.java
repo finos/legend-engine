@@ -51,7 +51,7 @@ public class TableSourceExtractor extends BaseNodeCollectorVisitor<Set<TableSour
     {
         if (val.name.parts.size() != 2)
         {
-            throw new IllegalArgumentException("All table names are expected to have 2 parts, <schema>.<name>");
+            return Sets.mutable.empty();
         }
         return Sets.mutable.of(new TableSource(val.name.parts.get(0), Lists.mutable.of(new TableSourceArgument(null, 0, val.name.parts.get(1)))));
     }

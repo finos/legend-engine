@@ -29,11 +29,17 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
   ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::RegexpLike
   (
     name = 'regexp_like',
-    documentation = 'Returns a full string regex match.',
+    documentation = 'Returns whether the pattern occurs anywhere in the string, as in PostgreSQL.',
     variations = [
       ^SqlFunctionVariation
       (
         parameterTypes = [AbstractStringSqlType, AbstractStringSqlType],
+        returnType = BooleanSqlType
+      ),
+      // The third argument carries the RegexpParameter flags, emitted as an inline pattern prefix.
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType, AbstractStringSqlType],
         returnType = BooleanSqlType
       )
     ],
@@ -44,6 +50,10 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       ),
       sqlFunctionTest(
         simpleFunctionCall('regexp_like', [literal('abcd'), literal('bc')]),
+        true
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('regexp_like', [literal('abcd'), literal('zz')]),
         false
       )
     ]

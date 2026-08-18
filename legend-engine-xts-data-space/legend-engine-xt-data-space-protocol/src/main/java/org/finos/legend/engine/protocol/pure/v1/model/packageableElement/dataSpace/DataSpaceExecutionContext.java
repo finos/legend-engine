@@ -26,5 +26,7 @@ public class DataSpaceExecutionContext
     public PackageableElementPointer mapping;
     public PackageableElementPointer defaultRuntime;
     public DataElementReference testData;
+    // TODO: see if we can remove mapping after deserializing mapping to mappingProvider. Check clients taking in dataspaces
+    public DataSpaceMappingProvider mappingProvider;
     public SourceInformation sourceInformation;
 }

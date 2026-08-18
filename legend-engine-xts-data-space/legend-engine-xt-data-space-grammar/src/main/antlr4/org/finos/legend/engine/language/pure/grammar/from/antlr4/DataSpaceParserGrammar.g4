@@ -19,6 +19,7 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_EXECUTION_CONTEXTS
                                     | DATA_SPACE_DEFAULT_EXECUTION_CONTEXT
                                     | DATA_SPACE_MAPPING
+                                    | DATA_SPACE_MAPPING_PROVIDER
                                     | DATA_SPACE_DEFAULT_RUNTIME
                                     | DATA_SPACE_TEST_DATA
                                     | DATA_SPACE_DIAGRAMS
@@ -51,7 +52,7 @@ identifier:                         VALID_STRING | STRING
 definition:                         (dataSpaceElement)*
                                     EOF
 ;
-dataSpaceElement:                   DATA_SPACE stereotypes? taggedValues? qualifiedName
+dataSpaceElement:                   documentation? DATA_SPACE stereotypes? taggedValues? qualifiedName
                                         BRACE_OPEN
                                             (
                                                 executionContexts
@@ -84,6 +85,7 @@ executionContext:                   BRACE_OPEN
                                             | executionContextTitle
                                             | executionContextDescription
                                             | executionContextMapping
+                                            | executionContextMappingProvider
                                             | executionContextDefaultRuntime
                                             | executionContextTestData
                                         )*
@@ -96,6 +98,8 @@ executionContextTitle:              DATA_SPACE__TITLE COLON STRING SEMI_COLON
 executionContextDescription:        DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
 ;
 executionContextMapping:            DATA_SPACE_MAPPING COLON qualifiedName SEMI_COLON
+;
+executionContextMappingProvider:    DATA_SPACE_MAPPING_PROVIDER COLON qualifiedName (DOT identifier (COMMA identifier)*)? SEMI_COLON
 ;
 executionContextTestData:           DATA_SPACE_TEST_DATA COLON embeddedData SEMI_COLON
 ;

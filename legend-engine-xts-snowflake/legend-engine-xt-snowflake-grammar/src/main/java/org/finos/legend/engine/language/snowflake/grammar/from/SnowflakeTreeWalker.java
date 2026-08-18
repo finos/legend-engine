@@ -76,7 +76,10 @@ public class SnowflakeTreeWalker
         snowflakeApp._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         snowflakeApp.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         snowflakeApp.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        snowflakeApp.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        snowflakeApp.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
 
         SnowflakeParserGrammar.ApplicationNameContext applicationNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.applicationName(), "applicationName", snowflakeApp.sourceInformation);
         snowflakeApp.applicationName = PureGrammarParserUtility.fromGrammarString(applicationNameContext.STRING().getText(), true);
@@ -134,7 +137,10 @@ public class SnowflakeTreeWalker
         SnowflakeM2MUdf._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         SnowflakeM2MUdf.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         SnowflakeM2MUdf.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        SnowflakeM2MUdf.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        SnowflakeM2MUdf.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                ctx.documentation() == null ? null : ctx.documentation().STRING().getSymbol(),
+                ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues()),
+                this.walkerSourceInformation);
 
         SnowflakeParserGrammar.UdfNameContext udfNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.udfName(), "udfName", SnowflakeM2MUdf.sourceInformation);
         SnowflakeM2MUdf.udfName = PureGrammarParserUtility.fromGrammarString(udfNameContext.STRING().getText(), true);
@@ -176,7 +182,7 @@ public class SnowflakeTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);

@@ -1,0 +1,42 @@
+name: service-shared-test-data
+title: "One Data Element Feeding Two Services' Test Suites"
+description: |
+  Two services over the same relational mapping — a full listing and a filtered
+  lookup — whose test suites both prime their connection from a single
+  `demo::data::PersonData` element via `Reference #{ ... }#` rather than
+  restating the rows inline. The point is the sharing: one edit to the Data
+  element must move both services' expectations, so the model is a regression
+  for `Data`-element resolution through `EmbeddedDataCompilerHelper` on the
+  service-test path, not merely for a service having test data at all.
+
+modelSources:
+  model:
+    root: service-shared-test-data
+    files:
+      - data/personData.pure
+      - runtime/personRuntime.pure
+      - service/personServices.pure
+  dependencies:
+    - source: service-shared-domain.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:shared-test-data
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - shared-test-data
+  - data-element
+  - h2
+  - service-test
+  - shared-domain

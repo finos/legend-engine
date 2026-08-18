@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::metamodel::relation::*;
+import meta::external::dataquality::*;
+import meta::external::dataquality::datarecon::*;
+
+function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
+  element: PackageableElement[1],
+  compiler: Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
+): RelationType<Any>[1]
+{
+  let lambda = $element->match([
+    v: DataQualityRelationValidation[1] | generateDataqualityRelationValidationLambda($v, [], [], false, false, true, false),
+    c: DataQualityRelationComparison[1] | let reconInput = createReconInput(
+                                            $c.source,
+                                            $c.target,
+                                            $c.keys,
+                                            meta::external::dataquality::lambdaRelationType::aggregatedHashOf($c.strategy),
+                                            $c.columnsToCompare,
+                                            meta::external::dataquality::lambdaRelationType::sourceHashColumnOf($c.strategy),
+                                            meta::external::dataquality::lambdaRelationType::targetHashColumnOf($c.strategy),
+                                            true
+                                          );
+                                          getDataReconLambda($reconInput, $compiler);,
+    e: PackageableElement[1]            | fail('Unsupported DataQuality element for relation type: ' + $e->elementToPath())->cast(@LambdaFunction<Any>);
+  ]);
+  $lambda.expressionSequence->last()->evaluateAndDeactivate().genericType.typeArguments.rawType->toOne()->cast(@RelationType<Any>);
+}
+
+// Strategy field extractors — mirror the Java helpers previously in DataQualityExecute.
+function <<access.private>> meta::external::dataquality::lambdaRelationType::aggregatedHashOf(strategy: ReconStrategy[1]): Boolean[1]
+{
+  $strategy->match([
+    m: MD5HashStrategy[1] | $m.aggregatedHash,
+    s: ReconStrategy[1]   | false
+  ]);
+}
+
+function <<access.private>> meta::external::dataquality::lambdaRelationType::sourceHashColumnOf(strategy: ReconStrategy[1]): String[0..1]
+{
+  $strategy->match([
+    m: MD5HashStrategy[1] | $m.sourceHashColumn,
+    s: ReconStrategy[1]   | []
+  ]);
+}
+
+function <<access.private>> meta::external::dataquality::lambdaRelationType::targetHashColumnOf(strategy: ReconStrategy[1]): String[0..1]
+{
+  $strategy->match([
+    m: MD5HashStrategy[1] | $m.targetHashColumn,
+    s: ReconStrategy[1]   | []
+  ]);
+}

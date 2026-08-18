@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-pure</artifactId>
-        <version>4.135.1-SNAPSHOT</version>
+        <version>4.140.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-scenario-quant-pure</artifactId>
@@ -96,35 +96,6 @@
                             <goal>generate-pct-functions</goal>
                         </goals>
                     </execution>
-                </executions>
-                <configuration>
-                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
-                    <scopeProviderMethod>
-                        org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions
-                    </scopeProviderMethod>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m3-precisePrimitives</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-maven-generation-pct</artifactId>
-                <executions>
                     <execution>
                         <id>PCT-Generation-Compiled</id>
                         <phase>process-test-classes</phase>
@@ -158,6 +129,12 @@
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <targetDir>${project.build.directory}/classes/pct-reports/</targetDir>
+                    <scopeProviderMethod>
+                        org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryProvider.scenario_Quant_Functions
+                    </scopeProviderMethod>
+                </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
@@ -179,6 +156,21 @@
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-standard</artifactId>
                         <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-functions-relation-pure</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m3-precisePrimitives</artifactId>
+                        <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

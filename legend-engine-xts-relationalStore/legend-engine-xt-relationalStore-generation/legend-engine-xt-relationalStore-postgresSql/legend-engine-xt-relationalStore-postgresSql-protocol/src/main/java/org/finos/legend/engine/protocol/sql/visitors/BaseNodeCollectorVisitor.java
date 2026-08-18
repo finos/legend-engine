@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.sql.metamodel.Cast;
 import org.finos.legend.engine.protocol.sql.metamodel.CollectionColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.ColumnType;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentUser;
+import org.finos.legend.engine.protocol.sql.metamodel.Except;
+import org.finos.legend.engine.protocol.sql.metamodel.Intersect;
 import org.finos.legend.engine.protocol.sql.metamodel.JSONExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.LateralRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryWithScope;
@@ -41,6 +43,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.With;
 import org.finos.legend.engine.protocol.sql.metamodel.ComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.CurrentTime;
 import org.finos.legend.engine.protocol.sql.metamodel.DoubleLiteral;
+import org.finos.legend.engine.protocol.sql.metamodel.ExistsPredicate;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Extract;
 import org.finos.legend.engine.protocol.sql.metamodel.FrameBound;
@@ -58,6 +61,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.Literal;
 import org.finos.legend.engine.protocol.sql.metamodel.LogicalBinaryExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.LongLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.NamedArgumentExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.NamedWindow;
 import org.finos.legend.engine.protocol.sql.metamodel.NegativeExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
@@ -66,6 +70,7 @@ import org.finos.legend.engine.protocol.sql.metamodel.NullLiteral;
 import org.finos.legend.engine.protocol.sql.metamodel.ParameterPlaceholderExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.PositionalParameterExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedNameReference;
+import org.finos.legend.engine.protocol.sql.metamodel.QuantifiedComparisonExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
 import org.finos.legend.engine.protocol.sql.metamodel.QuerySpecification;
@@ -243,6 +248,24 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     }
 
     @Override
+    public T visit(Except val)
+    {
+        return visit((SetOperation) val);
+    }
+
+    @Override
+    public T visit(ExistsPredicate val)
+    {
+        return collect(val.query);
+    }
+
+    @Override
+    public T visit(QuantifiedComparisonExpression val)
+    {
+        return collect(val.value, val.subQuery);
+    }
+
+    @Override
     public T visit(Expression val)
     {
         return collect(val);
@@ -294,6 +317,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     public T visit(IntegerLiteral val)
     {
         return defaultValue();
+    }
+
+    @Override
+    public T visit(Intersect val)
+    {
+        return visit((SetOperation) val);
     }
 
     @Override
@@ -363,6 +392,12 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     }
 
     @Override
+    public T visit(NamedWindow val)
+    {
+        return collect(val.window);
+    }
+
+    @Override
     public T visit(NegativeExpression val)
     {
         return collect(val.value);
@@ -428,8 +463,9 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
         T having = collect(val.having);
         T select = collect(val.select);
         T where = collect(val.where);
+        T windows = collect(val.windows);
 
-        return collate(from, limit, order, offset, group, having, select, where);
+        return collate(from, limit, order, offset, group, having, select, where, windows);
     }
 
     @Override
@@ -462,7 +498,10 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(SetOperation val)
     {
-        return collect(val);
+        T order = collect(val.orderBy);
+        T rest = collect(val.left, val.right, val.limit, val.offset);
+
+        return collate(order, rest);
     }
 
     @Override
@@ -546,7 +585,7 @@ public class BaseNodeCollectorVisitor<T> implements NodeVisitor<T>
     @Override
     public T visit(Union val)
     {
-        return collect(val.left, val.right);
+        return visit((SetOperation) val);
     }
 
     @Override

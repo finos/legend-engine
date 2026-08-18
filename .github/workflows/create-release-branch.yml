@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
     inputs:
       releaseVersion:
-        description: "Release version (used to create branch legend-release-<version>)"
+        description: "Release version (used to create branch release-legend-release-<version>)"
         required: true
       gitRef:
         description: "Git ref to branch from (commit hash, tag, or branch). Defaults to head of master if not provided."
@@ -29,6 +29,14 @@ jobs:
   create-branch:
     name: Create Release Branch
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    # Defined once here so the branch that gets pushed and the backport label
+    # that names it can never drift apart. Mapping the input through env also
+    # keeps it out of the shell command lines below.
+    env:
+      BRANCH_NAME: release-legend-release-${{ github.event.inputs.releaseVersion }}
     steps:
       - name: Determine base ref
         id: base
@@ -49,8 +57,20 @@ jobs:
 
       - name: Create and push release branch
         run: |
-          BRANCH_NAME="legend-release-${{ github.event.inputs.releaseVersion }}"
           echo "Creating branch: ${BRANCH_NAME}"
           git checkout -b "${BRANCH_NAME}"
           git push origin "${BRANCH_NAME}"
           echo "Successfully created and pushed branch: ${BRANCH_NAME}"
+
+      - name: Create backport label
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LABEL_NAME="backport ${BRANCH_NAME}"
+          echo "Creating label: ${LABEL_NAME}"
+          gh label create "${LABEL_NAME}" \
+            --repo "${{ github.repository }}" \
+            --color "0E8A16" \
+            --description "Apply to a PR to auto-open a backport PR against ${BRANCH_NAME} when merged" \
+            --force \
+            || echo "::warning::Could not create label '${LABEL_NAME}' - create it manually with: gh label create '${LABEL_NAME}'"

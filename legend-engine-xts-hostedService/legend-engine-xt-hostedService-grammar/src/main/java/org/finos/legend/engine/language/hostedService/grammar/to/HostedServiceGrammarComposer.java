@@ -34,7 +34,7 @@ import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import java.util.Collections;
 import java.util.List;
 
-import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderDeclarationPrefix;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -82,7 +82,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
-        return "HostedService " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
+        return renderDeclarationPrefix("HostedService", app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
                 "   pattern : " + PureGrammarComposerUtility.convertString(app.pattern, true) + ";\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +

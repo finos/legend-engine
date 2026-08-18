@@ -38,7 +38,8 @@
         "legend-engine-xt-sql-pure",
         "legend-engine-xt-sql-http-api",
         "legend-engine-xt-sql-reversePCT",  
-        "legend-engine-xt-sql-postgres-server"        
+        "legend-engine-xt-sql-postgres-server",
+        "legend-engine-xt-sql-e2e-tests"
       ]
     },
     {

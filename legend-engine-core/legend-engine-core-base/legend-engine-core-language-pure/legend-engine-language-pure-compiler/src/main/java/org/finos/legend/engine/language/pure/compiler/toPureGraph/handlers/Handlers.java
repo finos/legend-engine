@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.ImmutableSet;
@@ -213,6 +214,44 @@ public class Handlers
             aggInference(parameters.get(2), gt, mapOffset, aggOffset, valueSpecificationBuilder);
         }
     }
+
+    // Shared by in() and the quantified comparisons, which all take (value, Relation<Z=(?:U)>): the single-column
+    // and matching-type constraints are not expressible in the signature, so they are checked here.
+    public static final Function<String, ParametersInference> SingleColumnRelationInference = functionName -> (parameters, valueSpecificationBuilder) ->
+    {
+        List<ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
+        GenericType gt = processed.get(1)._genericType();
+
+        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            GenericType relationType = gt._typeArguments().getOnly();
+            if (relationType._rawType() instanceof RelationType)
+            {
+                RelationType<?> type = (RelationType<?>) relationType._rawType();
+                ProcessorSupport processorSupport = valueSpecificationBuilder.getContext().pureModel.getExecutionSupport().getProcessorSupport();
+                if (type._columns().size() != 1)
+                {
+                    throw new EngineException(functionName + "(..., Relation) expects a relation with a single column, got " + _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
+                }
+                GenericType columnType = _Column.getColumnType(type._columns().getOnly());
+                if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(processed.get(0)._genericType(), columnType, processorSupport))
+                {
+                    throw new EngineException(functionName + "(..., Relation) expects the value and the relation column to be of the same type, got " +
+                            org.finos.legend.pure.m3.navigation.generictype.GenericType.print(processed.get(0)._genericType(), processorSupport) + " and " +
+                            _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
+                }
+            }
+        }
+        return processed;
+    };
+
+    public static final ParametersInference InInference = SingleColumnRelationInference.apply("in");
+
+    // There is no notEqualAny / notEqualAll: !equalAll is the one and !equalAny is the other, by De Morgan.
+    public static final ImmutableList<String> QUANTIFIED_COMPARISONS = Lists.immutable.of(
+            "equalAny", "equalAll",
+            "greaterThanAny", "greaterThanAll", "greaterThanEqualAny", "greaterThanEqualAll",
+            "lessThanAny", "lessThanAll", "lessThanEqualAny", "lessThanEqualAll");
 
     public static final Function<String, ParametersInference> RelationOlapAggregator = colSpecType -> (parameters, valueSpecificationBuilder) ->
     {
@@ -978,7 +1017,16 @@ public class Handlers
 
     public static final ParametersInference SortByInference = LambdaInference;
     public static final ParametersInference MapInference = LambdaInference;
-    public static final ParametersInference ExistsInference = LambdaInference;
+    // A Relation lambda receives one row -- the RelationType -- rather than the Relation itself, so the
+    // Relation overload of exists needs the same unwrapping filter does; see FilterInference.
+    public static final ParametersInference ExistsInference = (parameters, valueSpecificationBuilder) ->
+    {
+        List<ValueSpecification> firstPassProcessed = parameters.stream().map(p -> p instanceof LambdaFunction ? null : p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
+        GenericType gt = firstPassProcessed.get(0)._genericType();
+        boolean isRelation = valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName());
+        updateSimpleLambda(parameters.get(1), isRelation ? gt._typeArguments().getFirst() : gt, new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
+        return ListIterate.zip(firstPassProcessed, parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(valueSpecificationBuilder));
+    };
     public static final ParametersInference ForAllInference = LambdaInference;
     public static final ParametersInference RemoveDuplicatesByInference = LambdaInference;
     public static final ParametersInference FoldInference = TwoParameterLambdaInferenceDiffTypes;
@@ -1425,7 +1473,10 @@ public class Handlers
                 )
         );
 
-        register(grp(ExistsInference, h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", "exists", true, ps -> res("Boolean", "one"), ps -> true)));
+        register(grp(ExistsInference,
+                // The Relation overload must be tried first: a Relation[1] also satisfies the collection overload's T[*] parameter.
+                h("meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_", "exists", false, ps -> res("Boolean", "one"), ps -> typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                h("meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_", "exists", true, ps -> res("Boolean", "one"), ps -> true)));
 
         register(grp(ForAllInference, h("meta::pure::functions::collection::forAll_T_MANY__Function_1__Boolean_1_", "forAll", true, ps -> res("Boolean", "one"), ps -> true)));
 
@@ -1520,8 +1571,27 @@ public class Handlers
 
         register("meta::pure::functions::collection::objectReferenceIn_Any_1__String_MANY__Boolean_1_", "objectReferenceIn", false, ps -> res("Boolean", "one"));
 
-        register(h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity())));
+        // The Relation overload must be tried first: a Relation[1] also satisfies the collection overloads' Any[*] parameter.
+        // U and Z cannot be inferred from the arguments -- Z is constrained as Relation<Z=(?:U)> -- so resolve them
+        // explicitly, in declaration order, the way eval and flatten do for their wildcard-column ColSpecs.
+        register(grp(InInference,
+                h("meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_", "in", false,
+                        ps -> res("Boolean", "one"),
+                        ps -> Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()),
+                        ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity()))));
+
+        // The quantified comparisons share in()'s signature, so they need the same explicit type arguments. None of
+        // them names a collection overload, so each registers on its own rather than in an ordered group.
+        for (String quantified : QUANTIFIED_COMPARISONS)
+        {
+            register(grp(SingleColumnRelationInference.apply(quantified),
+                    h("meta::pure::functions::relation::" + quantified + "_U_$0_1$__Relation_1__Boolean_1_", quantified, false,
+                            ps -> res("Boolean", "one"),
+                            ps -> Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()),
+                            ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
+        }
 
         register(h("meta::pure::functions::boolean::xor_Boolean_1__Boolean_1__Boolean_1_", "xor", false, ps -> res("Boolean", "one"), ps -> ps.size() == 2));
 
@@ -2409,6 +2479,8 @@ public class Handlers
         register("meta::pure::functions::string::reverseString_String_1__String_1_", "reverseString", true, ps -> res("String", "one"));
         register("meta::pure::functions::string::split_String_1__String_1__String_MANY_", "split", true, ps -> res("String", "zeroMany"));
         register("meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_", "splitPart", false, ps -> res("String", "zeroOne"));
+        register(m(m(h("meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_", "substr", false, ps -> res("String", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::substr_String_1__Integer_1__String_1_", "substr", false, ps -> res("String", "one"), ps -> true))));
         register(m(m(h("meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> ps.size() == 3)),
                 m(h("meta::pure::functions::string::substring_String_1__Integer_1__String_1_", "substring", true, ps -> res("String", "one"), ps -> true))));
         register("meta::pure::functions::string::toLower_String_1__String_1_", "toLower", true, ps -> res("String", "one"));
@@ -2692,6 +2764,7 @@ public class Handlers
         register("meta::pure::functions::math::pow_Number_1__Number_1__Number_1_", "pow", true, ps -> res("Number", "one"));
         register("meta::pure::functions::math::rem_Number_1__Number_1__Number_1_", "rem", true, ps -> res("Number", "one"));
         register("meta::pure::functions::math::sqrt_Number_1__Float_1_", "sqrt", true, ps -> res("Float", "one"));
+        register("meta::pure::functions::math::binFloor_Integer_1__Integer_1__Integer_1_", "binFloor", false, ps -> res("Integer", "one"));
 
         register(m(
                     m(

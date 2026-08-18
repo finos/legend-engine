@@ -2161,6 +2161,116 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "}\n");
     }
 
+    // ------------- serviceTestData (DataResolver, flat paren form) roundtrips -------------
+
+    @Test
+    public void testServiceTestSuiteFlatWithReferenceOnly()
+    {
+        // Reference-only DataResolver: `my::path;`
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::Person.all()->project(~[name:p|$p.name]);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      my::pkg::MyDataElement;\n" +
+                "      test_1 =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteFlatWithBaseResolverAndRelationAssertion()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |demo::Person.all()->project(~[name:p|$p.name]);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1 'Happy path'\n" +
+                "    (\n" +
+                "      store::MyDatabase:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.PERSON_TABLE:\n" +
+                "              ID, NAME\n" +
+                "              1 , Alice\n" +
+                "              2 , Bob;\n" +
+                "        }#;\n" +
+                "      test_1 'basic query' =>\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          Name\n" +
+                "          Alice\n" +
+                "          Bob;\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteFlatWithParamsAndKeys()
+    {
+        test("###Service\n" +
+                "Service meta::pure::myServiceSingle\n" +
+                "{\n" +
+                "  pattern: '/url/myUrl/';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: nameFilter: String[1]|demo::Person.all()->filter(p|$p.name->startsWith($nameFilter))->project(~[name:p|$p.name]);\n" +
+                "    mapping: meta::myMapping;\n" +
+                "    runtime: meta::myRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      store::MyDatabase:\n" +
+                "        Relation\n" +
+                "        #{\n" +
+                "          default.PERSON_TABLE:\n" +
+                "              ID, NAME\n" +
+                "              1 , Alice;\n" +
+                "        }#;\n" +
+                "      test_prefix_A (nameFilter = 'A%') ['prod', 'qa'] : PURE_TDSOBJECT =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[{\"Name\":\"Alice\"}]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
 
     private void testComposedGrammarWithoutSectionIndex(String code, boolean omitSectionIndex)
     {

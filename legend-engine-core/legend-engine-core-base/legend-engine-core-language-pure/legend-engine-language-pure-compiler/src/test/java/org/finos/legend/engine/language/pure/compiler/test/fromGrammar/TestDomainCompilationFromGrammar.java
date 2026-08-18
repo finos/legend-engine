@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.Milestoning;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.TaggedValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
@@ -1552,6 +1553,62 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "   names : String[0..1];\n" +
                 "   prop() {$this.names + 'ok'} : String[1];\n" +
                 "}", "COMPILATION error at [4:18-22]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop, Applying plus], multiplicity:[0..1]");
+    }
+
+    @Test
+    public void testSingleElementCollectionLiteralAcceptsOptional()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   many : String[*];\n" +
+                "   prop() { concatenate([$this.optional], $this.many) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionLiteralAcceptsMany()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   many1 : String[*];\n" +
+                "   many2 : String[*];\n" +
+                "   prop() { concatenate([$this.many1], $this.many2) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionInIfBranches()
+    {
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   prop(cond:Boolean[1]) { if($cond, | [$this.optional], | []) } : String[*];\n" +
+                "}");
+    }
+
+    @Test
+    public void testSingleElementCollectionInConstructorManySlot()
+    {
+
+        test("Class test::Foo { xs : String[*]; }\n" +
+                "function test::mkFoo(opt:String[0..1]):test::Foo[1]\n" +
+                "{\n" +
+                "   ^test::Foo(xs = [$opt])\n" +
+                "}");
+    }
+
+    @Test
+    public void testMultiElementCollectionStillRejectsNonOne()
+    {
+
+        test("Class test::A\n" +
+                "{\n" +
+                "   optional : String[0..1];\n" +
+                "   prop() { [$this.optional, 'x'] } : String[*];\n" +
+                "}", "COMPILATION error at [4:20-27]: Collection element must have a multiplicity [1] - Context:[Class 'test::A' Third Pass, Qualified Property prop], multiplicity:[0..1]");
     }
 
     @Test
@@ -3225,5 +3282,47 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                         "\t\tabs(Integer[1]):Integer[1]\n" +
                         "\t\tabs(Decimal[1]):Decimal[1]\n" +
                         "\t\tabs(Number[1]):Number[1]");
+    }
+
+    @Test
+    public void testDocumentationCompilesToTheDocTag()
+    {
+        // documentation is sugar for the doc tagged value, so the compiled graph cannot tell the two apart -
+        // both classes below must end up pointing at the very same Tag instance with the very same value
+        PureModel model = test("'''\n" +
+                "Documented with a documentation literal.\n" +
+                "'''\n" +
+                "Class model::Sugared\n" +
+                "{\n" +
+                "  '''\n" +
+                "  Given name.\n" +
+                "  '''\n" +
+                "  firstName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class {meta::pure::profiles::doc.doc = 'Documented with a documentation literal.'} model::Explicit\n" +
+                "{\n" +
+                "}\n").getTwo();
+
+        TaggedValue sugaredTag = model.getClass("model::Sugared")._taggedValues().toList().get(0);
+        TaggedValue explicitTag = model.getClass("model::Explicit")._taggedValues().toList().get(0);
+        Assert.assertEquals("doc", sugaredTag._tag()._value());
+        Assert.assertSame(explicitTag._tag(), sugaredTag._tag());
+        Assert.assertEquals(explicitTag._value(), sugaredTag._value());
+
+        Property<?, ?> firstName = (Property<?, ?>) model.getClass("model::Sugared")._properties().toList().get(0);
+        Assert.assertEquals("Given name.", firstName._taggedValues().toList().get(0)._value());
+    }
+
+    @Test
+    public void testDocumentationConflictsWithAnExplicitDocTag()
+    {
+        test("'''\n" +
+                        "From the documentation.\n" +
+                        "'''\n" +
+                        "Class {meta::pure::profiles::doc.doc = 'From the tagged value.'} model::A\n" +
+                        "{\n" +
+                        "}\n",
+                "PARSER error at [4:8-63]: Element has both documentation and an explicit doc.doc tagged value. Use one.");
     }
 }

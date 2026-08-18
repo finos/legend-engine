@@ -1,4 +1,5 @@
 import meta::relational::metamodel::*;
+import meta::relational::metamodel::join::*;
 import meta::pure::extension::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::functions::sqlQueryToString::default::*;
@@ -39,7 +40,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
-      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForClickHouse_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
@@ -78,6 +78,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('array_max',              $allStates,            ^ToSql(format='arrayMax(%s)')),
     dynaFnToSql('array_min',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | if($p->size() == 0, | '[]', | format('arrayMin(%s)', $p->joinStrings(',')))})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    // Projected null-safe comparisons need coalesce to stay two-valued (ClickHouse NULL boolean logic is version-inconsistent),
+    // but the join planner only recognises the plain expansion as an equi-join condition (INVALID_JOIN_ON_EXPRESSION otherwise)
+    dynaFnToSql('nullSafeEqual',          selectOutsideWhenGenerationState(),      ^ToSql(format='(coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeEqual',          notSelectOutsideWhenGenerationStates(),  ^ToSql(format='(%s = %s or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       selectOutsideWhenGenerationState(),      ^ToSql(format='not (coalesce(%s = %s, false) or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       notSelectOutsideWhenGenerationStates(),  ^ToSql(format='(not (%s = %s) or (%s is null and %s is not null) or (%s is not null and %s is null))', transform={p:String[2]|$p->concatenate($p)->concatenate($p)})),
     dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cos(%s)/sin(%s)', transform={p:String[1] | $p->concatenate($p)})),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForClickHouse()})),
@@ -106,7 +112,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')), 
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format='cast(match(%s, %s) as Bool)')), 
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='cast(match(%s, %s) as Bool)', transform={p:String[2]|$p->transformRegexpParamsClickHouse()})),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='argMax(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(hex(MD5(%s)))')), 
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='argMin(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
@@ -125,8 +131,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='toSecond(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(hex(SHA1(%s)))')), 
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(hex(SHA256(%s)))')), 
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='splitByString(%s, %s)', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='splitByString(%s, %s)[%s]', transform={p:String[*] | $p->at(1)->concatenate($p->at(0))->concatenate($p->at(2))})),
-    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->transformSubstringForClickHouse()})),
+    // Index correction lives in processSubstring/processSubstr, so the parameters pass through here.
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevPop', $p)})),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='%s', transform={p:String[*] | transformWithArrayReduceForClickHouse('stddevSamp', $p)})),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='cast(toStartOfInterval(%s) as DateTime64)', transform={p:String[3]|$p->at(0) + ', ' + constructInterval($p->at(2), $p->at(1))})),
@@ -143,6 +151,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='toYear(%s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateClickHouse()}))
   ];
+}
+
+// match() is a substring match, so the pattern must be anchored to give Pure's full-match `matches`.
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformRegexpParamsClickHouse(params:String[2]):String[*]
+{
+   $params->at(0)->concatenate('\'^(?:' + $params->at(1)->removeQuotes() + ')$\'');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformFormatDateClickHouse(params:String[2]):String[1]
@@ -171,6 +186,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
    $s->processSelectSQLQueryForClickHouse($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(data:RelationalTreeNode[0..1]):Boolean[1]
+{
+   if($data->isEmpty(),
+      | false,
+      | $data->toOne()->match([
+           r:RootJoinTreeNode[1] | $r->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree()),
+           j:JoinTreeNode[1]     | $j.joinType == JoinType.FULL_OUTER || $j.joinType == JoinType.RIGHT_OUTER || $j->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree()),
+           a:Any[1]              | false
+        ])
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(j:JoinTreeNode[1]):Boolean[1]
+{
+   $j.joinType == JoinType.FULL_OUTER || $j.joinType == JoinType.RIGHT_OUTER || $j->children()->cast(@JoinTreeNode)->exists(c | $c->hasNullableJoinInTree());
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSelectSQLQueryForClickHouse(s:SelectSQLQuery[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($s.pivot, 'pivot is not supported for ClickHouse');
@@ -179,6 +211,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
+  let needsJoinUseNulls = hasNullableJoinInTree($s.data);
+
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
@@ -186,7 +220,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForClickHouse_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+  processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForClickHouse_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_) +
+  if($needsJoinUseNulls, | ' SETTINGS join_use_nulls = 1', | '');
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSliceOrDropForClickHouse(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
@@ -280,16 +315,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
        let second = $secondParam->floor();
        let nanoseconds = ($secondParam - $second) * 1000000000;
        'makeDateTime64(' + $params->take(5)->joinStrings(',') + ',' + $second->toString() + ',' + $nanoseconds->toString() + ')';);
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformSubstringForClickHouse(params:String[*]):String[1]
-{
-  let paramsSize = $params->size();
-  let start = ($params->at(1)->parseInteger() + 1)->toString();
-  if ($paramsSize == 2,
-  | [$params->at(0), $start]->joinStrings(', '),
-  | let length = ($params->at(2)->parseInteger() - $params->at(1)->parseInteger())->toString();
-    [$params->at(0), $start, $length]->joinStrings(', '););
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::transformPercentileForClickHouse(params:String[*]):String[1]

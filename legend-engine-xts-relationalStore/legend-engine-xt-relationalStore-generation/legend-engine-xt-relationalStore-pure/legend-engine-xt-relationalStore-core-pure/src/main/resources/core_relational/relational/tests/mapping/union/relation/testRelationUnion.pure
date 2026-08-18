@@ -331,11 +331,6 @@ function <<access.private>> meta::relational::tests::mapping::union::relation::t
    assertSameElements($expectedRows, $result.rows->map(r | $r.values->makeString(' | ')));
 }
 
-// =============================================================================
-// testTds-based variants of the embedded firm tests above, mirroring the style
-// of meta::relational::tests::mapping::relation::testInlineEmbeddedRelationMappingWithAssociationAndFilter
-// in tests.pure.
-// =============================================================================
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_EmbeddedFirmProject_Tds():Boolean[1]
 {
    meta::relational::tests::mapping::union::relation::testTds(|Person.all()->project(~[lastName:p|$p.lastName, legalName:p|$p.firm.legalName])->cast(@TabularDataSet),
@@ -357,4 +352,75 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::
            myDB,
            ['Roberts']
          );
+}
+
+// Functional / OOM canary: a wide projection over a 2-leg relation union must execute and
+// return the correct rows. Before the router idempotency fix this blew up during routing.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_ManyColumnProject():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[
+         c0 :p|$p.lastName,
+         c1 :p|$p.firstName,
+         c2 :p|$p.lastName,
+         c3 :p|$p.firstName,
+         c4 :p|$p.lastName,
+         c5 :p|$p.firstName,
+         c6 :p|$p.lastName,
+         c7 :p|$p.firstName,
+         c8 :p|$p.lastName,
+         c9 :p|$p.firstName,
+         c10:p|$p.lastName,
+         c11:p|$p.firstName
+       ])->distinct(),
+      unionOfTwoRelationMappingsFirstAndLast,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11
+        Anand, , Anand, , Anand, , Anand, , Anand, , Anand,
+        Roberts, , Roberts, , Roberts, , Roberts, , Roberts, , Roberts,
+        Scott, , Scott, , Scott, , Scott, , Scott, , Scott,
+        Taylor, , Taylor, , Taylor, , Taylor, , Taylor, , Taylor,
+        Wright, , Wright, , Wright, , Wright, , Wright, , Wright,
+     #->toString(),
+     $result.values->at(0)->sort([~c0->ascending()])->toString());
+}
+
+// Bounded-growth guarantee: a 2-leg union must compile to exactly one `union all` fragment,
+// independent of the number of projected columns. If the resolved set list had doubled per
+// column the generated SQL would contain many union branches (or plan generation would OOM).
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::union::relation::testUnionTwoRelationMappings_ManyColumnProjectGeneratesSingleUnion():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[
+         c0 :p|$p.lastName,
+         c1 :p|$p.firstName,
+         c2 :p|$p.lastName,
+         c3 :p|$p.firstName,
+         c4 :p|$p.lastName,
+         c5 :p|$p.firstName,
+         c6 :p|$p.lastName,
+         c7 :p|$p.firstName,
+         c8 :p|$p.lastName,
+         c9 :p|$p.firstName,
+         c10:p|$p.lastName,
+         c11:p|$p.firstName
+       ])->distinct(),
+      unionOfTwoRelationMappingsFirstAndLast,
+      meta::external::store::relational::tests::testRuntime(myDB),
+      meta::relational::extension::relationalExtensions()
+   );
+   assertEquals(
+     #TDS
+        c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11
+        Anand, , Anand, , Anand, , Anand, , Anand, , Anand,
+        Roberts, , Roberts, , Roberts, , Roberts, , Roberts, , Roberts,
+        Scott, , Scott, , Scott, , Scott, , Scott, , Scott,
+        Taylor, , Taylor, , Taylor, , Taylor, , Taylor, , Taylor,
+        Wright, , Wright, , Wright, , Wright, , Wright, , Wright,
+     #->toString(),
+     $result.values->at(0)->sort([~c0->ascending()])->toString());
 }

@@ -170,7 +170,7 @@ public class GraphFetchTreeParseTreeWalker
         {
             if (ctx.STRING() != null)
             {
-                result = new CString(PureGrammarParserUtility.fromGrammarString(ctx.getText(), true));
+                result = PureGrammarParserUtility.toCString(ctx.getText());
             }
             else if (ctx.INTEGER() != null)
             {

@@ -1,29 +1,8 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_",
-    "expectedError" : "Cannot resolve \"(true AND true)\" due to data type mismatch"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"
-  }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true AND false)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 12"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_",
-    "expectedError" : "Cannot resolve \"(true OR true)\" due to data type mismatch"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 8"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.BINARY_OP_WRONG_TYPE] Cannot resolve \"(true OR true)\" due to data type mismatch: the binary operator requires the input type \"BOOLEAN\", not \"STRING\". SQLSTATE: 42K09; line 1 pos 9"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
     "expectedError" : "Ensure the target system understands Year or Year-month semantic."
@@ -58,26 +37,8 @@
     "test" : "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"
   }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteralFromVar_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testFilterLiteral_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Databricks"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::filter::testLambdaAsFunctionParameter_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: Databricks"
-  }, {
     "test" : "meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_",
     "expectedError" : "Expected at most one object, but found many"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstOnOneElement_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstSimple_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
@@ -86,43 +47,16 @@
     "expectedError" : "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:63cc79-83); error compiling generated Java code"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:52cc64-68); error compiling generated Java code"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
-    "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code"
+    "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"range step must not be 0\"\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    "expectedError" : "range step must not be 0"
   }, {
     "test" : "meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'."
@@ -203,6 +137,6 @@
     "expectedError" : "No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testPlusInIterate_Function_1__Boolean_1_",
-    "expectedError" : "No relational processor matched function 'fold'. The function is registered in getContextBasedSupportedFunctions as a context-only entry; reaching this catchall means none of its earlier applicability predicates matched the current State during plan generation."
+    "expectedError" : "No relational processor matched function 'fold'."
   } ]
 }

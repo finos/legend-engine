@@ -1,0 +1,34 @@
+name: relational-store-union
+title: "Store Union Across Two Tables"
+description: |
+  A single Customer class has two relational set implementations — one per
+  regional table — combined by an `Operation` element invoking the `union`
+  router operation over both set ids. Proves that one logical class can be
+  backed by several tables in the same store and that a query over the class
+  returns the union of their rows, with the union pushed down to the store.
+
+modelSources:
+  model:
+    root: relational-store-union
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/customerMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - mapping:store-union
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-multi-table
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - mapping-test
+  - operation-mapping
+  - union

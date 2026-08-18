@@ -83,10 +83,17 @@ Class meta::external::query::sql::metamodel::QuerySpecification extends meta::ex
   <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
   <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> windows: meta::external::query::sql::metamodel::NamedWindow[*];
 }
 
 Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SetOperation extends meta::external::query::sql::metamodel::QueryBody
 {
+  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
+  <<equality.Key>> distinct: Boolean[1] = false;
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
+  <<equality.Key>> limit: meta::external::query::sql::metamodel::Expression[0..1];
+  <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 Class meta::external::query::sql::metamodel::AliasedRelation extends meta::external::query::sql::metamodel::Relation
@@ -101,11 +108,17 @@ Class meta::external::query::sql::metamodel::LateralRelation extends meta::exter
   <<equality.Key>> relation:meta::external::query::sql::metamodel::Relation[1];
 }
 
+//TODO left/right/distinct should not be Union/Except/Interset but issue with PAR serialization
 Class meta::external::query::sql::metamodel::Union extends meta::external::query::sql::metamodel::SetOperation
 {
-  <<equality.Key>> left: meta::external::query::sql::metamodel::Relation[1];
-  <<equality.Key>> right: meta::external::query::sql::metamodel::Relation[1];
-  <<equality.Key>> distinct: Boolean[1] = false;
+}
+
+Class meta::external::query::sql::metamodel::Except extends meta::external::query::sql::metamodel::SetOperation
+{
+}
+
+Class meta::external::query::sql::metamodel::Intersect extends meta::external::query::sql::metamodel::SetOperation
+{
 }
 
 Class meta::external::query::sql::metamodel::Select extends meta::external::query::sql::metamodel::Node
@@ -114,7 +127,7 @@ Class meta::external::query::sql::metamodel::Select extends meta::external::quer
   <<equality.Key>> selectItems: meta::external::query::sql::metamodel::SelectItem[*];
 }
 
-Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
+Class meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
 {
 }
 
@@ -396,6 +409,19 @@ Class meta::external::query::sql::metamodel::InPredicate extends meta::external:
   <<equality.Key>> valueList: meta::external::query::sql::metamodel::Expression[1];
 }
 
+Class meta::external::query::sql::metamodel::ExistsPredicate extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> query: meta::external::query::sql::metamodel::TableSubquery[1];
+}
+
+Class meta::external::query::sql::metamodel::QuantifiedComparisonExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: meta::external::query::sql::metamodel::ComparisonOperator[1];
+  <<equality.Key>> quantifier: meta::external::query::sql::metamodel::Quantifier[1];
+  <<equality.Key>> subQuery: meta::external::query::sql::metamodel::SubqueryExpression[1];
+}
+
 Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> min: meta::external::query::sql::metamodel::Expression[1];
@@ -457,6 +483,13 @@ Class meta::external::query::sql::metamodel::Window extends meta::external::quer
   <<equality.Key>> windowFrame: meta::external::query::sql::metamodel::WindowFrame[0..1];
 }
 
+Class meta::external::query::sql::metamodel::NamedWindow extends meta::external::query::sql::metamodel::Node
+{
+  <<equality.Key>> name: String[1];
+  <<equality.Key>> window: meta::external::query::sql::metamodel::Window[1];
+}
+
+
 Class meta::external::query::sql::metamodel::WindowFrame extends meta::external::query::sql::metamodel::Node
 {
   <<equality.Key>> mode: meta::external::query::sql::metamodel::WindowFrameMode[1];
@@ -496,6 +529,15 @@ Enum meta::external::query::sql::metamodel::LogicalBinaryType
 {
   AND,
   OR
+}
+
+// SOME is a synonym for ANY in the standard; the grammar accepts it, and it is kept distinct here only so a
+// parsed query can be composed back the way it was written.
+Enum meta::external::query::sql::metamodel::Quantifier
+{
+  ANY,
+  SOME,
+  ALL
 }
 
 Enum meta::external::query::sql::metamodel::ArithmeticType

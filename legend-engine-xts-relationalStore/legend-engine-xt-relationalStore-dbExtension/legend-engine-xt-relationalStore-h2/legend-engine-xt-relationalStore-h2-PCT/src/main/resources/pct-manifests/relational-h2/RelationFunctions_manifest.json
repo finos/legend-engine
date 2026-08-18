@@ -14,7 +14,7 @@
     "expectedError" : "H2 SQL Dialect does not support AsOfJoin!"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for currentUserId().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for currentUserId()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
@@ -23,46 +23,43 @@
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_to_string()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_reverse()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_sort()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_contains()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_distinct()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_position()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_size()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_size()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for array_slice()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for keys().\""
+    "expectedError" : "Couldn't find DynaFunction to Postgres model translation for keys()."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:9203 column:71), \"Expected one table alias column in operation\""
+    "expectedError" : "Expected one table alias column in operation"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
@@ -82,6 +79,9 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {
@@ -89,7 +89,7 @@
     "expectedError" : "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
     "expectedError" : "com.fasterxml.jackson.core.JsonParseException: Unrecognized token 'hello': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')"
@@ -98,18 +98,21 @@
     "expectedError" : "Match failure: MapRelationalLambdaObject instanceOf MapRelationalLambda"
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
+    "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: TableSubquery cannot be cast to SemiStructuredArrayFlatten"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
@@ -152,13 +155,13 @@
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:264 column:54), \"Couldn't find DynaFunction to Postgres model translation for variantTo().\""
+    "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'SemiStructured'"
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
     "expectedError" : "Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation"

@@ -5,19 +5,19 @@
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendJoinStringOnNull_Function_1__Boolean_1_",
     "expectedError" : "Feature 'GROUP_CONCAT in window function' is not supported by SingleStore."
@@ -32,7 +32,7 @@
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
@@ -59,10 +59,10 @@
     "expectedError" : "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
@@ -92,34 +92,91 @@
     "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Feature 'CUME_DIST window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::distinct::testDistinctAll_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::distinct::testDistinctMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::distinct::testDistinctSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlQueryToString/extensionDefaults.pure line:102 column:46), \"Cast exception: TableAliasColumn cannot be cast to Alias\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsInExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsUncorrelated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsWithNestedIn_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "'GROUP_CONCAT in window function' is not supported by SingleStore."
@@ -128,55 +185,55 @@
     "expectedError" : "'GROUP_CONCAT in window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "Feature 'GROUP_CONCAT in window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "'GROUP_CONCAT in window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "'GROUP_CONCAT in window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "Feature 'GROUP_CONCAT in window function' is not supported by SingleStore."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
-      "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_",
-      "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
-    }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE"
@@ -197,7 +254,7 @@
     "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testSimpleFilter_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
@@ -208,35 +265,242 @@
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_LimitedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testSimpleGreaterThanAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testSimpleGreaterThanAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_InExtend_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_String_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   }, {
     "test" : "meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::join::testSimpleJoin_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: MemSQL"
@@ -365,13 +629,13 @@
     "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "MemSQL does not support dynamic pivot"
@@ -380,13 +644,13 @@
     "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "MemSQL does not support dynamic pivot"
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: MemSQL"
@@ -509,37 +773,34 @@
     "expectedError" : "Operation 'RANGE FOLLOWING without UNBOUNDED' is not allowed."
   }, {
     "test" : "meta::pure::functions::relation::tests::rename::testSimpleRename_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::slice::testSimpleSlice_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB MemSQL"
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: MemSQL"

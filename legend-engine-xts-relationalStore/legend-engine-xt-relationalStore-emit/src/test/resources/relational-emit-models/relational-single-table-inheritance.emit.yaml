@@ -1,0 +1,38 @@
+name: relational-single-table-inheritance
+title: "Single-Table Inheritance with Discriminator Filters"
+description: |
+  A Shape hierarchy (Circle, Square) is stored in one wide table carrying a
+  `kind` discriminator column. Each subclass gets its own set implementation on
+  that same table, distinguished by a store-level `~filter`, and the abstract
+  root is mapped with an `Operation` element using the `inheritance` router
+  operation. Proves the single-table strategy: querying the root class
+  dispatches to every mapped leaf subtype and unions their filtered rows.
+
+modelSources:
+  model:
+    root: relational-single-table-inheritance
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/shapeMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:operation-mapping
+  - mapping:relational-single-table-inheritance
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-filter
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - discriminator
+  - h2
+  - inheritance
+  - mapping-test
+  - single-table

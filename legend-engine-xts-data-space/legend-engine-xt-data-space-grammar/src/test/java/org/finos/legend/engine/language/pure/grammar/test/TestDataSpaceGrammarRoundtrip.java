@@ -768,4 +768,143 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  };\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDataSpaceDocumentation()
+    {
+        // documentation is sugar for the doc tagged value, which is a different slot from the DataSpace's own
+        // `description` field - an element may carry both, and they mean different things
+        test("###DataSpace\n" +
+                "'''\n" +
+                "Covers trading positions across desks.\n" +
+                "\n" +
+                "Sourced from the overnight batch.\n" +
+                "'''\n" +
+                "DataSpace <<meta::pure::profiles::typemodifiers.abstract>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  description: 'Short blurb shown in the catalog.';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceDocumentationFallsBackToATaggedValue()
+    {
+        // authored as an ordinary tagged value, so it composes back as one - and its trailing \n could not
+        // survive a documentation block anyway
+        test("###DataSpace\n" +
+                "DataSpace {meta::pure::profiles::doc.doc = 'text\\n'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithoutExecutionContexts()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  description: 'some description';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id], ['Id']);\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithoutExecutionContextsMinimal()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutionContextsWithoutDefault()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::mapping;\n" +
+                "      defaultRuntime: model::runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  title: 'some title';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithMultipleExecutionContextsWithoutDefault()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::mapping;\n" +
+                "      defaultRuntime: model::untime;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      name: 'Context 2';\n" +
+                "      mapping: model::mapping;\n" +
+                "      defaultRuntime: model::runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  title: 'some title';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithoutExecutionContextsWithExecutablesUsingFrom()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  title: 'some title';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->from(model::mapping, model::runtime);\n" +
+                "    },\n" +
+                "    {\n" +
+                "      id: 2;\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: model::Firm[1]|$src;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

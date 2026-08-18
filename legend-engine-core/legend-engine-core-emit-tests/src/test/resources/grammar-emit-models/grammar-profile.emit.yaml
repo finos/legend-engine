@@ -1,0 +1,31 @@
+name: grammar-profile
+title: "Profiles, Stereotypes and Tagged Values"
+description: |
+  Two profiles declaring stereotypes and tags, applied at every element position the
+  domain grammar allows them: class, property, enumeration, enumeration value,
+  association, association property, and standalone function. One property carries
+  stereotypes and tagged values drawn from both profiles at once, so annotation
+  references must be resolved against their owning profile rather than by bare name.
+  Proves that profile definitions and their applications survive compilation as
+  model content — annotations are silently droppable in a way that is easy to miss
+  without an end-to-end fixture.
+
+modelSources:
+  model:
+    root: grammar-profile
+    files:
+      - model.pure
+
+features:
+  - grammar:association
+  - grammar:enumeration
+  - grammar:function
+  - grammar:profile
+  - scaffolding:class
+stores: []
+complexity: basic
+tags:
+  - profile
+  - stereotype
+  - tagged-value
+  - annotation

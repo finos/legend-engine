@@ -58,10 +58,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.testable.assertion.RelationAssertionColumnTypes;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.AbstractTestSuiteSessionWithResources;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestSuiteSession;
+import org.finos.legend.engine.testable.helper.TestExecutionContextHelper;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
@@ -150,20 +152,29 @@ public class FunctionTestRunner implements TestRunner
         private final String testablePath;
         private FunctionTestRunnerContext context;
         private FunctionDefinition<?> modifiedFunctionDefinition;
-        private TestConnectionBuildParameters hints = TestConnectionBuildParameters.NONE;
+        private final TestConnectionBuildParameters hints;
+        private final RelationAssertionColumnTypes relationAssertionColumnTypes;
         private final List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
 
         FunctionTestSuiteSession(Root_meta_pure_test_TestSuite pureSuite, FunctionTestSuite protocolSuite, PureModel pureModel, PureModelContextData pmcd, String testablePath)
         {
             super(pureSuite, protocolSuite, pureModel, pmcd, FunctionTestSuiteSession::getTestSuiteTests, FunctionTestSuiteSession::getAtomicTestId);
             this.testablePath = testablePath;
+            if (TestReturnTypeHelper.isRelationReturnType(FunctionTestRunner.this.functionDefinition, pureModel))
+            {
+                this.hints = TestConnectionBuildParameters.newBuilder().withIsRelation(true).build();
+                this.relationAssertionColumnTypes = RelationAssertionColumnTypes.of(TestReturnTypeHelper.getRelationReturnColumns(FunctionTestRunner.this.functionDefinition, pureModel));
+            }
+            else
+            {
+                this.hints = TestConnectionBuildParameters.NONE;
+                this.relationAssertionColumnTypes = RelationAssertionColumnTypes.NONE;
+            }
         }
 
         @Override
         protected void initialize(Consumer<? super AutoCloseable> closeableConsumer)
         {
-            boolean isRelation = TestReturnTypeHelper.isRelationReturnType(FunctionTestRunner.this.functionDefinition, this.pureModel);
-            this.hints = isRelation ? TestConnectionBuildParameters.newBuilder().withIsRelation(true).build() : TestConnectionBuildParameters.NONE;
             Root_meta_legend_function_metamodel_FunctionTestSuite functionTestSuite = (Root_meta_legend_function_metamodel_FunctionTestSuite) this.pureSuite;
             this.context = new FunctionTestRunnerContext(
                     Tuples.pair(this.pmcd, this.pureModel),
@@ -195,7 +206,7 @@ public class FunctionTestRunner implements TestRunner
             try
             {
                 FunctionDefinition<?> effectiveFunction = this.modifiedFunctionDefinition != null ? this.modifiedFunctionDefinition : FunctionTestRunner.this.functionDefinition;
-                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, null, this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
+                SingleExecutionPlan executionPlan = PlanGenerator.generateExecutionPlan(effectiveFunction, null, null, TestExecutionContextHelper.executionContextFor(this.hints, this.context.getPureModel()), this.context.getPureModel(), FunctionTestRunner.this.pureVersion, PlanPlatform.JAVA, null, this.context.getRouterExtensions(), this.context.getExecutionPlanTransformers());
                 TestAssertion assertion = functionTest.assertions.get(0);
                 PlanExecutor.ExecuteArgsBuilder executeArgs = this.context.getExecuteBuilder().withPlan(executionPlan);
                 MutableMap<String, Object> parameters = Maps.mutable.empty();
@@ -206,7 +217,7 @@ public class FunctionTestRunner implements TestRunner
                 }
                 executeArgs.withParams(parameters);
                 Result result = FunctionTestRunner.this.executor.executeWithArgs(executeArgs.build());
-                AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW));
+                AssertionStatus assertionResult = assertion.accept(new TestAssertionEvaluator(result, SerializationFormat.RAW, this.relationAssertionColumnTypes));
                 TestExecuted testResult = new TestExecuted(Collections.singletonList(assertionResult));
                 testResult.atomicTestId = functionTest.id;
                 return testResult;

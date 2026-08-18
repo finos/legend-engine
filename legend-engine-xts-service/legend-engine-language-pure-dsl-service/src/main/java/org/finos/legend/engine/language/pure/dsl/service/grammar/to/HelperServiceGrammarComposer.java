@@ -22,6 +22,9 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
@@ -118,6 +121,16 @@ public class HelperServiceGrammarComposer
 
     public static String renderServiceTestSuite(ServiceTestSuite serviceTestSuite, PureGrammarComposerContext context)
     {
+        boolean flat = serviceTestSuite.testData != null
+                && serviceTestSuite.testData.serviceTestData != null
+                && !serviceTestSuite.testData.serviceTestData.isEmpty();
+        return flat
+                ? renderServiceTestSuiteFlat(serviceTestSuite, context)
+                : renderServiceTestSuiteLegacy(serviceTestSuite, context);
+    }
+
+    private static String renderServiceTestSuiteLegacy(ServiceTestSuite serviceTestSuite, PureGrammarComposerContext context)
+    {
         int baseIndentation = 2;
         StringBuilder str = new StringBuilder();
 
@@ -125,7 +138,6 @@ public class HelperServiceGrammarComposer
         str.append(getTabString(baseIndentation)).append("{\n");
 
         // testData
-
         if (serviceTestSuite.testData != null)
         {
             str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
@@ -152,8 +164,107 @@ public class HelperServiceGrammarComposer
         }
 
         str.append(getTabString(baseIndentation)).append("}");
-
         return str.toString();
+    }
+
+    private static String renderServiceTestSuiteFlat(ServiceTestSuite serviceTestSuite, PureGrammarComposerContext context)
+    {
+        int baseIndentation = 2;
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(serviceTestSuite.id));
+        if (serviceTestSuite.doc != null)
+        {
+            str.append(" ").append(convertString(serviceTestSuite.doc, true));
+        }
+        str.append("\n").append(getTabString(baseIndentation)).append("(\n");
+
+        if (serviceTestSuite.testData != null && serviceTestSuite.testData.serviceTestData != null)
+        {
+            for (DataResolver resolver : serviceTestSuite.testData.serviceTestData)
+            {
+                str.append(renderDataResolver(resolver, baseIndentation + 1, context)).append("\n");
+            }
+        }
+        // atomic tests
+        if (serviceTestSuite.tests != null)
+        {
+            for (org.finos.legend.engine.protocol.pure.v1.model.test.Test t : serviceTestSuite.tests)
+            {
+                str.append(renderAtomicTest((ServiceTest) t, baseIndentation + 1, context)).append("\n");
+            }
+        }
+        str.append(getTabString(baseIndentation)).append(")");
+        return str.toString();
+    }
+
+    private static String renderAtomicTest(ServiceTest test, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(getTabString(baseIndentation)).append(PureGrammarComposerUtility.convertIdentifier(test.id));
+        if (test.doc != null)
+        {
+            str.append(" ").append(convertString(test.doc, true));
+        }
+        if (test.parameters != null && !test.parameters.isEmpty())
+        {
+            str.append(" (");
+            str.append(LazyIterate.collect(test.parameters,
+                    p -> p.name + " = " + p.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).makeString(", "));
+            str.append(")");
+        }
+        if (test.keys != null && !test.keys.isEmpty())
+        {
+            str.append(" [")
+               .append(LazyIterate.collect(test.keys, k -> convertString(k, true)).makeString(", "))
+               .append("]");
+        }
+        if (test.serializationFormat != null)
+        {
+            str.append(" : ").append(test.serializationFormat);
+        }
+        str.append(" =>\n");
+        if (test.assertions != null && test.assertions.size() == 1
+                && test.assertions.get(0) instanceof org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement element =
+                    ((org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation) test.assertions.get(0)).expected;
+            str.append(getTabString(baseIndentation + 1)).append("Relation\n");
+            str.append(org.finos.legend.engine.language.pure.grammar.to.data.HelperRelationElementsDataComposer
+                    .renderAlignedRelationElement(element, getTabString(baseIndentation + 1), true));
+        }
+        else
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData embedded = assertionToEmbeddedData(test);
+            str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(embedded,
+                    PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+        }
+        str.append(";");
+        return str.toString();
+    }
+
+    private static org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData assertionToEmbeddedData(ServiceTest test)
+    {
+        if (test.assertions == null || test.assertions.size() != 1)
+        {
+            throw new UnsupportedOperationException("Flat-form service atomic test '" + test.id
+                    + "' must have exactly one assertion; got " + (test.assertions == null ? 0 : test.assertions.size()));
+        }
+        org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion a = test.assertions.get(0);
+        if (a instanceof org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson)
+        {
+            return ((org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson) a).expected;
+        }
+        if (a instanceof org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData rel =
+                    new org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElementsData();
+            rel.relationElements = java.util.Collections.singletonList(
+                    ((org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToRelation) a).expected);
+            return rel;
+        }
+        throw new UnsupportedOperationException("Flat-form service atomic test '" + test.id
+                + "' can only render EqualToJson or EqualToRelation assertions; got " + a.getClass().getSimpleName());
     }
 
     private static String renderConnectionData(ConnectionTestData connectionData, int baseIndentation, PureGrammarComposerContext context)
@@ -163,6 +274,27 @@ public class HelperServiceGrammarComposer
         str.append(getTabString(baseIndentation)).append(connectionData.id).append(":\n");
         str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(connectionData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
 
+        return str.toString();
+    }
+
+    private static String renderDataResolver(DataResolver resolver, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        if (resolver instanceof ReferenceDataResolver)
+        {
+            str.append(getTabString(baseIndentation)).append(((ReferenceDataResolver) resolver).elementPointer.path).append(";");
+        }
+        else if (resolver instanceof BaseDataResolver)
+        {
+            BaseDataResolver base = (BaseDataResolver) resolver;
+            str.append(getTabString(baseIndentation)).append(base.elementPointer.path).append(":\n");
+            str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(base.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+            str.append(";");
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Unsupported DataResolver type: " + resolver.getClass().getSimpleName());
+        }
         return str.toString();
     }
 

@@ -1,0 +1,325 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+// An empty value is never in the relation, matching meta::pure::functions::collection::in(Any[0..1], Any[*]).
+//
+// Boolean[1] is two-valued, so a null on either side answers false here where SQL's `in` would answer
+// UNKNOWN. The relational stores drop nulls from the searched column inside the subquery, which makes SQL
+// two-valued at the source rather than compensating for it afterwards.
+function <<PCT.function, functionType.NormalizeRequiredFunction>>
+{
+    doc.doc='Returns true if the given value appears in the single column of the given relation. On relational stores this generates an IN (subquery) predicate.'
+}
+meta::pure::functions::relation::in<U,Z>(value:U[0..1], rel:Relation<Z=(?:U)>[1]):Boolean[1]
+{
+   let col = $rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,U|0..1>);
+   $value->isNotEmpty() && $rel->meta::pure::functions::relation::exists({row:Z[1] | $col->eval($row) == $value});
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn_Negated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_String<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let active = #TDS
+                                 name
+                                 Engineering
+                                 Sales
+                               #;
+                  $departments->filter(d | $d.departmentName->in($active->select(~name)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #->filter(e | $e.employeeId > 1000);
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #;
+                  $departments->filter(d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// select outer_customer.id, outer_customer.name from customers as outer_customer
+// where outer_customer.countryId in (select inner_regions.countryId from regions as inner_regions
+//                                    where inner_regions.managerId = outer_customer.salesRepId)
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let customers = #TDS
+                                    id, name, countryId, salesRepId
+                                    1, Alice, 10, 100
+                                    2, Bob, 20, 200
+                                    3, Carol, 30, 100
+                                  #;
+                  let regions = #TDS
+                                  countryId, managerId
+                                  10, 100
+                                  20, 999
+                                  40, 100
+                                #;
+                  $customers->filter(c | $c.countryId->in($regions->filter(r | $r.managerId == $c.salesRepId)->select(~countryId)))
+                            ->select(~[id, name]);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   id,name\n'+
+                 '   1,Alice\n'+
+                 '#', $res->sort(~id->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExtend_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->extend(~isStaffed : d | $d.departmentId->in($employees->select(~department)))
+                              ->select(~[departmentName, isStaffed]);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentName,isStaffed\n'+
+                 '   Engineering,true\n'+
+                 '   Support,false\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_InExtend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #;
+                  $departments->extend(~isStaffed : d | $d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName,isStaffed\n'+
+                 '   1,Engineering,true\n'+
+                 '   2,Support,false\n'+
+                 '   3,Sales,true\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// The searched column is a grouping key, so the null has to be excluded through HAVING rather than WHERE.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_GroupedRelationWithNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let payroll = #TDS
+                                  employeeId, department, salary
+                                  101, 1, 900
+                                  102, 1, 900
+                                  103, 2, 100
+                                  104, 3, 100
+                                  105, null, 900
+                                #->groupBy(~department, ~total : x | $x.salary : y | $y->plus())
+                                 ->filter(g | $g.total > 500)
+                                 ->select(~department);
+                  $departments->filter(d | $d.departmentId->in($payroll));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_DerivedRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let payroll = #TDS
+                                  employeeId, department, salary
+                                  101, 1, 900
+                                  102, 2, 100
+                                  103, 3, 900
+                                #->filter(p | $p.salary > 500)->select(~department);
+                  $departments->filter(d | $d.departmentId->in($payroll));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}

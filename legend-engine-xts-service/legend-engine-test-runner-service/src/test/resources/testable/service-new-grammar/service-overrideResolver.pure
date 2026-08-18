@@ -1,0 +1,96 @@
+###Relational
+Database store::ovr::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+###Pure
+Class model::ovr::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+###Mapping
+Mapping execution::ovr::FirmMapping
+(
+  *model::ovr::Firm: Relational
+  {
+    ~primaryKey ([store::ovr::FirmDB]FIRM_TABLE.ID)
+    ~mainTable [store::ovr::FirmDB]FIRM_TABLE
+    id: [store::ovr::FirmDB]FIRM_TABLE.ID,
+    name: [store::ovr::FirmDB]FIRM_TABLE.NAME
+  }
+)
+###Connection
+RelationalDatabaseConnection model::ovr::FirmConnection
+{
+  store: store::ovr::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+###Runtime
+Runtime execution::ovr::FirmRuntime
+{
+  mappings:
+  [
+    execution::ovr::FirmMapping
+  ];
+  connections:
+  [
+    store::ovr::FirmDB:
+    [
+      connection_1: model::ovr::FirmConnection
+    ]
+  ];
+}
+###Data
+Data data::ovr::DefaultFirms
+{
+  store::ovr::FirmDB:
+    Relation
+    #{
+      default.FIRM_TABLE:
+        ID,NAME
+        1,Alice
+        2,Bob;
+    }#;
+}
+###Service
+Service service::svctd::OverrideResolverService
+{
+  pattern: '/firmNames/override';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::ovr::Firm.all()->project(~['Name': f | $f.name]);
+    mapping: execution::ovr::FirmMapping;
+    runtime: execution::ovr::FirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1 'base resolver overrides reference resolver'
+    (
+      data::ovr::DefaultFirms;
+      store::ovr::FirmDB:
+        Relation
+        #{
+          default.FIRM_TABLE:
+            ID,NAME
+            99,Zoe;
+        }#;
+      test_1 'only overriding rows are visible' =>
+        Relation
+        #{
+          Name
+          Zoe;
+        }#;
+    )
+  ]
+}

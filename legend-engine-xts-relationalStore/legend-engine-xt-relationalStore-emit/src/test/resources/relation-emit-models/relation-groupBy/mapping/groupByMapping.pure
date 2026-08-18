@@ -1,0 +1,118 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::functions::relation::*;
+import meta::pure::metamodel::relation::*;
+
+function demo::relation::func::positions(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::db::EmployeeDB.PositionTable}#
+    ->filter(r | $r.QTY > 0)
+    ->groupBy(~[GSN, PRODUCT_ID], ~[
+      TOTAL_QTY: x | $x.QTY : y | $y->sum(),
+      AVG_QTY: x | $x.QTY : y | $y->average()
+    ])
+}
+
+###Mapping
+import demo::relation::func::*;
+
+Mapping demo::relation::mapping::PositionGroupByMapping
+(
+  *demo::relation::domain::Position: Relation
+  {
+    ~func demo::relation::func::positions():Relation<Any>[1]
+    gsn: GSN,
+    productId: PRODUCT_ID,
+    totalQty: TOTAL_QTY,
+    avgQty: AVG_QTY
+  }
+
+  testSuites:
+  [
+    groupBySuite:
+    {
+      function: |demo::relation::domain::Position.all()
+                  ->sortBy(x | $x.gsn)
+                  ->project(
+                    [x | $x.gsn, x | $x.productId, x | $x.totalQty],
+                    ['GSN', 'Product ID', 'Total Qty']
+                  );
+      tests:
+      [
+        aggregatedTotals:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::PositionData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    },
+    multiAggregateSuite:
+    {
+      function: |demo::relation::domain::Position.all()
+                  ->sortBy(x | $x.gsn)
+                  ->project(
+                    [x | $x.gsn, x | $x.productId, x | $x.totalQty, x | $x.avgQty],
+                    ['GSN', 'Product ID', 'Total Qty', 'Avg Qty']
+                  );
+      tests:
+      [
+        multipleAggregatesWithPreFilter:
+        {
+          data:
+          [
+            demo::relation::db::EmployeeDB:
+              Reference
+              #{
+                demo::relation::data::PositionData
+              }#
+          ];
+          asserts:
+          [
+            shouldAggregateWithAverageAndExcludeZeroQty:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"GSN":"EA4GNY","Product ID":2,"Total Qty":300,"Avg Qty":150.0},{"GSN":"YU2EF5","Product ID":1,"Total Qty":8,"Avg Qty":4.0}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

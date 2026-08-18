@@ -47,10 +47,16 @@
     "expectedError" : "\"\nexpected: ['abc']\nactual:   []\""
   }, {
     "test" : "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesUnanchoredIsFullMatch_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::string::tests::matches::testMatchesAlternation_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'matches' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
@@ -65,6 +71,9 @@
     "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
@@ -123,11 +132,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'xoXoXoX'\nactual:   'XoXoXoX'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'XOxOxOx'\nactual:   'xOxOxOx'\""
   } ]
 }

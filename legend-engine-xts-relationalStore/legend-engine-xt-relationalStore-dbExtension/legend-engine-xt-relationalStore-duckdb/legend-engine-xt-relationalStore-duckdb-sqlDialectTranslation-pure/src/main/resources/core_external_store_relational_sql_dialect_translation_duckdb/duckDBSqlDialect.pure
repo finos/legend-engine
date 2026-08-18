@@ -223,6 +223,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
     existsPredicateProcessor_default(),
+    quantifiedComparisonExpressionProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
@@ -482,6 +483,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Chr, simpleFunctionProcessor('chr')),
     pair(Reverse, simpleFunctionProcessor('reverse')),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StringToArray, simpleFunctionProcessor('string_split')),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Left, simpleFunctionProcessor('left')),
     pair(Right, simpleFunctionProcessor('right')),
@@ -494,7 +496,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Contains, customFunctionProcessor(processorForContainsDuckDB_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
 
     // Boolean
-    pair(RegexpLike, customFunctionProcessor(processorForRegexpLike_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForRegexpLikeDuckdb_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpFullMatch, customFunctionProcessor(processorForRegexpFullMatch_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(BoolAnd, simpleFunctionProcessor('bool_and')),
     pair(BoolOr, simpleFunctionProcessor('bool_or')),
 
@@ -757,3 +760,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 }
 
 // --------------------------------------------------------------------------
+
+// DuckDB's ~ is a full match (an alias for regexp_full_match), unlike Postgres and H2, so a
+// substring match has to use regexp_matches.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::processorForRegexpLikeDuckdb(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let args = regexpLikeArgs($f, $sqlDialect, $state, $config);
+  'regexp_matches(' + $args->at(0) + ', ' + $args->at(1) + ')';
+}

@@ -55,56 +55,11 @@
     "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "Padding string must not be empty"
   }, {
-    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpIndexOf with a capture group is not supported on Trino: regexp_position takes no group argument"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "regexpReplace with replaceAll=false is not supported on Trino: regexp_replace always replaces every occurrence"
   }, {
     "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringEmptyString_Function_1__Boolean_1_",
     "expectedError" : "Padding string must not be empty"
@@ -112,19 +67,10 @@
     "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatStringNoString_Function_1__Boolean_1_",
     "expectedError" : "Could not choose a best candidate operator. Explicit type casts must be added."
   }, {
-    "test" : "meta::pure::functions::string::tests::right::testRightTooShortString_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'ab'\nactual:   ''"
-  }, {
     "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "Padding string must not be empty"
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
     "expectedError" : "expected: 'Hello World'\nactual:   'H'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'xoXoXoX'\nactual:   'XoXoXoX'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacter_Function_1__Boolean_1_",
-    "expectedError" : "expected: 'XOxOxOx'\nactual:   'xOxOxOx'"
   } ]
 }

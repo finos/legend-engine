@@ -25,7 +25,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
      getDynaFunctionToSqlForMemSQL()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
-      isBooleanLiteralSupported = true,
+      // MySQL has no boolean type - TRUE/FALSE are just 1/0 - so a boolean is never a value here,
+      // only a predicate. Booleans are wrapped as comparisons and projected through a case.
+      isBooleanLiteralSupported = false,
       collectionThresholdLimit = 1048576,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
@@ -44,6 +46,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       pureTypeToDatabaseTypeConverter = convert_GenericType_1__DataType_1_,
       buildDummyConnection = buildDummyConnection__RelationalDatabaseConnection_1_
    );
+}
+
+// as processSelectColumns, but quotes the case-wrapped alias with the dialect identifier
+// processor - MemSQL uses backticks, and the shared version emits the raw alias
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectColumnsMemSQL(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
+{
+  if ($s->size() == 0,
+         |'*',
+         | $format.separator + $s->map(r| $r->match([a:Alias[1] | let shouldWrapWithCase = ($a.relationalElement->isBooleanOperation($extensions) && !$conditionalExprAllowed);
+
+                                                                 $shouldWrapWithCase->if(|'case when (' + $a.relationalElement->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = true), $config, $extensions) + ') then \'true\' else \'false\' end as ' + $dbConfig.identifierProcessor($a.name),
+                                                                                         | $r->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                                                         );,
+                                                     z:RelationalOperationElement[1] | $z->processOperation($dbConfig, $format, ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false), $config, $extensions)
+                                                     ])
+                                      )->joinStrings($separator + $format.separator);
+  );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::memSQLReservedWords():String[*]
@@ -86,6 +105,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
     dynaFnToSql('char',                      $allStates,            ^ToSql(format='cast(char(%s) as char)')),
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s <=> %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='not (%s <=> %s)')),
     dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
     dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),
     dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(0), $p->at(1), $p->at(2)->replace('\'', '')])})),
@@ -116,7 +137,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('left',                      $allStates,            ^ToSql(format='left(%s, %s)')),
     dynaFnToSql('length',                    $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('lpad',                      $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
-    dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPatternPosix('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('regexpExtract',             $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractMemSQL()})),
+    dynaFnToSql('regexpIndexOf',             $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfMemSQL()})),
+    dynaFnToSql('regexpLike',                $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeMemSQL()})),
+    dynaFnToSql('regexpReplace',             $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceMemSQL()})),
     dynaFnToSql('minute',                    $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                     $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',                 $allStates,            ^ToSql(format='monthname(%s)')),
@@ -344,7 +369,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   let joinOrder = [JoinType.INNER, JoinType.LEFT_OUTER, JoinType.RIGHT_OUTER];
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+  processSelectColumnsMemSQL($s.columns, $dbConfig, $format->indent(), ^Config(), ', ', $dbConfig.dbExtension.isBooleanLiteralSupported, $extensions) +
   if ($s.data == [],
     |'',
     | let fromStr = $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), $joinOrder, $extensions);
@@ -421,6 +446,9 @@ function meta::relational::functions::sqlQueryToString::memsql::getColumnTypeSql
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+      u : meta::relational::metamodel::datatype::UnsignedBigInt[1] | 'BIGINT UNSIGNED',
+      u : meta::relational::metamodel::datatype::UnsignedInt[1] | 'INT UNSIGNED',
+      u : meta::relational::metamodel::datatype::UnsignedTinyInt[1] | 'TINYINT UNSIGNED',
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }
@@ -476,6 +504,9 @@ function meta::relational::functions::sqlQueryToString::memsql::convert(genericT
             pair(|$path == 'SmallInt', |^meta::relational::metamodel::datatype::SmallInt()),
             pair(|$path == 'Timestamp', |^meta::relational::metamodel::datatype::Timestamp()),
             pair(|$path == 'TinyInt', |^meta::relational::metamodel::datatype::TinyInt()),
+            pair(|$path == 'UBigInt', |^meta::relational::metamodel::datatype::UnsignedBigInt()),
+            pair(|$path == 'UInt', |^meta::relational::metamodel::datatype::UnsignedInt()),
+            pair(|$path == 'UTinyInt', |^meta::relational::metamodel::datatype::UnsignedTinyInt()),
             pair(|$path == 'Varchar', |^meta::relational::metamodel::datatype::Varchar(size=$variables->cast(@InstanceValue)->evaluateAndDeactivate().values->toOne()->cast(@Integer))),
             pair(|$path == 'Variant', |^meta::relational::metamodel::datatype::Json())
         ],
@@ -496,4 +527,64 @@ function meta::relational::functions::sqlQueryToString::memsql::buildDummyConnec
                                   ),
         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
     )
+}
+
+// SingleStore takes no options argument on its regex functions, but the engine accepts inline
+// flags, so RegexpParameter is emitted as a prefix on the pattern. CASE_SENSITIVE is the absence
+// of a flag.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::regexpInlineFlagsForMemSQL(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::applyInlineFlagsMemSQL(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   assert($regexpParametersAsString->regexpInlineFlagsForMemSQL() == '', | 'RegexpParameter flags are not supported on MemSQL: its regex engine rejects an inline (?i) style prefix with "repetition-operator operand invalid"');
+   '\'' + $pattern->removeQuotesIfExist() + '\'';
+}
+
+// MemSQL sets isBooleanLiteralSupported = false, so a Boolean argument does not reach the transform
+// as a bare true/false the way it does on dialects that support boolean literals.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::isSqlTrueMemSQL(value: String[1]):Boolean[1]
+{
+   let normalized = $value->removeQuotesIfExist()->toLower()->trim();
+   $normalized == 'true' || $normalized == '1';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpLikeMemSQL(params: String[3]):String[1]
+{
+   '(' + $params->at(0) + ' RLIKE ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(2)) + ')';
+}
+
+// REGEXP_SUBSTR takes no group index and returns only the first match.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpExtractMemSQL(params: String[5]):String[1]
+{
+   assert($params->at(3)->removeQuotesIfExist() == '0', | 'regexpExtract with a capture group is not supported on MemSQL: REGEXP_SUBSTR takes no group index');
+   assert(!$params->at(2)->isSqlTrueMemSQL(), | 'regexpExtract with extractAll=true is not supported on MemSQL: REGEXP_SUBSTR returns only the first match');
+   'REGEXP_SUBSTR(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(4)) + ')';
+}
+
+// REGEXP_INSTR is 1-based and returns 0 for no match; Pure is 0-based and returns -1, so one
+// subtraction converts both. It has no capture-group argument.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpIndexOfMemSQL(params: String[4]):String[1]
+{
+   assert($params->at(2)->removeQuotesIfExist() == '0', | 'regexpIndexOf with a capture group is not supported on MemSQL: REGEXP_INSTR takes no group argument');
+   '(REGEXP_INSTR(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(3)) + ') - 1)';
+}
+
+// MemSQL's REGEXP_REPLACE replaces only the first match and takes exactly three arguments -
+// passing an occurrence argument is rejected with "Too many arguments" - so replaceAll has no
+// expressible form. This is the reverse of every other dialect here, which can only replace all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformRegexpReplaceMemSQL(params: String[5]):String[1]
+{
+   assert(!$params->at(3)->isSqlTrueMemSQL(), | 'regexpReplace with replaceAll=true is not supported on MemSQL: REGEXP_REPLACE replaces only the first match and accepts no occurrence argument');
+   'REGEXP_REPLACE(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsMemSQL($params->at(4)) + ', ' + $params->at(2) + ')';
 }

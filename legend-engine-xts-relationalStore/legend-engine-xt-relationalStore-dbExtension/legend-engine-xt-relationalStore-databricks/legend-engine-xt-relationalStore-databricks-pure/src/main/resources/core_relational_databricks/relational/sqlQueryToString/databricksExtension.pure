@@ -2,6 +2,7 @@ import meta::relational::functions::sqlQueryToString::databricks::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
@@ -41,26 +42,35 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let reservedWords = databricksReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForDatabricks());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
-   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+   let baseDynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForDatabricks()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
+   // VARIANT array operands need a `cast(... as array<variant>)`; typed arrays stay bare (Snowflake-matching).
+   let dynaFuncDispatch = {func:DynaFunction[1], sgc:SqlGenerationContext[1] | $func->dynaFuncDispatchForDatabricks($sgc, $baseDynaFuncDispatch)};
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
+      collectionThresholdLimit = 10000,
+      aliasLimit = 255,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumnForDatabricks_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      semiStructuredElementProcessor = processSemiStructuredElementForDatabricks_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
+      variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
-      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslatorForDatabricks(),
       dataTypeToSqlText = meta::relational::functions::typeConversion::databricks::dataTypeToSqlTextDatabricks_DataType_1__String_1_,
       pureTypeToDatabaseTypeConverter = meta::relational::functions::typeConversion::databricks::convert_GenericType_1__DataType_1_,
-      buildDummyConnection = meta::relational::functions::sqlQueryToString::databricks::buildDummyConnection__RelationalDatabaseConnection_1_
+      buildDummyConnection = meta::relational::functions::sqlQueryToString::databricks::buildDummyConnection__RelationalDatabaseConnection_1_,
+      lambdaParameterProcessor = buildLambdaParameterForDatabricks_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
+      lambdaProcessor = buildLambdaForDatabricks_RelationalLambda_1__SqlGenerationContext_1__String_1_
    );
 }
 
@@ -69,6 +79,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    newMap([
       // escape single quotes in string
       pair(String,         ^LiteralProcessor(format = '\'%s\'',               transform = {s:String[1], a:String[0..1] | $s->replace('\'','\\\'')})),
+      // the default processor quotes these; Spark would coerce the string back to a boolean, but
+      // emitting the keyword keeps the column a real BOOLEAN over JDBC instead of a VARCHAR
+      pair(Boolean,        ^LiteralProcessor(format = '%s',                   transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
@@ -84,6 +97,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDatabricks()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTimeDatabricks()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as STRING)')),
@@ -111,9 +126,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
-    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='%s', transform={p:String[1..2] | $p->arrayJoinDatabricks()})),
+    dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='array_join(collect_list(%s), %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format='%s', transform={p:String[2]|$p->transformRegexpParamsDatabricks()})),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountDatabricks()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractDatabricks()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfDatabricks()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
     dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
@@ -122,9 +142,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'MMMM\')')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 0 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
-    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='to_date(%s,%s)')),
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformParseDateDatabricks()})),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='%s', transform={p:String[*] |$p->transformParseDecimal()})),
-    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as bigint)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
@@ -134,6 +154,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='false')),
     dynaFnToSql('sqlTrue',                $allStates,            ^ToSql(format='true')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -147,8 +168,118 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateDatabricks()})),
-    dynaFnToSql('extractFromSemiStructured', $allStates, ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForDatabricks()}))
+    dynaFnToSql('extractFromSemiStructured', $allStates, ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForDatabricks()})),
+
+    // Array functions: registered with bare typed-array codegen (mirrors Snowflake). When the operand
+    // is relationally VARIANT, the dispatcher swaps in the array<variant> variant (see
+    // arrayFunctionVariantOverrideForDatabricks / dynaFuncDispatchForDatabricks).
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='array_max(%s)')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='array_min(%s)')),
+    dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='aggregate(%s, cast(0 as DOUBLE), (acc, x) -> acc + x)')),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='reverse(%s)')),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(size(%s), 0)')),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
+    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='ifnull(array_position(%s, %s) - 1, -1)')),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='slice(%s, greatest(%s, 0) + 1, greatest(%s - %s, 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]})),
+    dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='slice(%s, greatest(%s, 0) + 1, greatest(size(%s) - greatest(%s, 0), 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(0), $vals->at(1)]})),
+    dynaFnToSql('array_take',             $allStates,            ^ToSql(format='slice(%s, 1, greatest(%s, 0))')),
+    dynaFnToSql('array_first',            $allStates,            ^ToSql(format='try_element_at(%s, 1)')),
+    dynaFnToSql('array_last',             $allStates,            ^ToSql(format='try_element_at(%s, -1)')),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='slice(%s, 1, greatest(size(%s) - 1, 0))', transform={vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='slice(%s, 2, greatest(size(%s) - 1, 0))', transform={vals:String[*] | $vals->concatenate($vals->at(0))})),
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='concat(%s, %s)')),
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->transformRangeDatabricks()})),
+    dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
+    dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='array_join(cast(%s as ARRAY<STRING>), %s)')),
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='flatten(%s)')),
+
+    // Bit functions
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ %s)')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='shiftleft(%s, %s)')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='shiftright(%s, %s)')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='(%s ^ %s)')),
+
+    // Variant/semi-structured functions
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->toVariantForDatabricks()})),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='map(%s)', transform={p:String[*] | $p->transformToVariantObjectDatabricks()})),
+    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
+    dynaFnToSql('values',                 $allStates,            ^ToSql(format='map_values(%s)')),
+    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_concat(%s, %s)')),
+    dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='cast(%s as BOOLEAN)')),
+
+    // Other functions
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='uuid()')),
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='levenshtein(%s, %s)')),
+    dynaFnToSql('date',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformDateConstructionForDatabricks()}))
   ];
+}
+
+// Swaps in the array<variant> codegen when the array operand is relationally VARIANT. The decision
+// needs the operand's relational type (only available on the DynaFunction node, not the rendered SQL),
+// so it is made here rather than inside a `ToSql` transform.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
+{
+   let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
+   if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
+      | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = $variantOverride->toOne()),
+      | $baseDispatch->eval($func, $sgc)
+   );
+}
+
+// True when the operand renders to a Databricks VARIANT value: a semi-structured navigation, or any
+// operation whose inferred relational type is SemiStructured (e.g. a Variant column).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isSemiStructuredOperandForDatabricks(op:RelationalOperationElement[1]):Boolean[1]
+{
+   if($op->instanceOf(SemiStructuredObjectNavigation)
+        || $op->instanceOf(SemiStructuredArrayFlatten)
+        || $op->instanceOf(SemiStructuredArrayFlattenOutput)
+        || $op->instanceOf(SemiStructuredArrayFlattenRelation),
+      | true,
+      | let inferred = meta::relational::functions::typeInference::inferRelationalType($op, false);
+        $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::SemiStructured);
+   );
+}
+
+// array<variant> codegen used when the operand is VARIANT. Element-comparison functions
+// (append/position/contains) also cast the scalar element to variant to match the element type.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::arrayFunctionVariantOverrideForDatabricks():Map<String, ToSql>[1]
+{
+   newMap([
+      pair('array_max',         ^ToSql(format='array_max(cast(%s as array<variant>))')),
+      pair('array_min',         ^ToSql(format='array_min(cast(%s as array<variant>))')),
+      pair('array_sum',         ^ToSql(format='aggregate(cast(%s as array<variant>), cast(0 as DOUBLE), (acc, x) -> acc + x)')),
+      pair('array_sort',        ^ToSql(format='array_sort(cast(%s as array<variant>))')),
+      pair('array_reverse',     ^ToSql(format='reverse(cast(%s as array<variant>))')),
+      pair('array_size',        ^ToSql(format='ifnull(size(cast(%s as array<variant>)), 0)')),
+      pair('array_append',      ^ToSql(format='array_append(cast(%s as array<variant>), cast(%s as variant))')),
+      pair('array_position',    ^ToSql(format='ifnull(array_position(cast(%s as array<variant>), cast(%s as variant)) - 1, -1)')),
+      pair('array_slice',       ^ToSql(format='slice(cast(%s as array<variant>), greatest(%s, 0) + 1, greatest(%s - %s, 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]})),
+      pair('array_drop',        ^ToSql(format='slice(cast(%s as array<variant>), greatest(%s, 0) + 1, greatest(size(cast(%s as array<variant>)) - greatest(%s, 0), 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(0), $vals->at(1)]})),
+      pair('array_take',        ^ToSql(format='slice(cast(%s as array<variant>), 1, greatest(%s, 0))')),
+      pair('array_first',       ^ToSql(format='try_element_at(cast(%s as array<variant>), 1)')),
+      pair('array_last',        ^ToSql(format='try_element_at(cast(%s as array<variant>), -1)')),
+      pair('array_init',        ^ToSql(format='slice(cast(%s as array<variant>), 1, greatest(size(cast(%s as array<variant>)) - 1, 0))', transform={vals:String[*] | $vals->concatenate($vals->at(0))})),
+      pair('array_tail',        ^ToSql(format='slice(cast(%s as array<variant>), 2, greatest(size(cast(%s as array<variant>)) - 1, 0))', transform={vals:String[*] | $vals->concatenate($vals->at(0))})),
+      pair('array_concatenate', ^ToSql(format='concat(cast(%s as array<variant>), cast(%s as array<variant>))')),
+      pair('array_contains',    ^ToSql(format='ifnull(array_contains(cast(%s as array<variant>), cast(%s as variant)), false)')),
+      pair('array_distinct',    ^ToSql(format='array_distinct(cast(%s as array<variant>))')),
+      pair('array_flatten',     ^ToSql(format='flatten(cast(%s as array<variant>))'))
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformParseDateDatabricks(params:String[*]):String[1]
+{
+  assert(2 - $params->size() >= 0, 'Incorrect number of parameters for parseDate: parseDate(column,[dateformat])');
+  // Databricks/Spark datetime patterns use 'MMM' for the abbreviated month name (Snowflake uses 'MON').
+  let dateFormat = if($params->size() == 1,
+                      | '\'yyyy-MM-dd\'',
+                      | $params->at(1)->replace('MON', 'MMM'));
+  'to_date(' + $params->at(0) + ',' + $dateFormat + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformFormatDateDatabricks(params:String[2]):String[1]
@@ -160,6 +291,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRangeDatabricks(params:String[3]):String[1]
+{
+   // Pure/Snowflake `range` treats stop as EXCLUSIVE; Databricks `sequence` treats it as INCLUSIVE and
+   // errors when the step sign disagrees with the start/stop direction. Adjust the inclusive end by one
+   // per step sign, and emit an empty array when the range is empty.
+   let start = $params->at(0);
+   let stop = $params->at(1);
+   let step = $params->at(2);
+   'case ' +
+   'when ' + $step + ' = 0 then sequence(' + $start + ', ' + $stop + ', ' + $step + ') ' +
+   'when ' + $step + ' > 0 and ' + $start + ' < ' + $stop + ' then sequence(' + $start + ', ' + $stop + ' - 1, ' + $step + ') ' +
+   'when ' + $step + ' < 0 and ' + $start + ' > ' + $stop + ' then sequence(' + $start + ', ' + $stop + ' + 1, ' + $step + ') ' +
+   'else cast(array() as array<bigint>) end';
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
@@ -312,9 +458,66 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    'rlike(' + $params->at(0) + ',' + $expression + ')';
 }
 
+// rlike is a substring match, so the pattern must be anchored to give Pure's full-match `matches`.
+// See meta::relational::functions::sqlQueryToString::default::regexpPattern for why the group is required.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpParamsDatabricks(params: String[2]):String[1]
 {
-   'rlike(' + $params->at(0) + ',' + $params->at(1) + ')';
+   'rlike(' + $params->at(0) + ',\'^(?:' + $params->at(1)->removeQuotes() + ')$\')';
+}
+
+// Spark's regex functions take no options argument, but its engine is java.util.regex, so the
+// RegexpParameter flags are emitted as an inline prefix on the pattern instead. That is the same
+// syntax the platform runtime uses, which is why the flag semantics agree rather than approximate.
+// CASE_SENSITIVE is the absence of a flag; there is no inline spelling for it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::regexpInlineFlagsForDatabricks(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::applyInlineFlagsDatabricks(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   '\'' + $regexpParametersAsString->regexpInlineFlagsForDatabricks() + $pattern->removeQuotesIfExist() + '\'';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpLikeDatabricks(params: String[3]):String[1]
+{
+   'rlike(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpCountDatabricks(params: String[3]):String[1]
+{
+   'regexp_count(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpExtractDatabricks(params: String[5]):String[1]
+{
+   let pattern = $params->at(1)->applyInlineFlagsDatabricks($params->at(4));
+   let args = $params->at(0) + ', ' + $pattern + ', ' + $params->at(3);
+   if ($params->at(2) == 'true', | 'regexp_extract_all(' + $args + ')', | 'regexp_extract(' + $args + ')');
+}
+
+// regexp_instr is 1-based and returns 0 for no match; Pure is 0-based and returns -1, so one
+// subtraction converts both. Databricks has no capture-group argument on regexp_instr.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpIndexOfDatabricks(params: String[4]):String[1]
+{
+   assert($params->at(2)->removeQuotesIfExist() == '0', | 'regexpIndexOf with a capture group is not supported on Databricks: regexp_instr takes no group argument');
+   '(regexp_instr(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(3)) + ') - 1)';
+}
+
+// Spark's regexp_replace always replaces every occurrence; its fourth argument is a start position,
+// not an occurrence count, so replaceFirst has no direct equivalent.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpReplaceDatabricks(params: String[5]):String[1]
+{
+   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Databricks: regexp_replace always replaces every occurrence');
+   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(4)) + ', ' + $params->at(2) + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
@@ -350,14 +553,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         )
     );
     if ($cmd == '',|fail('The DurationUnit \''+$p->at(2)+'\' is not supported yet for date_diff'),|'');
-    [$cmd];
-}
-
-function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::arrayJoinDatabricks(p:String[1..2]):String[1]
-{
-    let delimiter = if($p->size() == 1, |',', |$p->at(1));
-    let values = if($p->at(0)->size() == 1, |'array('+$p->at(0)+')', |$p->at(0));
-    let cmd = 'array_join('+ $values + ', ' + $p->at(1) +')';
     [$cmd];
 }
 
@@ -414,19 +609,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processExtractFromSemiStructuredParamsForDatabricks(params:String[3]):String[1]
 {
+  // Databricks stores SEMISTRUCTURED as VARIANT. Use the colon operator with an explicit cast
+  // rather than `get_json_object`, which only accepts STRING input.
+  // Path is dot-separated (e.g. 'entity.entityType'); each segment is backticked so that names
+  // containing special characters such as `@type` remain valid identifiers in the path expression.
   let baseRelationalOp = $params->at(0);
   let pathNavigation = $params->at(1);
   let returnType = $params->at(2);
 
-  let elementAccess = format('get_json_object(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]);
+  let pathSegments = $pathNavigation->split('.');
+  let backTickedPath = $pathSegments->map(s | '`' + $s + '`')->joinStrings('.');
+  let elementAccess = $baseRelationalOp + ':' + $backTickedPath;
 
-  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | $elementAccess, |
-  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
-  if ($returnType == 'DATE', | 'cast(' + $elementAccess + ' as DATE)', |
-  if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
-  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
-  if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + ' as INT)', |
-  if ($returnType == 'DECIMAL', | 'cast(' + $elementAccess + ' as DECIMAL)', |
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | $elementAccess + '::STRING', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | $elementAccess + '::TIMESTAMP', |
+  if ($returnType == 'DATE', | $elementAccess + '::DATE', |
+  if ($returnType == 'BOOLEAN', | $elementAccess + '::BOOLEAN', |
+  if ($returnType == 'FLOAT', | $elementAccess + '::DOUBLE', |
+  if ($returnType == 'INTEGER', | $elementAccess + '::INT', |
+  if ($returnType == 'DECIMAL', | $elementAccess + '::DECIMAL', |
   $elementAccess)))))));
 }
 
@@ -449,4 +650,190 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 {  
   assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');  
   '(SELECT param_' + $v.name + ' FROM func_param_table)';  
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredElementForDatabricks(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $s->match([
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForDatabricks($sgc),
+      a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForDatabricks($sgc),
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForDatabricks($sgc),
+      a:SemiStructuredArrayFlattenRelation[1]| $a->processSemiStructuredArrayFlattenRelationForDatabricks($sgc)
+   ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredObjectNavigationForDatabricks(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Databricks addresses semi-structured VARIANT data with the colon operator - `col:field.subField[index]`.
+   // The first hop into the VARIANT value uses ':'; subsequent property hops use '.'.
+   // Property names are always backticked so that names containing special characters
+   // (e.g. `@type`) remain valid path identifiers.
+   let processedOperand = $s.operand->processOperation($sgc);
+   let isNestedNavigation = $s.operand->instanceOf(SemiStructuredObjectNavigation);
+
+   let elementAccess = $processedOperand + $s->match([
+      p: SemiStructuredPropertyAccess[1]     | if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+      a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
+   ]);
+
+   if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForDatabricksSemiStructuredData($s.returnType));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenForDatabricks(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Used inside INNER JOIN LATERAL. Databricks needs an actual subquery expression, and
+   // `explode_outer` emits a column named `col` (its `AS VALUE` alias is ignored at top-level).
+   // Wrap in a subquery that renames `col` to `VALUE` so downstream references
+   // (see processSemiStructuredArrayFlattenOutputForDatabricks) resolve as `alias.VALUE`.
+   //
+   // Use `try_cast` (not `cast`): a plain cast of a VARIANT that holds a JSON-string
+   // representation of an array raises INVALID_VARIANT_CAST at runtime. `try_cast`
+   // returns NULL on failure, and `explode_outer(NULL)` yields one NULL row per the
+   // "outer" contract, matching the semi-structured null-safety semantics used elsewhere.
+   let processedNavigation = $s.navigation->processOperation($sgc);
+   '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $processedNavigation + ' as array<variant>))))';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenRelationForDatabricks(s:SemiStructuredArrayFlattenRelation[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // `explode_outer` in a top-level SELECT emits a column called `col`; a trailing `AS VALUE` on
+   // that SELECT is ignored by Databricks. Wrap the explode in an inner SELECT and alias `col`
+   // to `VALUE` in the outer projection so that downstream references (see
+   // processSemiStructuredArrayFlattenOutputForDatabricks) resolve.
+   //
+   // See processSemiStructuredArrayFlattenForDatabricks for the try_cast rationale.
+   let processedNavigation = $s.navigation->processOperation($sgc);
+   '(select `col` as `VALUE` from (select explode_outer(try_cast(' + $processedNavigation + ' as array<variant>))))';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenOutputForDatabricks(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let backTick = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'`');
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($backTick + $s.tableAliasColumn.alias.name->toOne() + $backTick);
+   $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig) + castSuffixForDatabricksSemiStructuredData($s.returnType);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::castSuffixForDatabricksSemiStructuredData(type:Type[0..1]): String[1]
+{
+   if($type == String, | '::STRING', |
+   if($type == StrictDate, | '::DATE', |
+   if($type == Integer, | '::INT', |
+   if($type == Float, | '::DOUBLE', |
+   if($type == Boolean, | '::BOOLEAN', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::TIMESTAMP', |
+   if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::STRING', |
+   '')))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinTreeNodeWithLateralJoinForDatabricks(j:JoinTreeNode[1], dbConfig:DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   ' ' + $format.separator() + 'inner join lateral '
+   + $j.alias
+         ->map(a|^$a(name = '`' + $a.name + '`'))
+         ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks(schema:String[1], functionName:String[1], params:FunctionParameter[*]):String[1]
+{
+   if($schema == '', | $functionName, | $schema + '.' + $functionName) + '(' + $params->map(p|$p.name)->joinStrings(', ') + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::variableDeclarationProcessorForDatabricks(v:VariableDeclaration[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $v.name + ' := (' + $v.value->match([
+                         l: Literal[1] | $l.value,
+                         r: RelationalOperationElement[1]| $r->processOperation($sgc)
+                       ])->cast(@String) + ')'
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildLambdaParameterForDatabricks(param:RelationalLambdaParameter[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   '`%s`'->format($param.name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildLambdaForDatabricks(lambda:RelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   $lambda->match([
+      fold: FoldRelationalLambda[1] | buildFoldLambdaForDatabricks($fold, $sgc),
+      map: MapRelationalLambda[1] | buildMapLambdaForDatabricks($map, $sgc),
+      filter: FilterRelationalLambda[1] | buildFilterLambdaForDatabricks($filter, $sgc)
+   ]);
+}
+
+// Renders the collection argument of a Databricks higher-order function (aggregate/transform/filter).
+// A typed array is passed through bare (matching Snowflake, preserving element types). A
+// VARIANT/semi-structured operand is coerced to ARRAY<VARIANT>: `try_cast` handles a VARIANT that
+// holds an array, and the `array(cast(... as variant))` fallback wraps a scalar VARIANT into a
+// 1-element ARRAY<VARIANT>. Both coalesce arms are ARRAY<VARIANT> so their types match (a bare
+// `array(%s)` fallback over an already-ARRAY<VARIANT> value would yield ARRAY<ARRAY<VARIANT>> and
+// trip DATATYPE_MISMATCH.DATA_DIFF_TYPES).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::lambdaCollectionExprForDatabricks(input:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let processed = $input->processOperation($sgc);
+   if($input->isSemiStructuredOperandForDatabricks(),
+      | 'coalesce(try_cast(' + $processed + ' as array<variant>), array(cast(' + $processed + ' as variant)))',
+      | $processed
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFoldLambdaForDatabricks(lambda:FoldRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Databricks higher-order function lambdas do not accept parameter type annotations.
+   // Syntax: `aggregate(array, zero, (acc, x) -> body)`
+   'aggregate(%s, %s, (`%s`, `%s`) -> %s)'->format([
+      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
+      $lambda.parameters->at(1).value->processOperation($sgc),
+      $lambda.parameters->at(1).name,
+      $lambda.parameters->at(0).name,
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildMapLambdaForDatabricks(lambda:MapRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
+   'transform(%s, `%s` -> %s)'->format([
+      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
+      $lambda.parameters->at(0).name,
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFilterLambdaForDatabricks(lambda:FilterRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Databricks `filter(array, x -> body)` - lambda param has no type annotation.
+   'filter(%s, `%s` -> %s)'->format([
+      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
+      $lambda.parameters->at(0).name,
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::toVariantForDatabricks(params:String[*]):String[1]
+{
+   if($params->size() == 1,
+      | 'ifnull(cast(%s as VARIANT), parse_json(\'null\'))'->format($params->toOne()),
+      | 'cast(array(%s) as VARIANT)'->format($params->joinStrings(','))
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformToVariantObjectDatabricks(params:String[*]):String[1]
+{
+   // params are the flattened [k1, v1, k2, v2, ...] of the object. Snowflake's object-construct
+   // `{k: v}` allows heterogeneous value types; Databricks `map(...)` requires a single value type,
+   // so each value is cast to VARIANT, yielding MAP<STRING, VARIANT>. The surrounding cast (added by
+   // processNewMap/processPut) then coerces to the declared MAP/VARIANT type, and keys/values/
+   // mapConcatenate operate on the resulting map as in Snowflake.
+   range(0, $params->size(), 2)->map(i | $params->at($i) + ', cast(' + $params->at($i + 1) + ' as variant)')->joinStrings(', ');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformDateConstructionForDatabricks(params:String[*]):String[1]
+{
+   if($params->size() == 3,
+      | 'make_date(' + $params->at(0) + ', ' + $params->at(1) + ', ' + $params->at(2) + ')',
+      | if($params->size() >= 6,
+           | 'make_timestamp(' + $params->at(0) + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $params->at(3) + ', ' + $params->at(4) + ', ' + $params->at(5) + ')',
+           | fail('Date construction with ' + $params->size()->toString() + ' parameters not supported for Databricks'); '';
+        )
+   );
 }

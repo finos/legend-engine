@@ -1,0 +1,189 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+'''
+Whether the given value is equal to every value in the single column of the given relation.
+
+The relation must carry exactly one column, of the same type as the value; the compiler
+rejects anything else. Nulls in that column are ignored rather than making the comparison
+undecided, which is where this parts company with the SQL `= ALL` it generates -- `Boolean[1]`
+is two-valued and has no UNKNOWN to return.
+
+An empty relation answers `true`, as `= ALL` does over an empty subquery, and so does a column
+holding only nulls. An empty value still answers `false`: absence is not a value the comparison
+holds for, matching the scalar `=`.
+
+Negation is exact. `!$value->equalAll($rel)` is `true` for precisely the cases this answers `false`
+for, empty values included, and on relational stores it generates a plain `not` over a decided
+predicate rather than a disjunction.
+
+There is no `notEqualAny`: `!$v->equalAll($r)` is it, by De Morgan.
+
+**Parameters**
+- `value` — the value to compare; may be empty.
+- `rel` — a relation with a single column of the same type as `value`.
+
+**Returns** `true` when every non-null value `c` in the column satisfies `value = c`.
+
+**Examples**
+```pure
+let limits = #TDS
+               threshold
+               250
+               250
+             #->select(~threshold);
+
+#TDS
+  productId, price
+  1, 100
+  2, 250
+  3, 400
+#->filter(p | $p.price->equalAll($limits))   // keeps 2
+```
+
+**See also** `equalAny(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`in(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`exists(Relation<T>[1], Function<{T[1]->Boolean[1]}>[1]):Boolean[1]`
+'''
+function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::equalAll<U,Z>(value:U[0..1], rel:Relation<Z=(?:U)>[1]):Boolean[1]
+{
+   let col = $rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,U|0..1>);
+   $value->isNotEmpty() && !$rel->meta::pure::functions::relation::exists({row:Z[1] | $col->eval($row)->isNotEmpty() && ($col->eval($row) != $value)});
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalAll::testEqualAll<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let limits = #TDS
+                                 threshold
+                                 250
+                                 250
+                               #;
+                  $products->filter(p | $p.price->equalAll($limits->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalAll::testEqualAll_Negated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let limits = #TDS
+                                 threshold
+                                 250
+                                 250
+                               #;
+                  $products->filter(p | !$p.price->equalAll($limits->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   3,400\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let limits = #TDS
+                                 threshold
+                                 150
+                               #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | $p.price->equalAll($limits->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalAll::testEqualAll_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, null
+                                 #;
+                  let limits = #TDS
+                                 threshold
+                                 100
+                               #;
+                  $products->filter(p | $p.price->equalAll($limits->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalAll::testEqualAll_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let limits = #TDS
+                                 threshold
+                                 100
+                                 null
+                               #;
+                  $products->filter(p | $p.price->equalAll($limits->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}

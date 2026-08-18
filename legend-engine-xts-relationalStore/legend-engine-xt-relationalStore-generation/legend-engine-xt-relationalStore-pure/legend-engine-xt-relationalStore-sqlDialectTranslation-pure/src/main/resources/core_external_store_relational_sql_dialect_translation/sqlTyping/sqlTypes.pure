@@ -63,6 +63,10 @@ Class <<typemodifiers.abstract>> meta::external::store::relational::sqlDialectTr
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::DateSqlType extends AbstractTemporalSqlType {}
 Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::TimestampSqlType extends AbstractTemporalSqlType {}
 
+// ---------------------- Array ----------------------------------------------
+
+Class meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::ArraySqlType extends SqlType {}
+
 // -----------------------------------------------------------------------------
 
 function meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::orderedSubTypes(cls: Class<SqlType>[1]): Class<SqlType>[1..*]

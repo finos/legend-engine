@@ -40,6 +40,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -193,9 +194,22 @@ public class HelperServiceBuilder
     {
         Root_meta_legend_service_metamodel_ServiceTestData pureTestData = new Root_meta_legend_service_metamodel_ServiceTestData_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::ServiceTestData"));
 
-        if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
+        boolean hasConnections = testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty();
+        boolean hasServiceTestData = testData.serviceTestData != null && !testData.serviceTestData.isEmpty();
+        if (hasConnections && hasServiceTestData)
+        {
+            throw new EngineException("Service test data cannot have both 'connections' and 'serviceTestData' blocks populated; use one or the other.", testData.sourceInformation, EngineErrorType.COMPILATION);
+        }
+
+        if (hasConnections)
         {
             pureTestData._connectionsTestData(ListIterate.collect(testData.connectionsTestData, data -> HelperServiceBuilder.processServiceConnectionData(data, context, processingContext)));
+        }
+
+        if (hasServiceTestData)
+        {
+            // validation
+            pureTestData._resolvedData(new PureMap(new DataResolverHelper().resolveDataFromDataResolvers(testData.serviceTestData, context, processingContext)));
         }
 
         return pureTestData;
@@ -207,6 +221,23 @@ public class HelperServiceBuilder
         {
             EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements);
             ListIterate.forEach(testData.connectionsTestData, data -> data.data.accept(embeddedDataPrerequisiteElementsPassBuilder));
+        }
+        if (testData.serviceTestData != null && !testData.serviceTestData.isEmpty())
+        {
+            EmbeddedDataPrerequisiteElementsPassBuilder embeddedDataPrerequisiteElementsPassBuilder = new EmbeddedDataPrerequisiteElementsPassBuilder(context, prerequisiteElements);
+            for (org.finos.legend.engine.protocol.pure.v1.model.data.DataResolver resolver : testData.serviceTestData)
+            {
+                if (resolver instanceof org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver)
+                {
+                    org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver base = (org.finos.legend.engine.protocol.pure.v1.model.data.BaseDataResolver) resolver;
+                    prerequisiteElements.add(base.elementPointer);
+                    base.data.accept(embeddedDataPrerequisiteElementsPassBuilder);
+                }
+                else if (resolver instanceof org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver)
+                {
+                    prerequisiteElements.add(((org.finos.legend.engine.protocol.pure.v1.model.data.ReferenceDataResolver) resolver).elementPointer);
+                }
+            }
         }
     }
 

@@ -178,18 +178,60 @@ lists the Maven module name(s) to test in that job. Key groups:
 ## 6. Docker Images
 
 The `legend-engine-config/legend-engine-server` module produces a Docker image via the
-`dockerfile-maven-plugin`. The image:
+`jib-maven-plugin` (no Dockerfile, no Docker daemon needed to build/push). The image:
 
-- Base: `eclipse-temurin:11-jre`
-- Exposes port `6300`
-- Entrypoint: `java -jar legend-engine-server.jar server <config>`
+- Base: `eclipse-temurin:11.0.17_8-jdk-jammy` (`<from><image>` in the module pom)
+- Server listens on port `6300`
+- Entrypoint: `java <jvmFlags> -cp ... org.finos.legend.engine.server.Server server /config/config.json`
+- `src/main/resources/docker/config/` is baked in at `/config/`
+
+All three profiles bind to `install`: `docker-snapshot` pushes the `snapshot` tag,
+`docker` pushes `${project.version}`, and `docker-local` builds to the local Docker daemon
+instead of pushing. The versioned push therefore happens both in `release.yml`'s
+"Build Release Tag" step and in the `release:perform` workflows.
+
+There is no `-jar`-able artifact for this module — the image is the distribution.
+
+`legend-engine-pure-ide-light-http-server` still uses the older `dockerfile-maven-plugin`
+plus a checked-in `Dockerfile`.
 
 **Building locally:**
 
 ```bash
+# push the snapshot tag (needs DOCKER_USERNAME / DOCKER_PASSWORD)
 mvn install -P docker-snapshot -pl legend-engine-config/legend-engine-server/legend-engine-server-http-server -am
-docker run -p 6300:6300 finos/legend-engine-server:snapshot
+
+# or build into the local Docker daemon, no registry credentials required
+mvn install -P docker-local -pl legend-engine-config/legend-engine-server/legend-engine-server-http-server -am
+docker run -p 6300:6300 legend-engine-server-http-server
 ```
+
+On Apple Silicon, `docker-local` fails with *"configured platforms don't match the Docker
+Engine's OS and architecture"* — jib targets `linux/amd64` by default and refuses to load
+a foreign-arch image into the local engine. Add `-Djib.from.platforms=linux/arm64` for
+local builds. Do not set this in the pom: it would change the manifest of the published
+image. `docker`/`docker-snapshot` push to a registry and are unaffected.
+
+The baked `/config/config.json` is templated with environment variables (`ENGINE_PORT`,
+`MONGODB_URI`, GitLab OAuth), so it will not boot as-is. To run the image standalone,
+override the arguments with a self-contained config:
+
+```bash
+docker run -p 6300:6300 \
+  -v "$PWD/legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test:/testconfig:ro" \
+  legend-engine-server-http-server server /testconfig/userTestConfig.json
+```
+
+**Vulnerability scanning:** `.github/workflows/docker.yml` runs weekly (and on demand)
+and scans the *published* `:snapshot` tags of all three images with Trivy. Results are
+uploaded to the repository's Security tab as code-scanning alerts rather than failing the
+run, so container CVEs are triaged alongside Dependabot alerts. It deliberately has no
+`push`/`pull_request` triggers — `:snapshot` is republished on every master merge, so it
+already tracks the code.
+
+Note that scan coverage depends on the image layout: an uber-jar hides most dependency
+identities from Trivy's Java scanner. When this module still shipped a shaded jar, Trivy
+resolved 875 dependencies in the image; with jib's exploded layout it resolves 1083.
 
 ---
 

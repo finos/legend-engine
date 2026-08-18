@@ -35,7 +35,7 @@
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:38cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[3],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
@@ -44,7 +44,7 @@
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[4],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:47cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
     "expectedError" : "Any is not managed yet!"
@@ -375,12 +375,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.0D\nactual:   0D\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""

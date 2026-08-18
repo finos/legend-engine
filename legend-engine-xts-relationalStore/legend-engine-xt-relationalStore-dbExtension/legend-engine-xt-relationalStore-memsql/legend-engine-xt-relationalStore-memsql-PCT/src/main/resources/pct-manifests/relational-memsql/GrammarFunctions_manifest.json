@@ -1,167 +1,38 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotFalseExpression_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotFalse_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
     "expectedError" : "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotTrueExpression_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
-    "expectedError" : "NullPointer exception"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqBoolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqFloat_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqInteger_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqPrimitiveExtension_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqString_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqVarIdentity_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualBoolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualFloat_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualInteger_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualPrimitiveExtension_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualString_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type SideClass"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Date_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Number_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_String_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Date_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Number_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_String_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Date_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Number_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_String_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Date_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Number_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_String_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass"
   }, {
     "test" : "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/filter.pure:49cc46-50); error compiling generated Java code"
@@ -190,35 +61,17 @@
     "test" : "meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
   }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseMultiple_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsEmptyFalseSingle_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsEmpty_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyFalse_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsNotEmptyMultiple_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:63cc79-83); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToOne_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:52cc64-68); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromOneToOne_Function_1__Boolean_1_",
-    "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure:43cc92-98); error compiling generated Java code:"
+    "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
     "expectedError" : "The function 'range' (state: [Select, false]) is not supported yet"

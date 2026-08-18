@@ -22,7 +22,9 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataQualityParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityExecutionContext;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
@@ -34,6 +36,12 @@ import org.finos.legend.engine.protocol.dataquality.metamodel.RelationValidation
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
 import org.finos.legend.engine.protocol.dataquality.metamodel.MD5HashStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.ReconStrategy;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestData;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationComparisonTestSuite;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTest;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestData;
+import org.finos.legend.engine.protocol.dataquality.metamodel.testable.DataQualityRelationValidationTestSuite;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -42,9 +50,13 @@ import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.PropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.dsl.graph.valuespecification.constant.classInstance.SubTypeGraphFetchTree;
@@ -151,6 +163,14 @@ public class DataQualityTreeWalker
             relationComparison.expectedMatch = Double.parseDouble(reconExpectedMatchContext.FLOAT().getText());
         }
 
+        // testSuites (optional)
+        DataQualityParserGrammar.DqTestSuitesContext testSuitesContext = PureGrammarParserUtility.validateAndExtractOptionalField(
+                ctx.dqTestSuites(), "testSuites", relationComparison.sourceInformation);
+        if (Objects.nonNull(testSuitesContext))
+        {
+            relationComparison.testSuites = ListIterate.collect(testSuitesContext.dqTestSuite(), this::visitRelationComparisonTestSuite);
+        }
+
         return relationComparison;
     }
 
@@ -194,7 +214,10 @@ public class DataQualityTreeWalker
         dataQuality._package = validationDefinitionContext.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(validationDefinitionContext.qualifiedName().packagePath().identifier());
         dataQuality.sourceInformation = walkerSourceInformation.getSourceInformation(validationDefinitionContext);
         dataQuality.stereotypes = validationDefinitionContext.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(validationDefinitionContext.stereotypes());
-        dataQuality.taggedValues = validationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(validationDefinitionContext.taggedValues());
+        dataQuality.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                validationDefinitionContext.documentation() == null ? null : validationDefinitionContext.documentation().STRING().getSymbol(),
+                validationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(validationDefinitionContext.taggedValues()),
+                this.walkerSourceInformation);
         dataQuality.sourceInformation = walkerSourceInformation.getSourceInformation(validationDefinitionContext);
 
         // context
@@ -347,7 +370,7 @@ public class DataQualityTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
@@ -399,7 +422,10 @@ public class DataQualityTreeWalker
         dataqualityRelationValidation._package = relationValidationDefinitionContext.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(relationValidationDefinitionContext.qualifiedName().packagePath().identifier());
         dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
         dataqualityRelationValidation.stereotypes = relationValidationDefinitionContext.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(relationValidationDefinitionContext.stereotypes());
-        dataqualityRelationValidation.taggedValues = relationValidationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(relationValidationDefinitionContext.taggedValues());
+        dataqualityRelationValidation.taggedValues = PureGrammarParserUtility.taggedValuesWithDocumentation(
+                relationValidationDefinitionContext.documentation() == null ? null : relationValidationDefinitionContext.documentation().STRING().getSymbol(),
+                relationValidationDefinitionContext.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(relationValidationDefinitionContext.taggedValues()),
+                this.walkerSourceInformation);
         dataqualityRelationValidation.sourceInformation = walkerSourceInformation.getSourceInformation(relationValidationDefinitionContext);
 
         // query
@@ -418,6 +444,14 @@ public class DataQualityTreeWalker
         if (Objects.nonNull(persistenceStrategyContext))
         {
             dataqualityRelationValidation.persistenceStrategy = IDataQualityGrammarParserExtension.parsePersistenceStrategy(persistenceStrategyContext.islandDefinition(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        }
+
+        // testSuites (optional)
+        DataQualityParserGrammar.DqTestSuitesContext testSuitesContext = PureGrammarParserUtility.validateAndExtractOptionalField(
+                relationValidationDefinitionContext.dqTestSuites(), "testSuites", dataqualityRelationValidation.sourceInformation);
+        if (Objects.nonNull(testSuitesContext))
+        {
+            dataqualityRelationValidation.testSuites = ListIterate.collect(testSuitesContext.dqTestSuite(), this::visitRelationValidationTestSuite);
         }
 
         return dataqualityRelationValidation;
@@ -473,6 +507,95 @@ public class DataQualityTreeWalker
             return validationTypeContext.validationTypeVal().VALIDATION_TYPE_ROW().getText();
         }
         return validationTypeContext.validationTypeVal().VALIDATION_TYPE_AGG().getText();
+    }
+
+    // -------------------- Testable --------------------
+
+    private DataQualityRelationValidationTestSuite visitRelationValidationTestSuite(DataQualityParserGrammar.DqTestSuiteContext ctx)
+    {
+        DataQualityRelationValidationTestSuite suite = new DataQualityRelationValidationTestSuite();
+        suite.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        suite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        DataQualityParserGrammar.DqTestSuiteDataContext dataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dqTestSuiteData(), "data", suite.sourceInformation);
+        if (Objects.nonNull(dataContext))
+        {
+            DataQualityRelationValidationTestData testData = new DataQualityRelationValidationTestData();
+            testData.sourceInformation = walkerSourceInformation.getSourceInformation(dataContext);
+            testData.testData = visitStoreTestData(dataContext);
+            suite.testData = testData;
+        }
+
+        DataQualityParserGrammar.DqTestSuiteTestsContext testsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dqTestSuiteTests(), "tests", suite.sourceInformation);
+        suite.tests = ListIterate.collect(testsContext.dqTestBlock(), block -> visitAtomicTest(block, false));
+        return suite;
+    }
+
+    private DataQualityRelationComparisonTestSuite visitRelationComparisonTestSuite(DataQualityParserGrammar.DqTestSuiteContext ctx)
+    {
+        DataQualityRelationComparisonTestSuite suite = new DataQualityRelationComparisonTestSuite();
+        suite.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        suite.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        DataQualityParserGrammar.DqTestSuiteDataContext dataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.dqTestSuiteData(), "data", suite.sourceInformation);
+        if (Objects.nonNull(dataContext))
+        {
+            DataQualityRelationComparisonTestData testData = new DataQualityRelationComparisonTestData();
+            testData.sourceInformation = walkerSourceInformation.getSourceInformation(dataContext);
+            testData.testData = visitStoreTestData(dataContext);
+            suite.testData = testData;
+        }
+
+        DataQualityParserGrammar.DqTestSuiteTestsContext testsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dqTestSuiteTests(), "tests", suite.sourceInformation);
+        suite.tests = ListIterate.collect(testsContext.dqTestBlock(), block -> visitAtomicTest(block, true));
+        return suite;
+    }
+
+    private List<FunctionTestData> visitStoreTestData(DataQualityParserGrammar.DqTestSuiteDataContext ctx)
+    {
+        List<FunctionTestData> result = new ArrayList<>();
+        if (ctx.dqStoreTestData() == null || ctx.dqStoreTestData().isEmpty())
+        {
+            return result;
+        }
+        for (DataQualityParserGrammar.DqStoreTestDataContext storeCtx : ctx.dqStoreTestData())
+        {
+            result.add(visitStoreTestDataEntry(storeCtx));
+        }
+        return result;
+    }
+
+    private FunctionTestData visitStoreTestDataEntry(DataQualityParserGrammar.DqStoreTestDataContext ctx)
+    {
+        FunctionTestData testData = new FunctionTestData();
+        testData.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        String path = (ctx.qualifiedName().packagePath() == null ? "" : (PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier()) + "::"))
+                + PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        testData.packageableElementPointer = new PackageableElementPointer(
+                PackageableElementType.STORE,
+                path,
+                walkerSourceInformation.getSourceInformation(ctx.qualifiedName())
+        );
+        testData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(ctx.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        return testData;
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest visitAtomicTest(DataQualityParserGrammar.DqTestBlockContext ctx, boolean forComparison)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.test.AtomicTest atomicTest = forComparison ? new DataQualityRelationComparisonTest() : new DataQualityRelationValidationTest();
+        atomicTest.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        atomicTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        DataQualityParserGrammar.DqTestAssertsContext assertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dqTestAsserts(), "asserts", atomicTest.sourceInformation);
+        atomicTest.assertions = ListIterate.collect(assertsContext.dqTestAssert(), this::visitTestAssertion);
+        return atomicTest;
+    }
+
+    private TestAssertion visitTestAssertion(DataQualityParserGrammar.DqTestAssertContext ctx)
+    {
+        TestAssertion assertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        assertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        return assertion;
     }
 
 }

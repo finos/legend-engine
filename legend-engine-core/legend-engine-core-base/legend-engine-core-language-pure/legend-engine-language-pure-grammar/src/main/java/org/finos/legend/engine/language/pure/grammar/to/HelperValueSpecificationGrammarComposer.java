@@ -230,6 +230,18 @@ public class HelperValueSpecificationGrammarComposer
         return transformer.isRenderingHTML() ? "<span class='pureGrammar-decimal'>" + b + "d</span>" : b + "D";
     }
 
+    public static String renderString(CString cString, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        String s = cString.value;
+        if (transformer.isRenderingHTML() || transformer.isValueSpecificationExternalParameter())
+        {
+            return renderString(s, transformer);
+        }
+        // the flag decides, nothing else: the parser sets it only for a literal authored as a block whose value can be
+        // written back as one, so there is no value inspection to do here
+        return cString.multiLine ? renderTextBlock(s, transformer.getIndentationString()) : convertString(s, true);
+    }
+
     public static String renderString(String s, DEPRECATED_PureGrammarComposerCore transformer)
     {
         String resultString;
@@ -246,6 +258,85 @@ public class HelperValueSpecificationGrammarComposer
             resultString = convertString(s, true);
         }
         return resultString;
+    }
+
+
+
+    /**
+     * Write a value as a `'''` block that {@code PureGrammarParserUtility.processTextBlock} reads back unchanged, for
+     * any value. The parser dedents, strips trailing whitespace per line and then unescapes, so anything that would be
+     * consumed by those steps is emitted as an escape instead of a raw character.
+     */
+    private static String renderTextBlock(String value, String indent)
+    {
+        boolean closeOnOwnLine = value.endsWith("\n");
+        // when the closing delimiter shares the last content line there is no blank line to pin the indentation the
+        // parser strips, so each line's own leading whitespace has to be escaped out of the measurement
+        boolean escapeLeadingWhitespace = !closeOnOwnLine;
+        boolean escapeQuotes = value.contains("'''");
+        String[] lines = (closeOnOwnLine ? value.substring(0, value.length() - 1) : value).split("\n", -1);
+        StringBuilder builder = new StringBuilder("'''\n");
+        for (int i = 0; i < lines.length; i++)
+        {
+            builder.append(indent).append(escapeTextBlockLine(lines[i], escapeLeadingWhitespace, escapeQuotes));
+            if (i < lines.length - 1)
+            {
+                builder.append('\n');
+            }
+        }
+        if (closeOnOwnLine)
+        {
+            builder.append('\n').append(indent);
+        }
+        return builder.append("'''").toString();
+    }
+
+    private static String escapeTextBlockLine(String line, boolean escapeLeadingWhitespace, boolean escapeQuotes)
+    {
+        int leading = 0;
+        while (leading < line.length() && Character.isWhitespace(line.charAt(leading)))
+        {
+            leading++;
+        }
+        boolean allWhitespace = leading == line.length() && !line.isEmpty();
+        // a whitespace-only line would otherwise read back as empty: the parser counts it as blank and strips it away
+        int trailingFrom = allWhitespace ? line.length() - 1 : trailingWhitespaceStart(line, leading);
+        StringBuilder builder = new StringBuilder(line.length());
+        for (int i = 0; i < line.length(); i++)
+        {
+            char c = line.charAt(i);
+            if (i >= trailingFrom || (i == 0 && (allWhitespace || (escapeLeadingWhitespace && leading > 0))))
+            {
+                builder.append(String.format("\\u%04x", (int) c));
+            }
+            else if (c == '\\')
+            {
+                builder.append("\\\\");
+            }
+            else if (c == '\r')
+            {
+                builder.append("\\r");
+            }
+            else if (c == '\'' && escapeQuotes)
+            {
+                builder.append("\\'");
+            }
+            else
+            {
+                builder.append(c);
+            }
+        }
+        return builder.toString();
+    }
+
+    private static int trailingWhitespaceStart(String line, int leading)
+    {
+        int end = line.length();
+        while (end > leading && Character.isWhitespace(line.charAt(end - 1)))
+        {
+            end--;
+        }
+        return end;
     }
 
     public static String renderBoolean(Boolean b, DEPRECATED_PureGrammarComposerCore transformer)

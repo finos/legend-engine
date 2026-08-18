@@ -23,6 +23,7 @@ import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
@@ -134,10 +135,7 @@ public class RelationalParseTreeWalker
         }
         database.schemas = ListIterate.collect(ctx.schema(), schemaCtx -> this.visitSchema(schemaCtx, scopeInfo));
         database.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        if (ctx.taggedValues() != null)
-        {
-            database.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-        }
+        database.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         // NOTE: if tables and views are defined without a schema, create a default schema to hold these
         List<Table> tables = ListIterate.collect(ctx.table(), this::visitTable);
         List<View> views = ListIterate.collect(ctx.view(), viewCtx -> this.visitView(viewCtx, scopeInfo));
@@ -177,6 +175,18 @@ public class RelationalParseTreeWalker
         });
     }
 
+    /**
+     * The element's tagged values, with a documentation block promoted into a doc tagged value. An element with
+     * neither yields an empty list, which the protocol omits from the serialized model.
+     */
+    private List<TaggedValue> visitTaggedValues(RelationalParserGrammar.DocumentationContext documentationCtx, RelationalParserGrammar.TaggedValuesContext taggedValuesCtx)
+    {
+        return PureGrammarParserUtility.taggedValuesWithDocumentation(
+                documentationCtx == null ? null : documentationCtx.STRING().getSymbol(),
+                taggedValuesCtx == null ? Lists.mutable.empty() : this.visitTaggedValues(taggedValuesCtx),
+                this.walkerSourceInformation);
+    }
+
     private List<TaggedValue> visitTaggedValues(RelationalParserGrammar. TaggedValuesContext ctx)
     {
         return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
@@ -186,7 +196,7 @@ public class RelationalParseTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
@@ -208,11 +218,7 @@ public class RelationalParseTreeWalker
         {
             schema.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            schema.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        schema.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         return schema;
     }
 
@@ -234,11 +240,7 @@ public class RelationalParseTreeWalker
         {
             table.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            table.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        table.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         return table;
     }
 
@@ -251,11 +253,7 @@ public class RelationalParseTreeWalker
         {
             column.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            column.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        column.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         boolean nullable = true;
         if (ctx.PRIMARY_KEY() != null)
         {
@@ -555,11 +553,7 @@ public class RelationalParseTreeWalker
         {
             view.stereotypes = this.visitStereotypes(ctx.stereotypes());
         }
-        if (ctx.taggedValues() != null)
-        {
-            view.taggedValues = this.visitTaggedValues(ctx.taggedValues());
-
-        }
+        view.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         return view;
     }
 

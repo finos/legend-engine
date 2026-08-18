@@ -1,0 +1,321 @@
+tests:
+  # Scalar subquery in SELECT
+  - id: subquery_scalar_select
+    sql: "SELECT name, salary, (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) AS avg_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in SELECT"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_scalar_max
+    sql: "SELECT name, salary, (SELECT MAX(salary) FROM persons) AS max_salary FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in SELECT"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Subquery in WHERE with IN
+  - id: subquery_in_where
+    sql: "SELECT name FROM persons WHERE id IN (SELECT person_id FROM orders WHERE amount > 100) ORDER BY 1"
+    feature: "Subquery with IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_in_dept
+    sql: "SELECT name FROM persons WHERE dept_id IN (SELECT id FROM departments WHERE budget > 500000) ORDER BY 1"
+    feature: "Subquery with IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Subquery with NOT IN
+  - id: subquery_not_in
+    sql: "SELECT name FROM persons WHERE id NOT IN (SELECT person_id FROM orders WHERE person_id IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with NOT IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_not_in_dept
+    sql: "SELECT name FROM persons WHERE dept_id NOT IN (SELECT id FROM departments WHERE budget < 600000) AND dept_id IS NOT NULL ORDER BY 1"
+    feature: "Subquery with NOT IN"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Subquery in WHERE with EXISTS
+  - id: subquery_exists
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Subquery with EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_exists_dept
+    sql: "SELECT d.name FROM departments d WHERE EXISTS (SELECT 1 FROM persons p WHERE p.dept_id = d.id AND p.salary > 70000) ORDER BY 1"
+    feature: "Subquery with EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Subquery with NOT EXISTS
+  - id: subquery_not_exists
+    sql: "SELECT p.name FROM persons p WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Subquery with NOT EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Derived table (subquery in FROM)
+  - id: subquery_derived_table
+    sql: "SELECT sub.dept_id, sub.avg_salary FROM (SELECT dept_id, AVG(salary) AS avg_salary FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL GROUP BY dept_id) sub ORDER BY 1"
+    feature: "Derived table (subquery in FROM)"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: subquery_derived_join
+    sql: "SELECT p.name, sub.avg_salary FROM persons p INNER JOIN (SELECT dept_id, AVG(salary) AS avg_salary FROM persons WHERE salary IS NOT NULL GROUP BY dept_id) sub ON p.dept_id = sub.dept_id ORDER BY 1"
+    feature: "Derived table (subquery in FROM)"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # Correlated subquery
+  - id: subquery_correlated
+    sql: "SELECT p.name, p.salary FROM persons p WHERE p.salary > (SELECT AVG(salary) FROM persons WHERE dept_id = p.dept_id AND salary IS NOT NULL) ORDER BY 1"
+    feature: "Correlated subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_correlated_count
+    sql: "SELECT p.name, (SELECT COUNT(*) FROM orders o WHERE o.person_id = p.id) AS order_count FROM persons p ORDER BY 1"
+    feature: "Correlated subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Subquery with aggregate comparison
+  - id: subquery_agg_comparison
+    sql: "SELECT name, salary FROM persons WHERE salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with aggregate comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_agg_min
+    sql: "SELECT name, salary FROM persons WHERE salary = (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
+    feature: "Subquery with aggregate comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Subquery in HAVING
+  - id: subquery_in_having
+    sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > (SELECT AVG(cnt) FROM (SELECT COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id) sub) ORDER BY 1"
+    feature: "Subquery in HAVING"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Subquery with UNION
+  - id: subquery_union
+    sql: "SELECT name FROM persons WHERE id IN (SELECT person_id FROM orders WHERE amount > 100 UNION SELECT person_id FROM orders WHERE status = 'completed') ORDER BY 1"
+    feature: "Subquery with UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Lateral-style derived table with aggregation
+  - id: subquery_derived_agg_filter
+    sql: "SELECT sub.dept_id, sub.total FROM (SELECT dept_id, SUM(salary) AS total FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000) sub ORDER BY 1"
+    feature: "Derived table with HAVING"
+    category: "subqueries"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Subquery returning single row in arithmetic
+  - id: subquery_scalar_arithmetic
+    sql: "SELECT name, salary - (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) AS above_min FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Scalar subquery in arithmetic"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # EXISTS with multiple conditions
+  - id: subquery_exists_multi_cond
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM orders o WHERE o.person_id = p.id AND o.amount > 100 AND o.status = 'completed') ORDER BY 1"
+    feature: "EXISTS with multiple conditions"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Subquery in CASE
+  - id: subquery_in_case
+    sql: "SELECT name, CASE WHEN salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) THEN 'Above' ELSE 'Below' END AS vs_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
+    feature: "Subquery in CASE"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Uncorrelated EXISTS
+  - id: subquery_exists_uncorrelated
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM departments d WHERE d.budget > 900000) ORDER BY 1"
+    feature: "Uncorrelated EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Uncorrelated EXISTS with no matching row
+  - id: subquery_exists_uncorrelated_empty
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT 1 FROM departments d WHERE d.budget > 99999999) ORDER BY 1"
+    feature: "Uncorrelated EXISTS"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # EXISTS selecting a real column rather than a literal
+  - id: subquery_exists_select_column
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT o.id FROM orders o WHERE o.person_id = p.id AND o.amount > 400) ORDER BY 1"
+    feature: "EXISTS selecting a column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # EXISTS over a grouped subquery - the predicate cannot be hoisted past the grouping
+  - id: subquery_exists_grouped
+    sql: "SELECT p.name FROM persons p WHERE EXISTS (SELECT o.person_id, COUNT(*) AS cnt FROM orders o WHERE o.person_id = p.id GROUP BY o.person_id) ORDER BY 1"
+    feature: "EXISTS over grouped subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Uncorrelated IN (subquery) against a filtered relation
+  - id: subquery_in_uncorrelated_filtered
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id IN (SELECT d.id FROM departments d WHERE d.budget > 500000) ORDER BY 1"
+    feature: "Uncorrelated IN (subquery)"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Correlated IN (subquery)
+  - id: subquery_in_correlated
+    sql: "SELECT p.name FROM persons p WHERE p.id IN (SELECT o.person_id FROM orders o WHERE o.amount > p.salary / 1000) ORDER BY 1"
+    feature: "Correlated IN (subquery)"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # IN (subquery) where no row matches
+  - id: subquery_in_empty
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id IN (SELECT d.id FROM departments d WHERE d.budget > 99999999) ORDER BY 1"
+    feature: "IN (subquery) with empty result"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Quantified comparison - <op> ANY / <op> ALL against a subquery
+  - id: subquery_quant_gt_any
+    sql: "SELECT p.name FROM persons p WHERE p.age > ANY (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_gt_all
+    sql: "SELECT p.name FROM persons p WHERE p.age > ALL (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison ALL"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # SOME is a synonym for ANY
+  - id: subquery_quant_ge_some
+    sql: "SELECT p.name FROM persons p WHERE p.age >= SOME (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2) ORDER BY 1"
+    feature: "Quantified comparison SOME"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_eq_any
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id = ANY (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # != has no relation function of its own - it is the negation of the opposite quantifier
+  - id: subquery_quant_neq_any
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id <> ANY (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ANY"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_neq_all
+    sql: "SELECT p.name FROM persons p WHERE p.dept_id <> ALL (SELECT d.id FROM departments d WHERE d.budget > 700000) ORDER BY 1"
+    feature: "Quantified comparison ALL"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # a null in the subquery makes ALL unknown, which the relation function alone would answer true - dept 1
+  # holds Hank's null salary, so Postgres returns nothing. This is what the null guard is for: without it
+  # the five higher-paid people come back.
+  - id: subquery_quant_all_null_in_subquery
+    sql: "SELECT p.name FROM persons p WHERE p.salary > ALL (SELECT p2.salary FROM persons p2 WHERE p2.dept_id = 1) ORDER BY 1"
+    feature: "Quantified comparison ALL over a nullable column"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # correlated, and vacuously true for the persons with no orders. ERROR for the same reason
+  # subquery_in_correlated is: a correlated column cannot be resolved when the outer and inner relations
+  # share the 'root' alias (#5048), which predates quantified comparison.
+  - id: subquery_quant_all_correlated_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id < ALL (SELECT o.id FROM orders o WHERE o.person_id = p.id) ORDER BY 1"
+    feature: "Correlated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: subquery_quant_all_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id > ALL (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ALL over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_any_empty
+    sql: "SELECT p.name FROM persons p WHERE p.id > ANY (SELECT p2.id FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ANY over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # known divergence: over an empty subquery SQL performs no comparison at all, so ALL is true even for a
+  # null value, where relation::greaterThanAll answers false for an absent value by definition. Closing it
+  # needs a subquery under OR, the shape that cannot be unnested on Snowflake.
+  - id: subquery_quant_all_empty_null_value
+    sql: "SELECT p.name FROM persons p WHERE p.age > ALL (SELECT p2.age FROM persons p2 WHERE p2.id > 100) ORDER BY 1"
+    feature: "Quantified comparison ALL over an empty subquery"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: FAIL
+
+  # negation has to reproduce when SQL is false rather than true, which moves the null guard from ALL onto ANY
+  - id: subquery_quant_not_gt_any
+    sql: "SELECT p.name FROM persons p WHERE NOT (p.age > ANY (SELECT p2.age FROM persons p2 WHERE p2.dept_id = 2)) ORDER BY 1"
+    feature: "Negated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_quant_not_gt_all_null_in_subquery
+    sql: "SELECT p.name FROM persons p WHERE NOT (p.salary > ALL (SELECT p2.salary FROM persons p2 WHERE p2.dept_id = 1)) ORDER BY 1"
+    feature: "Negated quantified comparison"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

@@ -23,7 +23,13 @@ Class meta::pure::data::DataElement extends PackageableElement
   resolvedData: Map<PackageableElement, EmbeddedData>[0..1];
 }
 
+// TODO: remove embedded data later; move to using DataProvider so that DataResolver is just used for the addProvidedType mapping
 Class <<typemodifiers.abstract>> meta::pure::data::DataResolver
+{
+  data: EmbeddedData[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::pure::data::DataProvider
 {
   data: EmbeddedData[0..1];
 }

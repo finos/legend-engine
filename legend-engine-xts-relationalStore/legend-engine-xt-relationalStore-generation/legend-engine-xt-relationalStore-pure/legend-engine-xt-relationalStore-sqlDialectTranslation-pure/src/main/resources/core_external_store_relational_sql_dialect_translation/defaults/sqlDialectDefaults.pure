@@ -99,6 +99,7 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::fin
     {i: IsNotNullPredicate[1] | SqlOperatorTypes_default.IS_CHECK},
     {i: NegativeExpression[1] | SqlOperatorTypes_default.UNARY_PLUS_MINUS},
     {i: InPredicate[1] | SqlOperatorTypes_default.IN},
+    {q: QuantifiedComparisonExpression[1] | SqlOperatorTypes_default.BASIC_COMPARISON},
     {b: BetweenPredicate[1] | SqlOperatorTypes_default.BETWEEN},
     a: meta::external::query::sql::metamodel::Expression[1] | fail('Unknown expression type - ' + $e->class()->elementToPath()); SqlOperatorTypes_default.OTHER_NATIVE_USER_DEFINED_OPERATOR;
   ])->toString()
@@ -888,9 +889,11 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::tri
   )
 }
 
+// The group is required: alternation binds looser than the anchors, so '^a|b$' would parse as
+// (^a)|(b$) and match strings that Pure's full-match `matches` rejects.
 function meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern(regexOperator:String[1]):String[1]
 {
-  '%s ' + $regexOperator + ' \'' + '^%s$' +'\''
+  '%s ' + $regexOperator + ' \'' + '^(?:%s)$' +'\''
 }
 
 function meta::external::store::relational::sqlDialectTranslation::defaults::transformRegexpParams(params: String[*], sqlDialect:SqlDialect[1]):String[*]
@@ -923,7 +926,45 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::add
   );
 }
 
+// RegexpParameter values are emitted as an inline (?i)(?m)(?s) prefix rather than an options
+// argument, because the ~ operator has no options slot and every engine on this stack accepts the
+// inline form. CASE_SENSITIVE is the absence of a flag.
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpInlineFlags(regexpParametersAsString:String[1], sqlDialect:SqlDialect[1]):String[1]
+{
+  let regexpParameters = $regexpParametersAsString->removeQuotes($sqlDialect)->split(',');
+  let flagMap = newMap([
+    pair('CASE_SENSITIVE', ''),
+    pair('CASE_INSENSITIVE', 'i'),
+    pair('MULTILINE', 'm'),
+    pair('NON_NEWLINE_SENSITIVE', 's')
+  ]);
+  let flags = $regexpParameters->map(p | $flagMap->get($p))->filter(f | $f != '')->joinStrings('');
+  if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+// Substring match, as PostgreSQL's ~ already is - the pattern is emitted unaltered.
 function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpLike(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let inlineFlags = if ($processedArgs->size() > 2, | $processedArgs->at(2)->regexpInlineFlags($sqlDialect), | '');
+  let args = $processedArgs->transformRegexpParams($sqlDialect);
+  $args->at(0) + ' ~ \'' + $inlineFlags + $args->at(1) + '\'';
+}
+
+// Builds the (subject, pattern) pair for a substring match, with RegexpParameter flags folded into
+// the pattern as an inline prefix. Dialects whose ~ is not a substring match - DuckDB's is a full
+// match, and Snowflake and MemSQL have no ~ at all - use this to build their own form.
+function meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikeArgs(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[*]
+{
+  let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
+  let inlineFlags = if ($processedArgs->size() > 2, | $processedArgs->at(2)->regexpInlineFlags($sqlDialect), | '');
+  let args = $processedArgs->transformRegexpParams($sqlDialect);
+  let pattern = '\'' + $inlineFlags + $args->at(1) + '\'';
+  $args->at(0)->concatenate($pattern);
+}
+
+// Whole-string match: the anchors are added here rather than by each caller.
+function meta::external::store::relational::sqlDialectTranslation::defaults::processorForRegexpFullMatch(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
   regexpLikePattern('~')->format($processedArgs->transformRegexpParams($sqlDialect));

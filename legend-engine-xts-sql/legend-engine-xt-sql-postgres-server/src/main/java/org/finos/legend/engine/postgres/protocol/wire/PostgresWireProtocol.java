@@ -898,8 +898,10 @@ public class PostgresWireProtocol
         {
             byte type = buffer.readByte();
             String portalOrStatement = readCString(buffer);
+            String traceId = span.getSpanContext().getTraceId();
             this.addTaskToQueue(() ->
             {
+                messages.sendTraceIdNotice(channel, traceId);
                 DescribeResult describeResult = session.describe((char) type, portalOrStatement);
                 try
                 {
@@ -967,7 +969,13 @@ public class PostgresWireProtocol
             //
             // To ensure clients receive messages in the correct order we delay all writes
             // The "finish" logic of the ResultReceivers writes out all pending writes/unblocks the channel
-            this.composeTaskInQueue(() -> session.execute(portalName, maxRows, q -> new ResultSetReceiver(q, channel, false, null, messages)));
+            String traceId = span.getSpanContext().getTraceId();
+            this.composeTaskInQueue(() ->
+            {
+                messages.sendTraceIdNotice(channel, traceId);
+                return session.execute(portalName, maxRows, q ->
+                        new ResultSetReceiver(q, channel, false, null, messages));
+            });
         }
         catch (Exception e)
         {
@@ -1070,7 +1078,8 @@ public class PostgresWireProtocol
             List<String> queries = QueryStringSplitter.splitQuery(queryString);
             for (String query : queries)
             {
-                Supplier<CompletableFuture<Void>> runnable = () -> handleSingleQuery(query, channel);
+                String traceId = span.getSpanContext().getTraceId();
+                Supplier<CompletableFuture<Void>> runnable = () -> handleSingleQuery(query, channel, traceId);
                 this.composeTaskInQueue(runnable);
             }
             this.handleRfq();
@@ -1088,7 +1097,7 @@ public class PostgresWireProtocol
     }
 
 
-    private CompletableFuture<Void> handleSingleQuery(String query, DelayableWriteChannel channel)
+    private CompletableFuture<Void> handleSingleQuery(String query, DelayableWriteChannel channel, String traceId)
     {
         Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
@@ -1102,10 +1111,14 @@ public class PostgresWireProtocol
                 result.complete(null);
                 return result;
             }
+            messages.sendTraceIdNotice(channel, traceId);
             try
             {
                 sessionStats.incStatements();
-                return session.executeSimple(this.sqlManager.buildStatement(query, session), query, () -> new ResultSetReceiver(query, channel, true, null, messages));
+                return session.executeSimple(this.sqlManager.buildStatement(query, session), query, () ->
+                {
+                    return new ResultSetReceiver(query, channel, true, null, messages);
+                });
             }
             catch (Throwable t)
             {

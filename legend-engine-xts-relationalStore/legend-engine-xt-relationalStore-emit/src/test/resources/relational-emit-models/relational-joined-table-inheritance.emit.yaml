@@ -1,0 +1,38 @@
+name: relational-joined-table-inheritance
+title: "Joined-Table Inheritance Across Parent and Child Tables"
+description: |
+  A Party hierarchy where the subclass Organisation owns its own table holding
+  only the properties it adds, while the property inherited from Party lives on
+  the parent table. The Organisation set implementation takes OrganisationTable
+  as its main table and resolves the inherited `name` through
+  `[db]@PartyOrganisation | PartyTable.name`. Proves the joined-table strategy:
+  a subclass instance is assembled from two tables, and only parties that have
+  an Organisation row are returned.
+
+modelSources:
+  model:
+    root: relational-joined-table-inheritance
+    files:
+      - model/types.pure
+      - store/db.pure
+      - data/testData.pure
+      - mapping/partyMapping.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - grammar:class-inheritance
+  - mapping:relational-joined-table-inheritance
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - inheritance
+  - join
+  - joined-table
+  - mapping-test

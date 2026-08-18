@@ -37,7 +37,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
-      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       commitQueryProcessor = processCommitQueryForDuckDB_CommitQuery_1__SqlGenerationContext_1__String_1_,
@@ -207,6 +206,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
     dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     // dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeH2()})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateDuckDB()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='CAST(%s AS VARCHAR)')),
@@ -273,8 +274,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha256(%s)')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='string_split(%s, %s)')),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
-    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),  // TODO - pure uses 0-based indexing,  duck db returns location with 1-based index , keeping this as H2 also returns 1-based currently, many user tests need to be fixed
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='time_bucket(%s)', transform={p:String[3] | constructIntervalFunction($p->at(2), $p->at(1)) + ', ' + $p->at(0) + ', ' + constructTimeBucketOffset($p->at(2))})),
@@ -405,11 +407,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   if ($params->at(2) == 'true', | 'regexp_extract_all(' + $transformedParams + ')', | 'regexp_extract(' + $transformedParams + ')');
 }
 
+// Pure reports a 0-based position and -1 for no match; strpos is 1-based and returns 0, which it also
+// returns for the empty string regexp_extract yields when nothing matched. Hence the guard and the -1.
+// DuckDB has no regexp_instr, so the position is found by locating the matched text: that differs from
+// the true match position when the same text occurs earlier in the string. Tracked as a known gap in
+// docs/engineering/reference/regex-portability.md.
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRegexpIndexOf(params:String[4]):String[1]
 {
   let originalString = $params->at(0)->enableEscapeSequence();
   let transformedPatterns = $params->at(3)->regexpParametersToPatternFlagsForDuckDB();
-  'strpos(' + $originalString + ', regexp_extract(' + $originalString + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns + '))';
+  let position = 'strpos(' + $originalString + ', regexp_extract(' + $originalString + ', ' + $params->at(1) + ', ' + $params->at(2) + ', ' + $transformedPatterns + ')) - 1';
+  'CASE WHEN regexp_matches(' + $originalString + ', ' + $params->at(1) + ', ' + $transformedPatterns + ') THEN ' + $position + ' ELSE -1 END';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::enableEscapeSequence(originalString:String[1]):String[1]

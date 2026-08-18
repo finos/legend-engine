@@ -41,14 +41,19 @@ public class RelationalResultToCSVSerializer extends CsvSerializer
 
     public RelationalResultToCSVSerializer(RelationalResult relationalResult, boolean withHeader)
     {
+        this(relationalResult, withHeader, CSVFormat.DEFAULT);
+    }
+
+    public RelationalResultToCSVSerializer(RelationalResult relationalResult, boolean withHeader, CSVFormat csvFormat)
+    {
         this.relationalResult = relationalResult;
         if (withHeader)
         {
-            this.csvFormat = CSVFormat.DEFAULT.withHeader(relationalResult.getColumnListForSerializer().toArray(new String[0]));
+            this.csvFormat = csvFormat.withHeader(relationalResult.getColumnListForSerializer().toArray(new String[0]));
         }
         else
         {
-            this.csvFormat = CSVFormat.DEFAULT;
+            this.csvFormat = csvFormat;
         }
     }
 

@@ -177,6 +177,9 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                               ]);,
                                     x:Enum[1]|$x->genericType().rawType->toOne()->elementToPath() + '.' + $x.name->toOne(),
                                     t:meta::pure::metamodel::relation::TDS<Any>[1]|'#TDS{\n'+$t.csv->replace(' ','')+'}#',
+                                    r:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $r->printRootGraphFetchTree($configuration, $context),
+                                    p:meta::pure::graphFetch::PropertyGraphFetchTree[1]  | $p->printPropertyGraphFetchTree($configuration, $context),
+                                    st:meta::pure::graphFetch::SubTypeGraphFetchTree[1]  | $st->printSubTypeGraphFetchTree($configuration, $context),
                                     a:Any[1] |$a->toRepresentation();
                                   ])->toOneMany()
                             )
@@ -186,6 +189,50 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                            multiple:String[*] |$multiple->joinStrings('[', ', ', ']');
                         ])
    );
+}
+
+function meta::pure::metamodel::serialization::grammar::printRootGraphFetchTree(r:meta::pure::graphFetch::RootGraphFetchTree<Any>[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
+{
+  '#{' + $r.class->elementToPath() + printSubTreesBlock($r.subTrees, $r.subTypeTrees, $configuration, $context) + '}#';
+}
+
+function meta::pure::metamodel::serialization::grammar::printPropertyGraphFetchTree(p:meta::pure::graphFetch::PropertyGraphFetchTree[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
+{
+  let aliasStr = if ($p.alias->isEmpty(), |'', | '\'' + $p.alias->toOne() + '\':');
+  let paramsStr = if ($p.parameters->isEmpty(), |'',
+    | '(' + $p.parameters->evaluateAndDeactivate()->map(pv | $pv->printValueSpecification($configuration, $context))->joinStrings(', ') + ')');
+  let subTypeStr = if ($p.subType->isEmpty(), |'', | printSubTypeAnnotation($p.subType->toOne()));
+  let subTreesStr = if ($p.subTrees->concatenate($p.subTypeTrees)->isEmpty(), |'',
+    | printSubTreesBlock($p.subTrees, $p.subTypeTrees, $configuration, $context));
+  $aliasStr + $p.property.name->toOne() + $paramsStr + $subTypeStr + $subTreesStr;
+}
+
+function meta::pure::metamodel::serialization::grammar::printSubTypeGraphFetchTree(st:meta::pure::graphFetch::SubTypeGraphFetchTree[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
+{
+  let subTreesStr = if ($st.subTrees->isEmpty(), |'', | printSubTreesBlock($st.subTrees, [], $configuration, $context));
+  printSubTypeAnnotation($st.subTypeClass) + $subTreesStr;
+}
+
+function meta::pure::metamodel::serialization::grammar::printGraphFetchTreeNode(n:meta::pure::graphFetch::GraphFetchTree[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
+{
+  $n->match([
+    p:meta::pure::graphFetch::PropertyGraphFetchTree[1] | $p->printPropertyGraphFetchTree($configuration, $context),
+    r:meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | $r->printRootGraphFetchTree($configuration, $context),
+    st:meta::pure::graphFetch::SubTypeGraphFetchTree[1] | $st->printSubTypeGraphFetchTree($configuration, $context)
+  ]);
+}
+
+function meta::pure::metamodel::serialization::grammar::printSubTreesBlock(subTrees:meta::pure::graphFetch::GraphFetchTree[*], subTypeTrees:meta::pure::graphFetch::SubTypeGraphFetchTree[*], configuration:Configuration[0..1], context:GContext[1]):String[1]
+{
+  let stStr = $subTrees->map(st | $st->printGraphFetchTreeNode($configuration, $context))->joinStrings(',');
+  let sttStr = $subTypeTrees->map(st | $st->printSubTypeGraphFetchTree($configuration, $context))->joinStrings(',');
+  let sep = if ($stStr->length() > 0, | if ($sttStr->length() > 0, |',', |''), |'');
+  '{' + $stStr + $sep + $sttStr + '}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printSubTypeAnnotation(class:meta::pure::metamodel::type::Class<Any>[1]):String[1]
+{
+  '->subType(@' + $class->elementToPath() + ')';
 }
 
 function <<access.private>> meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionExpression(functionExpression:FunctionExpression[1], configuration:Configuration[0..1], context:GContext[1]):String[1]

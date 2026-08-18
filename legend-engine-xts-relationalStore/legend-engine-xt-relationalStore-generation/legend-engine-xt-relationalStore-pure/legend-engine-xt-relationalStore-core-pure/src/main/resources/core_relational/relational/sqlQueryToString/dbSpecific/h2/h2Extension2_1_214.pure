@@ -31,7 +31,6 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForH2_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
-      commonTableExpressionsProcessor = processCommonTableExpressionsProcessorDefault_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForH2_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForH2_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
@@ -196,6 +195,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   let allStates = allGenerationStates();
 
   [
+     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),
@@ -255,6 +256,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='rawtohex(hash(\'SHA-1\', %s))')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA-256\', %s))')),
+    dynaFnToSql('split',                  $allStates,            ^ToSql(format='legend_h2_extension_split(%s, %s)')),
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s, %s, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),

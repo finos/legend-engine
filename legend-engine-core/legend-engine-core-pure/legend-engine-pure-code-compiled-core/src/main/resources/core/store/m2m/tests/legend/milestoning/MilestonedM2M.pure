@@ -43,3 +43,310 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   let expected = '{"personName":"Ram","vehicleName":"B"}';
   assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
 }
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithMilestonedTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicleName": "B"}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithMilestonedTargetAndNonMilestonedSourceWithAllVersions():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.allVersions()->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicleName": "B"}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithMilestonedModelsWithAllVersionsInRange():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.allVersionsInRange(%2020-10-01, %2020-10-31)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMapping;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner,
+                                        url='data:application/json,{"businessDate": "2020-10-15","name" : "Ram", "vehicleAllVersions": [{"name": "B", "businessDate" : "2020-10-15", "id" : "1"}]}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithProcessingTemporalTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_ProcessingVehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_ProcessingVehicleOwner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingProcessingTemporalTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicleName": "B"}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNestedMilestonedTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner{
+                   personName,
+                   vehicle(%2020-10-15){
+                     name
+                   }
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedMilestonedTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicle": {"name": "B"}}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicle(2020-10-15)":{"name":"B"}}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNonMilestonedTargetAndMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner.all()->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNonMilestonedTargetFromMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_VehicleOwner,
+                                        url='data:application/json,{"businessDate": "2020-10-15","name" : "Ram", "vehicleAllVersions": [{"name": "A", "businessDate" : "2020-10-14", "id" : "1"}, {"name": "B", "businessDate" : "2020-10-15", "id" : "1"}]}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNestedMilestonedTargetAndMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner{
+                   personName,
+                   vehicle(%2020-10-15){
+                     name
+                   }
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedMilestonedTargetFromMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_MilestonedOwner,
+                                        url='data:application/json,{"businessDate": "2020-10-15", "name" : "Ram", "vehicleAllVersions": [{"name": "A", "businessDate" : "2020-10-14"}, {"name": "B", "businessDate" : "2020-10-15"}]}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicle(2020-10-15)":{"name":"B"}}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+// Root milestoning date supplied as a (captured) variable rather than a literal, from a
+// non-milestoned model-store source. Confirms the milestoning-ignore behavior does not depend
+// on the date being an inlined literal at the root getAll.
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithMilestonedTargetAndNonMilestonedSourceWithVariableDate():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let businessDate = %2020-10-15;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_VehicleOwner.all($businessDate)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicleName": "B"}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+// Nested milestoned target from a non-milestoned source, with the root milestoning date supplied
+// as a (captured) variable. Confirms variable-date root navigation still resolves the nested
+// milestoned target property (which our in-memory getter fix rewrites to all-versions).
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNestedMilestonedTargetAndNonMilestonedSourceWithVariableDate():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner{
+                   personName,
+                   vehicle(%2020-10-15){
+                     name
+                   }
+                 }
+               }#;
+  let businessDate = %2020-10-15;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_Owner.all($businessDate)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedMilestonedTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicle": {"name": "B"}}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicle(2020-10-15)":{"name":"B"}}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNestedOptionalMilestonedTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerOptionalVehicle{
+                   personName,
+                   vehicle(%2020-10-15){
+                     name
+                   }
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerOptionalVehicle.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedOptionalMilestonedTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicle": {"name": "B"}}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicle(2020-10-15)":{"name":"B"}}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNestedManyMilestonedTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerManyVehicles{
+                   personName,
+                   vehicles(%2020-10-15){
+                     name
+                   }
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_OwnerManyVehicles.all(%2020-10-15)->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNestedManyMilestonedTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedOwnerWithVehicles,
+                                        url='data:application/json,{"name" : "Ram", "vehicles": [{"name": "A"}, {"name": "B"}]}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicles(2020-10-15)":[{"name":"A"},{"name":"B"}]}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}
+
+// Baseline: non-milestoned source -> non-milestoned target. No milestoning anywhere, so the
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_32_0'}meta::pure::mapping::modelToModel::test::alloy::milestoning::model::testM2MMappingWithNonMilestonedTargetAndNonMilestonedSource():Boolean[1]
+{
+  let tree =  #{ meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner{
+                   vehicleName,
+                   personName
+                 }
+               }#;
+  let query = {|meta::pure::mapping::modelToModel::test::alloy::milestoning::model::T_NonMilestonedVehicleOwner.all()->graphFetch($tree)->serialize($tree)};
+
+  let mapping = meta::pure::mapping::modelToModel::test::alloy::milestoning::model::M2MMappingNonMilestonedTargetFromNonMilestonedSource;
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                                        element=^ModelStore(),
+                                        connection=^JsonModelConnection(
+                                        class=meta::pure::mapping::modelToModel::test::alloy::milestoning::model::S_NonMilestonedVehicleOwner,
+                                        url='data:application/json,{"name" : "Ram", "vehicleName": "B"}'
+                                        ))
+                        );
+  let result = meta::pure::router::execute($query, $mapping, $runtime, meta::pure::extension::configuration::coreExtensions());
+
+  let json = $result.values->toOne();
+  let expected = '{"personName":"Ram","vehicleName":"B"}';
+  assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
+}

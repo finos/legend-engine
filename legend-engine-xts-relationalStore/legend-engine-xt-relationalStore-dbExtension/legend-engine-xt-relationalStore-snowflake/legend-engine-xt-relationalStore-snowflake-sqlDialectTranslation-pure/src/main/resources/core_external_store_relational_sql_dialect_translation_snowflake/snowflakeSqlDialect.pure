@@ -141,6 +141,16 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
       'CastOperation - Decimal',
       'Expected - {"columnNames":["result"],"rows":[{"values":[123.0]}]}\n' +
       'Actual - {"columnNames":["result"],"rows":[{"values":[123]}]}'
+    ),
+    pair(
+      'FuncTests - string_to_array(0/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc,def,ghi]"]}]}\n' +
+      'Actual - {"columnNames":["result"],"rows":[{"values":["[\\"abc\\",\\"def\\",\\"ghi\\"]"]}]}'
+    ),
+    pair(
+      'FuncTests - string_to_array(1/1)',
+      'Expected - {"columnNames":["result"],"rows":[{"values":["[abc]"]}]}\n'+
+      'Actual - {"columnNames":["result"],"rows":[{"values":["[\\"abc\\"]"]}]}'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -241,7 +251,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     bitwiseNotExpressionNodeProcessorForSnowflake(),
     bitwiseShiftExpressionNodeProcessorForSnowflake(),
     likePredicateProcessor_default(),
-    existsPredicateProcessor_default()    
+    existsPredicateProcessor_default(),
+    quantifiedComparisonExpressionProcessor_default()
   ]
 }
 
@@ -507,6 +518,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Rpad, simpleFunctionProcessor('rpad')),
     pair(Rtrim, simpleFunctionProcessor('rtrim')),
     pair(SplitPart, simpleFunctionProcessor('split_part')),
+    pair(StringToArray, simpleFunctionProcessor('split')),
     pair(StrPos, argTransformFunctionProcessor('position', {n:Node[*]| $n->reverse()})),
     pair(Substring, simpleFunctionProcessor('substring')),
     pair(Upper, simpleFunctionProcessor('upper')),
@@ -556,7 +568,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Cosh, simpleFunctionProcessor('cosh')),
 
     // String
-    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForSubstringRegexpSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpFullMatch, customFunctionProcessor(processorForRegExpLikeSnowflake_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sha1, simpleFunctionProcessor('sha1')),
     pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*] | $n->concatenate(literal(256))})),
     pair(Contains, simpleFunctionProcessor('contains')),
@@ -615,7 +628,9 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForRegExpLikeSnowflake(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let patternParam = '\'^' + $processedArgs->at(1)->removeQuotes($sqlDialect) + '$\'';
+  // Capturing group, not (?:...), which Snowflake's engine does not accept. See
+  // meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern.
+  let patternParam = '\'^(' + $processedArgs->at(1)->removeQuotes($sqlDialect) + ')$\'';
   $sqlDialect->generateFunctionCallWithArgs('regexp_like', [$processedArgs->at(0), $patternParam], [], $state, $config);
 }
 
@@ -835,3 +850,11 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 }
 
 // --------------------------------------------------------------------------
+
+// Snowflake has no ~ operator, and its REGEXP_LIKE/RLIKE are implicitly whole-string, so a
+// substring match is expressed positionally.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::processorForSubstringRegexpSnowflake(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let args = regexpLikeArgs($f, $sqlDialect, $state, $config);
+  '(REGEXP_INSTR(' + $args->at(0) + ', ' + $args->at(1) + ') > 0)';
+}

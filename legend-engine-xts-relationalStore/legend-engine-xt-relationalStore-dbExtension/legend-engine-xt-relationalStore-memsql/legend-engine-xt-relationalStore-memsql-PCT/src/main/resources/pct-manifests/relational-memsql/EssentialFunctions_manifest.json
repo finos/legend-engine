@@ -31,9 +31,6 @@
     "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
@@ -74,7 +71,7 @@
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:38cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[3],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
@@ -83,7 +80,7 @@
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[4],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:47cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: MemSQL"
@@ -457,9 +454,6 @@
     "test" : "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
-    "test" : "meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'truesentence'\nactual:   'falsesentence'\""
-  }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""
   }, {
@@ -547,18 +541,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "No error was thrown"
   }, {
-    "test" : "meta::pure::functions::string::tests::contains::testFalseContains_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::contains::testTrueContains_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testFalseEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::endswith::testTrueEndsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
   }, {
@@ -644,16 +626,10 @@
     "expectedError" : "\"\nexpected: 0.0D\nactual:   0D\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testFalseStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::string::tests::startswith::testTrueStartsWith_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
+    "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""
@@ -687,9 +663,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""

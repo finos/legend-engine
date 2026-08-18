@@ -108,10 +108,21 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (getTabString(3) + "name: " + convertString(executionContext.name, true) + ";\n") +
                 (executionContext.title != null ? (getTabString(3) + "title: " + convertString(executionContext.title, true) + ";\n") : "") +
                 (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
-                getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n" +
-                getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n" +
+                (executionContext.mapping != null ? (getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n") : "") +
+                (executionContext.mappingProvider != null ? (getTabString(3) + "mappingProvider: " + renderMappingProvider(executionContext.mappingProvider) + ";\n") : "") +
+                (executionContext.defaultRuntime != null ? (getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n") : "") +
                 (executionContext.testData == null ? "" : (renderTestData(executionContext.testData, 3, context) + "\n")) +
                 getTabString(2) + "}";
+    }
+
+    private static String renderMappingProvider(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceMappingProvider provider)
+    {
+        String base = PureGrammarComposerUtility.convertPath(provider.element.path);
+        if (provider.keys == null || provider.keys.isEmpty())
+        {
+            return base;
+        }
+        return base + "." + String.join(",", provider.keys);
     }
 
     private static String renderTestData(EmbeddedData embeddedData, int baseIndentation, PureGrammarComposerContext context)
@@ -189,10 +200,10 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 dataSpace.diagrams = featuredDiagrams;
             }
         }
-        return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
+        return HelperDomainGrammarComposer.renderDeclarationPrefix("DataSpace", dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
                 "{\n" +
-                getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, executionContext -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutionContext(executionContext, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n" +
-                getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +
+                (dataSpace.executionContexts == null || dataSpace.executionContexts.isEmpty() ? "" : getTabString() + "executionContexts:" + "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, executionContext -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutionContext(executionContext, context)).makeString(",\n") + "\n" + getTabString() + "]" + ";\n") +
+                (dataSpace.defaultExecutionContext != null ? getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" : "") +
                 (dataSpace.title != null ? (getTabString() + "title: " + convertString(dataSpace.title, true) + ";\n") : "") +
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
                 (dataSpace.diagrams != null ? (getTabString() + "diagrams:" + (dataSpace.diagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.diagrams, DataSpaceGrammarComposerExtension::renderDataSpaceDiagram).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +

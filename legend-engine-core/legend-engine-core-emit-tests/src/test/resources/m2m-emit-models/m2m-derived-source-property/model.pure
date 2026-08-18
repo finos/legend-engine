@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+// The source class carries derived properties. Only its stored properties are
+// populated from the test data; the derived ones are computed on the source
+// instance at execution time and are what the mapping actually reads.
+Class demo::m2m::derived::source::S_Person
+{
+  firstName: String[1];
+  lastName: String[1];
+  birthYear: Integer[1];
+  observationYear: Integer[1];
+
+  // Derived from two stored properties.
+  fullName() { $this.firstName + ' ' + $this.lastName }: String[1];
+
+  // Arithmetic over stored properties.
+  age() { $this.observationYear - $this.birthYear }: Integer[1];
+
+  // A derived property that reads another derived property, so the chain has to
+  // be resolved rather than just the first level.
+  descriptor() { $this.fullName + ' (' + $this.age->toString() + ')' }: String[1];
+
+  // A parameterised (qualified) property on the source, invoked with a literal
+  // argument from the mapping.
+  initial(separator: String[1])
+  {
+    $this.firstName->substring(0, 1) + $separator + $this.lastName->substring(0, 1)
+  }: String[1];
+}
+
+Class demo::m2m::derived::target::Person
+{
+  name: String[1];
+  age: Integer[1];
+  descriptor: String[1];
+  initials: String[1];
+}

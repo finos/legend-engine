@@ -198,6 +198,14 @@ public class DomainParseTreeWalker
         return profile;
     }
 
+    private List<TaggedValue> visitTaggedValues(DomainParserGrammar.DocumentationContext docCtx, DomainParserGrammar.TaggedValuesContext tvCtx)
+    {
+        return PureGrammarParserUtility.taggedValuesWithDocumentation(
+                docCtx == null ? null : docCtx.STRING().getSymbol(),
+                tvCtx == null ? Lists.mutable.empty() : this.visitTaggedValues(tvCtx),
+                this.walkerSourceInformation);
+    }
+
     private List<TaggedValue> visitTaggedValues(DomainParserGrammar.TaggedValuesContext ctx)
     {
         return ListIterate.collect(ctx.taggedValue(), taggedValueContext ->
@@ -207,7 +215,7 @@ public class DomainParseTreeWalker
             taggedValue.tag = tagPtr;
             tagPtr.profile = PureGrammarParserUtility.fromQualifiedName(taggedValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : taggedValueContext.qualifiedName().packagePath().identifier(), taggedValueContext.qualifiedName().identifier());
             tagPtr.value = PureGrammarParserUtility.fromIdentifier(taggedValueContext.identifier());
-            taggedValue.value = PureGrammarParserUtility.fromGrammarString(taggedValueContext.STRING().getText(), true);
+            taggedValue.value = PureGrammarParserUtility.toCString(taggedValueContext.STRING().getText());
             taggedValue.tag.profileSourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.qualifiedName());
             taggedValue.tag.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext.identifier());
             taggedValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(taggedValueContext);
@@ -281,7 +289,7 @@ public class DomainParseTreeWalker
         enumeration.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         enumeration._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         enumeration.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        enumeration.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        enumeration.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         enumeration.values = ListIterate.collect(ctx.enumValue(), this::visitEnumValue);
         enumeration.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         return enumeration;
@@ -293,7 +301,7 @@ public class DomainParseTreeWalker
         enumValue.value = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         enumValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         enumValue.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        enumValue.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        enumValue.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         return enumValue;
     }
 
@@ -317,7 +325,7 @@ public class DomainParseTreeWalker
             String path = PureGrammarParserUtility.fromQualifiedName(t.qualifiedName().packagePath() == null ? Collections.emptyList() : t.qualifiedName().packagePath().identifier(), t.qualifiedName().identifier());
             return new PackageableElementPointer(PackageableElementType.CLASS, path, this.walkerSourceInformation.getSourceInformation(t));
         });
-        _class.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        _class.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         _class.properties = ctx.classBody().properties().property() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.classBody().properties().property(), this::visitSimpleProperty);
         _class.qualifiedProperties = ctx.classBody().properties().qualifiedProperty() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.classBody().properties().qualifiedProperty(), this::visitDerivedProperty);
         _class.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -375,7 +383,7 @@ public class DomainParseTreeWalker
         Property property = new Property();
         property.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         property.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        property.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        property.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         // NOTE: here we limit the property type to only primitive type, class, or enumeration
         property.genericType = processGenericType(ctx.propertyReturnType().type());
         property.multiplicity = this.buildMultiplicity(ctx.propertyReturnType().multiplicity().multiplicityArgument());
@@ -409,7 +417,7 @@ public class DomainParseTreeWalker
         QualifiedProperty qualifiedProperty = new QualifiedProperty();
         qualifiedProperty.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
         qualifiedProperty.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        qualifiedProperty.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        qualifiedProperty.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext(qualifiedProperty.name);
         qualifiedProperty.body = this.codeBlock(ctx.qualifiedPropertyBody().codeBlock(), null, lambdaContext, false, " ");
         qualifiedProperty.parameters = ListIterate.collect(ctx.qualifiedPropertyBody().functionVariableExpression(), functionVariableExpressionContext ->
@@ -437,7 +445,7 @@ public class DomainParseTreeWalker
         assoc._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         assoc.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         assoc.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        assoc.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        assoc.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         assoc.properties = ctx.associationBody().properties().property() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.associationBody().properties().property(), this::visitSimpleProperty);
         assoc.qualifiedProperties = ctx.associationBody().properties().qualifiedProperty() == null ? Lists.mutable.empty() : ListIterate.collect(ctx.associationBody().properties().qualifiedProperty(), this::visitDerivedProperty);
         assoc.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -457,7 +465,7 @@ public class DomainParseTreeWalker
         Function func = new Function();
         func._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         func.stereotypes = ctx.stereotypes() == null ? Lists.mutable.empty() : this.visitStereotypes(ctx.stereotypes());
-        func.taggedValues = ctx.taggedValues() == null ? Lists.mutable.empty() : this.visitTaggedValues(ctx.taggedValues());
+        func.taggedValues = this.visitTaggedValues(ctx.documentation(), ctx.taggedValues());
         DomainParseTreeWalker.LambdaContext lambdaContext = new DomainParseTreeWalker.LambdaContext(func.name);
         func.body = this.codeBlock(ctx.codeBlock(), null, lambdaContext, false, " ");
         func.parameters = ListIterate.collect(ctx.functionTypeSignature().functionVariableExpression(), functionVariableExpressionContext ->
@@ -1144,7 +1152,7 @@ public class DomainParseTreeWalker
 
     private CString getInstanceString(String string)
     {
-        return new CString(PureGrammarParserUtility.fromGrammarString(string, true));
+        return PureGrammarParserUtility.toCString(string);
     }
 
     private CInteger getInstanceInteger(String integerString)

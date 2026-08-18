@@ -5,19 +5,16 @@
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testConcatenateWithJoinOnOneSide_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "Error while executing: Create Table "
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendAddOnNull_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -68,7 +65,7 @@
     "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
@@ -139,50 +136,53 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::denseRank::testOLAPWithPartitionAndOrderDenseRank_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
-    "test" : "meta::pure::functions::relation::tests::distinct::testDistinctAll_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::distinct::testDistinctMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::distinct::testDistinctSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "\nexpected: '#TDS\\n   val,str\\n   5,wwe\\n   6,weq\\n#'\nactual:   '#TDS\\n   val,str\\n   4,qw\\n   5,wwe\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggIntegerWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowChainedWithSimple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -191,13 +191,13 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -206,25 +206,25 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -233,7 +233,7 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithMultiplePartitionsAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -245,22 +245,13 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendInt_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendStrShared_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendStr_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testSimpleMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: Create Table"
@@ -280,9 +271,6 @@
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
   }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testSimpleFilter_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
   }, {
@@ -295,23 +283,119 @@
     "test" : "meta::pure::functions::relation::tests::first::testOLAPWithPartitionAndOrderFirstWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::join::testJoin_forFailedJoinWhenNoRowsMatchJoinCondition_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::join::testSimpleJoin_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_LimitedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_String_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testSimpleGreaterThanAll_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_DerivedRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_String_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testSimpleGreaterThanAny_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -320,19 +404,79 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
-    "test" : "meta::pure::functions::relation::tests::limit::testSimpleLimit_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Negated_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::nth::testOLAPWithPartitionAndOrderNthWindow2_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -551,13 +695,13 @@
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
@@ -566,13 +710,13 @@
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
@@ -784,41 +928,14 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
-    "test" : "meta::pure::functions::relation::tests::rename::testSimpleRename_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
     "test" : "meta::pure::functions::relation::tests::rowNumber::testOLAPWithPartitionAndRowNumber_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::select::testMultiColsSelect_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::select::testSelectAll_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::select::testSingleColSelect_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::select::testSingleSelectWithQuotedColumn_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSize_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::slice::testSimpleSlice_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Common table expression not supported on DB Spanner"
+    "expectedError" : "\nexpected: '#TDS\\n   val,str\\n   3,ewe\\n   4,qw\\n#'\nactual:   '#TDS\\n   val,str\\n   3,ewe\\n   1,a\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::write::testWrite_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 5\nactual:   0"

@@ -16,6 +16,10 @@ package org.finos.legend.engine.testable.assertion;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.protocol.pure.m3.relation.Column;
+import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.PackageableType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationRowTestData;
@@ -170,16 +174,8 @@ public class TestTestAssertionEvaluator
         equalToJson.id = "assert1";
         equalToJson.expected = data;
 
-        data.data = "{\"some\":2}";
-        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
-        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
-        Assert.assertEquals("assert1", assertionStatus.id);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2.0%n}"), ((EqualToJsonAssertFail) assertionStatus).actual);
-        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
-
         data.data = "{\"some\":2.000000000000000001}";
-        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
+        AssertionStatus assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult));
         Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
         Assert.assertEquals("assert1", assertionStatus.id);
         Assert.assertEquals(String.format("{%n  \"some\" : 2.000000000000000001%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
@@ -208,14 +204,6 @@ public class TestTestAssertionEvaluator
         Assert.assertEquals("assert1", assertionStatus.id);
 
         ConstantResult constantResult1 = new ConstantResult("{\"some\":2}");
-
-        data.data = "{\"some\":2.0}";
-        assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
-        Assert.assertTrue(assertionStatus instanceof EqualToJsonAssertFail);
-        Assert.assertEquals("assert1", assertionStatus.id);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2.0%n}"), ((EqualToJsonAssertFail) assertionStatus).expected);
-        Assert.assertEquals(String.format("{%n  \"some\" : 2%n}"), ((EqualToJsonAssertFail) assertionStatus).actual);
-        Assert.assertEquals("Actual result does not match Expected result", ((EqualToJsonAssertFail) assertionStatus).message);
 
         data.data = "{\"some\":2}";
         assertionStatus = equalToJson.accept(new TestAssertionEvaluator(constantResult1));
@@ -397,5 +385,198 @@ public class TestTestAssertionEvaluator
         RelationRowTestData row = new RelationRowTestData();
         row.values = Arrays.asList(values);
         return row;
+    }
+
+    @Test
+    public void testEqualToRelationFallbackWithoutColumnTypesCoercesNumericLookingStringToNumber()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"1234\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("code");
+        element.rows = Collections.singletonList(makeRow("1234"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, RelationAssertionColumnTypes.NONE));
+        Assert.assertTrue(status instanceof EqualToRelationAssertFail);
+    }
+
+    @Test
+    public void testEqualToRelationWithVarcharColumnTypeKeepsNumericLookingStringAsString()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"1234\"},{\"code\":\"007\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("code");
+        element.rows = Arrays.asList(makeRow("1234"), makeRow("007"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("code", "meta::pure::precisePrimitives::Varchar")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+    
+    @Test
+    public void testEqualToRelationWithStringColumnTypeKeepsNumericLookingStringAsString()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"42\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("code");
+        element.rows = Collections.singletonList(makeRow("42"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("code", "String")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
+    public void testEqualToRelationWithIntegerColumnTypeCoercesToNumber()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"n\":42}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("n");
+        element.rows = Collections.singletonList(makeRow("42"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("n", "Integer")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+    
+    @Test
+    public void testEqualToRelationWithMixedColumnTypes()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"1234\",\"amount\":100},{\"code\":\"99\",\"amount\":250}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("code", "amount");
+        element.rows = Arrays.asList(makeRow("1234", "100"), makeRow("99", "250"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Arrays.asList(
+                column("code", "meta::pure::precisePrimitives::Varchar"),
+                column("amount", "Integer")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
+    public void testEqualToRelationEmptyColumnTypesIsSameAsFallback()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"1234\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("code");
+        element.rows = Collections.singletonList(makeRow("1234"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        AssertionStatus withNone = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, RelationAssertionColumnTypes.NONE));
+        AssertionStatus withoutColumnTypes = equalToRelation.accept(new TestAssertionEvaluator(new ConstantResult("[{\"code\":\"1234\"}]"), SerializationFormat.RAW));
+        Assert.assertEquals(withNone.getClass(), withoutColumnTypes.getClass());
+    }
+    
+    @Test
+    public void testEqualToRelationColumnTypesSuppliedButColumnMissingDefaultsToText()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":\"1234\",\"extra\":\"007\"}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Arrays.asList("code", "extra");
+        element.rows = Collections.singletonList(makeRow("1234", "007"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("code", "meta::pure::precisePrimitives::Varchar")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+    
+    @Test
+    public void testEqualToRelationColumnTypesSuppliedButUnrecognizedTypeDefaultsIsGuessed()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"code\":1234}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("code");
+        element.rows = Collections.singletonList(makeRow("1234"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assert1";
+        equalToRelation.expected = element;
+        
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("code", "my::custom::UnknownType")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue(status instanceof AssertPass);
+    }
+
+    @Test
+    public void testEqualToRelationAssertionWithDecimalTrailingZerosAgainstWholeNumber()
+    {
+        ConstantResult constantResult = new ConstantResult("[{\"amount\":11.000000},{\"amount\":11},{\"amount\":11.0},{\"amount\":11.000}]");
+
+        RelationElement element = new RelationElement();
+        element.paths = Collections.emptyList();
+        element.columns = Collections.singletonList("amount");
+        element.rows = Arrays.asList(makeRow("11.000000"), makeRow("11"), makeRow("11"), makeRow("11.0"));
+
+        EqualToRelation equalToRelation = new EqualToRelation();
+        equalToRelation.id = "assertDecimal";
+        equalToRelation.expected = element;
+
+        RelationAssertionColumnTypes columnTypes = RelationAssertionColumnTypes.of(Collections.singletonList(
+                column("amount", "Decimal")));
+
+        AssertionStatus status = equalToRelation.accept(new TestAssertionEvaluator(constantResult, SerializationFormat.RAW, columnTypes));
+        Assert.assertTrue("Expected AssertPass but got: " + status.getClass().getSimpleName(), status instanceof AssertPass);
+    }
+
+    private static Column column(String name, String rawTypeFullPath)
+    {
+        Column c = new Column();
+        c.name = name;
+        c.genericType = new GenericType(new PackageableType(rawTypeFullPath));
+        return c;
     }
 }

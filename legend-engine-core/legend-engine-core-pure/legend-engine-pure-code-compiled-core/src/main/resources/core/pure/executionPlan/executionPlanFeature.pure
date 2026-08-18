@@ -21,7 +21,9 @@ import meta::pure::executionPlan::featureFlag::*;
 Enum  meta::pure::executionPlan::features::Feature
 {
     PUSH_DOWN_ENUM_TRANSFORM,
-    VARIANT_TYPE_AS_INPUT
+    VARIANT_TYPE_AS_INPUT,
+    LEGACY_SQL_NULL_UNSAFE_EQUALS,
+    CORRECT_SQL_SUBSTRING_INDEXING
 }
 
 function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]

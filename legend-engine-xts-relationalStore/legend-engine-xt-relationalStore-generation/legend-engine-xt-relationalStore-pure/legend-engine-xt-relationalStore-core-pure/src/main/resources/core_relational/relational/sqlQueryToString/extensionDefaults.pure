@@ -177,6 +177,12 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
+// A rendered sub-select already carries its own brackets; a bare operand does not.
+function meta::relational::functions::sqlQueryToString::default::bracketSubQuery(p:String[1]):String[1]
+{
+   if($p->startsWith('(') && $p->endsWith(')'), | $p, | '(' + $p + ')');
+}
+
 function meta::relational::functions::sqlQueryToString::default::getDynaFunctionToSqlDefault(literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): DynaFunctionToSql[*]
 {
   let allStates = allGenerationStates();
@@ -187,6 +193,8 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
     dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('anyOf',                  $allStates,            ^ToSql(format='any %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
+    dynaFnToSql('allOf',                  $allStates,            ^ToSql(format='all %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
     dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),
     dynaFnToSql('atan',                   $allStates,            ^ToSql(format='atan(%s)')),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
@@ -251,6 +259,8 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
     dynaFnToSql('notEqualAnsi',           $allStates,            ^ToSql(format='%s <> %s')),
     dynaFnToSql('ntile',                  $allStates,            ^ToSql(format='ntile(%s)')),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='(%s = %s or (%s is null and %s is null))', transform={p:String[2]|$p->concatenate($p)})),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='(not (%s = %s) or (%s is null and %s is not null) or (%s is not null and %s is null))', transform={p:String[2]|$p->concatenate($p)->concatenate($p)})),
     dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
     dynaFnToSql('plus',                   $allStates,            ^ToSql(format='%s', transform=getTransformForAddPlus())),
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),
@@ -658,7 +668,23 @@ function meta::relational::functions::sqlQueryToString::default::mapToDBUnitType
    ]->filter(p | $p.first == $unitWithoutQuotes).second->toOne('Unit not found: ' + $unitWithoutQuotes);
 }
 
+// The group is required: alternation binds looser than the anchors, so '^a|b$' would parse as
+// (^a)|(b$) and match strings that Pure's full-match `matches` rejects.
 function meta::relational::functions::sqlQueryToString::default::regexpPattern(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^(?:' +$query + ')$' +'\''
+}
+
+// As regexpPattern, with a capturing group for engines that do not accept (?:...).
+function meta::relational::functions::sqlQueryToString::default::regexpPatternPosix(query: String[1]):String[1]
+{
+   '%s regexp \'' + '^(' +$query + ')$' +'\''
+}
+
+// Ungrouped anchoring, kept only for dialects with no PCT module. It mis-handles a top-level
+// alternation exactly as described on regexpPattern, but correcting it there cannot be verified by
+// any suite, so those dialects stay on the behaviour their users have today.
+function meta::relational::functions::sqlQueryToString::default::regexpPatternLegacy(query: String[1]):String[1]
 {
    '%s regexp \'' + '^' +$query + '$' +'\''
 }
@@ -755,7 +781,14 @@ function meta::relational::functions::sqlQueryToString::default::likePatternWith
    '%s not like \'' + $query + '\''
 }
 
+// See regexpPattern for why the group is required.
 function meta::relational::functions::sqlQueryToString::default::regexpLikePattern(query1: String[1], query2: String[1]):String[1]
+{
+   'REGEXP_LIKE(' + $query1 + ', \'' + '^(?:' +$query2 + ')$' +'\')'
+}
+
+// See regexpPatternLegacy — kept for dialects with no PCT module.
+function meta::relational::functions::sqlQueryToString::default::regexpLikePatternLegacy(query1: String[1], query2: String[1]):String[1]
 {
    'REGEXP_LIKE(' + $query1 + ', \'' + '^' +$query2 + '$' +'\')'
 }

@@ -13,9 +13,6 @@
     "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
   }, {
-    "test" : "meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
-  }, {
     "test" : "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet\""
   }, {
@@ -27,13 +24,7 @@
   }, {
     "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: ['???']\nactual:   []\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/"
-  }, {
-    "test" : "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00911: invalid character\n\nhttps://docs.oracle.com/error-help/db/ora-00911/"
-  }, {
+  },{
     "test" : "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet\""
   }, {
@@ -47,6 +38,9 @@
     "expectedError" : "\"[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+    "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
@@ -93,9 +87,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::repeatstring::testRepeatString_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00904: \"REPEAT\": invalid identifier\n\nhttps://docs.oracle.com/error-help/db/ora-00904/"
-  }, {
-    "test" : "meta::pure::functions::string::tests::right::testRightEmptyString_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: ['']\nactual:   []\""
   }, {
     "test" : "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: ['abcd']\nactual:   []\""

@@ -1,0 +1,78 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Employee.department navigates the [0..1] EmpDept association via the Emp_Dept
+// join. Projecting it produces a LEFT OUTER JOIN: an employee whose DEPT_ID has no
+// matching DEPARTMENT row still appears, with a null department name. An INNER join
+// would drop that employee — the assertion locks in the outer semantics.
+###Mapping
+Mapping demo::joins::LeftOuterJoinMapping
+(
+  *demo::joins::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.EMPLOYEE.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.EMPLOYEE
+    name: [demo::store::JoinsDB]HR.EMPLOYEE.NAME,
+    department: [demo::store::JoinsDB]@Emp_Dept
+  }
+
+  *demo::joins::Department: Relational
+  {
+    ~primaryKey
+    (
+      [demo::store::JoinsDB]HR.DEPARTMENT.ID
+    )
+    ~mainTable [demo::store::JoinsDB]HR.DEPARTMENT
+    name: [demo::store::JoinsDB]HR.DEPARTMENT.NAME,
+    location: [demo::store::JoinsDB]HR.DEPARTMENT.LOCATION
+  }
+
+  testSuites:
+  [
+    leftOuterSuite:
+    {
+      function: |demo::joins::Employee.all()->sortBy(x | $x.name)->project([x | $x.name, x | $x.department.name], ['Name', 'Dept']);
+      tests:
+      [
+        unmatchedRowSurvives:
+        {
+          data:
+          [
+            demo::store::JoinsDB:
+              Reference
+              #{
+                demo::joins::data::LeftOuterJoinData
+              }#
+          ];
+          asserts:
+          [
+            shouldKeepEmployeeWithoutDepartment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Name":"Alice","Dept":"Engineering"},{"Name":"Bob","Dept":"Sales"},{"Name":"Carol","Dept":null}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

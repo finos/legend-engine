@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::nested::Person
+{
+  firstName: String[1];
+  lastName: String[1];
+
+  // Two-hop traversal: person -> firm -> address.
+  firmCity() { $this.firm.address.city }: String[1];
+
+  // Four-hop traversal that crosses every association in the model and comes back
+  // down the far side, ending in a collection that is then aggregated.
+  countryStaffCount() { $this.firm.address.country.addresses.firms.staff->size() }: Integer[1];
+}
+
+Class demo::nested::Firm
+{
+  legalName: String[1];
+
+  // Traversal that starts at the far end of one association and crosses another.
+  staffCities() { $this.staff.firm.address.city }: String[*];
+}
+
+Class demo::nested::Address
+{
+  street: String[1];
+  city: String[1];
+}
+
+Class demo::nested::Country
+{
+  countryCode: String[1];
+}
+
+// A chain of three associations: Person -> Firm -> Address -> Country. Each is an
+// independent element, so multi-level traversal requires the compiler to stitch
+// property references across all three.
+Association demo::nested::Firm_Person
+{
+  firm: demo::nested::Firm[1];
+  staff: demo::nested::Person[*];
+}
+
+Association demo::nested::Firm_Address
+{
+  address: demo::nested::Address[1];
+  firms: demo::nested::Firm[*];
+}
+
+Association demo::nested::Address_Country
+{
+  country: demo::nested::Country[1];
+  addresses: demo::nested::Address[*];
+}

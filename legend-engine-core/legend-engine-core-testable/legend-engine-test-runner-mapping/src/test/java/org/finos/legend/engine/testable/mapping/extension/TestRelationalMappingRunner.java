@@ -516,7 +516,8 @@ public class TestRelationalMappingRunner
             "    id INTEGER PRIMARY KEY,\n" +
             "    firm_id INTEGER,\n" +
             "    firstName VARCHAR(200),\n" +
-            "    lastName VARCHAR(200)\n" +
+            "    lastName VARCHAR(200),\n" +
+            "    employee_code VARCHAR(20)\n" +
             "  )\n" +
             "\n" +
             "  Join FirmPerson(PersonTable.firm_id = FirmTable.id)\n" +
@@ -528,6 +529,7 @@ public class TestRelationalMappingRunner
             "{\n" +
             "  firstName: String[1];\n" +
             "  lastName: String[1];\n" +
+            "  employeeCode: String[1];\n" +
             "}\n" +
             "\n" +
             "Class model::Firm\n" +
@@ -548,7 +550,8 @@ public class TestRelationalMappingRunner
             "    )\n" +
             "    ~mainTable [store::TestDB]PersonTable\n" +
             "    firstName: [store::TestDB]PersonTable.firstName,\n" +
-            "    lastName: [store::TestDB]PersonTable.lastName\n" +
+            "    lastName: [store::TestDB]PersonTable.lastName,\n" +
+            "    employeeCode: [store::TestDB]PersonTable.employee_code\n" +
             "  }\n" +
             "  *model::Firm: Relational\n" +
             "  {\n" +
@@ -564,7 +567,7 @@ public class TestRelationalMappingRunner
             "    [\n" +
             "      testSuite1:\n" +
             "      {\n" +
-            "        function: |model::Firm.all()->project(~['Employees/First Name': x|$x.employees.firstName, 'Employees/Last Name': x|$x.employees.lastName, 'Legal Name': x|$x.legalName]);\n" +
+            "        function: |model::Firm.all()->project(~['Employees/First Name': x|$x.employees.firstName, 'Employees/Last Name': x|$x.employees.lastName, 'Employees/Code': x|$x.employees.employeeCode, 'Legal Name': x|$x.legalName]);\n" +
             "        tests:\n" +
             "        [\n" +
             "          test1:\n" +
@@ -575,10 +578,10 @@ public class TestRelationalMappingRunner
             "  Relation\n" +
             "  #{\n" +
             "    default.PersonTable:\n" +
-            "      id,firm_id,firstName,lastName\n" +
-            "      1,1,John,Doe\n" +
-            "      2,1,Nicole,Smith\n" +
-            "      3,2,Time,Smith;\n" +
+            "      id,firm_id,firstName,lastName,employee_code\n" +
+            "      1,1,John,Doe,1234\n" +
+            "      2,1,Nicole,Smith,99\n" +
+            "      3,2,Time,Smith,007;\n" +
             "\n" +
             "    default.FirmTable:\n" +
             "      id,legal_name\n" +
@@ -591,10 +594,10 @@ public class TestRelationalMappingRunner
             "              shouldPass:\n" +
             "                Relation\n" +
             "                #{\n" +
-            "                  Employees/First Name, Employees/Last Name, Legal Name\n" +
-            "                  John                , Doe                , Finos\n" +
-            "                  Nicole              , Smith              , Finos\n" +
-            "                  Time                , Smith              , Apple;\n" +
+            "                  Employees/First Name, Employees/Last Name, Employees/Code, Legal Name\n" +
+            "                  John                , Doe                , 1234          , Finos\n" +
+            "                  Nicole              , Smith              , 99            , Finos\n" +
+            "                  Time                , Smith              , 007           , Apple;\n" +
             "                }#\n" +
             "            ];\n" +
             "          }\n" +

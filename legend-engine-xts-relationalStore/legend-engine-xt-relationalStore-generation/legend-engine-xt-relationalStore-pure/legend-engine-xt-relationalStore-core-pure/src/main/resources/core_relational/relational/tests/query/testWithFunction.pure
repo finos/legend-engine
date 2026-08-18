@@ -67,7 +67,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
    let result = execute(|Person.all()->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->isAlphaNumeric())}), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^[a-zA-Z0-9]*$\'', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^(?:[a-zA-Z0-9]*)$\'', $result->sqlRemoveFormatting());
 
    let result_next = execute(|Person.all()
                         ->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->isAlphaNumeric()->not())}),
@@ -75,7 +75,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::functi
 
    assertSize($result_next.values,5);
    assertSameElements(['Hill', 'Harris', 'Firm B', 'Roberts', 'Smith'], $result_next.values.lastName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^[a-zA-Z0-9]*$\'', $result_next->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^(?:[a-zA-Z0-9]*)$\'', $result_next->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingMatchesFunction():Boolean[1]
@@ -86,7 +86,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    assertSize($result.values,6);
    assertSameElements(['Allen', 'Smith', 'Johnson', 'New York', 'Hill', 'York'], $result.values.lastName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^[A-Za-z0-9]*$\'', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^(?:[A-Za-z0-9]*)$\'', $result->sqlRemoveFormatting());
 
    let result_next = execute(|Person.all()
                         ->filter({p | ($p.firm->toOne().legalName->replace(' X', 'X')->matches('[A-Za-z0-9]*')->not())}),
@@ -94,7 +94,7 @@ function <<test.Test>> meta::relational::tests::query::function::testFilterUsing
 
    assertSize($result_next.values, 5);
    assertSameElements(['Hill', 'Harris', 'Firm B', 'Roberts', 'Smith'], $result_next.values.lastName);
-   assertEquals( 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^[A-Za-z0-9]*$\'', $result_next->sqlRemoveFormatting());
+   assertEquals( 'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) where not replace("firmtable_0".LEGALNAME, \' X\', \'X\') ~ \'^(?:[A-Za-z0-9]*)$\'', $result_next->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testFilterUsingSubstringFunction():Boolean[1]
@@ -489,7 +489,7 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekFu
                                    ->project([t | $t.date->dayOfWeek()],['Day Of Week Name']),
                                    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals('Day Of Week Name\n'+'Tuesday\n'+'Tuesday\n'+'Wednesday\n'+'Wednesday\n'+'Thursday\n'+'Thursday\n'+'Thursday\n'+'Friday\n',$result.values->meta::relational::tests::csv::toCSV());
-  assertEquals('select formatdatetime("root".tradeDate, \'EEEE\') as "Day Of Week Name" from tradeTable as "root" where formatdatetime("root".tradeDate, \'EEEE\') <> \'Monday\' or formatdatetime("root".tradeDate, \'EEEE\') is null', $result->sqlRemoveFormatting(0));
+  assertEquals('select formatdatetime("root".tradeDate, \'EEEE\') as "Day Of Week Name" from tradeTable as "root" where formatdatetime("root".tradeDate, \'EEEE\') is distinct from \'Monday\'', $result->sqlRemoveFormatting(0));
 }
 
 function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNumberFunction():Boolean[1]
@@ -498,6 +498,6 @@ function <<test.Test>> meta::relational::tests::query::function::testDayOfWeekNu
                                    ->project([t | $t.date->dayOfWeekNumber(DayOfWeek.Sunday)],['Day Of Week Number']),
                                    simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals('Day Of Week Number\n'+'2\n'+ '2\n'+'2\n'+'4\n'+'4\n'+'5\n'+'5\n'+'5\n'+'6\n',$result.values->meta::relational::tests::csv::toCSV());
-  assertEquals('select extract(dow from "root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where extract(isodow from "root".tradeDate) <> \'2\' or extract(isodow from "root".tradeDate) is null', $result->sqlRemoveFormatting(0));
+  assertEquals('select extract(dow from "root".tradeDate) as "Day Of Week Number" from tradeTable as "root" where extract(isodow from "root".tradeDate) is distinct from \'2\'', $result->sqlRemoveFormatting(0));
 }
 

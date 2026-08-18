@@ -1,0 +1,2 @@
+org.finos.legend.engine.testable.dataquality.extension.DataQualityRelationValidationTestableRunnerExtension
+org.finos.legend.engine.testable.dataquality.extension.DataQualityRelationComparisonTestableRunnerExtension

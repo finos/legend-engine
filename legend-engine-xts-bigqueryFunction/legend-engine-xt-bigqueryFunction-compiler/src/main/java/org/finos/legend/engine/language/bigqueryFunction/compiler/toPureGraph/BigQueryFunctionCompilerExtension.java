@@ -74,7 +74,7 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
                     null,
                     context.pureModel.getClass("meta::external::function::activator::bigQueryFunction::BigQueryFunction"))
                     ._stereotypes(ListIterate.collect(bigQueryFunction.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)))
-                    ._taggedValues(ListIterate.collect(bigQueryFunction.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)))
+                    ._taggedValues(ListIterate.collect(bigQueryFunction.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value.value)))
                     ._functionName(bigQueryFunction.functionName)
                     ._function(func)
                     ._description(bigQueryFunction.description)

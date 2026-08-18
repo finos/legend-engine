@@ -3583,7 +3583,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "       }\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:20 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
+                "}\n","COMPILATION error at [20:1-45:1]: Error in 'test::executionEnvironment': Cannot resolve binding. Error: Execution error at (resource:/platform/pure/essential/meta/graph/pathToElement.pure line:44 column:12), \"'test::bind' is not a valid PackageableElement: could not find 'test' in Root\"");
 
         String binding = "###ExternalFormat\n" +
                 "Binding test::bind\n" +
@@ -3849,5 +3849,315 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    query: |test::class.all()->project(x | $x.prop1, 'prop1');\n" +
                 "  }\n" +
                 "}\n", null, FastList.newListWith("COMPILATION warning at [6:1-17:1]: Service 'Service' has empty documentation"));
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarEmptyResolversSingleTest()
+    {
+        test("###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::model::Firm\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  class: test::model::Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.legalName]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test_1 =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarWithDescriptionAndMultipleTests()
+    {
+        test("###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::model::Firm\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  class: test::model::Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.legalName]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1 'Happy path'\n" +
+                "    (\n" +
+                "      test_1 'first' =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "      test_2 'second' =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarWithParamsKeysAndFormat()
+    {
+        test("###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::model::Firm\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  class: test::model::Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmServiceMulti\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Multi\n" +
+                "  {\n" +
+                "    query: nameFilter: String[1] | test::model::Firm.all()->filter(f | $f.legalName->startsWith($nameFilter))->project(~[name: f | $f.legalName]);\n" +
+                "    key: 'env';\n" +
+                "    executions['prod']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping::FirmMapping;\n" +
+                "      runtime: test::runtime::FirmRuntime;\n" +
+                "    }\n" +
+                "    executions['qa']:\n" +
+                "    {\n" +
+                "      mapping: test::mapping::FirmMapping;\n" +
+                "      runtime: test::runtime::FirmRuntime;\n" +
+                "    }\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_1\n" +
+                "    (\n" +
+                "      test_all_envs (nameFilter = 'A') =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "      test_prod_only (nameFilter = 'B') ['prod'] : PURE_TDSOBJECT =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "      test_prod_and_qa (nameFilter = 'C') ['prod', 'qa'] =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testServiceTestSuiteNewGrammarMultipleSuites()
+    {
+        test("###Pure\n" +
+                "Class test::model::Firm\n" +
+                "{\n" +
+                "  legalName: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                "  *test::model::Firm: Pure\n" +
+                "  {\n" +
+                "    ~src test::model::Firm\n" +
+                "    legalName: $src.legalName\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  class: test::model::Firm;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [ test::mapping::FirmMapping ];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    ModelStore:\n" +
+                "    [\n" +
+                "      c1: test::runtime::FirmConnection\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "###Service\n" +
+                "Service test::service::FirmService\n" +
+                "{\n" +
+                "  pattern: '/firm';\n" +
+                "  title: 'my Service';\n" +
+                "  documentation: 'doc';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::model::Firm.all()->project(~[name: f | $f.legalName]);\n" +
+                "    mapping: test::mapping::FirmMapping;\n" +
+                "    runtime: test::runtime::FirmRuntime;\n" +
+                "  }\n" +
+                "  testSuites:\n" +
+                "  [\n" +
+                "    testSuite_a\n" +
+                "    (\n" +
+                "      test_a1 =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    ),\n" +
+                "    testSuite_b 'other happy path'\n" +
+                "    (\n" +
+                "      test_b1 =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "      test_b2 =>\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'application/json';\n" +
+                "          data: '[]';\n" +
+                "        }#;\n" +
+                "    )\n" +
+                "  ]\n" +
+                "}\n");
     }
 }

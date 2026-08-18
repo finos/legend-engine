@@ -295,17 +295,37 @@ The parent aggregator sits directly under `legend-engine-core/` (as a sibling of
 pipeline — parsing, compilation, generation, test execution, and plan generation — rather than
 being scoped to the `Testable` metamodel concept alone.
 
+**Everything inside `legend-engine-core-emit/` is framework.** The EMIT models under
+`legend-engine-emit/src/test/resources/emit-models/` are self-test fixtures for the runner —
+several drive fake test-only SPIs (`EmitDemo*Extension`) rather than real engine extensions, and
+one (`compile-failure`) is expected to fail. They exist to exercise the runner, not to demonstrate
+engine features, and should not be read as catalog examples. (Note that the §5.4 coverage report
+does still render them: the server pom excludes only `legend-engine-emit-junit` by name, so
+`legend-engine-emit`'s own fixtures reach the dashboard. Adding `legend-engine-emit` to
+`excludedDirectoryNames` would keep self-test fixtures out of the catalog view.) Catalog models for
+core engine features live in a separate module,
+`legend-engine-core/legend-engine-core-emit-tests`, which is a *sibling* of
+`legend-engine-core-emit` rather than a child of it precisely so the two are not confused.
+
 #### Distributed Test Locations
 
 Actual EMIT tests are **spread throughout the codebase**, living in the modules that own the
 features being tested. Each module that contributes EMIT tests adds a test-scoped dependency
-on `legend-engine-emit-junit` and places its models under `src/test/resources/emit-models/`:
+on `legend-engine-emit-junit` and places its models under a classpath root, conventionally
+`src/test/resources/emit-models/`. When a single module hosts more than one independently
+owned suite, each suite gets its own disambiguated root and its own `*EMITTests` runner instead
+of sharing `emit-models/`, so a failure is unambiguously attributable to one feature area rather
+than the module as a whole. `legend-engine-xt-relationalStore-emit` is the concrete example —
+it owns both the classic relational-mapping suite and the relation (`~func`) mapping suite:
 
 ```
 legend-engine-xts-relationalStore/
-  legend-engine-xt-relationalStore-emit/    ← Module owning the relational EMIT examples
+  legend-engine-xt-relationalStore-emit/    ← Module owning both EMIT suites below
+    src/test/java/.../emit/
+      relational/RelationalEMITTests.java   ← Classic relational-mapping suite runner
+      relation/RelationEMITTests.java       ← Relation (`~func`) mapping suite runner
     src/test/resources/
-      emit-models/
+      relational-emit-models/               ← Classic relational-mapping models
         relational-simple.emit.yaml         ← Test descriptor configures sources
         relational-simple/                  ← Model sources (paths resolved relative to YAML)
           store/db.pure
@@ -319,12 +339,55 @@ legend-engine-xts-relationalStore/
           model/person.pure
           model/firm.pure
           model/employment.pure
+      relation-emit-models/                 ← Relation (`~func`) mapping models
+        relation-simple.emit.yaml
+        relation-simple/
+          ...
+        relation-modelJoin.emit.yaml        ← Relation leaf combined with a relational leaf
+        relation-milestoning.emit.yaml
+        ...
 ```
 
 (Tests reuse `relational-shared-domain` via the descriptor `dependencies`
 mechanism; see §4.1.)
 
-The same pattern applies to other extension modules (`legend-engine-xts-service`, `legend-engine-xts-generation`, etc.) — each owns the EMIT models for its feature area, with one `*.emit.yaml` per test and a sibling source-root directory.
+The same pattern applies to other extension modules (`legend-engine-xts-service`, `legend-engine-xts-generation`, etc.) — each owns the EMIT models for its feature area, with one `*.emit.yaml` per test and a sibling source-root directory. Most modules host a single suite and keep the plain `emit-models/` root name; disambiguate only when a module genuinely hosts more than one independently-owned suite, as above.
+
+Feature areas that are not extensions at all — core Pure language constructs and model-to-model
+mappings — are owned the same way by `legend-engine-core/legend-engine-core-emit-tests`. It applies
+the same two-suite split as the relational module, because language constructs and M2M mappings are
+independent subjects that should be runnable and attributable separately:
+
+```
+legend-engine-core/
+  legend-engine-core-emit-tests/            ← Core-feature catalog models (no store extension)
+    src/test/java/.../emit/core/
+      grammar/GrammarEMITTests.java         ← Pure language suite
+      m2m/M2MEMITTests.java                 ← Model-to-model mapping suite
+    src/test/resources/
+      grammar-emit-models/                  ← Parse + compile only: no store, no mapping
+        grammar-constraint.emit.yaml
+        grammar-constraint/model.pure
+        grammar-measure.emit.yaml
+        ...
+      m2m-emit-models/                      ← M2M mappings with executing test suites
+        m2m-transform.emit.yaml
+        m2m-transform/
+          model/source.pure
+          model/target.pure
+          mapping/employeeMapping.pure
+        ...
+```
+
+> **Coverage-report caveat:** the HTML coverage report's discovery walk (§5.4) only looks under
+> a root literally named `emit-models/` by default. A module using a disambiguated root name —
+> like `relational-emit-models/` and `relation-emit-models/` above, or `grammar-emit-models/` and
+> `m2m-emit-models/` in the core-feature module — is invisible to the report
+> unless its consuming pom adds that root to `includedRelativeSubpaths`. `legend-engine-server-http-server`
+> does this explicitly (see the table in §5.4) so every such suite is represented in
+> the coverage dashboard; any other module that disambiguates its root needs the same override.
+> **This is the standing cost of the two-suite split** — pay it deliberately, and update the
+> server pom in the same PR that introduces the root.
 
 The `EMITRunner` automatically discovers all `*.emit.yaml` files. The YAML file explicitly configures which directories and files comprise the test.
 
@@ -644,7 +707,7 @@ still applies, are:
 | Parameter | Default | Server override |
 |---|---|---|
 | `outputFilePath` | `${project.build.outputDirectory}/emit/emit-coverage.html` (i.e. `target/classes/emit/...`, so jar packaging automatically bundles it into the consuming jar) | Pinned explicitly to the default so the server jar's bundled resource path stays fixed if the plugin default ever changes |
-| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | — |
+| `includedRelativeSubpaths` | `["src/test/resources/emit-models"]` | `["src/test/resources/emit-models", "src/test/resources/relational-emit-models", "src/test/resources/relation-emit-models", "src/test/resources/grammar-emit-models", "src/test/resources/m2m-emit-models"]` (adds the two disambiguated relational-store roots and the two core-feature roots on top of the default) |
 | `excludedDirectoryNames` | `["target"]` | `["target", "legend-engine-emit-junit"]` (excludes the binding module's bootstrap examples from the server-side report) |
 | `excludedDirectoryNamePrefixes` | `["."]` | — |
 | `excludedRelativeSubpaths` | `["src/main"]` | — |
@@ -752,6 +815,8 @@ infrastructure rather than the feature under test:
 | `scaffolding:relational-store` | A relational store definition (typically H2) |
 | `scaffolding:relational-connection` | A relational database connection |
 | `scaffolding:relational-mapping` | Base relational class mapping (no special features) |
+| `scaffolding:relation-function` | A Pure function returning a `Relation<Any>`, used as a mapping source |
+| `scaffolding:relation-mapping` | Base relation-function class mapping (`~func` / `~src`, no special features) |
 | `scaffolding:m2m-mapping` | Base model-to-model mapping |
 | `scaffolding:runtime` | A runtime definition |
 | `scaffolding:model-connection` | A model connection (M2M tests) |
@@ -803,6 +868,26 @@ infrastructure rather than the feature under test:
 | `mapping:router-union` | Router union mapping |
 | `mapping:store-union` | Store union mapping |
 
+**Relation-function mappings** (`Relation` class mappings — `~func` / `~src`; grammar
+in `RelationFunctionMappingParserGrammar.g4`). These are mapping-level capabilities and
+so live in the `mapping:` domain alongside their relational counterparts:
+
+| Feature | Description |
+|---|---|
+| `mapping:relation-binding-transformer` | `Binding <qualifiedName>:` property transformer |
+| `mapping:relation-embedded` | Embedded property mapping — `prop ( ... )` |
+| `mapping:relation-expression-rhs` | Full `$src` expression as a property RHS (vs. a bare column) |
+| `mapping:relation-filter` | `->filter` applied in the source relation (the `~func` body) |
+| `mapping:relation-group-by` | `->groupBy` aggregation in the source relation, mapped as the class shape |
+| `mapping:relation-inline-embedded` | Inline embedded property mapping — `prop () Inline [setId]` |
+| `mapping:relation-local-property` | Local property — `+prop: Type[mult]: <rhs>` |
+| `mapping:relation-model-join` | ModelJoin association between relation-mapped classes |
+| `mapping:relation-primary-key` | Explicit `~primaryKey: col` / `~primaryKey: [a, b]` |
+| `mapping:relation-src` | `~src` inline-source form (vs. `~func`) |
+| `mapping:relation-union` | Union of relation set implementations |
+| `mapping:relation-window-function` | Window function (`over(...)` / `->extend`) in the source relation |
+| `mapping:relation-xstore-association` | `XStore` cross-set association between relation-mapped classes (distinct from ModelJoin) |
+
 #### Store — relational store-level features
 
 | Feature | Description |
@@ -844,6 +929,8 @@ infrastructure rather than the feature under test:
 | `execution:external-format-binding` | External format binding |
 | `execution:file-generation` | File generation specification |
 | `execution:hosted-service` | Hosted service function activator |
+| `execution:legacy-mapping-test` | Deprecated `MappingTests` block on a Mapping (EMIT Phase 5's legacy `MappingTestRunner`) |
+| `execution:legacy-service-test` | Deprecated `test: Single` / `test: Multi` block on a Service (EMIT Phase 5's legacy `ServiceTestRunner`) |
 | `execution:model-generation` | Model generation specification |
 | `execution:multi-execution-service` | Multi-execution service |
 | `execution:plan-generation` | Execution plan generation |
@@ -893,6 +980,21 @@ that case:
 2. Include the taxonomy update in the same PR as the new EMIT test.
 3. If a new *domain* is needed (e.g., `data-quality`), add a new
    subsection and update the complexity-scoring guidance accordingly.
+
+**Pick the domain by concern, not by convenience, and reuse before you invent.**
+Two rules keep the matrix meaningful:
+
+- A capability that is store-agnostic gets **one** entry reused by every store
+  flavor. `mapping:enumeration-mapping` and `mapping:mapping-include` cover the
+  relational *and* relation-function forms; do not mint
+  `grammar:enumeration-mapping` / `grammar:mapping-include` alongside them.
+- A capability with a dedicated domain belongs in that domain. Milestoning is
+  `milestoning:*` — tagging a temporal model `grammar:milestoning` hides it from
+  the milestoning coverage roll-up even though the test genuinely exercises it.
+
+Because an untaxonomised or mis-domained tag makes a covered capability read as a
+gap, coverage reports are only as accurate as this table. Adding the entry in the
+same PR is what keeps the two in sync.
 
 ### 6.3 Catalog Index
 

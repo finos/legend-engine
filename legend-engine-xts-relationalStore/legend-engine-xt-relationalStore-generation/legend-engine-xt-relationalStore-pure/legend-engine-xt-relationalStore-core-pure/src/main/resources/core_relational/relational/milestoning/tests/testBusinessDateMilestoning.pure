@@ -95,7 +95,7 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testC
    let result = validate(|ProductWithConstraint3.all($busDate),meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(DAY, 1, \'2015-10-16\') and "productclassificationtable_0".thru_z > dateadd(DAY, 1, \'2015-10-16\')) left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-10-16\' and "productexchangetable_0".thru_z > \'2015-10-16\') where ("productexchangetable_0".name <> \'exchangeName\' OR "productexchangetable_0".name is null) and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',
-    'select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, DATE\'2015-10-16\') and "productclassificationtable_0".thru_z > dateadd(day, 1, DATE\'2015-10-16\')) left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= DATE\'2015-10-16\' and "productexchangetable_0".thru_z > DATE\'2015-10-16\') where ("productexchangetable_0".name <> \'exchangeName\' or "productexchangetable_0".name is null) and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'',
+    'select \'CST\' as "CONSTRAINT_ID", \'Error\' as "ENFORCEMENT_LEVEL", \'Ensure that milestoning qualified properties passed function arguments which reference $this.temporalDate are processed correctly\' as "MESSAGE", "root".id as "id", "root".name as "name" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= dateadd(day, 1, DATE\'2015-10-16\') and "productclassificationtable_0".thru_z > dateadd(day, 1, DATE\'2015-10-16\')) left outer join ProductExchangeTable as "productexchangetable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= DATE\'2015-10-16\' and "productexchangetable_0".thru_z > DATE\'2015-10-16\') where "productexchangetable_0".name is distinct from \'exchangeName\' and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'',
     $result->sqlRemoveFormatting()
    );
 }
@@ -1344,6 +1344,58 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testC
     'select "unionalias_0"."businessDate" as "businessDate", "unionalias_0"."name" as "name" from (select "root".name as "name", cast(truncate(DATE\'2015-10-16\') as date) as "businessDate" from ProductTable as "root" where "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\' union all select "root".name as "name", cast(truncate(dateadd(day, -1, DATE\'2015-10-16\')) as date) as "businessDate" from ProductTable as "root" where "root".from_z <= dateadd(day, -1, DATE\'2015-10-16\') and "root".thru_z > dateadd(day, -1, DATE\'2015-10-16\')) as "unionalias_0" order by "businessDate" asc, "name" asc',
     $result->sqlRemoveFormatting()
    );
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessTemporalPredicateOnLeftOuterFilterJoinTopLevel():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(|Product.all($businessDate)->project([p|$p.name],['name']), milestoningmapWithFilterViaJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "root".name as "name" from ProductTable as "root" left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-09-01\') where "productexchangetable_0".city = \'London\' and "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-09-01\'',
+    'select "root".name as "name" from ProductTable as "root" left outer join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= DATE\'2015-09-01\' and "productexchangetable_0".thru_z > DATE\'2015-09-01\') where "productexchangetable_0".city = \'London\' and "root".from_z <= DATE\'2015-09-01\' and "root".thru_z > DATE\'2015-09-01\'',
+    $result->sqlRemoveFormatting()
+   );
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName1'], $tds.rows->map(r|$r.values->makeString(','))->sort());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessTemporalPredicateOnLeftOuterFilterJoinNavigation():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(|Order.all()->project([o|$o.product($businessDate).name],['name']), milestoningmapWithFilterViaJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".name as name from ProductTable as "producttable_1" left outer join ProductExchangeTable as "productexchangetable_0" on ("producttable_1".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-09-01\') where "producttable_1".from_z <= \'2015-09-01\' and "producttable_1".thru_z > \'2015-09-01\' and "productexchangetable_0".city = \'London\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".name as name from ProductTable as "producttable_1" left outer join ProductExchangeTable as "productexchangetable_0" on ("producttable_1".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= DATE\'2015-09-01\' and "productexchangetable_0".thru_z > DATE\'2015-09-01\') where "producttable_1".from_z <= DATE\'2015-09-01\' and "producttable_1".thru_z > DATE\'2015-09-01\' and "productexchangetable_0".city = \'London\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    $result->sqlRemoveFormatting()
+   );
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(','))->sort());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessTemporalPredicateOnInnerFilterJoinNavigation():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(|Order.all()->project([o|$o.product($businessDate).name],['name']), milestoningmapWithInnerFilterViaJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "root".id as id, "root".name as name, "root".type as type, "root".exchange as exchange, "root".classificationSystemId as classificationSystemId, "root".referenceSystemName as referenceSystemName, "root".externalReferenceSystemName as externalReferenceSystemName, "root".from_z as from_z, "root".thru_z as thru_z from ProductTable as "root" inner join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-09-01\') where "productexchangetable_0".city = \'London\' and "root".from_z <= \'2015-09-01\' and "root".thru_z > \'2015-09-01\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "root".id as id, "root".name as name, "root".type as type, "root".exchange as exchange, "root".classificationSystemId as classificationSystemId, "root".referenceSystemName as referenceSystemName, "root".externalReferenceSystemName as externalReferenceSystemName, "root".from_z as from_z, "root".thru_z as thru_z from ProductTable as "root" inner join ProductExchangeTable as "productexchangetable_0" on ("root".exchange = "productexchangetable_0".name and "productexchangetable_0".from_z <= DATE\'2015-09-01\' and "productexchangetable_0".thru_z > DATE\'2015-09-01\') where "productexchangetable_0".city = \'London\' and "root".from_z <= DATE\'2015-09-01\' and "root".thru_z > DATE\'2015-09-01\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    $result->sqlRemoveFormatting()
+   );
+  let tds = $result.values->at(0);
+  assertEquals(['ProductName1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(','))->sort());
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessTemporalPredicateOnMultiHopFilterJoinNavigation():Boolean[1]
+{
+   let businessDate = %2015-9-1;
+   let result = execute(|Order.all()->project([o|$o.product($businessDate).name],['name']), milestoningmapWithMultiHopFilterViaJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".name as name from ProductTable as "producttable_1" left outer join (select "productexchangetable_0".name as name from ProductExchangeTable as "productexchangetable_0" where "productexchangetable_0".from_z <= \'2015-09-01\' and "productexchangetable_0".thru_z > \'2015-09-01\') as "productexchangetable_0" on ("producttable_1".exchange = "productexchangetable_0".name) left outer join ProductClassificationTable as "productclassificationtable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productclassificationtable_0".from_z <= \'2015-09-01\' and "productclassificationtable_0".thru_z > \'2015-09-01\') where "producttable_1".from_z <= \'2015-09-01\' and "producttable_1".thru_z > \'2015-09-01\' and "productclassificationtable_0".type = \'STOCK\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    'select "producttable_0".name as "name" from OrderTable as "root" left outer join (select "producttable_1".id as id, "producttable_1".name as name from ProductTable as "producttable_1" left outer join (select "productexchangetable_0".name as name from ProductExchangeTable as "productexchangetable_0" where "productexchangetable_0".from_z <= DATE\'2015-09-01\' and "productexchangetable_0".thru_z > DATE\'2015-09-01\') as "productexchangetable_0" on ("producttable_1".exchange = "productexchangetable_0".name) left outer join ProductClassificationTable as "productclassificationtable_0" on ("productclassificationtable_0".exchange = "productexchangetable_0".name and "productclassificationtable_0".from_z <= DATE\'2015-09-01\' and "productclassificationtable_0".thru_z > DATE\'2015-09-01\') where "producttable_1".from_z <= DATE\'2015-09-01\' and "producttable_1".thru_z > DATE\'2015-09-01\' and "productclassificationtable_0".type = \'STOCK\') as "producttable_0" on ("root".prodFk = "producttable_0".id)',
+    $result->sqlRemoveFormatting()
+   );
+   let tds = $result.values->at(0);
+   assertEquals(['ProductName1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(','))->sort());
 }
 
 // workaround for https://github.com/finos/legend-pure/issues/686

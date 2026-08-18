@@ -110,10 +110,12 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    );
 }
 
-function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1],extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreGraphFetchProject(node: InMemoryGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1],extensions: Extension[*], debug: DebugContext[1]):ProjectAndState[1]
 {
    $node->match([
-      c : InMemoryCrossStoreGraphFetchExecutionNode[1]  | $c->generateInMemoryStoreRootNodeProject($path, $context, $extensions,  $debug)->addInMemoryCrossStoreMethods($c, $path, $context, $extensions, $debug),
+      c : InMemoryCrossStoreGraphFetchExecutionNode[1]  |
+             let rns = $c->generateInMemoryStoreRootNodeProject($path, $context, $extensions,  $debug);
+             ^ProjectAndState(project = $rns.project->toOne()->addInMemoryCrossStoreMethods($c, $path, $context, $extensions, $debug), resolutionState = $rns.resolutionState);,
       r : InMemoryRootGraphFetchExecutionNode[1]        | $r->generateInMemoryStoreRootNodeProject($path, $context, $extensions, $debug),
       p : InMemoryPropertyGraphFetchExecutionNode[1]    | $p->generateInMemoryStorePropertyNodeProject($path, $context, $extensions, $debug)
    ])
@@ -126,7 +128,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let constraintsToExclude = $node.graphFetchTree.constraintsExclusions;
 
    let allQualifiers        = $context.typeInfos->allQualifiedProperties($currentClass);
-   let qpGetterProject      = $class->updateImplementationClassWithQualifiedPropertyGetters($node->typeFromStoreLocalNode(), $context, $debug->indent());
+   let qpGetterProject      = $class->updateImplementationClassWithQualifiedPropertyGetters($node->typeFromStoreLocalNode(), $node.graphFetchTree->cast(@RoutedGraphFetchTree).sets->cast(@InstanceSetImplementation)->head(), $context, $debug->indent());
    let constraintsProject   = $class->createConstraintCheckingForClass($currentClass, $constraintsToExclude, $context, $debug->indent());
    let sourceReferenceClass = $class
                                  ->addPropertyWithGetterAndSetter('setId$', javaString(), $conventions)
@@ -136,7 +138,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    [$qpGetterProject, $constraintsProject, newProject()->addClass($sourceReferenceClass)]->mergeProjects();
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithQualifiedPropertyGetters(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], context: GenerationContext[1], debug: DebugContext[1]): Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::updateImplementationClassWithQualifiedPropertyGetters(implClass: meta::external::language::java::metamodel::Class[1], nodeType: meta::pure::metamodel::type::Class<Any>[1], set: InstanceSetImplementation[0..1], context: GenerationContext[1], debug: DebugContext[1]): Project[1]
 {
    let conventions = $context.conventions;
    let typeInfo = $context.typeInfos->forClass($nodeType);
@@ -152,7 +154,18 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
       let mapField = $jThis->j_field($mapName, javaMap($keyType, $fieldType));
       let keyVar = $keyType->j_variable('qualifierKey$');
 
-      let body = $q.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+      // ModelStore has no notion of milestoning, so a milestoned property whose values cannot carry milestoning dates
+      // (because the mapped source is not milestoned) resolves to every version rather than filtering on the date.
+      // Gated on a pure model-to-model runtime so M2M2R (relational leaf present) keeps filtering at the relational store.
+      let body = if($context.pureM2MRuntime && $q->milestoningIgnoredInMemory($set),
+                    | $jThis->allVersionsCode($q, $nodeType, $fieldType, $conventions),
+                    | let rawBody = $q.expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($conventions, $debug);
+                      if($q->hasGeneratedMilestoningPropertyStereotype() && $q->functionReturnMultiplicity()->isZeroOne(),
+                         | let stmts = $rawBody->cast(@Block).statements;
+                           let lastReturn = $stmts->last()->toOne()->cast(@Return);
+                           let wrappedExpr = $conventions->className(Library)->j_invoke('first', $lastReturn.expression->toOne(), $fieldType);
+                           $stmts->init()->concatenate($wrappedExpr->j_return())->j_block();,
+                         | $rawBody););
 
       let updatedClass = $implClass
          ->addMethod(
@@ -187,7 +200,34 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    newProject()->concatenate($projects)->toOneMany()->mergeProjects();
 }
 
-function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::milestoningIgnoredInMemory(property: QualifiedProperty<Any>[1], set: InstanceSetImplementation[0..1]): Boolean[1]
+{
+   let returnType = $property->functionReturnType().rawType;
+   if(!$property->isMilestonedGeneratedQualifiedProperty() || $set->isEmpty() || !$returnType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
+      | false,
+      | let propertyClass = $returnType->toOne()->cast(@meta::pure::metamodel::type::Class<Any>);
+        let propertySet   = $set->toOne().parent->rootClassMappingByClass($propertyClass);
+        let sourceClass   = $propertySet->filter(s | $s->instanceOf(PureInstanceSetImplementation))->cast(@PureInstanceSetImplementation).srcClass->filter(c | $c->instanceOf(meta::pure::metamodel::type::Class));
+        !$sourceClass->isEmpty()
+           && (($propertyClass->isBusinessTemporal()   && !$sourceClass->toOne()->isBusinessTemporal())
+            || ($propertyClass->isProcessingTemporal() && !$sourceClass->toOne()->isProcessingTemporal()));
+   );
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::allVersionsCode(jThis: Code[1], property: QualifiedProperty<Any>[1], owner: meta::pure::metamodel::type::Class<Any>[1], returnType: meta::external::language::java::metamodel::Type[1], conventions: Conventions[1]): Code[1..*]
+{
+   let edgePointProperty = $owner->propertyByName($property->edgePointPropertyName()->toOne())->toOne();
+   let versions = $jThis->j_invoke($conventions->getterName($edgePointProperty), [], $conventions->pureTypeToJavaType($edgePointProperty));
+   let value = if($property.multiplicity->isToOne(),
+                  | $conventions->className(Library)->j_invoke('toOne', $versions, $returnType),
+                  |
+              if($property.multiplicity->isZeroOne(),
+                  | $conventions->className(Library)->j_invoke('first', $versions, $returnType),
+                  | $versions));
+   $value->j_return();
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreRootNodeProject(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):ProjectAndState[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryRootGraphFetch\n', |''));
    if($node->nodeIsMerged(),
@@ -215,10 +255,15 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
         let executeClass   = $executeClassWithImports->addMethod($transformMethod)->addMethod($filterMethod);
         let executeProject = newProject()->addClasses($executeClass);
-        let allProjects    = $executeProject->concatenate($transformMethodCodes->dependencies()->resolveAndGetProjects())
-        ->concatenate($filterMethodCode->dependencies()->resolveAndGetProjects())
+        let s0             = $context->currentResolutionState();
+        let transformDeps  = $transformMethodCodes->dependencies();
+        let s1             = $transformDeps->resolveProjects($s0);
+        let filterDeps     = $filterMethodCode->dependencies();
+        let s2             = $filterDeps->resolveProjects($s1);
+        let allProjects    = $executeProject->concatenate($s2->getProjects($transformDeps))
+        ->concatenate($s2->getProjects($filterDeps))
         ->toOneMany();
-        $allProjects->mergeProjects();
+        ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s2);
      );
 }
 
@@ -231,7 +276,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 }
 
 
-function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreMergeRootNodes(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStoreMergeRootNodes(node: InMemoryRootGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):ProjectAndState[1]
 {
 
   print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryRootGraphFetch for Merge\n', |''));
@@ -269,8 +314,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 
   let executeClass   = $executeClassWithImports->addMethods($transformMethod->concatenate($mergeMethods));
   let executeProject = newProject()->addClasses($executeClass);
-  let allProjects    = $executeProject->concatenate($transform->dependencies()->resolveAndGetProjects())->toOneMany();
-  $allProjects->mergeProjects();
+  let s0             = $context->currentResolutionState();
+  let transformDeps  = $transform->dependencies();
+  let s1             = $transformDeps->resolveProjects($s0);
+  let allProjects    = $executeProject->concatenate($s1->getProjects($transformDeps))->toOneMany();
+  ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s1);
  }
 
 Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::MergedPropertyHolder
@@ -285,7 +333,7 @@ Class <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platf
 
 
 
-function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStorePropertyNodeProject(node: InMemoryPropertyGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):Project[1]
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generateInMemoryStorePropertyNodeProject(node: InMemoryPropertyGraphFetchExecutionNode[1], path: String[1], context: GenerationContext[1], extensions: Extension[*], debug: DebugContext[1]):ProjectAndState[1]
 {
    print(if($debug.debug,|$debug.space+'('+$path+') generateCodeForInMemoryPropertyGraphFetch\n', |''));
 
@@ -420,13 +468,20 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let executeClass            = $executeClassWithFields ->addMethod($transformPropertyMethod);
    let executeProject          = newProject()->addClasses($executeClass);
 
+   let s0             = $context->currentResolutionState();
+   let d1             = $propMappingTransformers->dependencies();
+   let s1             = $d1->resolveProjects($s0);
+   let d2             = $targetSetTransformers->dependencies();
+   let s2             = $d2->resolveProjects($s1);
+   let d3             = $transformPropertyMethodCodes->dependencies();
+   let s3             = $d3->resolveProjects($s2);
    let allProjects = $executeProject
-      ->concatenate($propMappingTransformers->dependencies()->resolveAndGetProjects())
-      ->concatenate($targetSetTransformers->dependencies()->resolveAndGetProjects())
-      ->concatenate($transformPropertyMethodCodes->dependencies()->resolveAndGetProjects())
+      ->concatenate($s3->getProjects($d1))
+      ->concatenate($s3->getProjects($d2))
+      ->concatenate($s3->getProjects($d3))
       ->toOneMany();
 
-    $allProjects->mergeProjects();
+    ^ProjectAndState(project = $allProjects->mergeProjects(), resolutionState = $s3);
 }
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::addFilterForSubtype(input:Code[1],propertyType: Code[1],targetSRCType:meta::external::language::java::metamodel::Type[1], targetSet:InstanceSetImplementation[1],context: GenerationContext[1],extensions: Extension[*]):Code[1]
 {

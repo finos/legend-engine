@@ -19,7 +19,7 @@ function <<PCT.function>> {doc.doc = 'Upper cases the first character of the pro
 {
   if($str->length() == 0,
     |$str,
-    |$str->substring(0, 1)->toUpper() + $str->substring(1)
+    |$str->left(1)->toUpper() + $str->substr(1)
   )
 }
 
@@ -36,6 +36,11 @@ function <<PCT.test>>  meta::pure::functions::string::tests::toupperfirstcharact
 function <<PCT.test>>  meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterNumber<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEquals('1isOne', $f->eval(|'1isOne'->toUpperFirstCharacter()));
+}
+
+function <<PCT.test>>  meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterSingleCharacter<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertEquals('X', $f->eval(|'x'->toUpperFirstCharacter()));
 }
 
 function <<PCT.test>>  meta::pure::functions::string::tests::toupperfirstcharacter::TestToUpperFirstCharacterEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

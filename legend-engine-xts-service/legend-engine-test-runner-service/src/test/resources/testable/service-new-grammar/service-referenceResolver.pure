@@ -1,0 +1,90 @@
+###Relational
+Database store::ref::FirmDB
+(
+  Table FIRM_TABLE
+  (
+    ID INTEGER PRIMARY KEY,
+    NAME VARCHAR(200)
+  )
+)
+###Pure
+Class model::ref::Firm
+{
+  id: Integer[1];
+  name: String[1];
+}
+###Mapping
+Mapping execution::ref::FirmMapping
+(
+  *model::ref::Firm: Relational
+  {
+    ~primaryKey ([store::ref::FirmDB]FIRM_TABLE.ID)
+    ~mainTable [store::ref::FirmDB]FIRM_TABLE
+    id: [store::ref::FirmDB]FIRM_TABLE.ID,
+    name: [store::ref::FirmDB]FIRM_TABLE.NAME
+  }
+)
+###Connection
+RelationalDatabaseConnection model::ref::FirmConnection
+{
+  store: store::ref::FirmDB;
+  type: H2;
+  specification: LocalH2
+  {
+  };
+  auth: DefaultH2;
+}
+###Runtime
+Runtime execution::ref::FirmRuntime
+{
+  mappings:
+  [
+    execution::ref::FirmMapping
+  ];
+  connections:
+  [
+    store::ref::FirmDB:
+    [
+      connection_1: model::ref::FirmConnection
+    ]
+  ];
+}
+###Data
+Data data::ref::DefaultFirms
+{
+  store::ref::FirmDB:
+    Relation
+    #{
+      default.FIRM_TABLE:
+        ID,NAME
+        1,Alice
+        2,Bob;
+    }#;
+}
+###Service
+Service service::svctd::ReferenceResolverService
+{
+  pattern: '/firmNames/referenceResolver';
+  documentation: 'doc';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |model::ref::Firm.all()->project(~['Name': f | $f.name]);
+    mapping: execution::ref::FirmMapping;
+    runtime: execution::ref::FirmRuntime;
+  }
+  testSuites:
+  [
+    testSuite_1 'reference to shared Data element'
+    (
+      data::ref::DefaultFirms;
+      test_1 'lists shared data rows' =>
+        Relation
+        #{
+          Name
+          Alice
+          Bob;
+        }#;
+    )
+  ]
+}

@@ -11,4 +11,5 @@ for the ADR template and process.
 | # | Title | Status |
 |---|-------|--------|
 | ADR-001 | [No user-defined generic types in the Alloy compiler protocol](ADR-001-no-user-defined-generics-in-alloy-compiler.md) | Accepted |
+| ADR-002 | [Canonical semantics for Legend regular expressions](ADR-002-legend-regex-canonical-semantics.md) | Accepted |
 

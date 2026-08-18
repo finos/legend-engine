@@ -2802,6 +2802,26 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testM2MMappingCallingFunctionReturningOptionalFromListExpression()
+    {
+        ServiceTestableRunnerExtension runner = new ServiceTestableRunnerExtension();
+        String grammar = getResourceAsString("testable/m2m-optional-from-list/legend-testable-m2m-optional-from-list.pure");
+        PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(grammar);
+        PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service) pureModel.getPackageableElement("testM2MOptionalFromList::service::OptionalFromListService");
+        List<TestResult> results = runner.executeAllTest(service, pureModel, modelData);
+
+        Assert.assertEquals(1, results.size());
+        TestResult result = results.get(0);
+        Assert.assertFalse("Expected a TestExecuted, got: " + result, result instanceof TestError);
+        Assert.assertTrue(result instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
+        Assert.assertEquals("testM2MOptionalFromList::service::OptionalFromListService", result.testable);
+        Assert.assertEquals("testSuite1", result.testSuiteId);
+        Assert.assertEquals("test1", result.atomicTestId);
+    }
+
+    @Test
     public void testServiceTestKeysWithMultipleTestBlocks()
     {
         List<TestResult> MultiKeyTestResult = executeServiceTest("testable/service/", "serviceGrammarModel.pure", "serviceGrammarWithTestKeys1.pure", "testModelStoreTestSuites::service::DocM2MService");

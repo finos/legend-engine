@@ -121,6 +121,33 @@
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'cume_dist' does not exist"
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsInExtend_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::exists::testExistsWithNestedIn_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'concatWithSeparator' does not exist."
   }, {
@@ -202,6 +229,21 @@
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleMultiple_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {
@@ -226,6 +268,12 @@
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "from parent scope only supported for constants and CTE"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,null\\n   8,1,H,null\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,null\\n   1,2,A,E\\n   7,3,G,null\\n   3,3,C,G\\n   4,4,D,null\\n   9,5,I,null\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,J\\n   8,1,H,H\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,E\\n   1,2,A,E\\n   7,3,G,G\\n   3,3,C,G\\n   4,4,D,D\\n   9,5,I,I\\n#'"
   }, {
@@ -235,11 +283,20 @@
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: ClickHouse\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: ClickHouse"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: ClickHouse\""
   }, {
     "test" : "meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "Aggregate function with name 'lead' does not exist"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: ClickHouse\""
@@ -429,12 +486,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
     "expectedError" : "'RANGE' frame must be a nonnegative 32-bit integer, '0.5' of type 'Float64' given."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testComparisonOperationAfterSize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "class java.lang.Long cannot be cast to class java.lang.Boolean (java.lang.Long and java.lang.Boolean are in module java.base of loader 'bootstrap')"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"

@@ -22,8 +22,6 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
-import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.test.emit.EMITTasks.ArtifactCandidate;
 import org.finos.legend.engine.test.emit.EMITTasks.LegacyMappingTestCandidate;
 import org.finos.legend.engine.test.emit.EMITTasks.LegacyServiceTestCandidate;
@@ -285,7 +283,7 @@ public class EMITRunner
                 RunTestsResult runTestsResult = EMITTasks.runTests(testableInputs, model.getPmcd(), model.getPureModel());
                 outputs.add(runTestsResult);
                 total += runTestsResult.results.size();
-                failed += ListIterate.count(runTestsResult.results, r -> !(r instanceof TestExecuted) || (((TestExecuted) r).testExecutionStatus == TestExecutionStatus.FAIL));
+                failed += ListIterate.count(runTestsResult.results, r -> !EMITTasks.isTestPassed(r));
             }
 
             // Legacy Mapping tests

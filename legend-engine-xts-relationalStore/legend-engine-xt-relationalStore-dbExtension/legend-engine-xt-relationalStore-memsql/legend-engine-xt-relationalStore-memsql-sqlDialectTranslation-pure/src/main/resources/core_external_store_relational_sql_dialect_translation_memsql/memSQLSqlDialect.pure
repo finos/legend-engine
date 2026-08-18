@@ -117,7 +117,10 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
       'SQLStructureTests - LikeIgnoreCase',
       'Expected - {"columnNames":["name"],"rows":[{"values":["abc65%"]}]}\n' +
       'Actual - {"columnNames":["name"],"rows":[]}'
-    ),  
+    ),
+    pair('FuncTests - string_to_array(0/1)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
+    pair('FuncTests - string_to_array(1/1)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
+    // pair('FuncTests - string_to_array(2/2)', 'MemSQL SQL Dialect does not support the function - string_to_array'),
     pair('FuncTests - split_part(0/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(1/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
     pair('FuncTests - split_part(2/2)', 'MemSQL SQL Dialect does not support the function - split_part'),
@@ -245,6 +248,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     inListExpressionProcessor_default(),
     inPredicateProcessor_default(),
     existsPredicateProcessor_default(),
+    quantifiedComparisonExpressionProcessor_default(),
     extractProcessor_default(),
     betweenPredicateProcessor_default(),
     functionCallProcessor_default(),
@@ -1611,7 +1615,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(DecodeBase64, customFunctionProcessor(processorForDecodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EncodeBase64, customFunctionProcessor(processorForEncodeBase64_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EndsWith, customFunctionProcessor(processorForEndsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
-    pair(RegexpLike, customFunctionProcessor(processorForRegExpLikeMemSQL_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpLike, customFunctionProcessor(processorForSubstringRegexpMemSQL_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
+    pair(RegexpFullMatch, customFunctionProcessor(processorForRegExpLikeMemSQL_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(Sha1, simpleFunctionProcessor('sha1')),
     pair(Sha256, argTransformFunctionProcessor('sha2', {n:Node[*]| $n->concatenate(^IntegerLiteral(value = 256))})),
     pair(StartsWith, customFunctionProcessor(processorForStartsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -1723,7 +1728,8 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForRegExpLikeMemSQL(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let patternParam = '\'^' + $processedArgs->at(1)->removeQuotes($sqlDialect) + '$\'';
+  // See meta::external::store::relational::sqlDialectTranslation::defaults::regexpLikePattern.
+  let patternParam = '\'^(' + $processedArgs->at(1)->removeQuotes($sqlDialect) + ')$\'';
   $processedArgs->at(0) +  ' '  +$sqlDialect->keyword('rlike', $state, $config) + ' '  + $patternParam;
 }
 
@@ -1965,3 +1971,10 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
 }
 
 // --------------------------------------------------------------------------
+
+// MemSQL has no ~ operator; RLIKE is its substring match.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForSubstringRegexpMemSQL(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
+{
+  let args = regexpLikeArgs($f, $sqlDialect, $state, $config);
+  '(' + $args->at(0) + ' RLIKE ' + $args->at(1) + ')';
+}

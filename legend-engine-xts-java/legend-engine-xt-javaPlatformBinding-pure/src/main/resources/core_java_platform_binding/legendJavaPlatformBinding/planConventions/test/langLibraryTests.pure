@@ -27,6 +27,10 @@ meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::te
          ->assert('(%s).intValue() == 5')
       ->addTest('cast empty', {|[]->cast(@Integer)}, '(Long) null', javaLong()->toBoxed())
          ->assert('(%s) == null')
+      ->addTest('cast collection', {|[1, 2]->cast(@Number)}, 'java.util.Arrays.asList(1L, 2L).stream().map(Number.class::cast).collect(java.util.stream.Collectors.toList())', javaList(javaNumber()))
+         ->assert('(%s).size() == 2')
+         ->assert('((Number)(%s).get(0)).intValue() == 1')
+         ->assert('((Number)(%s).get(1)).intValue() == 2')
       ->runTests();
 }
 
@@ -67,6 +71,27 @@ meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::te
       ->generate(C)
       ->generate(D)
       ->runTests();
+}
+
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::optionalFromListShape(cond: Boolean[1]) : String[0..1]
+{
+   if($cond, |[], |'FOUND')
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::doTestOptionalFromListShape() : Boolean[1]
+{
+   assertEquals('FOUND', optionalFromListShape(false));
+   assertEquals([], optionalFromListShape(true));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
+{  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
+meta::pure::executionPlan::platformBinding::legendJava::library::lang::tests::testOptionalFromListShape() : Boolean[1]
+{
+   javaPureTests(engineConventions([]), [
+      doTestOptionalFromListShape__Boolean_1_
+   ])->runTests();
 }
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>

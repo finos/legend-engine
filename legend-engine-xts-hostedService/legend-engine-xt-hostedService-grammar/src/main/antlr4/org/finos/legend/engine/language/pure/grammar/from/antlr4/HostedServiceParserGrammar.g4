@@ -36,7 +36,7 @@ imports:                                (importStatement)*
 ;
 importStatement:                        IMPORT packagePath PATH_SEPARATOR STAR SEMI_COLON
 ;
-service:                                SERVICE stereotypes? taggedValues? qualifiedName
+service:                                documentation? SERVICE stereotypes? taggedValues? qualifiedName
                                             BRACE_OPEN
                                                 (
                                                     servicePattern

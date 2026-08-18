@@ -143,6 +143,7 @@ Class meta::analytics::lineage::LineageInputFromFunctionDefinition
   mapping: Mapping[*];
   runtime: Runtime[*];
   funcBody: ValueSpecification[1..*];
+  additionalContext: PackageableElement[*];
 }
 
 
@@ -172,7 +173,7 @@ function meta::analytics::lineage::getLineageInputFromFunctionDefinition(f:Funct
         meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_,
         meta::pure::mapping::withMapping_T_m__Mapping_1__T_m_, 
         meta::pure::mapping::withChainedMappings_T_m__Mapping_MANY__T_m_
-      ])) //TODO: handle from_T_m__Runtime_1__T_m_
+      ]->concatenate(meta::analytics::lineage::getLineageExtension($extensions).additionalMappingExtractionFunctions->map(g|$g->eval())->cast(@Function<Any>)))) //TODO: handle from_T_m__Runtime_1__T_m_
       ->evaluateAndDeactivate();
   let resolvedParams = if($fromExprList->isEmpty(), |[], |$fromExprList->map(x|$x.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([i:InstanceValue[1]|$i.values, a: Any[1]| []]))));
   let funcBody = $f.expressionSequence->evaluateAndDeactivate();
@@ -181,7 +182,8 @@ function meta::analytics::lineage::getLineageInputFromFunctionDefinition(f:Funct
   (
     mapping = $resolvedParams->extractMappings(),
     runtime = $resolvedParams->map(r | $r->match([runtime:Runtime[1] | $runtime, packageableRuntime:meta::pure::runtime::PackageableRuntime[1] | $packageableRuntime.runtimeValue, any:Any[1] | []])),
-    funcBody = $funcBody
+    funcBody = $funcBody,
+    additionalContext = $resolvedParams->filter(v | $v->instanceOf(PackageableElement) && !$v->instanceOf(Mapping) && !$v->instanceOf(meta::pure::runtime::PackageableRuntime))->cast(@PackageableElement)
   );
 }
 
@@ -254,7 +256,7 @@ function meta::analytics::lineage::computeLineage(f:FunctionDefinition<Any>[1], 
                                 |$updatedFuncBody->map(e|$e->cast(@FunctionExpression)->meta::pure::mapping::modelToModel::chain::allReprocess([], $modelToModelMappings, $extensions, noDebug()).res));
   if(($config.useV2Lineage->isNotEmpty() && $config.useV2Lineage->toOne()) || ($updatedFuncBody->last()->toOne().genericType.rawType->isNotEmpty() &&  ($updatedFuncBody->last()->toOne().genericType.rawType->toOne() == meta::pure::metamodel::relation::Relation || $updatedFuncBody->last()->toOne().genericType.rawType->toOne()->subTypeOf(meta::pure::metamodel::relation::RelationElementAccessor)) ) ,
       | let mergedMapping = if($mappings->isNotEmpty(),|$mappings->toOneMany()->meta::pure::mapping::mergeMappings(),|[] );
-        let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($updatedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$mergedMapping,extensions=$extensions), $lineageExtensions);
+        let propLineage =  meta::analytics::lineage::property::buildPropertyLineageReport($updatedFuncBody->last()->toOne(), 'Root', ^meta::analytics::lineage::property::scanner::ScannerState(vars=$f->openVariableValues(), mapping=$mergedMapping,extensions=$extensions,runtime=$runtime, additionalContext = $lineageInputFromFuncDef.additionalContext), $lineageExtensions);
          let propReport = $propLineage->scannerToPropertyReport();
           ^FunctionAnalytics
           (
@@ -583,6 +585,7 @@ Class meta::analytics::lineage::LineageExtension extends ModuleExtension
     propertyReportToGraphNode:Function<{ -> Function<{Nil[1] -> meta::pure::lineage::graph::NodeData[1]}>[*]}>[0..1];
     graphID:  Function<{->Function<{Nil[1]->String[1]}>[*]}>[0..1];
     buildMappingNode: Function<{meta::analytics::lineage::property::scanner::ScannerState[1], LineageExtension[*]->  meta::analytics::lineage::property::scanner::ScannerState[1]}>[0..1];
+    additionalMappingExtractionFunctions: Function<{-> Function<Any>[*]}>[0..1];
 
 }
 function meta::analytics::lineage::getLineageExtension(extension:Extension[*]):LineageExtension[*]

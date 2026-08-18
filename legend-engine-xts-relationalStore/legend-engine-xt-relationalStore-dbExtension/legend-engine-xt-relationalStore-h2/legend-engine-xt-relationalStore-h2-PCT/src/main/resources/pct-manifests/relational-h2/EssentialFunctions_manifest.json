@@ -74,7 +74,7 @@
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:38cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindLiteralFromVar_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[3],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
@@ -83,7 +83,7 @@
     "expectedError" : "Function does not exist 'meta::pure::functions::collection::find(String[4],LambdaFunction<{String[1]->Boolean[1]}>[1])'"
   }, {
     "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
-    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure:47cc38-42); error compiling generated Java code:"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda"
@@ -478,6 +478,9 @@
     "test" : "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType"
   }, {
+    "test" : "meta::pure::functions::math::tests::binFloor::testBinFloorNegative_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: -10\nactual:   0"
+  }, {
     "test" : "meta::pure::functions::math::tests::mod::testModWithNegativeNumbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 3\nactual:   -2\""
   }, {
@@ -594,12 +597,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_",
     "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"9999999999999992\"; SQL statement:\nselect cast('9999999999999992' as integer) [22018-214]"
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplitWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'split_String_1__String_1__String_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""

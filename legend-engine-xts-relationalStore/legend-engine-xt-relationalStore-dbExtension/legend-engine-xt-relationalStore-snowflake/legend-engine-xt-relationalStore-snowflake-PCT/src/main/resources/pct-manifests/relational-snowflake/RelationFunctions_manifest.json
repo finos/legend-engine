@@ -19,6 +19,9 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Cumulative window frame unsupported for function LISTAGG"
   }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+    "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+  }, {
     "test" : "meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,8\\n   6,1,F,6\\n   2,1,B,2\\n   5,2,E,5\\n   1,2,A,1\\n   7,3,G,7\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   8,1,H,2\\n   6,1,F,2\\n   2,1,B,2\\n   5,2,E,1\\n   1,2,A,1\\n   7,3,G,3\\n   3,3,C,3\\n   4,4,D,4\\n   9,5,I,9\\n#'"
   }, {

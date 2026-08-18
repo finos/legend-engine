@@ -1,0 +1,41 @@
+name: m2m-legacy-mapping-test
+title: "M2M Mapping Tested Through the Deprecated MappingTests Block"
+description: |
+  A model-to-model mapping carrying the deprecated `MappingTests [ ... ]` block
+  with `<Object, JSON, sourceClass, '...'>` input data. This is the M2M half of
+  EMIT Phase 5's legacy `MappingTestRunner`, and it takes a materially different
+  code path from its relational sibling `relational-legacy-mapping-test`:
+  `buildTestConnection` turns the input data into a `JsonModelConnection` whose
+  url is a base64 `data:` URL, where the relational form generates H2 setup SQL
+  through `meta::relational::functions::database::setUpData`. Two tests are
+  declared, one filtered, so the per-test loop and more than one input data set
+  are both exercised.
+
+  Note the contrast with the modern M2M test suites in this same directory: the
+  legacy path reaches its single source class through a `data:` URL rather than
+  through `ModelStoreTestConnectionFactory`'s thread-local stream provider, so it
+  does not share that factory's single-connection behaviour — though it is
+  likewise limited to one input data set per test, by an explicit check in
+  `MappingTestRunner.buildTestConnection`.
+
+modelSources:
+  model:
+    root: m2m-legacy-mapping-test
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/personMapping.pure
+
+features:
+  - execution:legacy-mapping-test
+  - execution:test-data
+  - mapping:m2m-transform
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - legacy-mapping-test
+  - deprecated
+  - m2m

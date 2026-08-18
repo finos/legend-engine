@@ -21,6 +21,7 @@ import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TagPtr;
 import org.finos.legend.engine.protocol.pure.m3.extension.TaggedValue;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CString;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.*;
@@ -298,7 +299,7 @@ public class TestQueryStoreManager
         taggedValue.tag = new TagPtr();
         taggedValue.tag.profile = profile;
         taggedValue.tag.value = tag;
-        taggedValue.value = value;
+        taggedValue.value = new CString(value);
         return taggedValue;
     }
 
@@ -1424,6 +1425,102 @@ public class TestQueryStoreManager
         Assert.assertEquals(2, store.getQueryHistory("1").size());
         // query "2" was never updated → its history must remain empty
         Assert.assertTrue(store.getQueryHistory("2").isEmpty());
+    }
+
+    @Test
+    public void testGetQueryHistorySpecificVersion() throws Exception
+    {
+        // Requesting a specific version returns exactly that version
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        createdQuery.name = "query1_v2";
+        createdQuery = store.updateQuery("1", createdQuery, currentUser);
+
+        createdQuery.name = "query1_v3";
+        store.updateQuery("1", createdQuery, currentUser);
+
+        List<Query> v1 = store.getQueryHistory("1", 1);
+        Assert.assertEquals(1, v1.size());
+        Assert.assertEquals(Integer.valueOf(1), v1.get(0).version);
+        Assert.assertEquals("query1", v1.get(0).name);
+
+        List<Query> v2 = store.getQueryHistory("1", 2);
+        Assert.assertEquals(1, v2.size());
+        Assert.assertEquals(Integer.valueOf(2), v2.get(0).version);
+        Assert.assertEquals("query1_v2", v2.get(0).name);
+    }
+
+    @Test
+    public void testGetQueryHistorySpecificVersionForCurrentLiveVersion() throws Exception
+    {
+        // The current live version is also retrievable by version number
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        createdQuery.name = "query1_v2";
+        store.updateQuery("1", createdQuery, currentUser);
+
+        List<Query> v2 = store.getQueryHistory("1", 2);
+        Assert.assertEquals(1, v2.size());
+        Assert.assertEquals(Integer.valueOf(2), v2.get(0).version);
+        Assert.assertEquals("query1_v2", v2.get(0).name);
+    }
+
+    @Test
+    public void testGetQueryHistoryNullVersionReturnsAllVersions() throws Exception
+    {
+        // Passing null for version behaves identically to the no-version overload
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+        createdQuery.name = "query1_v2";
+        store.updateQuery("1", createdQuery, currentUser);
+
+        List<Query> allViaNull = store.getQueryHistory("1", null);
+        List<Query> allViaOverload = store.getQueryHistory("1");
+        Assert.assertEquals(allViaOverload.size(), allViaNull.size());
+        Assert.assertEquals(1, allViaNull.size());
+    }
+
+    @Test
+    public void testGetQueryHistoryUnknownVersionThrowsNotFound() throws Exception
+    {
+        // Requesting a version that does not exist for an existing query → NOT_FOUND with a version-specific message
+        String currentUser = "testUser";
+        store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+
+        ApplicationQueryException ex = Assert.assertThrows(ApplicationQueryException.class,
+                () -> store.getQueryHistory("1", 99));
+        Assert.assertEquals("Can't find version '99' for query with ID '1'", ex.getMessage());
+    }
+
+    @Test
+    public void testGetQueryHistoryVersionForUnknownQueryThrowsNotFound()
+    {
+        // Requesting any version on a non-existent query → NOT_FOUND with a query-specific message
+        ApplicationQueryException ex = Assert.assertThrows(ApplicationQueryException.class,
+                () -> store.getQueryHistory("does-not-exist", 1));
+        Assert.assertEquals("Can't find query with ID 'does-not-exist'", ex.getMessage());
+    }
+
+    @Test
+    public void testGetQueryHistorySpecificVersionOfDeletedQuery() throws Exception
+    {
+        // Historical versions of a deleted query remain individually addressable by version
+        String currentUser = "testUser";
+        Query createdQuery = store.createQuery(TestQueryBuilder.create("1", "query1", currentUser).withExplicitExecution().build(), currentUser);
+        createdQuery.name = "query1_v2";
+        store.updateQuery("1", createdQuery, currentUser);
+        store.deleteQuery("1", currentUser);
+
+        List<Query> v1 = store.getQueryHistory("1", 1);
+        Assert.assertEquals(1, v1.size());
+        Assert.assertEquals("query1", v1.get(0).name);
+
+        List<Query> v2 = store.getQueryHistory("1", 2);
+        Assert.assertEquals(1, v2.size());
+        Assert.assertEquals("query1_v2", v2.get(0).name);
+        Assert.assertNotNull(v2.get(0).deletedAt);
     }
 
     // ==========================================

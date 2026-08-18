@@ -60,6 +60,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),    
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
+    dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateTrino()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeTrino()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
@@ -87,6 +89,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('regexpCount',            $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpCountTrino()})),
+    dynaFnToSql('regexpExtract',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpExtractTrino()})),
+    dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfTrino()})),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeTrino()})),
+    dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceTrino()})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(to_hex(md5(to_utf8(%s))))')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
@@ -305,4 +312,57 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 {
    assert($identifier->matches('[a-zA-Z0-9_"]*'), '[unsupported-api] special chars are not supported in table/column names');
    $identifier->processIdentifierWithQuoteChar('"', $dbConfig);
+}
+
+// Trino's regex functions take no options argument, but joni accepts java.util.regex inline flags,
+// so RegexpParameter is emitted as a prefix on the pattern. CASE_SENSITIVE is the absence of a flag.
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::regexpInlineFlagsForTrino(regexpParametersAsString: String[1]):String[1]
+{
+   let regexpParameters = $regexpParametersAsString->removeQuotesIfExist()->split(',');
+   let regexpParametersMap = newMap([
+      pair('CASE_SENSITIVE', ''),
+      pair('CASE_INSENSITIVE', 'i'),
+      pair('MULTILINE', 'm'),
+      pair('NON_NEWLINE_SENSITIVE', 's')
+   ]);
+   let flags = $regexpParameters->map(p | $regexpParametersMap->get($p))->filter(f | $f != '')->joinStrings('');
+   if ($flags == '', | '', | '(?' + $flags + ')');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::applyInlineFlagsTrino(pattern: String[1], regexpParametersAsString: String[1]):String[1]
+{
+   '\'' + $regexpParametersAsString->regexpInlineFlagsForTrino() + $pattern->removeQuotesIfExist() + '\'';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformRegexpLikeTrino(params: String[3]):String[1]
+{
+   'regexp_like(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsTrino($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformRegexpCountTrino(params: String[3]):String[1]
+{
+   'regexp_count(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsTrino($params->at(2)) + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformRegexpExtractTrino(params: String[5]):String[1]
+{
+   let pattern = $params->at(1)->applyInlineFlagsTrino($params->at(4));
+   let args = $params->at(0) + ', ' + $pattern + ', ' + $params->at(3);
+   if ($params->at(2) == 'true', | 'regexp_extract_all(' + $args + ')', | 'regexp_extract(' + $args + ')');
+}
+
+// regexp_position is 1-based and already returns -1 when there is no match, so subtracting one and
+// clamping at -1 converts a hit to Pure's 0-based origin while leaving the sentinel alone.
+// It takes no capture-group argument.
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformRegexpIndexOfTrino(params: String[4]):String[1]
+{
+   assert($params->at(2)->removeQuotesIfExist() == '0', | 'regexpIndexOf with a capture group is not supported on Trino: regexp_position takes no group argument');
+   'greatest(regexp_position(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsTrino($params->at(3)) + ') - 1, -1)';
+}
+
+// Trino's regexp_replace always replaces every occurrence; there is no occurrence argument.
+function <<access.private>> meta::relational::functions::sqlQueryToString::trino::transformRegexpReplaceTrino(params: String[5]):String[1]
+{
+   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Trino: regexp_replace always replaces every occurrence');
+   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsTrino($params->at(4)) + ', ' + $params->at(2) + ')';
 }
