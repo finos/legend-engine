@@ -71,6 +71,15 @@ public class HelperRelationalGrammarComposer
         {
             return renderLiteral((Literal) op, context);
         }
+        else if (op instanceof RelationalLambda)
+        {
+            RelationalLambda lambda = (RelationalLambda) op;
+            return lambda.parameterName + " | " + renderRelationalOperationElement(lambda.body, context, nested, numTabs);
+        }
+        else if (op instanceof LambdaParameter)
+        {
+            return "$" + ((LambdaParameter) op).name;
+        }
         return PureGrammarComposerUtility.unsupported(op.getClass(), "relational operation element type");
     }
 

@@ -22,9 +22,9 @@ Data demo::ssd::data::TeamData
   Relation
   #{
     default.TEAM_TABLE:
-      ID,LABEL,SCORES
-      1,Falcons,"{""values"":[9,100,20]}"
-      2,Ravens,"{""values"":[5,12,7]}"
-      3,Owls,"{""values"":[40,35]}";
+      ID,LABEL,SCORES,DIVISIONS
+      1,Falcons,"{""values"":[9,100,20]}","{""divisions"":[{""name"":""Alpha"",""headcount"":150},{""name"":""Beta"",""headcount"":50},{""name"":""Gamma"",""headcount"":300}]}"
+      2,Ravens,"{""values"":[5,12,7]}","{""divisions"":[{""name"":""Delta"",""headcount"":20}]}"
+      3,Owls,"{""values"":[40,35]}","{""divisions"":[{""name"":""Eps"",""headcount"":900}]}";
   }#
 }

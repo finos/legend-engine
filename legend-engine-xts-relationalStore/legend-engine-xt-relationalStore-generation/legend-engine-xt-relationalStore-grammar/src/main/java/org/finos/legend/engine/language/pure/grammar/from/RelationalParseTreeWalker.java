@@ -82,6 +82,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.JoinPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -701,6 +703,12 @@ public class RelationalParseTreeWalker
             String database = ctx.databasePointer() != null ? this.visitDatabasePointer(ctx.databasePointer()) : null;
             operationElement = this.visitFunctionOperation(ctx.functionOperation(), database != null ? ScopeInfo.Builder.newInstance(scopeInfo).withDatabase(database).build() : scopeInfo);
         }
+        else if (ctx.lambdaParameter() != null)
+        {
+            LambdaParameter parameter = new LambdaParameter();
+            parameter.name = PureGrammarParserUtility.fromIdentifier(ctx.lambdaParameter().identifier());
+            operationElement = parameter;
+        }
         else if (ctx.constant() != null)
         {
             operationElement = this.visitConstant(ctx.constant());
@@ -850,6 +858,15 @@ public class RelationalParseTreeWalker
         if (ctx.operation() != null)
         {
             return this.visitOperation(ctx.operation(), scopeInfo);
+        }
+        if (ctx.functionOperationLambda() != null)
+        {
+            RelationalParserGrammar.FunctionOperationLambdaContext lambdaCtx = ctx.functionOperationLambda();
+            RelationalLambda lambda = new RelationalLambda();
+            lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(lambdaCtx);
+            lambda.parameterName = PureGrammarParserUtility.fromIdentifier(lambdaCtx.identifier());
+            lambda.body = this.visitOperation(lambdaCtx.operation(), scopeInfo);
+            return lambda;
         }
         LiteralList literalList = new LiteralList();
         literalList.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);

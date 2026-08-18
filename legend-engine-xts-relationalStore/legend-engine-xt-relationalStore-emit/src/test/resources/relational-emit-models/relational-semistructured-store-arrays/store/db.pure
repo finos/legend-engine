@@ -18,6 +18,8 @@ Class demo::ssd::Team
   id: Integer[1];
   label: String[1];
   scoreCount: Integer[1];
+  largeDivisions: Integer[1];
+  divisionNames: String[1];
   topScore: Integer[1];
   lowScore: Integer[1];
 }
@@ -37,7 +39,9 @@ Database demo::ssd::store::TeamDB
     ID INTEGER PRIMARY KEY,
     LABEL VARCHAR(100),
     // A JSON array of numbers, aggregated where it sits rather than fanned into rows.
-    SCORES SEMISTRUCTURED
+    SCORES SEMISTRUCTURED,
+    // Array of objects, so the lambda body has to navigate into each element.
+    DIVISIONS SEMISTRUCTURED
   )
 
   // Array function in a filter predicate: row inclusion decided by an aggregate of the
