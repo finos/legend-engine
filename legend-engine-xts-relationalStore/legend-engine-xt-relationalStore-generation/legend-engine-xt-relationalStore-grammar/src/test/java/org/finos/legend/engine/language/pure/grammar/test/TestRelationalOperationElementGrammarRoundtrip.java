@@ -59,6 +59,16 @@ public class TestRelationalOperationElementGrammarRoundtrip
         Assert.assertEquals(null, val, renderedOperation);
     }
 
+    // Round-trips through the protocol like test() above, but allows the composed form to differ
+    // from the source, for syntax the composer canonicalises.
+    protected static void testWithSourceAndExpected(String source, String expectedComposed) throws Exception
+    {
+        RelationalOperationElement op = RelationalGrammarParserExtension.parseRelationalOperationElement(source, "", 0, 0, true);
+        String json = objectMapper.writeValueAsString(op);
+        RelationalOperationElement operation = objectMapper.readValue(json, RelationalOperationElement.class);
+        Assert.assertEquals(expectedComposed, RelationalGrammarComposerExtension.renderRelationalOperationElement(operation));
+    }
+
     @Test
     public void testSimplePropertyMapping()
     {
@@ -89,5 +99,22 @@ public class TestRelationalOperationElementGrammarRoundtrip
     public void testLambdaParameterIsDistinctFromAColumn()
     {
         test("array_filter([store::TESTDB]SCHEMA.TABLE.DOC, d | equal($d, [store::TESTDB]SCHEMA.TABLE.COL))", null);
+    }
+
+    @Test
+    public void testArrayReduceLambdaWithTwoParameters()
+    {
+        test("array_reduce(extractFromSemiStructured([store::TESTDB]SCHEMA.TABLE.DOC, 'divisions', 'SEMISTRUCTURED[]'), (d, acc | plus($acc, extractFromSemiStructured($d, 'headcount', 'INTEGER'))), 0)", null);
+    }
+
+    // A single parameter may be written parenthesised, but composes back bare: parentheses are
+    // only required to keep several names from reading as further arguments, so one name has a
+    // single canonical form. This asserts the normalised output rather than the input.
+    @Test
+    public void testSingleParameterLambdaInParenthesesNormalises() throws Exception
+    {
+        testWithSourceAndExpected(
+                "array_filter([store::TESTDB]SCHEMA.TABLE.DOC, (d | extractFromSemiStructured($d, 'name', 'VARCHAR')))",
+                "array_filter([store::TESTDB]SCHEMA.TABLE.DOC, d | extractFromSemiStructured($d, 'name', 'VARCHAR'))");
     }
 }

@@ -819,7 +819,7 @@ public class HelperRelationalBuilder
     // filter/transform/reduce over an array. The Pure path already lowers these to
     // Filter/Map/FoldRelationalLambda and every dialect that supports semi-structured data renders
     // them, so authoring one in a store definition builds the same node rather than a parallel one.
-    private static final MutableSet<String> ARRAY_LAMBDA_FUNCTIONS = Sets.mutable.with("array_filter", "array_transform");
+    private static final MutableSet<String> ARRAY_LAMBDA_FUNCTIONS = Sets.mutable.with("array_filter", "array_transform", "array_reduce");
 
     // Works on the compiled collection rather than the protocol node, so a column can be followed
     // to its declaration and checked: pointing an array lambda at an ordinary VARCHAR column is a
@@ -901,11 +901,44 @@ public class HelperRelationalBuilder
         }
     }
 
+    private static Root_meta_relational_metamodel_RelationalLambdaParameter newLambdaParameter(String name, RelationalOperationElement value, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType type, CompileContext context, org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation)
+    {
+        return new Root_meta_relational_metamodel_RelationalLambdaParameter_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::RelationalLambdaParameter"))
+                ._name(name)._value(value)._type(type);
+    }
+
+    // The accumulator is typed from the starting value, since that is what it holds before the
+    // first element is folded in. Only a literal is read, because anything else would be a guess.
+    private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType resolveAccumulatorType(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement seed, CompileContext context, SourceInformation sourceInformation)
+    {
+        if (seed instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal)
+        {
+            Object value = ((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal) seed).value;
+            if (value instanceof Integer || value instanceof Long)
+            {
+                return buildDataType("INTEGER", context, sourceInformation);
+            }
+            if (value instanceof Double || value instanceof Float)
+            {
+                return buildDataType("FLOAT", context, sourceInformation);
+            }
+            if (value instanceof String)
+            {
+                return buildDataType("VARCHAR", context, sourceInformation);
+            }
+            if (value instanceof Boolean)
+            {
+                return buildDataType("BOOLEAN", context, sourceInformation);
+            }
+        }
+        throw new EngineException("The starting value of 'array_reduce' must be a literal, so the accumulator can be typed from it", sourceInformation, EngineErrorType.COMPILATION);
+    }
+
     private static boolean isArrayLambdaFunction(DynaFunc dynaFunc)
     {
         return ARRAY_LAMBDA_FUNCTIONS.contains(dynaFunc.funcName)
                 && dynaFunc.parameters != null
-                && dynaFunc.parameters.size() == 2
+                && dynaFunc.parameters.size() >= 2
                 && dynaFunc.parameters.get(1) instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda;
     }
 
@@ -917,13 +950,31 @@ public class HelperRelationalBuilder
         RelationalOperationElement collection = processRelationalOperationElement(dynaFunc.parameters.get(0), context, aliasMap, selfJoinTargets, lambdaScope);
         org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType elementType = resolveArrayElementType(collection, context, dynaFunc.sourceInformation);
 
-        Root_meta_relational_metamodel_RelationalLambdaParameter parameter = new Root_meta_relational_metamodel_RelationalLambdaParameter_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::RelationalLambdaParameter"))
-                ._name(lambda.parameterName)
-                ._value(collection)
-                ._type(elementType);
+        boolean isFold = "array_reduce".equals(dynaFunc.funcName);
+        int expected = isFold ? 2 : 1;
+        if (lambda.parameterNames.size() != expected)
+        {
+            throw new EngineException("'" + dynaFunc.funcName + "' takes a lambda of " + expected + " parameter(s), found " + lambda.parameterNames.size(), dynaFunc.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        if (isFold && dynaFunc.parameters.size() != 3)
+        {
+            throw new EngineException("'array_reduce' takes a collection, a lambda and a starting value", dynaFunc.sourceInformation, EngineErrorType.COMPILATION);
+        }
 
+        // The two parameters are not interchangeable. The renderers read the collection from the
+        // first and the starting value from the second, so the element is described by the
+        // collection and its element type, and the accumulator by the starting value and its own
+        // type. Written element-first, as fold is in Pure.
+        MutableList<Root_meta_relational_metamodel_RelationalLambdaParameter> parameters = Lists.mutable.empty();
         MutableMap<String, Root_meta_relational_metamodel_RelationalLambdaParameter> bodyScope = Maps.mutable.withMap(lambdaScope);
-        bodyScope.put(lambda.parameterName, parameter);
+
+        parameters.add(newLambdaParameter(lambda.parameterNames.get(0), collection, elementType, context, m3SourceInformation));
+        if (isFold)
+        {
+            RelationalOperationElement seed = processRelationalOperationElement(dynaFunc.parameters.get(2), context, aliasMap, selfJoinTargets, lambdaScope);
+            parameters.add(newLambdaParameter(lambda.parameterNames.get(1), seed, resolveAccumulatorType(dynaFunc.parameters.get(2), context, dynaFunc.sourceInformation), context, m3SourceInformation));
+        }
+        parameters.forEach(parameter -> bodyScope.put(parameter._name(), parameter));
         RelationalOperationElement body = processRelationalOperationElement(lambda.body, context, aliasMap, selfJoinTargets, bodyScope);
 
         // Named explicitly rather than defaulted: falling through to one of these would build a
@@ -933,10 +984,13 @@ public class HelperRelationalBuilder
         {
             case "array_filter":
                 return new Root_meta_relational_metamodel_FilterRelationalLambda_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::FilterRelationalLambda"))
-                        ._parameters(Lists.mutable.with(parameter))._body(body);
+                        ._parameters(parameters)._body(body);
             case "array_transform":
                 return new Root_meta_relational_metamodel_MapRelationalLambda_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::MapRelationalLambda"))
-                        ._parameters(Lists.mutable.with(parameter))._body(body);
+                        ._parameters(parameters)._body(body);
+            case "array_reduce":
+                return new Root_meta_relational_metamodel_FoldRelationalLambda_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::FoldRelationalLambda"))
+                        ._parameters(parameters)._body(body);
             default:
                 throw new EngineException("'" + dynaFunc.funcName + "' is listed as an array lambda but has no case here", dynaFunc.sourceInformation, EngineErrorType.COMPILATION);
         }

@@ -864,7 +864,7 @@ public class RelationalParseTreeWalker
             RelationalParserGrammar.FunctionOperationLambdaContext lambdaCtx = ctx.functionOperationLambda();
             RelationalLambda lambda = new RelationalLambda();
             lambda.sourceInformation = this.walkerSourceInformation.getSourceInformation(lambdaCtx);
-            lambda.parameterName = PureGrammarParserUtility.fromIdentifier(lambdaCtx.identifier());
+            lambda.parameterNames = ListIterate.collect(lambdaCtx.identifier(), PureGrammarParserUtility::fromIdentifier);
             lambda.body = this.visitOperation(lambdaCtx.operation(), scopeInfo);
             return lambda;
         }

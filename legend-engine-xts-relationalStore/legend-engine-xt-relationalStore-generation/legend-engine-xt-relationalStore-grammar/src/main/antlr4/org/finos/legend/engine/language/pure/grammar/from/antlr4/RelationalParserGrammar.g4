@@ -219,9 +219,11 @@ functionOperation:                          identifier PAREN_OPEN (functionOpera
 ;
 functionOperationArgument:                  operation | functionOperationArgumentArray | functionOperationLambda
 ;
-// A single-parameter lambda, as filter/map/fold over an array take. The body is an ordinary
-// operation, so it may navigate, compare, or call another function.
+// A lambda, as filter/map/fold over an array take. The body is an ordinary operation, so it may
+// navigate, compare, or call another function. Parentheses are required for more than one
+// parameter, so that the names cannot be read as further arguments to the enclosing function.
 functionOperationLambda:                    identifier PIPE operation
+                                            | PAREN_OPEN identifier (COMMA identifier)* PIPE operation PAREN_CLOSE
 ;
 functionOperationArgumentArray:             BRACKET_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? BRACKET_CLOSE
 ;

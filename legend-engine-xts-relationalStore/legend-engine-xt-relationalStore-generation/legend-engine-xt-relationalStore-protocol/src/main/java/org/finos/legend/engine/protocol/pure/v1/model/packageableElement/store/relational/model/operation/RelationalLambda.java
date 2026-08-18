@@ -16,6 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.
 
 public class RelationalLambda extends RelationalOperationElement
 {
-    public String parameterName;
+    public java.util.List<String> parameterNames;
     public RelationalOperationElement body;
 }
