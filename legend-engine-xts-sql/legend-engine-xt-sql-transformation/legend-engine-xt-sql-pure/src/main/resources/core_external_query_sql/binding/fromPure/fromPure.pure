@@ -661,8 +661,46 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processProjection', $context.debug);
 
   let aggregates = $originalSelect.selectItems->filter(si | $si->isSelectItemAggregate())->cast(@SingleColumn);
-  let windows = $originalSelect.selectItems->filter(si | $si->isSelectItemWindow())->cast(@SingleColumn);
-  let standard = $originalSelect.selectItems->removeAll($aggregates)->removeAll($windows);
+  //direct windows are select items whose top-level expression is a FunctionCall with a window (e.g. rank() OVER (...))
+  let directWindows = $originalSelect.selectItems->filter(si | $si->isSelectItemWindow())->cast(@SingleColumn);
+  //nested window items have a window function buried inside another expression (e.g. abs(row_number() OVER (...)), row_number() OVER (...) + 1)
+  let nestedWindowItems = $originalSelect.selectItems->filter(si | $si->isSelectItemContainingNestedWindow())->cast(@SingleColumn);
+
+  //decompose nested window items into two parts:
+  //  1. synthetic window columns: standalone window function columns (e.g. __sql_window_ABS_ROW_0 = row_number() OVER (...))
+  //     these get processed through processOlapGroupBy like normal window columns
+  //  2. post-window extend columns: the original outer expression rewritten to reference the synthetic columns
+  //     (e.g. ABS_ROW = abs(__sql_window_ABS_ROW_0)), applied as an extend after all window processing
+  let nestedDecomposed = $nestedWindowItems->map(item |
+    //find all window FunctionCall nodes within this expression
+    let innerWindowFunctions = $item.expression->extractWindowFunctionsFromExpression()->removeDuplicates();
+    //generate unique synthetic column names for each inner window function
+    let syntheticNames = $innerWindowFunctions->size()->range()->map(i | '__sql_window_' + $item->extractNameFromSingleColumn($context) + '_' + $i->toString());
+    //create standalone SingleColumn entries for each inner window function, to be processed as regular window columns
+    let syntheticWindowColumns = $innerWindowFunctions->size()->range()->map(i |
+      ^SingleColumn(expression = $innerWindowFunctions->at($i), alias = $syntheticNames->at($i))
+    );
+    //rewrite the original expression, replacing inner window calls with QualifiedNameReferences to the synthetic column names
+    let rewrittenExpression = $item.expression->replaceWindowFunctionsWithRefs($innerWindowFunctions, $syntheticNames);
+    let postWindowColumn = ^$item(expression = $rewrittenExpression);
+    pair(list($syntheticWindowColumns), $postWindowColumn);
+  );
+
+  let syntheticWindowColumns = $nestedDecomposed.first.values;
+  let postWindowExtendColumns = $nestedDecomposed.second;
+
+  //build the combined windows list preserving the original select order so that olapGroupBy columns
+  //are generated in the same order they appear in the SQL. For nested window items, we substitute
+  //their synthetic window columns in place.
+  let nestedDecomposedMap = $nestedWindowItems->size()->range()->map(i | pair($nestedWindowItems->at($i), $nestedDecomposed->at($i)));
+  let windows = $originalSelect.selectItems->filter(si | $si->isSelectItemWindow() || $si->isSelectItemContainingNestedWindow())->map(si |
+    if ($si->isSelectItemWindow(),
+      | $si->cast(@SingleColumn),
+      | let decomposed = $nestedDecomposedMap->filter(p | $p.first == $si)->toOne();
+        $decomposed.second.first.values;)
+  );
+  //nested window items are excluded from standard since they are handled via the window + post-window extend path
+  let standard = $originalSelect.selectItems->removeAll($aggregates)->removeAll($directWindows)->removeAll($nestedWindowItems);
 
   let havingExtensions = extractAggregatesFromExpression($having)->map(e | ^SingleColumn(expression = $e));
   let groupByExtensions = $groupBy->map(g | $g->match([
@@ -741,12 +779,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                   | $extend);
 
   let olapGroupBy = if ($isWindow,
-                  | processOlapGroupBy($windows, $select, $extensions, $havingExtensions, $groupByExtensions, clone(^$context(expression = $group), $context)),
+                  //exclude nested window items from the select passed to processOlapGroupBy so they don't
+                  //appear in processRename (their expressions aren't columns yet, the post-window extend creates them)
+                  | let olapSelect = ^$select(selectItems = $select.selectItems->filter(si | !$si->in($nestedWindowItems)));
+                    processOlapGroupBy($windows, $olapSelect, $extensions, $havingExtensions, $groupByExtensions, clone(^$context(expression = $group), $context));,
                   | $group);
 
+  //after all window columns are computed, apply the rewritten outer expressions as extends
+  //e.g. abs(row_number() OVER (...)) becomes extend(abs(__sql_window_col_0)) at this point
+  let postWindowExtend = if ($postWindowExtendColumns->isNotEmpty(),
+                  | processExtend($postWindowExtendColumns, [], clone(^$context(expression = $olapGroupBy), $context)),
+                  | $olapGroupBy);
+
   let distinctExp = if($select.distinct,
-    | ^TDSBuilder().distinct($olapGroupBy, $context.relation->isTrue()),
-    | $olapGroupBy);
+    | ^TDSBuilder().distinct($postWindowExtend, $context.relation->isTrue()),
+    | $postWindowExtend);
 
   let newContext = clone(^$context(expression = $distinctExp), $context);
 
@@ -1091,7 +1138,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     q:QualifiedNameReference[1] | processExpression($q, rowExpressionContext($context), $context),
     e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, rowExpressionContext($context), $context),
     //NOTE * params come through as empty, investigate whether parser should handle this better
-    a:meta::external::query::sql::metamodel::Expression[0] | rowExpressionContext($context).var()
+    a:meta::external::query::sql::metamodel::Expression[0] | rowExpressionContext($context).var('map function arg')
   ])->evaluateAndDeactivate();
 }
 
@@ -1186,6 +1233,69 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $si->instanceOf(SingleColumn)
   && $si->cast(@SingleColumn).expression->instanceOf(FunctionCall)
   && $si->cast(@SingleColumn).expression->cast(@FunctionCall).window->isNotEmpty()
+}
+
+//checks whether an expression tree contains any FunctionCall with a non-empty window anywhere within it.
+//uses the walk mechanism to traverse all expression types (ArithmeticExpression, Cast, etc.), and manually
+//recurses into FunctionCall arguments since the walk extras handler replaces the default FunctionCall traversal.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionContainingWindow(e:meta::external::query::sql::metamodel::Expression[0..1]):Boolean[1]
+{
+  walk($e,
+    t | $t->exists(v | $v),
+    f:FunctionCall[1] | if($f.window->isNotEmpty(), | true, | $f.arguments->exists(a | $a->isExpressionContainingWindow()))
+  );
+}
+
+//identifies select items where a window function is nested inside another expression (e.g. abs(row_number() OVER (...)))
+//but the top-level expression is NOT itself a window function. These need special decomposition handling.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemContainingNestedWindow(si: SelectItem[1]):Boolean[1]
+{
+  $si->instanceOf(SingleColumn)
+  && !$si->isSelectItemWindow()
+  && $si->cast(@SingleColumn).expression->isExpressionContainingWindow();
+}
+
+//extracts all window FunctionCall nodes from within an expression tree.
+//stops recursion at window functions (returns them) and manually recurses into non-window FunctionCall arguments.
+//other expression types are traversed via walk.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowFunctionsFromExpression(e:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
+{
+  walk($e,
+    t | $t,
+    f:FunctionCall[1] | if($f.window->isNotEmpty(), | $f, | $f.arguments->map(a | $a->extractWindowFunctionsFromExpression()))
+  )->cast(@FunctionCall);
+}
+
+//replaces window FunctionCall nodes in an expression with QualifiedNameReferences to synthetic column names.
+//manually recurses through common expression types. This cannot use the walk-with-extras replacement mechanism
+//because the extras handler would match all FunctionCalls and prevent the default recursion into non-window ones.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::replaceWindowFunctionsWithRefs(e:meta::external::query::sql::metamodel::Expression[1], windowFunctions:FunctionCall[*], syntheticNames:String[*]):meta::external::query::sql::metamodel::Expression[1]
+{
+  let replace = {expr:meta::external::query::sql::metamodel::Expression[1] | $expr->replaceWindowFunctionsWithRefs($windowFunctions, $syntheticNames)};
+  $e->match([
+    f:FunctionCall[1] |
+      let idx = $windowFunctions->indexOf($f);
+      if ($idx >= 0,
+        //this FunctionCall is a window function; replace it with a reference to its synthetic column
+        | ^QualifiedNameReference(name = ^QualifiedName(parts = $syntheticNames->at($idx))),
+        //not a window function; recurse into its arguments
+        | ^$f(arguments = $f.arguments->map(a | $replace->eval($a))));,
+    a:ArithmeticExpression[1] | ^$a(left = $replace->eval($a.left), right = $replace->eval($a.right)),
+    c:Cast[1] | ^$c(expression = $replace->eval($c.expression)),
+    c:ComparisonExpression[1] | ^$c(left = $replace->eval($c.left), right = $replace->eval($c.right)),
+    n:NegativeExpression[1] | ^$n(value = $replace->eval($n.value)),
+    s:SearchedCaseExpression[1] | ^$s(
+      defaultValue = $s.defaultValue->map(d | $replace->eval($d)),
+      whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $replace->eval($wc.operand), result = $replace->eval($wc.result)))
+    ),
+    s:SimpleCaseExpression[1] | ^$s(
+      operand = $replace->eval($s.operand),
+      defaultValue = $s.defaultValue->map(d | $replace->eval($d)),
+      whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $replace->eval($wc.operand), result = $replace->eval($wc.result)))
+    ),
+    //for any other expression type, return as-is (leaf nodes like literals, QualifiedNameReference, etc.)
+    a:meta::external::query::sql::metamodel::Expression[1] | $a
+  ]);
 }
 
 //we determins nonAliased as a column that either has no alias, or the alias is the same as the column name itself
@@ -2005,7 +2115,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
         $columns->map(c |
           //set doCastNonPrimitiveColumnAccessor to ensure correct column type for enums
-          let expression = createTdsColumn($c.actual, $expContext.var, ^$expContext(doCastNonPrimitiveColumnAccessor = true), $context);
+          let expression = createTdsColumn($c.actual, $expContext.var('select column: ' + $c.actual), ^$expContext(doCastNonPrimitiveColumnAccessor = true), $context);
           let functionType = ^FunctionType(parameters = $expContext.defaultVar, returnMultiplicity = $expression.multiplicity, returnType = $expression.genericType->toOne());
           let lambda = lambda($functionType, $expression);
           pair($lambda, $c.expected);
@@ -2623,7 +2733,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processSubRelation', $context.debug);
 
   let outerNames = $context.name->concatenate($context.contexts->filter(c | $c.name->isNotEmpty()).name)->removeDuplicates();
-  let outerAliases = $outerNames->map(n | pair($n, $expContext.var()));
+  let outerAliases = $outerNames->map(n | pair($n, $expContext.var('subrelation')));
 
   let subContext = ^$context(
     debug = $context.debug->indent(),
@@ -3160,7 +3270,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processFunctionCall', $context.debug);
 
-  assert($f.window->isEmpty(), | 'window functions not currently supported within function call');
+  //window functions nested inside other expressions (e.g. abs(row_number() OVER (...))) are decomposed
+  //upstream in processProjection into synthetic window columns + post-window extends, so a FunctionCall
+  //with a non-empty window should not normally reach here. No assertion is needed.
   assert($f.orderBy->isEmpty(), | 'order by in function calls not currently supported');
 
   if ($expContext.processFunctionCallAsIdentifier,
@@ -3180,7 +3292,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   if ($col->isEmpty(),
     | processFunctionCallAsFunction($f, $expContext, $context),
-    | createTdsColumn($col.name->toOne(), $expContext.var, $expContext, $context));
+    | createTdsColumn($col.name->toOne(), $expContext.var('column: ' + $col.name->toOne()), $expContext, $context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFunctionCallAsFunction(f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -4561,15 +4673,15 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
   relation:Boolean[1];
   functionCallStack: FunctionCall[*];
 
-  var() {
-    assert($this.defaultVar->isNotEmpty(), | 'no var present');
+  var(context:String[1]) {
+    assert($this.defaultVar->isNotEmpty(), | 'no var present, context: ' + $context);
     $this.defaultVar->toOne();
   }:VariableExpression[1];
 
   var(name:QualifiedName[1])
   {
     let var = if ($name.parts->size() == 2, | $this.varMap->get($name.parts->first()->toOne()), | []);
-    if ($var->isEmpty(), | $this.var, | $var->toOne());
+    if ($var->isEmpty(), | $this.var('qualified name: ' + $name.parts->joinStrings('.')), | $var->toOne());
   }:VariableExpression[1];
 
   parentFunctionCall()
