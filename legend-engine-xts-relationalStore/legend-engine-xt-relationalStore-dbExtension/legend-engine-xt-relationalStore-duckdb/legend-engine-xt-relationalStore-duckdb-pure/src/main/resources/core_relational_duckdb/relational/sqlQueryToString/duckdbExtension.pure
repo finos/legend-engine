@@ -30,6 +30,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
       windowColumnProcessor = processWindowColumnForDuckDB_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForDuckDB_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       literalProcessor = $literalProcessor,
       joinProcessor = meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,

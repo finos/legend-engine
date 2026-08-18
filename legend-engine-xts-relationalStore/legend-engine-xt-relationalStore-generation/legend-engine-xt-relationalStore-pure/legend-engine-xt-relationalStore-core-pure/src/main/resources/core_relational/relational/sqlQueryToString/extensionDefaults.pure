@@ -793,6 +793,15 @@ function meta::relational::functions::sqlQueryToString::default::processWithinGr
    $f.parameters->at(0)->processOperation($sgc) + ' within group (order by ' + withinGroupOrderBy($f, $sgc) + ')';
 }
 
+// DuckDB and Postgres reject WITHIN GROUP on plain aggregates such as string_agg; they take the ordering as a
+// trailing clause inside the aggregate's own parentheses instead.
+function meta::relational::functions::sqlQueryToString::default::processWithinGroupInline(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let agg = $f.parameters->at(0)->processOperation($sgc);
+   assert($agg->endsWith(')'), | 'withinGroup expects the aggregate to render as a function call, got: ' + $agg);
+   $agg->substring(0, $agg->length() - 1) + ' order by ' + withinGroupOrderBy($f, $sgc) + ')';
+}
+
 function meta::relational::functions::sqlQueryToString::default::transformPercentile(args: String[*], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): String[1]
 {
    let boolProc = $literalProcessor->eval(Boolean);
