@@ -728,6 +728,7 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
 {
   map:meta::external::query::sql::metamodel::Expression[0..1];
   aggregate:meta::external::query::sql::metamodel::Expression[1];
+  sortItems:meta::external::query::sql::metamodel::SortItem[*];
 }
 
 function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
@@ -743,12 +744,11 @@ function meta::external::query::sql::transformation::queryToPure::percentilePreP
 
 function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
 {
-  unsupported($aggregate.group->isEmpty(), | 'aggregate within group not supported');
-  unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
-
+  // WITHIN GROUP (ORDER BY ...) carries a single key; the in-paren form carries any number.
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.arguments->first(),
-    aggregate = $column->replaceAggregateArguments()
+    aggregate = $column->replaceAggregateArguments(),
+    sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy)
   );
 }
 
@@ -764,7 +764,9 @@ function meta::external::query::sql::transformation::queryToPure::replaceAggrega
         let processor = $f.name->functionProcessor();
         let var = ^QualifiedNameReference(name=^QualifiedName());
         if ($processor.isAggregate,
-          | ^$f(arguments = $f.arguments->match([
+          // The ordering is lifted into AggregateFunctionPreProcessorWrapper.sortItems and must not survive here:
+          // this expression becomes the reduce lambda, which processFunctionCall rejects with an order by on it.
+          | ^$f(group = [], orderBy = [], arguments = $f.arguments->match([
               a:meta::external::query::sql::metamodel::Expression[0..1] | $var,
               a:meta::external::query::sql::metamodel::Expression[1..*] | $var->concatenate($a->tail()),
               a:meta::external::query::sql::metamodel::Expression[*] | unsupported('aggregation type currently not supported'); [];

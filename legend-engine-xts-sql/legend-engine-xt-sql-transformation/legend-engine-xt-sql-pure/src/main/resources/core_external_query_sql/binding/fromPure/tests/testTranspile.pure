@@ -1235,6 +1235,59 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByOrderedAggregation():Boolean[1]
+{
+  test(
+    ['SELECT String, string_agg("String", \',\' ORDER BY "Integer" DESC) AS "ordered" FROM service."/service/service1" GROUP BY String',
+     'SELECT String, string_agg("String", \',\') WITHIN GROUP (ORDER BY "Integer" DESC) AS "ordered" FROM service."/service/service1" GROUP BY String'],
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[ordered : {g | $g->reduce(x|$x.String, y|$y->joinStrings(','), [~Integer->descending()])}]
+            )}, true, false)
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByOrderedAggregationMultipleSortKeys():Boolean[1]
+{
+  test(
+    'SELECT String, string_agg("String", \',\' ORDER BY "Integer" DESC, "Float" ASC) AS "ordered" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[ordered : {g | $g->reduce(x|$x.String, y|$y->joinStrings(','), [~Integer->descending(), ~Float->ascending()])}]
+            )}, true, false)
+    ]
+  )
+}
+
+// One ordered aggregate pulls its unordered siblings into the same reduce shape.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByOrderedAggregationMixedWithPlainAggregate():Boolean[1]
+{
+  test(
+    'SELECT String, string_agg("String", \',\' ORDER BY "Integer" DESC) AS "ordered", sum(Integer) AS "sum" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[
+                ordered : {g | $g->reduce(x|$x.String, y|$y->joinStrings(','), [~Integer->descending()])},
+                sum : {g | $g->reduce(x|$x.Integer, y|$y->sum())}
+              ]
+            )}, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
   test(

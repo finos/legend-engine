@@ -1338,7 +1338,31 @@ public class Handlers
         return null;
     };
 
-    public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
+    // The group-scoped reduce: the relation is the group itself, so the map lambda takes a row of it and the
+    // sort spec resolves against its own columns.
+    public static final ParametersInference GroupReduceInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
+        ValueSpecification rel = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType gt = rel._genericType();
+
+        updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
+        ValueSpecification map = parameters.get(1).accept(valueSpecificationBuilder);
+
+        updateSimpleLambda(parameters.get(2), funcReturnType(map, cc.pureModel), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(0, null), cc);
+        ValueSpecification agg = parameters.get(2).accept(valueSpecificationBuilder);
+
+        MutableList<ValueSpecification> result = Lists.mutable.with(rel, map, agg);
+        if (parameters.size() == 4)
+        {
+            processSort(parameters.get(3), gt, cc, valueSpecificationBuilder, processorSupport);
+            result.add(parameters.get(3).accept(valueSpecificationBuilder));
+        }
+        return result;
+    };
+
+    public static final ParametersInference WindowReduceInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
         ValueSpecification rel = parameters.get(0).accept(valueSpecificationBuilder);
@@ -1367,6 +1391,11 @@ public class Handlers
         
         return Lists.mutable.with(rel, w, row, map, agg);
     };
+
+    // reduce has two unrelated shapes under one simple name: the OLAP form (relation, window, row, map, agg)
+    // and the group-scoped form (relation, map, agg[, sortInfo]). One group, so one inference has to dispatch.
+    public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
+            (parameters.size() >= 5 ? WindowReduceInference : GroupReduceInference).update(parameters, valueSpecificationBuilder);
 
     private final Map<String, FunctionExpressionBuilder> map = Maps.mutable.empty();
     private final Map<String, Dispatch> dispatchMap = Maps.mutable.empty();
@@ -1467,7 +1496,9 @@ public class Handlers
 
         register(
                 grp(ReduceInference,
-                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), p -> true)
+                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), ps -> ps.size() == 5),
+                    h("meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__U_m_", "reduce", false, ps -> res(funcReturnType(ps.get(2)), funcReturnMul(ps.get(2))), ps -> ps.size() == 3),
+                    h("meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_", "reduce", false, ps -> res(funcReturnType(ps.get(2)), funcReturnMul(ps.get(2))), ps -> ps.size() == 4)
                 )
         );
 
