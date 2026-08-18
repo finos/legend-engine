@@ -37,16 +37,10 @@
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_",
     "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\""
   }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testEmpty_Function_1__Boolean_1_",
-    "expectedError" : "could not determine polymorphic type because input has type unknown"
-  }, {
     "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '[[[1]]]'\nactual:   '[1]'\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '[{\"hello\":[{\"world\":2}]}]'\nactual:   '{\"hello\":{\"world\":2}}'\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_",
-    "expectedError" : "could not determine polymorphic type because input has type unknown"
   } ]
 }
