@@ -29,25 +29,7 @@
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'keys' (state: [Where, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'values' (state: [Where, false]) is not supported yet"
+    "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
