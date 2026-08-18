@@ -645,6 +645,41 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
+    // The relation forms of these aggregates name their columns, and optionally an ordering, as ColSpecs, so
+    // all of them have to be resolved against the source relation before the arguments are built. Shared by
+    // joinStrings and maxBy/minBy; a no-op unless the first argument is a relation.
+    public static final ParametersInference RelationColumnAggregateInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
+        ValueSpecification firstProcessedParameter = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType gt = firstProcessedParameter._genericType();
+        if (cc.pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            // Every ColSpec argument names a column of the source relation -- one for joinStrings, two for
+            // maxBy/minBy -- so resolve them all. A sort spec is not a ClassInstance and is handled below.
+            for (int i = 1; i < parameters.size(); i++)
+            {
+                if (parameters.get(i) instanceof ClassInstance)
+                {
+                    processColumn(parameters.get(i), gt, cc);
+                }
+            }
+            // A second argument that is not a ColSpec is a row function, whose parameter is a row.
+            if (parameters.size() > 1 && !(parameters.get(1) instanceof ClassInstance))
+            {
+                updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
+            }
+            if (parameters.size() == 4)
+            {
+                processSort(parameters.get(3), gt, cc, valueSpecificationBuilder, processorSupport);
+            }
+        }
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
+        parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder)).forEach(result::add);
+        return result;
+    };
+
     public static final ParametersInference SortColumnInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
@@ -852,11 +887,11 @@ public class Handlers
             Object aggCol = ((ClassInstance) parameters.get(aggSpecParamIndex)).value;
             if (aggCol instanceof ColSpecArray)
             {
-                ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleAggColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
+                ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleGroupColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
             }
             else if (aggCol instanceof ColSpec)
             {
-                processSingleAggColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
+                processSingleGroupColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
             }
             else
             {
@@ -957,6 +992,23 @@ public class Handlers
                 c.genericType = CompileContext.convertGenericType(_Column.getColumnType(found));
                 c.multiplicity = CompileContext.convertMultiplicity(_Column.getColumnMultiplicity(found));
             });
+        }
+    }
+
+    // A groupBy/aggregate column is either an AggColSpec (map lambda over a row, then a reduce lambda over the
+    // mapped values) or a FuncColSpec (one lambda over the whole group). The protocol tells them apart by
+    // whether a second lambda is present.
+    private static void processSingleGroupColSpec(ColSpec colSpec, ValueSpecification firstProcessedParameter, ValueSpecificationBuilder valueSpecificationBuilder)
+    {
+        if (colSpec.function2 == null)
+        {
+            // The lambda parameter is the group itself, so it takes the relation's own generic type rather
+            // than the row type an AggColSpec map would get.
+            updateSimpleLambda(colSpec.function1, firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), valueSpecificationBuilder.getContext());
+        }
+        else
+        {
+            processSingleAggColSpec(colSpec, firstProcessedParameter, valueSpecificationBuilder);
         }
     }
 
@@ -1078,11 +1130,11 @@ public class Handlers
                 Object aggCol = ((ClassInstance) parameters.get(aggSpecParamIndex)).value;
                 if (aggCol instanceof ColSpecArray)
                 {
-                    ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleAggColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
+                    ((ColSpecArray) aggCol).colSpecs.forEach(c -> processSingleGroupColSpec(c, firstProcessedParameter, valueSpecificationBuilder));
                 }
                 else if (aggCol instanceof ColSpec)
                 {
-                    processSingleAggColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
+                    processSingleGroupColSpec((ColSpec) aggCol, firstProcessedParameter, valueSpecificationBuilder);
                 }
                 else
                 {
@@ -1217,6 +1269,10 @@ public class Handlers
         {
             return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
         }
+        if (parameters.size() == 2 && parameters.get(1) instanceof ClassInstance)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
+        }
         return null;
     };
 
@@ -1226,6 +1282,10 @@ public class Handlers
         {
             return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
         }
+        if (parameters.size() == 2 && parameters.get(1) instanceof ClassInstance)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
+        }
         return null;
     };
 
@@ -1234,6 +1294,10 @@ public class Handlers
         if (parameters.size() == 4)
         {
             return RelationOlapAggregator.apply("cov_Number").update(parameters, valueSpecificationBuilder);
+        }
+        if (parameters.size() == 2)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
         }
         return null;
     };
@@ -1274,7 +1338,31 @@ public class Handlers
         return null;
     };
 
-    public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
+    // The group-scoped reduce: the relation is the group itself, so the map lambda takes a row of it and the
+    // sort spec resolves against its own columns.
+    public static final ParametersInference GroupReduceInference = (parameters, valueSpecificationBuilder) ->
+    {
+        CompileContext cc = valueSpecificationBuilder.getContext();
+        ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
+        ValueSpecification rel = parameters.get(0).accept(valueSpecificationBuilder);
+        GenericType gt = rel._genericType();
+
+        updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
+        ValueSpecification map = parameters.get(1).accept(valueSpecificationBuilder);
+
+        updateSimpleLambda(parameters.get(2), funcReturnType(map, cc.pureModel), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(0, null), cc);
+        ValueSpecification agg = parameters.get(2).accept(valueSpecificationBuilder);
+
+        MutableList<ValueSpecification> result = Lists.mutable.with(rel, map, agg);
+        if (parameters.size() == 4)
+        {
+            processSort(parameters.get(3), gt, cc, valueSpecificationBuilder, processorSupport);
+            result.add(parameters.get(3).accept(valueSpecificationBuilder));
+        }
+        return result;
+    };
+
+    public static final ParametersInference WindowReduceInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
         ValueSpecification rel = parameters.get(0).accept(valueSpecificationBuilder);
@@ -1303,6 +1391,11 @@ public class Handlers
         
         return Lists.mutable.with(rel, w, row, map, agg);
     };
+
+    // reduce has two unrelated shapes under one simple name: the OLAP form (relation, window, row, map, agg)
+    // and the group-scoped form (relation, map, agg[, sortInfo]). One group, so one inference has to dispatch.
+    public static final ParametersInference ReduceInference = (parameters, valueSpecificationBuilder) ->
+            (parameters.size() >= 5 ? WindowReduceInference : GroupReduceInference).update(parameters, valueSpecificationBuilder);
 
     private final Map<String, FunctionExpressionBuilder> map = Maps.mutable.empty();
     private final Map<String, Dispatch> dispatchMap = Maps.mutable.empty();
@@ -1383,6 +1476,10 @@ public class Handlers
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__FuncColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__FuncColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpecArray_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_", "groupBy", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
                         // meta::pure::functions::collection::groupBy<K,V,U>(set:K[*], functions:meta::pure::metamodel::function::Function<{K[1]->Any[*]}>[*], aggValues:meta::pure::functions::collection::AggregateValue<K,V,U>[*], ids:String[*]):TabularDataSet[1]
                         h("meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_", "groupBy", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true)
                 )
@@ -1391,13 +1488,17 @@ public class Handlers
         register(
                 grp(AggregateInference,
                         h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
-                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
+                        h("meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true),
+                        h("meta::pure::functions::relation::aggregate_Relation_1__FuncColSpecArray_1__Relation_1_", "aggregate", true, ps -> GroupByReturnInference(ps, this.pureModel), ps -> true)
                 )
         );
 
         register(
                 grp(ReduceInference,
-                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), p -> true)
+                    h("meta::pure::functions::relation::reduce_Relation_1___Window_1__T_1__Function_1__Function_1__U_m_", "reduce", true, ps -> res(funcReturnType(ps.get(4)), funcReturnMul(ps.get(4))), ps -> ps.size() == 5),
+                    h("meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__U_m_", "reduce", false, ps -> res(funcReturnType(ps.get(2)), funcReturnMul(ps.get(2))), ps -> ps.size() == 3),
+                    h("meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_", "reduce", false, ps -> res(funcReturnType(ps.get(2)), funcReturnMul(ps.get(2))), ps -> ps.size() == 4)
                 )
         );
 
@@ -2447,9 +2548,17 @@ public class Handlers
         register("meta::pure::functions::string::humanize_String_1__String_1_", "humanize", false, ps -> res("String", "one"));
         register("meta::pure::functions::string::isLowerCase_String_1__Boolean_1_", "isLowerCase", false, ps -> res("Boolean", "one"));
         register("meta::pure::functions::string::isUpperCase_String_1__Boolean_1_", "isUpperCase", false, ps -> res("Boolean", "one"));
-        register(m(m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4)),
-                m(h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> true))));
+        // The string and relation forms of joinStrings share a simple name, and the relation forms need a
+        // ParametersInference to resolve their ColSpecs, so every handler has to sit under one group. The
+        // inference is a no-op unless the first argument is a relation.
+        register(grp(RelationColumnAggregateInference,
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2),
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4 && !typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
+                h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 1),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__ColSpec_1__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 3 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_ColSpec"))),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__ColSpec_1__String_1__SortInfo_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 4 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_ColSpec"))),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 3),
+                h("meta::pure::functions::relation::joinStrings_Relation_1__Function_1__String_1__SortInfo_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 4 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation")))));
         register(m(m(h("meta::pure::functions::string::makeCamelCase_String_1__Boolean_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> ps.size() == 2)),
                 m(h("meta::pure::functions::string::makeCamelCase_String_1__String_1_", "makeCamelCase", false, ps -> res("String", "one"), ps -> true))));
         register(m(m(h("meta::pure::functions::string::isDigit_String_1__Integer_1__Integer_1__Boolean_1_", "isDigit", false, ps -> res("Boolean", "one"), ps -> ps.size() == 3)),

@@ -658,6 +658,30 @@
     "test" : "meta::pure::functions::relation::tests::join::testSimpleJoin_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_ForcingSubSelect_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_MultipleSortColumns_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_RowFunction_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Unordered_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -1236,6 +1260,9 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSimpleSize_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::size::testSize_GroupBy_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_"

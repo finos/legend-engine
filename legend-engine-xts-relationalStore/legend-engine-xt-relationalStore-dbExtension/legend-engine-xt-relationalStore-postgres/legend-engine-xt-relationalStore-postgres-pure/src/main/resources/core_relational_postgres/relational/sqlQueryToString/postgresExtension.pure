@@ -43,6 +43,7 @@ function meta::relational::functions::sqlQueryToString::postgres::createDbExtens
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForPostgres_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,

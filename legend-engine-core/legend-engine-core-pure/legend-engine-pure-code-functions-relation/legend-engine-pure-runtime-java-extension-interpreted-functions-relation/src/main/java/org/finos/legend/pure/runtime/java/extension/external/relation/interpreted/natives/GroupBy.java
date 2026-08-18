@@ -23,7 +23,10 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpecArray;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpecArray;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m3.navigation.Instance;
 import org.finos.legend.pure.m3.navigation.M3Properties;
@@ -33,9 +36,11 @@ import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.AggregationShared;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSCoreInstance;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Rows;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
@@ -75,6 +80,17 @@ public class GroupBy extends AggregationShared
         else if (aggSpec instanceof AggColSpecArray)
         {
             result = ((AggColSpecArray<?, ?, ?>) aggSpec)._aggSpecs().injectInto(result, (accResult, aggColSpec) -> accResult.addColumn(processOneAggColSpec(orderedSource, Lists.fixedSize.empty(), null, aggColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, true, false, null)));
+        }
+        // The FuncColSpec forms hand the whole group to one lambda instead of a map/reduce pair, so the value
+        // comes from processFuncColSpec in compressed mode -- one result per partition rather than per row.
+        else if (aggSpec instanceof FuncColSpec)
+        {
+            result = result.addColumn(processFuncColSpec(orderedSource, new Window(new Rows(true, true)), (FuncColSpec<?, ?>) aggSpec, true, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne(M3Properties.genericType), false));
+        }
+        else if (aggSpec instanceof FuncColSpecArray)
+        {
+            GenericType sourceGenericType = (GenericType) params.get(0).getValueForMetaPropertyToOne(M3Properties.genericType);
+            result = ((FuncColSpecArray<?, ?>) aggSpec)._funcSpecs().injectInto(result, (accResult, funcColSpec) -> accResult.addColumn(processFuncColSpec(orderedSource, new Window(new Rows(true, true)), funcColSpec, true, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceGenericType, false)));
         }
         else
         {

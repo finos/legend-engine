@@ -883,7 +883,46 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
 
-  ^TDSBuilder().aggregation($name, $mapLambda, $aggLambda, $context.relation->isTrue());
+  if ($adjusted.sortItems->isEmpty(),
+    | ^TDSBuilder().aggregation($name, $mapLambda, $aggLambda, $context.relation->isTrue()),
+    |
+      unsupported($context.relation->isTrue(), | 'ordered aggregation is only supported on relations');
+      unsupported($adjusted.sortItems.sortKey->forAll(k | $k->instanceOf(QualifiedNameReference)), | 'ordered aggregation only supports column sort keys');
+      ^OrderedAggregation(name = $name, map = $mapLambda, agg = $aggLambda,
+                          sortInfos = $adjusted.sortItems->map(si | $si->createSortItemFunction($context)));
+  );
+}
+
+// An aggregate carrying an ORDER BY cannot be an AggColSpec -- the sort columns are gone by the time the
+// reduce lambda sees only mapped values. It becomes a group-scoped reduce instead; see TDSBuilder.groupBy.
+Class meta::external::query::sql::transformation::queryToPure::OrderedAggregation
+{
+  name:String[1];
+  map:LambdaFunction<Any>[1];
+  agg:LambdaFunction<Any>[1];
+  sortInfos:ValueSpecification[*];
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::groupReduceColSpec(
+  name:String[1],
+  map:meta::pure::metamodel::function::Function<Any>[1],
+  agg:meta::pure::metamodel::function::Function<Any>[1],
+  sortInfos:ValueSpecification[*],
+  relationType:GenericType[1]):meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1]
+{
+  let returnType = $agg->functionReturnType();
+  let returnMultiplicity = $agg->functionReturnMultiplicity();
+
+  let call = if ($sortInfos->isEmpty(),
+    | sfe(reduce_Relation_1__Function_1__Function_1__U_m_, $returnType, [], $returnMultiplicity,
+          [var('g', PureOne, $relationType), iv($map), iv($agg)]),
+    | sfe(reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_, $returnType, [], $returnMultiplicity,
+          [var('g', PureOne, $relationType), iv($map), iv($agg), iv($sortInfos)]));
+
+  ^meta::pure::metamodel::relation::FuncColSpec<Any, Any>(
+    name = $name,
+    function = lambda(functionType(var('g', PureOne, $relationType), $returnType, $returnMultiplicity), $call)
+  );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(expression:meta::external::query::sql::metamodel::Expression[1], type:Type[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
@@ -4887,7 +4926,48 @@ aggregation(
     ])->evaluateAndDeactivate();
   }:ValueSpecification[1];
 
+  // A single ordered aggregate forces every aggregate in the same groupBy into the group-scoped reduce form,
+  // because groupBy takes one homogeneous column-spec array.
+  groupByReduce(
+    func: ValueSpecification[1],
+    groupByColumns:String[*],
+    aggregates: Any[*]){
+
+    let relationType = $func->evaluateAndDeactivate().genericType;
+
+    let funcSpecs = $aggregates->map(a | $a->match([
+      o:OrderedAggregation[1] | groupReduceColSpec($o.name, $o.map, $o.agg, $o.sortInfos, $relationType),
+      s:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1] | groupReduceColSpec($s.name, $s.map, $s.reduce, [], $relationType)
+    ]));
+
+    let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
+
+    let columns = $groupByColumns->map(c | $relationColumns->get($c).values)->concatenate($funcSpecs->map(f |
+      newRelationColumn($f.name, $f.function->functionReturnType().rawType, $f.function->functionReturnMultiplicity())
+    ));
+
+    let gt = buildRelationType($columns);
+    let specs = iv(^meta::pure::metamodel::relation::FuncColSpecArray<Any, Any>(funcSpecs = $funcSpecs));
+
+    if ($groupByColumns->isEmpty(),
+      | sfe(aggregate_Relation_1__FuncColSpecArray_1__Relation_1_, $gt, [$func, $specs]),
+      | sfe(groupBy_Relation_1__ColSpecArray_1__FuncColSpecArray_1__Relation_1_, $gt, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns)), $specs]));
+
+  }:ValueSpecification[1];
+
   groupBy(
+    func: ValueSpecification[1],
+    groupByColumns:String[*],
+    aggregates: Any[*],
+    relation:Boolean[1]){
+
+    if ($aggregates->exists(a | $a->instanceOf(OrderedAggregation)),
+      | $this.groupByReduce($func, $groupByColumns, $aggregates),
+      | $this.groupByAggColSpec($func, $groupByColumns, $aggregates, $relation));
+
+  }:ValueSpecification[1];
+
+  groupByAggColSpec(
     func: ValueSpecification[1],
     groupByColumns:String[*],
     aggregates: Any[*],

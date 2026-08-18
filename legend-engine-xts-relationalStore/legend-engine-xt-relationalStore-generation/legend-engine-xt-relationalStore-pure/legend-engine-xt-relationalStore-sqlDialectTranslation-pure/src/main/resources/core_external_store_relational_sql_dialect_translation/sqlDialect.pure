@@ -168,7 +168,7 @@ function meta::external::store::relational::sqlDialectTranslation::simpleFunctio
   functionProcessor(
     {sqlDialect, f, state, config |
       $f->doFunctionCallChecks();
-      $sqlDialect->generateFunctionCallWithArgs($functionName, $f.arguments, $f.window, $f.group, $f.distinct, $state, $config);
+      $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, $f.orderBy, $state, $config);
     },
     {n: FunctionCall[1] | true}
   )
@@ -197,6 +197,22 @@ function meta::external::store::relational::sqlDialectTranslation::customFunctio
   )
 }
 
+// LISTAGG-style aggregates take their ordering as a WITHIN GROUP suffix rather than inside their own
+// parentheses. Dialects whose aggregate accepts the in-paren form keep simpleFunctionProcessor.
+function meta::external::store::relational::sqlDialectTranslation::withinGroupFunctionProcessor(functionName: String[*]): FunctionProcessor[1]
+{
+  functionProcessor(
+    {sqlDialect, f, state, config |
+      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+      let base = $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, [], $state, $config);
+      $base + $f.orderBy->executeIfNotEmptyElseReturnEmptyString({|
+        ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sqlDialect->keyword('order by ', $state, $config) + $f.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(', ') + ')'
+      });
+    },
+    {n: FunctionCall[1] | true}
+  )
+}
+
 function meta::external::store::relational::sqlDialectTranslation::nativeFunctionProcessor(functionClass: Class<SqlFunction>[1]): FunctionProcessor[1]
 {
   let initializerPath = $functionClass.package->toOne()->elementToPath() + '::' + $functionClass->value4Tag('initializer', sqlFunctionInfo).value->toOne() + '__SqlFunction_1_';
@@ -207,7 +223,6 @@ function meta::external::store::relational::sqlDialectTranslation::nativeFunctio
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
 {
   assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
-  assert($f.orderBy->isEmpty(), | 'Sorted function call processing not implemented yet');
 }
 
 function meta::external::store::relational::sqlDialectTranslation::processFunctionArgs(sqlDialect: SqlDialect[1], args: Node[*], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[*]
@@ -238,10 +253,17 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
 
 function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], f: meta::external::query::sql::metamodel::FunctionCall[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
-  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $f.window, $f.group, $f.distinct, $state, $config)
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $f.window, $f.group, $f.distinct, $f.orderBy, $state, $config)
 }
 
 function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1],state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $window, $group, $distinct, [], $state, $config)
+}
+
+// ORDER BY inside the aggregate's own parentheses -- string_agg(x, ',' order by y) -- as distinct from the
+// WITHIN GROUP suffix carried by group. Unlike Group.orderBy this can hold more than one sort key.
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1], orderBy:meta::external::query::sql::metamodel::SortItem[*], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
   let sep0 = $state.separatorIfPretty(0, $config);
   let sep1 = $state.separatorIfPretty(1, $config);
@@ -252,8 +274,12 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
   let argsWithDistinct = if($distinct->isTrue(), | $sqlDialect->keyword('distinct', $state, $config) + '(' + $args->at(0) + ')', | $args->head())->concatenate($args->tail());
   let argumentsString = $argsWithDistinct->joinStrings(',' + if($noArgIsMultiLine, |' ', |$state.separator(1, $config)));
 
+  let orderByString = $orderBy->executeIfNotEmptyElseReturnEmptyString({|
+    ' ' + $sqlDialect->keyword('order by ', $state, $config) + $orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(', ')
+  });
+
   $functionName + '(' + if($noArgIsMultiLine, |'', |$state.separatorIfPretty(1, $config)) +
-    $argumentsString +
+    $argumentsString + $orderByString +
   if($noArgIsMultiLine, |'', |$state.separatorIfPretty(0, $config)) + ')' +
 
   $group->executeIfNotEmptyElseReturnEmptyString({|
