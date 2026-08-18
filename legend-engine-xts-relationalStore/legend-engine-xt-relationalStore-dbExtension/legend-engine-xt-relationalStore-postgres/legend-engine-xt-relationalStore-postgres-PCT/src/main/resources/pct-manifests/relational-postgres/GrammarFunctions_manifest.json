@@ -40,15 +40,6 @@
     "test" : "meta::pure::functions::collection::tests::first::testFirstComplex_Function_1__Boolean_1_",
     "expectedError" : "Expected at most one object, but found many"
   }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstOnOneElement_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::first::testFirstSimple_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet"
-  }, {
     "test" : "meta::pure::functions::collection::tests::getAll::testBasic_Function_1__Boolean_1_",
     "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
   }, {
@@ -87,12 +78,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::size::testSize_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
