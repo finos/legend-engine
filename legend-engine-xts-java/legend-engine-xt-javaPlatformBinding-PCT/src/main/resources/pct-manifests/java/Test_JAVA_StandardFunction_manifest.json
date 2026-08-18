@@ -170,10 +170,6 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::math::tests::average::testAverage_Relation_GroupBy_Function_1__Boolean_1_",
-      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
@@ -282,10 +278,6 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::math::tests::max::testMax_Relation_GroupBy_Function_1__Boolean_1_",
-      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
       "expectedError": "\"Generics not supported (function: meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_)\""
     },
@@ -347,10 +339,6 @@
     },
     {
       "test": "meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_",
-      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
-    },
-    {
-      "test": "meta::pure::functions::math::tests::min::testMin_Relation_GroupBy_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {

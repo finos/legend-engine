@@ -226,9 +226,6 @@
     "test" : "meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""
   }, {
-    "test" : "meta::pure::functions::math::tests::average::testAverage_Relation_GroupBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""
   }, {
@@ -316,9 +313,6 @@
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""
   }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Relation_GroupBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::math::maxBy_T_MANY__Number_MANY__T_$0_1$_\""
   }, {
@@ -381,9 +375,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Relation_GroupBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::math::minBy_T_MANY__Number_MANY__T_$0_1$_\""

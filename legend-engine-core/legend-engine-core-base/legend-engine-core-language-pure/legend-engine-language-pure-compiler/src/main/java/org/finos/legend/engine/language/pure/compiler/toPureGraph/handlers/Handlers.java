@@ -2809,7 +2809,6 @@ public class Handlers
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", "max", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", "max", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::math::max_Relation_1__ColSpec_1__Number_$0_1$_", "max", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
                         h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", "max", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
 
         register(grp(MinInference,
@@ -2830,7 +2829,6 @@ public class Handlers
                         h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", "min", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", "min", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
-                        h("meta::pure::functions::math::min_Relation_1__ColSpec_1__Number_$0_1$_", "min", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
                         h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", "min", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
     }
 
@@ -2923,8 +2921,7 @@ public class Handlers
         register(grp(AverageInference,
                 h("meta::pure::functions::math::average_Float_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::average_Integer_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")),
-                h("meta::pure::functions::math::average_Relation_1__ColSpec_1__Float_1_", "average", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation")))));
+                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))));
 
         register(h("meta::pure::functions::math::mean_Float_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::mean_Integer_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
