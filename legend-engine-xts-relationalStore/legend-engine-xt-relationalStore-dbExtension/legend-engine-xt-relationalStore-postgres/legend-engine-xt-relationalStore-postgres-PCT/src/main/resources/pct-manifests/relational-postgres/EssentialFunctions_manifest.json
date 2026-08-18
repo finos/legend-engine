@@ -37,39 +37,6 @@
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropExceedsSizeOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropInList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropManyOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropManyOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropNegativeOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropNegativeOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropOneOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropOneOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropZeroOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::drop::testDropZeroOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_drop' (state: [Select, false]) is not supported yet"
-  }, {
     "test" : "meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
@@ -131,13 +98,13 @@
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_first' (state: [Select, false]) is not supported yet"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0\nactual:   1\""
@@ -145,26 +112,8 @@
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOf_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::init::testInitOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::init::testInitOneElement_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::init::testInit_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_init' (state: [Select, false]) is not supported yet"
-  }, {
     "test" : "meta::pure::functions::collection::tests::keys::testKeys_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'keys' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::last::testLastFromEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::last::testLastOfOneElementList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::last::testLast_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_last' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::collection::tests::put::testPut_addsEntry_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'mapConcatenate' (state: [Select, false]) is not supported yet\""
@@ -205,32 +154,8 @@
     "test" : "meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'."
   }, {
-    "test" : "meta::pure::functions::collection::tests::reverse::testReverseEmpty_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_reverse' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::reverse::testReverse_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_reverse' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceEqualBounds_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_",
-    "expectedError" : "The function 'array_slice' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceInList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceOnBounds_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceOnEmpty_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceOutOfBounds_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSlice_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"The low bound (3) can't be higher than the high bound (2) in a slice operation\""
   }, {
     "test" : "meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
@@ -252,48 +177,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::sort::testSortEmptySet_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::tail::testTailOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::tail::testTailOneElement_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::tail::testTail_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_tail' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeExceedsSizeOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeInList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeManyOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeManyOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeNegativeOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeNegativeOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeOneOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeOneOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeZeroOnEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::take::testTakeZeroOnNonEmptyList_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_take' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::collection::tests::values::testValues_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'values' (state: [Select, false]) is not supported yet\""

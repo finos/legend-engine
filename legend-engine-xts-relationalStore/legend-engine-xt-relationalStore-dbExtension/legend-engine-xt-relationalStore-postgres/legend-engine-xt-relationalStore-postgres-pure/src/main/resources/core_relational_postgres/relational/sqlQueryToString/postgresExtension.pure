@@ -189,6 +189,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(to_json(%s), \'null\'::json)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(json_array_length(%s), 0)')),
+    dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s ->> 0)')),
+    dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s ->> -1)')),
+    dynaFnToSql('array_take',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForPostgres($p->at(0), 'o <= greatest(%s, 0)'->format($p->at(1)), 'o')})),
+    dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForPostgres($p->at(0), 'o > greatest(%s, 0)'->format($p->at(1)), 'o')})),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='%s', transform={p:String[3] | reshapeJsonArrayForPostgres($p->at(0), 'o > greatest(%s, 0) and o <= greatest(%s, 0)'->format([$p->at(1), $p->at(2)]), 'o')})),
+    dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), 'o > 1', 'o')})),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), 'o < json_array_length(%s)'->format($p->at(0)), 'o')})),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', 'o desc')})),
     dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | castFromJsonForPostgres($p->at(0), $p->at(1))})),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='cast(%s as JSON)')),
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='%s')),
@@ -271,6 +280,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::reshapeJsonArrayForPostgres(array:String[1], where:String[1], order:String[1]):String[1]
+{
+  // Postgres has no list functions over json, so any reshaping of a json array is done by exploding
+  // it and rebuilding it.  o is the 1-based element position; the order by inside json_agg is what
+  // preserves (or reverses) element order, since scan order is not guaranteed.
+  let filter = if($where == '', |'', |' where ' + $where);
+  // The case guard keeps a null array null: json_agg over zero rows is null either way, so without
+  // it a null input would come back as an empty array instead.
+  '(select case when %s is null then null else coalesce(json_agg(t.v order by %s), \'[]\'::json) end from json_array_elements(%s) with ordinality t(v, o)%s)'
+    ->format([$array, $order, $array, $filter]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::castFromJsonForPostgres(expr:String[1], dbType:String[1]):String[1]
