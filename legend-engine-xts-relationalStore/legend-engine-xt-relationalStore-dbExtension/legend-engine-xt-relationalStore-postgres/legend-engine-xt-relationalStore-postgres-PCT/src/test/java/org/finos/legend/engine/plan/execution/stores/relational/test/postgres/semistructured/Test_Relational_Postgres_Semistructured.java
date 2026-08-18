@@ -42,7 +42,163 @@ public class Test_Relational_Postgres_Semistructured
         // fully-qualified Pure test to a substring that must appear in the thrown
         // exception, so a test that starts failing differently is reported rather than
         // silently absorbed. Anything not named here is rethrown untouched.
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty();
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                // A flattened element is exposed as text rather than json (see
+                // processSemiStructuredArrayFlattenForPostgres), so it cannot be navigated or
+                // re-flattened without an intervening cast.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredMultiFlatten_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFiltering_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyFlattening_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstInIfElse_Connection_1__Boolean_1_",
+                        "ERROR: function json_extract_path(text, text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstWithEnumComparison_Connection_1__Boolean_1_",
+                        "ERROR: function json_extract_path(text, text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirst_Connection_1__Boolean_1_",
+                        "ERROR: function json_extract_path(text, text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredMultiFlatten_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayConcatenate_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayGroupByAggJoin_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayInJoinWithFilter_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitiveArrayWithReplace_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFiltering_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyFlattening_Connection_1__Boolean_1_",
+                        "ERROR: function json_array_elements(text) does not exist")
+                // json has no btree operator class, so the fixture's semi-structured primary key
+                // cannot be created at all.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
+                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredProperty_Connection_1__Boolean_1_",
+                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE")
+                // The value returns as json text containing commas, which the CSV comparison helper
+                // then reads as extra columns.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredPrimitivePropertyArrayIndexing_Connection_1__Boolean_1_",
+                        "planExecutionTestUtility.pure")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredPrimitivePropertyArrayIndexing_Connection_1__Boolean_1_",
+                        "planExecutionTestUtility.pure")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredArrayElementAccessPrimitive_Connection_1__Boolean_1_",
+                        "planExecutionTestUtility.pure")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessPrimitive_Connection_1__Boolean_1_",
+                        "planExecutionTestUtility.pure")
+                // Other SQL that Postgres rejects.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::explode::testComplexProjectFlattenedAndExplodedPropertiesInProject_Connection_1__Boolean_1_",
+                        "ERROR: invalid reference to FROM-clause entry for table \"root\"")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
+                        "ERROR: UNION types character varying and json cannot be matched")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
+                        "ERROR: UNION types character varying and json cannot be matched")
+                // Runs to completion but returns the wrong values.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::extract::testAllDataTypesAccess_Connection_1__Boolean_1_",
+                        "actual:   'Id,Legal Name,Est Date,Mnc,Employee Count,Revenue,Last Updat")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::extract::testArrayElementNoFlattenAccess_Connection_1__Boolean_1_",
+                        "actual:   'Id,Second Line of Address")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::extract::testDotAndBracketNotationAccess_Connection_1__Boolean_1_",
+                        "actual:   'Id,Dot Only,Bracket Only,Dot & Bracket")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address 0 Line 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyArrayIndexing_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address 0 Name,Firm Address 2 Name")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::relationFunctionMapping::testSemiStructuredComplexPropertyFlatteningFollowedBySubType_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address Line 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectAt_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,First Address Name")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexingFollowedBySubType_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address 0 Line 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyArrayIndexing_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address 0 Name,Firm Address 2 Name")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::flattening::testSemiStructuredComplexPropertyFlatteningFollowedBySubType_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Name,Firm Address Line 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No,Firm Address Street,Firm A")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClassNested_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No,Firm Address Street,Firm A")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::relationFunctionMapping::testSemiStructuredPropertyAccessAtSubClass_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNestedUsingProjectWithFunctions_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No,Firm Address Street,Firm A")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClassNested_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No,Firm Address Street,Firm A")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::inheritance::testSemiStructuredPropertyAccessAtSubClass_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address 0 Line No")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::relationFunctionMapping::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt_Connection_1__Boolean_1_",
+                        "actual:   'First Name,First Address Line")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::relationFunctionMapping::testSemiStructuredArrayElementAccessComplex_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address Line 0,Firm Address Line 1,Firm Addr")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAt_Connection_1__Boolean_1_",
+                        "actual:   'First Name,First Address Line")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::simple::testSemiStructuredArrayElementAccessComplex_Connection_1__Boolean_1_",
+                        "actual:   'First Name,Firm Address Line 0,Firm Address Line 1,Firm Addr")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product 0 Type,Product 1 Type")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpec_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product Type")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::relationFunctionMapping::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product Type")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterArrayElementAccess_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product 0 Type,Product 1 Type")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenColSpec_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product Type")
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::typeFunctions::testSemiStructuredTypeNameFunctionUsageAfterFlattenFunction_Connection_1__Boolean_1_",
+                        "actual:   'Order Id,Product Type");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));

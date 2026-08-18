@@ -339,14 +339,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let returnType = $params->at(2);
 
   // https://www.postgresql.org/docs/current/functions-json.html
-  let elementAccess = if ($returnType == 'JSON', 
-    | format('jsonb_extract_path(%s, %s)', [$baseRelationalOp, $pathNavigation]),  
-    | format('jsonb_extract_path_text(%s, %s)', [$baseRelationalOp, $pathNavigation]));
+  // json_*, not jsonb_*: a Variant is json here, and the jsonb overloads do not accept it.  The
+  // operand is cast because it is not always json already -- a flattened element arrives as text.
+  let operand = format('cast(%s as json)', $baseRelationalOp);
+  let elementAccess = if ($returnType == 'JSON',
+    | format('json_extract_path(%s, %s)', [$operand, $pathNavigation]),
+    | format('json_extract_path_text(%s, %s)', [$operand, $pathNavigation]));
 
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'cast(' + $elementAccess + ' as VARCHAR)', |
   if ($returnType->in(['DATE','DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
   if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
-  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
+  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE PRECISION)', |
   if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + ' as INTEGER)', |
   $elementAccess)))));
 }
