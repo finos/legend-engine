@@ -1372,3 +1372,46 @@ The suite runs on DuckDB only, as all EMIT models do. What it establishes is tha
 reaches SQL generation and returns a value — the part that was genuinely unknown. Dialect-specific
 rendering of the same calls is the parameterised suite's job, and §11.9 already covers the three
 array renderers there.
+
+### 11.12 `explodeSemiStructured`'s type argument is validated by a different vocabulary
+
+`extractFromSemiStructured` and `explodeSemiStructured` both take a type name as their last
+argument, and they read *different* lists to interpret it.
+
+`extractFromSemiStructured` checks the 11-entry whitelist in §11.9 and fails loudly on anything
+else. `explodeSemiStructured` looks the name up in `sqlTextToRelationalDataTypeMap` — 20 SQL type
+names — and when the lookup misses, treats the flattened element as a document:
+
+```pure
+let func = $map->get($typeName);
+let columnType = if ($func->isEmpty(), | ^SemiStructured(), | $func->toOne()->eval(1000, 1));
+```
+
+The consequence is easier to see once you check what the corpus passes. **Every**
+`explodeSemiStructured` call in this repository passes `'SEMISTRUCTURED'` — and `'SEMISTRUCTURED'`
+is not in that map. The canonical spelling is not recognised; it produces the right answer because
+the miss-path catches it. The function's one real contract is reached by accident, which is why
+`testExplodeReturnTypeAcceptedNames` now pins it.
+
+A typo produces the same right-looking result for the wrong reason, and two names mean different
+things between the sibling functions:
+
+| name | `extractFromSemiStructured` | `explodeSemiStructured` |
+|---|---|---|
+| `'SEMISTRUCTURED'` | document | document, via the miss-path |
+| `'STRING'` | `String` | **silently a document** |
+| `'DATETIME'` | `DateTime` | **silently a document** |
+| `'BIGINT'`, `'DOUBLE'`, … | error | `Integer` / `Float` |
+
+**Not fixed here, deliberately.** Rejecting unrecognised names would turn a working model into a
+broken one on upgrade, which is exactly what §10.4 says must not happen without a warning stage:
+the argument that promoting an unknown *dyna name* is safe — "already a hard failure today … cannot
+break a model that works now" — does not transfer, because an unknown *type argument* succeeds
+today. This belongs in §10's staged rollout, with the severity flag and the escape hatch, not as a
+separate validation path bolted on here.
+
+Two notes for whoever picks it up. Aliasing `'STRING'` and `'DATETIME'` to align the two
+vocabularies is also a silent behaviour change, not a safe subset — those names currently yield
+documents. And `ARRAY`, `BINARY`, `BIT`, `DISTINCT` and `OTHER` are all keys in the map, but
+`ARRAY` and `BINARY` have no case in `dataTypeToCompatiblePureType` and fail with a match error
+further down; any error message that enumerates the map would be advertising a second defect.
