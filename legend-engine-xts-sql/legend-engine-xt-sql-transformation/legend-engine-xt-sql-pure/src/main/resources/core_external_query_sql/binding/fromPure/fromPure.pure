@@ -2301,7 +2301,22 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(s:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
-  processStringConcatenate($s.values->map(v | $v->processExpression($expContext, $context)), [], false, $expContext);
+  //we clear the type to ensure things that are concatenating to create a date are not processed as date e.g. where date > cast('2026' || '/01/01' as date)
+  processStringConcatenate($s.values->map(v | $v->processExpression(^$expContext(type = []), $context)), [], false, $expContext);
+}
+
+//in postgres args are coercesed to varchar, Boolean has a very specific handling
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenateWithArgumentTransform(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
+{
+  let processedArgs = $args->map(a | if ($a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),  
+                      | if ($a->instanceOf(InstanceValue) && ($a->cast(@InstanceValue).values == true || $a->cast(@InstanceValue).values == false),
+                          | let value = $a->cast(@InstanceValue).values;
+                            if ($value == true, | iv('t'), | if ($value == false, | iv('f'), | $a));,
+                          | createIfStatement($a, iv('t'), createIfStatement(sfe(isEmpty_Any_$0_1$__Boolean_1_, $a), iv(''), iv('f')))
+                      );,
+                      | $a->possiblyProcessToString()));
+
+  processStringConcatenate($processedArgs, $separator, $ignoreNulls, $expContext);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
@@ -2317,7 +2332,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
       //TODO handle in non relation flow, requires regression testing as breaking change.
   let multiplicityForcedArgs = if ($expContext.relation->isTrue(), | toOneifyCollectionArg($filteredArgs), | $filteredArgs);
-
 
   if ($multiplicityForcedArgs->size() == 1 && $multiplicityForcedArgs->at(0)->isNull(),
       | createNormalizedCast(iv([]), String)->evaluateAndDeactivate(),
@@ -2875,7 +2889,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::possiblyProcessToString(v:ValueSpecification[1]):ValueSpecification[1]
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType;
-  if ($type->preciseToPrimitive() == String, | $v, | sfe(toString_Any_1__String_1_, $v));
+  if ($type->preciseToPrimitive() == String, | $v, | if ($v.multiplicity != PureZero, | sfe(toString_Any_1__String_1_, $v), | $v));
 }
 
 //TODO revisit to fully push down
@@ -3802,7 +3816,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processComparisonExpression', $context.debug);
 
-  let left = $c.left->processExpression($expContext, $context);
+  //in postgres a StringLiteral is unknown type by default. In this case, we can try to use the right hand side type to force correct typing
+  let leftExpressionContext = if ($c.left->instanceOf(StringLiteral), 
+    | ^$expContext(type = getExpressionType($c.right, $context)), 
+    | $expContext);
+
+  
+
+  let left = $c.left->processExpression($leftExpressionContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
 
   let leftType = normalizeType($left.genericType.rawType->toOne());

@@ -105,6 +105,55 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  - id: concat__mixed_types__int_bool
+    sql: SELECT CONCAT('abc', 1, true, false) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__int
+    sql: SELECT CONCAT(name, '-', age) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__decimal
+    sql: SELECT CONCAT('salary=', salary) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__date
+    sql: SELECT CONCAT('hired:', hire_date) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__boolean
+    sql: SELECT CONCAT('active=', active) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__null_handling
+    sql: SELECT CONCAT('val=', NULL, '-', 42) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__all_types
+    sql: SELECT CONCAT(name, '|', age, '|', salary, '|', hire_date, '|', active) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   - id: concat_ws__txt_variadic__from_table
     sql: SELECT CONCAT_WS(', ', val, nullable_val) AS result FROM strings ORDER BY 1
     function: concat_ws

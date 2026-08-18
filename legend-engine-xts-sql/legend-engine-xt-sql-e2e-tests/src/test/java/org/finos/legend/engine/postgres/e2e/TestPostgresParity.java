@@ -110,6 +110,7 @@ public class TestPostgresParity
             "parity-tests/functions/math_functions.yaml",
             "parity-tests/functions/string_functions.yaml",
             "parity-tests/functions/binary_functions.yaml",
+            "parity-tests/functions/comparison_functions.yaml",
             "parity-tests/functions/pgcrypto_functions.yaml",
             "parity-tests/functions/pattern_matching.yaml",
             "parity-tests/functions/formatting_functions.yaml",
