@@ -71,13 +71,13 @@
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0\nactual:   1\""
