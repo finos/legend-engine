@@ -377,7 +377,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   if($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'VARCHAR', |
   if($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
   if($returnType == 'FLOAT', | 'DOUBLE', |
-  $returnType)));
+  if($returnType == 'SEMISTRUCTURED', | 'JSON', |
+  $returnType))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]

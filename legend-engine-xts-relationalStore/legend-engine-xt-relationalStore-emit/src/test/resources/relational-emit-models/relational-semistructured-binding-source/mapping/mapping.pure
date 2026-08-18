@@ -77,6 +77,8 @@ Mapping demo::ssn::PersonMapping
 
   // The bound property is to-many here, so the binding types a JSON array rather than a
   // single object. Two sibling arrays under the same column are typed independently.
+  // SEMISTRUCTURED[] says the extraction yields an array of documents, which is what lets
+  // the elements stay documents rather than being read back as text.
   demo::ssn::Record: Relational
   {
     ~primaryKey
@@ -85,8 +87,8 @@ Mapping demo::ssn::PersonMapping
     )
     ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE
     reference: [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.REFERENCE,
-    tags: Binding demo::ssn::TagBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'VARCHAR[]'),
-    participants: Binding demo::ssn::ParticipantBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'VARCHAR[]')
+    tags: Binding demo::ssn::TagBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'SEMISTRUCTURED[]'),
+    participants: Binding demo::ssn::ParticipantBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'SEMISTRUCTURED[]')
   }
 
   testSuites:

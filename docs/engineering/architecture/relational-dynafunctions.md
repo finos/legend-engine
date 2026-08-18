@@ -1085,7 +1085,7 @@ with `[]`:
 
 ```
 array_max(extractFromSemiStructured(TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
-tags: Binding TagBinding : extractFromSemiStructured(T.CONTENT, 'payload.tags', 'VARCHAR[]')
+tags: Binding TagBinding : extractFromSemiStructured(T.CONTENT, 'payload.tags', 'SEMISTRUCTURED[]')
 ```
 
 Before this, `extractFromSemiStructured` returned one of ten scalars or nothing. That single
@@ -1124,13 +1124,24 @@ are asserted in a mapping property, a filter predicate and a computed view colum
 `[*]` bindings in `relational-semistructured-binding-source` dropped `parseJson` while returning
 byte-identical results.
 
-**Not yet done.** Only DuckDB has the renderer branch — each dialect needs its own, and
-`sqlTextToRelationalDataTypeMap` still maps bare `'ARRAY'` to an element-less `Array()`. An array
-*of objects* is still not expressible: the whitelist admits scalars only, so `Tag[*]` is bound via
-`'VARCHAR[]'` and the elements are re-navigated as JSON text. Admitting a semi-structured element
-type would close that last case. `extractFromSemiStructured` and the `array_*` family also remain
-absent from `getDynaFunctionTypeInferenceMap` (`relationalExtension.pure:189`), so a view column
-built from them carries no inferred datatype — execution is unaffected.
+**`SEMISTRUCTURED` is a target type too**, and it is what the three dialects in the semi-structured
+suite needed. Declaring an extraction `'VARCHAR'` when it yields a *sub-document* is what broke
+bindings fed by a navigation: Snowflake rendered `to_varchar(get_path(...))` and its `GET` rejected
+the string, while Databricks silently produced nulls — the same defect wearing two faces, and its
+recorded reason on Databricks blamed "a binding-selection bug in the union router", which was
+wrong. Declaring `'SEMISTRUCTURED'` leaves the value a document and both pass. `'SEMISTRUCTURED[]'`
+composes for an array of documents, which is how a `[*]` binding types its elements without
+`parseJson`.
+
+That single whitelist entry retired four expected-failure records: two on Snowflake, leaving it
+with none, and two on Databricks.
+
+**Not yet done.** Renderer branches exist for DuckDB, Snowflake and Databricks; Postgres, MemSQL
+and ClickHouse have none, deliberately, since they are outside the parameterised suite and the
+code would be unverifiable. `sqlTextToRelationalDataTypeMap` still maps bare `'ARRAY'` to an
+element-less `Array()`, superseded by the `[]` form. `extractFromSemiStructured` and the `array_*`
+family remain absent from `getDynaFunctionTypeInferenceMap` (`relationalExtension.pure:189`), so a
+view column built from them carries no inferred datatype — execution is unaffected.
 
 **What a binding can be attached to.** The operation on the right of a `Binding` is not limited to
 a bare column, and the bound property is not limited to `[1]`. All of the following are supported

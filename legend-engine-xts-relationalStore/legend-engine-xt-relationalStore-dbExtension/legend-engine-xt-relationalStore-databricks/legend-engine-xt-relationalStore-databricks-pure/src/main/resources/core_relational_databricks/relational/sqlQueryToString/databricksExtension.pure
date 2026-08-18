@@ -641,7 +641,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
   if ($returnType == 'FLOAT', | 'DOUBLE', |
   if ($returnType == 'INTEGER', | 'INT', |
-  $returnType))));
+  if ($returnType == 'SEMISTRUCTURED', | 'VARIANT', |
+  $returnType)))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
