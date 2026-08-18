@@ -36,6 +36,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      withinGroupProcessor = processWithinGroupForMemSQL_DynaFunction_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -50,6 +51,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 // as processSelectColumns, but quotes the case-wrapped alias with the dialect identifier
 // processor - MemSQL uses backticks, and the shared version emits the raw alias
+// MemSQL puts the ordering inside GROUP_CONCAT but before SEPARATOR, so neither the suffix default nor the
+// inline default fits and the aggregate has to be rebuilt from its arguments.
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processWithinGroupForMemSQL(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let inner = $f.parameters->at(0);
+   assert($inner->instanceOf(DynaFunction) && $inner->cast(@DynaFunction).name == 'joinStrings',
+          | '[unsupported-api] ordered aggregation is only supported for joinStrings on MemSQL');
+
+   let args = $inner->cast(@DynaFunction).parameters;
+   'group_concat(' + $args->at(0)->processOperation($sgc)
+      + ' order by ' + withinGroupOrderBy($f, $sgc)
+      + ' separator ' + $args->at(1)->processOperation($sgc) + ')';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSelectColumnsMemSQL(s:RelationalOperationElement[*], dbConfig : DbConfig[1], format:Format[1], config:Config[1], separator:String[1], conditionalExprAllowed:Boolean[1], extensions:Extension[*]):String[1]
 {
   if ($s->size() == 0,
