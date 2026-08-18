@@ -826,6 +826,11 @@ public class HelperRelationalBuilder
     // modelling error worth catching here, not a puzzle to decode from a dialect message later.
     private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType resolveArrayElementType(RelationalOperationElement collection, CompileContext context, SourceInformation sourceInformation)
     {
+        return resolveArrayElementType(collection, context, sourceInformation, false);
+    }
+
+    private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType resolveArrayElementType(RelationalOperationElement collection, CompileContext context, SourceInformation sourceInformation, boolean fromTransformBody)
+    {
         if (collection instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction)
         {
             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction extract = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction) collection;
@@ -850,6 +855,12 @@ public class HelperRelationalBuilder
                         {
                             return buildDataType(type, context, sourceInformation);
                         }
+                        // Reached when a transform body is the extraction: it names the type of
+                        // each produced element directly, so there is no suffix to strip.
+                        if (fromTransformBody)
+                        {
+                            return buildDataType(type, context, sourceInformation);
+                        }
                         throw new EngineException("An array lambda needs a collection: extract it with an array type such as 'INTEGER[]', or as 'SEMISTRUCTURED' when the shape is not known; found '" + declared + "'", sourceInformation, EngineErrorType.COMPILATION);
                     }
                 }
@@ -866,7 +877,23 @@ public class HelperRelationalBuilder
             // The column holds documents, so that is the element type.
             return columnType;
         }
-        throw new EngineException("An array lambda operates on a semi-structured column or an extractFromSemiStructured of one; the element type cannot be determined otherwise", sourceInformation, EngineErrorType.COMPILATION);
+        // Array operations compose, so the collection may itself be one. A filter yields what it
+        // was given, so its element type carries over. A transform yields whatever its body
+        // produces, which is knowable when that body is an extraction naming its type.
+        if (collection instanceof Root_meta_relational_metamodel_FilterRelationalLambda)
+        {
+            return ((Root_meta_relational_metamodel_FilterRelationalLambda) collection)._parameters().getFirst()._type();
+        }
+        if (collection instanceof Root_meta_relational_metamodel_MapRelationalLambda)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement body = ((Root_meta_relational_metamodel_MapRelationalLambda) collection)._body();
+            if (body instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction && "extractFromSemiStructured".equals(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction) body)._name()))
+            {
+                return resolveArrayElementType(body, context, sourceInformation, true);
+            }
+            throw new EngineException("The element type of an array_transform used as a collection is only known when its body is an extractFromSemiStructured naming a type", sourceInformation, EngineErrorType.COMPILATION);
+        }
+        throw new EngineException("An array lambda operates on a semi-structured column, an extractFromSemiStructured of one, or another array operation; the element type cannot be determined otherwise", sourceInformation, EngineErrorType.COMPILATION);
     }
 
     // meta::relational::functions::database::sqlTextToRelationalDataTypeMap is the canonical list of
