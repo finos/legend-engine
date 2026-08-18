@@ -54,14 +54,5 @@
   }, {
     "test" : "meta::pure::functions::variant::tests::collection::fold::testFold_FromVariant_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] fold over a semi-structured array is not supported in Postgres"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_flatten' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_flatten' (state: [Select, false]) is not supported yet"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToMany_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] The function 'array_flatten' (state: [Select, false]) is not supported yet"
   } ]
 }

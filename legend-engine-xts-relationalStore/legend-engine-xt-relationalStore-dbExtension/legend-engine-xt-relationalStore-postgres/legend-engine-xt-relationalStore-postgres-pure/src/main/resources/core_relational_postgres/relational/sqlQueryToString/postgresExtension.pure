@@ -189,6 +189,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(to_json(%s), \'null\'::json)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', jsonElementOrderingForPostgres())})),
+    dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(s.v order by s.o), \'[]\'::json) end from (select distinct on (t.v::jsonb) t.v as v, t.o as o from json_array_elements(%s) with ordinality t(v, o) order by t.v::jsonb, t.o) s)'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(b.e order by a.o, b.o), \'[]\'::json) end from json_array_elements(%s) with ordinality a(v, o), lateral json_array_elements(a.v) with ordinality b(e, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='(select coalesce(string_agg(t.v #>> \'{}\', %s order by t.o), \'\') from json_array_elements(%s) with ordinality t(v, o))', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
+    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(coalesce((select min(t.o) from json_array_elements(%s) with ordinality t(v, o) where t.v::jsonb = to_json(%s)::jsonb), 0) - 1)')),
+    dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='coalesce((%s)::jsonb @> to_json(%s)::jsonb, false)')),
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='((%s)::jsonb || (%s)::jsonb)::json')),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='((%s)::jsonb || to_json(%s)::jsonb)::json')),
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='(select max((t.v #>> \'{}\')::numeric) from json_array_elements(%s) t(v))')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='(select min((t.v #>> \'{}\')::numeric) from json_array_elements(%s) t(v))')),
+    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.k order by t.o), \'[]\'::json) end from json_object_keys(%s) with ordinality t(k, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('values',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.v order by t.o), \'[]\'::json) end from json_each(%s) with ordinality t(k, v, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='((%s)::jsonb || (%s)::jsonb)::json')),
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(json_array_length(%s), 0)')),
     dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s ->> 0)')),
     dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s ->> -1)')),
@@ -280,6 +293,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::jsonElementOrderingForPostgres():String[1]
+{
+  // json has no ordering operator, so sort numbers numerically and everything else as text.  The
+  // numeric key is null for non-numbers, which falls through to the text key.
+  '(case when json_typeof(t.v) = \'number\' then (t.v #>> \'{}\')::numeric end), (t.v #>> \'{}\')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::reshapeJsonArrayForPostgres(array:String[1], where:String[1], order:String[1]):String[1]
