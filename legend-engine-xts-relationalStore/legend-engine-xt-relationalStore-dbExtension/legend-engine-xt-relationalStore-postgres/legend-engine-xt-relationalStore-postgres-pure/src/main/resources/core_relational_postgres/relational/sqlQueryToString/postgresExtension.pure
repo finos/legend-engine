@@ -186,7 +186,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(to_json(%s), \'null\'::json)')),
+    // json_build_array(x) -> 0 rather than to_json(x): to_json takes anyelement, which Postgres
+    // cannot resolve for an untyped null (an empty Pure collection), whereas json_build_array is
+    // variadic "any" and accepts it.  The result is identical for every typed value.
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(json_build_array(%s) -> 0, \'null\'::json)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', jsonElementOrderingForPostgres())})),
