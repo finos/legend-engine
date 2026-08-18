@@ -56,19 +56,6 @@ public class Test_Relational_Databricks_Semistructured
                 .withKeyValue(
                         "meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy_Connection_1__Boolean_1_",
                         "[AMBIGUOUS_REFERENCE]")
-                // [needsInvestigation] Union-mapping-with-binding drops non-Databricks
-                // input rows -- expected 3 firms (A/B/D) but only firm_D returned.
-                // Likely a binding-selection bug in the union router; needs the actual
-                // generated SQL to diagnose further.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D'")
-                // [needsInvestigation] Union-mapping-with-binding: expected 6 firms
-                // (A/B/C/D/E/F) but returned 3 real firms + 3 nulls. Same class of
-                // issue as testSemiStructuredUnionMappingWithBindingAndFilter above.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'")
                 // [needsInvestigation] Filtering a semi-structured array then indexing
                 // it: the filtered value stays VARIANT, so the [] extract cannot descend
                 // into it (needs a complex STRUCT/ARRAY/MAP base).
