@@ -1327,3 +1327,48 @@ reads the warnings and a later phase promotes a wrong rule to an error.
 | [ModelJoin](model-join.md) | `mergeSQLQueryData` and `processDynaFunction` interaction |
 | [`docs/pct/wiring-howto.md`](../../pct/wiring-howto.md) `:47-60`, `:185-202` | Pure function → DynaFunction → SQL wiring, and the Postgres-model translation error |
 | [Coding Standards](../standards/coding-standards.md) | `EngineException` / `SourceInformation` conventions referenced in §8 |
+
+### 11.11 Which `array_*` functions the store language can actually use
+
+Before typed extraction existed, the honest answer was "`array_size`, and by accident". Seven of
+the family render as subscripts or slices, which returned NULL against a JSON document rather than
+failing, so the working set had never been established — only assumed.
+
+`relational-semistructured-array-survey` settles it: one suite per function over an
+`'INTEGER[]'` / `'VARCHAR[]'` extraction, each isolated so a function that fails takes only its own
+suite with it. Source `[3,1,2,1]` — unsorted, with a duplicate, so ordering and de-duplication are
+visible in the result rather than coincidental.
+
+| function | result on `[3,1,2,1]` |
+|---|---|
+| `array_last` | `1` |
+| `array_init` | `3,1,2` |
+| `array_tail` | `1,2,1` |
+| `array_sort` | `1,1,2,3` |
+| `array_reverse` | `1,2,1,3` |
+| `array_append(…, 9)` | `3,1,2,1,9` |
+| `array_position(…, 2)` | `2` |
+| `array_slice(…, 0, 2)` | `3,1` |
+| `array_drop(…, 1)` | `1,2,1` |
+| `array_take(…, 2)` | `3,1` |
+| `array_contains(…, 2)` | `true` |
+| `array_distinct` | `3`, `1`, `2` in unspecified order |
+| `array_concatenate` | `b,a,b,a` |
+| `array_sum` | `7` |
+
+All fourteen work, none returns NULL, and none needed a renderer change — they were blocked
+solely by the scalar-only type whitelist described in §11.9. Together with `array_size`,
+`array_max`, `array_min`, `array_to_string`, `array_first` and the three lambda forms of §11.10,
+the family is fully usable from a `View` column, a `Filter`, a `Join` and a property mapping.
+
+Two behaviours worth knowing rather than discovering:
+
+- **`array_position` is 0-based.** Pure's `indexOf` is 1-based, so the two disagree. The survey
+  asserts `2` for the value `2` in `[3,1,2,1]`.
+- **`array_distinct` does not promise to preserve order.** The survey wraps it in `array_sort`;
+  a test that asserts the raw order is asserting an implementation detail.
+
+The suite runs on DuckDB only, as all EMIT models do. What it establishes is that each function
+reaches SQL generation and returns a value — the part that was genuinely unknown. Dialect-specific
+rendering of the same calls is the parameterised suite's job, and §11.9 already covers the three
+array renderers there.
