@@ -49,9 +49,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] fold over a semi-structured array is not supported in Postgres"
-  }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
     "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   }, {
