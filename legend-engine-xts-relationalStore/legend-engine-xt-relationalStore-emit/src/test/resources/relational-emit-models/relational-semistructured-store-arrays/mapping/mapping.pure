@@ -28,6 +28,12 @@ Mapping demo::ssd::TeamMapping
     id: [demo::ssd::store::TeamDB]TEAM_TABLE.ID,
     label: [demo::ssd::store::TeamDB]TEAM_TABLE.LABEL,
     scoreCount: array_size(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    // A lambda in the store language: filter the array, then count what survives. $d binds each
+    // element, and the body navigates into it.
+    largeDivisions: array_size(array_filter(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.DIVISIONS, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)),
+    // array_transform maps each element, so the result is still a collection - joined here to
+    // land a scalar the projection can carry.
+    divisionNames: array_to_string(array_transform(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.DIVISIONS, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'name', 'VARCHAR')), ','),
     topScore: array_max(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
     lowScore: array_min(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
   }
@@ -50,14 +56,14 @@ Mapping demo::ssd::TeamMapping
     mappingArraySuite:
     {
       function: |demo::ssd::Team.all()
-                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount, topScore: t | $t.topScore, lowScore: t | $t.lowScore])
+                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount, topScore: t | $t.topScore, lowScore: t | $t.lowScore, largeDivisions: t | $t.largeDivisions, divisionNames: t | $t.divisionNames])
                   ->sort([~label->ascending()]);
       tests:
       [
         arrayFunctionsInMappingAndFilter:
         {
           data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
-          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3,"topScore":100,"lowScore":9},{"label":"Ravens","scoreCount":3,"topScore":12,"lowScore":5}]'; }#; }# ];
+          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3,"topScore":100,"lowScore":9,"largeDivisions":2,"divisionNames":"Alpha,Beta,Gamma"},{"label":"Ravens","scoreCount":3,"topScore":12,"lowScore":5,"largeDivisions":0,"divisionNames":"Delta"}]'; }#; }# ];
         }
       ];
     },

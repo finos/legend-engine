@@ -64,4 +64,30 @@ public class TestRelationalOperationElementGrammarRoundtrip
     {
         test("[store::TESTDB]SCHEMA.TABLE.COL", null);
     }
+
+    @Test
+    public void testArrayFilterLambda()
+    {
+        test("array_filter(extractFromSemiStructured([store::TESTDB]SCHEMA.TABLE.DOC, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER'))", null);
+    }
+
+    @Test
+    public void testArrayFilterLambdaOverColumn()
+    {
+        test("array_filter([store::TESTDB]SCHEMA.TABLE.DOC, d | extractFromSemiStructured($d, 'name', 'VARCHAR'))", null);
+    }
+
+    @Test
+    public void testArrayTransformLambda()
+    {
+        test("array_transform(extractFromSemiStructured([store::TESTDB]SCHEMA.TABLE.DOC, 'tags', 'SEMISTRUCTURED[]'), t | extractFromSemiStructured($t, 'label', 'VARCHAR'))", null);
+    }
+
+    // The parameter is referenced with a sigil because a bare identifier is already a column
+    // reference; this pins that the two stay distinguishable.
+    @Test
+    public void testLambdaParameterIsDistinctFromAColumn()
+    {
+        test("array_filter([store::TESTDB]SCHEMA.TABLE.DOC, d | equal($d, [store::TESTDB]SCHEMA.TABLE.COL))", null);
+    }
 }

@@ -816,7 +816,141 @@ public class HelperRelationalBuilder
         throw new UnsupportedOperationException();
     }
 
+    // filter/transform/reduce over an array. The Pure path already lowers these to
+    // Filter/Map/FoldRelationalLambda and every dialect that supports semi-structured data renders
+    // them, so authoring one in a store definition builds the same node rather than a parallel one.
+    private static final MutableSet<String> ARRAY_LAMBDA_FUNCTIONS = Sets.mutable.with("array_filter", "array_transform");
+
+    // Works on the compiled collection rather than the protocol node, so a column can be followed
+    // to its declaration and checked: pointing an array lambda at an ordinary VARCHAR column is a
+    // modelling error worth catching here, not a puzzle to decode from a dialect message later.
+    private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType resolveArrayElementType(RelationalOperationElement collection, CompileContext context, SourceInformation sourceInformation)
+    {
+        if (collection instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction extract = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction) collection;
+            if ("extractFromSemiStructured".equals(extract._name()))
+            {
+                MutableList<RelationalOperationElement> params = Lists.mutable.withAll(extract._parameters());
+                if (params.size() == 3 && params.get(2) instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Literal)
+                {
+                    Object declared = ((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Literal) params.get(2))._value();
+                    if (declared instanceof String)
+                    {
+                        String type = ((String) declared).toUpperCase();
+                        if (type.endsWith("[]"))
+                        {
+                            return buildDataType(type.substring(0, type.length() - 2), context, sourceInformation);
+                        }
+                        // SEMISTRUCTURED without the suffix is allowed on purpose: it says the shape
+                        // is unknown, and a document may well be an array, so refusing it here would
+                        // reject a legitimate model on a guess. A named scalar is different - an
+                        // INTEGER is not an array - so those are still refused now.
+                        if ("SEMISTRUCTURED".equals(type))
+                        {
+                            return buildDataType(type, context, sourceInformation);
+                        }
+                        throw new EngineException("An array lambda needs a collection: extract it with an array type such as 'INTEGER[]', or as 'SEMISTRUCTURED' when the shape is not known; found '" + declared + "'", sourceInformation, EngineErrorType.COMPILATION);
+                    }
+                }
+            }
+        }
+        if (collection instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn)
+        {
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column column = ((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn) collection)._column();
+            org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType columnType = column == null ? null : column._type();
+            if (!(columnType instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.SemiStructured))
+            {
+                throw new EngineException("An array lambda operates on semi-structured data, but column '" + (column == null ? "?" : column._name()) + "' is not declared SEMISTRUCTURED", sourceInformation, EngineErrorType.COMPILATION);
+            }
+            // The column holds documents, so that is the element type.
+            return columnType;
+        }
+        throw new EngineException("An array lambda operates on a semi-structured column or an extractFromSemiStructured of one; the element type cannot be determined otherwise", sourceInformation, EngineErrorType.COMPILATION);
+    }
+
+    // meta::relational::functions::database::sqlTextToRelationalDataTypeMap is the canonical list of
+    // these names; this mirrors the subset extractFromSemiStructured admits. Unknown names fail
+    // rather than falling back to a string type, which would hand the dialect a plausible-looking
+    // cast and turn a modelling mistake into a wrong answer.
+    private static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType buildDataType(String elementType, CompileContext context, SourceInformation sourceInformation)
+    {
+        switch (elementType)
+        {
+            case "INTEGER":
+                return new Root_meta_relational_metamodel_datatype_Integer_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Integer"));
+            case "FLOAT":
+                return new Root_meta_relational_metamodel_datatype_Float_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Float"));
+            case "DECIMAL":
+                return new Root_meta_relational_metamodel_datatype_Decimal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Decimal"));
+            case "BOOLEAN":
+                return new Root_meta_relational_metamodel_datatype_Bit_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Bit"));
+            case "DATE":
+                return new Root_meta_relational_metamodel_datatype_Date_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Date"));
+            case "DATETIME":
+            case "TIMESTAMP":
+                return new Root_meta_relational_metamodel_datatype_Timestamp_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Timestamp"));
+            case "CHAR":
+            case "VARCHAR":
+            case "STRING":
+                return new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar"))._size(4000L);
+            case "SEMISTRUCTURED":
+                return new Root_meta_relational_metamodel_datatype_SemiStructured_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::SemiStructured"));
+            default:
+                throw new EngineException("'" + elementType + "' is not a type an array lambda can bind its parameter to", sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
+    private static boolean isArrayLambdaFunction(DynaFunc dynaFunc)
+    {
+        return ARRAY_LAMBDA_FUNCTIONS.contains(dynaFunc.funcName)
+                && dynaFunc.parameters != null
+                && dynaFunc.parameters.size() == 2
+                && dynaFunc.parameters.get(1) instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda;
+    }
+
+    private static RelationalOperationElement buildRelationalLambda(DynaFunc dynaFunc, CompileContext context, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias> aliasMap, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets, MutableMap<String, Root_meta_relational_metamodel_RelationalLambdaParameter> lambdaScope, org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda lambda = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda) dynaFunc.parameters.get(1);
+        // The array being operated on is the first argument, so it supplies both halves the
+        // parameter needs: the value the dialect renders the collection from, and the element type.
+        RelationalOperationElement collection = processRelationalOperationElement(dynaFunc.parameters.get(0), context, aliasMap, selfJoinTargets, lambdaScope);
+        org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType elementType = resolveArrayElementType(collection, context, dynaFunc.sourceInformation);
+
+        Root_meta_relational_metamodel_RelationalLambdaParameter parameter = new Root_meta_relational_metamodel_RelationalLambdaParameter_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::RelationalLambdaParameter"))
+                ._name(lambda.parameterName)
+                ._value(collection)
+                ._type(elementType);
+
+        MutableMap<String, Root_meta_relational_metamodel_RelationalLambdaParameter> bodyScope = Maps.mutable.withMap(lambdaScope);
+        bodyScope.put(lambda.parameterName, parameter);
+        RelationalOperationElement body = processRelationalOperationElement(lambda.body, context, aliasMap, selfJoinTargets, bodyScope);
+
+        // Named explicitly rather than defaulted: falling through to one of these would build a
+        // filter where a caller asked for something else, and the difference only shows up as a
+        // wrong answer at execution.
+        switch (dynaFunc.funcName)
+        {
+            case "array_filter":
+                return new Root_meta_relational_metamodel_FilterRelationalLambda_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::FilterRelationalLambda"))
+                        ._parameters(Lists.mutable.with(parameter))._body(body);
+            case "array_transform":
+                return new Root_meta_relational_metamodel_MapRelationalLambda_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::MapRelationalLambda"))
+                        ._parameters(Lists.mutable.with(parameter))._body(body);
+            default:
+                throw new EngineException("'" + dynaFunc.funcName + "' is listed as an array lambda but has no case here", dynaFunc.sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
     public static RelationalOperationElement processRelationalOperationElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement operationElement, CompileContext context, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias> aliasMap, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets)
+    {
+        return processRelationalOperationElement(operationElement, context, aliasMap, selfJoinTargets, Maps.mutable.empty());
+    }
+
+    // lambdaScope binds a lambda's parameter name while its body is compiled, so a $x in the body
+    // resolves to the very RelationalLambdaParameter the enclosing lambda declares - which is how
+    // the Pure path represents such a reference too.
+    public static RelationalOperationElement processRelationalOperationElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement operationElement, CompileContext context, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias> aliasMap, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets, MutableMap<String, Root_meta_relational_metamodel_RelationalLambdaParameter> lambdaScope)
     {
         org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(operationElement.sourceInformation);
         if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn)
@@ -846,15 +980,29 @@ public class HelperRelationalBuilder
             ElementWithJoins elementWithJoins = (ElementWithJoins) operationElement;
             RelationalOperationElementWithJoin res = new Root_meta_relational_metamodel_RelationalOperationElementWithJoin_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::RelationalOperationElementWithJoin"))
                     ._joinTreeNode(buildElementWithJoinsJoinTreeNode(elementWithJoins.joins, context));
-            return elementWithJoins.relationalElement == null ? res : res._relationalOperationElement(processRelationalOperationElement(elementWithJoins.relationalElement, context, Maps.mutable.empty(), selfJoinTargets));
+            return elementWithJoins.relationalElement == null ? res : res._relationalOperationElement(processRelationalOperationElement(elementWithJoins.relationalElement, context, Maps.mutable.empty(), selfJoinTargets, lambdaScope));
         }
         else if (operationElement instanceof DynaFunc)
         {
             DynaFunc dynaFunc = (DynaFunc) operationElement;
-            MutableList<RelationalOperationElement> ps = ListIterate.collect(dynaFunc.parameters, relationalOperationElement -> processRelationalOperationElement(relationalOperationElement, context, aliasMap, selfJoinTargets));
+            if (isArrayLambdaFunction(dynaFunc))
+            {
+                return buildRelationalLambda(dynaFunc, context, aliasMap, selfJoinTargets, lambdaScope, m3SourceInformation);
+            }
+            MutableList<RelationalOperationElement> ps = ListIterate.collect(dynaFunc.parameters, relationalOperationElement -> processRelationalOperationElement(relationalOperationElement, context, aliasMap, selfJoinTargets, lambdaScope));
             return new Root_meta_relational_metamodel_DynaFunction_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::DynaFunction"))
                     ._name(dynaFunc.funcName)
                     ._parameters(ps);
+        }
+        else if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter)
+        {
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter parameter = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter) operationElement;
+            Root_meta_relational_metamodel_RelationalLambdaParameter bound = lambdaScope.get(parameter.name);
+            if (bound == null)
+            {
+                throw new EngineException("The lambda parameter '" + parameter.name + "' is not in scope", parameter.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            return bound;
         }
         else if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal)
         {
