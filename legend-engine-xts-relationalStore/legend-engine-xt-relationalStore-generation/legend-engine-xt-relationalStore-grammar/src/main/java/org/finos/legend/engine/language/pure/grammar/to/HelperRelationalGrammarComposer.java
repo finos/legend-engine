@@ -74,7 +74,12 @@ public class HelperRelationalGrammarComposer
         else if (op instanceof RelationalLambda)
         {
             RelationalLambda lambda = (RelationalLambda) op;
-            return lambda.parameterName + " | " + renderRelationalOperationElement(lambda.body, context, nested, numTabs);
+            String body = renderRelationalOperationElement(lambda.body, context, nested, numTabs);
+            // Parentheses are required for more than one parameter, so compose them back the same
+            // way; a single parameter keeps the barer form it was written in.
+            return lambda.parameterNames.size() == 1
+                    ? lambda.parameterNames.get(0) + " | " + body
+                    : "(" + String.join(", ", lambda.parameterNames) + " | " + body + ")";
         }
         else if (op instanceof LambdaParameter)
         {

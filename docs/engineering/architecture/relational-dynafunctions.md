@@ -1143,6 +1143,45 @@ element-less `Array()`, superseded by the `[]` form. `extractFromSemiStructured`
 family remain absent from `getDynaFunctionTypeInferenceMap` (`relationalExtension.pure:189`), so a
 view column built from them carries no inferred datatype — execution is unaffected.
 
+### 11.10 Lambdas in the store language
+
+`array_filter`, `array_transform` and `array_reduce` can be written in a store definition:
+
+```
+array_filter(extractFromSemiStructured(T.DOC, 'divisions', 'SEMISTRUCTURED[]'),
+             d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)
+array_transform(<collection>, d | <body>)
+array_reduce(<collection>, (d, acc | <body>), <seed>)
+```
+
+`$d` refers to the parameter; the sigil is needed because a bare identifier in an operation is
+already a column reference. Parentheses are required for more than one parameter so the names
+cannot read as further arguments, and a single parameter composes back bare. Reduce takes the
+element first and the accumulator second, as `fold` does in Pure.
+
+These build the **existing** `FilterRelationalLambda` / `MapRelationalLambda` /
+`FoldRelationalLambda` (`metamodel.pure:73-102`) that the Pure path already produces, so no SQL
+generation was written — DuckDB, Databricks and Snowflake render them today. Building anything new
+would also have escaped `reAliasQuery` and `milestoning`, which match on `RelationalLambda`.
+
+The parameter is derived entirely from the first argument, which is why no placeholder is needed:
+the renderers take `value` to be the *collection*, not the element, and the collection is that
+argument. Its declared type gives the element type. Consequently the first argument is restricted
+to an extraction or a plain column, both checked at compile time — a column is followed to its
+declaration and refused unless it is `SEMISTRUCTURED`, and an extraction must carry an array type
+or `SEMISTRUCTURED` (allowed unsuffixed, since that type means the shape is unknown and a document
+may be an array).
+
+**Folding documents into a non-string accumulator fails on DuckDB.** `buildFoldLambda` presents the
+elements *as the accumulator's type* — `cast(<collection> as <accumulator>[])` — which suits a fold
+building a string out of documents, the shape the parameterised suite exercises. Summing a number
+out of documents casts the objects whole and fails with `Failed to cast value to numerical`. This
+is pre-existing and reachable from the Pure path too; folding a scalar array is unaffected. A fix
+means keeping the collection at its element type and casting per element in the body.
+
+**Not accepted upstream.** `legend-pure-m2-store-relational-grammar` does not parse this syntax, a
+known gap taken deliberately, as with `TabularFunction`.
+
 **What a binding can be attached to.** The operation on the right of a `Binding` is not limited to
 a bare column, and the bound property is not limited to `[1]`. All of the following are supported
 and now covered:
