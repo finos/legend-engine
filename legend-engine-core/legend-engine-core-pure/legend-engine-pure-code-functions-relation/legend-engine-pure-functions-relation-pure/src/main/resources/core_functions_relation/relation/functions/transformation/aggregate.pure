@@ -27,8 +27,7 @@ native function <<PCT.function>>
 }
 meta::pure::functions::relation::aggregate<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
 
-// See the note on the equivalent groupBy overloads: these hand the whole relation to a single lambda so an
-// aggregate can name columns beyond the one it aggregates.
+// See the note on the equivalent groupBy overloads.
 native function <<PCT.function>>
 {
     doc.doc='Aggregates the entire given relation and adds a new column whose value is computed by applying the given function to the relation'

@@ -645,10 +645,10 @@ public class Handlers
         return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(valueSpecificationBuilder))).collect(Collectors.toList());
     };
 
-    // The relation forms of joinStrings name the joined column, and optionally the ordering, as ColSpecs, so
-    // both have to be resolved against the source relation before the arguments are built. The column may
-    // instead be a row function, which just needs its parameter typed.
-    public static final ParametersInference RelationAggregateOverColumnInference = (parameters, valueSpecificationBuilder) ->
+    // The relation forms of these aggregates name their columns, and optionally an ordering, as ColSpecs, so
+    // all of them have to be resolved against the source relation before the arguments are built. Shared by
+    // joinStrings and maxBy/minBy; a no-op unless the first argument is a relation.
+    public static final ParametersInference RelationColumnAggregateInference = (parameters, valueSpecificationBuilder) ->
     {
         CompileContext cc = valueSpecificationBuilder.getContext();
         ProcessorSupport processorSupport = cc.pureModel.getExecutionSupport().getProcessorSupport();
@@ -656,11 +656,17 @@ public class Handlers
         GenericType gt = firstProcessedParameter._genericType();
         if (cc.pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
         {
-            if (parameters.size() > 1 && parameters.get(1) instanceof ClassInstance)
+            // Every ColSpec argument names a column of the source relation -- one for joinStrings, two for
+            // maxBy/minBy -- so resolve them all. A sort spec is not a ClassInstance and is handled below.
+            for (int i = 1; i < parameters.size(); i++)
             {
-                processColumn(parameters.get(1), gt, cc);
+                if (parameters.get(i) instanceof ClassInstance)
+                {
+                    processColumn(parameters.get(i), gt, cc);
+                }
             }
-            else if (parameters.size() > 1)
+            // A second argument that is not a ColSpec is a row function, whose parameter is a row.
+            if (parameters.size() > 1 && !(parameters.get(1) instanceof ClassInstance))
             {
                 updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1), cc);
             }
@@ -1263,6 +1269,10 @@ public class Handlers
         {
             return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
         }
+        if (parameters.size() == 2 && parameters.get(1) instanceof ClassInstance)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
+        }
         return null;
     };
 
@@ -1272,6 +1282,10 @@ public class Handlers
         {
             return TwoParameterLambdaInference.update(parameters, valueSpecificationBuilder);
         }
+        if (parameters.size() == 2 && parameters.get(1) instanceof ClassInstance)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
+        }
         return null;
     };
 
@@ -1280,6 +1294,10 @@ public class Handlers
         if (parameters.size() == 4)
         {
             return RelationOlapAggregator.apply("cov_Number").update(parameters, valueSpecificationBuilder);
+        }
+        if (parameters.size() == 2)
+        {
+            return RelationColumnAggregateInference.update(parameters, valueSpecificationBuilder);
         }
         return null;
     };
@@ -2502,7 +2520,7 @@ public class Handlers
         // The string and relation forms of joinStrings share a simple name, and the relation forms need a
         // ParametersInference to resolve their ColSpecs, so every handler has to sit under one group. The
         // inference is a no-op unless the first argument is a relation.
-        register(grp(RelationAggregateOverColumnInference,
+        register(grp(RelationColumnAggregateInference,
                 h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 2),
                 h("meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_", "joinStrings", true, ps -> res("String", "one"), ps -> ps.size() == 4 && !typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::string::joinStrings_String_MANY__String_1_", "joinStrings", false, ps -> res("String", "one"), ps -> ps.size() == 1),
@@ -2760,6 +2778,7 @@ public class Handlers
                         h("meta::pure::functions::date::max_StrictDate_MANY__StrictDate_$0_1$_", "max", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::max_Date_MANY__Date_$0_1$_", "max", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::max_X_$1_MANY$__X_1_", "max", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::math::max_Relation_1__ColSpec_1__Number_$0_1$_", "max", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
                         h("meta::pure::functions::collection::max_X_MANY__X_$0_1$_", "max", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
 
         register(grp(MinInference,
@@ -2780,6 +2799,7 @@ public class Handlers
                         h("meta::pure::functions::date::min_StrictDate_MANY__StrictDate_$0_1$_", "min", false, ps -> res("StrictDate", "zeroOne"), ps -> typeMany(ps.get(0), "StrictDate")),
                         h("meta::pure::functions::date::min_Date_MANY__Date_$0_1$_", "min", false, ps -> res("Date", "zeroOne"), ps -> typeMany(ps.get(0), "Date")),
                         h("meta::pure::functions::collection::min_X_$1_MANY$__X_1_", "min", false, ps -> res(ps.get(0)._genericType(), "one"), ps -> isOne(ps.get(0)._multiplicity())),
+                        h("meta::pure::functions::math::min_Relation_1__ColSpec_1__Number_$0_1$_", "min", false, ps -> res("Number", "zeroOne"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation"))),
                         h("meta::pure::functions::collection::min_X_MANY__X_$0_1$_", "min", false, ps -> res(ps.get(0)._genericType(), "zeroOne"), ps -> true)));
     }
 
@@ -2872,7 +2892,8 @@ public class Handlers
         register(grp(AverageInference,
                 h("meta::pure::functions::math::average_Float_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::average_Integer_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),
-                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number"))));
+                h("meta::pure::functions::math::average_Number_MANY__Float_1_", "average", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Number")),
+                h("meta::pure::functions::math::average_Relation_1__ColSpec_1__Float_1_", "average", false, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), pureModel.taxonomyTypes("cov_relation_Relation")))));
 
         register(h("meta::pure::functions::math::mean_Float_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Float")),
                 h("meta::pure::functions::math::mean_Integer_MANY__Float_1_", "mean", false, ps -> res("Float", "one"), ps -> typeMany(ps.get(0), "Integer")),

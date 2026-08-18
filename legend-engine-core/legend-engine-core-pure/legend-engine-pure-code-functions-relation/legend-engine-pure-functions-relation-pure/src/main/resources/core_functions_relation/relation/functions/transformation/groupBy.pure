@@ -39,9 +39,8 @@ native function <<PCT.function>>
 }
 meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1];
 
-// The forms below hand the whole group to a single lambda rather than splitting it into map and reduce.
-// They exist so an aggregate can name columns other than the one it aggregates -- an ordering, a tie-break --
-// which the map/reduce pair cannot express once the map has narrowed each row to a value.
+// A single lambda over the whole group, so an aggregate can name columns beyond the one it aggregates -- an
+// ordering, a tie-break -- which the map/reduce pair cannot once the map has narrowed each row to a value.
 native function <<PCT.function>>
 {
     doc.doc='Groups the given relation with the given columns and adds a new column whose value is computed by applying the given function to the relation of rows in each group'

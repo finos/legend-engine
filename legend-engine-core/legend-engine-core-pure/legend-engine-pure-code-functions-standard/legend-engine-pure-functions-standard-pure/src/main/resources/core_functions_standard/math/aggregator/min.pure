@@ -300,3 +300,33 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '   9.9,5,I,9.9\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
+
+function <<PCT.function>>
+{
+    doc.doc='Returns the minimum of the given column across the rows of the given relation.'
+}
+meta::pure::functions::math::min<T>(rel:meta::pure::metamodel::relation::Relation<T>[1], col:meta::pure::metamodel::relation::ColSpec<(?:Number)⊆T>[1]):Number[0..1]
+{
+    $rel->meta::pure::functions::relation::reduce(x | meta::pure::functions::relation::eval($col, $x), y | $y->meta::pure::functions::math::min());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::min::testMin_Relation_GroupBy<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, val
+                  1, 10
+                  1, 30
+                  2, 20
+                  2, 40
+                #->groupBy(~grp, ~res : g | $g->meta::pure::functions::math::min(~val))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,res\n'+
+                  '   1,10.0\n'+
+                  '   2,20.0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}

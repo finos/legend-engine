@@ -778,6 +778,21 @@ function meta::relational::functions::sqlQueryToString::default::transformLikePa
       ->concatenate('');
 }
 
+// Alternating column/direction parameters follow the aggregate; see processRelationReduce.
+function meta::relational::functions::sqlQueryToString::default::withinGroupOrderBy(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let rest = $f.parameters->tail();
+   assert($rest->size() > 0 && $rest->size()->mod(2) == 0, | 'withinGroup expects an aggregate followed by column/direction pairs, got ' + $rest->size()->toString() + ' trailing parameters');
+   range(0, $rest->size(), 2)->map(i | $rest->at($i)->processOperation($sgc) + ' ' + $rest->at($i + 1)->cast(@Literal).value->cast(@String)->toLower())->joinStrings(', ');
+}
+
+// Dialects wanting the ordering inside the aggregate's parentheses override this and rebuild from the inner
+// DynaFunction's parameters.
+function meta::relational::functions::sqlQueryToString::default::processWithinGroup(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $f.parameters->at(0)->processOperation($sgc) + ' within group (order by ' + withinGroupOrderBy($f, $sgc) + ')';
+}
+
 function meta::relational::functions::sqlQueryToString::default::transformPercentile(args: String[*], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): String[1]
 {
    let boolProc = $literalProcessor->eval(Boolean);

@@ -113,6 +113,15 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
    }: String[1];
 
+   // Defaults rather than requiring every dialect to opt in; a dialect with no ordered-set aggregates
+   // overrides this to fail with a clear message.
+   withinGroupProcessor(f:DynaFunction[1], sgc:SqlGenerationContext[1])
+   {
+     if($this.dbExtension.withinGroupProcessor->isEmpty(),
+        | meta::relational::functions::sqlQueryToString::default::processWithinGroup($f, $sgc),
+        | $this.dbExtension.withinGroupProcessor->toOne()->eval($f, $sgc));
+   }: String[1];
+
    selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
    {
      let cte = $s.commonTableExpressions->isNotEmpty()->if(
@@ -280,6 +289,9 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   // Unrendered, because dialects place the ordering differently: a WITHIN GROUP suffix, inside the
+   // aggregate's parentheses, or -- on H2's GROUP_CONCAT -- before the SEPARATOR.
+   withinGroupProcessor: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
    commonTableExpressionsProcessor: meta::pure::metamodel::function::Function<{CommonTableExpression[*], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
@@ -868,6 +880,9 @@ function meta::relational::functions::sqlQueryToString::parseSemiStructuredPathN
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
+   if ($func.name == 'withinGroup',
+      | $sgc.dbConfig.withinGroupProcessor($func, $sgc),
+      |
    if ($func->isEqualsFromFilter($sgc.config),
       | processEqualFromFilter($func,$sgc),
       |
@@ -895,7 +910,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
         let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
         $result->toOne().toSql($params, $paramWiseSgcs);
-   ))));
+   )))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processExtractFromSemiStructured(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
@@ -1240,6 +1255,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   parseJson,
   parseBoolean,
   percentile,
+  withinGroup,
   percentRank,
   plus,
   position,
