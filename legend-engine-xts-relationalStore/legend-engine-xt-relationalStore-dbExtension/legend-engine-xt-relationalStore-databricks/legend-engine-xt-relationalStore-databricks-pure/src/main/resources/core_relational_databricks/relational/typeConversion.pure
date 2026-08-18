@@ -70,7 +70,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
         n : meta::relational::metamodel::datatype::Numeric[1] | format('DECIMAL(%d, %d)', [$n.precision, $n.scale]),
         // b : meta::relational::metamodel::datatype::Bit[1] | fail('Databricks does not support the BIT data type'); '',
         y : meta::relational::metamodel::datatype::Binary[1] | 'BINARY',
-        a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty() || $a.type->toOne()->instanceOf(meta::relational::metamodel::datatype::SemiStructured), |'ARRAY<STRING>', |'ARRAY<' + $a.type->toOne()->dataTypeToSqlTextDatabricks() + '>'),
+        a : meta::relational::metamodel::datatype::Array[1] | if($a.type->isEmpty(), |'ARRAY<STRING>', |'ARRAY<' + $a.type->toOne()->dataTypeToSqlTextDatabricks() + '>'),
         o : meta::relational::metamodel::datatype::Object[1] | 'MAP<%s, %s>'->format([$o.keyType->dataTypeToSqlTextDatabricks(), $o.valueType->dataTypeToSqlTextDatabricks()]),
         s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT'
     ]);

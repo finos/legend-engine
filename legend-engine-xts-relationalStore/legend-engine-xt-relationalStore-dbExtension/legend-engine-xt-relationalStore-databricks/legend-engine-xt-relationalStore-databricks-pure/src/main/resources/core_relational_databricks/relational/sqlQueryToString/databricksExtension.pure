@@ -147,6 +147,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as bigint)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformPercentileDatabricks()})),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -160,6 +161,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    // parseDate() always calls toTimestamp with a single fixed 'YYYY-MM-DD HH24:MI:SS' format literal
+    // (see processParseDate), which cannot describe the optional milliseconds/'Z'/offset suffixes or
+    // date-only strings parseDate actually needs to accept. The literal format is ignored here in favor
+    // of Spark's own flexible ISO-8601 timestamp/date string parsing (cast to TIMESTAMP), which handles
+    // all of those variants natively without needing a matching pattern per input shape.
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='cast(%s as TIMESTAMP)', transform={p:String[2] | [$p->at(0)]})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
@@ -227,8 +234,23 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
    if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = $variantOverride->toOne()),
-      | $baseDispatch->eval($func, $sgc)
+      | // Databricks/Spark has no direct `CAST(MAP<..> AS VARIANT)`. A bare Map value passed to
+        // `toVariant()` renders as `cast(map(...) as VARIANT)` by default, which Spark rejects
+        // (DATATYPE_MISMATCH.CAST_WITHOUT_SUGGESTION). Route a Map operand through a JSON round-trip
+        // instead, which Databricks does support for constructing a VARIANT from a MAP.
+        if($func.name == 'toVariant' && $func.parameters->size() == 1 && $func.parameters->at(0)->isMapOperandForDatabricks(),
+           | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='parse_json(to_json(%s))')),
+           | $baseDispatch->eval($func, $sgc)
+        )
    );
+}
+
+// True when the operand renders to a Databricks MAP value (e.g. the `cast(map(...), MAP<..>)`
+// produced when building a Pure Map literal).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isMapOperandForDatabricks(op:RelationalOperationElement[1]):Boolean[1]
+{
+   let inferred = meta::relational::functions::typeInference::inferRelationalType($op, false);
+   $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Object);
 }
 
 // True when the operand renders to a Databricks VARIANT value: a semi-structured navigation, or any
@@ -291,6 +313,26 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   ];
   let sqlFmt = $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
   format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
+}
+
+// percentile_cont's ORDER BY expression must resolve to a NUMERIC type. Databricks rejects the
+// default template unchanged when the ordering column is a BIGINT/ARRAY-derived expression (e.g.
+// from a fold/transform lambda) with DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE, so the column is cast
+// to DOUBLE first. Booleans here render as bare `true`/`false` per getLiteralProcessorsForDatabricks.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformPercentileDatabricks(args: String[*]): String[1]
+{
+   let column     = 'cast(' + $args->at(0) + ' as DOUBLE)';
+   let percentile = $args->at(1);
+   let ascending  = if($args->size() > 2, | $args->at(2), | 'true');
+   let continuous = if($args->size() > 3, | $args->at(3), | 'true');
+
+   assert($ascending->in(['true', 'false']), 'Ascending argument for percentile should be true or false. Got: ' + $ascending);
+   assert($continuous->in(['true', 'false']), 'Continuous argument for percentile should be true or false. Got: ' + $continuous);
+
+   let func  = if($continuous == 'true', | 'percentile_cont', | 'percentile_disc');
+   let order = if($ascending == 'true', | 'asc', | 'desc');
+
+   $func + '(' + $percentile + ') within group (order by ' + $column + ' ' + $order + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRangeDatabricks(params:String[3]):String[1]
@@ -778,11 +820,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFoldLambdaForDatabricks(lambda:FoldRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // Databricks higher-order function lambdas do not accept parameter type annotations.
-   // Syntax: `aggregate(array, zero, (acc, x) -> body)`
+   // Databricks higher-order function lambdas do not accept parameter type annotations, so `acc`'s
+   // type is whatever the zero literal renders as. A bare Integer zero (e.g. `0`) renders as a plain
+   // SQL INT constant, but Integer-typed array elements arrive as BIGINT (see parseInteger/array<bigint>
+   // conventions elsewhere in this file), so `acc + x` infers as BIGINT while `aggregate`'s third
+   // parameter must match the zero's own (INT) type exactly. Casting an Integer-typed zero to bigint
+   // aligns it with that BIGINT arithmetic; non-Integer accumulators (String, etc.) are left untouched.
+   let identityValue = $lambda.parameters->at(1).value;
+   let identityType = meta::relational::functions::typeInference::inferRelationalType($identityValue, false);
+   let identitySql = if($identityType->isNotEmpty() && $identityType->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
+      | 'cast(' + $identityValue->processOperation($sgc) + ' as bigint)',
+      | $identityValue->processOperation($sgc)
+   );
    'aggregate(%s, %s, (`%s`, `%s`) -> %s)'->format([
       lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
-      $lambda.parameters->at(1).value->processOperation($sgc),
+      $identitySql,
       $lambda.parameters->at(1).name,
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)

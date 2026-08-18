@@ -39,53 +39,5 @@
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_",
     "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_",
-    "expectedError" : "actual:   '[1]'"
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfVariants_Function_1__Boolean_1_",
-    "expectedError" : "actual:   '[\"1\",\"2\",\"3\"]'"
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapOfVariantValues_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, VARIANT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapWithMultipleKeys_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapWithPrimitiveValues_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
-  }, {
-    "test" : "meta::pure::functions::variant::navigation::tests::get::testNestedGet_arrayToMap_Function_1__Boolean_1_",
-    "expectedError" : "Need a complex type [STRUCT, ARRAY, MAP] but got \"STRING\""
-  }, {
-    "test" : "meta::pure::functions::variant::navigation::tests::get::testNestedGet_mapToArray_Function_1__Boolean_1_",
-    "expectedError" : "Unrecognized token 'sun'"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::collection::filter::testFilter_FromVariant_Function_1__Boolean_1_",
-    "expectedError" : "actual:   '[\"1\",\"3\"]'"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::collection::fold::testFold_FromVariantAsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "The third parameter requires the \"INT\" type"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::collection::fold::testFold_FromVariant_Function_1__Boolean_1_",
-    "expectedError" : "The third parameter requires the \"INT\" type"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedProperty_manyToMany_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"STRING\" to \"ARRAY<STRING>\""
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToMany_Function_1__Boolean_1_",
-    "expectedError" : "cannot cast \"STRING\" to \"ARRAY<STRING>\""
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_manyToOne_Function_1__Boolean_1_",
-    "expectedError" : "Cannot find column index for attribute"
-  }, {
-    "test" : "meta::pure::functions::variant::tests::convert::to::model::testToClassAndAccessNestedQualifiedProperty_oneToMany_Function_1__Boolean_1_",
-    "expectedError" : "Cannot find column index for attribute"
   } ]
 }
