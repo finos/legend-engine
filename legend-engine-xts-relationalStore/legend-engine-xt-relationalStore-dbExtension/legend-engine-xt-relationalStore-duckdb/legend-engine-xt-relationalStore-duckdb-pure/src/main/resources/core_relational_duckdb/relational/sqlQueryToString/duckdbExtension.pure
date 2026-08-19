@@ -353,10 +353,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let returnType = $params->at(2);
 
   // The authored path uses ["a key"] for quoted members, which DuckDB's JSONPath rejects -
-  // it spells those $."a key". Tokenise and re-emit so every segment form is handled:
-  // a named member becomes ."name", an array subscript stays [n].
+  // it spells those $."a key". Tokenise and re-emit so every segment form is handled: an array
+  // subscript stays [n], and a member is quoted only when it is not a plain identifier, which
+  // leaves the SQL for an ordinary path exactly as it was.
   let jsonPath = '$' + meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($pathNavigation)
-                          ->map(token | if($token->isDigit(), | '[' + $token + ']', | '.' + $token))
+                          ->map(token | if($token->isDigit(),
+                                          | '[' + $token + ']',
+                                          | let member = $token->substring(1, $token->length() - 1);
+                                            if($member->matches('[a-zA-Z_][a-zA-Z_0-9]*'), | '.' + $member, | '."' + $member + '"');))
                           ->joinStrings('');
 
   let elementAccess = format('json_extract(%s, \'%s\')', [$baseRelationalOp, $jsonPath]);
