@@ -705,12 +705,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
    ]);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::asJsonArrayForPostgres(expr:String[1]):String[1]
+{
+  // json_array_elements rejects anything that is not an array, where Snowflake's FLATTEN and
+  // DuckDB's unnest both normalise first -- DuckDB substitutes a singleton list for the same
+  // reason. A single element reaches here when the value has already been narrowed, so treat it
+  // as a one-element array rather than failing.
+  'case when json_typeof(cast(%s as json)) = \'array\' then cast(%s as json) else json_build_array(cast(%s as json)) end'
+    ->format([$expr, $expr, $expr]);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::flattenedSourceForPostgres(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
   // WITH ORDINALITY + the order by in the aggregate is what preserves element order; scan order is not guaranteed.
   let name = $lambda.parameters->at(0).name;
-  'json_array_elements(cast(%s as json)) with ordinality as "%s__src"("%s", legend_ord)'->format([
-      $lambda.parameters->at(0).value->processOperation($sgc),
+  'json_array_elements(%s) with ordinality as "%s__src"("%s", legend_ord)'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc)->asJsonArrayForPostgres(),
       $name,
       $name
    ]);
