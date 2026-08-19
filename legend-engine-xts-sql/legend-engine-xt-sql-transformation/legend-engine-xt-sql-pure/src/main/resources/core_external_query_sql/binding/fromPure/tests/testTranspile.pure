@@ -3480,6 +3480,49 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFunctionWrappingWindowFunctions():Boolean[1]
+{
+  test(
+    'SELECT String, ' +
+    'abs(row_number() OVER (PARTITION BY String ORDER BY Integer ASC)) AS "ABS_ROW", ' +
+    'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) + 1 AS "ROW_PLUS", ' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({|
+          FlatInput.all()
+              ->project(
+                [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+              ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), '__sql_window_ABS_ROW_0')
+              ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), '__sql_window_ROW_PLUS_0')
+              ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+              ->extend([
+                col(row:TDSRow[1] | abs($row.getInteger('__sql_window_ABS_ROW_0')), 'ABS_ROW'),
+                col(row:TDSRow[1] | $row.getInteger('__sql_window_ROW_PLUS_0') + 1, 'ROW_PLUS')
+              ])
+              ->restrict(['String', 'ABS_ROW', 'ROW_PLUS', 'RANK'])
+      }, true, false),
+
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )
+              ->extend(over(~[String], [~Integer->ascending()]), ~['__sql_window_ABS_ROW_0':{p,w,r| $p->rowNumber($r)}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~['__sql_window_ROW_PLUS_0':{p,w,r| $p->rowNumber($r)}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
+              ->extend(~[
+                ABS_ROW: x | $x.'__sql_window_ABS_ROW_0'->toOne()->abs(),
+                ROW_PLUS: x | $x.'__sql_window_ROW_PLUS_0' + 1
+              ])
+              ->select(~[String, ABS_ROW, ROW_PLUS, RANK])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRelationWindowFunctions():Boolean[1]
 {
   test(
