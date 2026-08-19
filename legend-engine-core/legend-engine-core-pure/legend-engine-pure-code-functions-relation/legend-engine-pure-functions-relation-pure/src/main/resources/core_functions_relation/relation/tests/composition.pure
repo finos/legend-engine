@@ -2244,16 +2244,21 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
    let expr = {|
                   $tds->lateral(x | $x.payload->to(@Map<String, Variant>)->toOne()->values()->map(x | $x->get('firstName')->to(@String))->flatten(~firstName))
                       ->sort([~id->ascending(), ~firstName->ascending()])
+                      // The payload is not what this test asserts, and echoing it would pin the key
+                      // order of a json object -- including the nested ones. A store that keeps a
+                      // canonical form (Postgres jsonb) cannot preserve it, and key order is not part
+                      // of the variant contract, so the column is projected away.
+                      ->select(~[id, firstName])
               };
 
    let res = $f->eval($expr);
 
     meta::pure::functions::relation::assertTdsEquivalent(
       #TDS
-        id, payload:meta::pure::metamodel::variant::Variant, firstName
-        1, '{"a":{"firstName": "John", "lastName": "Smith"},"b":{"firstName": "Jane", "lastName": "Smith"}}', Jane
-        1, '{"a":{"firstName": "John", "lastName": "Smith"},"b":{"firstName": "Jane", "lastName": "Smith"}}', John
-        2, '{"c":{"firstName": "Juan", "lastName": "Del Pueblo"}}', Juan
+        id, firstName
+        1, Jane
+        1, John
+        2, Juan
       #,
       $res,
       0.01
