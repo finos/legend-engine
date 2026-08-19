@@ -644,7 +644,15 @@ function <<access.private>> meta::pure::graphFetch::enrichSourceTreeNodeForPrope
                                                                                                                 || $cGenPaths->contains($rPath)
                                                                                                                 || $r->getAllTypeGeneralisations()->map(t | $t->elementToPath())->contains($cPath););
                                                                        );
-         assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty() || $hasReachableTreeClass,
+         // A transform that never references its source parameter reads only constant
+         // reference data (instances built by functions from literals). The navigated
+         // classes hold no source-derived state, so nothing needs fetching - the legacy
+         // fallback's empty contribution is correct and the diagnostic must stay inert.
+         // The property tree cannot make this distinction (both shapes scan to the same
+         // unreachable chains), so it is read off the transform expressions directly.
+         let transformsReferenceSource = $propertyMappings->exists(pm | let paramNames = $pm.transform->functionType().parameters->evaluateAndDeactivate().name;
+                                                                        $pm.transform.expressionSequence->evaluateAndDeactivate()->exists(e | $e->meta::pure::graphFetch::referencesAnyVariable($paramNames)););
+         assert(!$setImplSrcClassMatchesOwner || $propertyTreesBelongingToOwner->isNotEmpty() || $nonTrivialTreeClasses->isEmpty() || $hasReachableTreeClass || !$transformsReferenceSource,
                 |'No intermediate-class property of ' + $owner->elementToPath() + ' returns ' + $nonTrivialTreeClasses->at(0)->elementToPath() + ' - cannot build path back to owner.');
 
          // Property tree root node may not start at owner (e.g. when the source of a mapping is wrapped in a new class and passed to a property mapping).
@@ -835,6 +843,28 @@ function <<access.private>> meta::pure::graphFetch::addPassThroughSubTreesAtPath
       | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->addPassThroughSubTrees($tgtPgft, $extensions), |$st))),
       | ^$srcNode(subTrees=$srcNode.subTrees->cast(@PropertyGraphFetchTree)->map(st|if($st.property == $head.property, |$st->addPassThroughSubTreesAtPath(list($tail), $tgtPgft, $extensions), |$st)))
    );
+}
+
+// Does the expression reference any variable with one of the given names? Used to decide
+// whether a transform consumes its source parameter at all. Nested lambdas are entered
+// without tracking shadowing: a nested parameter reusing the source's name would read as
+// a source reference, which errs on the side of keeping the owner-reachability diagnostic
+// active - the pre-existing conservative behaviour.
+function <<access.private>> meta::pure::graphFetch::referencesAnyVariable(vs:ValueSpecification[1], names:String[*]) : Boolean[1]
+{
+   $vs->match([
+      ve   : VariableExpression[1]               | $ve.name->in($names),
+      fe   : FunctionExpression[1]               | $fe.parametersValues->evaluateAndDeactivate()->exists(p | $p->referencesAnyVariable($names)),
+      iv   : InstanceValue[1]                    | $iv.values->evaluateAndDeactivate()->exists(v | $v->match([
+                                                      ivs : ValueSpecification[1]      | $ivs->referencesAnyVariable($names),
+                                                      k   : KeyExpression[1]           | $k.expression->evaluateAndDeactivate()->referencesAnyVariable($names),
+                                                      f   : FunctionDefinition<Any>[1] | $f.expressionSequence->evaluateAndDeactivate()->exists(e | $e->referencesAnyVariable($names)),
+                                                      a   : Any[1]                     | false
+                                                   ])),
+      ervs : meta::pure::router::metamodel::ExtendedRoutedValueSpecification[1] | $ervs.value->referencesAnyVariable($names),
+      frvs : meta::pure::router::FunctionRoutedValueSpecification[1] | $frvs.value->referencesAnyVariable($names),
+      other: ValueSpecification[1]               | false
+   ]);
 }
 
 function <<access.private>> meta::pure::graphFetch::collectPropertyTreeClasses(pTree:PropertyPathTree[1]) : Class<Any>[*]
