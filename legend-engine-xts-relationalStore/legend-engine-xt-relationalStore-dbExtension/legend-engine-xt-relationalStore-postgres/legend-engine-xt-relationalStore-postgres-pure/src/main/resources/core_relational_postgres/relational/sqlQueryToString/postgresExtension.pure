@@ -205,7 +205,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.k order by t.o), \'[]\'::json) end from json_object_keys(cast(%s as json)) with ordinality t(k, o))'->format([$p->at(0), $p->at(0)])})),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.v order by t.o), \'[]\'::json) end from json_each(cast(%s as json)) with ordinality t(k, v, o))'->format([$p->at(0), $p->at(0)])})),
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='((%s)::jsonb || (%s)::jsonb)::json')),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(json_array_length(%s), 0)')),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(json_array_length(cast(%s as json)), 0)')),
     dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s ->> 0)')),
     dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s ->> -1)')),
     dynaFnToSql('array_take',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForPostgres($p->at(0), 'o <= greatest(%s, 0)'->format($p->at(1)), 'o')})),
