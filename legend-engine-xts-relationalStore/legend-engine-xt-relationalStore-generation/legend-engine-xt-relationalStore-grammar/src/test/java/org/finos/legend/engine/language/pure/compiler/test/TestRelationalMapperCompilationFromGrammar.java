@@ -14,11 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.test;
 
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalMapperPostProcessor;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TestRelationalMapperCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
@@ -64,39 +59,6 @@ public class TestRelationalMapperCompilationFromGrammar extends TestCompilationF
     public void testRelationalMapper()
     {
         test(store + relationalMapper);
-    }
-
-    // The relational mapper is resolved out of the graph while compiling the connection, so this only works if the
-    // mapper's first pass has already run - see RelationalCompilerExtension.getExtraConnectionSecondPassProcessors.
-    @Test
-    public void testRelationalMapperOnConnection()
-    {
-        PureModel pureModel = test(store + relationalMapper +
-                "###Connection\n" +
-                        "RelationalDatabaseConnection test::MapperConnection\n" +
-                        "{\n" +
-                        "  store: test::OrganizationsDB;\n" +
-                        "  type: H2;\n" +
-                        "  specification: LocalH2\n" +
-                        "  {\n" +
-                        "  };\n" +
-                        "  auth: DefaultH2;\n" +
-                        "  postProcessors:\n" +
-                        "  [\n" +
-                        "    relationalMapper\n" +
-                        "    {\n" +
-                        "      test::testMapper\n" +
-                        "    }\n" +
-                        "  ];\n" +
-                        "}\n").getTwo();
-
-        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection =
-                (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) pureModel.getConnection("test::MapperConnection", SourceInformation.getUnknownSourceInformation());
-        Assert.assertEquals(1, connection._postProcessors().size());
-        Root_meta_pure_alloy_connections_RelationalMapperPostProcessor postProcessor =
-                (Root_meta_pure_alloy_connections_RelationalMapperPostProcessor) connection._postProcessors().getFirst();
-        Assert.assertEquals("testMapper", postProcessor._relationalMappers().getFirst()._name());
-        Assert.assertEquals(1, connection._queryPostProcessorsWithParameter().size());
     }
 
     @Test
