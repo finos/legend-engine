@@ -3952,3 +3952,115 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleM
     txId : $src.txId
   }
 )
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: a transform may navigate properties of purely constant reference data -
+// instances built by a function that consumes nothing from the source. The navigated
+// classes (CrRefWrap/CrRefLeaf) are unreachable from the source class, but no source
+// data flows into them, so nothing needs fetching: the correct source tree is the bare
+// root. The owner-reachability diagnostic must stay inert for this shape.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+{
+  x : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefLeaf
+{
+  supported : Boolean[1];
+  label     : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefWrap
+{
+  leaf : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefLeaf[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt
+{
+  label : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt
+{
+  label : String[1];
+  xOut  : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData() : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefWrap[*]
+{
+  [
+    ^CrRefWrap(leaf = ^CrRefLeaf(supported = true, label = 'A')),
+    ^CrRefWrap(leaf = ^CrRefLeaf(supported = true, label = 'B'))
+  ]
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::testConstantReferenceDataNavigation():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt {
+      label
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('CrSrcRoot'), | 'expected root class in source tree: '                             + $str);
+  assert(!$str->contains('leaf'),     | 'constant-derived leaf must not appear in the source tree: '       + $str);
+  assert(!$str->contains('label'),    | 'constant-derived label must not appear in the source tree: '      + $str);
+  assert(!$str->contains('supported'),| 'constant-derived supported must not appear in the source tree: '  + $str);
+  true;
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::testConstantReferenceDataAlongsideSourceProperty():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt {
+      label,
+      xOut
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMixedMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('x'),         | 'source-mapped x must appear in the source tree: '                 + $str);
+  assert(!$str->contains('leaf'),     | 'constant-derived leaf must not appear in the source tree: '       + $str);
+  assert(!$str->contains('label'),    | 'constant-derived label must not appear in the source tree: '      + $str);
+  assert(!$str->contains('supported'),| 'constant-derived supported must not appear in the source tree: '  + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+    label : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData()
+              ->map(w | $w.leaf)
+              ->map(l | $l.label)
+              ->joinStrings(',')
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMixedMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+    label : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData()
+              ->map(w | $w.leaf)
+              ->map(l | $l.label)
+              ->joinStrings(','),
+    xOut  : $src.x
+  }
+)

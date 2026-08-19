@@ -459,6 +459,23 @@ subtree where `srcClass != owner` — that is the legitimate cross-branch
 shape where the legacy fallback's silent empty output is correct. The
 precondition stays inert there.
 
+A second gate (`transformsReferenceSource`) handles constant reference data:
+a transform such as `referenceData()->map(w | $w.leaf)->map(l | $l.label)`
+navigates classes that are genuinely unreachable from owner, but the data is
+built by a function from literals — no source data flows into it, so nothing
+needs fetching and the legacy fallback's empty contribution is correct. The
+property tree cannot make this distinction (`$src->badWrap().foreign.y`, the
+genuine-error shape, scans to the same unreachable chains because the scan
+drops the source access inside the constructor's key expressions), so the
+gate is read off the transform expressions directly: the diagnostic fires
+only if at least one of the property mappings' transforms references its
+source parameter (`referencesAnyVariable`, a recursive walk over the
+deactivated expression). A transform that mixes a source reference with
+constant navigation (e.g. `if($src.flag, |referenceData(), |[])...`) is
+conservatively treated as source-referencing. See
+`testConstantReferenceDataNavigation` /
+`testConstantReferenceDataAlongsideSourceProperty`.
+
 `childPropertiesMap` and `propertyTreesBelongingToOwner` are hoisted out of
 the intermediate-handling branch and reused in the dispatch below — both as
 the precondition's input and as the dispatch's input. This avoids
