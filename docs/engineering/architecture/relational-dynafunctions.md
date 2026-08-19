@@ -1456,6 +1456,14 @@ unknown dyna name, which already fails, this case *succeeded* — so by §10.4's
 kind of change that would normally warn first. It ships as an error because the alternative is a
 value the modeller never wrote, and because the dialects disagreeing is itself a defect.
 
+### 11.15 The modeller-facing guide
+
+`docs/guides/semi-structured-modelling.md` covers the same surface for people writing models rather
+than changing the engine: the path syntax, the array functions that have been checked, the lambda
+forms, explode, and the shapes that do not work. It is the document to hand someone who asks how to
+model a JSON column, and it should be updated whenever the behaviour here changes — the sections
+above are the reasoning, that guide is the contract a modeller reads.
+
 ### 11.14 Wildcard path segments
 
 `'divisions[*].teams[*].label'` reaches every element at each level. The segment is rewritten
