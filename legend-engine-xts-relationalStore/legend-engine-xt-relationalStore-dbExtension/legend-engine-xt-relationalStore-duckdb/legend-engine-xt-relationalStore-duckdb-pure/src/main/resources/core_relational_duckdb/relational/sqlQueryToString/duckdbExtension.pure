@@ -693,7 +693,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
    let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
    let elementAccess = $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig);
-   $elementAccess->castForDuckDBSemiStructuredData($s.returnType);
+   // VALUE is JSON when the list held navigated documents, but a plain value when it came from a
+   // typed array extraction or from array_transform, which renders as apply() over plain text.
+   // The casts that read it back with '->>' need JSON, so give them JSON; to_json is a no-op on a
+   // value that is JSON already. The other casts read the value directly and must not see it
+   // wrapped - map_keys reaches the untyped branch and would come back quoted.
+   let readsAsJson = $s.returnType == String || ($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration));
+   let value = if($readsAsJson, | 'to_json(' + $elementAccess + ')', | $elementAccess);
+   $value->castForDuckDBSemiStructuredData($s.returnType);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredArrayFlattenForDuckDB(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
