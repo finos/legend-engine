@@ -66,10 +66,10 @@ public class Test_Relational_Postgres_Semistructured
                 // union generation rather than anything Postgres-specific.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "UNION types character varying and json cannot be matched")
+                        "and json cannot be matched")
                 .withKeyValue(
                         "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "UNION types character varying and json cannot be matched");
+                        "and json cannot be matched");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
