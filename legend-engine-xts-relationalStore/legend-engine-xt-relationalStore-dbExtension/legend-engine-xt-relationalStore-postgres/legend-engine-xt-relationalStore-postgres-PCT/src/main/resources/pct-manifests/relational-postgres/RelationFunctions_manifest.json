@@ -207,14 +207,5 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: Postgres"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
-    "expectedError" : "#TDS\n   id:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1],firstName:String[0..1]\n   1,'{\"a\":{\"firstName\":\"John\",\"lastName\":\"Smith\"},\"b\":{\"firstName\":\"Jane\",\"lastName\":\"Smith\"}}',Jane\n   1,'{\"a\":{\"firstName\":\"John\",\"lastName\":\"Smith\"},\"b\":{\"firstName\":\"Jane\",\"lastName\":\"Smith\"}}',John\n   2,'{\"c\":{\"firstName\":\"Juan\",\"lastName\":\"Del Pueblo\"}}',Juan\n#\n is not equivalent to:\n#TDS\n   id:Integer[0..1],payload:meta::pure::metamodel::variant::Variant[0..1],firstName:String[0..1]\n   1,'{\"a\":{\"lastName\":\"Smith\",\"firstName\":\"John\"},\"b\":{\"lastName\":\"Smith\",\"firstName\":\"Jane\"}}',Jane\n   1,'{\"a\":{\"lastName\":\"Smith\",\"firstName\":\"John\"},\"b\":{\"lastName\":\"Smith\",\"firstName\":\"Jane\"}}',John\n   2,'{\"c\":{\"lastName\":\"Del Pueblo\",\"firstName\":\"Juan\"}}',Juan\n#"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   id,payload,booleanKey,integerKey,stringKey\\n   1,\\'{\"boolean\":true,\"integer\":1,\"string\":\"hello\"}\\',\\'true\\',\\'1\\',\\'\"hello\"\\'\\n   2,\\'{\"boolean\":false,\"integer\":2,\"string\":\"world\"}\\',\\'false\\',\\'2\\',\\'\"world\"\\'\\n   3,\\'{\"boolean\":true,\"integer\":3,\"string\":\"world\"}\\',\\'true\\',\\'3\\',\\'\"world\"\\'\\n#'\nactual:   '#TDS\\n   id,payload,booleanKey,integerKey,stringKey\\n   1,\\'{\"string\":\"hello\",\"boolean\":true,\"integer\":1}\\',\\'true\\',\\'1\\',\\'\"hello\"\\'\\n   2,\\'{\"string\":\"world\",\"boolean\":false,\"integer\":2}\\',\\'false\\',\\'2\\',\\'\"world\"\\'\\n   3,\\'{\"string\":\"world\",\"boolean\":true,\"integer\":3}\\',\\'true\\',\\'3\\',\\'\"world\"\\'\\n#'"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   id,payload\\n   1,\\'{\"boolean\":true,\"integer\":1,\"string\":\"hello\"}\\'\\n#'\nactual:   '#TDS\\n   id,payload\\n   1,\\'{\"string\":\"hello\",\"boolean\":true,\"integer\":1}\\'\\n#'"
   } ]
 }
