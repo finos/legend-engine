@@ -834,6 +834,14 @@ public class HelperRelationalBuilder
         if (collection instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction)
         {
             org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction extract = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.DynaFunction) collection;
+            // array_flatten removes one level of nesting. Beneath it sits a transform whose body
+            // extraction names its type with a [] suffix, and the branch below strips that suffix
+            // when reading a transform body - which lands on the element type the flattened array
+            // has. Only that shape is recognised; anything else falls through and is refused.
+            if ("array_flatten".equals(extract._name()) && extract._parameters().size() == 1)
+            {
+                return resolveArrayElementType(Lists.mutable.withAll(extract._parameters()).get(0), context, sourceInformation, fromTransformBody);
+            }
             if ("extractFromSemiStructured".equals(extract._name()))
             {
                 MutableList<RelationalOperationElement> params = Lists.mutable.withAll(extract._parameters());
@@ -961,6 +969,120 @@ public class HelperRelationalBuilder
         throw new EngineException("The starting value of 'array_reduce' must be a literal, so the accumulator can be typed from it", sourceInformation, EngineErrorType.COMPILATION);
     }
 
+    private static final String PATH_WILDCARD = "[*]";
+
+    // A [*] segment means "every element at this level". Pure has no nested collection type, so
+    // the result has to come back flat - which is also what a Pure property chain over a to-many
+    // yields. Rewriting to array_transform/array_flatten here means the dialects need no wildcard
+    // support of their own: they already render these.
+    private static boolean isWildcardExtraction(DynaFunc dynaFunc)
+    {
+        return "extractFromSemiStructured".equals(dynaFunc.funcName)
+                && dynaFunc.parameters != null
+                && dynaFunc.parameters.size() == 3
+                && wildcardPathOf(dynaFunc) != null;
+    }
+
+    private static String wildcardPathOf(DynaFunc dynaFunc)
+    {
+        Object path = literalValue(dynaFunc.parameters.get(1));
+        return (path instanceof String && ((String) path).contains(PATH_WILDCARD)) ? (String) path : null;
+    }
+
+    private static Object literalValue(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement e)
+    {
+        return e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal
+                ? ((org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal) e).value
+                : null;
+    }
+
+    private static org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal protocolLiteral(Object value, org.finos.legend.engine.protocol.pure.m3.SourceInformation si)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal l =
+                new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal();
+        l.value = value;
+        l.sourceInformation = si;
+        return l;
+    }
+
+    private static DynaFunc protocolDyna(String name, org.finos.legend.engine.protocol.pure.m3.SourceInformation si, org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement... params)
+    {
+        DynaFunc d = new DynaFunc();
+        d.funcName = name;
+        d.sourceInformation = si;
+        d.parameters = Lists.mutable.of(params);
+        return d;
+    }
+
+    // 'a.b[*].c[*].d' becomes a base extraction of a.b, then one transform per wildcard. Every
+    // level but the last yields documents, so it is annotated SEMISTRUCTURED[] and flattened; the
+    // last carries the type the modeller declared. A path ending in [*] has no trailing segment,
+    // so the level before it produces the arrays and is flattened too.
+    private static org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement desugarWildcardExtraction(DynaFunc dynaFunc)
+    {
+        org.finos.legend.engine.protocol.pure.m3.SourceInformation si = dynaFunc.sourceInformation;
+        String path = wildcardPathOf(dynaFunc);
+        Object declaredType = literalValue(dynaFunc.parameters.get(2));
+        if (!(declaredType instanceof String))
+        {
+            throw new EngineException("The type of an extractFromSemiStructured with a " + PATH_WILDCARD + " segment must be a literal", si, EngineErrorType.COMPILATION);
+        }
+        // The type argument names what the expression returns, exactly as it does without a
+        // wildcard. A [*] path always returns a collection, so it has to carry the [] suffix -
+        // and the leaf extraction is then given the element type inside it.
+        String declared = (String) declaredType;
+        if (!declared.toUpperCase().endsWith("[]"))
+        {
+            throw new EngineException("A path containing " + PATH_WILDCARD + " returns a collection, so its type must carry the array suffix: '" + declared + "[]' rather than '" + declared + "'", si, EngineErrorType.COMPILATION);
+        }
+        String leaf = declared.substring(0, declared.length() - 2);
+
+        MutableList<String> parts = Lists.mutable.empty();
+        for (String raw : path.split(java.util.regex.Pattern.quote(PATH_WILDCARD), -1))
+        {
+            parts.add(raw.startsWith(".") ? raw.substring(1) : raw);
+        }
+        boolean trailing = parts.getLast().isEmpty();
+        if (trailing)
+        {
+            parts.remove(parts.size() - 1);
+        }
+        if (parts.isEmpty() || parts.anySatisfy(String::isEmpty))
+        {
+            throw new EngineException("'" + path + "' has an empty segment around a " + PATH_WILDCARD, si, EngineErrorType.COMPILATION);
+        }
+
+        int last = parts.size() - 1;
+        String baseType = (last == 0) ? (trailing ? leaf + "[]" : leaf) : "SEMISTRUCTURED[]";
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement current =
+                protocolDyna("extractFromSemiStructured", si, dynaFunc.parameters.get(0), protocolLiteral(parts.get(0), si), protocolLiteral(baseType, si));
+
+        for (int i = 1; i <= last; i++)
+        {
+            boolean isLast = i == last;
+            String bodyType = isLast ? (trailing ? leaf + "[]" : leaf) : "SEMISTRUCTURED[]";
+            String param = "wc" + i;
+
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter ref =
+                    new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LambdaParameter();
+            ref.name = param;
+            ref.sourceInformation = si;
+
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda lambda =
+                    new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalLambda();
+            lambda.parameterNames = Lists.mutable.of(param);
+            lambda.sourceInformation = si;
+            lambda.body = protocolDyna("extractFromSemiStructured", si, ref, protocolLiteral(parts.get(i), si), protocolLiteral(bodyType, si));
+
+            current = protocolDyna("array_transform", si, current, lambda);
+            if (!isLast || trailing)
+            {
+                current = protocolDyna("array_flatten", si, current);
+            }
+        }
+        return current;
+    }
+
     private static boolean isArrayLambdaFunction(DynaFunc dynaFunc)
     {
         return ARRAY_LAMBDA_FUNCTIONS.contains(dynaFunc.funcName)
@@ -1066,6 +1188,10 @@ public class HelperRelationalBuilder
         else if (operationElement instanceof DynaFunc)
         {
             DynaFunc dynaFunc = (DynaFunc) operationElement;
+            if (isWildcardExtraction(dynaFunc))
+            {
+                return processRelationalOperationElement(desugarWildcardExtraction(dynaFunc), context, aliasMap, selfJoinTargets, lambdaScope);
+            }
             if (isArrayLambdaFunction(dynaFunc))
             {
                 return buildRelationalLambda(dynaFunc, context, aliasMap, selfJoinTargets, lambdaScope, m3SourceInformation);

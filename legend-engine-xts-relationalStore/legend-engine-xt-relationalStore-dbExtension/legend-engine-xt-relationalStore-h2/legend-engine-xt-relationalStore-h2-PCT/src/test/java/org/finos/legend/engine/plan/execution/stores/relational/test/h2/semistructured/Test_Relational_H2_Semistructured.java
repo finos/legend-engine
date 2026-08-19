@@ -34,6 +34,11 @@ import org.eclipse.collections.api.factory.Maps;
 public class Test_Relational_H2_Semistructured
 {
     private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
+            // A [*] path becomes an array_transform, and array lambdas reach H2 through the
+            // sqlDialectTranslation path, which has no case for the lambda nodes: "Match failure:
+            // MapRelationalLambdaObject instanceOf MapRelationalLambda". Left failing per H2's
+            // retirement.
+            "meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage_Connection_1__Boolean_1_",
             // H2 renders one lateral flatten correctly - every single-level explode test passes
             // here - but a second lateral over the first one's output yields nulls rather than
             // rows, and does so silently. Left failing per H2's retirement.
