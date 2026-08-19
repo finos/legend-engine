@@ -1415,3 +1415,88 @@ vocabularies is also a silent behaviour change, not a safe subset — those name
 documents. And `ARRAY`, `BINARY`, `BIT`, `DISTINCT` and `OTHER` are all keys in the map, but
 `ARRAY` and `BINARY` have no case in `dataTypeToCompatiblePureType` and fail with a match error
 further down; any error message that enumerates the map would be advertising a second defect.
+
+### 11.13 A declared array type is an assertion, and was not one on Snowflake
+
+The `[]` suffix in `extractFromSemiStructured(col, path, 'SEMISTRUCTURED[]')` is the modeller
+stating that the path holds an array. DuckDB and Databricks enforce that — DuckDB on the cast,
+Databricks with `INVALID_VARIANT_CAST` — but Snowflake's `to_array` **promoted** a scalar or an
+object into a one-element array. Same model, same data, an error on one dialect and a fabricated
+array on another, with nothing to signal it. It also quietly readmitted the irregular JSON that
+§11.9 puts out of scope.
+
+Measured against the integration account rather than reasoned about, which mattered, because the
+obvious fix is not one:
+
+| construct | scalar `9` | object | real `[1,2]` |
+|---|---|---|---|
+| `to_array` | `[9]` — invents | `[{…}]` — invents | ok |
+| `as_array` | `NULL` — drops | `NULL` — drops | ok |
+| `::ARRAY` | `[9]` — invents | `[{…}]` — invents | ok |
+| **`::ARRAY(VARIANT)`** | **raises** | **raises** | ok |
+
+Swapping `to_array` for `::ARRAY` — the change anyone would reach for first — would have altered
+nothing. The structured type raises a real type error: `Typed object schema mismatch in conversion`.
+
+The element type stays `VARIANT` deliberately. Comparison on it is type-aware, so
+`array_max([9,100,20])` still answers 100 rather than ordering as text — the reason `to_array` was
+chosen originally. Missing paths, JSON null, SQL null and empty arrays were each checked and are
+unchanged. Nothing in the suite could have depended on the promotion, since the same tests pass on
+DuckDB where no coercion exists.
+
+**One consequence, one level up.** Typing extractions as `ARRAY(VARIANT)` means a transform whose
+body extracts an array produces `ARRAY(ARRAY(VARIANT))`, and `ARRAY_FLATTEN` refuses that. Widening
+at the flatten — `array_flatten(cast(… as ARRAY))` — is what it accepts, and costs nothing: the
+elements stay VARIANT and the assertion still sits on the extraction cast. This only appeared when
+a two-level `[*]` path ran on Snowflake; DuckDB and Databricks both accept the nested form, so no
+single-dialect run could have found it.
+
+Rejecting a non-array is a behaviour change for any model that relied on the promotion. Unlike an
+unknown dyna name, which already fails, this case *succeeded* — so by §10.4's reasoning it is the
+kind of change that would normally warn first. It ships as an error because the alternative is a
+value the modeller never wrote, and because the dialects disagreeing is itself a defect.
+
+### 11.14 Wildcard path segments
+
+`'divisions[*].teams[*].label'` reaches every element at each level. The segment is rewritten
+during compilation into the transform and flatten it stands for, so no dialect needed wildcard
+support of its own — they already render those nodes, exactly as with the lambdas in §11.10.
+
+The rewrite, per wildcard segment:
+
+```
+array_flatten(array_transform(<prev>, x | extract($x, <segment>, 'SEMISTRUCTURED[]')))
+```
+
+with the last segment carrying the declared type and needing no flatten, since its body produces
+scalars. A path ending in `[*]` has no trailing segment, so the level before it produces the arrays
+and is flattened too.
+
+**The result is flat**, however deep the path went, because Pure has no collection-of-collections
+to return instead — `String[*]` is flat. That is not a choice about JSONPath convention; it is the
+only shape the result can have. It also matches what a property chain over a to-many does.
+
+**The type argument names what the expression returns**, as it does without a wildcard, so a `[*]`
+path carries the array suffix: `'VARCHAR[]'`, not `'VARCHAR'`. Bare scalars are refused at compile
+time with a message naming the correction. The first implementation had this inverted — the leaf
+element type was expected, so the *consistent* spelling failed at runtime inside the dialect,
+reporting a data value rather than the mistake.
+
+`resolveArrayElementType` gained an `array_flatten` case. Beneath a flatten sits a transform whose
+body extraction names its type with a `[]` suffix, and the branch that reads a transform body
+already strips that suffix — which lands on the element type the flattened array has. Only that
+shape is recognised; anything else is still refused rather than guessed.
+
+Empty inner arrays, explicit nulls and absent keys each contribute nothing, so no null filtering is
+needed. Genuinely ragged data — a level that is an array in one row and a scalar in the next —
+fails at the extraction cast, consistently across dialects now that §11.13 has landed.
+
+**Binding a `[*]` path to a to-many property does not give a collection.** It returns the array's
+text as a single value, with no error at compile or run time. Relational multiplicity comes from
+row cardinality: `explodeSemiStructured` produces rows, so `teams: Team[*]` through a join behaves
+normally, while a `[*]` path produces one row with an array in one column and has nothing to range
+over. Tracked as [#5099](https://github.com/finos/legend-engine/issues/5099), with an assessment of
+what a compile-time rejection would take recorded on the issue.
+
+H2 skips wildcard tests: a `[*]` path becomes an `array_transform`, and array lambdas reach H2
+through the `sqlDialectTranslation` path, which has no case for the lambda nodes.
