@@ -1048,6 +1048,23 @@ function meta::relational::functions::pureToSqlQuery::extractExplodeSemiStructur
     ]);
 }
 
+// Innermost first, so index 0 is the explode whose input must be a column and each later entry
+// fans out an array held inside the elements the previous one produced.
+function meta::relational::functions::pureToSqlQuery::explodeSemiStructuredChain(op: DynaFunction[1]):DynaFunction[*]
+{
+  let inner = $op.parameters->at(0);
+  if($inner->instanceOf(DynaFunction) && $inner->cast(@DynaFunction).name == meta::relational::functions::sqlQueryToString::DynaFunctionRegistry.explodeSemiStructured.name,
+     | $inner->cast(@DynaFunction)->explodeSemiStructuredChain()->concatenate($op),
+     | $op);
+}
+
+function meta::relational::functions::pureToSqlQuery::buildSemiStructuredNavigationForExplode(path: String[1], operand: RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+  let pathNavigation = meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($path);
+  let initialNavigation = if($pathNavigation->at(0)->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$operand,index=^Literal(value = $pathNavigation->at(0))), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $pathNavigation->at(0)->substring(1, $pathNavigation->at(0)->length()-1)), operand=$operand));
+  $pathNavigation->slice(1, $pathNavigation->size())->fold({property, navigation | if($property->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$navigation,index=^Literal(value = $property)), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $property->substring(1, $property->length()-1)), operand=$navigation)) }, $initialNavigation);
+}
+
 function meta::relational::functions::pureToSqlQuery::explodeReturnType(typeName:String[1]):Type[0..1]
 {
     let map = meta::relational::functions::database::sqlTextToRelationalDataTypeMap();

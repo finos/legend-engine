@@ -9291,12 +9291,15 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   let sourceAliasInJoin = $join->otherTableFromAlias($targetAliasInJoin)->toOne();
 
   let allExplodeCalls = $join.operation->extractExplodeSemiStructured()->removeDuplicates();
-  assert($allExplodeCalls->size() == 1, 'only one unique explode allowed in operation in join: ' + $join.name); // This condition needs to be relaxed to support many-to-many
-  let explodeOp = $allExplodeCalls->at(0)->cast(@DynaFunction);
-  assert($explodeOp.parameters->size() == 3, 'explodeSemiStructured takes exactly 3 arguments, passed: ', $explodeOp.parameters->size());
-  assert($explodeOp.parameters->at(0)->instanceOf(TableAliasColumn), 'Input to explodeSemiStructured must be defined as a column in table/view in join: ' + $join.name); // This condition needs to be relaxed to support nested explosion
-  let columnToExplode = $explodeOp.parameters->at(0)->cast(@TableAliasColumn);
-  let pathToExplode   = $explodeOp.parameters->at(1)->cast(@Literal).value->cast(@String);
+  // An explode nested inside another is one chain producing a row per combination, not two
+  // independent explodes. Only chain roots are counted here, so many-to-many stays unsupported.
+  let rootExplodeCalls = $allExplodeCalls->filter(e | !$allExplodeCalls->exists(other | !$other->is($e) && $other->cast(@DynaFunction).parameters->map(prm | $prm->extractExplodeSemiStructured())->exists(d | $d->is($e))));
+  assert($rootExplodeCalls->size() == 1, 'only one unique explode allowed in operation in join: ' + $join.name); // This condition needs to be relaxed to support many-to-many
+  let explodeOp = $rootExplodeCalls->at(0)->cast(@DynaFunction);
+  let explodeChain = $explodeOp->explodeSemiStructuredChain();
+  $explodeChain->forAll(e | assert($e.parameters->size() == 3, 'explodeSemiStructured takes exactly 3 arguments, passed: ', $e.parameters->size()));
+  assert($explodeChain->at(0).parameters->at(0)->instanceOf(TableAliasColumn), 'Input to explodeSemiStructured must be defined as a column in table/view in join: ' + $join.name);
+  let columnToExplode = $explodeChain->at(0).parameters->at(0)->cast(@TableAliasColumn);
   let pureReturnType  = $explodeOp.parameters->at(2)->cast(@Literal).value->cast(@String)->explodeReturnType();
   let tableToExplodeAlias = $columnToExplode.alias;
 
@@ -9307,29 +9310,37 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
 
   // 1. create a subquery(exploded) for the flattened relation by doing a lateral join between tableToFlatten and the flattened array.
   let toExplodeRootTreeNode = ^RootJoinTreeNode(alias=^TableAlias(name='root',relationalElement=$tableToExplodeAlias.relationalElement->processRelation([], $joinType, $nodeId, true, -1, true, $milestoningContext, $state, $context, $extensions)));
-  let pathNavigation = meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($pathToExplode);
-  let initialNavigation = if($pathNavigation->at(0)->isDigit(), | ^SemiStructuredArrayElementAccess(operand=^$columnToExplode(alias = $toExplodeRootTreeNode.alias),index=^Literal(value = $pathNavigation->at(0))), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $pathNavigation->at(0)->substring(1, $pathNavigation->at(0)->length()-1)), operand=^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
-  let semiStructuredNavigation = $pathNavigation->slice(1, $pathNavigation->size())->fold({property, navigation | if($property->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$navigation,index=^Literal(value = $property)), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $property->substring(1, $property->length()-1)), operand=$navigation)) }, $initialNavigation );
-  let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $semiStructuredNavigation);
-  let leftAlias = $toExplodeRootTreeNode.alias;
-  let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_0');
-  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
-  let lateralJoin = ^Join(
-    name      = $joinName,
-    target    = $rightAlias,
-    aliases   = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
-    operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])
-  );
-  let lateralJoinNode = ^JoinTreeNode(
-    database = $joinTree.database,
-    joinName = $joinName,
-    alias    = $rightAlias,
-    join     = $lateralJoin,
-    joinType = JoinType.INNER,
-    lateral  = true
-  );
-  let explodedRootTreeNode = ^$toExplodeRootTreeNode(childrenData = $lateralJoinNode);
-  let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralJoinNode.alias->toOne(), column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
+  // One lateral per level. Level 0 navigates from the re-rooted base column; each level above it
+  // navigates from the VALUE the level below produced, which is what fans out an array held
+  // inside each element of the array beneath it.
+  let lateralAliases = $explodeChain->fold({e, aliasesSoFar |
+      let level = $aliasesSoFar->size();
+      let operand = if($level == 0,
+                      | ^$columnToExplode(alias = $toExplodeRootTreeNode.alias),
+                      | ^TableAliasColumn(alias = $aliasesSoFar->at($level - 1)->cast(@TableAlias), column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured())));
+      let navigation = buildSemiStructuredNavigationForExplode($e.parameters->at(1)->cast(@Literal).value->cast(@String), $operand);
+      $aliasesSoFar->concatenate(^TableAlias(relationalElement = ^SemiStructuredArrayFlatten(navigation = $navigation), name = 'arrayFlatten_' + $level->toString()));
+    }, [])->cast(@TableAlias);
+  let lateralJoinNodes = range(0, $lateralAliases->size())->map(level |
+      let rightAlias = $lateralAliases->at($level);
+      let leftAlias = if($level == 0, | $toExplodeRootTreeNode.alias, | $lateralAliases->at($level - 1));
+      let joinName = 'join_arrayFlatten_' + $rightAlias.relationalElement->cast(@SemiStructuredArrayFlatten)->buildUniqueName(false, true, $extensions);
+      ^JoinTreeNode(
+        database = $joinTree.database,
+        joinName = $joinName,
+        alias    = $rightAlias,
+        join     = ^Join(
+          name      = $joinName,
+          target    = $rightAlias,
+          aliases   = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
+          operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)])
+        ),
+        joinType = JoinType.INNER,
+        lateral  = true
+      );
+    );
+  let explodedRootTreeNode = ^$toExplodeRootTreeNode(childrenData = $lateralJoinNodes);
+  let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralAliases->last()->toOne(), column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
   let columnsForInnerJoin           = $join.operation->extractTableAliasColumns()->filter(tac|$tac.alias == $tableToExplodeAlias )->map(c|^TableAliasColumn(column = $c.column, alias = $toExplodeRootTreeNode.alias))->removeDuplicates();
   let additionalColumnsToFetch      = if($tableToExplodeAlias == $sourceAliasInJoin,
                                         | $srcPrimaryKeys->map(c|^Alias(name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString(), relationalElement = ^TableAliasColumn(column=$c, alias=$toExplodeRootTreeNode.alias))),  // fetch only pks from source
@@ -9354,7 +9365,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   let reprocessedJoin = reprocessJoin(^$join(operation=$updatedOperation), [^OldAliasToNewAlias(first = $tableToExplodeAlias.name->toOne(), second = $explodedSubQuery), ^OldAliasToNewAlias(first = $otherTableInJoin.name, second = $otherTableInJoinUpdated)], []);
   let innerJoinTreeNode = ^JoinTreeNode(
     database = $joinTree.database,
-    joinName = 'inner_join_flattened_' + $targetAliasInJoin->buildUniqueName(true, true, $extensions) + '__' + $joinName,
+    joinName = 'inner_join_flattened_' + $targetAliasInJoin->buildUniqueName(true, true, $extensions) + '__' + $lateralJoinNodes->at(0).joinName,
     alias    = if($targetAliasInJoin == $tableToExplodeAlias, | $explodedSubQuery, | $otherTableInJoinUpdated),
     join     = $reprocessedJoin,
     joinType = JoinType.INNER
