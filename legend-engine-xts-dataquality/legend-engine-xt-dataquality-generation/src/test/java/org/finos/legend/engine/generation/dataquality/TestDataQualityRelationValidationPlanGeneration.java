@@ -30,7 +30,6 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -40,12 +39,14 @@ import org.junit.Test;
 import java.util.ServiceLoader;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
- * Plan generation for DataQualityRelationValidation. Nothing else in the repository takes a relation
- * validation all the way to an ExecutionPlan, which is how #5091 broke the rowsWith* helpers without
- * turning any suite red.
+ * Plan generation for DataQualityRelationValidation. The existing coverage stops one stage earlier --
+ * doRelationTest compares the generated lambda, and the helper tests run over an in-memory #TDS -- so
+ * nothing exercised the router, which is where #5091 broke the rowsWith* helpers.
+ *
+ * These assert only that a plan is produced, which is exactly what regressed. Whether the plan means
+ * the right thing is asserted by executing it against H2 in TestDataQualityApi.
  */
 public class TestDataQualityRelationValidationPlanGeneration
 {
@@ -60,11 +61,9 @@ public class TestDataQualityRelationValidationPlanGeneration
     @Test
     public void testPlanGeneration_rowsWithEmptyColumn()
     {
-        String plan = generatePlanJson(
+        assertPlanGenerated(
                 "emptyLastName",
                 "rel|$rel->rowsWithEmptyColumn(~LASTNAME)->assertRelationEmpty(~[FIRSTNAME, LASTNAME])");
-
-        assertTrue(plan, plan.contains("LASTNAME is null"));
     }
 
     // The shape reported against #5091: the column fed to rowsWithEmptyColumn is produced by a LEFT JOIN
@@ -72,16 +71,13 @@ public class TestDataQualityRelationValidationPlanGeneration
     @Test
     public void testPlanGeneration_rowsWithEmptyColumn_afterFilterAndJoin()
     {
-        String plan = generatePlanJson(
+        assertPlanGenerated(
                 "unmatchedAddress",
                 "rel|$rel->filter(row|$row.FIRSTNAME->isNotEmpty())" +
                 "->join(#>{meta::external::dataquality::tests::domain::db.addressTable}#->select(~[ID])->rename(~ID, ~joinedId), " +
                         "meta::pure::functions::relation::JoinKind.LEFT, {r1, r2 | $r1.ADDRESSID == $r2.joinedId})" +
                 "->rowsWithEmptyColumn(~joinedId)" +
                 "->assertRelationEmpty(~[FIRSTNAME, LASTNAME])");
-
-        assertTrue(plan, plan.contains("left outer join"));
-        assertTrue(plan, plan.contains("\\\"joinedId\\\" is null"));
     }
 
     // The four helpers whose ColSpec pins a concrete column type reach eval with a compiled-in Z, a
@@ -89,14 +85,12 @@ public class TestDataQualityRelationValidationPlanGeneration
     @Test
     public void testPlanGeneration_rowsWithValueOutsideRange()
     {
-        String plan = generatePlanJson(
+        assertPlanGenerated(
                 "addressIdOutOfRange",
                 "rel|$rel->rowsWithValueOutsideRange(~ADDRESSID, 0, 100)->assertRelationEmpty(~[FIRSTNAME, LASTNAME])");
-
-        assertTrue(plan, plan.contains("ADDRESSID"));
     }
 
-    private String generatePlanJson(String validationName, String assertion)
+    private void assertPlanGenerated(String validationName, String assertion)
     {
         String validation = "###DataQualityValidation\n" +
                 "DataQualityRelationValidation meta::dataquality::Validation\n" +
@@ -131,13 +125,5 @@ public class TestDataQualityRelationValidationPlanGeneration
                 lambda, null, null, null, model, "vX_X_X", PlanPlatform.JAVA, null, routerExtensions.apply(model), TRANSFORMERS);
         assertNotNull(plan);
         assertNotNull(plan.rootExecutionNode);
-        try
-        {
-            return ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(plan);
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 }
