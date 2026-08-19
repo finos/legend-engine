@@ -19,15 +19,15 @@ tests:
     sql: "SELECT name, dept_id, salary, ROUND(salary * 100.0 / SUM(salary) OVER (PARTITION BY dept_id), 2) AS pct_of_dept FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
     feature: "Running percentage within partition"
     category: "compositions"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: ERROR
 
   - id: comp_running_pct_cumulative
     sql: "SELECT name, salary, ROUND(SUM(salary) OVER (ORDER BY name) * 100.0 / SUM(salary) OVER (), 2) AS cum_pct FROM persons WHERE salary IS NOT NULL ORDER BY 1"
     feature: "Running percentage within partition"
     category: "compositions"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Rank within department
   - id: comp_rank_in_dept
@@ -49,7 +49,7 @@ tests:
     sql: "SELECT name, dept_id, salary, salary - AVG(salary) OVER (PARTITION BY dept_id) AS diff_from_avg FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
     feature: "Value vs partition average"
     category: "compositions"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: ERROR
 
   # Multiple windows + CASE
@@ -57,13 +57,13 @@ tests:
     sql: "SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS overall_rank, CASE WHEN salary > AVG(salary) OVER () THEN 'Above' ELSE 'Below' END AS vs_avg FROM persons WHERE salary IS NOT NULL ORDER BY 1"
     feature: "Multiple windows + CASE"
     category: "compositions"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Window + arithmetic expression
   - id: comp_window_arithmetic
     sql: "SELECT name, salary, SUM(salary) OVER (PARTITION BY dept_id) AS dept_total, salary * 100.0 / SUM(salary) OVER (PARTITION BY dept_id) AS pct FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL ORDER BY 1"
     feature: "Window + arithmetic"
     category: "compositions"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: ERROR
