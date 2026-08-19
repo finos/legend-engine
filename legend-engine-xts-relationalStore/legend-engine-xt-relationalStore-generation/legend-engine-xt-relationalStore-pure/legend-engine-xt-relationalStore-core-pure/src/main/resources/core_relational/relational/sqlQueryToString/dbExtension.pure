@@ -922,7 +922,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
   let result = $sgc.dbConfig.dynaFuncDispatch($func, $sgc)->toOne();
   let p0 = $params->at(0)->processOperation($newSgc);
   let p1 = $params->at(1)->cast(@Literal).value->cast(@String);
-  assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
+  assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specification must follow regex: ' + extractFromSemiStructuredPathRegex());
   let p2 = $params->at(2)->cast(@Literal).value->cast(@String)->toUpper();
   // SEMISTRUCTURED says the extraction yields a document rather than a scalar, so the
   // dialect leaves it as the store's own semi-structured type instead of unquoting it to
