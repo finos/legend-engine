@@ -266,7 +266,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
+    // iso_week, not week: H2's week counts from Sunday, so 2020-12-27 is week 1 of 2021 there and
+    // week 52 of 2020 under ISO 8601, which is what weekOfYear means.
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='iso_week(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('convertTimeZone',        $allStates,         ^ToSql(format='%s', transform={p:String[3] | $p->transformConvertTimeZone()})),
     dynaFnToSql('formatDate',             $allStates,         ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDate()}))
