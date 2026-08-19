@@ -189,25 +189,30 @@ Join Firm_Team(
 
 ## Choosing between `[*]` and explode
 
-`[*]` gives you a collection you collapse into a property — a name list, a count, a maximum.
-`explodeSemiStructured` gives you rows you can join. Same intuition, different result: pick by
-whether you want a property or a relationship.
+`[*]` gives you a collection. `explodeSemiStructured` gives you rows you can **join** to another
+table. Same intuition, different result: pick by whether you want a property or a relationship.
 
-This also decides whether a **to-many property** works. A relational mapping gets its multiplicity
-from rows, so `teams: Team[*]` mapped through an exploding join behaves like any other to-many. A
-`[*]` path produces one row with an array in a single column, so there are no rows for a
-`String[*]` to range over — it comes back as one value instead. If you want a real collection
-today, reach for the join.
+Either way a **to-many property** works. A relational mapping gets its multiplicity from rows, so
+`teams: Team[*]` mapped through an exploding join behaves like any other to-many — and binding a
+`[*]` path to a `String[*]` does too, because the array is fanned out to one row per element for
+you. A row whose array is empty or absent keeps its place with a null rather than disappearing.
+
+```
+divisionNames: extractFromSemiStructured([db]T.DOC, 'divisions[*].name', 'VARCHAR[]')
+```
+
+with `divisionNames: String[*]` gives one row per division name. Collapse it in the query when you
+want a single value — `$r.divisionNames->joinStrings(', ')` — or in the mapping with `array_to_string`
+if the property is a `String[0..1]`. Reach for the join when the collection is a *relationship*: rows
+you need to join to another table, rather than values you need to read.
 
 # What does not work yet
 
-These are known limits, not bugs to report. One of them fails quietly rather than loudly — worth
-reading that row even if you skim the rest.
+These are known limits, not bugs to report.
 
 | Shape | Status | What to do instead |
 |---|---|---|
 | A field that is a single value in some rows and an array in others | not supported | Common in XML-derived JSON. Handle it explicitly for now; a `toArray` helper is being considered. |
-| Mapping `[*]` straight to a `String[*]` property | **compiles, wrong** | You get one value holding the array's text, and no error. Tracked as [#5099](https://github.com/finos/legend-engine/issues/5099). Collapse it with an array function, or get a real collection through a join. |
 | Two independent explodes in one join | not supported | Split into separate joins. |
 | `explodeSemiStructured` outside a `Join` | not supported | Use `[*]` if you want a value rather than rows. |
 | Exploding something other than a plain column | not supported | The innermost explode must read a table or view column directly. |

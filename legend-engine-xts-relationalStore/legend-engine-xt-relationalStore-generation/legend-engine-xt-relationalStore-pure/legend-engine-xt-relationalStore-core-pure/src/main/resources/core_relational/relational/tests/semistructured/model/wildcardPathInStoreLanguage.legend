@@ -20,12 +20,51 @@ Class wildcard::model::Firm
   teamLabels: String[0..1];
   teamCount: Integer[0..1];
   maxHeadcount: Integer[0..1];
+  divisionNameRows: String[*];
+  headcountRows: Integer[*];
+  tagRows: String[*];
+  teamLabelRows: String[*];
 }
 
 function wildcard::wildcardPathInStoreLanguage():TabularDataSet[1]
 {
     wildcard::model::Firm.all()->project([x|$x.id, x|$x.divisionNames, x|$x.teamLabels, x|$x.teamCount, x|$x.maxHeadcount],
                                          ['Id', 'Division Names', 'Team Labels', 'Team Count', 'Max Headcount']);
+}
+
+function wildcard::divisionNameRows():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.divisionNameRows], ['Id', 'Name']);
+}
+
+function wildcard::headcountRows():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.headcountRows], ['Id', 'Headcount']);
+}
+
+function wildcard::tagRows():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.tagRows], ['Id', 'Tag']);
+}
+
+function wildcard::divisionNameRowsJoined():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.divisionNameRows->joinStrings('|')], ['Id', 'Names']);
+}
+
+function wildcard::divisionNameRowCount():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.divisionNameRows->count()], ['Id', 'Count']);
+}
+
+function wildcard::teamLabelRows():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.teamLabelRows], ['Id', 'Label']);
+}
+
+function wildcard::firmsWithAlphaDivision():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->filter(x|$x.divisionNameRows->contains('Alpha'))->project([x|$x.id], ['Id']);
 }
 
 ###Relational
@@ -63,6 +102,17 @@ Mapping wildcard::mapping::Mapping
     teamCount: array_size(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].teams[*].label', 'VARCHAR[]')),
 
     // Headcounts are ordered so a text comparison answers 9 rather than 100.
-    maxHeadcount: array_max(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].headcount', 'INTEGER[]'))
+    maxHeadcount: array_max(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].headcount', 'INTEGER[]')),
+
+    // Bound to a to-many rather than collapsed: the array is fanned out to one row per element.
+    divisionNameRows: extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].name', 'VARCHAR[]'),
+    headcountRows: extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].headcount', 'INTEGER[]'),
+
+    // No wildcard, so the array comes straight off a path rather than from a transform. The two
+    // spellings reach the flatten as different nodes and are worth covering separately.
+    tagRows: extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'tags', 'VARCHAR[]'),
+
+    // Two wildcards, so the expression is a flatten over a transform rather than a bare transform.
+    teamLabelRows: extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].teams[*].label', 'VARCHAR[]')
   }
 )

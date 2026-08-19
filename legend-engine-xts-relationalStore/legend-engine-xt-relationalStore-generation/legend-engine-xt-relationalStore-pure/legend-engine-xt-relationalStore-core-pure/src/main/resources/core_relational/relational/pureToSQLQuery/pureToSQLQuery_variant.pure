@@ -996,41 +996,51 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
               | ^$sel(columns = $sel.columns->map(c | $stamp->eval($c))));
           ^$swc(select = $updatedSel);,
         |
-            // Property is 1->MANY. Need to flatten
-          let navigation = if($state.inFilter, | $finalResult->cast(@SelectWithCursor).select.filteringOperation, | $finalResult->cast(@SelectWithCursor).select.columns)->toOne();
-          let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
-          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
-          let leftAlias = $finalResult.currentTreeNode->toOne().alias;
-          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
-          let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
-          let join = ^Join(
-            name = $joinName,
-            target = $rightAlias,
-            aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
-            operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
-          );
-          let lateralJoinNode = ^JoinTreeNode(
-            database = ^Database(),
-            joinName = $joinName,
-            alias = $rightAlias,
-            join = $join,
-            joinType = $joinType,
-            lateral = true
-          );
-          let joinAppliedNode = applyJoinInTree($finalResult.select.data->toOne(), $finalResult.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
-          let joinAppliedNodeSelect = $joinAppliedNode.select;
-          let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType  = $property.genericType.rawType);
-          let res = ^$joinAppliedNode(
-            select = ^$joinAppliedNodeSelect(
-                columns = if($state.inFilter,|[],|$flattenOutput),
-                filteringOperation = if($state.inFilter,|$flattenOutput,|[])
-            )
-          );
-          $res->validate([], $extensions);
-          $res;
+          // Property is 1->MANY: fan the array out to rows with a lateral flatten.
+          buildArrayFlattenLateral($finalResult->cast(@SelectWithCursor), $srcOperation, $property.genericType.rawType, $state, $joinType, $nodeId, $context, $extensions);
       );
   );
 }
+
+// Builds the lateral flatten that turns an array-valued expression into one row per element:
+// a SemiStructuredArrayFlatten wrapped in a TableAlias, reached through a lateral JoinTreeNode
+// whose condition is trivially true. Shared by the Binding-backed semi-structured path and by
+// the implicit explosion of a to-many mapped to an array expression in the store language.
+function meta::relational::functions::pureToSqlQuery::buildArrayFlattenLateral(resolved:SelectWithCursor[1], srcOperation:SelectWithCursor[1], returnType:Type[0..1], state:State[1], joinType:JoinType[1], nodeId:String[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  let navigation = if($state.inFilter, | $resolved.select.filteringOperation, | $resolved.select.columns)->toOne();
+  let updatedNavigation = $navigation->match([s:SemiStructuredObjectNavigation[1]|^$s(avoidCastIfPrimitive=true), a:Any[*]|$navigation]);
+  let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = $updatedNavigation);
+  let leftAlias = $resolved.currentTreeNode->toOne().alias;
+  let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
+  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
+  let join = ^Join(
+    name = $joinName,
+    target = $rightAlias,
+    aliases = [pair($leftAlias, $rightAlias), pair($rightAlias, $leftAlias)],
+    operation = ^DynaFunction(name = 'equal', parameters = [^Literal(value = 1), ^Literal(value = 1)]) // True operation
+  );
+  let lateralJoinNode = ^JoinTreeNode(
+    database = ^Database(),
+    joinName = $joinName,
+    alias = $rightAlias,
+    join = $join,
+    joinType = $joinType,
+    lateral = true
+  );
+  let joinAppliedNode = applyJoinInTree($resolved.select.data->toOne(), $resolved.currentTreeNode->toOne(), $lateralJoinNode, $srcOperation, $nodeId, $joinType, true, true, [], $state, $context, $extensions);
+  let joinAppliedNodeSelect = $joinAppliedNode.select;
+  let flattenOutput = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $joinAppliedNode.currentTreeNode.alias->toOne(), column = ^Column(name = 'result', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $returnType);
+  let res = ^$joinAppliedNode(
+    select = ^$joinAppliedNodeSelect(
+        columns = if($state.inFilter,|[],|$flattenOutput),
+        filteringOperation = if($state.inFilter,|$flattenOutput,|[])
+    )
+  );
+  $res->validate([], $extensions);
+  $res;
+}
+
 
 function meta::relational::functions::pureToSqlQuery::explodeInCurrentJoinOperation(op: RelationalOperationElement[1]):Boolean[1]
 {
