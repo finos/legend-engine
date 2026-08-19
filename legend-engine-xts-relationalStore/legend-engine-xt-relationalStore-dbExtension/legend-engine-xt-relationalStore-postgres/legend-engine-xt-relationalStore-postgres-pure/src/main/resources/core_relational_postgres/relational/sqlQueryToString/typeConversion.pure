@@ -60,9 +60,9 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
         s : meta::relational::metamodel::datatype::SmallInt[1] | 'SMALLINT',        
         d : meta::relational::metamodel::datatype::Double[1] | 'FLOAT8',
         n : meta::relational::metamodel::datatype::Numeric[1] | format('NUMERIC(%d, %d)', [$n.precision, $n.scale]),
-        a : meta::relational::metamodel::datatype::Array[1] | 'JSON',//if($a.type->isEmpty(), |'JSON[]', |$a.type->toOne()->dataTypeToSqlTextPostgres() + '[]'),
-        o : meta::relational::metamodel::datatype::Object[1] | 'JSON', // 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextPostgres(), $o.valueType->dataTypeToSqlTextPostgres()]),
-        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',
-        s : meta::relational::metamodel::datatype::Json[1] | 'JSON'
+        a : meta::relational::metamodel::datatype::Array[1] | 'JSONB',//if($a.type->isEmpty(), |'JSON[]', |$a.type->toOne()->dataTypeToSqlTextPostgres() + '[]'),
+        o : meta::relational::metamodel::datatype::Object[1] | 'JSONB', // 'MAP(%s, %s)'->format([$o.keyType->dataTypeToSqlTextPostgres(), $o.valueType->dataTypeToSqlTextPostgres()]),
+        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSONB',
+        s : meta::relational::metamodel::datatype::Json[1] | 'JSONB'
     ]);
 }

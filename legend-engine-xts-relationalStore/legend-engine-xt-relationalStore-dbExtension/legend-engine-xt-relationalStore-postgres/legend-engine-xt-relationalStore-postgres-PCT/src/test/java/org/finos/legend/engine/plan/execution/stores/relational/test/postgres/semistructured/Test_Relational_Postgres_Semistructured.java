@@ -42,22 +42,9 @@ public class Test_Relational_Postgres_Semistructured
         // fully-qualified Pure test to a substring that must appear in the thrown
         // exception, so a test that starts failing differently is reported rather than
         // silently absorbed. Anything not named here is rethrown untouched.
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                // json has no default btree operator class, so Postgres cannot build the primary
-                // key the fixture declares on the semi-structured column, and the table is never
-                // created.
-                //
-                // Mapping Variant to jsonb instead does fix these two -- measured, not assumed --
-                // and the migration is small. It is not done because jsonb stores a canonical form
-                // and does not preserve object key order, which regresses three PCT tests that
-                // round-trip a variant column and that Snowflake, Databricks and DuckDB all pass.
-                // The trade is key-order fidelity for these two, and fidelity wins.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredProperty_Connection_1__Boolean_1_",
-                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE")
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE");
+        // Empty: Postgres maps Variant to jsonb, which has a btree operator class, so the
+        // primary key the fixture declares on a semi-structured column now builds.
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty();
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
