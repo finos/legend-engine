@@ -456,10 +456,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
   let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);
 
-  // An array extraction converts to an ARRAY. The element type is not applied: a Snowflake
-  // ARRAY holds VARIANT, and VARIANT comparison is type-aware, so array_max on numbers
-  // already orders numerically rather than as text.
-  if ($returnType->endsWith('[]'), | 'to_array(' + $elementAccess + ')', |
+  // A [] suffix is the modeller asserting the path holds an array, so a value that is not one
+  // has to fail rather than be made to fit. to_array promotes a scalar or object into a
+  // one-element array, which invents data and lets a model pass here that fails on DuckDB;
+  // ARRAY(VARIANT) raises instead. The element type stays VARIANT because comparison on it is
+  // type-aware, so array_max over numbers still orders numerically rather than as text.
+  if ($returnType->endsWith('[]'), | 'cast(' + $elementAccess + ' as ARRAY(VARIANT))', |
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
   if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |
