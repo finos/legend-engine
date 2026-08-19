@@ -10,22 +10,10 @@
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
-    "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_",
-    "expectedError" : "Error running query: [PARSE_SYNTAX_ERROR]"
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_",
     "expectedError" : "[MISSING_AGGREGATION] org.apache.spark.sql.catalyst.ExtendedAnalysisException: [MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
-    "expectedError" : "\"pivot is not supported\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
-    "expectedError" : "\"pivot is not supported\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_",
@@ -68,18 +56,6 @@
     "expectedError" : "[PARSE_SYNTAX_ERROR]"
   }, {
     "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR]"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullValue_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR]"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testSimpleExtendFloat_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   val,doub,name\\n   1,1.2,2.2\\n   3,2.3,3.3\\n   4,4.2,5.2\\n   5,4.2,5.2\\n   6,4.5,5.5\\n#'\nactual:   '#TDS\\n   val,doub,name\\n   1,1.2,2.200000047683716\\n   3,2.3,3.299999952316284\\n   4,4.2,5.199999809265137\\n   5,4.2,5.199999809265137\\n   6,4.5,5.5\\n#'"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
     "expectedError" : "[PARSE_SYNTAX_ERROR]"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
@@ -404,9 +380,6 @@
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   } ]
 }

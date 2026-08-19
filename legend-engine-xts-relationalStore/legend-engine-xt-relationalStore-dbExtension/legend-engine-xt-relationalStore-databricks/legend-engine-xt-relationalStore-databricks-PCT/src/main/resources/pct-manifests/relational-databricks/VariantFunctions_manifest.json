@@ -36,8 +36,5 @@
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_",
     "expectedError" : "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Expect variant that contains an 'ARRAY', but got 'STRING'\"\""
   } ]
 }
