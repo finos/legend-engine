@@ -50,33 +50,21 @@ public class Test_Relational_Postgres_Semistructured
                 .withKeyValue(
                         "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
                         "cannot call json_array_elements on a non-array")
-                // A [*] path segment is expanded before SQL generation -- the dialect never sees the
-                // wildcard, only the flatten it becomes -- and the extracted element is then handed
-                // to json_array_elements even though it is already a scalar. Making this work is an
-                // engine-side change rather than a Postgres one; H2 skips the same test.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage_Connection_1__Boolean_1_",
-                        "cannot call json_array_elements on a scalar")
                 // json has no default btree operator class, so Postgres cannot build the primary
                 // key the fixture declares on the semi-structured column, and the table is never
-                // created. jsonb would support it, but the dialect maps Variant to json throughout
-                // and switching that is well beyond this test.
+                // created.
+                //
+                // Mapping Variant to jsonb instead does fix these two -- measured, not assumed --
+                // and the migration is small. It is not done because jsonb stores a canonical form
+                // and does not preserve object key order, which regresses three PCT tests that
+                // round-trip a variant column and that Snowflake, Databricks and DuckDB all pass.
+                // The trade is key-order fidelity for these two, and fidelity wins.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredProperty_Connection_1__Boolean_1_",
                         "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE")
                 .withKeyValue(
                         "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE")
-                // The union mapping puts a varchar branch and a json branch in the same UNION.
-                // Postgres resolves union column types strictly and will not unify the two; the
-                // branches would have to agree before the SQL is emitted, which is in the shared
-                // union generation rather than anything Postgres-specific.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "and json cannot be matched")
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "and json cannot be matched");
+                        "Error while executing: Create Table FIRM_SCHEMA.FIRM_TABLE");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));

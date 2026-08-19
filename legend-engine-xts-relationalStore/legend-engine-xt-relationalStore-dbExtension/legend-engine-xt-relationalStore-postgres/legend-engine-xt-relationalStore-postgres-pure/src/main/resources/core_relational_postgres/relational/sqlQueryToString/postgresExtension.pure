@@ -348,7 +348,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   // json_*, not jsonb_*: a Variant is json here, and the jsonb overloads do not accept it.  The
   // operand is cast because it is not always json already -- a flattened element arrives as text.
   let operand = format('cast(%s as json)', $baseRelationalOp);
-  let elementAccess = if ($returnType == 'JSON',
+  // SEMISTRUCTURED says the extraction yields a document, so it stays json rather than being
+  // unquoted to text.  Getting this wrong is not just a cast: a union of an extracted branch and a
+  // raw semi-structured column then puts text beside json, which Postgres refuses to unify.
+  // A trailing [] names the element type, so strip it before deciding.
+  let elementType = if ($returnType->endsWith('[]'), | $returnType->substring(0, $returnType->length() - 2), | $returnType);
+  let yieldsDocument = $elementType->in(['JSON', 'SEMISTRUCTURED']);
+  let elementAccess = if ($yieldsDocument,
     | format('json_extract_path(%s, %s)', [$operand, $pathNavigation]),
     | format('json_extract_path_text(%s, %s)', [$operand, $pathNavigation]));
 
