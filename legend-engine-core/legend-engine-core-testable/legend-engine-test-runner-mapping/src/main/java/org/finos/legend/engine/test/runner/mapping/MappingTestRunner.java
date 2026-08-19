@@ -23,7 +23,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -102,11 +101,9 @@ public class MappingTestRunner
         {
             CompileContext context = this.pureModel.getContext();
             Store element = getStore(conn.element, conn.elementSourceInformation, context);
-            Root_meta_core_runtime_Connection pureConnection = conn.accept(connectionVisitor);
-            conn.accept(new ConnectionSecondPassBuilder(context, pureConnection));
             Root_meta_core_runtime_ConnectionStore connectionStore =
                     new Root_meta_core_runtime_ConnectionStore_Impl("")
-                            ._connection(pureConnection)
+                            ._connection(conn.accept(connectionVisitor))
                             ._element(element);
             this.runtime._connectionStoresAdd(connectionStore);
         });

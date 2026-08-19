@@ -26,7 +26,6 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -70,7 +69,6 @@ import org.finos.legend.engine.testable.extension.TestSuiteSession;
 import org.finos.legend.engine.testable.helper.TestExecutionContextHelper;
 import org.finos.legend.engine.testable.helper.TestResultHelper;
 import org.finos.legend.engine.testable.helper.TestReturnTypeHelper;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
@@ -430,11 +428,9 @@ public class MappingTestRunner implements TestRunner
         connections.forEach(conn ->
         {
             org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store element = HelperRuntimeBuilder.getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext());
-            Root_meta_core_runtime_Connection pureConnection = conn.accept(connectionVisitor);
-            conn.accept(new ConnectionSecondPassBuilder(context.getPureModel().getContext(), pureConnection));
             Root_meta_core_runtime_ConnectionStore connectionStore =
                     new Root_meta_core_runtime_ConnectionStore_Impl("")
-                            ._connection(pureConnection)
+                            ._connection(conn.accept(connectionVisitor))
                             ._element(element);
             runtime._connectionStoresAdd(connectionStore);
         });
