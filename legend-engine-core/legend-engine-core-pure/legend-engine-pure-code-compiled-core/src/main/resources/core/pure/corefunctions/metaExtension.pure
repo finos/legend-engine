@@ -954,7 +954,7 @@ function meta::pure::functions::meta::resolveResolvedTypeParameters(func : Funct
             );
             );
           if ($v->isEmpty(), 
-            | fail('Unable to resolve type param ' + $tp.name  + ' from parameter values'); [];, 
+            | fail('Unable to resolve type param ' + $tp.name + ' of function ' + $func->elementToPath() + ' from parameter values'); [];, 
             | 
                 $v->at(0);
             );
