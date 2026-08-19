@@ -26,6 +26,13 @@
     <name>Legend Engine - XT - Persistence - EMIT Examples</name>
     <description>Example EMIT (Engine Model Integration Test) models exercising persistence: parse, compile and execute persistence tests (top-level atomic tests, not test suites) against an in-memory H2.</description>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <dependencies>
         <!-- EMIT framework + JUnit integration -->
         <dependency>

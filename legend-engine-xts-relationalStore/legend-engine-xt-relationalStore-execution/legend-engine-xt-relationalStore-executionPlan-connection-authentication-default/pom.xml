@@ -25,8 +25,29 @@
     <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
     <name>Legend Engine - Execution Plan - Execution - Store - Authentication - Default</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:*</dependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Block running the External Integration Tests-->
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -78,6 +99,10 @@
 
     <dependencies>
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
@@ -148,10 +173,12 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- JACKSON -->
 

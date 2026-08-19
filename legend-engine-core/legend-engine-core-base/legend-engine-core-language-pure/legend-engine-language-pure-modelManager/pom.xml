@@ -25,6 +25,24 @@
     <artifactId>legend-engine-language-pure-modelManager</artifactId>
     <name>Legend Engine - Language Pure - Model Manager</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol</dependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <!-- ENGINE -->
         <dependency>
@@ -52,6 +70,18 @@
             <artifactId>legend-engine-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- PURE -->
 
         <!-- JACKSON -->
         <dependency>

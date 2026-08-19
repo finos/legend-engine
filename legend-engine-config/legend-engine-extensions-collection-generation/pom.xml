@@ -26,6 +26,13 @@
     <artifactId>legend-engine-extensions-collection-generation</artifactId>
     <name>Legend Engine - Extensions Collection - Generation</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -50,6 +57,121 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-xt-persistence-target-relational-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.eclipse.collections:eclipse-collections-api</dependency>
+                                <dependency>org.eclipse.collections:eclipse-collections</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m3-core</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m4</dependency>
+                                <dependency>org.finos.legend.engine:*</dependency>
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-store-entitlement-analytics</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-snowflake-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-avro</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-morphir</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-tds-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-tds-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-hostedService-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-elasticsearch-V7-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-powerbi-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-data-space-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-core-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-authentication-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-graphQL-grammar-integration</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-bigquery-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-openapi-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-authentication-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-sql-expression-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-hostedService-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-external-shared</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-flatdata-driver-bloomberg</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-json-javaPlatformBinding-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-nonrelationalStore-mongodb-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-data-space-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-elasticsearch-V7-pure-metamodel</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-functionJar-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-dataquality-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-spanner-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-language-pure-dsl-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-pure-code-core-extension</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-nonrelationalStore-mongodb-grammar-integration</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-cloud-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-memsqlFunction-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-serviceStore-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-hostedService-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-flatdata-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-protobuf</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-language-pure-dsl-service</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-snowflake-generator</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-dataquality-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-functionActivator-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-daml-model</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-bigquery-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-trino-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-data-space-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-dataquality-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-analytics-search-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-diagram-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-spanner-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-data-space-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-sql-expression-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-language-pure-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-bigqueryFunction-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-graphQL-http-api</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-json-model</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-databricks-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-shared-core</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-hostedService-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-external-format-jsonSchema</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-javaPlatformBinding-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-cloud-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-snowflake-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-sql-expression-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-functionJar-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-diagram-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-elasticsearch-V7-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-xml-model</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-serviceStore-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-text-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-databricks-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-json-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-text-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-functionJar-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-snowflake-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-memsqlFunction-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-xml-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-target-relational-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-bigqueryFunction-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-external-format-core</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-trino-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-language-pure-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-language-pure-dsl-service-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-functionActivator-generation</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-redshift-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-redshift-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-memsqlFunction-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-bigqueryFunction-compiler</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-analytics-store-entitlement</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-text-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-persistence-target-relational-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-flatdata-shared</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-identity-core</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-relationalStore-snowflake-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-arrow-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-deephaven-javaPlatformBinding-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-javaPlatformBinding-externalFormat-pure</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-snowflake-protocol</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-serviceStore-grammar</dependency>-->
+<!--                                <dependency>org.finos.legend.engine:legend-engine-xt-flatdata-model</dependency>-->
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -61,11 +183,16 @@
         <!-- PURE -->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- PURE -->
 
@@ -250,6 +377,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-diagram-compiler</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

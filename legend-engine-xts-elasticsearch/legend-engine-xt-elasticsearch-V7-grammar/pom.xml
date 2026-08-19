@@ -35,6 +35,20 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-store-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
                         <id>copy-antlr-core-grammar</id>
                         <phase>initialize</phase>
                         <goals>
@@ -96,6 +110,10 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-authentication-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
         </dependency>
         <dependency>
@@ -148,6 +166,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -159,6 +178,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

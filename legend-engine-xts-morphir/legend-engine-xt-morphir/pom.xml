@@ -29,6 +29,10 @@
     <dependencies>
         <!-- PURE -->
         <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-generation-pure</artifactId>
         </dependency>
@@ -70,6 +74,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- ENGINE -->
@@ -89,6 +94,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- JACKSON -->
 

@@ -196,6 +196,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -239,6 +240,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -249,6 +251,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -260,11 +263,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-mft</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-core-pure</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
         <!-- TEST -->
     </dependencies>

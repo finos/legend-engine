@@ -117,6 +117,9 @@
                                 <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-grammar</dependency>
                             </ignoredUsedUndeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.pure:legend-pure-runtime-java-engine-compiled</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -128,6 +131,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -136,6 +140,15 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
 
         <!-- ECLIPSE COLLECTIONS -->

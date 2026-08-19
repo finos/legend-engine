@@ -25,8 +25,34 @@
 
     <artifactId>legend-engine-xt-powerbi-generation</artifactId>
     <name>Legend Engine - XT - PowerBI Generation</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-language-pure-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m4</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-identity-core</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-shared-core</dependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <!--PURE-->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>

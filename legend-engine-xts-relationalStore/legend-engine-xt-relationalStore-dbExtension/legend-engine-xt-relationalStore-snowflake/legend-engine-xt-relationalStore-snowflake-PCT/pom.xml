@@ -27,6 +27,13 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Snowflake - PCT</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -43,6 +50,12 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -260,6 +273,11 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>regions</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
         </dependency>
 
         <dependency>
