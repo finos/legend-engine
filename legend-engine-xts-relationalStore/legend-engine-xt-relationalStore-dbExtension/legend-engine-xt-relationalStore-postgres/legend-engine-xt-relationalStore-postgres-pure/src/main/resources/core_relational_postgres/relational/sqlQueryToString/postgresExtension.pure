@@ -186,36 +186,36 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let allStates = allGenerationStates();
 
   [
-    // json_build_array(x) -> 0 rather than to_json(x): to_json takes anyelement, which Postgres
-    // cannot resolve for an untyped null (an empty Pure collection), whereas json_build_array is
+    // jsonb_build_array(x) -> 0 rather than to_jsonb(x): to_jsonb takes anyelement, which Postgres
+    // cannot resolve for an untyped null (an empty Pure collection), whereas jsonb_build_array is
     // variadic "any" and accepts it.  The result is identical for every typed value.
-    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(json_build_array(%s) -> 0, \'null\'::json)')),
-    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
-    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
-    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', jsonElementOrderingForPostgres())})),
-    dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(s.v order by s.o), \'[]\'::json) end from (select distinct on (t.v::jsonb) t.v as v, t.o as o from json_array_elements(cast(%s as json)) with ordinality t(v, o) order by t.v::jsonb, t.o) s)'->format([$p->at(0), $p->at(0)])})),
-    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(b.e order by a.o, b.o), \'[]\'::json) end from json_array_elements(cast(%s as json)) with ordinality a(v, o), lateral json_array_elements(a.v) with ordinality b(e, o))'->format([$p->at(0), $p->at(0)])})),
-    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='(select coalesce(string_agg(t.v #>> \'{}\', %s order by t.o), \'\') from json_array_elements(cast(%s as json)) with ordinality t(v, o))', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
-    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(coalesce((select min(t.o) from json_array_elements(cast(%s as json)) with ordinality t(v, o) where t.v::jsonb = to_json(%s)::jsonb), 0) - 1)')),
-    dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='coalesce((%s)::jsonb @> to_json(%s)::jsonb, false)')),
-    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='((%s)::jsonb || (%s)::jsonb)::json')),
-    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='((%s)::jsonb || to_json(%s)::jsonb)::json')),
-    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='(select max((t.v #>> \'{}\')::numeric) from json_array_elements(cast(%s as json)) t(v))')),
-    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='(select min((t.v #>> \'{}\')::numeric) from json_array_elements(cast(%s as json)) t(v))')),
-    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.k order by t.o), \'[]\'::json) end from json_object_keys(cast(%s as json)) with ordinality t(k, o))'->format([$p->at(0), $p->at(0)])})),
-    dynaFnToSql('values',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(json_agg(t.v order by t.o), \'[]\'::json) end from json_each(cast(%s as json)) with ordinality t(k, v, o))'->format([$p->at(0), $p->at(0)])})),
-    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='((%s)::jsonb || (%s)::jsonb)::json')),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(json_array_length(cast(%s as json)), 0)')),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='coalesce(jsonb_build_array(%s) -> 0, \'null\'::jsonb)')),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='jsonb_build_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='jsonb_build_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', jsonbElementOrderingForPostgres())})),
+    dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(s.v order by s.o), \'[]\'::jsonb) end from (select distinct on (t.v) t.v as v, t.o as o from jsonb_array_elements(cast(%s as jsonb)) with ordinality t(v, o) order by t.v, t.o) s)'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(b.e order by a.o, b.o), \'[]\'::jsonb) end from jsonb_array_elements(cast(%s as jsonb)) with ordinality a(v, o), lateral jsonb_array_elements(a.v) with ordinality b(e, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='(select coalesce(string_agg(t.v #>> \'{}\', %s order by t.o), \'\') from jsonb_array_elements(cast(%s as jsonb)) with ordinality t(v, o))', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
+    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(coalesce((select min(t.o) from jsonb_array_elements(cast(%s as jsonb)) with ordinality t(v, o) where t.v = to_jsonb(%s)), 0) - 1)')),
+    dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='coalesce((%s) @> to_jsonb(%s), false)')),
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='((%s) || (%s))')),
+    dynaFnToSql('array_append',           $allStates,            ^ToSql(format='((%s) || to_jsonb(%s))')),
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='(select max((t.v #>> \'{}\')::numeric) from jsonb_array_elements(cast(%s as jsonb)) t(v))')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='(select min((t.v #>> \'{}\')::numeric) from jsonb_array_elements(cast(%s as jsonb)) t(v))')),
+    dynaFnToSql('keys',                   $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(t.k order by t.o), \'[]\'::jsonb) end from jsonb_object_keys(cast(%s as jsonb)) with ordinality t(k, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('values',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else coalesce(jsonb_agg(t.v order by t.o), \'[]\'::jsonb) end from jsonb_each(cast(%s as jsonb)) with ordinality t(k, v, o))'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='((%s) || (%s))')),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(jsonb_array_length(cast(%s as jsonb)), 0)')),
     dynaFnToSql('array_first',            $allStates,            ^ToSql(format='(%s ->> 0)')),
     dynaFnToSql('array_last',             $allStates,            ^ToSql(format='(%s ->> -1)')),
     dynaFnToSql('array_take',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForPostgres($p->at(0), 'o <= greatest(%s, 0)'->format($p->at(1)), 'o')})),
     dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForPostgres($p->at(0), 'o > greatest(%s, 0)'->format($p->at(1)), 'o')})),
     dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='%s', transform={p:String[3] | reshapeJsonArrayForPostgres($p->at(0), 'o > greatest(%s, 0) and o <= greatest(%s, 0)'->format([$p->at(1), $p->at(2)]), 'o')})),
     dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), 'o > 1', 'o')})),
-    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), 'o < json_array_length(%s)'->format($p->at(0)), 'o')})),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), 'o < jsonb_array_length(%s)'->format($p->at(0)), 'o')})),
     dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForPostgres($p->at(0), '', 'o desc')})),
     dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | castFromJsonForPostgres($p->at(0), $p->at(1))})),
-    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='cast(%s as JSON)')),
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='cast(%s as JSONB)')),
     dynaFnToSql('toJson',                 $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', '')->removeQuotesIfExist(), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net,
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
@@ -298,33 +298,33 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   format('TO_CHAR(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::jsonElementOrderingForPostgres():String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::jsonbElementOrderingForPostgres():String[1]
 {
-  // json has no ordering operator, so sort numbers numerically and everything else as text.  The
+  // jsonb has no ordering operator, so sort numbers numerically and everything else as text.  The
   // numeric key is null for non-numbers, which falls through to the text key.
-  '(case when json_typeof(t.v) = \'number\' then (t.v #>> \'{}\')::numeric end), (t.v #>> \'{}\')';
+  '(case when jsonb_typeof(t.v) = \'number\' then (t.v #>> \'{}\')::numeric end), (t.v #>> \'{}\')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::reshapeJsonArrayForPostgres(array:String[1], where:String[1], order:String[1]):String[1]
 {
-  // Postgres has no list functions over json, so any reshaping of a json array is done by exploding
-  // it and rebuilding it.  o is the 1-based element position; the order by inside json_agg is what
+  // Postgres has no list functions over jsonb, so any reshaping of a jsonb array is done by exploding
+  // it and rebuilding it.  o is the 1-based element position; the order by inside jsonb_agg is what
   // preserves (or reverses) element order, since scan order is not guaranteed.
   let filter = if($where == '', |'', |' where ' + $where);
-  // The case guard keeps a null array null: json_agg over zero rows is null either way, so without
+  // The case guard keeps a null array null: jsonb_agg over zero rows is null either way, so without
   // it a null input would come back as an empty array instead.
-  '(select case when %s is null then null else coalesce(json_agg(t.v order by %s), \'[]\'::json) end from json_array_elements(cast(%s as json)) with ordinality t(v, o)%s)'
+  '(select case when %s is null then null else coalesce(jsonb_agg(t.v order by %s), \'[]\'::jsonb) end from jsonb_array_elements(cast(%s as jsonb)) with ordinality t(v, o)%s)'
     ->format([$array, $order, $array, $filter]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::castFromJsonForPostgres(expr:String[1], dbType:String[1]):String[1]
 {
-  // Postgres cannot cast a json value directly to a scalar type, and casting it to text keeps the
-  // quotes around json strings -- cast('"1"'::json as TEXT) is "1", which is not a valid bigint.
+  // Postgres cannot cast a jsonb value directly to a scalar type, and casting it to text keeps the
+  // quotes around jsonb strings -- cast('"1"'::jsonb as TEXT) is "1", which is not a valid bigint.
   // #>> '{}' extracts the scalar as unquoted text.  https://www.postgresql.org/docs/current/functions-json.html
-  // to_json normalises the operand first: #>> is only defined on json, but the expression reaching
-  // here is sometimes already text (e.g. json_extract_path_text), and to_json is a no-op on json.
-  let unquoted = 'to_json(%s) #>> \'{}\''->format($expr);
+  // to_jsonb normalises the operand first: #>> is only defined on jsonb, but the expression reaching
+  // here is sometimes already text (e.g. jsonb_extract_path_text), and to_jsonb is a no-op on jsonb.
+  let unquoted = 'to_jsonb(%s) #>> \'{}\''->format($expr);
   if ($dbType->startsWith('JSON'),
     | $expr,
     | if ($dbType->startsWith('VARCHAR') || $dbType->startsWith('CHAR') || $dbType == 'TEXT',
@@ -337,7 +337,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let baseRelationalOp = $params->at(0);
   // The shared parser splits dot and bracket notation alike, so a.b[1].c becomes three segments.
   // Splitting on '.' alone would leave 'b[1]' as one key and silently navigate to nothing.
-  // json_extract_path takes every segment as text and reads a numeric one as an array index.
+  // jsonb_extract_path takes every segment as text and reads a numeric one as an array index.
   let pathNavigation = $params->at(1)
       ->meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation()
       ->map(seg|'\'' + $seg->replace('"', '') + '\'')
@@ -345,18 +345,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let returnType = $params->at(2);
 
   // https://www.postgresql.org/docs/current/functions-json.html
-  // json_*, not jsonb_*: a Variant is json here, and the jsonb overloads do not accept it.  The
-  // operand is cast because it is not always json already -- a flattened element arrives as text.
-  let operand = format('cast(%s as json)', $baseRelationalOp);
-  // SEMISTRUCTURED says the extraction yields a document, so it stays json rather than being
+  // json_*, not jsonb_*: a Variant is jsonb here, and the jsonb overloads do not accept it.  The
+  // operand is cast because it is not always jsonb already -- a flattened element arrives as text.
+  let operand = format('cast(%s as jsonb)', $baseRelationalOp);
+  // SEMISTRUCTURED says the extraction yields a document, so it stays jsonb rather than being
   // unquoted to text.  Getting this wrong is not just a cast: a union of an extracted branch and a
-  // raw semi-structured column then puts text beside json, which Postgres refuses to unify.
+  // raw semi-structured column then puts text beside jsonb, which Postgres refuses to unify.
   // A trailing [] names the element type, so strip it before deciding.
   let elementType = if ($returnType->endsWith('[]'), | $returnType->substring(0, $returnType->length() - 2), | $returnType);
   let yieldsDocument = $elementType->in(['JSON', 'SEMISTRUCTURED']);
   let elementAccess = if ($yieldsDocument,
-    | format('json_extract_path(%s, %s)', [$operand, $pathNavigation]),
-    | format('json_extract_path_text(%s, %s)', [$operand, $pathNavigation]));
+    | format('jsonb_extract_path(%s, %s)', [$operand, $pathNavigation]),
+    | format('jsonb_extract_path_text(%s, %s)', [$operand, $pathNavigation]));
 
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'cast(' + $elementAccess + ' as VARCHAR)', |
   if ($returnType == 'DATE', | 'cast(' + $elementAccess + ' as DATE)', |
@@ -517,17 +517,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSemiStructuredObjectNavigationForPostgres(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // The operand is cast because it is not always json: a preceding navigation with a String
-   // return type unwraps to text, and both json_extract_path and -> are json-only.
-   let processedOperand = 'cast(%s as json)'->format($s.operand->processOperation($sgc));
+   // The operand is cast because it is not always jsonb: a preceding navigation with a String
+   // return type unwraps to text, and both jsonb_extract_path and -> are jsonb-only.
+   let processedOperand = 'cast(%s as jsonb)'->format($s.operand->processOperation($sgc));
 
    let elementAccess = $s->match([
-      p: SemiStructuredPropertyAccess[1]     | let access = 'json_extract_path(%s, %s)'->format([$processedOperand, $p.property->processOperation($sgc)]);
+      p: SemiStructuredPropertyAccess[1]     | let access = 'jsonb_extract_path(%s, %s)'->format([$processedOperand, $p.property->processOperation($sgc)]);
                                                // A property access can carry an index -- addresses[0] arrives as one
                                                // node, not a property access followed by an element access.
                                                if ($p.index->isEmpty(),
                                                  | $access,
-                                                 | '(cast(%s as json) -> %s)'->format([$access, $p.index->toOne()->processOperation($sgc)]));,
+                                                 | '(cast(%s as jsonb) -> %s)'->format([$access, $p.index->toOne()->processOperation($sgc)]));,
       a: SemiStructuredArrayElementAccess[1] | '(%s->%s)'->format([$processedOperand, $a.index->processOperation($sgc)])
    ]);
 
@@ -605,11 +605,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
    // VALUE is left unquoted to match how the reference to it is emitted: it is not a Postgres
    // reserved word, so identifierProcessor does not quote it and Postgres folds both to "value".
    //
-   // The element is exposed as text, not json, because the caller wraps this column in a plain
-   // cast(... as <type>) and Postgres has no cast from json to a scalar type.  #>> '{}' yields the
-   // unquoted scalar, which casts to both the scalar types and (for objects/arrays) back to json.
+   // The element is exposed as text, not jsonb, because the caller wraps this column in a plain
+   // cast(... as <type>) and Postgres has no cast from jsonb to a scalar type.  #>> '{}' yields the
+   // unquoted scalar, which casts to both the scalar types and (for objects/arrays) back to jsonb.
    let processedNavigation = $s.navigation->processOperation($sgc);
-   '(select "value" #>> \'{}\' as VALUE from json_array_elements(cast(' + $processedNavigation + ' as json)))';
+   '(select "value" #>> \'{}\' as VALUE from jsonb_array_elements(cast(' + $processedNavigation + ' as jsonb)))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSemiStructuredArrayFlattenOutputForPostgres(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
@@ -620,7 +620,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
    // A plain cast, not castFromJsonForPostgres: the flatten column is already unquoted text
    // (see processSemiStructuredArrayFlattenForPostgres), so scalars parse directly and a JSON
-   // target re-parses the element's json text.
+   // target re-parses the element's jsonb text.
    if ($s.returnType->isNotEmpty(),
     |
       let dbType = meta::relational::functions::pureToSqlQuery::genericTypeToDataType(^GenericType(rawType = $s.returnType->toOne()), PureOne)->meta::relational::functions::sqlQueryToString::postgres::dataTypeToSqlTextPostgres();
@@ -676,7 +676,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   let declaredType = $sgc.dbConfig.dataTypeToSqlText($accumulator.type);
   let accumulatorType = if($declaredType->startsWith('VARCHAR') || $declaredType->startsWith('CHAR'), |'TEXT', |$declaredType);
 
-  '(with recursive legend_fold("legend_i", "%s") as (select 0, cast(%s as %s) union all select f."legend_i" + 1, %s from legend_fold f join json_array_elements(cast(%s as json)) with ordinality e("%s", "legend_o") on e."legend_o" = f."legend_i" + 1) select "%s" from legend_fold order by "legend_i" desc limit 1)'
+  '(with recursive legend_fold("legend_i", "%s") as (select 0, cast(%s as %s) union all select f."legend_i" + 1, %s from legend_fold f join jsonb_array_elements(cast(%s as jsonb)) with ordinality e("%s", "legend_o") on e."legend_o" = f."legend_i" + 1) select "%s" from legend_fold order by "legend_i" desc limit 1)'
     ->format([
         $accumulator.name,
         $accumulator.value->processOperation($sgc),
@@ -690,7 +690,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::buildFilterLambdaForPostgres(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  '(select coalesce(json_agg("%s" order by legend_ord), \'[]\'::json) from %s where %s)'->format([
+  '(select coalesce(jsonb_agg("%s" order by legend_ord), \'[]\'::jsonb) from %s where %s)'->format([
       $lambda.parameters->at(0).name,
       $lambda->flattenedSourceForPostgres($sgc),
       $lambda.body->processOperation($sgc)
@@ -699,7 +699,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::buildMapLambdaForPostgres(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  '(select coalesce(json_agg(%s order by legend_ord), \'[]\'::json) from %s)'->format([
+  '(select coalesce(jsonb_agg(%s order by legend_ord), \'[]\'::jsonb) from %s)'->format([
       $lambda.body->processOperation($sgc),
       $lambda->flattenedSourceForPostgres($sgc)
    ]);
@@ -707,11 +707,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::asJsonArrayForPostgres(expr:String[1]):String[1]
 {
-  // json_array_elements rejects anything that is not an array, where Snowflake's FLATTEN and
+  // jsonb_array_elements rejects anything that is not an array, where Snowflake's FLATTEN and
   // DuckDB's unnest both normalise first -- DuckDB substitutes a singleton list for the same
   // reason. A single element reaches here when the value has already been narrowed, so treat it
   // as a one-element array rather than failing.
-  'case when json_typeof(cast(%s as json)) = \'array\' then cast(%s as json) else json_build_array(cast(%s as json)) end'
+  'case when jsonb_typeof(cast(%s as jsonb)) = \'array\' then cast(%s as jsonb) else jsonb_build_array(cast(%s as jsonb)) end'
     ->format([$expr, $expr, $expr]);
 }
 
@@ -719,7 +719,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 {
   // WITH ORDINALITY + the order by in the aggregate is what preserves element order; scan order is not guaranteed.
   let name = $lambda.parameters->at(0).name;
-  'json_array_elements(%s) with ordinality as "%s__src"("%s", legend_ord)'->format([
+  'jsonb_array_elements(%s) with ordinality as "%s__src"("%s", legend_ord)'->format([
       $lambda.parameters->at(0).value->processOperation($sgc)->asJsonArrayForPostgres(),
       $name,
       $name
