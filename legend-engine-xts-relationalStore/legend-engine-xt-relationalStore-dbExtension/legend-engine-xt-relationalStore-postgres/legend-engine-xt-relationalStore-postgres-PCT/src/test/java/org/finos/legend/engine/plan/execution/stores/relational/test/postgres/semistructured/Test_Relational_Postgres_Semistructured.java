@@ -43,13 +43,6 @@ public class Test_Relational_Postgres_Semistructured
         // exception, so a test that starts failing differently is reported rather than
         // silently absorbed. Anything not named here is rethrown untouched.
         MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                // Postgres has no tolerant flatten. json_array_elements rejects anything that is
-                // not an array, whereas Snowflake's FLATTEN takes outer => true and yields no rows
-                // instead of failing. Here filter(...)->first() narrows the array to a single
-                // object, which joinStrings then tries to flatten.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
-                        "cannot call json_array_elements on a non-array")
                 // json has no default btree operator class, so Postgres cannot build the primary
                 // key the fixture declares on the semi-structured column, and the table is never
                 // created.
