@@ -39,7 +39,7 @@ tests:
     function: array_length
     signature: "array_length(anyarray, integer) → integer"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: array_lower__anyarray_int__from_table
     sql: "SELECT ARRAY_LOWER(ARRAY[10,20,30], 1) AS result FROM numbers WHERE id = 1"
@@ -55,12 +55,15 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  # ARRAY_POSITION transpiles to Pure indexOf, which is 0-based and returns -1 when the
+  # element is absent, whereas Postgres is 1-based and returns null. The relation path now
+  # runs rather than erroring, so the off-by-one surfaces as a result mismatch.
   - id: array_position__anycompatiblearray_anycompatible__from_table
     sql: "SELECT ARRAY_POSITION(ARRAY[1,2,3], 2) AS result FROM numbers WHERE id = 1"
     function: array_position
     signature: "array_position(anycompatiblearray, anycompatible) → integer"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   - id: array_position__anycompatiblearray_anycompatible_int__with_start
     sql: "SELECT ARRAY_POSITION(ARRAY[1,2,3,2], 2, 2) AS result FROM numbers WHERE id = 1"
