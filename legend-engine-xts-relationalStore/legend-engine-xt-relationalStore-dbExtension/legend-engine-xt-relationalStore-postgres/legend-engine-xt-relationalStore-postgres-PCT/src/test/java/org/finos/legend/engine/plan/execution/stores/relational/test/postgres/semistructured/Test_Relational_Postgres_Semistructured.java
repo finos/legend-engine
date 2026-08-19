@@ -50,6 +50,13 @@ public class Test_Relational_Postgres_Semistructured
                 .withKeyValue(
                         "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
                         "cannot call json_array_elements on a non-array")
+                // A [*] path segment is expanded before SQL generation -- the dialect never sees the
+                // wildcard, only the flatten it becomes -- and the extracted element is then handed
+                // to json_array_elements even though it is already a scalar. Making this work is an
+                // engine-side change rather than a Postgres one; H2 skips the same test.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage_Connection_1__Boolean_1_",
+                        "cannot call json_array_elements on a scalar")
                 // json has no default btree operator class, so Postgres cannot build the primary
                 // key the fixture declares on the semi-structured column, and the table is never
                 // created. jsonb would support it, but the dialect maps Variant to json throughout
