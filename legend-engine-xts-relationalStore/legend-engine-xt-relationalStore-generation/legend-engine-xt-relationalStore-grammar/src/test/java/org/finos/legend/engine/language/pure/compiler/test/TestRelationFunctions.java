@@ -1522,6 +1522,138 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
         );
     }
 
+    @Test
+    public void testInAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.name->in(#>{a::A.other}#->select(~oname)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInAcrossDifferentIntegerWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->in(#>{a::A.other}#->select(~oid)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInAcrossDifferentDecimalPrecisions()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(amount DECIMAL(18,6))\n" +
+                        "   Table other(oamount DECIMAL(20,2))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.amount->in(#>{a::A.other}#->select(~oamount)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInWithStringLiteralAgainstVarcharColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|'abc'->in(#>{a::A.tb}#->select(~name)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInWithIntegerLiteralAgainstIntColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|1->in(#>{a::A.tb}#->select(~id)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testInWithEmptyValueAgainstVarcharColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|[]->in(#>{a::A.tb}#->select(~name)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testQuantifiedComparisonAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.name->greaterThanAny(#>{a::A.other}#->select(~oname)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testExistsAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|#>{a::A.other}#->exists(o|$o.oname == $x.name))\n" +
+                        "}");
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {
