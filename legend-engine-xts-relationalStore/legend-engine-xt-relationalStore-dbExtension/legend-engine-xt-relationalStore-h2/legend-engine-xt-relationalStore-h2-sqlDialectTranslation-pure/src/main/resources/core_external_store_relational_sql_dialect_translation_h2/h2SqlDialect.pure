@@ -903,7 +903,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
           pair(| $returnType == 'date',                           | 'date'),
           pair(| $returnType == 'boolean',                        | 'boolean'),
           pair(| $returnType == 'float',                          | 'float'),
-          pair(| $returnType == 'integer',                        | 'integer')
+          pair(| $returnType == 'integer',                        | 'integer'),
+          // H2 has no native semi-structured type - it holds the document in a VARCHAR, which is
+          // what the SemiStructured datatype renders as too - so the cast is a no-op that leaves
+          // the document as the store's own representation. Without an arm here the type name
+          // reaches H2 verbatim and it answers "Unknown data type: SEMISTRUCTURED".
+          pair(| $returnType == 'semistructured',                 | 'varchar')
         ],
         | $returnType
       );

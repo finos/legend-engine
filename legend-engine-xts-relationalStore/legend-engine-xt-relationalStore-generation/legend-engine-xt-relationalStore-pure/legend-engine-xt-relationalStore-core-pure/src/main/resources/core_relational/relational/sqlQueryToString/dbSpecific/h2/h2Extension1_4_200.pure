@@ -227,7 +227,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   if ($returnType == 'BOOLEAN', | 'boolean', |
   if ($returnType == 'FLOAT', | 'float', |
   if ($returnType == 'INTEGER', | 'integer', |
-  $returnType))))));
+  // H2 has no native semi-structured type - it holds the document in a VARCHAR, which is what
+  // the datatype match for SemiStructured renders too - so the cast is a no-op that leaves the
+  // document as the store's own representation. Without this the type name reaches H2 verbatim
+  // and it answers "Unknown data type: SEMISTRUCTURED".
+  if ($returnType == 'SEMISTRUCTURED', | 'varchar', |
+  $returnType)))))));
 
   format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
 }

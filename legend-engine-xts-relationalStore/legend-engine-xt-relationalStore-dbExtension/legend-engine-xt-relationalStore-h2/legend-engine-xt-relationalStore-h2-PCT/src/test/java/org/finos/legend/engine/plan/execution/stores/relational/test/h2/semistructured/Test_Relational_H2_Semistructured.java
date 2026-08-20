@@ -48,12 +48,6 @@ public class Test_Relational_H2_Semistructured
             // FilterRelationalLambda". Same structural gap as the array_* family - H2 is the only
             // dialect on that path. Left failing per H2's retirement.
             "meta::relational::tests::semistructured::chain::testComplexChainInStoreLanguage_Connection_1__Boolean_1_",
-            // The union of two binding legs casts the shared column to the declared type,
-            // and SEMISTRUCTURED is not an H2 SQL type: "Unknown data type: SEMISTRUCTURED".
-            // Only H2 hits this - it is the sole dialect without a native semi-structured
-            // type, holding the data in a VARCHAR instead. Left failing per H2's retirement.
-            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
             // H2 is the only dialect on the sqlDialectTranslation path, and toPostgresModel
             // carries no translation for the array_* family: "Couldn't find DynaFunction to
             // Postgres model translation for array_max()" (toPostgresModel.pure:268). This is
