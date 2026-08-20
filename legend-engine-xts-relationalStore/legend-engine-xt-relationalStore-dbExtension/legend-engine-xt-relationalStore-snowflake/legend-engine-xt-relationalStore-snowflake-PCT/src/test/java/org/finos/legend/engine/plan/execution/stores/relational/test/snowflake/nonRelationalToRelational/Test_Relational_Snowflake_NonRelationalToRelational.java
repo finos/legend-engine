@@ -21,6 +21,7 @@ import junit.framework.Test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -38,8 +39,11 @@ public class Test_Relational_Snowflake_NonRelationalToRelational
         String testPackage = "meta::relational::tests::pct::snowflake::nonRelationalToRelational";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        Map<CoreInstance, String> failures = Maps.mutable.<String, String>empty()
-                .collect((k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                .withKeyValue("meta::relational::mutation::tests::nonRelationalToRelational::testNonRelationalToRelationalSelect_Connection_1__Boolean_1_", "'LEGEND_TEMP_DB' does not exist or not authorized"); //TODO remove once we setup LEGEND_TEMP db on Snowflake used in PCT
+
+        Map<CoreInstance, String> failures = pathToReason.collect(
+                (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
@@ -47,12 +51,12 @@ public class Test_Relational_Snowflake_NonRelationalToRelational
             {
                 return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
-            catch (Exception e)
+            catch (Throwable e)
             {
                 String reason = failures.get(test);
                 if (reason != null)
                 {
-                    if (!e.getMessage().contains(reason))
+                    if (e.getMessage() == null || !e.getMessage().contains(reason))
                     {
                         throw new AssertionError("Expect failure to contains: " + reason, e);
                     }

@@ -1416,8 +1416,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() : Connection.TRANSACTION_NONE;
                 blockConnection.setTransactionIsolation(isolationLevel);
-                blockConnection.addRollbackQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
-                blockConnection.addCommitQuery(databaseCommands.dropTempTable(createAndPopulateTempTableExecutionNode.tempTableName));
+                String qualifiedTempTableName = databaseCommands.processTempTableName(createAndPopulateTempTableExecutionNode.tempTableName);
+                blockConnection.addRollbackQuery(databaseCommands.dropTempTable(qualifiedTempTableName));
+                blockConnection.addCommitQuery(databaseCommands.dropTempTable(qualifiedTempTableName));
                 return blockConnection;
             }
             catch (Exception e)
