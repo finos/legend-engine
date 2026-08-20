@@ -151,6 +151,10 @@
                     <shadedArtifactAttached>false</shadedArtifactAttached>
                     <relocations>
                         <relocation>
+                            <pattern>com.fasterxml</pattern>
+                            <shadedPattern>${maven-shade-plugin.shadedPattern}.com.fasterxml</shadedPattern>
+                        </relocation>
+                        <relocation>
                             <pattern>org.apache</pattern>
                             <shadedPattern>${maven-shade-plugin.shadedPattern}.org.apache</shadedPattern>
                         </relocation>
