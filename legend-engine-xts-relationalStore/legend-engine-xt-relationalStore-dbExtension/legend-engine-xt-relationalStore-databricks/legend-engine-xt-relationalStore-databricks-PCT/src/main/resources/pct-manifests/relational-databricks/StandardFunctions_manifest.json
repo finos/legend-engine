@@ -103,12 +103,6 @@
     "test" : "meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""
   }, {
-    "test" : "meta::pure::functions::math::tests::average::testAverage_Floats_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::average::testAverage_Integers_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"avg(1.0 * %s)\"\""
-  }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\""
   }, {
@@ -148,34 +142,7 @@
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""
   }, {
-    "test" : "meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."
-  }, {
-    "test" : "meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."
-  }, {
-    "test" : "meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."
-  }, {
-    "test" : "meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '('."
-  }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
     "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
-  }, {
-    "test" : "meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
-  }, {
-    "test" : "meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
-  }, {
-    "test" : "meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_",
-    "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
-  }, {
-    "test" : "meta::pure::functions::math::tests::wavg::testSimpleGroupByMultipleWavg_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   grp,wavgCol1,wavgCol2\\n   1,180.0,220.0\\n   2,150.0,175.0\\n   3,362.5,325.0\\n   4,700.0,700.0\\n   5,350.0,350.0\\n#'\nactual:   '#TDS\\n   grp,wavgCol1,wavgCol2\\n   1,180.00000268220901,220.00000029802322\\n   2,150.0,175.0\\n   3,362.5,325.0\\n   4,700.0,700.0\\n   5,350.0,350.0\\n#'"
-  }, {
-    "test" : "meta::pure::functions::math::tests::wavg::testSimpleGroupByWavg_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   grp,wavgCol\\n   1,180.0\\n   2,150.0\\n   3,362.5\\n   4,700.0\\n   5,350.0\\n#'\nactual:   '#TDS\\n   grp,wavgCol\\n   1,180.00000268220901\\n   2,150.0\\n   3,362.5\\n   4,700.0\\n   5,350.0\\n#'"
   } ]
 }
