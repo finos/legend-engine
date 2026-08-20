@@ -148,8 +148,9 @@ PCT targets, how to add a new one, and how PCT fits into the CI pipeline.
 1. Create a `<dialect>-PCT` module alongside the store's other modules.
 2. Implement a JUnit test class that extends the relevant PCT base class and declares the store
    adapter. Use an existing module (e.g. `legend-engine-xt-relationalStore-h2-PCT`) as a template.
-3. If the store requires cloud credentials, add the module under the `pct-cloud-test` Maven profile
-   in the root `pom.xml`.
+3. If the store requires cloud credentials, skip surefire by default in the module's own `pom.xml`
+   and add a `pct-cloud-test` profile there that re-enables it. The profile is declared per module —
+   there is no aggregate definition in the root `pom.xml`.
 4. Add the new module to `.github/workflows/resources/modulesToTest.json` under the appropriate
    CI group.
 
