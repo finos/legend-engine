@@ -38,27 +38,7 @@ meta::pure::functions::boolean::between(value:String[0..1], lower:String[0..1], 
 function
     <<PCT.function>>
     {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports StrictDate (e.g. 2025-04-09) values and bounds'
-    }
-meta::pure::functions::boolean::between(value:StrictDate[0..1], lower:StrictDate[0..1], upper:StrictDate[0..1]):Boolean[1]
-{
-  ($value >= $lower) && ($value <= $upper);
-}
-
-function
-    <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports DateTime values and bounds'
-    }
-meta::pure::functions::boolean::between(value:DateTime[0..1], lower:DateTime[0..1], upper:DateTime[0..1]):Boolean[1]
-{
-  ($value >= $lower) && ($value <= $upper);
-}
-
-function
-    <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports Date values and bounds (mix of StrictDate/DateTime/partial dates)'
+        doc.doc='between returns true if the value is >= lower and <= upper; supports any Date values and bounds (StrictDate, DateTime, or partial dates)'
     }
 meta::pure::functions::boolean::between(value:Date[0..1], lower:Date[0..1], upper:Date[0..1]):Boolean[1]
 {
