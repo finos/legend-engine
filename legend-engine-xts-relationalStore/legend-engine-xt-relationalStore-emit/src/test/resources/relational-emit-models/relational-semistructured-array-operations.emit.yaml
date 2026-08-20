@@ -1,0 +1,54 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured-array-operations
+title: "Relational Store — Operations on JSON Arrays"
+description: |
+  Collection functions applied to to-many properties backed by JSON arrays, grouped by
+  what they do: cardinality (size, isEmpty, isNotEmpty), element access (at, first),
+  and lambda-driven operations (filter, map, fold, exists, joinStrings) which push down
+  to the database rather than materialising the array.
+
+  The binding is attached directly to the column. That is a requirement, not a style
+  choice: the auto-flatten gate rejects a binding whose operation carries a join, so
+  array operations are unavailable across a join-based binding.
+
+modelSources:
+  model:
+    root: relational-semistructured-array-operations
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:external-format-binding
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-array-functions
+  - store:relational-semistructured-binding
+  - store:relational-semistructured-flatten
+stores:
+  - relational
+# Distinct non-scaffolding domains: execution, store = 2 -> basic.
+complexity: basic
+tags:
+  - semi-structured
+  - binding
+  - array-functions
+  - json

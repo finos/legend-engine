@@ -118,6 +118,11 @@
                             <skip>false</skip>
                             <forkCount>2</forkCount>
                             <reuseForks>false</reuseForks>
+                            <!-- The Snowflake driver decodes results through Arrow, whose
+                                 allocator reflects into java.nio at class-init. JDK 16+ blocks
+                                 that, and every query then fails inside the driver rather than
+                                 in SQL. Harmless on JDK 11, where the flag is simply accepted. -->
+                            <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
                             <systemPropertyVariables>
                                 <AWS_ACCESS_KEY_ID>${env.AWS_ACCESS_KEY_ID}</AWS_ACCESS_KEY_ID>
                                 <AWS_SECRET_ACCESS_KEY>${env.AWS_SECRET_ACCESS_KEY}</AWS_SECRET_ACCESS_KEY>

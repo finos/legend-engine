@@ -1,0 +1,42 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured-array-survey
+title: "Relational Store — Which Array Functions the Store Language Can Use"
+description: |
+  One suite per array_* function over a typed extraction, so the set that works is visible
+  rather than assumed. Each is isolated: a function that fails takes only its own suite
+  with it.
+modelSources:
+  model:
+    root: relational-semistructured-array-survey
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-array-functions
+stores:
+  - relational
+complexity: basic
+tags:
+  - semi-structured
+  - array-functions
+  - json

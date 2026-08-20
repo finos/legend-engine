@@ -1380,15 +1380,19 @@ meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction<
                                   integerKey:x | $x.payload->get('integer'),
                                   stringKey:x | $x.payload->get('string')
                                 ])
+                       ->select(~[id, booleanKey, integerKey, stringKey])
               };
 
    let res =  $f->eval($expr);
 
+   // The payload is not what this test asserts, and echoing it would pin the key order of a
+   // json object. A store that keeps a canonical form (Postgres jsonb) cannot preserve it,
+   // and key order is not part of the variant contract, so the column is projected away.
    assertEquals('#TDS\n'+
-                '   id,payload,booleanKey,integerKey,stringKey\n'+
-                '   1,\'{"boolean":true,"integer":1,"string":"hello"}\',\'true\',\'1\',\'"hello"\'\n'+
-                '   2,\'{"boolean":false,"integer":2,"string":"world"}\',\'false\',\'2\',\'"world"\'\n'+
-                '   3,\'{"boolean":true,"integer":3,"string":"world"}\',\'true\',\'3\',\'"world"\'\n'+
+                '   id,booleanKey,integerKey,stringKey\n'+
+                '   1,\'true\',\'1\',\'"hello"\'\n'+
+                '   2,\'false\',\'2\',\'"world"\'\n'+
+                '   3,\'true\',\'3\',\'"world"\'\n'+
                 '#', $res->toString());
 }
 

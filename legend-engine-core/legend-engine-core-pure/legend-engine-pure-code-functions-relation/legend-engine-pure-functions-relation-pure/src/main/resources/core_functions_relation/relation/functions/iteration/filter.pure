@@ -97,13 +97,17 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 
    let expr = {|
                   $tds->filter(x | $x.payload->get('boolean')->to(@Boolean)->toOne() && $x.payload->get('integer')->to(@Integer) == 1)
+                       ->select(~[id])
               };
 
    let res =  $f->eval($expr);
 
+   // The payload is not what this test asserts, and echoing it would pin the key order of a
+   // json object. A store that keeps a canonical form (Postgres jsonb) cannot preserve it,
+   // and key order is not part of the variant contract, so the column is projected away.
    assertEquals('#TDS\n'+
-                '   id,payload\n'+
-                '   1,\'{"boolean":true,"integer":1,"string":"hello"}\'\n'+
+                '   id\n'+
+                '   1\n'+
                 '#', $res->toString());
 }
 

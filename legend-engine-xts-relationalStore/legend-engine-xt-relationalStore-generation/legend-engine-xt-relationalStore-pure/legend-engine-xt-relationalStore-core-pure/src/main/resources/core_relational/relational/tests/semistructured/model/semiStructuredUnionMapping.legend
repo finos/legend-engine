@@ -83,7 +83,7 @@ Mapping test::mapping::testMapping
       [test::store::testDB]PERSON_SCHEMA.PERSON_TABLE_1.ID
     )
     ~mainTable [test::store::testDB]PERSON_SCHEMA.PERSON_TABLE_1
-    firm: Binding test::binding::FirmBinding : extractFromSemiStructured([test::store::testDB]PERSON_SCHEMA.PERSON_TABLE_1.FIRM_DETAILS, 'firm', 'VARCHAR')
+    firm: Binding test::binding::FirmBinding : extractFromSemiStructured([test::store::testDB]PERSON_SCHEMA.PERSON_TABLE_1.FIRM_DETAILS, 'firm', 'SEMISTRUCTURED')
   }
   test::model::Person[Type_B]: Relational
   {

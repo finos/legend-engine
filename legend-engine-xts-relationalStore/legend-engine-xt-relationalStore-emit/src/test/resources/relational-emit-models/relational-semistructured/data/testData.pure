@@ -1,0 +1,32 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// RFC-4180: each JSON document is wrapped in " and every internal " is doubled.
+//   orders     - array of objects, navigated as orders[0].price
+//   matrix     - array of arrays, navigated as matrix[0][1] (consecutive indices)
+//   items      - object array whose element holds an array, navigated as items[0].tags[1]
+//   "odd keys" - key holding a space, whose child key holds a dot; reachable only
+//                through bracket-quoted segments
+//   FIRM_TAGS  - root is an array, so paths may lead with an index
+###Data
+Data demo::ss::data::FirmData
+{
+  Relation
+  #{
+    default.FIRM_TABLE:
+      ID,FIRM_DETAILS,FIRM_TAGS
+      1,"{""legalName"":""Firm X"",""employeeCount"":4,""isMnc"":true,""ticker"":""FX"",""sector"":""Tech"",""revenue"":1234.5,""marketCap"":9876.54,""dates"":{""estDate"":""2020-01-15"",""lastUpdate"":""2024-03-02T10:15:30"",""auditStamp"":""2024-03-02T10:15:30""},""odd keys"":{""a.b c"":""quoted-hit""},""orders"":[{""price"":100},{""price"":250}],""matrix"":[[1,2],[3,4]],""items"":[{""tags"":[""a"",""b""]}]}","[""alpha"",{""label"":""beta""}]"
+      2,"{""legalName"":""Firm A"",""employeeCount"":1,""isMnc"":false,""ticker"":""FA"",""sector"":""Retail"",""revenue"":50.25,""marketCap"":100.75,""dates"":{""estDate"":""2021-06-30"",""lastUpdate"":""2023-01-05T08:00:00"",""auditStamp"":""2023-01-05T08:00:00""},""odd keys"":{""a.b c"":""quoted-miss""},""orders"":[{""price"":50}],""matrix"":[[9,8],[7,6]],""items"":[{""tags"":[""x"",""y""]}]}","[""gamma"",{""label"":""delta""}]";
+  }#
+}

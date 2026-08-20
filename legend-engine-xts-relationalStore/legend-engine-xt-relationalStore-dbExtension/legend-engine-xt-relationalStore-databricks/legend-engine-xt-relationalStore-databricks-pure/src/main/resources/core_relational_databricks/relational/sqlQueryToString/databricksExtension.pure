@@ -59,7 +59,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
-      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForDatabricks_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -72,6 +72,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       lambdaParameterProcessor = buildLambdaParameterForDatabricks_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
       lambdaProcessor = buildLambdaForDatabricks_RelationalLambda_1__SqlGenerationContext_1__String_1_
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinStringsOperationForDatabricks(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // Databricks has no group-concat aggregate. collect_list gathers the rows and array_join renders
+   // them, which is how the dynaFnToSql entry for joinStrings already spells it; without a
+   // groupByCat the shared processor asserts that the database type is unsupported. The concat
+   // branch is the shared default, unchanged.
+   processJoinStringsOperation($js, $sgc,
+      {col, sep| 'array_join(collect_list(' + $col + '), ' + $sep + ')'},
+      {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getLiteralProcessorsForDatabricks():Map<Type,LiteralProcessor>[1]
@@ -621,6 +632,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   let backTickedPath = $pathSegments->map(s | '`' + $s + '`')->joinStrings('.');
   let elementAccess = $baseRelationalOp + ':' + $backTickedPath;
 
+  // An array extraction casts to a typed ARRAY so the array_* family receives real elements
+  // rather than a variant holding a document.
+  if ($returnType->endsWith('[]'),
+      | $elementAccess + '::ARRAY<' + $returnType->substring(0, $returnType->length() - 2)->databricksSemiStructuredElementType() + '>', |
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | $elementAccess + '::STRING', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | $elementAccess + '::TIMESTAMP', |
   if ($returnType == 'DATE', | $elementAccess + '::DATE', |
@@ -628,7 +643,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   if ($returnType == 'FLOAT', | $elementAccess + '::DOUBLE', |
   if ($returnType == 'INTEGER', | $elementAccess + '::INT', |
   if ($returnType == 'DECIMAL', | $elementAccess + '::DECIMAL', |
-  $elementAccess)))))));
+  $elementAccess))))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::databricksSemiStructuredElementType(returnType: String[1]): String[1]
+{
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'STRING', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
+  if ($returnType == 'FLOAT', | 'DOUBLE', |
+  if ($returnType == 'INTEGER', | 'INT', |
+  if ($returnType == 'SEMISTRUCTURED', | 'VARIANT', |
+  $returnType)))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]

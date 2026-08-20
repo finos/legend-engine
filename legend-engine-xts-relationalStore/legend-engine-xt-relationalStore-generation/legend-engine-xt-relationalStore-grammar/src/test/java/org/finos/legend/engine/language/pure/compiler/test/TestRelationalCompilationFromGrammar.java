@@ -4866,4 +4866,78 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "  ]\n" +
                 "}\n");
     }
+
+    private static final String ARRAY_LAMBDA_STORE =
+            "###Relational\n" +
+            "Database my::DB\n" +
+            "(\n" +
+            "  Table T\n" +
+            "  (\n" +
+            "    ID INTEGER PRIMARY KEY,\n" +
+            "    DOC SEMISTRUCTURED,\n" +
+            "    NAME VARCHAR(100)\n" +
+            "  )\n";
+
+    @Test
+    public void testArrayFilterLambdaOverExtractedArray()
+    {
+        test(ARRAY_LAMBDA_STORE +
+                "  View V\n" +
+                "  (\n" +
+                "    ID: T.ID PRIMARY KEY,\n" +
+                "    N: array_size(array_filter(extractFromSemiStructured(T.DOC, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    // The shape is unknown, so this is allowed rather than guessed at - a document may be an array.
+    @Test
+    public void testArrayFilterLambdaOverSemiStructuredWithoutArraySuffix()
+    {
+        test(ARRAY_LAMBDA_STORE +
+                "  View V\n" +
+                "  (\n" +
+                "    ID: T.ID PRIMARY KEY,\n" +
+                "    N: array_size(array_filter(extractFromSemiStructured(T.DOC, 'divisions', 'SEMISTRUCTURED'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testArrayFilterLambdaOverSemiStructuredColumn()
+    {
+        test(ARRAY_LAMBDA_STORE +
+                "  View V\n" +
+                "  (\n" +
+                "    ID: T.ID PRIMARY KEY,\n" +
+                "    N: array_size(array_filter(T.DOC, d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
+                "  )\n" +
+                ")\n");
+    }
+
+    // An INTEGER is not a collection, so this is a modelling mistake worth naming now.
+    @Test
+    public void testArrayFilterLambdaRejectsScalarExtraction()
+    {
+        test(ARRAY_LAMBDA_STORE +
+                "  View V\n" +
+                "  (\n" +
+                "    ID: T.ID PRIMARY KEY,\n" +
+                "    N: array_size(array_filter(extractFromSemiStructured(T.DOC, 'divisions', 'INTEGER'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
+                "  )\n" +
+                ")\n", "COMPILATION error at [13:19-147]: An array lambda needs a collection: extract it with an array type such as 'INTEGER[]', or as 'SEMISTRUCTURED' when the shape is not known; found 'INTEGER'");
+    }
+
+    // Pointing at an ordinary column used to compile and fail later as a dialect error.
+    @Test
+    public void testArrayFilterLambdaRejectsNonSemiStructuredColumn()
+    {
+        test(ARRAY_LAMBDA_STORE +
+                "  View V\n" +
+                "  (\n" +
+                "    ID: T.ID PRIMARY KEY,\n" +
+                "    N: array_size(array_filter(T.NAME, d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
+                "  )\n" +
+                ")\n", "COMPILATION error at [13:19-97]: An array lambda operates on semi-structured data, but column 'NAME' is not declared SEMISTRUCTURED");
+    }
 }

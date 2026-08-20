@@ -90,6 +90,20 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- DuckDB: driver/DatabaseManager plus the Pure dbExtension. A mapping test whose query
+             returns a Relation is routed to DuckDB rather than H2 (RelationalConnectionFactory),
+             and resolving that connection needs both halves on the classpath. -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-execution</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-duckdb-pure</artifactId>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Plan generation + serialisation, in-memory store, json model, java binding —
              same set as the EMIT framework's own tests, kept here to mirror that profile. -->
         <dependency>

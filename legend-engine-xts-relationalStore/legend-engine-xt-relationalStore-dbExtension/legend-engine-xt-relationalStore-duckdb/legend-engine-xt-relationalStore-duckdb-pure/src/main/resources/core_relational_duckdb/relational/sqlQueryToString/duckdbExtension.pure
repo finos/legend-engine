@@ -180,7 +180,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('array_sum',              $allStates,            ^ToSql(format='array_aggregate(%s, \'sum\')')),
     dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='array_sort(%s)')),
     dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='array_reverse(%s)')),
-    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(len(%s), 0)')),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(json_array_length(cast(%s as JSON)), 0)')),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(ifnull(array_position(%s, %s), 0)-1)')),
     dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='(%s[greatest(%s + 1, 1) : greatest(%s, 0)])')),
@@ -352,14 +352,37 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
   let pathNavigation = $params->at(1);
   let returnType = $params->at(2);
 
-  let elementAccess = format('json_extract(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]);
+  // The authored path uses ["a key"] for quoted members, which DuckDB's JSONPath rejects -
+  // it spells those $."a key". Tokenise and re-emit so every segment form is handled: an array
+  // subscript stays [n], and a member is quoted only when it is not a plain identifier, which
+  // leaves the SQL for an ordinary path exactly as it was.
+  let jsonPath = '$' + meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($pathNavigation)
+                          ->map(token | if($token->isDigit(),
+                                          | '[' + $token + ']',
+                                          | let member = $token->substring(1, $token->length() - 1);
+                                            if($member->matches('[a-zA-Z_][a-zA-Z_0-9]*'), | '.' + $member, | '."' + $member + '"');))
+                          ->joinStrings('');
 
-  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | format('json_extract_string(%s, \'$.%s\')', [$baseRelationalOp, $pathNavigation]), |
-  if ($returnType->in(['DATE','DATETIME', 'TIMESTAMP']), | 'cast(' + $elementAccess + ' as TIMESTAMP)', |
-  if ($returnType == 'BOOLEAN', | 'cast(' + $elementAccess + ' as BOOLEAN)', |
-  if ($returnType == 'FLOAT', | 'cast(' + $elementAccess + ' as DOUBLE)', |
-  if ($returnType == 'INTEGER', | 'cast(' + $elementAccess + 'as INTEGER)', |
-  $elementAccess)))));
+  let elementAccess = format('json_extract(%s, \'%s\')', [$baseRelationalOp, $jsonPath]);
+
+  // An array extraction casts to a typed list, which is what the array_* family needs -
+  // json_extract on its own yields JSON, and DuckDB compares JSON elements as text.
+  if ($returnType->endsWith('[]'),
+      | 'cast(' + $elementAccess + ' as ' + $returnType->substring(0, $returnType->length() - 2)->duckDBSemiStructuredSqlType() + '[])', |
+  // A string is unquoted rather than cast, so the JSON quotes do not survive into the value.
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | format('json_extract_string(%s, \'%s\')', [$baseRelationalOp, $jsonPath]), |
+  if ($returnType->in(['DATE', 'DATETIME', 'TIMESTAMP', 'BOOLEAN', 'FLOAT', 'INTEGER']),
+      | 'cast(' + $elementAccess + ' as ' + $returnType->duckDBSemiStructuredSqlType() + ')', |
+  $elementAccess)));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::duckDBSemiStructuredSqlType(returnType: String[1]): String[1]
+{
+  if($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'VARCHAR', |
+  if($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
+  if($returnType == 'FLOAT', | 'DOUBLE', |
+  if($returnType == 'SEMISTRUCTURED', | 'JSON', |
+  $returnType))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
@@ -658,30 +681,119 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    $s->match([
       o:SemiStructuredObjectNavigation[1]     | $o->processSemiStructuredObjectNavigationForDuckDB($sgc),
       f:SemiStructuredArrayFlatten[1]         | $f->processSemiStructuredArrayFlattenForDuckDB($sgc),
-      f:SemiStructuredArrayFlattenRelation[1] | ^SemiStructuredArrayFlatten(navigation = $f.navigation)->processSemiStructuredArrayFlattenForDuckDB($sgc)
+      f:SemiStructuredArrayFlattenRelation[1] | ^SemiStructuredArrayFlatten(navigation = $f.navigation)->processSemiStructuredArrayFlattenForDuckDB($sgc),
+      o:SemiStructuredArrayFlattenOutput[1]   | $o->processSemiStructuredArrayFlattenOutputForDuckDB($sgc)
    ])
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredArrayFlattenOutputForDuckDB(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   // processSemiStructuredArrayFlattenForDuckDB names the unnested column VALUE; reference it
+   // on the flatten alias and cast to the navigated type, as the navigation path does.
+   let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
+   let elementAccess = $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig);
+   // VALUE is JSON when the list held navigated documents, but a plain value when it came from a
+   // typed array extraction or from array_transform, which renders as apply() over plain text.
+   // The casts that read it back with '->>' need JSON, so give them JSON; to_json is a no-op on a
+   // value that is JSON already. The other casts read the value directly and must not see it
+   // wrapped - map_keys reaches the untyped branch and would come back quoted.
+   let readsAsJson = $s.returnType == String || ($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration));
+   let value = if($readsAsJson, | 'to_json(' + $elementAccess + ')', | $elementAccess);
+   $value->castForDuckDBSemiStructuredData($s.returnType);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredArrayFlattenForDuckDB(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
 {
    // https://duckdb.org/docs/stable/sql/query_syntax/unnest.html
-   let processedNavigation = $s.navigation->processOperation($sgc);
-   '(select unnest(' + $processedNavigation + ', recursive := false) as VALUE)';
+   // unnest needs a LIST. Semi-structured navigation ('->') yields JSON, which has to be cast
+   // to JSON[] first; anything else reaching here (map_keys, array functions, ...) is already a
+   // LIST and must NOT be cast, or DuckDB tries to re-parse its elements as JSON.
+   // DuckDB has no OUTER unnest and rejects a LEFT JOIN LATERAL on correlated columns, so a row
+   // whose array is empty or absent would simply disappear. Substituting a singleton [NULL]
+   // keeps the row and yields a null flattened value, which is the outer-flatten semantics the
+   // other dialects get from their own flatten operators.
+   let list = $s.navigation->asListForDuckDB($sgc);
+   '(select unnest(if(len(' + $list + ') > 0, ' + $list + ', [NULL]), recursive := false) as VALUE)';
+}
+
+// unnest/filter/apply/reduce all require a LIST. Semi-structured navigation ('->') yields JSON,
+// which must be cast to JSON[] first; anything else reaching here (map_keys, array functions,
+// ...) is already a LIST and must NOT be cast, or DuckDB re-parses its elements as JSON.
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::asListForDuckDB(element: RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+   $element->asListForDuckDB($sgc, 'JSON');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::asListForDuckDB(element: RelationalOperationElement[1], sgc: SqlGenerationContext[1], elementType: String[1]): String[1]
+{
+   let processed = $element->processOperation($sgc);
+   if($element->isSemiStructuredValueForDuckDB(),
+      | 'cast(' + $processed + ' as ' + $elementType + '[])',
+      | $processed);
+}
+
+// True when the element renders as a JSON scalar and therefore has to be cast before it can be
+// treated as a list. Navigation ('->') is one source; an explicit cast to SEMISTRUCTURED - which
+// DuckDB spells JSON - is the other. Anything else (keys/values, array functions, a nested
+// filter or apply) is already a LIST and must be left alone.
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::isScalarElementAccessorForDuckDB(element: RelationalOperationElement[1]): Boolean[1]
+{
+   $element->match([
+      d: DynaFunction[1] | $d.name->in(['array_first', 'array_last']),
+      a: Any[1] | false
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::isSemiStructuredValueForDuckDB(element: RelationalOperationElement[1]): Boolean[1]
+{
+   $element->match([
+      s: SemiStructuredObjectNavigation[1] | true,
+      d: DynaFunction[1] | ($d.name == 'parseJson')
+                              || (($d.name->in(['cast', 'variantTo']))
+                                   && ($d.parameters->size() > 1)
+                                   && $d.parameters->at(1)->instanceOf(meta::relational::metamodel::DataTypeInfo)
+                                   && ($d.parameters->at(1)->cast(@meta::relational::metamodel::DataTypeInfo).dataType->instanceOf(meta::relational::metamodel::datatype::SemiStructured)
+                                        || $d.parameters->at(1)->cast(@meta::relational::metamodel::DataTypeInfo).dataType->instanceOf(meta::relational::metamodel::datatype::Json))),
+      a: Any[1] | false
+   ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processSemiStructuredObjectNavigationForDuckDB(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
    let processedOperand = $s.operand->processOperation($sgc);
 
-   let elementAccess = $s->match([
-      p: SemiStructuredPropertyAccess[1]     | $p.property,
-      a: SemiStructuredArrayElementAccess[1] | $a.index
+   // A SemiStructuredPropertyAccess carries an OPTIONAL index of its own - 'addresses'->at(0)
+   // is one property access with index 0, not a separate SemiStructuredArrayElementAccess.
+   // Dropping that index makes every element of an array resolve to the same value.
+   // Subscripts are addressed by JSONPath because the index literal may hold an Integer or a
+   // String, and rendering the String form through processOperation would quote it into a key.
+   let navigation = $s->match([
+      p: SemiStructuredPropertyAccess[1] |
+            let propertyAccess = '%s->%s'->format([$processedOperand, $p.property->processOperation($sgc)]);
+            if($p.index->isEmpty(),
+               | $propertyAccess,
+               | '%s->\'$[%s]\''->format([$propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()]));,
+      a: SemiStructuredArrayElementAccess[1] |
+            '%s->\'$[%s]\''->format([$processedOperand, $a.index->cast(@Literal).value->toString()])
    ]);
 
-   '%s->%s'->format([
-      $processedOperand,
-      $elementAccess->processOperation($sgc)
-   ]);
+   // '->' yields JSON, so a navigated string comes back still quoted. Cast to the navigated
+   // type the way Snowflake and Databricks already do.
+   if($s.avoidCastIfPrimitive == true, | $navigation, | $navigation->castForDuckDBSemiStructuredData($s.returnType));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::castForDuckDBSemiStructuredData(elementAccess:String[1], type:Type[0..1]): String[1]
+{
+   // '->>' unquotes a JSON scalar to text; the remaining primitives cast directly from JSON.
+   if($type == String, | '(%s->>\'$\')'->format($elementAccess), |
+   if($type == Integer, | 'cast(%s as INTEGER)'->format($elementAccess), |
+   if($type == Float, | 'cast(%s as DOUBLE)'->format($elementAccess), |
+   if($type == Boolean, | 'cast(%s as BOOLEAN)'->format($elementAccess), |
+   if($type == StrictDate, | 'cast(%s as DATE)'->format($elementAccess), |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | 'cast(%s as TIMESTAMP)'->format($elementAccess), |
+   if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '(%s->>\'$\')'->format($elementAccess), |
+   $elementAccess)))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildLambdaParameter(param: RelationalLambdaParameter[1], sgc: SqlGenerationContext[1]): String[1]
@@ -700,20 +812,38 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFoldLambda(lambda: FoldRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
-  'cast(reduce(%s, lambda "%s", "%s" : %s, %s) as %s)'->format([
-    $lambda.parameters->at(0).value->processOperation($sgc),
+  // Cast the seed to the accumulator type. Without it DuckDB unifies the accumulator with the
+  // list element type - JSON, once the collection is a JSON[] - and then fails converting a
+  // seed such as '' into JSON.
+  let accumulatorType = $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type);
+  // reduce requires the seed and the list element to share a type, so a JSON element type
+  // would force the seed to JSON and fail on values such as ''. Present the elements as the
+  // accumulator type; the body re-casts each element to JSON where it navigates. The
+  // collection may be a nested filter/apply rather than a bare navigation, so key off the
+  // element type rather than the shape of the expression.
+  let foldCollection = if($lambda.parameters->at(0).type->instanceOf(meta::relational::metamodel::datatype::SemiStructured),
+                          | 'cast(' + $lambda.parameters->at(0).value->processOperation($sgc) + ' as ' + $accumulatorType + '[])',
+                          | $lambda.parameters->at(0).value->asListForDuckDB($sgc, 'VARCHAR'));
+  'cast(reduce(%s, lambda "%s", "%s" : %s, cast(%s as %s)) as %s)'->format([
+    $foldCollection,
     $lambda.parameters->at(1).name,
     $lambda.parameters->at(0).name,
     $lambda.body->processOperation($sgc),
     $lambda.parameters->at(1).value->processOperation($sgc),
-    $sgc.dbConfig.dataTypeToSqlText($lambda.parameters->at(1).type)
+    $accumulatorType,
+    $accumulatorType
   ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildMapLambda(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
+  // array_first/array_last render as a subscript and yield a single element, but apply needs a
+  // LIST; wrap the element so a map over a [0..1] navigation still binds.
+  let mapCollection = if($lambda.parameters->at(0).value->isScalarElementAccessorForDuckDB(),
+                         | 'list_value(' + $lambda.parameters->at(0).value->processOperation($sgc) + ')',
+                         | $lambda.parameters->at(0).value->asListForDuckDB($sgc));
   'apply(%s, lambda "%s" : %s)'->format([
-      $lambda.parameters->at(0).value->processOperation($sgc),
+      $mapCollection,
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
    ]);
@@ -722,7 +852,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::buildFilterLambda(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
   'filter(%s, lambda "%s" : %s)'->format([
-      $lambda.parameters->at(0).value->processOperation($sgc),
+      $lambda.parameters->at(0).value->asListForDuckDB($sgc),
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
    ]);
@@ -730,10 +860,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinTreeNodeWithLateralJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
-   ', lateral '
+   // Use the explicit JOIN form rather than a comma join. Comma binds looser than JOIN, so a
+   // following LEFT OUTER JOIN would attach to the lateral alias while its ON clause still
+   // references the driving table - which DuckDB rejects as a non-inner join on correlated
+   // columns. Snowflake and Databricks emit the explicit form for the same reason.
+   ' inner join lateral '
    + $j.alias
          ->map(a|^$a(name = '"' + $a.name + '"'))
-         ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + $format.separator();
+         ->toOne()->processOperation($dbConfig, ^$format(newLine = '')->indent(), $extensions) + ' on true' + $format.separator();
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::transformRoundForDuckDB(p:String[1..2]):String[1]
