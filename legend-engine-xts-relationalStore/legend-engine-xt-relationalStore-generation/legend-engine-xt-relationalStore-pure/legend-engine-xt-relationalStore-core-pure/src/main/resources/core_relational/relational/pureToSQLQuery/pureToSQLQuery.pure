@@ -2469,6 +2469,23 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                                     let sel = $firstStep.select;
 
+                                                    // A to-many property mapped to an expression rather than to a join has no rows to range
+                                                    // over, so it would come back as a single value holding the whole array. Fan it out with a
+                                                    // lateral flatten instead, which is what a join-backed to-many gets from its join. The
+                                                    // exclusions each protect a shape that is legitimately single-valued or already fanned out:
+                                                    // a bare column (a plain to-many primitive), a join, an enum transformer (read before
+                                                    // buildPossibleEnumMappingPushDown clears it), and a union source, whose column type here is
+                                                    // deliberately bogus.
+                                                    let isImplicitArrayExplosion = !$property.multiplicity->hasToOneUpperBound()
+                                                                                    && $state.disableAutoFlatten != true
+                                                                                    && !$mappingImpl->instanceOf(RelationalOperationElementWithJoin)
+                                                                                    && !$mappingImpl->instanceOf(TableAliasColumn)
+                                                                                    && $OrigrelationalPropertyMappings->at(0).transformer->isEmpty()
+                                                                                    && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion();
+
+                                                    if($isImplicitArrayExplosion,
+                                                       | buildArrayFlattenLateral($firstStep, $srcOperation, $propertyReturnType, $state, $joinType, $nodeId, $context, $extensions);,
+                                                       |
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
                                                                                          a : Any[*]                                | ^$firstStep(positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($srcOperation.select.data->toOne(), $sel.data->toOne())->first()),
@@ -2485,6 +2502,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                                                                                 ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions))
                                                                              )
                                                         )
+                                                    );
                                                     );
                                                     ,
                                     c:Class<Any>[1] |let srcOperation = $oldSrcOperation;

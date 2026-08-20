@@ -39,6 +39,21 @@ public class Test_Relational_H2_Semistructured
             // MapRelationalLambdaObject instanceOf MapRelationalLambda". Left failing per H2's
             // retirement.
             "meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage_Connection_1__Boolean_1_",
+            // Binding a [*] path to a to-many property flattens it to rows. H2 reaches the flatten
+            // through findTableForColumnInAlias, which wants a single table alias column and cannot
+            // resolve one through the transform: "Expected one table alias column in operation".
+            // Both callers of that function are H2-only, so no other dialect is affected.
+            // Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyIntegerProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testToManyPropertyCounted_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testTwoLevelWildcardBoundToToManyProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testFilterOnToManyProperty_Connection_1__Boolean_1_",
+            // Same flatten, reached without a wildcard, so it fails one layer earlier - in the
+            // sqlDialectTranslation path H2 alone uses: "Match failure: ExtractFromSemiStructuredObject
+            // instanceOf ...". Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::wildcard::testArrayPathBoundToToManyProperty_Connection_1__Boolean_1_",
             // H2 renders one lateral flatten correctly - every single-level explode test passes
             // here - but a second lateral over the first one's output yields nulls rather than
             // rows, and does so silently. Left failing per H2's retirement.
