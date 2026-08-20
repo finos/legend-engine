@@ -11,12 +11,16 @@ tests:
   expected_tds_status: ERROR
   expected_rel_status: FAIL
 
+# FAIL, not ERROR: the query runs and the SQL is right, but a jsonb scalar comes back one
+# encoding level too deep -- '"hello"' rather than 'hello' as a json string. json_arrow_get_field
+# above and jsonb_arrow_get_index below have recorded the same shape for as long as they have run.
+# The ->> spellings are unaffected because they hand back text rather than a json value.
 - id: jsonb_arrow_get_field
   sql: SELECT jsonb_val -> 'b' AS result FROM json_data WHERE id = 1
   function: "->"
   signature: jsonb -> text → jsonb
   expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_rel_status: FAIL
 
 # -> operator (get JSON array element by index)
 - id: json_arrow_get_index
@@ -46,7 +50,7 @@ tests:
   function: "->>"
   signature: jsonb ->> text → text
   expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 # ->> operator (get JSON array element as text)
 - id: json_arrow_text_get_index
@@ -200,7 +204,7 @@ tests:
   function: "-> ->>"
   signature: jsonb -> text -> text ->> text → text
   expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 # =============================================================================
 # Subscript (bracket) notation (PostgreSQL 14+)
@@ -641,7 +645,7 @@ tests:
   function: "->"
   signature: jsonb -> text → jsonb
   expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 - id: json_array_length__null
   sql: SELECT JSON_ARRAY_LENGTH(json_arr) AS result FROM json_data WHERE id = 5
