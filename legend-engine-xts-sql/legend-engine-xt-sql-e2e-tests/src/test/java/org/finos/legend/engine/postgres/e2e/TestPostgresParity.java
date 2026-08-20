@@ -143,6 +143,7 @@ public class TestPostgresParity
             "parity-tests/structural/multiple_schemas.yaml",
             "parity-tests/structural/json_operators.yaml",
             "parity-tests/structural/interval_arithmetic.yaml",
+            "parity-tests/structural/column_resolution_across_renames.yaml",
             "parity-tests/window_frames/frame_types.yaml",
             "parity-tests/window_frames/partition_ordering.yaml",
             "parity-tests/window_frames/frame_exclusion.yaml",

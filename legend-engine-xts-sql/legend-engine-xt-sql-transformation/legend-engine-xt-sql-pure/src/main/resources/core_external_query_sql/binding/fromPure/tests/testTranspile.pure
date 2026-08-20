@@ -5250,6 +5250,204 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 
+// ---------------------------------------------------------------------------
+// Column name resolution across a rename: "The column 'X' can't be found in
+// the relation (...)"
+//
+// processDuplicateRenames suffixes every column of each join side with the SQL
+// alias (String -> String_t1) and records that in SQLColumnAlias.realias.
+// processRename later emits renames without updating that map, so names
+// resolved through it afterwards refer to columns the relation no longer has.
+// A separate gap: statement-level ORDER BY expressions were never materialised,
+// unlike window, GROUP BY and HAVING expressions.
+//
+// The `"t1"."String" AS "String"` spelling is load-bearing. processGroupBy and
+// processOlapGroupBy drop $extensions from the select list they rename, and an
+// aliased column reference only escapes $extensions when its alias equals its
+// own bare column name (isNonAliasedSelectItemColumnReference). Remove the
+// alias and these stop reproducing. It is not contrived: an upstream
+// casing-correction pass emits it whenever stored column casing differs from
+// the view SQL's.
+//
+// These assert compile-and-schema only, via c(<expected>, false, false).
+// test() calls context.lambda(), which compiles the generated relation lambda,
+// so a stale column reference fails here as it does in production. The expected
+// lambda is a never-compared placeholder present so TestConfig.relation()
+// selects relationSources(). To upgrade one to a full output assertion, run it,
+// take the actual lambda and set both flags true.
+// ---------------------------------------------------------------------------
+
+// GROUP BY key resolved against the pre-rename relation: processGroupBy took its
+// key names from the context, emitted rename(~String_t1, ~String), then applied
+// the stale keys to the renamed relation.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByKeyOverJoinWithSelfNamedAlias():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", MAX("t2"."Integer") AS "maxInt" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY "t1"."String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// The same desync via the aggregate's map lambda rather than the key list:
+// createAggregation builds `x | $x.<col>` against the relation groupBy is
+// applied to, so those names must follow the rename too.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateOverJoinWithSelfNamedAlias():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", "t2"."ID" AS "ID", SUM("t1"."Integer") AS "total" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY "t1"."String", "t2"."ID"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// The same defect one function over: processOlapGroupBy emits the rename, then
+// processWindowSingleColumn resolves the window keys against the older context.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowPartitionKeyOverJoinWithSelfNamedAlias():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", ' +
+    'ROW_NUMBER() OVER (PARTITION BY "t1"."String" ORDER BY "t2"."ID") AS "rn" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// A statement-level ORDER BY expression was never materialised: processOrderBy
+// names the sort column by stringifying the expression, but only window, GROUP
+// BY and HAVING expressions got a matching extend.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByFunctionExpression():Boolean[1]
+{
+  test(
+    'SELECT "String", "Integer" FROM service."/service/service1" ORDER BY upper("String")',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// The shape seen in practice: Engine rejects NULLS FIRST/LAST, so the upstream
+// converter rewrites null ordering into a CASE sort key, which hits the gap above.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByNullOrderingCaseKey():Boolean[1]
+{
+  test(
+    'SELECT "String", "Integer" FROM service."/service/service1" ' +
+    'ORDER BY CASE WHEN "String" IS NULL THEN 1 ELSE 0 END DESC, "String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Constrains how the ORDER BY keys may be materialised. Every other trigger of
+// $extendRequired also suppresses processProjection's $project branch, so the
+// extend is the only thing building the select list; an ORDER BY key does not.
+// Routing these through $extensions would extend "calc" a second time on top of
+// a projection that already contains it, reading a column that projection has
+// dropped. Hence the dedicated extend after the projection.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByExpressionWithComputedSelectItem():Boolean[1]
+{
+  test(
+    'SELECT "String", "Integer" + 1 AS "calc" FROM service."/service/service1" ORDER BY upper("String")',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Already works and must keep working: processSelectToProject names the
+// projection 'upper(String)' and the sort resolves to the same name. Extending
+// unconditionally would add a second column of that name, hence the filter that
+// skips keys already present in the post-projection schema.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByExpressionMatchingUnaliasedProjection():Boolean[1]
+{
+  test(
+    'SELECT upper("String") FROM service."/service/service1" ORDER BY upper("String")',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Correctness guard: two join sides sharing a column name, renamed to different
+// output names. The alias-map repair must use the (from -> to) pairs actually
+// emitted, not a membership test on the post-rename schema -- under the latter
+// t2's stale entry would see its expected name "Integer" present as t1's column
+// and rebind t2.Integer onto t1.Integer, partitioning by the wrong side with no
+// compile error. Only a results comparison catches that.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowKeyOverJoinWithColumnsRenamedToDifferentNames():Boolean[1]
+{
+  test(
+    'SELECT "t1"."Integer" AS "Integer", "t2"."Integer" AS "otherInteger", ' +
+    'ROW_NUMBER() OVER (PARTITION BY "t2"."Integer" ORDER BY "t2"."ID") AS "rn" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// DISTINCT is deliberately excluded from materialisation: a helper column would
+// take part in the distinct and change which rows survive. A plain column key is
+// unaffected and must still work.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDistinctOrderByPlainColumnUnaffected():Boolean[1]
+{
+  test(
+    'SELECT DISTINCT "String" FROM service."/service/service1" ORDER BY "String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::testSources():SQLSource[*]
 {
   [
