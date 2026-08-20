@@ -19,6 +19,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.authe
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DefaultH2AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.DelegatedKerberosAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPApplicationDefaultCredentialsAuthenticationStrategyKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPServiceAccountKeyAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.GCPWorkloadIdentityFederationAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.MiddleTierUserNamePasswordAuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.OAuthAuthenticationStrategyKey;
@@ -30,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPServiceAccountKeyAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.OAuthAuthenticationStrategy;
@@ -83,6 +85,13 @@ public class AuthenticationStrategyKeyGenerator implements AuthenticationStrateg
             return new GCPWorkloadIdentityFederationAuthenticationStrategyKey(
                     gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
                     gcpWorkloadIdentityFederationAuthenticationStrategy.additionalGcpScopes
+            );
+        }
+        else if (authenticationStrategy instanceof GCPServiceAccountKeyAuthenticationStrategy)
+        {
+            GCPServiceAccountKeyAuthenticationStrategy gcpServiceAccountKeyAuthenticationStrategy = (GCPServiceAccountKeyAuthenticationStrategy) authenticationStrategy;
+            return new GCPServiceAccountKeyAuthenticationStrategyKey(
+                    gcpServiceAccountKeyAuthenticationStrategy.serviceAccountKeyVaultReference
             );
         }
         else if (authenticationStrategy instanceof OAuthAuthenticationStrategy)
