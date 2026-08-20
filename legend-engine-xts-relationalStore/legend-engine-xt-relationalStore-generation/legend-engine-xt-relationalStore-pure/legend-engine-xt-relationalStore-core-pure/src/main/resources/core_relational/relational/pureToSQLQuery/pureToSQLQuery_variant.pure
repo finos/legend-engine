@@ -1002,6 +1002,33 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   );
 }
 
+// Answers whether a mapped operation yields a semi-structured array, and so has elements for a
+// to-many property to range over. Only two shapes do. A [*] wildcard in a path desugars to a map
+// lambda over the array, and a path that names the array directly arrives as
+// extractFromSemiStructured with a declared type ending in [].
+//
+// Stated positively on purpose. A negative list of shapes to skip cannot be made complete: a plain
+// to-many primitive reached through a function over a join -- toString([db]@j | t.c) -- is neither
+// a bare TableAliasColumn nor a RelationalOperationElementWithJoin, so it slips through and gets a
+// flatten it must not have.
+//
+// A fold is deliberately absent: it reduces its array to a single value, so there is nothing left
+// to fan out.
+function meta::relational::functions::pureToSqlQuery::yieldsSemiStructuredArray(op:RelationalOperationElement[1]):Boolean[1]
+{
+  $op->match([
+    m:MapRelationalLambda[1]    | true,
+    f:FilterRelationalLambda[1] | true,
+    d:DynaFunction[1]           | $d.name == 'extractFromSemiStructured'
+                                    && $d.parameters->size() == 3
+                                    && $d.parameters->at(2)->match([
+                                         l:Literal[1]                    | $l.value->match([s:String[1] | $s->endsWith('[]'), a:Any[1] | false]),
+                                         a:RelationalOperationElement[1] | false
+                                       ]),
+    a:RelationalOperationElement[1] | false
+  ]);
+}
+
 // Builds the lateral flatten that turns an array-valued expression into one row per element:
 // a SemiStructuredArrayFlatten wrapped in a TableAlias, reached through a lateral JoinTreeNode
 // whose condition is trivially true. Shared by the Binding-backed semi-structured path and by
