@@ -2469,17 +2469,17 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                                     let sel = $firstStep.select;
 
-                                                    // A to-many property mapped to an expression rather than to a join has no rows to range
-                                                    // over, so it would come back as a single value holding the whole array. Fan it out with a
-                                                    // lateral flatten instead, which is what a join-backed to-many gets from its join. The
-                                                    // exclusions each protect a shape that is legitimately single-valued or already fanned out:
-                                                    // a bare column (a plain to-many primitive), a join, an enum transformer (read before
-                                                    // buildPossibleEnumMappingPushDown clears it), and a union source, whose column type here is
-                                                    // deliberately bogus.
+                                                    // A to-many property mapped to a semi-structured array rather than to a join has no rows
+                                                    // to range over, so it would come back as a single value holding the whole array. Fan it
+                                                    // out with a lateral flatten instead, which is what a join-backed to-many gets from its
+                                                    // join. yieldsSemiStructuredArray names the two shapes that qualify; everything else,
+                                                    // including a to-many primitive reached through a function over a join, is left alone.
+                                                    // The remaining conditions are not about the operation: an enum transformer has to be read
+                                                    // before buildPossibleEnumMappingPushDown clears it, and a union source is held back
+                                                    // because its column type here is deliberately bogus.
                                                     let isImplicitArrayExplosion = !$property.multiplicity->hasToOneUpperBound()
                                                                                     && $state.disableAutoFlatten != true
-                                                                                    && !$mappingImpl->instanceOf(RelationalOperationElementWithJoin)
-                                                                                    && !$mappingImpl->instanceOf(TableAliasColumn)
+                                                                                    && $mappingImpl->yieldsSemiStructuredArray()
                                                                                     && $OrigrelationalPropertyMappings->at(0).transformer->isEmpty()
                                                                                     && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion();
 
