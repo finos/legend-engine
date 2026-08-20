@@ -87,7 +87,6 @@ public class Test_Relational_UsingPureClientTestSuite extends TestSuite
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::pure::graphFetch::tests::m2m2r::milestoning", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::functions::pureToSqlQuery::calendarAggregations", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::tests::platform", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(buildSuite(TestCollection.collectTests("meta::relational::mutation::tests", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
                     return suite;
                 },

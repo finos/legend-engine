@@ -12,85 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-###Pure
-Class meta::relational::mutation::tests::variantFlatten::Metrics
-{
-   code: Integer[1];
-   name: String[1];
-}
-
-###Relational
-Database meta::relational::mutation::tests::variantFlatten::TempDb
-(
-)
-
-###Mapping
-Mapping meta::relational::mutation::tests::variantFlatten::MetricsMapping
-(
-   *meta::relational::mutation::tests::variantFlatten::Metrics: Pure
-   {
-      ~src meta::relational::mutation::tests::variantFlatten::Metrics
-      code: $src.code,
-      name: $src.name
-   }
-)
-
-###Pure
+import meta::core::runtime::*;
+import meta::external::store::model::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
+import meta::pure::metamodel::relation::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
-import meta::pure::metamodel::relation::*;
-import meta::pure::functions::relation::variant::*;
 import meta::pure::functions::relation::*;
-import meta::pure::tds::*;
-import meta::external::store::model::*;
-import meta::core::runtime::*;
-import meta::external::store::relational::runtime::*;
-import meta::relational::runtime::*;
-import meta::relational::extension::*;
-import meta::relational::tests::*;
-import meta::relational::mutation::tests::variantFlatten::*;
+import meta::pure::functions::relation::variant::*;
+import meta::relational::metamodel::*;
+import meta::relational::mutation::tests::nonRelationalToRelational::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::execute::tests::*;
 
-
-// Tests the non-relational → relational bridge
-function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_19_0'}
-meta::relational::mutation::tests::variantFlatten::testNonRelationalToRelational(): Boolean[1]
+function meta::relational::mutation::tests::nonRelationalToRelational::sourceRuntime(): meta::core::runtime::Runtime[1]
 {
-   let sourceRuntime = ^Runtime(connectionStores = [
-      ^ConnectionStore(
-         connection = ^JsonModelConnection(
-            class = meta::relational::mutation::tests::variantFlatten::Metrics,
-            url   = 'data:application/json,\n{"code":1,"name":"Alice"}\n{"code":2,"name":"Bob"}\n{"code":3,"name":"Charlie"}\n'
-         ),
-         element = ^ModelStore()
-      )
-   ]);
-   let targetRuntime = meta::external::store::relational::tests::testRuntime(TempDb);
+  let jsonConnection = ^meta::external::store::model::JsonModelConnection(
+    class = Metrics,
+    url   = 'data:application/json,\n{"code":1,"name":"Alice"}\n{"code":2,"name":"Bob"}\n{"code":3,"name":"Charlie"}\n'
+  );
+  ^Runtime(connectionStores = ^ConnectionStore(element = ^ModelStore(), connection = $jsonConnection));
+}
 
-   let result = execute(
-      |Metrics.all()
-         ->graphFetch(#{ Metrics { code, name } }#)
-         ->serialize(#{ Metrics { code, name } }#)
-         ->from(MetricsMapping, $sourceRuntime)
-         ->fromJson()
-         ->toMany(@Variant)
-         ->flatten(~value)
-         ->select(~[value])
-         ->from($targetRuntime),
-      ^Mapping(),
-      ^Runtime(),
-      relationalExtensions()
-   );
+function <<paramTest.Test>> meta::relational::mutation::tests::nonRelationalToRelational::testNonRelationalToRelationalSelect(conn: Connection[1]): Boolean[1]
+{
+  let targetRuntime = ^Runtime(connectionStores = ^ConnectionStore(connection = $conn, element = TempDb));
 
-   assertEquals(
-      '#TDS\n'+
-      '   value\n'+
-      '   \'{"code":1,"name":"Alice"}\'\n'+
-      '   \'{"code":2,"name":"Bob"}\'\n'+
-      '   \'{"code":3,"name":"Charlie"}\'\n'+
-      '#',
-      $result.values->at(0)->cast(@Relation<(value: Variant)>)->toString()
-   );
+  let expected =
+    'value\n' +
+    '\'"{""name"":""Alice""}"\'\n' +
+    '\'"{""name"":""Bob""}"\'\n' +
+    '\'"{""name"":""Charlie""}"\'\n';
+
+  executeLegendFunction(
+    {|
+      Metrics.all()
+        ->graphFetch(#{ Metrics { name } }#)
+        ->serialize(#{ Metrics { name } }#)
+        ->from(MetricsMapping, sourceRuntime())
+        ->fromJson()
+        ->toMany(@Variant)
+        ->flatten(~value)
+        ->select(~[value])
+        ->from($targetRuntime)
+    },
+    EmptyMapping,
+    TempDb,
+    $conn,
+    [],
+    $expected
+  );
 }

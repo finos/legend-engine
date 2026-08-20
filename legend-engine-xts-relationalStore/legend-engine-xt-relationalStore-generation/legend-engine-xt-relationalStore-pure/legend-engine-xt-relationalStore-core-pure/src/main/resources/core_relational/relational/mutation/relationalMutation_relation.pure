@@ -151,15 +151,8 @@ function meta::relational::mutation::executionPlan::extractVariantFromCall(sourc
 
 function meta::relational::mutation::executionPlan::buildAllocNodeFromFromCall(fromCall: SimpleFunctionExpression[1], srcVarName: String[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): AllocationExecutionNode[1]
 {
-   let innerExpr    = $fromCall.parametersValues->at(0)->cast(@ValueSpecification)->toOneMany();
-   let srcLambda    = ^LambdaFunction<{->Any[*]}>(expressionSequence = $innerExpr);
-   let srcMapping   = $fromCall.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@Mapping);
-   let srcRuntimeRaw = $fromCall.parametersValues->at(2)->cast(@InstanceValue).values->at(0);
-   let srcRuntime   = $srcRuntimeRaw->match([
-       r: Runtime[1] | $r,
-       pr: meta::pure::runtime::PackageableRuntime[1] | $pr.runtimeValue
-   ])->cast(@Runtime)->toOne();
-   let subPlan = meta::pure::executionPlan::executionPlan($srcLambda, $srcMapping, $srcRuntime, $exeCtx, $extensions, $debug);
+   let srcLambda = ^LambdaFunction<{->Any[*]}>(expressionSequence = $fromCall);
+   let subPlan = meta::pure::executionPlan::executionPlan($srcLambda, $exeCtx, $extensions, $debug);
    ^AllocationExecutionNode(varName=$srcVarName, resultSizeRange=ZeroMany, resultType=$subPlan.rootExecutionNode.resultType, executionNodes=$subPlan.rootExecutionNode);
 }
 
@@ -248,13 +241,16 @@ function meta::relational::mutation::executionPlan::qualifyVariantTempTableNames
 
 function meta::relational::mutation::executionPlan::extractVariantColName(colParam: ValueSpecification[1]): String[1]
 {
-   $colParam->evaluateAndDeactivate()
-       .genericType
-       .typeArguments->toOne()
-       .rawType
-       ->cast(@meta::pure::metamodel::relation::RelationType<Any>)
-       .columns->toOne()
-       .name->toOne();
+   $colParam->match([
+      sfe: SimpleFunctionExpression[1] | $sfe.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@String),
+      vs:  ValueSpecification[1]       | $vs->evaluateAndDeactivate()
+                                              .genericType
+                                              .typeArguments->toOne()
+                                              .rawType
+                                              ->cast(@meta::pure::metamodel::relation::RelationType<Any>)
+                                              .columns->toOne()
+                                              .name->toOne()
+   ]);
 }
 
 

@@ -297,7 +297,7 @@ same as it always has for any other column type. The one remaining variant-speci
 
 | Method | Purpose |
 |---|---|
-| `getSemiStructuredInsertStatement(tableName, columnName)` | Returns the full `INSERT` SQL for binding a JSON string into that column via `?` (default is plain `VALUES (?)`; dialects needing JSON-parse syntax override it — see §5). Not covered by the type-conversion machinery since it's about binding runtime values, not declaring a static DDL type. |
+| `getSemiStructuredInsertStatement(tableName, columnName)` | Returns the full `INSERT` SQL for binding a JSON string into that column via `?`. **The base implementation throws** — every dialect participating in the variant temp-table bridge must override it. Not covered by the type-conversion machinery since it's about binding runtime values, not declaring a static DDL type. |
 
 ---
 
@@ -314,3 +314,18 @@ same as it always has for any other column type. The one remaining variant-speci
 | Executor | `RelationalExecutionNodeExecutor.java` | Detects a `JsonStreamingResult` upstream input, dispatches to `loadVariantTempTable` (batched `PreparedStatement` streaming load) |
 | Dialect DDL/DML | `RelationalDatabaseCommands.java` + `*Commands.java` per dialect | `getSemiStructuredInsertStatement` (JSON-parse INSERT wrapping) — `createTempTable` needs no variant-specific logic, `dataType` arrives already resolved |
 | Type resolution | Each dialect's `typeConversion.pure` (`dataTypeToSqlText`) | Existing, pre-feature per-dialect mapping for the abstract `SemiStructured` type — reused rather than duplicated in Java (see §5) |
+
+---
+
+## 8. Testing
+
+The bridge is exercised end-to-end via PCT-style parameterised tests. The test bodies live once
+in the shared core-pure module and are re-run against every wired dialect's live connection.
+
+| Layer | File |
+|---|---|
+| Shared test bodies (`<<paramTest.Test>>`) | `core_relational/relational/mutation/tests/testNonRelationalToRelational.pure` |
+| Per-dialect `TestCollection` wrapper (Pure) | `core_relational_<db>_pct/testNonRelationalToRelational.pure` in each `-PCT` module — calls `collectParameterizedTests('<db>', getTestConnection(DatabaseType.<Db>), [], [])` under `meta::relational::tests::pct::<db>::nonRelationalToRelational::testCollection` |
+| Per-dialect JUnit runner | `Test_Relational_<Db>_NonRelationalToRelational.java` in each `-PCT` module |
+
+Dialects currently wired: **H2**, **DuckDB**, **PostgreSQL**, **Snowflake**, **Databricks**.
