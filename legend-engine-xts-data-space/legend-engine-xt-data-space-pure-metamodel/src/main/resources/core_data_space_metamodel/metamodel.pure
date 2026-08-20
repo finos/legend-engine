@@ -70,6 +70,7 @@ Class meta::pure::metamodel::dataSpace::DataSpaceExecutable
   id: String[1];
   description: String[0..1];
   executionContextKey: String[0..1];
+  sampleValues: meta::pure::data::RelationElement[0..1];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable extends meta::pure::metamodel::dataSpace::DataSpaceExecutable

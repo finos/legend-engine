@@ -62,6 +62,9 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationElement_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_data_RelationRow_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_Mapping_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl;
@@ -262,6 +265,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                             ._title(executable.title)
                                             ._description(executable.description)
                                             ._executionContextKey(executable.executionContextKey)
+                                            ._sampleValues(buildSampleValuesElement(executable.sampleValues, context))
                                             ._executable(element);
                                 }
                                 else
@@ -279,6 +283,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                             ._title(executable.title)
                                             ._description(executable.description)
                                             ._query(templateExecutableQuery)
+                                            ._sampleValues(buildSampleValuesElement(executable.sampleValues, context))
                                             ._executionContextKey(executable.executionContextKey);
                                 }
                                 else
@@ -734,4 +739,16 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 ));
     }
 
+    private static Root_meta_pure_data_RelationElement buildSampleValuesElement(org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement sampleValues, CompileContext context)
+    {
+        if (sampleValues == null)
+        {
+            return null;
+        }
+        return new Root_meta_pure_data_RelationElement_Impl("", SourceInformationHelper.toM3SourceInformation(sampleValues.sourceInformation), context.pureModel.getClass("meta::pure::data::RelationElement"))
+                ._columns(Lists.immutable.ofAll(sampleValues.columns))
+                ._paths(Lists.immutable.ofAll(sampleValues.paths))
+                ._rows(ListIterate.collect(sampleValues.rows, row -> new Root_meta_pure_data_RelationRow_Impl("", null, context.pureModel.getClass("meta::pure::data::RelationRow"))
+                        ._values(Lists.immutable.ofAll(row.values))));
+    }
 }
