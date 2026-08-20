@@ -2463,7 +2463,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                             if ($value == true, | iv('t'), | if ($value == false, | iv('f'), | $a));,
                           | createIfStatement($a, iv('t'), createIfStatement(sfe(isEmpty_Any_$0_1$__Boolean_1_, $a), iv(''), iv('f')))
                       );,
-                      | $a->possiblyProcessToString()));
+                      | unsupported($a->evaluateAndDeactivate().genericType.rawType != Map && $a->evaluateAndDeactivate().genericType.rawType != Variant, | 'concatenating json');
+                        $a->possiblyProcessToString();
+  ));
 
   processStringConcatenate($processedArgs, $separator, $ignoreNulls, $expContext);
 }

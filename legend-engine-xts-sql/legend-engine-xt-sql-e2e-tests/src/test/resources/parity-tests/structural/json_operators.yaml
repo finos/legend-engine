@@ -188,28 +188,28 @@ tests:
     sql: "SELECT '{\"a\":1}'::jsonb || '{\"b\":2}'::jsonb AS result FROM persons WHERE id = 1"
     feature: "JSONB concat objects (||)"
     category: "json_operators"
-    expected_tds_status: FAIL
+    expected_tds_status: ERROR
     expected_rel_status: ERROR
 
   - id: jsonb_concat_override
     sql: "SELECT '{\"a\":1}'::jsonb || '{\"a\":2}'::jsonb AS result FROM persons WHERE id = 1"
     feature: "JSONB concat override key (||)"
     category: "json_operators"
-    expected_tds_status: FAIL
+    expected_tds_status: ERROR
     expected_rel_status: ERROR
 
   - id: jsonb_concat_arrays
     sql: "SELECT '[1,2]'::jsonb || '[3,4]'::jsonb AS result FROM persons WHERE id = 1"
     feature: "JSONB concat arrays (||)"
     category: "json_operators"
-    expected_tds_status: FAIL
+    expected_tds_status: ERROR
     expected_rel_status: ERROR
 
   - id: jsonb_concat_value_to_array
     sql: "SELECT '[1,2]'::jsonb || '3'::jsonb AS result FROM persons WHERE id = 1"
     feature: "JSONB concat value to array (||)"
     category: "json_operators"
-    expected_tds_status: FAIL
+    expected_tds_status: ERROR
     expected_rel_status: ERROR
 
   # JSONB delete key operator -
