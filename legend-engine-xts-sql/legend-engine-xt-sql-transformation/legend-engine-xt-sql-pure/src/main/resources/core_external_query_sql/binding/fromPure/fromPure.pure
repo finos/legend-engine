@@ -715,6 +715,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($originalSelect);
   let isWindow = $windows->isNotEmpty();
 
+  //processOrderBy names a sort column by stringifying its expression, so an expression key needs a
+  //matching extend or it names nothing - the same treatment extractWindowExtensionExpressions gives
+  //window keys. These are emitted as their own extend at the end of this function rather than through
+  //$extensions, because every other $extendRequired trigger also suppresses the $project branch below
+  //while an ORDER BY key does not: routing them together would extend a computed select item twice.
+  //Aggregates and windows are excluded (their grouping runs after the projection and would discard the
+  //helper column), DISTINCT because an extra column changes which rows are distinct.
+  let orderByExtensions = if ($isAggregate || $isWindow || $originalSelect.distinct,
+    | [],
+    | $orderBy->map(o | $o->match([
+        i:IntegerLiteral[1] | [],
+        q:QualifiedNameReference[1] | [],
+        e:meta::external::query::sql::metamodel::Expression[1] | $e
+      ]))->map(e | ^SingleColumn(expression = $e)));
+
   let columns = $context.columns.name;
 
   let extensionNames = $standardExtensions->concatenate($windowExtensions)->map(s | $s->extractNameFromSingleColumn($context));
@@ -795,7 +810,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | ^TDSBuilder().distinct($postWindowExtend, $context.relation->isTrue()),
     | $postWindowExtend);
 
-  let newContext = clone(^$context(expression = $distinctExp), $context);
+  //Materialise the ORDER BY expression keys last, so the extend lands on the relation processOrderBy
+  //will sort; processQuerySpec's closing restrict drops the helper again before it reaches the caller.
+  //
+  //processExtend names the column with an empty context while processOrderBy resolves through the
+  //post-projection one. Those agree for a key built from output columns, which is what this targets. A
+  //key still written against pre-projection source columns is not covered and fails as before.
+  let projected = projectedContext($context, $distinctExp);
+
+  //Skip a key whose column already exists: 'SELECT upper(s) FROM t ORDER BY upper(s)' is already named
+  //upper(s) by the projection, so extending a second column of that name would break a working query.
+  let missingOrderKeys = $orderByExtensions->filter(sc | !extractNameFromSingleColumn($sc, [])->in($projected.columns.name));
+
+  let withOrderKeys = if ($missingOrderKeys->isNotEmpty(),
+    | processExtend($missingOrderKeys, [], $projected),
+    | $distinctExp);
+
+  let newContext = clone(^$context(expression = $withOrderKeys), $context);
 
   let newColumns = $newContext.columns.name;
 
@@ -832,9 +863,71 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
+//processRename emits a rename without updating context.aliases, so afterwards the map still reports the
+//pre-rename physical name (eg 'id_a', set by processDuplicateRenames) for a column the relation now calls
+//by its output name. Keys resolved through the map after that point - group-by keys, window partition and
+//order keys - then name columns that no longer exist. processDuplicateRenames is the one caller that
+//already keeps the two in step; the helpers below do the same for the renames processRename emits.
+//
+//The repair is driven by the exact (from -> to) pairs, not by testing which names survive in the schema.
+//A membership test cannot tell which join side owns a surviving column: with 'a.id AS id, b.id AS bid',
+//b's stale entry would see its own expected name 'id' present - as a's column - and rebind b.id onto
+//a.id, turning a compile error into wrong results.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::renamePairs(selectItems:SingleColumn[*], context: SqlTransformContext[1]):Pair<String, String>[*]
+{
+  $selectItems->map(si |
+    let defaultName = extractNameFromExpression($si.expression, $context);
+
+    if ($si.alias->isNotEmpty() && $si.alias != $defaultName,
+      | pair($defaultName, $si.alias->toOne()),
+      | []);
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::realignAliases(aliases:SQLColumnAlias[*], renames:Pair<String, String>[*]):SQLColumnAlias[*]
+{
+  $aliases->map(a |
+    let renamed = $renames->filter(r | $r.first == $a.actual)->first();
+
+    if ($renamed->isEmpty(), | $a, | ^$a(realias = $renamed.second->toOne()));
+  );
+}
+
+//Child contexts are realigned too: a qualified reference like 'b.risk_book' is resolved against the
+//child context named 'b' (columnByNameParts), so leaving those stale would defeat the whole repair.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::realignAliasesToRenames(context: SqlTransformContext[1], renames:Pair<String, String>[*]): SqlTransformContext[1]
+{
+  if ($renames->isEmpty(),
+    | $context,
+    | ^$context(
+        aliases  = realignAliases($context.aliases, $renames),
+        contexts = $context.contexts->map(c | ^$c(aliases = realignAliases($c.aliases, $renames)))
+      ));
+}
+
+//A context for a relation already projected down to its output columns: resolution must go to those
+//columns, so the pre-projection aliases (still carrying join suffixes) and child contexts are dropped.
+//Otherwise 't1.String' would resolve to 'String_t1', which the projection has removed. Mirrors what
+//processQuerySpec does to the context it finally returns.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedContext(context: SqlTransformContext[1], expression: ValueSpecification[1]): SqlTransformContext[1]
+{
+  let projected = clone(^$context(expression = $expression), $context);
+
+  ^$projected(
+    aliases  = $projected.columns.name->map(c | ^SQLColumnAlias(name = $c)),
+    contexts = []
+  );
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOlapGroupBy(windows:SelectItem[*], select: Select[1], extensions:SelectItem[*], havingExtensions:SelectItem[*], groupByExtensions:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
 {
-  let rename = clone(^$context(expression = processRename($select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn), $context)), $context);
+  let renamedItems = $select.selectItems->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->removeAll($groupByExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn);
+
+  //realigned, not just cloned: processWindowSingleColumn resolves the partition and order keys through
+  //this context, and they must name columns of the relation the rename just produced.
+  let rename = realignAliasesToRenames(
+    clone(^$context(expression = processRename($renamedItems, $context)), $context),
+    renamePairs($renamedItems, $context));
 
   $windows->cast(@SingleColumn)->fold({item, acc | processWindowSingleColumn($item, $acc, $rename)}, $rename.expression->toOne());
 }
@@ -844,28 +937,38 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processGroupBy', $context.debug);
   assert($windows->isEmpty(), | 'combining aggregations with window functions not currently supported');
 
-  let groupByColumns = $groupBy->map(g | $g->extractColumnNameFromExpression($select.selectItems, $context));
-
   let aggregates = $select.selectItems->filter(s | $s->isSelectItemAggregate() && !$s->isSelectItemWindow())->cast(@SingleColumn);
 
-  let rename = processSelect(^$select(selectItems = $select.selectItems->removeAll($aggregates)->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn)), false, $context);
+  let renamedItems = $select.selectItems->removeAll($aggregates)->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn);
+
+  let rename = processSelect(^$select(selectItems = $renamedItems), false, $context);
+
+  //The keys and aggregate lambdas below apply to $rename, not to the relation $context describes, so
+  //they must resolve against a context that reflects that rename - hence computing them after it.
+  //renamePairs returns what processRename emitted, so this is a no-op when no rename was needed.
+  let renamed = realignAliasesToRenames(
+    clone(^$context(expression = $rename), $context),
+    renamePairs($renamedItems, $context));
+
+  let groupByColumns = $groupBy->map(g | $g->extractColumnNameFromExpression($select.selectItems, $renamed));
 
   let additionalGroupColumns = $select.selectItems->removeAll($aggregates)->map(s | $s->match([
-    s:SingleColumn[1] | extractNameFromSingleColumn($s, $context),
+    s:SingleColumn[1] | extractNameFromSingleColumn($s, $renamed),
     a:AllColumns[1] |
         let columns = if ($a.prefix->isEmpty(),
-          | $context.contexts->map(c | $c.aliases)->concatenate($context.aliases),
-          | $context.context($a.prefix).aliases);
+          | $renamed.contexts->map(c | $c.aliases)->concatenate($renamed.aliases),
+          | $renamed.context($a.prefix).aliases);
 
         $columns.actual;
   ]));
 
   let allGroupByColumns = $groupByColumns->concatenate($additionalGroupColumns)->distinct();
 
-  let aggregateExpressionNames = $aggregates->cast(@SingleColumn)->map(column | extractNameFromExpression($column.expression, $context));
+  //$renamed here too: createAggregation builds map lambdas that read columns of $rename.
+  let aggregateExpressionNames = $aggregates->cast(@SingleColumn)->map(column | extractNameFromExpression($column.expression, $renamed));
   let allAggregateColumns = $aggregates->concatenate($havingExtensions->cast(@SingleColumn)->filter(h |
-    !extractNameFromExpression($h.expression, $context)->in($aggregateExpressionNames);
-  ))->removeDuplicatesBy(c | $c->extractNameFromSingleColumn($context));
+    !extractNameFromExpression($h.expression, $renamed)->in($aggregateExpressionNames);
+  ))->removeDuplicatesBy(c | $c->extractNameFromSingleColumn($renamed));
 
   //for any aggregate where there is multiple aggregations used with different arguments, we split the aggregates to individual columns and then extend
   let aggregateColumnExpresions = $allAggregateColumns->map(column |
@@ -875,12 +978,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let standardAggregations = $aggregateColumnExpresions->get(false).values->map(p |
     let column = $p.first;
-    let name = extractNameFromSingleColumn($column, $context);
-    createAggregation($column, $name, $p.second.values->cast(@FunctionCall)->at(0), $context);
+    let name = extractNameFromSingleColumn($column, $renamed);
+    createAggregation($column, $name, $p.second.values->cast(@FunctionCall)->at(0), $renamed);
   );
 
   let extractedAggregations = $aggregateColumnExpresions->get(true).values.second.values->removeDuplicates()->map(agg |
-    createAggregation(^SingleColumn(expression = $agg), extractNameFromExpression($agg, $context), $agg, $context);
+    createAggregation(^SingleColumn(expression = $agg), extractNameFromExpression($agg, $renamed), $agg, $renamed);
   );
 
   let aggExtensions = $aggregateColumnExpresions->get(true).values->map(p |
@@ -888,7 +991,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     let column = $p.first;
     ^$column(expression = $p.first.expression->walk([
       f:FunctionCall[1] |
-        if ($f->in($aggregateExpressions), | ^QualifiedNameReference(name = ^QualifiedName(parts = $f->extractNameFromExpression($context))), | $f);
+        if ($f->in($aggregateExpressions), | ^QualifiedNameReference(name = ^QualifiedName(parts = $f->extractNameFromExpression($renamed))), | $f);
     ])->toOne());
   );
 
@@ -901,7 +1004,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                             | if ($allGroupByColumns->isNotEmpty() && $aggregations->isEmpty(),
                                 |
                                   //group by with no aggregates is not compilable pure, so we simplify to restrict, distinct
-                                  let restrict = processRestrict($allGroupByColumns, clone(^$context(expression = $rename), $context));
+                                  let restrict = processRestrict($allGroupByColumns, $renamed);
                                   ^TDSBuilder().distinct($restrict, $context.relation->isTrue());,
                                 | ^TDSBuilder().groupBy($rename, $allGroupByColumns, $aggregations, $context.relation->isTrue())
                               )
@@ -1385,13 +1488,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processRename', $context.debug);
 
-  let renames = $selectItems->map(si |
-    let defaultName = extractNameFromExpression($si.expression, $context);
-
-    if ($si.alias->isNotEmpty() && $si.alias != $defaultName,
-      | pair($defaultName, $si.alias->toOne()),
-      | []);
-  );
+  //shared with realignAliasesToRenames so the alias map is repaired with exactly these pairs
+  let renames = renamePairs($selectItems, $context);
 
   ^TDSBuilder().rename($context.expression->toOne(), $renames, $context.relation->isTrue());
 }
