@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.ModelStore;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
@@ -169,6 +170,7 @@ public final class ServiceTestDataResolverSetup
             }
             Pair<Connection, List<Closeable>> built = buildMockedConnection(originalConnection, storeMap, dataElementIndex, hints, suiteId);
             Root_meta_core_runtime_Connection mockedCompiled = built.getOne().accept(connectionVisitor);
+            built.getOne().accept(new ConnectionSecondPassBuilder(pureModel.getContext(), mockedCompiled));
             connectionStores.forEach(cs ->
             {
                 savedOriginals.add(Tuples.pair(cs, cs._connection()));

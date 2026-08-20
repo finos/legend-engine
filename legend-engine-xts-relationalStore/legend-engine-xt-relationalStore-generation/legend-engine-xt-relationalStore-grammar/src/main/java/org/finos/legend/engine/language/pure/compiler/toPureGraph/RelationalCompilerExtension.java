@@ -567,14 +567,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraDataSourceSpecificationProcessors),
                                 context);
 
-                        List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.postProcessors;
-
-                        MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
-                                relationalDatabaseConnection,
-                                p,
-                                ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraConnectionPostProcessor),
-                                context));
-
                         List<DatabaseAuthenticationFlowKey> flowKeys = context.getCompilerExtensions().getExtensions().stream().filter(ext -> ext instanceof IRelationalCompilerExtension).map(ext -> ((IRelationalCompilerExtension) ext).getFlowKeys()).flatMap(Collection::stream).collect(Collectors.toList());
 
                         if (relationalDatabaseConnection.databaseType == null)
@@ -586,10 +578,44 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                             context.pureModel.addWarnings(Lists.mutable.with(new Warning(connectionValue.sourceInformation, "Unsupported Database Authentication Flow with Database Type: " + relationalDatabaseConnection.databaseType.name() + ", Datasource: " + relationalDatabaseConnection.datasourceSpecification.getClass().getSimpleName() + ", Authentication: " + relationalDatabaseConnection.authenticationStrategy.getClass().getSimpleName())));
                         }
 
-                        //we currently need to add both as __queryPosNDattProcessorsWithParameter is used for plan generation
-                        //and _postProcessors is used for serialization of plan to protocol
                         relational._datasourceSpecification(datasource);
                         relational._authenticationStrategy(authenticationStrategy);
+                        HelperRelationalDatabaseConnectionBuilder.addRelationalQueryGenerationConfigs(relationalDatabaseConnection, relational, context);
+
+                        return relational;
+                    }
+                    return null;
+                }
+        );
+    }
+
+    // Post processors can point at other packageable elements (e.g. a RelationalMapper), which are only guaranteed to
+    // be in the graph once every first pass has run, so they cannot be built in getExtraConnectionValueProcessors.
+    // This is the connection value second pass rather than the general one so that extensions reacting to the
+    // connection still observe _postProcessors() as populated.
+    @Override
+    public List<Procedure3<Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionValueSecondPassProcessors()
+    {
+        return Lists.mutable.with(
+                (connectionValue, pureConnection, context) ->
+                {
+                    if (connectionValue instanceof RelationalDatabaseConnection && pureConnection instanceof Root_meta_external_store_relational_runtime_RelationalDatabaseConnection)
+                    {
+                        RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
+                        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) pureConnection;
+
+                        List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
+
+                        List<PostProcessor> postProcessors = relationalDatabaseConnection.postProcessors == null ? FastList.newList() : relationalDatabaseConnection.postProcessors;
+
+                        MutableList<Pair<Root_meta_pure_alloy_connections_PostProcessor, Root_meta_relational_runtime_PostProcessorWithParameter>> pp = ListIterate.collect(postProcessors, p -> IRelationalCompilerExtension.process(
+                                relationalDatabaseConnection,
+                                p,
+                                ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraConnectionPostProcessor),
+                                context));
+
+                        //we currently need to add both as __queryPosNDattProcessorsWithParameter is used for plan generation
+                        //and _postProcessors is used for serialization of plan to protocol
                         List<Root_meta_relational_runtime_PostProcessorWithParameter> postProcessorWithParameters = ListIterate.collect(relationalDatabaseConnection.postProcessorWithParameter, p -> IRelationalCompilerExtension.process(
                                 p,
                                 ListIterate.flatCollect(extensions, IRelationalCompilerExtension::getExtraLegacyPostProcessors),
@@ -597,11 +623,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         List<Root_meta_relational_runtime_PostProcessorWithParameter> translatedForPlanGeneration = ListIterate.collect(pp, Pair::getTwo);
                         relational._queryPostProcessorsWithParameter(Lists.mutable.withAll(postProcessorWithParameters).withAll(translatedForPlanGeneration));
                         relational._postProcessors(ListIterate.collect(pp, Pair::getOne));
-                        HelperRelationalDatabaseConnectionBuilder.addRelationalQueryGenerationConfigs(relationalDatabaseConnection, relational, context);
-
-                        return relational;
                     }
-                    return null;
                 }
         );
     }

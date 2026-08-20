@@ -107,6 +107,7 @@ public class CompilerExtensions
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
     private final ImmutableList<Procedure2<AssociationMapping, Set<PackageableElementPointer>>> extraAssociationMappingPrerequisiteElementsPassProcessors;
     private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> extraConnectionValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> extraConnectionValueSecondPassProcessors;
     private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> extraConnectionSecondPassProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
     private final ImmutableList<Procedure2<InputData, Set<PackageableElementPointer>>> extraMappingTestInputDataPrerequisiteElementsPassProcessors;
@@ -154,6 +155,7 @@ public class CompilerExtensions
         this.extraAssociationMappingProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingProcessors);
         this.extraAssociationMappingPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraAssociationMappingPrerequisiteElementsPassProcessors);
         this.extraConnectionValueProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionValueProcessors);
+        this.extraConnectionValueSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionValueSecondPassProcessors);
         this.extraConnectionSecondPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraConnectionSecondPassProcessors);
         this.extraMappingTestInputDataProcessors = this.extensions.flatCollect(CompilerExtension::getExtraMappingTestInputDataProcessors);
         this.extraMappingTestInputDataPrerequisiteElementsPassProcessors = this.extensions.flatCollect(CompilerExtension::getExtraMappingTestInputDataPrerequisiteElementsPassProcessors);
@@ -295,6 +297,11 @@ public class CompilerExtensions
     public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return this.extraConnectionValueProcessors.castToList();
+    }
+
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionValueSecondPassProcessors()
+    {
+        return this.extraConnectionValueSecondPassProcessors.castToList();
     }
 
     public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
