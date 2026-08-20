@@ -161,6 +161,8 @@
         <duckdb.version>1.3.0.0</duckdb.version>
         <clickhouse.version>0.9.6</clickhouse.version>
         <bigqueryJDBC.version>1.0.0</bigqueryJDBC.version>
+        <googleCloudLibraries.version>26.86.0</googleCloudLibraries.version>
+        <httpcore5.version>5.3.4</httpcore5.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
@@ -184,7 +186,7 @@
         <freemarker.version>2.3.34</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
-        <grpc.version>1.65.1</grpc.version>
+        <grpc.version>1.82.2</grpc.version>
         <guava.version>33.4.6-jre</guava.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
@@ -251,7 +253,7 @@
         <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
         <maven.enforcer.plugin.version>3.5.0</maven.enforcer.plugin.version>
         <maven.extra.enforcer.rules.version>1.12.0</maven.extra.enforcer.rules.version>
-        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
+        <maven.shade.plugin.version>3.6.2</maven.shade.plugin.version>
         <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
@@ -4408,6 +4410,44 @@
             </dependency>
 
             <!-- GRPC -->
+            <!-- Aligns the whole Google Cloud stack - bigquery, the Storage API, gax, api-common,
+                 iam - so the BigQuery client library and the JDBC driver agree on it -->
+            <dependency>
+                <groupId>com.google.cloud</groupId>
+                <artifactId>libraries-bom</artifactId>
+                <version>${googleCloudLibraries.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>1.62.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Not covered by any of the imported BOMs -->
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>${httpcore5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5-h2</artifactId>
+                <version>${httpcore5.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-annotations</artifactId>
+                <version>1.27</version>
+            </dependency>
+            <!-- Not covered by libraries-bom; the driver and the client library pin different revs -->
+            <dependency>
+                <groupId>com.google.apis</groupId>
+                <artifactId>google-api-services-bigquery</artifactId>
+                <version>v2-rev20260612-2.0.0</version>
+            </dependency>
             <dependency>
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-api</artifactId>
