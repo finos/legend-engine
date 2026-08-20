@@ -57,7 +57,15 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
     $type->match([
         b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOLEAN',
         i : meta::relational::metamodel::datatype::Integer[1] | 'DECIMAL(19,0)',
-        f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT',
+        // The shared, dialect-agnostic pureToRelational.pure maps Pure Float to this relational
+        // Float type directly (bypassing convert() above, which correctly maps Pure Float to
+        // Double) whenever it types a #TDS-literal/extend()-computed column. Rendering it as real
+        // 32-bit SQL FLOAT here silently truncates values like 1.2 to float32 precision. Rendering
+        // as DOUBLE instead avoids that; the only other producer of this relational Float type is
+        // convert()'s genuine 32-bit 'Float4' mapping above, which loses its intentional
+        // single-precision semantics as a result - no test currently exercises Float4, so this is a
+        // theoretical/dormant regression only, pending the shared mapping being fixed upstream.
+        f : meta::relational::metamodel::datatype::Float[1] | 'DOUBLE',
         v : meta::relational::metamodel::datatype::Varchar[1] | format('VARCHAR(%d)', $v.size),
         c : meta::relational::metamodel::datatype::Char[1] | format('CHAR(%d)', $c.size),
         d : meta::relational::metamodel::datatype::Decimal[1] | format('DECIMAL(%d, %d)', [$d.precision, $d.scale]),
