@@ -405,9 +405,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(1), $params->at(0)]);
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::isEmptyStringLiteralForPostgres(op:RelationalOperationElement[1]):Boolean[1]
+{
+   $op->match([
+      l:Literal[1]                    | $l.value->match([s:String[1] | $s == '', a:Any[1] | false]),
+      a:RelationalOperationElement[1] | false
+   ]);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processJoinStringsOperationForPostgres(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('Text\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
+   // processJoinStringsOperation decides an empty prefix or suffix is absent by comparing its
+   // rendered form to '', but Postgres spells a string literal Text'...', so the comparison never
+   // holds and the empty literal joins the operand list.  The group-concat branch then aggregates
+   // $strs->at(0) -- the prefix -- rather than the column.  The concat branch merely carries the
+   // empty literals along, which stays inert only while the separator is itself empty.
+   let prefix = if($js.prefix->isEmpty() || $js.prefix->toOne()->isEmptyStringLiteralForPostgres(), | [], | $js.prefix);
+   let suffix = if($js.suffix->isEmpty() || $js.suffix->toOne()->isEmptyStringLiteralForPostgres(), | [], | $js.suffix);
+
+   // string_agg resolves to its text overload or its bytea one and will not implicitly convert an
+   // argument the way a scalar context would, so the column is spelled as text explicitly.
+   processJoinStringsOperation(^$js(prefix = $prefix, suffix = $suffix), $sgc,
+      {col, sep| 'string_agg(cast(' + $col + ' as text), ' + $sep + ')'},
+      {strs, sep| $strs->joinStrings('concat(', if('Text\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSelectSQLQueryForPostgres(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
