@@ -234,7 +234,8 @@ public class Handlers
                     throw new EngineException(functionName + "(..., Relation) expects a relation with a single column, got " + _RelationType.print(type, processorSupport), parameters.get(1).sourceInformation, EngineErrorType.COMPILATION);
                 }
                 GenericType columnType = _Column.getColumnType(type._columns().getOnly());
-                if (!org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(processed.get(0)._genericType(), columnType, processorSupport))
+                if (comparableCommonType(processed.get(0)._genericType(), columnType, valueSpecificationBuilder.getContext().pureModel) == null
+                        && !org.finos.legend.pure.m3.navigation.generictype.GenericType.isGenericCompatibleWith(processed.get(0)._genericType(), columnType, processorSupport))
                 {
                     throw new EngineException(functionName + "(..., Relation) expects the value and the relation column to be of the same type, got " +
                             org.finos.legend.pure.m3.navigation.generictype.GenericType.print(processed.get(0)._genericType(), processorSupport) + " and " +
@@ -246,6 +247,43 @@ public class Handlers
     };
 
     public static final ParametersInference InInference = SingleColumnRelationInference.apply("in");
+
+    // Engine literals and parameters carry the coarse primitives (Integer, String) where a relational column carries
+    // the precise ones (Int, Varchar(n)), so the value and the column routinely differ while still being comparable.
+    // Their common supertype carries no typeVariableValues, and ExtendedPrimitiveType.testTypeVariableValuesCompatible
+    // zips, so an empty list matches any width -- which is what makes it a valid U for the value and the column alike.
+    // That shape (a Varchar carrying no size) would not pass GenericTypeValidator, which the engine never runs over
+    // handler-built value specifications. Null means nothing more specific than Any in common, or nothing concrete.
+    private static GenericType comparableCommonType(GenericType valueType, GenericType columnType, PureModel pureModel)
+    {
+        GenericType common = MostCommonType.mostCommon(Lists.mutable.with(valueType, columnType), pureModel);
+        return common == null || common._rawType() == null || common._rawType() == pureModel.getType(M3Paths.Any) ? null : common;
+    }
+
+    private static GenericType singleRelationColumnType(ValueSpecification relation, PureModel pureModel)
+    {
+        GenericType gt = relation._genericType();
+        if (!pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        {
+            return null;
+        }
+        GenericType relationType = gt._typeArguments().getOnly();
+        if (!(relationType._rawType() instanceof RelationType))
+        {
+            return null;
+        }
+        RelationType<?> type = (RelationType<?>) relationType._rawType();
+        return type._columns().size() == 1 ? _Column.getColumnType(type._columns().getOnly()) : null;
+    }
+
+    // U and Z cannot be inferred from the arguments -- Z is constrained as Relation<Z=(?:U)> -- so resolve them
+    // explicitly, in declaration order, the way eval and flatten do for their wildcard-column ColSpecs.
+    private static RichIterable<? extends GenericType> singleColumnRelationTypeArguments(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        GenericType columnType = singleRelationColumnType(ps.get(1), pureModel);
+        GenericType common = columnType == null ? null : comparableCommonType(ps.get(0)._genericType(), columnType, pureModel);
+        return Lists.fixedSize.of(common == null ? ps.get(0)._genericType() : common, ps.get(1)._genericType()._typeArguments().getOnly());
+    }
 
     // There is no notEqualAny / notEqualAll: !equalAll is the one and !equalAny is the other, by De Morgan.
     public static final ImmutableList<String> QUANTIFIED_COMPARISONS = Lists.immutable.of(
@@ -1673,12 +1711,10 @@ public class Handlers
         register("meta::pure::functions::collection::objectReferenceIn_Any_1__String_MANY__Boolean_1_", "objectReferenceIn", false, ps -> res("Boolean", "one"));
 
         // The Relation overload must be tried first: a Relation[1] also satisfies the collection overloads' Any[*] parameter.
-        // U and Z cannot be inferred from the arguments -- Z is constrained as Relation<Z=(?:U)> -- so resolve them
-        // explicitly, in declaration order, the way eval and flatten do for their wildcard-column ColSpecs.
         register(grp(InInference,
                 h("meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_", "in", false,
                         ps -> res("Boolean", "one"),
-                        ps -> Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()),
+                        ps -> singleColumnRelationTypeArguments(ps, pureModel),
                         ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation"))),
                 h("meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isOne(ps.get(0)._multiplicity())),
                 h("meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_", "in", false, ps -> res("Boolean", "one"), ps -> isZeroOne(ps.get(0)._multiplicity()))));
@@ -1690,7 +1726,7 @@ public class Handlers
             register(grp(SingleColumnRelationInference.apply(quantified),
                     h("meta::pure::functions::relation::" + quantified + "_U_$0_1$__Relation_1__Boolean_1_", quantified, false,
                             ps -> res("Boolean", "one"),
-                            ps -> Lists.fixedSize.of(ps.get(0)._genericType(), ps.get(1)._genericType()._typeArguments().getOnly()),
+                            ps -> singleColumnRelationTypeArguments(ps, pureModel),
                             ps -> ps.size() == 2 && typeOne(ps.get(1), pureModel.taxonomyTypes("cov_relation_Relation")))));
         }
 
