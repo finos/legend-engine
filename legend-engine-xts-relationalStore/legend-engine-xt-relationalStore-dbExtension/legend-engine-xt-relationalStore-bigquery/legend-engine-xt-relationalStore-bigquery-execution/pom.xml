@@ -57,16 +57,16 @@
             <artifactId>google-cloud-bigquery-jdbc</artifactId>
             <scope>runtime</scope>
             <exclusions>
-                <!-- The driver pulls this in at two versions; annotations only, unused at runtime -->
+                <!-- Annotations only, and the driver carries them at two versions itself -->
                 <exclusion>
                     <groupId>com.google.j2objc</groupId>
                     <artifactId>j2objc-annotations</artifactId>
                 </exclusion>
-                <!-- Converge on the versions the engine already carries -->
                 <exclusion>
                     <groupId>com.google.errorprone</groupId>
                     <artifactId>error_prone_annotations</artifactId>
                 </exclusion>
+                <!-- Converge on the Arrow the engine already carries -->
                 <exclusion>
                     <groupId>org.apache.arrow</groupId>
                     <artifactId>arrow-format</artifactId>
