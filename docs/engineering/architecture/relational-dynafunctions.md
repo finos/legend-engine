@@ -1037,11 +1037,14 @@ every one of these.
    **Class**. So a primitive collection — `scores: Integer[*]` — fails the guard even once the
    processor sets it, and still flattens.
 
-   | Expression | Before guard | After guard |
+   | Expression | Today | With the guard set |
    |---|---|---|
    | `addresses->map(a\|$a.rank)->sort()` | error `array_sort(VARCHAR)` | **`[3,5,9]`** — array_sort ran |
    | `addresses->map(a\|$a.rank)->removeDuplicates()` | flattened silently | **`[9,3,5]`** — array_distinct ran |
    | `scores->sort()` (`Integer[*]`) | error `array_sort(INTEGER)` | error, unchanged |
+
+   The right-hand column was measured on DuckDB, not inferred: the guard was applied to all ten
+   processors and the results above observed. It is **not** shipped — see below.
 
    An intermediate reading recorded here — that the element type was irrelevant and the missing
    guard was the whole cause — was itself incomplete. Both readings were half right: the guard
@@ -1050,16 +1053,18 @@ every one of these.
    Note also that `distinct` is **not** an array operation: it is the TDS-level distinct that
    de-duplicates result rows. `removeDuplicates` is the one that lowers to `array_distinct`.
 
-   **Fixed** for the ten unconditionally-routed processors (`sort`, `reverse`,
-   `removeDuplicates`, `contains`, `slice`, `take`, `drop`, `last`, `init`, `tail`), which now
-   carry the same `effectiveState` guard `processVariantSize` has. When they engage, the column
-   holds the **whole array** rather than one row per element.
+   **Open, and tracked separately** — [#5114](https://github.com/finos/legend-engine/issues/5114).
+   The remedy is known and was measured: give the ten
+   unconditionally-routed processors (`sort`, `reverse`, `removeDuplicates`, `contains`, `slice`,
+   `take`, `drop`, `last`, `init`, `tail`) the same `effectiveState` guard `processVariantSize`
+   already has, so the column holds the **whole array** rather than one row per element. It is
+   not applied here because it changes the result of an existing Pure query on every relational
+   store, which belongs in its own changeset rather than riding on a store-language change.
 
-   **Still open:** (a) `max`/`min` need an `isSemiStructuredArrayInput` dispatch pair — a
-   behaviour change, deliberately not bundled with the guard fix; (b) primitive collections are
-   excluded by `isClassType`, so no array function reaches them. Since every future `array_*`
-   processor needs both the guard and a dispatch pair, a cross-check test asserting that is worth
-   more than further one-off fixes.
+   Two further gaps travel with it: `max`/`min` also need an `isSemiStructuredArrayInput`
+   dispatch pair, and primitive collections are excluded by `isClassType`, so no array function
+   reaches them at all. Since every `array_*` processor needs both the guard and a dispatch pair,
+   a cross-check test asserting that is worth more than ten one-off fixes.
 
 3. **`first()` and `exists()` do not collapse the flatten** when applied directly to a bound
    to-many property. For a firm with three addresses, `addresses->first().name` returns **three**

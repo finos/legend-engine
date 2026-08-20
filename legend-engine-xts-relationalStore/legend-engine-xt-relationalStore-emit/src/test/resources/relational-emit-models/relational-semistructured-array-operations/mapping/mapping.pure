@@ -119,40 +119,6 @@ Mapping demo::ssa::PersonMapping
           asserts: [ shouldAggregate: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","topScore":30,"lowScore":10},{"firstName":"Bob","topScore":7,"lowScore":7}]'; }#; }# ];
         }
       ];
-    },
-    // sort and removeDuplicates act on the array itself, so the column holds the whole
-    // array rather than one row per element. They reach array_sort / array_distinct only
-    // because the processor disables auto-flatten; without that the array is fanned into
-    // rows first and array_sort receives a single element.
-    // Note this is removeDuplicates, not distinct - distinct is a TDS operation that
-    // de-duplicates result rows and never touches the array.
-    orderingSuite:
-    {
-      function: |demo::ssa::Person.all()
-                  ->project(~[firstName: p | $p.firstName, sorted: p | $p.firm.addresses->map(a | $a.rank)->sort()])
-                  ->sort([~firstName->ascending(), ~sorted->ascending()]);
-      tests:
-      [
-        sortElements:
-        {
-          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
-          asserts: [ shouldSort: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","sorted":"[3,5,9]"},{"firstName":"Bob","sorted":"[1]"}]'; }#; }# ];
-        }
-      ];
-    },
-    removeDuplicatesSuite:
-    {
-      function: |demo::ssa::Person.all()
-                  ->project(~[firstName: p | $p.firstName, unique: p | $p.firm.addresses->map(a | $a.rank)->removeDuplicates()])
-                  ->sort([~firstName->ascending(), ~unique->ascending()]);
-      tests:
-      [
-        dedupeElements:
-        {
-          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
-          asserts: [ shouldDedupe: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","unique":"[9,3,5]"},{"firstName":"Bob","unique":"[1]"}]'; }#; }# ];
-        }
-      ];
     }
   ]
 )
