@@ -1,0 +1,781 @@
+{
+  "adapter": "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test": "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_",
+      "expectedError": "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
+      "expectedError": "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: CURRENT_USER"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_",
+      "expectedError": "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   2,1,B,16\\n   6,1,F,16\\n   8,1,H,16\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   2,1,B,16\\n   6,1,F,16\\n   8,1,H,16\\n   1,2,A,6\\n   5,2,E,6\\n   3,3,C,10\\n   7,3,G,10\\n   4,4,D,4\\n   9,5,I,9\\n#'"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
+      "expectedError": "\nexpected: '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   A,2,8,3\\n#'\nactual:   '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   D,1,10,1\\n   A,2,8,3\\n   B,2,8,2\\n#'"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression_Function_1__Boolean_1_",
+      "expectedError": "Error while executing: Create Table leSchema.tb"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_",
+      "expectedError": "Error while executing: insert into leSchema.tb"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \")\" but got \",\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
+      "expectedError": "Execution error at ??, \"Unused format args. [2] arguments provided to expression \"round(%s, 0)\"\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::drop::testSimpleDropShared_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected end of input but got \",\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \")\" but got \",\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAll::testEqualAll_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAll::testEqualAll_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAll::testEqualAll_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAny::testEqualAny_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAny::testEqualAny_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAny::testEqualAny_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::equalAny::testEqualAny_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsCorrelated_ExtraInnerPredicate_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT SEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT SEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsCorrelated_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsOnEmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT ANTISEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsOnGroupedRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT SEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsSelfReferencing_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT SEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::exists::testExistsWithNestedIn_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nLEFT SEMI JOIN cannot be used without a condition that is an equality of fields from both sides of the join."
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_Function_1__Boolean_1_",
+      "expectedError": "Error while executing: insert into leSchema.tb"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_GroupedRelationWithNull_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_InExtend_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_LimitedRelationWithNull_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_String_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAll::testSimpleGreaterThanAll_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_CorrelatedSubQuery_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_DerivedRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_GroupedRelationWithNull_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_InExtend_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_OnlyNullsInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_String_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanAny::testSimpleGreaterThanAny_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAll::testGreaterThanEqualAll_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::greaterThanEqualAny::testGreaterThanEqualAny_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (>= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+      "expectedError": "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_ForcingSubSelect_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_MultipleSortColumns_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_RowFunction_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanAny::testLessThanAny_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (< ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAll::testLessThanEqualAll_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ALL) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_EmptyRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_Negated_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullInRelation_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::lessThanEqualAny::testLessThanEqualAny_NullValue_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (<= ANY) are not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "\nexpected: '#TDS\\n   p,o,i,newCol\\n   0,1,10,50\\n   0,1,10,50\\n   0,null,30,30\\n   100,1,10,110\\n   100,2,20,110\\n   100,3,30,100\\n   100,null,20,50\\n   100,null,30,50\\n   200,1,10,110\\n   200,1,10,110\\n   200,3,30,90\\n   200,3,30,90\\n   200,null,10,30\\n   200,null,20,30\\n   300,1,10,30\\n   300,2,20,30\\n#'\nactual:   '#TDS\\n   p,o,i,newCol\\n   0,1,10,20\\n   0,1,10,20\\n   0,null,30,50\\n   100,1,10,60\\n   100,2,20,60\\n   100,3,30,50\\n   100,null,20,110\\n   100,null,30,110\\n   200,1,10,80\\n   200,1,10,80\\n   200,3,30,60\\n   200,3,30,60\\n   200,null,10,110\\n   200,null,20,110\\n   300,1,10,30\\n   300,2,20,30\\n#'"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "\nexpected: '#TDS\\n   p,o,i,newCol\\n   300,2,20,30\\n   300,1,10,30\\n   200,null,20,30\\n   200,null,10,30\\n   200,3,30,90\\n   200,3,30,90\\n   200,1,10,110\\n   200,1,10,110\\n   100,null,30,50\\n   100,null,20,50\\n   100,3,30,100\\n   100,2,20,110\\n   100,1,10,110\\n   0,null,30,30\\n   0,1,10,50\\n   0,1,10,50\\n#'\nactual:   '#TDS\\n   p,o,i,newCol\\n   300,2,20,30\\n   300,1,10,30\\n   200,null,20,110\\n   200,null,10,110\\n   200,3,30,60\\n   200,3,30,60\\n   200,1,10,80\\n   200,1,10,80\\n   100,null,30,110\\n   100,null,20,110\\n   100,3,30,50\\n   100,2,20,60\\n   100,1,10,60\\n   0,null,30,50\\n   0,1,10,20\\n   0,1,10,20\\n#'"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
+      "expectedError": "pivot is not supported"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "Window function with range frame using interval is not supported for this database type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError": "#TDS\n   p:Integer[0..1],o:Integer[0..1],i:Integer[0..1],newCol:Integer[0..1]\n   300,2,20,30\n   300,1,10,30\n   200,null,20,30\n   200,null,10,30\n   200,3,30,90\n   200,3,30,90\n   200,1,10,110\n   200,1,10,110\n   100,null,30,50\n   100,null,20,50\n   100,3,30,100\n   100,2,20,110\n   100,1,10,110\n   0,null,30,30\n   0,1,10,50\n   0,1,10,50\n#\n is not equivalent to:\n#TDS\n   p:Integer[0..1],o:Integer[0..1],i:Integer[0..1],newCol:Integer[0..1]\n   300,2,20,30\n   300,1,10,30\n   200,null,20,110\n   200,null,10,110\n   200,3,30,60\n   200,3,30,60\n   200,1,10,80\n   200,1,10,80\n   100,null,30,110\n   100,null,20,110\n   100,3,30,50\n   100,2,20,60\n   100,1,10,60\n   0,null,30,50\n   0,1,10,20\n   0,1,10,20\n#"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::slice::testSimpleSliceShared_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected end of input but got \",\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::slice::testSimpleSlice_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \")\" but got \",\""
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Lateral operation not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    },
+    {
+      "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: BigQuery"
+    }
+  ]
+}

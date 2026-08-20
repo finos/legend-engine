@@ -1,4 +1,4 @@
-// Copyright 2021 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,23 +14,15 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.pure.m3.pct.reports.model.Adapter;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProvider;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.GenericCodeRepository;
 
-public class CoreRelationalBigQueryCodeRepositoryProvider implements CodeRepositoryProvider
+public class CoreRelationalBigQueryPCTCodeRepositoryProvider implements CodeRepositoryProvider
 {
-    public static final Adapter bigQueryAdapter = new Adapter(
-            "BigQuery",
-            "Store_Relational",
-            "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_"
-    );
-
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_relational_bigquery.definition.json");
+        return GenericCodeRepository.build("core_relational_bigquery_pct.definition.json");
     }
 }
-
