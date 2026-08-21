@@ -3011,6 +3011,200 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// REGEXP FUNCTIONS
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRegexpFunctions():Boolean[1]
+{
+  // No flags: regexp_like (anchored→matches), regexp_count, regexp_instr, regexp_replace, regexp_substr
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\') AS "LIKE", ' +
+      'regexp_count(String, \'[aeiou]\') AS "COUNT", ' +
+      'regexp_instr(String, \'[0-9]\') AS "INSTR", ' +
+      'regexp_replace(String, \'[aeiou]\', \'X\') AS "REPLACE", ' +
+      'regexp_substr(String, \'[0-9]+\') AS "SUBSTR" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE: x | matches($x.String, 'test'),
+            COUNT: x | regexpCount($x.String, '[aeiou]'),
+            INSTR: x | regexpIndexOf($x.String, '[0-9]') + 1,
+            REPLACE: x | regexpReplace($x.String, '[aeiou]', 'X', false),
+            SUBSTR: x | regexpExtract($x.String, '[0-9]+', false)
+          ])
+      }
+    ]
+  );
+
+  // Flag 'i': case-insensitive
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'i\') AS "LIKE_I", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'i\') AS "COUNT_I", ' +
+      'regexp_replace(String, \'[aeiou]\', \'X\', \'i\') AS "REPLACE_I", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'i\') AS "SUBSTR_I" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_I: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
+            COUNT_I: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
+            REPLACE_I: x | regexpReplace($x.String, '[aeiou]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
+            SUBSTR_I: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE])
+          ])
+      }
+    ]
+  );
+
+  // Flag 'c': case-sensitive
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'c\') AS "LIKE_C", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'c\') AS "COUNT_C", ' +
+      'regexp_replace(String, \'[a-z]\', \'X\', \'c\') AS "REPLACE_C", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'c\') AS "SUBSTR_C" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_C: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
+            COUNT_C: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
+            REPLACE_C: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
+            SUBSTR_C: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE])
+          ])
+      }
+    ]
+  );
+
+  // Flag 's': dot-matches-newline (non-newline-sensitive)
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'s\') AS "LIKE_S", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'s\') AS "COUNT_S", ' +
+      'regexp_replace(String, \'[a-z]\', \'X\', \'s\') AS "REPLACE_S", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'s\') AS "SUBSTR_S" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_S: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
+            COUNT_S: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
+            REPLACE_S: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
+            SUBSTR_S: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE])
+          ])
+      }
+    ]
+  );
+
+  // Flag 'n': newline-sensitive (multiline)
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'n\') AS "LIKE_N", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'n\') AS "COUNT_N", ' +
+      'regexp_replace(String, \'[a-z]\', \'X\', \'n\') AS "REPLACE_N", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'n\') AS "SUBSTR_N" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_N: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            COUNT_N: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            REPLACE_N: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            SUBSTR_N: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])
+          ])
+      }
+    ]
+  );
+
+  // Flag 'm': synonym for 'n' (multiline)
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'m\') AS "LIKE_M", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'m\') AS "COUNT_M", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'m\') AS "SUBSTR_M" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_M: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            COUNT_M: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            SUBSTR_M: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])
+          ])
+      }
+    ]
+  );
+
+  // Flag 'g': global replace (regexp_replace only)
+  test(
+    'SELECT ' +
+      'regexp_replace(String, \'[aeiou]\', \'X\', \'g\') AS "REPLACE_G" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            REPLACE_G: x | regexpReplace($x.String, '[aeiou]', 'X', true)
+          ])
+      }
+    ]
+  );
+
+  // Flag 'gi': global + case-insensitive (regexp_replace only)
+  test(
+    'SELECT ' +
+      'regexp_replace(String, \'[aeiou]\', \'X\', \'gi\') AS "REPLACE_GI" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            REPLACE_GI: x | regexpReplace($x.String, '[aeiou]', 'X', true, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE])
+          ])
+      }
+    ]
+  );
+
+  // Multi-flag 'in': case-insensitive + newline-sensitive (multiline)
+  test(
+    'SELECT ' +
+      'regexp_like(String, \'^test$\', \'in\') AS "LIKE_IN", ' +
+      'regexp_count(String, \'[a-z]\', 1, \'in\') AS "COUNT_IN", ' +
+      'regexp_replace(String, \'[a-z]\', \'X\', \'in\') AS "REPLACE_IN", ' +
+      'regexp_substr(String, \'[a-z]+\', 1, 1, \'in\') AS "SUBSTR_IN" ' +
+      'FROM service."/service/service1"',
+    [
+      {|
+        FlatInput.all()
+          ->project(~[Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+          ->project(~[
+            LIKE_IN: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            COUNT_IN: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            REPLACE_IN: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
+            SUBSTR_IN: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE])
+          ])
+      }
+    ]
+  );
+
+  // regexp_instr extra args → error
+  error('SELECT regexp_instr(String, \'[0-9]\', 1) AS "INSTR" FROM service."/service/service1"',
+        'regexp_instr with a start position, occurrence or flags is not supported');
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEncodeDigestFunctions():Boolean[1]
 {
   test(

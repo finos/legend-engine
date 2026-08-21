@@ -219,16 +219,29 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       string('regexp_like', Boolean, {args, fc, expCtx, ctx |
         assert($args->size() == 2 || $args->size() == 3, 'incorrect number of args to regexp_like');
 
-        let caseInsensitive = $args->size() == 3 && $args->at(2)->reactivate()->match([
-          s:String[1] | $s == 'i',
-          a:Any[*] | false
-        ]);
+        let regexpParams = if ($args->size() == 3,
+          | parsePostgresRegexpFlags($args->at(2)),
+          | []);
 
-        createRegexMatch($args->at(0), $args->at(1), $caseInsensitive, false);
+        if ($regexpParams->isEmpty(),
+          | createRegexMatch($args->at(0), $args->at(1), false, false),
+          | nullOrSfe(regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_,
+                      [$args->at(0), $args->at(1), iv($regexpParams)]));
       }),
       string('regexp_count', Integer, {args, fc, expCtx, ctx |
-        assertEquals(2, $args->size(), 'regexp_count with a start position or flags is not supported');
-        nullOrSfe(regexpCount_String_1__String_1__Integer_1_, [$args->at(0), $args->at(1)]);
+        // PostgreSQL: regexp_count(string, pattern [, start [, flags]])
+        // arg 0: string, arg 1: pattern, arg 2: start position (integer), arg 3: flags (text)
+        assert(($args->size() >= 2) && ($args->size() <= 4), 'incorrect number of args to regexp_count');
+
+        // start position (arg 2) is intentionally ignored — Pure regexpCount always starts from 0
+        let regexpParams = if ($args->size() == 4,
+          | parsePostgresRegexpFlags($args->at(3)),
+          | []);
+
+        if ($regexpParams->isEmpty(),
+          | nullOrSfe(regexpCount_String_1__String_1__Integer_1_, [$args->at(0), $args->at(1)]),
+          | nullOrSfe(regexpCount_String_1__String_1__RegexpParameter_$1_MANY$__Integer_1_,
+                      [$args->at(0), $args->at(1), iv($regexpParams)]));
       }),
       // Postgres REGEXP_INSTR is 1-based and returns 0 for no match; Pure regexpIndexOf is 0-based
       // and returns -1, so adding one converts both at once.
@@ -238,14 +251,41 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
                   [iv([nullOrSfe(regexpIndexOf_String_1__String_1__Integer_1_, [$args->at(0), $args->at(1)]), iv(1)])]);
       }),
       string('regexp_replace', String, {args, fc, expCtx, ctx |
-        assertEquals(3, $args->size(), 'regexp_replace with a start position, occurrence or flags is not supported');
-        // Postgres replaces only the first match without the 'g' flag, which this arity cannot carry.
-        nullOrSfe(regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_,
-                  [$args->at(0), $args->at(1), $args->at(2), iv(false)]);
+        // PostgreSQL: regexp_replace(string, pattern, replacement [, flags])          — legacy 3-4 args
+        //             regexp_replace(string, pattern, replacement, start [, N [, flags]]) — PG 15+ 4-6 args
+        // When 4 args: if arg 4 is integer it's the start position; if text it's flags (legacy form).
+        assert(($args->size() >= 3) && ($args->size() <= 6), 'incorrect number of args to regexp_replace');
+
+        let flagStr = if ($args->size() == 4 && $args->at(3).genericType.rawType->toOne()->subTypeOf(String),
+          | $args->at(3)->reactivate()->match([s:String[1] | $s, a:Any[*] | fail('unsupported regex flag');'';]),
+          | if ($args->size() == 6,
+              | $args->at(5)->reactivate()->match([s:String[1] | $s, a:Any[*] | fail('unsupported regex flag');'';]),
+              | ''));
+        let replaceAll = $flagStr->contains('g');
+        let regexpParams = parsePostgresRegexpFlagsString($flagStr->replace('g', ''));
+
+        if ($regexpParams->isEmpty(),
+          | nullOrSfe(regexpReplace_String_1__String_1__String_1__Boolean_1__String_1_,
+                      [$args->at(0), $args->at(1), $args->at(2), iv($replaceAll)]),
+          | nullOrSfe(regexpReplace_String_1__String_1__String_1__Boolean_1__RegexpParameter_$1_MANY$__String_1_,
+                      [$args->at(0), $args->at(1), $args->at(2), iv($replaceAll), iv($regexpParams)]));
       }),
       string('regexp_substr', String, {args, fc, expCtx, ctx |
-        assertEquals(2, $args->size(), 'regexp_substr with a start position, occurrence or flags is not supported');
-        nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__String_MANY_, [$args->at(0), $args->at(1), iv(false)]);
+        // PostgreSQL: regexp_substr(string, pattern [, start [, N [, flags [, subexpr]]]])
+        // arg 0: string, arg 1: pattern, arg 2: start (int), arg 3: N/occurrence (int),
+        // arg 4: flags (text), arg 5: subexpr (int)
+        assert(($args->size() >= 2) && ($args->size() <= 6), 'incorrect number of args to regexp_substr');
+
+        // start position (arg 2) and occurrence (arg 3) are intentionally ignored — Pure regexpExtract
+        // always starts from 0 and returns the first match
+        let regexpParams = if ($args->size() >= 5,
+          | parsePostgresRegexpFlags($args->at(4)),
+          | []);
+
+        if ($regexpParams->isEmpty(),
+          | nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__String_MANY_, [$args->at(0), $args->at(1), iv(false)]),
+          | nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_,
+                      [$args->at(0), $args->at(1), iv(false), iv(0), iv($regexpParams)]));
       }),
       string('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       string('replace', replace_String_1__String_1__String_1__String_1_),
