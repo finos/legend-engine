@@ -1,0 +1,51 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured-join
+title: "Relational Store — Joining on a Value Inside a JSON Document"
+description: |
+  A join whose key is not stored in any column. One side reads a nested scalar out of a
+  JSON document and compares it to an ordinary primary key on the other side, so a
+  document-shaped source participates in an ordinary association without being
+  normalised first.
+
+  The mapping traverses the join like any other; nothing above the store knows a
+  document is involved.
+
+modelSources:
+  model:
+    root: relational-semistructured-join
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-semistructured
+  - store:relational-semistructured-navigation
+stores:
+  - relational
+# Distinct non-scaffolding domains: execution, store = 2 -> basic.
+complexity: basic
+tags:
+  - semi-structured
+  - join
+  - json

@@ -34,6 +34,47 @@ import org.eclipse.collections.api.factory.Maps;
 public class Test_Relational_H2_Semistructured
 {
     private static final Set<String> SKIPPED_TESTS = Sets.mutable.with(
+            // A [*] path becomes an array_transform, and array lambdas reach H2 through the
+            // sqlDialectTranslation path, which has no case for the lambda nodes: "Match failure:
+            // MapRelationalLambdaObject instanceOf MapRelationalLambda". Left failing per H2's
+            // retirement.
+            "meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage_Connection_1__Boolean_1_",
+            // Binding a [*] path to a to-many property flattens it to rows. H2 reaches the flatten
+            // through findTableForColumnInAlias, which wants a single table alias column and cannot
+            // resolve one through the transform: "Expected one table alias column in operation".
+            // Both callers of that function are H2-only, so no other dialect is affected.
+            // Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyIntegerProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testToManyPropertyCounted_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testTwoLevelWildcardBoundToToManyProperty_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::wildcard::testFilterOnToManyProperty_Connection_1__Boolean_1_",
+            // Same flatten, reached without a wildcard, so it fails one layer earlier - in the
+            // sqlDialectTranslation path H2 alone uses: "Match failure: ExtractFromSemiStructuredObject
+            // instanceOf ...". Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::wildcard::testArrayPathBoundToToManyProperty_Connection_1__Boolean_1_",
+            // H2 renders one lateral flatten correctly - every single-level explode test passes
+            // here - but a second lateral over the first one's output yields nulls rather than
+            // rows, and does so silently. Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::nested::testNestedExplode_Connection_1__Boolean_1_",
+            // Array lambdas reach H2 through the sqlDialectTranslation path, which has no case for
+            // the lambda nodes: "Match failure: FilterRelationalLambdaObject instanceOf
+            // FilterRelationalLambda". Same structural gap as the array_* family - H2 is the only
+            // dialect on that path. Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::chain::testComplexChainInStoreLanguage_Connection_1__Boolean_1_",
+            // The union of two binding legs casts the shared column to the declared type,
+            // and SEMISTRUCTURED is not an H2 SQL type: "Unknown data type: SEMISTRUCTURED".
+            // Only H2 hits this - it is the sole dialect without a native semi-structured
+            // type, holding the data in a VARCHAR instead. Left failing per H2's retirement.
+            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
+            // H2 is the only dialect on the sqlDialectTranslation path, and toPostgresModel
+            // carries no translation for the array_* family: "Couldn't find DynaFunction to
+            // Postgres model translation for array_max()" (toPostgresModel.pure:268). This is
+            // independent of semi-structured data - no array function reaches H2 at all.
+            "meta::relational::tests::semistructured::arrayStore::testArrayFunctionsInMapping_Connection_1__Boolean_1_",
+            "meta::relational::tests::semistructured::arrayStore::testArrayFunctionInFilter_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsEmpty_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectIsNotEmpty_Connection_1__Boolean_1_",
             "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayDirectSize_Connection_1__Boolean_1_",

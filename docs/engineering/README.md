@@ -107,6 +107,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Router & Pure-to-SQL](architecture/router-and-pure-to-sql.md) | Routing strategies, clustering, SQL generation pipeline, dialect extension                                                      |
 | [ModelJoin](architecture/model-join.md)                       | Store-agnostic model-level associations: parser, compiler, router, and Relational SQL translation                               |
 | [Relation Mappings](architecture/relation-mapping.md)         | End-to-end guide for class-to-Relation (`~func`) mappings: grammar, compiler passes, transformation, routing, and SQL generation |
+| [Relational DynaFunctions](architecture/relational-dynafunctions.md) | Dyna functions authored in `###Relational` `Filter`/`Join`/`View` bodies: what is supported, how it is dispatched, the validation gap, and a proposal for contracts and self-documenting coverage |
 | [Pre-Evaluation (preeval)](architecture/preeval.md)           | AST simplification pass that runs before the router: constant folding, let inlining, short-circuiting                           |
 | [Source Tree Calculation](architecture/source-tree-calculation.md) | calculateSourceTree pipeline and the new-instance operator pattern: intermediate-class handling, edge cases, design alternatives |
 

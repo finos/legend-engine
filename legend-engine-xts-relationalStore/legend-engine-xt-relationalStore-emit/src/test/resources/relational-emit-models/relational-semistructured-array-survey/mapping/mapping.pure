@@ -1,0 +1,210 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssv::M
+(
+  *demo::ssv::Row: Relational
+  {
+    ~primaryKey ( [demo::ssv::store::DB]T.ID )
+    ~mainTable [demo::ssv::store::DB]T
+    id: [demo::ssv::store::DB]T.ID,
+    lastVal: array_last(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]')),
+    initVals: array_to_string(array_init(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]')), ','),
+    tailVals: array_to_string(array_tail(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]')), ','),
+    sortedVals: array_to_string(array_sort(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]')), ','),
+    reversedVals: array_to_string(array_reverse(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]')), ','),
+    appendedVals: array_to_string(array_append(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 9), ','),
+    positionOfTwo: array_position(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 2),
+    slicedVals: array_to_string(array_slice(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 0, 2), ','),
+    droppedVals: array_to_string(array_drop(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 1), ','),
+    takenVals: array_to_string(array_take(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 2), ','),
+    containsTwo: array_contains(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'), 2),
+    distinctVals: array_to_string(array_sort(array_distinct(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'))), ','),
+    concatenated: array_to_string(array_concatenate(extractFromSemiStructured([demo::ssv::store::DB]T.WORDS, 'values', 'VARCHAR[]'), extractFromSemiStructured([demo::ssv::store::DB]T.WORDS, 'values', 'VARCHAR[]')), ','),
+    sumVals: array_sum(extractFromSemiStructured([demo::ssv::store::DB]T.NUMS, 'values', 'INTEGER[]'))
+  }
+
+  testSuites:
+  [
+    lastValSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.lastVal])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 1\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    initValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.initVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "3,1,2"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    tailValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.tailVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,2,1"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    sortedValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.sortedVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,1,2,3"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    reversedValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.reversedVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,2,1,3"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    appendedValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.appendedVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "3,1,2,1,9"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    positionOfTwoSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.positionOfTwo])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 2\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    slicedValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.slicedVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "3,1"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    droppedValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.droppedVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,2,1"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    takenValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.takenVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "3,1"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    containsTwoSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.containsTwo])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : true\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    distinctValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.distinctVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,2,3"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    concatenatedSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.concatenated])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "b,a,b,a"\n} ]'; }#; }# ];
+        }
+      ];
+    },
+    sumValsSuite:
+    {
+      function: |demo::ssv::Row.all()->project(~[id: r | $r.id, v: r | $r.sumVals])->sort([~id->ascending()]);
+      tests:
+      [
+        t:
+        {
+          data: [ demo::ssv::store::DB: Reference #{ demo::ssv::data::D }# ];
+          asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 7\n} ]'; }#; }# ];
+        }
+      ];
+    }
+  ]
+)

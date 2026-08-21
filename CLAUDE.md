@@ -15,6 +15,49 @@ mvn checkstyle:check                               # Checkstyle (blocking in CI)
 
 Always pass `clean` — several Pure Maven plugins are buggy and fail with "duplicate artifact present" errors when building over a prior target directory.
 
+### Isolate your build from the shared `~/.m2` cache
+
+All checkouts share one local repository, and every branch builds the same
+`<version>-SNAPSHOT` coordinates. If two working copies are built at different times, whichever
+installed last wins, and the other silently runs against the wrong jars. This is especially
+dangerous for Pure modules, whose `.pure` sources are compiled to bytecode inside the installed
+jar — a stale jar produces failures with no connection to anything you changed.
+
+**Use a chained local repository.** Maven 3.9+ supports a split local repository: writes go to the
+**head**, reads fall back to a read-only **tail**. Point the head somewhere outside `~/.m2` and the
+tail at the shared repository:
+
+```bash
+HEAD=/tmp/m2-$(git rev-parse --abbrev-ref HEAD)
+mvn clean install -DskipTests -pl <changed-modules> \
+    -Dmaven.repo.local=$HEAD -Dmaven.repo.local.tail=$HOME/.m2/repository
+mvn clean test -pl <module> \
+    -Dmaven.repo.local=$HEAD -Dmaven.repo.local.tail=$HOME/.m2/repository
+```
+
+Your freshly built jars land in `$HEAD` and shadow the shared ones; everything you did not build
+resolves from `~/.m2` as usual, so there is nothing to re-download and `-o` still works. The shared
+repository is never written to, so a parallel build in another checkout cannot clobber you and you
+cannot clobber it. Delete `$HEAD` when finished.
+
+**How much to build into the head depends on how much you trust the tail.** Naming only the modules
+you changed is enough when the shared repository holds engine jars consistent with your branch. When
+it may not — another checkout has been installing a different branch, or a
+`-Dlegend.pure.version` override — add `-am` so every engine-internal artifact is built from source
+into the head, and let only third-party dependencies come from the tail. A wrong-branch engine jar
+resolved from the tail reproduces exactly the staleness this section exists to prevent.
+
+**Pass both flags on every command.** A build that omits them silently reverts to the shared
+repository, which is worse than no isolation — you get it on some commands and not others, and the
+resulting staleness is intermittent.
+
+Do **not** isolate by stamping the reactor with `versions:set`. It rewrites 600+ `pom.xml` files,
+which buries the real diff, must be reverted before a PR, and is easy to commit by accident.
+
+Symptoms of a collision, when you have skipped isolation altogether: tests failing in modules you
+never touched, a test count that changes between identical runs, or a failure that disappears after
+rebuilding an unrelated module. Suspect the cache before you suspect your change.
+
 Run the server (main: `org.finos.legend.engine.server.Server`):
 ```
 server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json

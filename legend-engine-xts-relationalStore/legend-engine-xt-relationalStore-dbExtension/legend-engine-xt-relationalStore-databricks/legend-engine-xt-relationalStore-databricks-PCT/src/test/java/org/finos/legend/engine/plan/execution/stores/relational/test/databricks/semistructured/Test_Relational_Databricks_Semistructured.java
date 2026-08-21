@@ -56,35 +56,6 @@ public class Test_Relational_Databricks_Semistructured
                 .withKeyValue(
                         "meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy_Connection_1__Boolean_1_",
                         "[AMBIGUOUS_REFERENCE]")
-                // [needsInvestigation] The VARIANT column stores a JSON-string
-                // representation of an array (rather than a parsed VARIANT array); a
-                // straight cast to ARRAY<VARIANT> raises INVALID_VARIANT_CAST. The
-                // explode processors now use `try_cast`, which converts the runtime
-                // error into NULL rows -- so this test may now surface as an assertion
-                // mismatch instead. Root fix requires either forcing parse_json at
-                // ingestion time or emitting try_variant_get with an explicit path.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::flattening::testMultiArrayOlapWithNestedIfExists_Connection_1__Boolean_1_",
-                        "[INVALID_VARIANT_CAST]")
-                // [needsInvestigation] parse_json based mapping loses join-related
-                // columns -- all Firm-Name projections return null. Not a SQL-syntax
-                // issue but a mapping/join wiring bug specific to parse_json input.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::parseJson::testParseJsonInMapping_Connection_1__Boolean_1_",
-                        "Anthony,null,null,null,null,null")
-                // [needsInvestigation] Union-mapping-with-binding drops non-Databricks
-                // input rows -- expected 3 firms (A/B/D) but only firm_D returned.
-                // Likely a binding-selection bug in the union router; needs the actual
-                // generated SQL to diagnose further.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D'")
-                // [needsInvestigation] Union-mapping-with-binding: expected 6 firms
-                // (A/B/C/D/E/F) but returned 3 real firms + 3 nulls. Same class of
-                // issue as testSemiStructuredUnionMappingWithBindingAndFilter above.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'")
                 // [needsInvestigation] Filtering a semi-structured array then indexing
                 // it: the filtered value stays VARIANT, so the [] extract cannot descend
                 // into it (needs a complex STRUCT/ARRAY/MAP base).
@@ -108,9 +79,10 @@ public class Test_Relational_Databricks_Semistructured
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
+            Object result;
             try
             {
-                return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
+                result = PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
             // Throwable rather than Exception: a wrong-result test fails with an AssertionError.
             // Anything not named in pathToReason is still rethrown untouched.
@@ -127,6 +99,14 @@ public class Test_Relational_Databricks_Semistructured
                 }
                 throw e;
             }
+            // Reached only when the test passed. An entry that no longer reproduces is worse
+            // than no entry: it silently suppresses whatever regresses into it next. Raised
+            // outside the try because the catch above takes Throwable and would swallow it.
+            if (failures.containsKey(test))
+            {
+                throw new AssertionError("Expected this test to fail with: " + failures.get(test) + ", but it passed. Remove the entry.");
+            }
+            return result;
         };
 
         TestConnectionIntegration databricks = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst();

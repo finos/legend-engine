@@ -1,0 +1,158 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssa::PersonMapping
+(
+  *demo::ssa::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssa::store::PersonDB]PERSON_TABLE.ID
+    )
+    ~mainTable [demo::ssa::store::PersonDB]PERSON_TABLE
+    firstName: [demo::ssa::store::PersonDB]PERSON_TABLE.FIRST_NAME,
+    // Bound directly to the column, not through a join. Array operations require this:
+    // the auto-flatten gate rejects a binding whose operation carries a join.
+    firm: Binding demo::ssa::FirmBinding : [demo::ssa::store::PersonDB]PERSON_TABLE.FIRM_DETAILS
+  }
+
+  testSuites:
+  [
+    cardinalitySuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, addressCount: p | $p.firm.addresses->size(), noAddresses: p | $p.firm.addresses->isEmpty(), hasAddresses: p | $p.firm.addresses->isNotEmpty()])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        countElements:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldCount: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","addressCount":3,"noAddresses":false,"hasAddresses":true},{"firstName":"Bob","addressCount":1,"noAddresses":false,"hasAddresses":true}]'; }#; }# ];
+        }
+      ];
+    },
+    elementAccessSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, firstByIndex: p | $p.firm.addresses->at(0).name])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        accessElements:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldAccess: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","firstByIndex":"A1"},{"firstName":"Bob","firstByIndex":"Z9"}]'; }#; }# ];
+        }
+      ];
+    },
+    filterSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, matching: p | $p.firm.addresses->filter(a | $a.name->startsWith('A'))->size()])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        applyFilter:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldFilter: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","matching":2},{"firstName":"Bob","matching":0}]'; }#; }# ];
+        }
+      ];
+    },
+    mapSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, name: p | $p.firm.addresses->filter(a | $a.name->startsWith('A'))->map(a | $a.name)])
+                  ->sort([~firstName->ascending(), ~name->ascending()]);
+      tests:
+      [
+        applyMap:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldMap: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","name":"A1"},{"firstName":"Alice","name":"A3"}]'; }#; }# ];
+        }
+      ];
+    },
+    foldSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, concatenated: p | $p.firm.concatenatedNames()])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        applyFold:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldFold: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","concatenated":"A1B2A3"},{"firstName":"Bob","concatenated":"Z9"}]'; }#; }# ];
+        }
+      ];
+    },
+    // max/min over a semi-structured array are exercised nowhere else in the repo. The
+    // values below are correct, but they are reached by flattening and aggregating in
+    // SQL, not through array_max/array_min - max and min carry no semi-structured
+    // dispatch guard, so they never reach their array_* dyna function. This asserts the
+    // result only; it is not evidence the array path ran. See section 11.8 of
+    // docs/engineering/architecture/relational-dynafunctions.md.
+    aggregateSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, topScore: p | $p.firm.scores->max(), lowScore: p | $p.firm.scores->min()])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        aggregateElements:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldAggregate: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","topScore":30,"lowScore":10},{"firstName":"Bob","topScore":7,"lowScore":7}]'; }#; }# ];
+        }
+      ];
+    },
+    // sort and removeDuplicates act on the array itself, so the column holds the whole
+    // array rather than one row per element. They reach array_sort / array_distinct only
+    // because the processor disables auto-flatten; without that the array is fanned into
+    // rows first and array_sort receives a single element.
+    // Note this is removeDuplicates, not distinct - distinct is a TDS operation that
+    // de-duplicates result rows and never touches the array.
+    orderingSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, sorted: p | $p.firm.addresses->map(a | $a.rank)->sort()])
+                  ->sort([~firstName->ascending(), ~sorted->ascending()]);
+      tests:
+      [
+        sortElements:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldSort: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","sorted":"[3,5,9]"},{"firstName":"Bob","sorted":"[1]"}]'; }#; }# ];
+        }
+      ];
+    },
+    removeDuplicatesSuite:
+    {
+      function: |demo::ssa::Person.all()
+                  ->project(~[firstName: p | $p.firstName, unique: p | $p.firm.addresses->map(a | $a.rank)->removeDuplicates()])
+                  ->sort([~firstName->ascending(), ~unique->ascending()]);
+      tests:
+      [
+        dedupeElements:
+        {
+          data: [ demo::ssa::store::PersonDB: Reference #{ demo::ssa::data::PersonData }# ];
+          asserts: [ shouldDedupe: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"firstName":"Alice","unique":"[9,3,5]"},{"firstName":"Bob","unique":"[1]"}]'; }#; }# ];
+        }
+      ];
+    }
+  ]
+)
