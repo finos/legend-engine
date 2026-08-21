@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class chain::model::Firm
+{
+  id: Integer[1];
+  // Every property below is an ordinary scalar. The whole chain - navigate, filter, take the
+  // first survivor, navigate again - happens in the store definition.
+  firstLargeCity: String[1];
+  firstLargeName: String[1];
+  largeCount: Integer[1];
+  allLargeNames: String[1];
+  totalLargeHeadcount: Integer[1];
+}
+
+function chain::complexChainInStoreLanguage():TabularDataSet[1]
+{
+    chain::model::Firm.all()->project([x|$x.id, x|$x.firstLargeName, x|$x.firstLargeCity, x|$x.largeCount, x|$x.allLargeNames, x|$x.totalLargeHeadcount],
+                                      ['Id', 'First Large Name', 'First Large City', 'Large Count', 'All Large Names', 'Total Large Headcount']);
+}
+
+###Relational
+Database chain::store::DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+###Mapping
+Mapping chain::mapping::Mapping
+(
+  chain::model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE
+    id: [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID,
+
+    // navigate -> filter -> first -> navigate again, two levels down on the far side.
+    firstLargeCity: extractFromSemiStructured(array_first(array_filter(extractFromSemiStructured([chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'firm.divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)), 'address.city', 'VARCHAR'),
+    firstLargeName: extractFromSemiStructured(array_first(array_filter(extractFromSemiStructured([chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'firm.divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)), 'name', 'VARCHAR'),
+    largeCount: array_size(array_filter(extractFromSemiStructured([chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'firm.divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)),
+    allLargeNames: array_to_string(array_transform(array_filter(extractFromSemiStructured([chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'firm.divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100), d | extractFromSemiStructured($d, 'name', 'VARCHAR')), '|'),
+    totalLargeHeadcount: array_reduce(array_transform(array_filter(extractFromSemiStructured([chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'firm.divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100), d | extractFromSemiStructured($d, 'headcount', 'INTEGER')), (h, acc | plus($acc, $h)), 0)
+  }
+)

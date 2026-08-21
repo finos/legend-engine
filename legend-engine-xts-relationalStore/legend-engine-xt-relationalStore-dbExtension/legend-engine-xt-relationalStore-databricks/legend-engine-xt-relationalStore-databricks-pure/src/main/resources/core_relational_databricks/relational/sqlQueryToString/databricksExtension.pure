@@ -621,6 +621,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   let backTickedPath = $pathSegments->map(s | '`' + $s + '`')->joinStrings('.');
   let elementAccess = $baseRelationalOp + ':' + $backTickedPath;
 
+  // An array extraction casts to a typed ARRAY so the array_* family receives real elements
+  // rather than a variant holding a document.
+  if ($returnType->endsWith('[]'),
+      | $elementAccess + '::ARRAY<' + $returnType->substring(0, $returnType->length() - 2)->databricksSemiStructuredElementType() + '>', |
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | $elementAccess + '::STRING', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | $elementAccess + '::TIMESTAMP', |
   if ($returnType == 'DATE', | $elementAccess + '::DATE', |
@@ -628,7 +632,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   if ($returnType == 'FLOAT', | $elementAccess + '::DOUBLE', |
   if ($returnType == 'INTEGER', | $elementAccess + '::INT', |
   if ($returnType == 'DECIMAL', | $elementAccess + '::DECIMAL', |
-  $elementAccess)))))));
+  $elementAccess))))))));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::databricksSemiStructuredElementType(returnType: String[1]): String[1]
+{
+  if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'STRING', |
+  if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'TIMESTAMP', |
+  if ($returnType == 'FLOAT', | 'DOUBLE', |
+  if ($returnType == 'INTEGER', | 'INT', |
+  if ($returnType == 'SEMISTRUCTURED', | 'VARIANT', |
+  $returnType)))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]

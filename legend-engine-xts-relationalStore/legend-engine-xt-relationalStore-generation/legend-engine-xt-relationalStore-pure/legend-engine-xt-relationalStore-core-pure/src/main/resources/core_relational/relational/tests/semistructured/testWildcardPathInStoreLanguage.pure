@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::wildcard::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+// Firm 1 spreads teams across two divisions, so a wildcard that fails to flatten loses rows
+// rather than erroring. Firm 2 has a division holding no teams, and firm 3 no divisions at all.
+function meta::relational::tests::semistructured::wildcard::wildcardExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'FIRM_SCHEMA\n' +
+        'FIRM_TABLE\n' +
+        'ID,FIRM_DETAILS\n' +
+        '1,"{""divisions"": [{""name"": ""Alpha"", ""headcount"": 9, ""teams"": [{""label"": ""Core""}, {""label"": ""Edge""}]}, {""name"": ""Beta"", ""headcount"": 100, ""teams"": [{""label"": ""Ops""}]}]}"\n' +
+        '2,"{""divisions"": [{""name"": ""Gamma"", ""headcount"": 50, ""teams"": []}]}"\n' +
+        '3,"{""divisions"": []}"\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/wildcardPathInStoreLanguage.legend';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, 'wildcard::mapping::Mapping', 'wildcard::store::DB', $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testWildcardPathInStoreLanguage(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::wildcardPathInStoreLanguage__TabularDataSet_1_',
+    'Id,Division Names,Team Labels,Team Count,Max Headcount\n' +
+    '1,Alpha|Beta,Core|Edge|Ops,3,100\n' +
+    '2,Gamma,null,0,50\n' +
+    '3,null,null,0,null\n'
+  );
+}

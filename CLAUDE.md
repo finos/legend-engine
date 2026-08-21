@@ -15,6 +15,33 @@ mvn checkstyle:check                               # Checkstyle (blocking in CI)
 
 Always pass `clean` — several Pure Maven plugins are buggy and fail with "duplicate artifact present" errors when building over a prior target directory.
 
+### Isolate your build from the shared `~/.m2` cache
+
+All checkouts share one local repository, and every branch builds the same
+`<version>-SNAPSHOT` coordinates. If two working copies are built at different times, whichever
+installed last wins, and the other silently runs against the wrong jars. This is especially
+dangerous for Pure modules, whose `.pure` sources are compiled to bytecode inside the installed
+jar — a stale jar produces failures with no connection to anything you changed.
+
+**Before starting work on a branch, stamp the reactor with a unique version:**
+
+```bash
+mvn versions:set -DnewVersion=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT \
+    -DprocessAllModules=true -DgenerateBackupPoms=false
+```
+
+Every install then lands under its own coordinates and cannot collide with another session.
+To undo before opening a PR (the version bump must **not** be committed):
+
+```bash
+mvn versions:set -DnewVersion=<original-version> -DprocessAllModules=true -DgenerateBackupPoms=false
+# or, if backup poms were kept:  mvn versions:revert
+```
+
+Symptoms of a collision, when you have skipped this: tests failing in modules you never touched,
+a test count that changes between identical runs, or a failure that disappears after rebuilding
+an unrelated module. Suspect the cache before you suspect your change.
+
 Run the server (main: `org.finos.legend.engine.server.Server`):
 ```
 server legend-engine-config/legend-engine-server/legend-engine-server-http-server/src/test/resources/org/finos/legend/engine/server/test/userTestConfig.json

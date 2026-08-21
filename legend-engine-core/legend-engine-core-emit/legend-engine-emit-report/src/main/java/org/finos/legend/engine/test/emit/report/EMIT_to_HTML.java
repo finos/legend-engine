@@ -66,6 +66,10 @@ public class EMIT_to_HTML
             "store:relational-inner-join", "store:relational-left-outer-join",
             "store:relational-multi-table", "store:relational-nested-join",
             "store:relational-outer-join", "store:relational-right-outer-join",
+            "store:relational-semistructured", "store:relational-semistructured-array-functions",
+            "store:relational-semistructured-array-index", "store:relational-semistructured-binding",
+            "store:relational-semistructured-explode", "store:relational-semistructured-flatten",
+            "store:relational-semistructured-navigation",
             "store:service-store",
             // milestoning
             "milestoning:all-versions-in-range-query", "milestoning:all-versions-query",

@@ -354,7 +354,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='{%s}', transform={p:String[*] | range(0, $p->size(), 2)->map(i | $p->at($i) + ': ' + $p->at($i + 1))->joinStrings(', ')})),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='transform(map_keys(%s), k -> GET(%s, k))', transform = {p:String[1] | $p->concatenate($p)})),
-    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(%s)')),  
+    // Typing an extraction as ARRAY(VARIANT) means a transform whose body extracts an array
+    // produces ARRAY(ARRAY(VARIANT)), which ARRAY_FLATTEN refuses. Widening to a plain ARRAY
+    // first is what it accepts, and the elements stay VARIANT either way.
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='array_flatten(cast(%s as ARRAY))')),  
     dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_cat(%s, %s)')), 
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='to_boolean(%s)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
@@ -456,13 +459,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
   let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);
 
+  // A [] suffix is the modeller asserting the path holds an array, so a value that is not one
+  // has to fail rather than be made to fit. to_array promotes a scalar or object into a
+  // one-element array, which invents data and lets a model pass here that fails on DuckDB;
+  // ARRAY(VARIANT) raises instead. The element type stays VARIANT because comparison on it is
+  // type-aware, so array_max over numbers still orders numerically rather than as text.
+  if ($returnType->endsWith('[]'), | 'cast(' + $elementAccess + ' as ARRAY(VARIANT))', |
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
   if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |
   if ($returnType == 'BOOLEAN', | 'to_boolean(' + $elementAccess + ')', |
   if ($returnType == 'FLOAT', | 'to_double(' + $elementAccess + ')', |
   if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |
-  $elementAccess))))));
+  $elementAccess)))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateSnowflake(params:String[*]):String[1]
