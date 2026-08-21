@@ -1,0 +1,157 @@
+{
+  "adapter": "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_",
+  "exclusions": [
+    {
+      "test": "meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: CURRENT_USER"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityNotEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nThird argument (pad pattern) for LPAD/RPAD cannot be empty"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::matches::testMatchesAlternation_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::matches::testMatchesNoMatch_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::matches::testMatchesUnanchoredIsFullMatch_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::matches::testMatches_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'matches' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_CaseInsensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpCount::testRegexpCount_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpCount' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtractAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpExtract::testRegexpExtract_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpExtract' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
+      "expectedError": "[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::rpad::testRpadEmptyChar_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nThird argument (pad pattern) for LPAD/RPAD cannot be empty"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: split_part"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: split_part"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: split_part"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: split_part"
+    },
+    {
+      "test": "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: split_part"
+    }
+  ]
+}
