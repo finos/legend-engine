@@ -19,13 +19,15 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.pure.runtime.java.interpreted.extension.BaseInterpretedExtension;
 import org.finos.legend.pure.runtime.java.interpreted.extension.InterpretedExtension;
 import org.finos.legend.engine.pure.runtime.external.relational.postgresSql.parser.interpreted.natives.ParseSqlStatementToJson;
+import org.finos.legend.engine.pure.runtime.external.relational.postgresSql.parser.interpreted.natives.ParsePostgresDate;
 
 public class PostgresSqlParserExtensionInterpreted extends BaseInterpretedExtension
 {
     public PostgresSqlParserExtensionInterpreted()
     {
         super(Lists.mutable.with(
-                Tuples.pair("parseSqlStatementToJson_String_1__String_1_", ParseSqlStatementToJson::new)
+                Tuples.pair("parseSqlStatementToJson_String_1__String_1_", ParseSqlStatementToJson::new),
+                Tuples.pair("parsePostgresDate_String_1__Date_1_", ParsePostgresDate::new)
         ));
     }
 

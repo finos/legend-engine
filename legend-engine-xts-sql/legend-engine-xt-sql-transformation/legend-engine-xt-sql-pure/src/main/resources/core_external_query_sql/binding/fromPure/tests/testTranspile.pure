@@ -931,6 +931,74 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateLiteralFormats():Boolean[1]
+{
+  // date-only formats
+  test(
+    'SELECT ' +
+      'DATE \'2023-01-15\' AS "iso_date", ' +
+      '\'20230115\'::date AS "compact_no_sep", ' +
+      'DATE \'2023/01/15\' AS "ymd_slashes", ' +
+      'DATE \'January 15, 2023\' AS "month_name_full", ' +
+      'DATE \'Jan 15, 2023\' AS "month_name_abbrev", ' +
+      'DATE \'15 Jan 2023\' AS "day_month_year", ' +
+      'DATE \'Jan 15 2023\' AS "month_day_year_no_comma", ' +
+      'CAST(\'2023-06-15\' AS date) AS "cast_fn_date", ' +
+      '\'2023-06-15\'::date AS "cast_op_date" ' +
+      'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()
+              ->project(~[Boolean: x|$x.booleanIn, Integer: x|$x.integerIn, Float: x|$x.floatIn, Decimal: x|$x.decimalIn, StrictDate: x|$x.strictDateIn, DateTime: x|$x.dateTimeIn, String: x|$x.stringIn])
+              ->project(~[
+                  iso_date             : x | %2023-01-15,
+                  compact_no_sep       : x | %2023-01-15,
+                  ymd_slashes          : x | %2023-01-15,
+                  month_name_full      : x | %2023-01-15,
+                  month_name_abbrev    : x | %2023-01-15,
+                  day_month_year       : x | %2023-01-15,
+                  month_day_year_no_comma : x | %2023-01-15,
+                  cast_fn_date         : x | %2023-06-15,
+                  cast_op_date         : x | %2023-06-15
+                ])
+           }, true, false)
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testTimestampLiteralFormats():Boolean[1]
+{
+  // timestamp / datetime formats
+  test(
+    'SELECT ' +
+      'TIMESTAMP \'2023-01-15 10:30:00\' AS "ts_space", ' +
+      'TIMESTAMP \'2023-01-15T10:30:00\' AS "ts_t_sep", ' +
+      'TIMESTAMP \'2023-01-15 10:30:00.123\' AS "ts_millis", ' +
+      'TIMESTAMP \'2023-01-15 10:30:00.123456\' AS "ts_micros", ' +
+      'TIMESTAMP \'2023-01-15 00:00:00\' AS "ts_midnight", ' +
+      'TIMESTAMP \'2023-01-15 23:59:59\' AS "ts_end_of_day", ' +
+      'CAST(\'2023-06-15 14:30:00\' AS timestamp) AS "cast_fn_ts", ' +
+      '\'2023-06-15 14:30:00\'::timestamp AS "cast_op_ts" ' +
+      'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()
+              ->project(~[Boolean: x|$x.booleanIn, Integer: x|$x.integerIn, Float: x|$x.floatIn, Decimal: x|$x.decimalIn, StrictDate: x|$x.strictDateIn, DateTime: x|$x.dateTimeIn, String: x|$x.stringIn])
+              ->project(~[
+                  ts_space     : x | %2023-01-15T10:30:00,
+                  ts_t_sep     : x | %2023-01-15T10:30:00,
+                  ts_millis    : x | %2023-01-15T10:30:00.123,
+                  ts_micros    : x | %2023-01-15T10:30:00.123456,
+                  ts_midnight  : x | %2023-01-15T00:00:00,
+                  ts_end_of_day: x | %2023-01-15T23:59:59,
+                  cast_fn_ts   : x | %2023-06-15T14:30:00,
+                  cast_op_ts   : x | %2023-06-15T14:30:00
+                ])
+           }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsEnum():Boolean[1]
 {
   test(
@@ -3035,9 +3103,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT ' +
     ' concat(true, false, Boolean) as BOOLEANS, ' + 
-    ' concat(1, 2, \'abc\', 1.1) as MIXED, ' + 
-    ' true || false || Boolean as BOOLEANS_OP, ' + 
-    ' 1 || 2 || \'abc\' || 1.1 as MIXED_OP ' +     
+    ' concat(1, 2, \'abc\', 1.1) as MIXED, ' +
+    ' true || false || Boolean as BOOLEANS_OP, ' +
+    ' 1 || 2 || \'abc\' || 1.1 as MIXED_OP ' +
     'FROM service(\'/service/service1\')',
     [
       c({| FlatInput.all()->project(

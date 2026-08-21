@@ -2555,7 +2555,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //in postgres args are coercesed to varchar, Boolean has a very specific handling
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenateWithArgumentTransform(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], transformBools:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
 {
-  let processedArgs = $args->map(a | if ($transformBools && $a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),  
+  let processedArgs = $args->map(a | if ($transformBools && $a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),
                       | if ($a->instanceOf(InstanceValue) && ($a->cast(@InstanceValue).values == true || $a->cast(@InstanceValue).values == false),
                           | let value = $a->cast(@InstanceValue).values;
                             if ($value == true, | iv('t'), | if ($value == false, | iv('f'), | $a));,
@@ -2591,7 +2591,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a))
         ->fold({isEmptyArg, anyEmpty |
           sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
-        }, iv(false));    
+        }, iv(false));
 
         createIfStatement($nullGuardCondition, createNormalizedCast(iv([]), String)->evaluateAndDeactivate(), $concatenatedValue);,
     | $concatenatedValue);
@@ -3151,18 +3151,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   if ($type->preciseToPrimitive() == String, | $v, | if ($v->evaluateAndDeactivate().multiplicity != PureZero, | sfe(toString_Any_1__String_1_, $v), | $v));
 }
 
-//TODO revisit to fully push down
+
 function meta::external::query::sql::transformation::queryToPure::processParseDate(vs:ValueSpecification[1]):ValueSpecification[1]
 {
   let v = $vs->evaluateAndDeactivate();
 
   let value = if ($v->instanceOf(InstanceValue) && $v.multiplicity == PureOne && $v->cast(@InstanceValue).values->toOne()->instanceOf(String),
     | let string = $v->cast(@InstanceValue).values->at(0)->cast(@String);
-
-      if ([
-        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}([ T]{1}[0-9]{2}:[0-9]{2}(:[0-9]{2})?)(\.[0-9]{1,9})?'), | pair(iv($string->replace(' ', 'T')->parseDate()), DateTime)),
-        pair(| $string->matches('[0-9]{4}-[0-9]{2}-[0-9]{2}'), | pair(iv($string->parseDate()), StrictDate))
-      ], | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));,
+      let parsed = $string->parsePostgresDate();
+      pair(iv($parsed), $parsed->type()->toOne());,
     | pair(nullOrSfe(parseDate_String_1__Date_1_, $v), Date));
 
   //we do the cast to ensure correct column type
