@@ -376,7 +376,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 //serialize each streamed object to one JSON document and load it via a byte-size-bounded batched PreparedStatement (memory-bounded, no CSV).
                 RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
-                try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState))
+                try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState, true))
                 {
                     loadVariantTempTable(connectionManagerConnection, databaseCommands, createAndPopulateTempTableExecutionNode, (Stream<ObjectNode>) inputStream); //JsonStreamingResult will always produce Stream<ObjectNode>
                 }
@@ -416,7 +416,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
 
             RelationalDatabaseCommands databaseCommands = DatabaseManager.fromString(createAndPopulateTempTableExecutionNode.connection.type.name()).relationalDatabaseSupport();
-            try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState))
+            try (Connection connectionManagerConnection = this.getConnection(createAndPopulateTempTableExecutionNode, databaseCommands, this.identity, this.executionState, false))
             {
                 TempTableStreamingResult tempTableStreamingResult = new TempTableStreamingResult(inputStream, createAndPopulateTempTableExecutionNode);
                 String databaseTimeZone = createAndPopulateTempTableExecutionNode.connection.timeZone == null ? RelationalExecutor.DEFAULT_DB_TIME_ZONE : createAndPopulateTempTableExecutionNode.connection.timeZone;
@@ -1407,7 +1407,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
         throw new RuntimeException("Not implemented!");
     }
 
-    private Connection getConnection(CreateAndPopulateTempTableExecutionNode createAndPopulateTempTableExecutionNode, RelationalDatabaseCommands databaseCommands, Identity identity, ExecutionState executionState)
+    private Connection getConnection(CreateAndPopulateTempTableExecutionNode createAndPopulateTempTableExecutionNode, RelationalDatabaseCommands databaseCommands, Identity identity, ExecutionState executionState, boolean processTempTableName)
     {
         if (((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).retainConnection())
         {
@@ -1416,7 +1416,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 int isolationLevel  = ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() > 0 ? ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)).getIsolationLevel() : Connection.TRANSACTION_NONE;
                 blockConnection.setTransactionIsolation(isolationLevel);
-                String qualifiedTempTableName = databaseCommands.processTempTableName(createAndPopulateTempTableExecutionNode.tempTableName);
+                String qualifiedTempTableName = processTempTableName ? databaseCommands.processTempTableName(createAndPopulateTempTableExecutionNode.tempTableName) : createAndPopulateTempTableExecutionNode.tempTableName;
                 blockConnection.addRollbackQuery(databaseCommands.dropTempTable(qualifiedTempTableName));
                 blockConnection.addCommitQuery(databaseCommands.dropTempTable(qualifiedTempTableName));
                 return blockConnection;
