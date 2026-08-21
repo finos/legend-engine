@@ -42,6 +42,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Bridge;
@@ -60,7 +61,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Calendar;
+import java.time.temporal.WeekFields;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -136,7 +137,10 @@ public class FunctionsHelper
         {
             throw new PureExecutionException(sourceInformation, "Cannot get week of year for " + date, Stacks.mutable.empty());
         }
-        return date.getCalendar().get(Calendar.WEEK_OF_YEAR);
+        // ISO 8601 numbering: a week starts on Monday, and week 1 is the one holding the year's first
+        // Thursday. Fixed rather than read from the JVM locale, so a query answers the same wherever
+        // it runs, and answers what the relational stores do when it is pushed down to them.
+        return PureDateToJava.start().toLocalDate(date).get(WeekFields.ISO.weekOfWeekBasedYear());
     }
 
     public static long dayOfYear(PureDate date, SourceInformation sourceInformation)
@@ -145,7 +149,7 @@ public class FunctionsHelper
         {
             throw new PureExecutionException(sourceInformation, "Cannot get day of year for " + date, Stacks.mutable.empty());
         }
-        return date.getCalendar().get(Calendar.DAY_OF_YEAR);
+        return PureDateToJava.start().toLocalDate(date).getDayOfYear();
     }
 
     public static long dayOfWeekNumber(PureDate date, SourceInformation sourceInformation)
@@ -154,41 +158,8 @@ public class FunctionsHelper
         {
             throw new PureExecutionException(sourceInformation, "Cannot get day of week for " + date, Stacks.mutable.empty());
         }
-        switch (date.getCalendar().get(Calendar.DAY_OF_WEEK))
-        {
-            case Calendar.MONDAY:
-            {
-                return 1;
-            }
-            case Calendar.TUESDAY:
-            {
-                return 2;
-            }
-            case Calendar.WEDNESDAY:
-            {
-                return 3;
-            }
-            case Calendar.THURSDAY:
-            {
-                return 4;
-            }
-            case Calendar.FRIDAY:
-            {
-                return 5;
-            }
-            case Calendar.SATURDAY:
-            {
-                return 6;
-            }
-            case Calendar.SUNDAY:
-            {
-                return 7;
-            }
-            default:
-            {
-                throw new PureExecutionException(sourceInformation, "Error getting day of week for " + date, Stacks.mutable.empty());
-            }
-        }
+        // DayOfWeek numbers Monday 1 through Sunday 7, which is the numbering this function returns.
+        return PureDateToJava.start().toLocalDate(date).getDayOfWeek().getValue();
     }
 
     // DATE-TIME --------------------------------------------------------------

@@ -22,3 +22,28 @@ function <<test.Test>> meta::pure::functions::date::tests::testWeekOfYear():Bool
     assertEquals(16, %2015-04-15T17:09:21->weekOfYear());
     assertEquals(16, %2015-04-15T17:09:21.398->weekOfYear());
 }
+
+// Weeks are numbered as ISO 8601 does it: a week runs Monday to Sunday, and week 1 is the one
+// holding the year's first Thursday. The days below are where that differs from numbering weeks
+// from Sunday, which is what a US default locale used to give.
+function <<test.Test>> meta::pure::functions::date::tests::testWeekOfYearIsISO8601():Boolean[1]
+{
+    // a week starts on Monday, so the Sunday closing week 52 of 2020 is not yet week 1 of 2021
+    assertEquals(52, %2020-12-26->weekOfYear());
+    assertEquals(52, %2020-12-27->weekOfYear());
+    assertEquals(53, %2020-12-28->weekOfYear());
+
+    // 2021 opens on a Friday, so its first days finish 2020's last week rather than starting one
+    assertEquals(53, %2020-12-31->weekOfYear());
+    assertEquals(53, %2021-01-01->weekOfYear());
+    assertEquals(53, %2021-01-03->weekOfYear());
+    assertEquals(1, %2021-01-04->weekOfYear());
+
+    // and where a year opens on a Saturday, its first two days belong to the year before
+    assertEquals(52, %2000-01-01->weekOfYear());
+    assertEquals(52, %2000-01-02->weekOfYear());
+    assertEquals(1, %2000-01-03->weekOfYear());
+
+    // a year opening on a Thursday has that week as its own week 1
+    assertEquals(1, %2015-01-01->weekOfYear());
+}

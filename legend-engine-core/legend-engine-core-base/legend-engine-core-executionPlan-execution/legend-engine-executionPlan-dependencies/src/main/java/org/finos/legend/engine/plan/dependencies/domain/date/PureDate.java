@@ -14,10 +14,9 @@
 
 package org.finos.legend.engine.plan.dependencies.domain.date;
 
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.block.factory.Comparators;
-import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.StringIterate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -33,6 +32,7 @@ import java.time.YearMonth;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
@@ -141,7 +141,8 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         try
         {
             int length = formatString.length();
-            GregorianCalendar calendar = null;
+            ZonedDateTime zoned = null;
+            TimeZone zone = null;
             int i = 0;
             while (i < length)
             {
@@ -200,15 +201,14 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
                         if (hasHour())
                         {
-                            if (calendar == null)
+                            if (zoned == null)
                             {
-                                calendar = getCalendar();
-                                calendar.setTimeZone(timeZone);
-                                calendar.add(Calendar.MILLISECOND, timeZone.getOffset(calendar.getTimeInMillis()));
+                                zone = timeZone;
+                                zoned = PureDateToJava.start().toInstant(this).atZone(timeZone.toZoneId());
                             }
-                            else if (!timeZone.equals(calendar.getTimeZone()))
+                            else if (!timeZone.equals(zone))
                             {
-                                throw new IllegalArgumentException("Cannot set multiple timezones: " + calendar.getTimeZone().getID() + ", " + timeZone.getID());
+                                throw new IllegalArgumentException("Cannot set multiple timezones: " + zone.getID() + ", " + timeZone.getID());
                             }
                         }
                         break;
@@ -216,7 +216,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Year
                     case 'y':
                     {
-                        int displayYear = (calendar == null) ? this.year : calendar.get(Calendar.YEAR);
+                        int displayYear = (zoned == null) ? this.year : zoned.getYear();
                         int count = getCharCountFrom(character, formatString, i);
                         if (count < 3)
                         {
@@ -236,7 +236,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                         {
                             throw new IllegalArgumentException("Date has no month: " + this);
                         }
-                        int displayMonth = (calendar == null) ? this.month : (calendar.get(Calendar.MONTH) + 1);
+                        int displayMonth = (zoned == null) ? this.month : zoned.getMonthValue();
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayMonth, count + 1);
                         i += count;
@@ -249,7 +249,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                         {
                             throw new IllegalArgumentException("Date has no day: " + this);
                         }
-                        int displayDay = (calendar == null) ? this.day : calendar.get(Calendar.DAY_OF_MONTH);
+                        int displayDay = (zoned == null) ? this.day : zoned.getDayOfMonth();
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayDay, count + 1);
                         i += count;
@@ -258,7 +258,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Hour (1-12)
                     case 'h':
                     {
-                        int preDisplayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
+                        int preDisplayHour = hasHour() ? ((zoned == null) ? this.hour : zoned.getHour()) : 0;
                         int displayHour = (preDisplayHour == 0) ? 12 : ((preDisplayHour > 12) ? (preDisplayHour - 12) : preDisplayHour);
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayHour, count + 1);
@@ -268,7 +268,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // Hour (0-23)
                     case 'H':
                     {
-                        int displayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
+                        int displayHour = hasHour() ? ((zoned == null) ? this.hour : zoned.getHour()) : 0;
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayHour, count + 1);
                         i += count;
@@ -277,14 +277,14 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     // AM/PM
                     case 'a':
                     {
-                        int displayHour = hasHour() ? ((calendar == null) ? this.hour : calendar.get(Calendar.HOUR_OF_DAY)) : 0;
+                        int displayHour = hasHour() ? ((zoned == null) ? this.hour : zoned.getHour()) : 0;
                         appendable.append((displayHour < 12) ? "AM" : "PM");
                         break;
                     }
                     // Minute
                     case 'm':
                     {
-                        int displayMinute = hasMinute() ? ((calendar == null) ? this.minute : calendar.get(Calendar.MINUTE)) : 0;
+                        int displayMinute = hasMinute() ? ((zoned == null) ? this.minute : zoned.getMinute()) : 0;
                         int count = getCharCountFrom(character, formatString, i);
                         appendZeroPaddedInt(appendable, displayMinute, count + 1);
                         i += count;
@@ -339,15 +339,15 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     {
                         int count = getCharCountFrom(character, formatString, i);
                         // TODO
-                        if (calendar == null)
+                        if (zoned == null)
                         {
                             appendable.append("GMT");
                         }
                         else
                         {
                             SimpleDateFormat dateFormat = new SimpleDateFormat("z");
-                            dateFormat.setTimeZone(calendar.getTimeZone());
-                            appendable.append(dateFormat.format(calendar.getTime()));
+                            dateFormat.setTimeZone(zone);
+                            appendable.append(dateFormat.format(toDate(zoned)));
                         }
                         i += count;
                         break;
@@ -356,15 +356,15 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     case 'Z':
                     {
                         int count = getCharCountFrom(character, formatString, i);
-                        if (calendar == null)
+                        if (zoned == null)
                         {
                             appendable.append("+0000");
                         }
                         else
                         {
                             SimpleDateFormat dateFormat = new SimpleDateFormat("Z");
-                            dateFormat.setTimeZone(calendar.getTimeZone());
-                            appendable.append(dateFormat.format(calendar.getTime()));
+                            dateFormat.setTimeZone(zone);
+                            appendable.append(dateFormat.format(toDate(zoned)));
                         }
                         i += count;
                         break;
@@ -373,15 +373,15 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                     case 'X':
                     {
                         int count = getCharCountFrom(character, formatString, i);
-                        if (calendar == null)
+                        if (zoned == null)
                         {
                             appendable.append("Z");
                         }
                         else
                         {
                             SimpleDateFormat dateFormat = new SimpleDateFormat("X");
-                            dateFormat.setTimeZone(calendar.getTimeZone());
-                            appendable.append(dateFormat.format(calendar.getTime()));
+                            dateFormat.setTimeZone(zone);
+                            appendable.append(dateFormat.format(toDate(zoned)));
                         }
                         i += count;
                         break;
@@ -1238,7 +1238,15 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
      * precision greater than millisecond.
      *
      * @return Gregorian calendar for Pure date
+     * @deprecated Use {@link #toInstant()} or {@link #toLocalDate()} instead, or
+     * {@link PureDateToJava} where the date may stop short of a day. A Pure date is a span of time
+     * rather than an instant, and this method resolves it to the start of that span. A
+     * {@link GregorianCalendar} also reads dates before 1582 on the Julian calendar and knows no
+     * time zone history before 1900, neither of which is true of a Pure date. Nothing in this
+     * class calls it any longer; it is retained temporarily for callers that have not moved.
      */
+    @Deprecated
+    @Override
     public GregorianCalendar getCalendar()
     {
         GregorianCalendar calendar = new GregorianCalendar(this.year, (this.month == -1) ? 0 : (this.month - 1), (this.day == -1) ? 1 : this.day);
@@ -1391,6 +1399,11 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         {
             throw new RuntimeException(e);
         }
+    }
+
+    private static Date toDate(ZonedDateTime zoned)
+    {
+        return new Date(zoned.toInstant().toEpochMilli());
     }
 
     private static int getCharCountFrom(char character, String string, int start)
@@ -2005,7 +2018,7 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         static long getDateDiffWeeks(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate from, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate to)
         {
             long absDateDiffDays = Math.abs(getDiffDays(from, to));
-            int noDaysTillSunday = daysUntilSunday(from.getCalendar(), to.getCalendar());
+            int noDaysTillSunday = daysUntilSunday(from, to);
 
             if (noDaysTillSunday > absDateDiffDays)
             {
@@ -2021,27 +2034,9 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
         static long getDiffDays(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate first, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate second)
         {
-            Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate> thisCalPair = Tuples.pair(first.getCalendar(), first);
-            Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate> otherCalPair = Tuples.pair(second.getCalendar(), second);
-            Pair<Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate>, Pair<GregorianCalendar, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate>> earlierLaterPair = thisCalPair.getOne().before(otherCalPair.getOne()) ? Tuples.pair(thisCalPair, otherCalPair) : Tuples.pair(otherCalPair, thisCalPair);
-            long result = 0;
-            if (first.getYear() != second.getYear())
-            {
-                int fromYear = earlierLaterPair.getOne().getTwo().getYear();
-                int toYear = earlierLaterPair.getTwo().getTwo().getYear();
-                result += DateFunctions.getYearDays(fromYear) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
-                int nextYear = fromYear + 1;
-                for (; nextYear != toYear; nextYear++)
-                {
-                    result += DateFunctions.getYearDays(nextYear);
-                }
-                result += earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR);
-            }
-            else
-            {
-                result = (long) earlierLaterPair.getTwo().getOne().get(Calendar.DAY_OF_YEAR) - earlierLaterPair.getOne().getOne().get(Calendar.DAY_OF_YEAR);
-            }
-            return result;
+            LocalDate firstDate = PureDateToJava.start().toLocalDate(first);
+            LocalDate secondDate = PureDateToJava.start().toLocalDate(second);
+            return Math.abs(ChronoUnit.DAYS.between(firstDate, secondDate));
         }
 
         static long getDiffHours(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate first, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate second)
@@ -2064,23 +2059,17 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
 
         static long getDiffInMilliseconds(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate date1, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate date2)
         {
-            long time1 = date1.getCalendar().getTimeInMillis();
-            long time2 = date2.getCalendar().getTimeInMillis();
+            long time1 = PureDateToJava.start().toInstant(date1).toEpochMilli();
+            long time2 = PureDateToJava.start().toInstant(date2).toEpochMilli();
             return Math.abs(time1 - time2);
         }
 
-        private static int daysUntilSunday(Calendar start, Calendar end)
+        private static int daysUntilSunday(org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate from, org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate to)
         {
-            if (start.before(end))
-            {
-                int dayOfWeek = start.get(Calendar.DAY_OF_WEEK);
-                return 7 - (dayOfWeek - 1);
-            }
-            else
-            {
-                int dayOfWeek = start.get(Calendar.DAY_OF_WEEK);
-                return dayOfWeek - 1;
-            }
+            // DayOfWeek runs Monday 1 to Sunday 7, so modulo 7 gives the days elapsed since Sunday.
+            int daysSinceSunday = PureDateToJava.start().toLocalDate(from).getDayOfWeek().getValue() % 7;
+            boolean fromIsEarlier = PureDateToJava.start().toInstant(from).isBefore(PureDateToJava.start().toInstant(to));
+            return fromIsEarlier ? (7 - daysSinceSunday) : daysSinceSunday;
         }
     }
 

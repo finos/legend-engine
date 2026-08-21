@@ -14,11 +14,12 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.standard.shared.natives.date.operation;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.factory.Sets;
-import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateTime;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateWithSubsecond;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.StrictDate;
 
 import java.time.DayOfWeek;
@@ -29,10 +30,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.TemporalAdjusters;
 
-
 public class TimeBucketShared
 {
-
     public static PureDate time_bucket(PureDate date, long quantity, String unit) throws IllegalArgumentException
     {
         if (date instanceof DateTime)
@@ -66,8 +65,7 @@ public class TimeBucketShared
         }
         // date math in java.time requires TZ so adding back the UTC
         ZonedDateTime origin = Instant.ofEpochMilli(0).atZone(ZoneId.of("UTC"));
-        // avoid dependency on older gregorianCalendar methods
-        ZonedDateTime dateTimeTz = dateTime.getCalendar().toZonedDateTime().toInstant().atZone(ZoneId.of("UTC"));
+        ZonedDateTime dateTimeTz = PureDateToJava.start().toInstant(dateTime).atZone(ZoneId.of("UTC"));
         if (unit.equals("WEEKS"))
         {
             // Gets the ISO week start (if the weekday of a date is element of [Mon, Thu] it belongs to prior Monday)
@@ -167,5 +165,3 @@ public class TimeBucketShared
         return DateWithSubsecond.fromInstant(Instant.ofEpochMilli(res), 9);
     }
 }
-
-
