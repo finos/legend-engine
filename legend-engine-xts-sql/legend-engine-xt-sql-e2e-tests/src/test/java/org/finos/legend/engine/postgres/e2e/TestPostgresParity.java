@@ -115,6 +115,7 @@ public class TestPostgresParity
             "parity-tests/functions/pattern_matching.yaml",
             "parity-tests/functions/formatting_functions.yaml",
             "parity-tests/functions/datetime_functions.yaml",
+            "parity-tests/functions/date_literals.yaml",
             "parity-tests/functions/conditional_functions.yaml",
             "parity-tests/functions/json_functions.yaml",
             "parity-tests/functions/array_functions.yaml",
