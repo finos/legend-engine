@@ -4007,11 +4007,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'String like \'%b\' AS "ENDS_WITH", ' +
     'String like \'%b%\' AS "CONTAINS",' +
     'String like \'\\%b\\\%\' AS "DEFAULT_ESCAPE",' +
-    'String like \'\!%b!_\\!%\' ESCAPE \'!\' AS "ESCAPE"' +
+    'String like \'\!%b!_\\!%\' ESCAPE \'!\' AS "ESCAPE",' +
+    'String like \'a_c\' AS "UNDERSCORE",' +
+    'String like \'a%c\' AS "MIDDLE_PERCENT",' +
+    'String like \'a_b%c\' AS "MIXED",' +
+    'String ilike \'B\' AS "ILIKE_EQUAL",' +
+    'String ilike \'%B%\' AS "ILIKE_CONTAINS"' +
     'FROM service."/service/service1"',
 
     [
-      {|
+      c({|
           FlatInput.all()
               ->project(
                 [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -4022,11 +4027,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | endsWith($row.getString('String'), 'b'), 'ENDS_WITH'),
                   col(row:TDSRow[1] | contains($row.getString('String'), 'b'), 'CONTAINS'),
                   col(row:TDSRow[1] | equal($row.getString('String'), '%b%'), 'DEFAULT_ESCAPE'),
-                  col(row:TDSRow[1] | equal($row.getString('String'), '%b_\\%'), 'ESCAPE')
+                  col(row:TDSRow[1] | equal($row.getString('String'), '%b_\\%'), 'ESCAPE'),
+                  col(row:TDSRow[1] | regexpLike($row.getString('String'), '^a.c$'), 'UNDERSCORE'),
+                  col(row:TDSRow[1] | regexpLike($row.getString('String'), '^a.*c$'), 'MIDDLE_PERCENT'),
+                  col(row:TDSRow[1] | regexpLike($row.getString('String'), '^a.b.*c$'), 'MIXED'),
+                  col(row:TDSRow[1] | regexpLike($row.getString('String'), '^B$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]), 'ILIKE_EQUAL'),
+                  col(row:TDSRow[1] | regexpLike($row.getString('String'), '^.*B.*$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]), 'ILIKE_CONTAINS')
                 ])
-      },
+      }, true, false),
 
-      {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+      c({|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->project(~[
                 EQUAL : x|$x.String == 'b',
@@ -4034,19 +4044,15 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 ENDS_WITH : x|$x.String->endsWith('b'),
                 CONTAINS : x|$x.String->contains('b'),
                 DEFAULT_ESCAPE : x|$x.String->equal('%b%'),
-                ESCAPE : x|$x.String->equal('%b_\\%')])
-      }
+                ESCAPE : x|$x.String->equal('%b_\\%'),
+                UNDERSCORE : x|$x.String->regexpLike('^a.c$'),
+                MIDDLE_PERCENT : x|$x.String->regexpLike('^a.*c$'),
+                MIXED : x|$x.String->regexpLike('^a.b.*c$'),
+                ILIKE_EQUAL : x|$x.String->regexpLike('^B$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
+                ILIKE_CONTAINS : x|$x.String->regexpLike('^.*B.*$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE])])
+      }, true, false)
     ]
   )
-}
-
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLikeUnsupported():Boolean[1]
-{
-
-  error('SELECT String like \'ab_cd\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: unescaped _ not supported, pattern: ab_cd');
-  error('SELECT String like \'ab%cd\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab%cd');
-  error('SELECT String like \'ab\\%cd\' ESCAPE \'!\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ab\\%cd');
-  error('SELECT String like \'ab\\_cd\' ESCAPE \'!\' FROM service."/service/service1"', 'Unsupported: currently unsupported like pattern: unescaped _ not supported, pattern: ab\\_cd');
 }
 
 //PATTERN MATCHING
