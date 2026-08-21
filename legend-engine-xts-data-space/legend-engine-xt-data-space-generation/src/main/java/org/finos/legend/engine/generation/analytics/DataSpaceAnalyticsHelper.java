@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -43,6 +44,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.m3.function.Function;
 import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -64,6 +67,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Concre
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
+import org.finos.legend.pure.m3.navigation.function.InvalidFunctionDescriptorException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -164,6 +168,7 @@ public class DataSpaceAnalyticsHelper
                             //ignore
                         }
                     }
+                    executableAnalysisResult.sampleValues = executableV1.sampleValues;
                     dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                 }
                 else if (executable instanceof Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable)
@@ -282,6 +287,25 @@ public class DataSpaceAnalyticsHelper
                             {
                             }
                         }
+                        // find by path
+                        dataSpaceProtocol.executables.stream().filter(e ->
+                        {
+                            if (!(e instanceof DataSpacePackageableElementExecutable))
+                            {
+                                return false;
+                            }
+                            String rawPath = ((DataSpacePackageableElementExecutable) e).executable.path;
+                            String normalizedPath;
+                            try
+                            {
+                                normalizedPath = FunctionDescriptor.isValidFunctionDescriptor(rawPath) ? FunctionDescriptor.functionDescriptorToId(rawPath) : rawPath;
+                            }
+                            catch (InvalidFunctionDescriptorException ex)
+                            {
+                                throw new RuntimeException(ex);
+                            }
+                            return executablePath.equals(normalizedPath);
+                        }).findFirst().ifPresent(exec -> executableAnalysisResult.sampleValues = exec.sampleValues);
                         dataSpaceExecutionContextAnalysisResults.add(executableAnalysisResult);
                     }
                 }
