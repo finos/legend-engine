@@ -27,6 +27,76 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  - id: like__txt_txt__underscore
+    sql: "SELECT 'abc' LIKE 'a_c' AS matches, 'abbc' LIKE 'a_c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__middle_percent
+    sql: "SELECT 'abc' LIKE 'a%c' AS matches, 'abd' LIKE 'a%c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__underscore_and_percent
+    sql: "SELECT 'axbc' LIKE 'a_b%' AS matches, 'abc' LIKE 'a_b%' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__multiple_underscores
+    sql: "SELECT 'abcd' LIKE 'a__d' AS matches, 'abd' LIKE 'a__d' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__escaped_underscore
+    sql: "SELECT 'a_c' LIKE 'a\\_c' AS matches, 'abc' LIKE 'a\\_c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__percent_in_middle
+    sql: "SELECT 'abcdef' LIKE 'ab%ef' AS matches, 'abcxyz' LIKE 'ab%ef' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__case_insensitive
+    sql: "SELECT 'Hello' ILIKE 'hello' AS matches, 'world' ILIKE 'hello' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__case_insensitive_wildcard
+    sql: "SELECT 'Hello World' ILIKE '%hello%' AS matches, 'Goodbye' ILIKE '%hello%' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__from_table
+    sql: "SELECT val ILIKE '%LO%' AS result FROM strings ORDER BY 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__regex_special_chars
+    sql: "SELECT 'a.c' LIKE 'a.c' AS matches, 'abc' LIKE 'a.c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   # === regexp_count ===
   - id: regexp_count__constant__no_flags
     sql: "SELECT REGEXP_COUNT('hello world', '[aeiou]') AS matches, REGEXP_COUNT('xyz', '[aeiou]') AS noMatch FROM strings WHERE id = 1"

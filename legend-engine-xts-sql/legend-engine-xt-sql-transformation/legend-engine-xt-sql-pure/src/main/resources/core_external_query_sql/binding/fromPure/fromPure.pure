@@ -229,7 +229,7 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
 
 function meta::external::query::sql::transformation::queryToPure::getLambdaCompiler(compiler:Function<{String[1]->LambdaFunction<Any>[1]}>[1]):Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]
 {
-  {l:LambdaFunction<Any>[1]| 
+  {l:LambdaFunction<Any>[1]|
     let code = $l->removeFrom()->printLambdaDefinition();
     $compiler->eval($code);
   }
@@ -2637,48 +2637,79 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $context.positional($p, $expContext.type, true)->convertValueSpecification($expContext.type);
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::parseLikePattern(pattern:String[1], escape:String[0..1]):Pair<String, String>[*]
+{
+  parseLikePattern($pattern->chunk(1), 0, $escape, $pattern);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::parseLikePattern(chars:String[*], index:Integer[1], escape:String[0..1], pattern:String[1]):Pair<String, String>[*]
+{
+  if ($index >= $chars->size(),
+    | [],
+    | let c = $chars->at($index);
+      if ($escape->isNotEmpty() && $c == $escape->toOne(),
+        | assert($index + 1 < $chars->size(), | 'invalid like pattern: escape character at end of pattern: ' + $pattern);
+          [pair('__LITERAL__', $chars->at($index + 1))]->concatenate(parseLikePattern($chars, $index + 2, $escape, $pattern));,
+        | if ($c == '%',
+            | [pair('__WILDCARD_MULTI__', '')]->concatenate(parseLikePattern($chars, $index + 1, $escape, $pattern));,
+            | if ($c == '_',
+                | [pair('__WILDCARD_SINGLE__', '')]->concatenate(parseLikePattern($chars, $index + 1, $escape, $pattern));,
+                | [pair('__LITERAL__', $c)]->concatenate(parseLikePattern($chars, $index + 1, $escape, $pattern));))););
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::escapeRegexLiteralChar(char:String[1]):String[1]
+{
+  if ($char->in(['\\', '.', '^', '$', '|', '?', '*', '+', '(', ')', '[', ']', '{', '}']),
+    | '\\' + $char,
+    | $char);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::likeTokensToRegexpPattern(tokens:Pair<String, String>[*]):String[1]
+{
+  '^' + $tokens->map(t |
+      if ($t.first == '__WILDCARD_MULTI__',
+        | '.*',
+        | if ($t.first == '__WILDCARD_SINGLE__',
+            | '.',
+            | escapeRegexLiteralChar($t.second))))->joinStrings('') + '$';
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLikePredicate(l:LikePredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   assert($l.escape->isEmpty() || $l.escape->toOne()->instanceOf(StringLiteral), | 'like escape must be string literal');
-  unsupported($l.ignoreCase->isFalse(), | 'ilike currently not supported');
   assert($l.pattern->instanceOf(StringLiteral), | 'like pattern must be string literal');
 
   let pattern = $l.pattern->cast(@StringLiteral).value;
-  let escape = $l.escape->cast(@StringLiteral).value->orElse('\\');
+  let rawEscape = $l.escape->cast(@StringLiteral).value->orElse('\\');
+  assert($rawEscape->length() <= 1, | 'like escape must be empty or a single character');
+  let escape = if ($rawEscape == '', | [], | $rawEscape);
 
-  // Replace escaped wildcards with placeholders to find real (unescaped) wildcards
-  let escapedEscapePlaceholder = '<<ESC-ESC>>';
-  let escapedPercentPlaceholder = '<<ESC-PCT>>';
-  let escapedUnderscorePlaceholder = '<<ESC-US>>';
+  let tokens = parseLikePattern($pattern, $escape);
+  let shape = $tokens->map(t |
+    if ($t.first == '__WILDCARD_MULTI__',
+      | '%',
+      | if ($t.first == '__WILDCARD_SINGLE__', | '_', | 'L')))->joinStrings('');
 
-  // Neutralize escape sequences so only real wildcards remain
-  let neutralized = $pattern->replace($escape + $escape, $escapedEscapePlaceholder)
-                            ->replace($escape + '%', $escapedPercentPlaceholder)
-                            ->replace($escape + '_', $escapedUnderscorePlaceholder);
+  let hasLeading = $shape->startsWith('%');
+  let hasTrailing = $shape->endsWith('%');
+  let canUseSimplePredicate = !$l.ignoreCase && !$shape->contains('_') && $shape->matches('^%*L*%*$');
 
-  // Validate: no unescaped _ allowed
-  unsupported(!$neutralized->contains('_'), | 'currently unsupported like pattern: unescaped _ not supported, pattern: ' + $pattern);
-
-  let hasLeading = $neutralized->startsWith('%');
-  let hasTrailing = $neutralized->endsWith('%') && ($neutralized->length() > if($hasLeading, |1, |0));
-
-  // Strip leading/trailing unescaped % and assert none remain in the middle
-  let inner = $neutralized->substring(if($hasLeading, |1, |0), $neutralized->length() - if($hasTrailing, |1, |0));
-  unsupported(!$inner->contains('%'), | 'currently unsupported like pattern: % in the middle of the pattern is not supported unless escaped, pattern: ' + $pattern);
-
-  // Build the literal by resolving placeholders back to their unescaped characters
-  let literal = $inner->replace($escapedEscapePlaceholder, $escape)
-                       ->replace($escapedPercentPlaceholder, '%')
-                       ->replace($escapedUnderscorePlaceholder, '_');
+  let literal = $tokens->filter(t | $t.first == '__LITERAL__')->map(t | $t.second)->joinStrings('');
+  let regexPattern = likeTokensToRegexpPattern($tokens);
 
   let value = $l.value->processExpression($expContext, $context);
 
-  let func = if($hasLeading && $hasTrailing, | contains_String_1__String_1__Boolean_1_,
-             | if($hasLeading, | endsWith_String_1__String_1__Boolean_1_,
-             | if($hasTrailing, | startsWith_String_1__String_1__Boolean_1_,
-             | equal_Any_MANY__Any_MANY__Boolean_1_)));
+  if ($canUseSimplePredicate,
+    | let func = if($hasLeading && $hasTrailing, | contains_String_1__String_1__Boolean_1_,
+                 | if($hasLeading, | endsWith_String_1__String_1__Boolean_1_,
+                 | if($hasTrailing, | startsWith_String_1__String_1__Boolean_1_,
+                 | equal_Any_MANY__Any_MANY__Boolean_1_)));
 
-  sfe($func, [$value, iv($literal)]);
+      sfe($func, [$value, iv($literal)]);,
+    | if ($l.ignoreCase,
+        | nullOrSfe(regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_,
+                    [$value, iv($regexPattern), iv(meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE)]),
+        | nullOrSfe(regexpLike_String_1__String_1__Boolean_1_, [$value, iv($regexPattern)])));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBetweenPredicate(b:BetweenPredicate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -5230,16 +5261,16 @@ aggregation(
     let aggs = $this.aggregations($aggregates);
 
     if ($relation,
-      | 
+      |
         let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
 
-        let columns = $groupByColumns->map(c | $relationColumns->get($c).values)->concatenate($aggregates->map(a | 
+        let columns = $groupByColumns->map(c | $relationColumns->get($c).values)->concatenate($aggregates->map(a |
           let agg = $a->cast(@meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>);
           newRelationColumn($agg.name, $agg.reduce->functionReturnType().rawType, $agg.reduce->functionReturnMultiplicity());
         ));
 
         let gt = buildRelationType($columns);
-      
+
         if ($groupByColumns->isEmpty(),
           | sfe(aggregate_Relation_1__AggColSpecArray_1__Relation_1_, $gt, [$func, iv($aggs)]),
           | sfe(groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, $gt, [$func, iv(^meta::pure::metamodel::relation::ColSpecArray<Any>(names = $groupByColumns)), iv($aggs)]));,
