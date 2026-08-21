@@ -3745,8 +3745,8 @@ function meta::external::query::sql::transformation::queryToPure::processHash(ar
 function meta::external::query::sql::transformation::queryToPure::isHexEncode(f:FunctionCall[0..1]):Boolean[1]
 {
   isFunctionCallName($f, 'encode')
-  && $f.arguments->size() == 2 
-  && $f.arguments->at(1)->instanceOf(StringLiteral) 
+  && $f.arguments->size() == 2
+  && $f.arguments->at(1)->instanceOf(StringLiteral)
   && $f.arguments->at(1)->cast(@StringLiteral).value->toLower() == 'hex'
 }
 
@@ -4075,11 +4075,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processComparisonExpression', $context.debug);
 
   //in postgres a StringLiteral is unknown type by default. In this case, we can try to use the right hand side type to force correct typing
-  let leftExpressionContext = if ($c.left->instanceOf(StringLiteral), 
-    | ^$expContext(type = getExpressionType($c.right, $context)), 
+  let leftExpressionContext = if ($c.left->instanceOf(StringLiteral),
+    | ^$expContext(type = getExpressionType($c.right, $context)),
     | $expContext);
 
-  
+
 
   let left = $c.left->processExpression($leftExpressionContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
@@ -4306,6 +4306,41 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                         | nullOrSfe(regexpLike_String_1__String_1__Boolean_1_, [$left, $right])));
 
   if ($not, | nullOrSfe(not_Boolean_1__Boolean_1_, $match), | $match);
+}
+
+function meta::external::query::sql::transformation::queryToPure::parsePostgresRegexpFlags(flagsArg:ValueSpecification[1]):meta::pure::functions::string::RegexpParameter[*]
+{
+  let flagStr = $flagsArg->reactivate()->match([
+    s:String[1] | $s,
+    a:Any[1..*] | fail('unsupported regex flag ' + $a->map(v | $v->toString())->joinStrings(',')); '';,
+    a:Any[*] | ''
+  ]);
+
+  parsePostgresRegexpFlagsString($flagStr);
+}
+
+function meta::external::query::sql::transformation::queryToPure::parsePostgresRegexpFlagsString(flagStr:String[1]):meta::pure::functions::string::RegexpParameter[*]
+{
+  // PostgreSQL pattern matching flags (https://www.postgresql.org/docs/current/functions-matching.html):
+  // i - case-insensitive matching
+  // c - case-sensitive matching (overrides i)
+  // s - non-newline-sensitive (single-line mode): dot matches newline
+  // n - newline-sensitive: dot does NOT match newline, ^ and $ match at line boundaries
+  // m - historical synonym for n
+  // g - global (handled separately for regexp_replace, not a RegexpParameter)
+  let supportedFlags = ['i', 'c', 'n', 's', 'm', 'g'];
+  let chars = $flagStr->chunk(1);
+
+  let unsupported = $chars->filter(c | !$c->in($supportedFlags));
+  assert($unsupported->isEmpty(), | 'Unsupported regexp flag(s): ' + $unsupported->joinStrings(', ') + '. Supported flags are: i (case-insensitive), c (case-sensitive), n/m (newline-sensitive), s (dot matches newline), g (global)');
+
+  $chars->map(c | [
+    pair('i', meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE),
+    pair('c', meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE),
+    pair('s', meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE),
+    pair('n', meta::pure::functions::string::RegexpParameter.MULTILINE),
+    pair('m', meta::pure::functions::string::RegexpParameter.MULTILINE)
+  ]->filter(p | $p.first == $c).second)->removeDuplicates();
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLiteral(literal: Literal[1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
