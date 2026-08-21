@@ -2549,19 +2549,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(s:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   //we clear the type to ensure things that are concatenating to create a date are not processed as date e.g. where date > cast('2026' || '/01/01' as date)
-  processStringConcatenate($s.values->map(v | $v->processExpression(^$expContext(type = []), $context)), [], false, $expContext);
+  processStringConcatenateWithArgumentTransform($s.values->map(v | $v->processExpression(^$expContext(type = []), $context)), [], false, false, $expContext);
 }
 
 //in postgres args are coercesed to varchar, Boolean has a very specific handling
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenateWithArgumentTransform(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenateWithArgumentTransform(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], transformBools:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
 {
-  let processedArgs = $args->map(a | if ($a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),  
+  let processedArgs = $args->map(a | if ($transformBools && $a.genericType.rawType->size() == 1 && $a.genericType.rawType->toOne()->subTypeOfExNil(Boolean),  
                       | if ($a->instanceOf(InstanceValue) && ($a->cast(@InstanceValue).values == true || $a->cast(@InstanceValue).values == false),
                           | let value = $a->cast(@InstanceValue).values;
                             if ($value == true, | iv('t'), | if ($value == false, | iv('f'), | $a));,
                           | createIfStatement($a, iv('t'), createIfStatement(sfe(isEmpty_Any_$0_1$__Boolean_1_, $a), iv(''), iv('f')))
                       );,
-                      | $a->possiblyProcessToString()));
+                      | unsupported($a->evaluateAndDeactivate().genericType.rawType != Map && $a->evaluateAndDeactivate().genericType.rawType != Variant, | 'concatenating json');
+                        $a->possiblyProcessToString();
+  ));
 
   processStringConcatenate($processedArgs, $separator, $ignoreNulls, $expContext);
 }
@@ -2569,20 +2571,30 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(args:ValueSpecification[*], separator:ValueSpecification[0..1], ignoreNulls:Boolean[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
 {
   let func = if ($separator->isEmpty(), | plus_String_MANY__String_1_, | joinStrings_String_MANY__String_1__String_1_);
+  let requiresNullGuard = $expContext.relation->isTrue() && !$ignoreNulls && $args->exists(a | $a->isZeroOne());
 
   //TODO handle ignoreNulls in non relation flow, requires regression testing as breaking change.
   let filteredArgs = if ([
     pair(| $expContext.relation->isTrue() && $ignoreNulls, | getNonNullArguments($args)),
-    pair(| $expContext.relation->isTrue() && !$ignoreNulls && $args->exists(a | $a->isZeroOne()), | fail('string concat not ignoring nullable values not currently supported, if you want to ignore nulls use function concat instead of ||'); iv([]);),
     pair(| $expContext.relation->isTrue() && !$ignoreNulls && $args->exists(a | $a->isNull()), | iv([]))
   ], | $args);
 
       //TODO handle in non relation flow, requires regression testing as breaking change.
   let multiplicityForcedArgs = if ($expContext.relation->isTrue(), | toOneifyCollectionArg($filteredArgs), | $filteredArgs);
 
-  if ($multiplicityForcedArgs->size() == 1 && $multiplicityForcedArgs->at(0)->isNull(),
+  let concatenatedValue = if ($multiplicityForcedArgs->size() == 1 && $multiplicityForcedArgs->at(0)->isNull(),
       | createNormalizedCast(iv([]), String)->evaluateAndDeactivate(),
       | nullOrSfe($func, iv($multiplicityForcedArgs)->concatenate($separator)));
+
+  if ($requiresNullGuard,
+    | let nullGuardCondition = $args->filter(a | $a->isZeroOne())
+        ->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a))
+        ->fold({isEmptyArg, anyEmpty |
+          sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
+        }, iv(false));    
+
+        createIfStatement($nullGuardCondition, createNormalizedCast(iv([]), String)->evaluateAndDeactivate(), $concatenatedValue);,
+    | $concatenatedValue);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBitwiseBinaryExpression(b:BitwiseBinaryExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3136,7 +3148,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::possiblyProcessToString(v:ValueSpecification[1]):ValueSpecification[1]
 {
   let type = $v->evaluateAndDeactivate().genericType.rawType;
-  if ($type->preciseToPrimitive() == String, | $v, | if ($v.multiplicity != PureZero, | sfe(toString_Any_1__String_1_, $v), | $v));
+  if ($type->preciseToPrimitive() == String, | $v, | if ($v->evaluateAndDeactivate().multiplicity != PureZero, | sfe(toString_Any_1__String_1_, $v), | $v));
 }
 
 //TODO revisit to fully push down

@@ -98,6 +98,62 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  - id: concat_op__txt_txt__from_table
+    sql: SELECT val || '-' || nullable_val AS result FROM strings ORDER BY 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__int_bool
+    sql: SELECT 'abc' || 1 || true || false AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__int
+    sql: SELECT name || '-' || age AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__decimal
+    sql: SELECT 'salary=' || salary AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__date
+    sql: SELECT 'hired:' || hire_date AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__boolean
+    sql: SELECT 'active=' || active AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__null_handling
+    sql: SELECT 'val=' || NULL || '-' || 42 AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__all_types
+    sql: SELECT name || '|' || age || '|' || salary || '|' || hire_date || '|' || active AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   - id: concat__variadic__from_table
     sql: SELECT CONCAT(val, '-', nullable_val) AS result FROM strings ORDER BY 1
     function: concat

@@ -3009,7 +3009,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT ' +
       '\'a\' || \'b\' as SIMPLE,' +
       '\'a\' || null as "NULL",' +
-      // '\'a\' || case when 1 = 1 then null else \'b\' end as NULLABLE, ' +
+      '\'a\' || case when 1 = 1 then null else \'b\' end as NULLABLE, ' +
       'concat(\'a\', \'b\') as SIMPLE_CONCAT,' +
       'concat(\'a\', \'b\', null) as NULL_CONCAT,' +
       'concat(\'a\', case when 1 = 1 then null else \'b\' end) as NULLABLE_CONCAT,' +
@@ -3021,7 +3021,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           )->project(~[
             SIMPLE : x | 'a' + 'b',
             NULL : x | []->cast(@String),
-            // NULLABLE : x | 'a' + if (1 == 1, | []->toOne(), | 'b'),
+            NULLABLE : x | if (false || if (1 == 1, | [], | 'b')->isEmpty(), | []->cast(@String), | 'a' + if (1 == 1, | [], | 'b')->toOne()),
             SIMPLE_CONCAT : x | 'a' + 'b',
             NULL_CONCAT : x | 'a' + 'b',
             NULLABLE_CONCAT : x | 'a' + if (1 == 1, | [], | 'b')->toOne(),
@@ -3035,20 +3035,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT ' +
     ' concat(true, false, Boolean) as BOOLEANS, ' + 
-    ' concat(1, 2, \'abc\', 1.1) as MIXED ' + 
+    ' concat(1, 2, \'abc\', 1.1) as MIXED, ' + 
+    ' true || false || Boolean as BOOLEANS_OP, ' + 
+    ' 1 || 2 || \'abc\' || 1.1 as MIXED_OP ' +     
     'FROM service(\'/service/service1\')',
     [
       c({| FlatInput.all()->project(
             ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
           )->project(~[
             BOOLEANS: x | 't' + 'f' + if ($x.Boolean, | 't', | if ($x.Boolean->isEmpty(), | '', | 'f')),
-            MIXED: x | 1->toString() + 2->toString() + 'abc' + 1.1->toString()
+            MIXED: x | 1->toString() + 2->toString() + 'abc' + 1.1->toString(),
+            BOOLEANS_OP: x | true->toString() + (false->toString() + $x.Boolean->toString()),
+            MIXED_OP: x | 1->toString() + (2->toString() + ('abc' + 1.1->toString()))
           ])
       })
     ]
-  );  
-
-  error('SELECT \'a\' || case when 1 = 1 then null else \'b\' end as NULLABLE FROM service(\'/service/service1\')', 'string concat not ignoring nullable values not currently supported, if you want to ignore nulls use function concat instead of ||');
+  );
 }
 
 
