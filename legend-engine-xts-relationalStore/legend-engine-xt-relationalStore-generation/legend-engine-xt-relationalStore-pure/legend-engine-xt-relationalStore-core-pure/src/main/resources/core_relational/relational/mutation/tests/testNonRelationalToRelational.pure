@@ -1,0 +1,66 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+import meta::external::store::model::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::mapping::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::metamodel::variant::*;
+import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::relation::*;
+import meta::pure::functions::relation::variant::*;
+import meta::relational::metamodel::*;
+import meta::relational::mutation::tests::nonRelationalToRelational::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::execute::tests::*;
+
+function meta::relational::mutation::tests::nonRelationalToRelational::sourceRuntime(): meta::core::runtime::Runtime[1]
+{
+  let jsonConnection = ^meta::external::store::model::JsonModelConnection(
+    class = Metrics,
+    url   = 'data:application/json,\n{"code":1,"name":"Alice"}\n{"code":2,"name":"Bob"}\n{"code":3,"name":"Charlie"}\n'
+  );
+  ^Runtime(connectionStores = ^ConnectionStore(element = ^ModelStore(), connection = $jsonConnection));
+}
+
+function <<paramTest.Test>> meta::relational::mutation::tests::nonRelationalToRelational::testNonRelationalToRelationalSelect(conn: Connection[1]): Boolean[1]
+{
+  let targetRuntime = ^Runtime(connectionStores = ^ConnectionStore(connection = $conn, element = TempDb));
+
+  let expected =
+    'value\n' +
+    '\'"{""name"":""Alice""}"\'\n' +
+    '\'"{""name"":""Bob""}"\'\n' +
+    '\'"{""name"":""Charlie""}"\'\n';
+
+  executeLegendFunction(
+    {|
+      Metrics.all()
+        ->graphFetch(#{ Metrics { name } }#)
+        ->serialize(#{ Metrics { name } }#)
+        ->from(MetricsMapping, sourceRuntime())
+        ->fromJson()
+        ->toMany(@Variant)
+        ->flatten(~value)
+        ->select(~[value])
+        ->from($targetRuntime)
+    },
+    EmptyMapping,
+    TempDb,
+    $conn,
+    [],
+    $expected
+  );
+}
