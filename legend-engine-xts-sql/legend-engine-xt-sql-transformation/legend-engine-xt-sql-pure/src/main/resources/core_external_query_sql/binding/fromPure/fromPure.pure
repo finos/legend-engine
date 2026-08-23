@@ -3288,16 +3288,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let lambda = $subQueryCtx.lambda(true);
 
-  //a subquery used as a value (as opposed to a FROM source) must, by SQL rules, project exactly one
-  //column - its result is that column's value, at most one row. eval_Function_1__V_m_'s own declared
-  //return type is the unresolved type parameter V, so left to default inference the caller sees an
-  //empty genericType.rawType and any ->toOne() on it fails (e.g. in a plain comparison). Stamp the
-  //real column type here, once, for every caller, instead of leaving each one to work around it.
-  //the multiplicity is ZeroOne regardless of the column's own declared multiplicity, because it
-  //reflects the subquery possibly returning zero rows, not whether the column itself is nullable.
-  let columns = resolveSchema($lambda, $context.extensions);
-  assert($columns->size() == 1, | 'a subquery used as a value must return exactly one column, got ' + $columns->size()->toString());
-  sfe(eval_Function_1__V_m_, ^GenericType(rawType = $columns->toOne().type->toOne()), [], ZeroOne, iv($lambda));
+  sfe(eval_Function_1__V_m_, iv($lambda));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processArraySliceExpression(a:ArraySliceExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]

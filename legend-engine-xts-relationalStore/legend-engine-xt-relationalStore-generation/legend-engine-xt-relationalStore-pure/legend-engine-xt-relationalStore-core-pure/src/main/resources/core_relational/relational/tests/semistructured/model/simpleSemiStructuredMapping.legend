@@ -228,6 +228,24 @@ function simple::isEmptyCheckOnSemiStructuredPropertyAccessAfterAt(): TabularDat
         ])
 }
 
+function simple::filterWithIsEmptyOnSemiStructuredProperty(): TabularDataSet[1]
+{
+    simple::model::Person.all()
+        ->filter(x | $x.firm.address.street->isEmpty())
+        ->project([
+            col(x | $x.firstName, 'First Name')
+        ])
+}
+ 
+function simple::filterWithIsNotEmptyOnSemiStructuredProperty(): TabularDataSet[1]
+{
+    simple::model::Person.all()
+        ->filter(x | $x.firm.address.street->isNotEmpty())
+        ->project([
+            col(x | $x.firstName, 'First Name')
+        ])
+}
+
 function simple::semiStructuredDifferentDataTypePropertyAccess(): TabularDataSet[1]
 {
     simple::model::Person.all()

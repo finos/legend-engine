@@ -2,6 +2,7 @@
 Database pack::DB
 (
   Table myTab(name VARCHAR(200))
+  Table windowVariant(ID INTEGER PRIMARY KEY, PAYLOAD SEMISTRUCTURED)
 )
 
 ###Pure
@@ -18,6 +19,56 @@ function pack::mixedExpression():Any[*]
 function pack::fmultiExpressions():Any[*]
 {
   #SQL{with q as (select name from tb('pack::DB.myTab')) select name from q as t where t.name = 'www'}#->from(test::test);
+}
+
+function pack::jsonInSelectOnly():Any[*]
+{
+  #SQL{select t.ID as "id", t.PAYLOAD -> 'businessData' -> 'signalId' as "signalId" from tb('pack::DB.windowVariant') as t}#->from(test::test);
+}
+ 
+function pack::jsonIsNullInWhere():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' is null}#->from(test::test);
+}
+ 
+function pack::jsonIsNotNullInWhere():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' is not null}#->from(test::test);
+}
+ 
+function pack::wildcardSubqueryJsonIsNullInWhereOnly():Any[*]
+{
+  #SQL{select * from (select * from tb('pack::DB.windowVariant')) as s where s.PAYLOAD -> 'businessData' -> 'signalId' is not null}#->from(test::test);
+}
+ 
+function pack::jsonInCaseWhenAsWhereFilter():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where (case when t.PAYLOAD -> 'businessData' -> 'signalId' is null then 1 else 0 end) = 1}#->from(test::test);
+}
+ 
+function pack::deepJsonIsNullInWhere():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'a' -> 'b' -> 'c' -> 'd' is null}#->from(test::test);
+}
+ 
+function pack::jsonIsNullCombinedWithAnd():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' is null and t.ID > 1}#->from(test::test);
+}
+ 
+function pack::jsonNotIsNullInWhere():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where not (t.PAYLOAD -> 'businessData' -> 'signalId' is null)}#->from(test::test);
+}
+ 
+function pack::jsonEqualsInWhere():Any[*]
+{
+  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' = 'abc'}#->from(test::test);
+}
+ 
+function pack::jsonIsNullInGroupByHaving():Any[*]
+{
+  #SQL{select t.ID as "id", count(*) as "cnt" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' is null group by t.ID}#->from(test::test);
 }
 
 ###Runtime
