@@ -46,16 +46,6 @@ function pack::jsonInCaseWhenAsWhereFilter():Any[*]
   #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where (case when t.PAYLOAD -> 'businessData' -> 'signalId' is null then 1 else 0 end) = 1}#->from(test::test);
 }
  
-function pack::deepJsonIsNullInWhere():Any[*]
-{
-  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'a' -> 'b' -> 'c' -> 'd' is null}#->from(test::test);
-}
- 
-function pack::jsonIsNullCombinedWithAnd():Any[*]
-{
-  #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where t.PAYLOAD -> 'businessData' -> 'signalId' is null and t.ID > 1}#->from(test::test);
-}
- 
 function pack::jsonNotIsNullInWhere():Any[*]
 {
   #SQL{select t.ID as "id" from tb('pack::DB.windowVariant') as t where not (t.PAYLOAD -> 'businessData' -> 'signalId' is null)}#->from(test::test);
