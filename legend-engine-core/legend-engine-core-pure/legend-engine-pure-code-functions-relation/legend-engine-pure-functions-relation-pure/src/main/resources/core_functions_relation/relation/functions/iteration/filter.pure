@@ -107,27 +107,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
                 '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::filter::zzProbeNestedGetEquals<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-   let tds = #TDS
-     id, payload:meta::pure::metamodel::variant::Variant
-     1, '{"businessData":{"signalId":"s1"}}'
-     2, '{"businessData":{}}'
-     3, '{"businessData":{"signalId":"s3"}}'
-   #;
-
-   let expr = {|
-                  $tds->filter(x | $x.payload->get('businessData')->get('signalId')->to(@String) == 's1')
-              };
-
-   let res =  $f->eval($expr);
-
-   assertEquals('#TDS\n'+
-                '   id,payload\n'+
-                '   1,\'{"businessData":{"signalId":"s1"}}\'\n'+
-                '#', $res->toString());
-}
-
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
