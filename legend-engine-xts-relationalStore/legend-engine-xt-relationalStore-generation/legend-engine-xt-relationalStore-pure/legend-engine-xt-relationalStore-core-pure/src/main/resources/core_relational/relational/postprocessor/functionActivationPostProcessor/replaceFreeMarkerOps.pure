@@ -40,8 +40,24 @@ function <<access.private>> meta::relational::postProcessor::transformRelational
     v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
     v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
     f: FreeMarkerOperationHolder[1] | $f->rewriteFreeMarkerOperationHolder();,
+    ll: LiteralList[1] | $ll->processLiteralList();,
     r: RelationalOperationElement[1] | $r;
   ]);
+}
+
+function <<access.private>> meta::relational::postProcessor::processLiteralList(ll: LiteralList[1]): RelationalOperationElement[1]
+{
+  let transformedLiterals = $ll.values->map(l | if($l.value->instanceOf(VarPlaceHolder) && $l.value->cast(@VarPlaceHolder)->meta::relational::postProcessor::isRequiredPlaceHolder(),
+                                                    | ^Literal(value= $l->toOne()->transformRelationalElement()),
+                                                    | $l
+                                                  );
+                                            );
+  ^$ll(values = $transformedLiterals);
+}
+
+function <<access.private>> meta::relational::postProcessor::isRequiredPlaceHolder(v: VarPlaceHolder[1]): Boolean[1]
+{
+  $v.multiplicity->isNotEmpty() && $v.multiplicity == PureOne;
 }
 
 function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]

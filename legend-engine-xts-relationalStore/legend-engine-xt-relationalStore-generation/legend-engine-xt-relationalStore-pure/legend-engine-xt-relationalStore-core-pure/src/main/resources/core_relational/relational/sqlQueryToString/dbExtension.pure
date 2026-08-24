@@ -521,7 +521,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                             | '',
                                             | processTableAlias($c.alias, $dbConfig, $config)) + processColumnName($c.column.name->toOne(), $dbConfig)
                                           ,                                                                
-                                          l:Literal[1]| processLiteral($l, $dbConfig),
+                                          l:Literal[1]| processLiteral($l, $dbConfig, $sgc),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
                                           u:UpsertSQLQuery[1]| $u->processUpsertSQLQuery($sgc),
@@ -635,6 +635,14 @@ function meta::relational::functions::sqlQueryToString::processColumnName(name:S
 function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1]) : String[1]
 {
    $literal.value->processLiteralValue($dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1], sgc:SqlGenerationContext[1]) : String[1]
+{
+  let processor = if($literal.value->instanceOf(TableFunctionParamPlaceHolder),
+                      |$literal.value->cast(@RelationalOperationElement)->processOperation($sgc),
+                      |$literal.value->processLiteralValue($dbConfig)
+                    );
 }
 
 function meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
