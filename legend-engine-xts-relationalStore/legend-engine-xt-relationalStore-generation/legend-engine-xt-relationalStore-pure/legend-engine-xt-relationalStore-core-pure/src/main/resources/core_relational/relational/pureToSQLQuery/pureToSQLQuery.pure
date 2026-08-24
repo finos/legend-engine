@@ -10885,7 +10885,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_, second = meta::relational::functions::pureToSqlQuery::processNth_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
 
         // variant
-        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processVariantFlatten_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processFlattenOrVariantTempTable_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_, second = meta::relational::functions::pureToSqlQuery::processFromJson_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::toJson_Variant_1__String_1_, second = meta::relational::functions::pureToSqlQuery::processToJson_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::variant::convert::toVariant_Any_MANY__Variant_1_, second = meta::relational::functions::pureToSqlQuery::processToVariant_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
@@ -10914,4 +10914,34 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::core::runtime::currentUserId__String_1_, second = meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::runtime::currentUserId__String_1_, second = meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_)
    ])
+}
+
+// Dispatcher for flatten_T_MANY__ColSpec_1__Relation_1_ — detects whether this is a cross-store (from non relational source) variant temp-table flatten (source is fromJson()->toMany(@Variant) chain or PlanVarPlaceHolder) or a regular relational lateral flatten (source is a relational expression).
+// Cross-store case (from non relational source): generate SELECT from the pre-materialized variant temp table.
+// Relational case: delegate to the existing processVariantFlatten (LATERAL FLATTEN SQL).
+function meta::relational::functions::pureToSqlQuery::processFlattenOrVariantTempTable(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let isVariantTempTableCase = $fe->meta::relational::mutation::executionPlan::isVariantFlattenSource();
+   if($isVariantTempTableCase,
+      | processWriteToVariantTempTable($fe, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+      | processVariantFlatten($fe, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)
+   );
+}
+
+function meta::relational::functions::pureToSqlQuery::processWriteToVariantTempTable(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let colName  = $fe.parametersValues->at(1)->meta::relational::mutation::executionPlan::extractVariantColName();
+   let tempName = $fe->meta::relational::mutation::executionPlan::extractVariantWriteTempName();
+   let variantColumn = ^Column(name = $colName, type = ^meta::relational::metamodel::datatype::SemiStructured());
+   let tempTable = ^Table(name = $tempName,
+                          schema = ^Schema(name = 'default', database = ^Database(name = 'TempTableDb')),
+                          columns = $variantColumn,
+                          temporaryTable = true);
+   let tableAlias = ^TableAlias(name = 'writeVariant' + buildNodeId($nodeId, ''), relationalElement = $tempTable);
+   ^$operation(
+      select = ^TdsSelectSqlQuery(
+         columns = [^Alias(name = $colName->addQuotesIfNecessary(), relationalElement = ^TableAliasColumn(alias = $tableAlias, column = $variantColumn))],
+         data    = ^RootJoinTreeNode(alias = $tableAlias)
+      )
+   );
 }

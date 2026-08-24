@@ -1,4 +1,5 @@
 import meta::pure::router::store::metamodel::*;
+import meta::pure::router::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::translation::*;
@@ -89,6 +90,170 @@ function meta::relational::mutation::executionPlan::generateNodeForSameConnectio
     $node;
 }
 
+// Unwraps flatten's variant-bridge source shape toMany(@Variant, fromJson(X)) down to X, the candidate from/with call. Returns nothing if the shape doesn't match.
+function meta::relational::mutation::executionPlan::extractVariantCandidateFromCall(source: ValueSpecification[1]): SimpleFunctionExpression[0..1]
+{
+   let toManyFn   = meta::pure::functions::variant::convert::toMany_Variant_$0_1$__T_$0_1$__T_MANY_;
+   let fromJsonFn = meta::pure::functions::variant::convert::fromJson_String_1__Variant_1_;
+   let extract = {sfe: SimpleFunctionExpression[1] |
+      if($sfe.func == $toManyFn,
+         | $sfe.parametersValues->evaluateAndDeactivate()->at(0)->match([
+              fromJson: SimpleFunctionExpression[1] |
+                 if($fromJson.func == $fromJsonFn,
+                    | $fromJson.parametersValues->evaluateAndDeactivate()->at(0)->match([
+                         from: SimpleFunctionExpression[1] | [$from],
+                         a:    Any[1]                      | []
+                      ]),
+                    | []
+                 ),
+              a: Any[1] | []
+           ]),
+         | []
+      )
+   };
+   $source->match([
+      sfe: SimpleFunctionExpression[1]             | $extract->eval($sfe),
+      s:   StoreMappingRoutedValueSpecification[1]  | $s.value->match([
+              sfe: SimpleFunctionExpression[1] | $extract->eval($sfe),
+              a:   Any[1]                      | []]),
+      a:   Any[1]                                  | []
+   ]);
+}
+
+// Confirms fe is one of the router's own specially-recognized from/with-family binding functions
+function meta::relational::mutation::executionPlan::isFromOrWithCall(fe: FunctionExpression[1]): Boolean[1]
+{
+   meta::pure::router::store::routing::specializedFunctionExpressionRouterProcessorForStore([])
+      ->filter(p | $p.first->eval($fe))
+      ->isNotEmpty();
+}
+
+// Triggered when flatten() with a Variant source is detected from a non relational source (replaces write<T,Z> variant).
+function meta::relational::mutation::executionPlan::isVariantTempTableSource(source: ValueSpecification[1]): Boolean[1]
+{
+   $source->extractVariantCandidateFromCall()->filter(from | $from->meta::relational::mutation::executionPlan::isFromOrWithCall())->isNotEmpty();
+}
+
+// Returns true when the flatten expression's source matches toMany(@Variant, fromJson(...)).
+function meta::relational::mutation::executionPlan::isVariantFlattenSource(fe: FunctionExpression[1]): Boolean[1]
+{
+   $fe.parametersValues->evaluateAndDeactivate()->at(0)->meta::relational::mutation::executionPlan::isVariantTempTableSource();
+}
+
+function meta::relational::mutation::executionPlan::extractVariantFromCall(source: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+   let fromJsonSFE = $source->match([
+       sfe: SimpleFunctionExpression[1]            | $sfe.parametersValues->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression),
+       s:   StoreMappingRoutedValueSpecification[1] | $s.value->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression)
+   ]);
+   $fromJsonSFE.parametersValues->evaluateAndDeactivate()->at(0)->cast(@SimpleFunctionExpression);
+}
+
+function meta::relational::mutation::executionPlan::buildAllocNodeFromFromCall(fromCall: SimpleFunctionExpression[1], srcVarName: String[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): AllocationExecutionNode[1]
+{
+   let srcLambda = ^LambdaFunction<{->Any[*]}>(expressionSequence = $fromCall);
+   let subPlan = meta::pure::executionPlan::executionPlan($srcLambda, $exeCtx, $extensions, $debug);
+   ^AllocationExecutionNode(varName=$srcVarName, resultSizeRange=ZeroMany, resultType=$subPlan.rootExecutionNode.resultType, executionNodes=$subPlan.rootExecutionNode);
+}
+
+// Triggered when non relational to relational via flatten() is detected. Streams objects from 'source' into a transient VARIANT temp table on relational store resolved from the runtime, then returns a SELECT over it.
+function meta::relational::mutation::executionPlan::planWriteToVariantTempTableExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
+{
+  let fe = $sq.vs->cast(@FunctionExpression);
+  let store = $sq.store->cast(@Database);
+  let dbConnection = $runtime.connectionByElement($sq.store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+  let dbConfig = $dbConnection.type->createDbConfig();
+  let colName  = $fe.parametersValues->at(1)->extractVariantColName();
+  let srcVarName = 'variant_src_col_' + $colName;
+  let tempName   = 'variant_temp_col_' + $colName;
+
+  let fromCall  = $fe.parametersValues->at(0)->evaluateAndDeactivate()->extractVariantFromCall();
+  let allocNode = $fromCall->buildAllocNodeFromFromCall($srcVarName, $exeCtx, $extensions, $debug);
+
+  // dataType is resolved to the target dialect's concrete SQL type (VARIANT/JSON/...) here, at plan-gen time, via each dialect's existing dataTypeToSqlText registration
+  let createAndPopulate = ^meta::relational::mapping::CreateAndPopulateTempTableExecutionNode(
+      inputVarNames           = [$srcVarName],
+      tempTableName           = $tempName,
+      tempTableColumnMetaData = [^TempTableColumnMetaData(
+          column = ^SQLResultColumn(
+              label    = $colName,
+              dataType = ^meta::relational::metamodel::datatype::DbSpecificDataType(
+                             coreDataType  = ^meta::relational::metamodel::datatype::SemiStructured(),
+                             dbSpecificSql = $dbConfig.dataTypeToSqlText(^meta::relational::metamodel::datatype::SemiStructured())
+                         )
+          )
+      )],
+      connection = $dbConnection,
+      resultType = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void))
+  );
+  let selectNode = $dbConfig.procesTempTableName($tempName, $dbConnection)->buildVariantSelectNode($colName, $sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, $extensions);
+  let relBlock   = ^RelationalBlockExecutionNode(
+      isolationLevel        = 2,
+      executionNodes        = [$createAndPopulate, $selectNode],
+      resultType            = $selectNode.resultType,
+      finallyExecutionNodes = []
+  );
+  ^SequenceExecutionNode(
+      executionNodes  = [$allocNode, $relBlock],
+      resultType      = $selectNode.resultType,
+      resultSizeRange = ZeroMany
+  );
+}
+
+// Build the SELECT execution node over the VARIANT temp table
+function meta::relational::mutation::executionPlan::buildVariantSelectNode(tempName: String[1], colName: String[1], sq: StoreQuery[1], store: meta::relational::metamodel::Database[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[0..1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], debug: DebugContext[1], extensions: Extension[*]): ExecutionNode[1]
+{
+   let variantColumn = ^Column(name = $colName, type = ^meta::relational::metamodel::datatype::SemiStructured());
+   let tempTable  = ^Table(name = $tempName,
+                           schema = ^Schema(name = 'default', database = ^Database(name = 'TempTableDb')),
+                           columns = $variantColumn, temporaryTable = true);
+   let tableAlias = ^TableAlias(name = 'root', relationalElement = $tempTable);
+   ^PostProcessorResult(
+      query = ^SelectSQLQuery(
+         columns = ^Alias(name = $colName->addQuotesIfNecessary(), relationalElement = ^TableAliasColumn(alias = $tableAlias, column = $variantColumn)),
+         data    = ^RootJoinTreeNode(alias = $tableAlias)
+      )
+   )->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $mapping, $runtime, $exeCtx, $debug, true, $extensions);
+}
+
+// Default post-processor (registered in postProcessorList()) that dialect-qualifies the variant temp table's Table.name for the NESTED-dispatch case (flatten(...)->select(...)/project(...)),
+// where processWriteToVariantTempTable (pureToSQLQuery.pure) built it with the bare/raw name because that leaf pureToSqlQuery dispatch function has no DatabaseConnection in scope.
+function meta::relational::mutation::executionPlan::qualifyVariantTempTableNames(query:SQLQuery[1], runtime:Runtime[1], store:meta::relational::metamodel::Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+{
+   if($store->isEmpty(),
+      | ^PostProcessorResult(query = $query),
+      |
+      let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+      let dbConfig   = $connection.type->createDbConfig();
+      let transformFn = {r: RelationalOperationElement[1], uniqueId: Integer[1] |
+         $r->match([
+            t: Table[1] | if($t.temporaryTable == true
+                              && $t.name->startsWith('variant_temp_')
+                              && $t.columns->cast(@Column)->exists(c | $c.type->instanceOf(meta::relational::metamodel::datatype::SemiStructured)),
+                           | ^$t(name = $dbConfig.procesTempTableName($t.name, $connection)),
+                           | $t);,
+            rel: RelationalOperationElement[1] | $rel;
+         ])
+      };
+      ^PostProcessorResult(query = $query->meta::relational::postProcessor::transform($transformFn, ^Map<RelationalOperationElement, RelationalOperationElement>()).first->cast(@SQLQuery));
+   );
+}
+
+function meta::relational::mutation::executionPlan::extractVariantColName(colParam: ValueSpecification[1]): String[1]
+{
+   $colParam->match([
+      sfe: SimpleFunctionExpression[1] | $sfe.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@String),
+      vs:  ValueSpecification[1]       | $vs->evaluateAndDeactivate()
+                                              .genericType
+                                              .typeArguments->toOne()
+                                              .rawType
+                                              ->cast(@meta::pure::metamodel::relation::RelationType<Any>)
+                                              .columns->toOne()
+                                              .name->toOne()
+   ]);
+}
+
+
 function meta::relational::mutation::generateCommit(commitQuery:CommitQuery[1],  connection:meta::external::store::relational::runtime::DatabaseConnection[1], extensions: Extension[*]): ExecutionNode[1]
 {
    let sql = sqlQueryToString($commitQuery, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions);
@@ -100,4 +265,61 @@ function meta::relational::mutation::generateCommit(commitQuery:CommitQuery[1], 
 Class meta::relational::mutation::SQLTransactionNode extends ExecutionNode
 {
   commands: String[*];
+}
+
+// Walk a (routed) ValueSpecification tree and collect every FunctionExpression whose func is flatten_T_MANY__ColSpec_1__Relation_1_.  Used by the Normal Flow in planExecution to detect
+// flatten(source, col) variant-ingest sub-expressions. InstanceValues and LambdaFunctions are also recursed into so flatten() is found even when hidden inside eval(lambda) indirections.
+function meta::relational::mutation::executionPlan::collectWriteToVariantExprs(vs: Any[1]): FunctionExpression[*]
+{
+   $vs->evaluateAndDeactivate()->match([
+      fe: FunctionExpression[1] |
+          if($fe.func->in([meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_]) && $fe->isVariantFlattenSource(),
+             | [$fe],
+             | $fe.parametersValues->evaluateAndDeactivate()->map(pv | $pv->collectWriteToVariantExprs())
+          );,
+      frvs: FunctionRoutedValueSpecification[1] |
+          $frvs.value->collectWriteToVariantExprs();,
+      r: RoutedValueSpecification[1] |
+          $r.value->collectWriteToVariantExprs();,
+      iv: InstanceValue[1] |
+          $iv.values->map(v | $v->collectWriteToVariantExprs());,
+      lf: LambdaFunction<Any>[1] |
+          $lf.expressionSequence->evaluateAndDeactivate()->map(e | $e->collectWriteToVariantExprs());,
+      a: Any[1] | []
+   ]);
+}
+
+function meta::relational::mutation::executionPlan::extractVariantWriteTempName(writeExpr: FunctionExpression[1]): String[1]
+{
+   'variant_temp_col_' + $writeExpr.parametersValues->evaluateAndDeactivate()->at(1)->extractVariantColName();
+}
+
+function meta::relational::mutation::executionPlan::buildVariantCreateAndLoadNode(writeExpr: FunctionExpression[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1]): meta::relational::mapping::CreateAndPopulateTempTableExecutionNode[1]
+{
+   let colName    = $writeExpr.parametersValues->evaluateAndDeactivate()->at(1)->extractVariantColName();
+   let srcVarName = 'variant_src_col_' + $colName;
+   let dbConfig   = $dbConnection.type->createDbConfig();
+   // dataType is resolved to the target dialect's concrete SQL type here - see planWriteToVariantTempTableExecution.
+   ^meta::relational::mapping::CreateAndPopulateTempTableExecutionNode(
+      inputVarNames           = [$srcVarName],
+      tempTableName           = $writeExpr->extractVariantWriteTempName(),
+      tempTableColumnMetaData = [^TempTableColumnMetaData(
+          column = ^SQLResultColumn(
+              label    = $colName,
+              dataType = ^meta::relational::metamodel::datatype::DbSpecificDataType(
+                             coreDataType  = ^meta::relational::metamodel::datatype::SemiStructured(),
+                             dbSpecificSql = $dbConfig.dataTypeToSqlText(^meta::relational::metamodel::datatype::SemiStructured())
+                         )
+          )
+      )],
+      connection = $dbConnection,
+      resultType = ^VoidResultType(genericType = ^GenericType(rawType = meta::pure::router::store::routing::Void))
+   );
+}
+
+function meta::relational::mutation::executionPlan::buildVariantInlineAllocNode(writeExpr: FunctionExpression[1], exeCtx: meta::pure::runtime::ExecutionContext[1], debug: DebugContext[1], extensions: Extension[*]): AllocationExecutionNode[0..1]
+{
+   let colName    = $writeExpr.parametersValues->evaluateAndDeactivate()->at(1)->extractVariantColName();
+   let srcVarName = 'variant_src_col_' + $colName;
+   [$writeExpr.parametersValues->evaluateAndDeactivate()->at(0)->extractVariantFromCall()->buildAllocNodeFromFromCall($srcVarName, $exeCtx, $extensions, $debug)];
 }

@@ -76,7 +76,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                 f: SimpleFunctionExpression[1] | $f.func->in([meta::relational::functions::database::tableReference_Database_1__String_1__String_1__Table_1_]),
                                                 a: Any[*] | false
                                      ])},
-     routeFunctionExpressions = pair(
+     routeFunctionExpressions = [
+         pair(
             fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
             {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
               let mapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping;
@@ -96,7 +97,15 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                               )
               );
             }
-      ),
+         ),
+         // flatten — intercept before first-pass argument routing for variant temp table flow so from(mapping,runtime) inside the source does not contaminate $routed and shouldBeRouted for downstream functions (select, project, with). The specializedFunctionProcessor path fires before routeFunctionExpressionFunctionDefinition so the first pass never runs for flatten when used for variant temp-table ingest.
+         pair(
+            fe:FunctionExpression[1] | $fe.func == meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_ && $fe->meta::relational::mutation::executionPlan::isVariantFlattenSource(),
+            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+              ^$state(shouldBeRouted = false)
+            }
+         )
+      ],
      supportsNativeJoinAmongElements = true,
      isPropertyAutoMapped = {prop: AbstractProperty<Any>[1], set: InstanceSetImplementation[1] |
         $set->match([
@@ -253,6 +262,12 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
           |$func->in([meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_]), // meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Runtime_1__Integer_1_]),
           | // Write Flow
             $sq->meta::relational::mutation::executionPlan::planWriteExecution($ext, $m, $runtime->toOne(), $exeCtx, $extensions, $debug);
+        ),
+        pair(
+          | $func->in([meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_]) &&
+            $sq.vs->cast(@meta::pure::metamodel::valuespecification::FunctionExpression)->meta::relational::mutation::executionPlan::isVariantFlattenSource(),
+          | // Variant-flatten temp-table Flow
+            $sq->meta::relational::mutation::executionPlan::planWriteToVariantTempTableExecution($ext, $m, $runtime->toOne(), $exeCtx, $extensions, $debug);
         )
       ]
       ,|
@@ -268,8 +283,30 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
      
         let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
             let originalQuery = $sq.vs->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
-            $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
-                          ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
+            let resultNode = $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
+                                           ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
+            // Nested flatten(source, col) case: variant-flatten appears as a sub-expression (e.g. flatten(src,~col)->filter(...)).
+            let writeExprs = $sq.vs->meta::relational::mutation::executionPlan::collectWriteToVariantExprs();
+            if($writeExprs->isEmpty(),
+               | $resultNode,
+               | let dbConnection = $runtime->toOne().connectionByElement($sq.store)->cast(@meta::external::store::relational::runtime::DatabaseConnection);
+                 let allocNodes      = $writeExprs->map(we | $we->meta::relational::mutation::executionPlan::buildVariantInlineAllocNode($exeCtx, $debug, $extensions));
+                 let createLoadNodes = $writeExprs->map(we | $we->meta::relational::mutation::executionPlan::buildVariantCreateAndLoadNode($dbConnection));
+                 let relBlock = ^RelationalBlockExecutionNode(
+                    isolationLevel        = 2,
+                    executionNodes        = $createLoadNodes->concatenate($resultNode),
+                    resultType            = $resultNode.resultType,
+                    finallyExecutionNodes = []  // commitQueryProcessor not registered for all dialects (e.g. Snowflake); not needed since CREATE/INSERT/SELECT share one block connection
+                 );
+                 if($allocNodes->isEmpty(),
+                    | $relBlock,
+                    | ^SequenceExecutionNode(
+                         executionNodes  = $allocNodes->concatenate($relBlock),
+                         resultType      = $resultNode.resultType,
+                         resultSizeRange = ZeroMany
+                      )
+                 );
+            );
       );
 
  
