@@ -48,6 +48,61 @@ Class meta::external::function::description::openapi::transformation::fromPure::
   price: Float[1];
 }
 
+Class meta::external::function::description::openapi::transformation::fromPure::tests::CyclicPerson
+{
+  name: String[1];
+  firm: CyclicFirm[0..1];
+  manager: CyclicPerson[0..1];
+  address: CyclicAddress[0..1];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::CyclicFirm
+{
+  name: String[1];
+  employees: CyclicPerson[*];
+  address: CyclicAddress[0..1];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::CyclicAddress
+{
+  line: String[1];
+  occupants: CyclicPerson[*];
+  firms: CyclicFirm[*];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::AssociatedPerson
+{
+  name: String[1];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::AssociatedFirm
+{
+  name: String[1];
+}
+
+Class meta::external::function::description::openapi::transformation::fromPure::tests::AssociatedAddress
+{
+  line: String[1];
+}
+
+Association meta::external::function::description::openapi::transformation::fromPure::tests::PersonFirm
+{
+  employer: AssociatedFirm[0..1];
+  employees: AssociatedPerson[*];
+}
+
+Association meta::external::function::description::openapi::transformation::fromPure::tests::PersonAddress
+{
+  homeAddress: AssociatedAddress[0..1];
+  occupants: AssociatedPerson[*];
+}
+
+Association meta::external::function::description::openapi::transformation::fromPure::tests::FirmAddress
+{
+  officeAddress: AssociatedAddress[0..1];
+  firms: AssociatedFirm[*];
+}
+
 function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test simple service join'} meta::external::function::description::openapi::transformation::fromPure::tests::simpleServiceJoin():Service[1]
 {
  ^Service
@@ -297,6 +352,58 @@ function <<meta::external::function::description::openapi::profiles::ServiceSpec
   );
 }
 
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test service over a cyclic model'} meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithCyclicGraphFetch():Service[1]
+{
+  let tree = #{CyclicPerson{name, manager{name}, firm{name, employees{name}}}}#;
+  let func = {|CyclicPerson.all()->graphFetchChecked($tree)->serialize($tree)};
+  ^Service
+  (
+    pattern = '/service/testCyclicOpenApi',
+    owners = ['dummy'],
+    documentation = 'test service over a cyclic model',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+                (
+                  func = $func,
+                  mapping = cyclicMapping,
+                  runtime = []
+                )
+  );
+}
+
+function <<meta::external::function::description::openapi::profiles::ServiceSpecGeneration.OpenAPI>> {doc.doc = 'Legend openapi test service over a model cyclic through associations'} meta::external::function::description::openapi::transformation::fromPure::tests::serviceWithAssociationGraphFetch():Service[1]
+{
+  let tree = #{AssociatedPerson{name, employer{name, officeAddress{line}}}}#;
+  let func = {|AssociatedPerson.all()->graphFetchChecked($tree)->serialize($tree)};
+  ^Service
+  (
+    pattern = '/service/testAssociationOpenApi',
+    owners = ['dummy'],
+    documentation = 'test service over a model cyclic through associations',
+    autoActivateUpdates = true,
+    execution = ^PureSingleExecution
+                (
+                  func = $func,
+                  mapping = associationMapping,
+                  runtime = []
+                )
+  );
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testCyclicGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = serviceWithCyclicGraphFetch()->serviceToOpenApi(^Server(url='test'), meta::relational::extension::relationalExtensions());
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testCyclicGraphFetchOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
+function <<test.Test>> meta::external::function::description::openapi::transformation::fromPure::tests::testAssociationGraphFetchServiceShouldReturnCorrectOpenapiString():Boolean[1]
+{
+  let openapi = serviceWithAssociationGraphFetch()->serviceToOpenApi(^Server(url='test'), meta::relational::extension::relationalExtensions());
+  let expected = readFile('/core_external_format_openapi/transformation/fromPure/tests/resources/testAssociationGraphFetchOpenApiSpec.txt')->toOne();
+  assertJsonStringsEqual($expected, $openapi);
+}
+
 function meta::external::function::description::openapi::transformation::fromPure::tests::packageableElemWithTrade():PackageableElement[*]
 {
   [
@@ -333,5 +440,23 @@ Mapping meta::external::function::description::openapi::transformation::fromPure
     tradeId : $src.tradeId;
     quantity : $src.quantity;
     price : $src.price;
+  }
+)
+
+Mapping meta::external::function::description::openapi::transformation::fromPure::tests::cyclicMapping
+(
+  CyclicPerson : Pure
+  {
+    ~src CyclicPerson
+    name : $src.name;
+  }
+)
+
+Mapping meta::external::function::description::openapi::transformation::fromPure::tests::associationMapping
+(
+  AssociatedPerson : Pure
+  {
+    ~src AssociatedPerson
+    name : $src.name;
   }
 )

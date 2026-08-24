@@ -10,7 +10,7 @@
     }
   ],
   "paths": {
-    "/service/testOpenApi": {
+    "/service/testCyclicOpenApi": {
       "get": {
         "tags": [
           "definition"
@@ -21,7 +21,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Person"
+                  "$ref": "#/components/schemas/CyclicPerson"
                 }
               }
             }
@@ -38,7 +38,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Person"
+                  "$ref": "#/components/schemas/CyclicPerson"
                 }
               }
             }
@@ -49,13 +49,30 @@
   },
   "components": {
     "schemas": {
-      "Person": {
+      "CyclicPerson": {
         "type": "object",
         "properties": {
-          "lastName": {
+          "name": {
             "type": "string"
           },
-          "firstName": {
+          "manager": {
+            "$ref": "#/components/schemas/CyclicPerson"
+          },
+          "firm": {
+            "$ref": "#/components/schemas/CyclicFirm"
+          }
+        }
+      },
+      "CyclicFirm": {
+        "type": "object",
+        "properties": {
+          "employees": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CyclicPerson"
+            }
+          },
+          "name": {
             "type": "string"
           }
         }
