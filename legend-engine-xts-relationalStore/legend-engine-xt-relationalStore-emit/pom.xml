@@ -26,6 +26,13 @@
     <name>Legend Engine - XT - Relational Store - EMIT Tests</name>
     <description>EMIT (Engine Model Integration Test) models exercising the relational store: parse, compile and execute relational mapping tests against an in-memory H2.</description>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <dependencies>
         <!-- EMIT framework + JUnit integration -->
         <dependency>

@@ -27,6 +27,13 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - SQL - Reverse PCT</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -39,6 +46,12 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-relationalStore-PCT-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -223,6 +236,10 @@
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-legendCompiler</artifactId>
         </dependency>
         <dependency>
@@ -285,6 +302,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-framework</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

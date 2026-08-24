@@ -32,6 +32,21 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <!-- The dependency plugin analyzer raises these as false positives -->
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-maven-generation-java</artifactId>
                 <executions>
@@ -193,6 +208,7 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-unclassified-pure</artifactId>
             <type>test-jar</type>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

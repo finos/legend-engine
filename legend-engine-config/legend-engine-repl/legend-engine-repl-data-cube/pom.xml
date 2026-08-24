@@ -30,6 +30,10 @@
         <skip.yarn>false</skip.yarn>
         <repl.web-application.version>${legend.web-application.version}</repl.web-application.version>
         <repl.web-application.url>${npm.registry.url}/@finos/legend-application-repl-deployment/-/legend-application-repl-deployment-${repl.web-application.version}.tgz</repl.web-application.url>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
     </properties>
 
     <build>
@@ -78,6 +82,10 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-repl-client</artifactId>

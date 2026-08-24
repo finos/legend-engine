@@ -91,6 +91,15 @@
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
+
         <!-- ANNOTATIONS -->
         <dependency>
             <groupId>io.swagger</groupId>

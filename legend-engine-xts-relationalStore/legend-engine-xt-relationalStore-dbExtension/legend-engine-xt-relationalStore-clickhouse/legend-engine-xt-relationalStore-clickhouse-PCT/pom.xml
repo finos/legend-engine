@@ -27,6 +27,13 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - ClickHouse - PCT</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -44,6 +51,13 @@
                                 <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-grammar</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-code-compiled-core</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>junit:junit</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-standard-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-variant-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -198,6 +212,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-store-relational-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

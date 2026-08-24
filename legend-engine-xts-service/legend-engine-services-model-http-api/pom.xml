@@ -25,6 +25,13 @@
     <artifactId>legend-engine-services-model-http-api</artifactId>
     <name>Legend Engine - Services - model - HTTP - API</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

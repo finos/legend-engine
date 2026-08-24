@@ -46,6 +46,9 @@
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-tds-java</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-relation-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -203,6 +206,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-variant</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-shared-functions-variant</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>

@@ -26,6 +26,13 @@
     <packaging>jar</packaging>
     <name>Legend Engine - XT - Relational Store - Execution Plan - Connection - Tests</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <!-- Block running the _server tests (They should only execute in TeamCity). Run only H2 tests-->
@@ -136,12 +143,14 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -163,20 +172,24 @@
                     <artifactId>javax.annotation-api</artifactId>
                 </exclusion>
             </exclusions>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-executionPlan-connection-authentication-default</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- ENGINE -->
 
@@ -184,10 +197,12 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
@@ -195,6 +210,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- POOLING -->
 
@@ -202,6 +218,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-h2-execution-2.1.214</artifactId>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test -->

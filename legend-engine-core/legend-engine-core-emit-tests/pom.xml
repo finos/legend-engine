@@ -26,6 +26,13 @@
     <name>Legend Engine - Core - Core-Feature EMIT Tests</name>
     <description>EMIT (Engine Model Integration Test) models exercising core engine features that need no store extension: Pure language constructs (constraints, measures, profiles, qualified properties, inheritance, functions) and model-to-model mappings. This module hosts EMIT test models only; the EMIT framework itself lives in legend-engine-core-emit.</description>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <dependencies>
         <!-- EMIT framework + JUnit integration -->
         <dependency>

@@ -44,6 +44,14 @@
                                 <dependency>org.finos.legend.engine:legend-engine-pure-runtime-java-extension-shared-functions-standard</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
+                            <ignoredNonTestScopedDependencies>
+                                <dependency>org.finos.legend.engine:legend-engine-language-pure-compiler</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-code-core-extension</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-identity-core</dependency>
+                                <dependency>junit:junit</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-dsl-mapping-pure</dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-protocol-pure</dependency>
+                            </ignoredNonTestScopedDependencies>
                         </configuration>
                     </execution>
                 </executions>
@@ -100,6 +108,11 @@
     <dependencies>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+<!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
         <dependency>
@@ -145,6 +158,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-core-extension</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -169,6 +183,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-identity-core</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -177,6 +192,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -234,6 +250,7 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
+<!--            <scope>test</scope>-->
         </dependency>
 
         <!-- TEST -->

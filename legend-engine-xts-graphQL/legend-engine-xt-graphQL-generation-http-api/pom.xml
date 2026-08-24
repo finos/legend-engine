@@ -25,6 +25,13 @@
     <artifactId>legend-engine-xt-graphQL-generation-http-api</artifactId>
     <name>Legend Engine - XT - GraphQL - HTTP - API</name>
 
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.enforcer.maxJdkVersion>11</maven.enforcer.maxJdkVersion>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -92,6 +99,16 @@
             <artifactId>legend-engine-xt-identity-pac4j</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <!-- PURE -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
+        </dependency>
 
         <!-- ANNOTATIONS -->
         <dependency>
