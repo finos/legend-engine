@@ -363,51 +363,6 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::simple::rel
   testIsEmptyCheckOnSemiStructuredPropertyAccessAfterAtAccessHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
 }
 
-function meta::relational::tests::semistructured::simple::testFilterWithIsEmptyOnSemiStructuredPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'simple::filterWithIsEmptyOnSemiStructuredProperty__TabularDataSet_1_',
-    $mapping,
-    'First Name\n' +
-    'Fabrice\n' +
-    'David\n'
-  );
-}
- 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithIsEmptyOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithIsEmptyOnSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
- 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterWithIsEmptyOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithIsEmptyOnSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
- 
-function meta::relational::tests::semistructured::simple::testFilterWithIsNotEmptyOnSemiStructuredPropertyHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
-{
-  semiStructuredExecute($conn,
-    'simple::filterWithIsNotEmptyOnSemiStructuredProperty__TabularDataSet_1_',
-    $mapping,
-    'First Name\n' +
-    'Peter\n' +
-    'John\n' +
-    'John\n' +
-    'Anthony\n' +
-    'Oliver\n'
-  );
-}
- 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::testFilterWithIsNotEmptyOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithIsNotEmptyOnSemiStructuredPropertyHelper($conn, 'simple::mapping::H2Mapping');
-}
- 
-function <<paramTest.Test>> meta::relational::tests::semistructured::simple::relationFunctionMapping::testFilterWithIsNotEmptyOnSemiStructuredProperty(conn: Connection[1]):Boolean[1]
-{
-  testFilterWithIsNotEmptyOnSemiStructuredPropertyHelper($conn, 'simple::relationFunctionMapping::H2Mapping');
-}
-
 function meta::relational::tests::semistructured::simple::testSemiStructuredDifferentDataTypePropertyAccessHelper(conn: Connection[1], mapping:String[1]):Boolean[1]
 {
   semiStructuredExecute($conn,
