@@ -127,7 +127,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
-    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='(locate(%s) - 1)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='array_join(collect_list(%s), %s)')),
@@ -179,6 +179,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     })),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] |
         [variancePopulationOrSampleDatabricks($p, true)]
+    })),
+    // Neither 'corr' nor 'mode' has native Spark aggregates that accept a literal Pure collection
+    // argument (same literal-array-vs-real-column ambiguity as variance/average above) - see
+    // corrDatabricksHelper for the literal-array Pearson-correlation rewrite.
+    dynaFnToSql('corr',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [corrDatabricksHelper($p)]
+    })),
+    dynaFnToSql('mode',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        if($p->size() == 1,
+           | 'mode(' + $p->at(0) + ')',
+           | modeDatabricksHelper($p))
     })),
     // The shared default template ('avg(1.0 * %s)') has exactly one %s placeholder, assuming the
     // sole Pure-level argument always renders as a single relational column reference - true for
@@ -235,7 +246,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->transformRangeDatabricks()})),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
-    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='array_join(cast(%s as ARRAY<STRING>), %s)')),
+    // A per-row (non-windowed) Variant->String[*] joinStrings (e.g. x.payload->toMany(@String)-
+    // >joinStrings(',')) routes here via processVariantJoinStrings, not through the windowed
+    // joinStrings path above. For the row where the Variant payload column holds a JSON null (not
+    // an array), this still renders the string "null" instead of Pure's expected joinStrings
+    // identity value, the empty string - see plan.md section 1e for the extensive (as of
+    // 2026-08-24, still unresolved) investigation: confirmed via direct SQL tracing that
+    // toMany(@String) lowers to a 'variantTo' DynaFunction wrapping this operand (processToMany,
+    // pureToSQLQuery.pure:4765), and a Databricks-specific 'variantTo' override using
+    // is_variant_null() DOES correctly select an "empty result" branch for this row (confirmed via
+    // a branch-marker experiment), but neither returning NULL nor a genuine empty array from that
+    // branch changes the final observed value - it renders as the string "null" in both cases,
+    // suggesting the bug is downstream of SQL generation (e.g. Java-side JDBC/TDS value mapping for
+    // Databricks VARIANT columns), not fixable via a dialect SQL template alone.
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='ifnull(array_join(cast(%s as ARRAY<STRING>), %s), \'\')')),
     dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='flatten(%s)')),
 
     // Bit functions
@@ -299,7 +323,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->isNotEmpty()
                   && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
                 | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='ifnull(array_position(%s, cast(%s as bigint)) - 1, -1)')),
-                | $baseDispatch->eval($func, $sgc)
+                | // The shared toVariantFriendlyValue() renders a genuinely empty, untyped literal
+                  // collection (e.g. []) as `cast(toVariantList(), array<VARIANT>)`, since Nil's
+                  // relational type is SemiStructured. VARIANT is not an orderable type in Spark, so
+                  // array_distinct/sort(default, no comparator - which lowers to the 'array_sort'
+                  // DynaFunction, see pureToSQLQuery_variant.pure) fail with INVALID_ORDERING_TYPE
+                  // even though the array is empty and its element type is unobservable. This is
+                  // scoped to only these two consumers (rather than a generic 'cast' override) because
+                  // other VARIANT-array consumers - e.g. array_append, used when folding into an
+                  // initially-empty accumulator - legitimately rely on the bare VARIANT placeholder
+                  // accepting any later-appended element type; forcing a concrete STRING placeholder
+                  // there breaks e.g. appending a numeric value (DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES).
+                  if($func.name->in(['array_distinct', 'array_sort']) && $func.parameters->size() == 1
+                       && $func.parameters->at(0)->instanceOf(DynaFunction)
+                       && $func.parameters->at(0)->cast(@DynaFunction).name == 'cast'
+                       && $func.parameters->at(0)->cast(@DynaFunction).parameters->size() == 2
+                       && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->instanceOf(DynaFunction)
+                       && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).name == 'toVariantList'
+                       && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).parameters->isEmpty(),
+                     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format=$func.name + '(cast(array() as ARRAY<STRING>))', transform={p:String[1] | []})),
+                     | $baseDispatch->eval($func, $sgc)
+                  )
              )
         )
    );
@@ -452,6 +496,68 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    );
 }
 
+// 2 args is the real column-pair case (Relation_Aggregate/Relation_Window forms via rowMapper) -
+// Spark's native corr(%s, %s) applies unchanged. A literal-array pair (e.g. corr([1,2],[10,20]))
+// flattens both arrays into one combined list of rendered element strings, so N>2 here is
+// unambiguously the literal-array case: the first half is series A, the second half is series B
+// (both arrays are always the same length for a well-formed call). Pearson's correlation is
+// computed directly from the paired elements - population covariance over the product of
+// population standard deviations - without needing any Spark array/aggregate function, since the
+// element count is already known at SQL-generation time. N==1 means one array was empty (e.g.
+// corr([1],[])), which Pure's corr() defines as no correlation ([]); NULL is SQL's equivalent of
+// that empty optional.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::corrDatabricksHelper(values:String[*]):String[1]
+{
+   if($values->size() == 2,
+      | 'corr(' + $values->at(0) + ', ' + $values->at(1) + ')',
+      | if($values->size() == 1,
+           | 'cast(null as double)',
+           | let n = ($values->size() / 2)->floor();
+             let seriesA = $values->take($n);
+             let seriesB = $values->drop($n);
+             let meanA = '((' + $seriesA->joinStrings('+') + ') * 1.0 / ' + $n->toString() + ')';
+             let meanB = '((' + $seriesB->joinStrings('+') + ') * 1.0 / ' + $n->toString() + ')';
+             let sumProd = range($n)->map(i | '((' + $seriesA->at($i) + ' - ' + $meanA + ') * (' + $seriesB->at($i) + ' - ' + $meanB + '))')->joinStrings('+');
+             let sumSqA = range($n)->map(i | 'power((' + $seriesA->at($i) + ' - ' + $meanA + '), 2)')->joinStrings('+');
+             let sumSqB = range($n)->map(i | 'power((' + $seriesB->at($i) + ' - ' + $meanB + '), 2)')->joinStrings('+');
+             '((' + $sumProd + ') / sqrt((' + $sumSqA + ') * (' + $sumSqB + ')))';
+        )
+   );
+}
+
+// meta::pure::functions::math::mode's native semantics (core_functions_standard/math/aggregator/mode.pure)
+// group elements by numeric equality (Integer 3 and Float 3.0 count as the same value) and, when
+// tied, the winning VALUE's returned Pure TYPE depends on argument order: sorting is stable, so equal
+// values keep their original relative order, and the accumulator's numMax is overwritten with the raw
+// current element on every element that pushes the running count to a new strictly-higher maximum -
+// meaning the final type is whichever tied instance most recently set a new max, not simply "the first"
+// or "the majority type". A Spark array/aggregate is homogeneously typed, so pushing this down as
+// mode(array(3, 3.0, 3, 2, 2)) computes the correct value but always returns it coerced to DOUBLE (see
+// 1c status notes in plan.md). Since a literal Pure collection is fully known at SQL-generation time,
+// this instead reimplements the native sort-then-fold algorithm directly in Pure against the N already-
+// rendered literal strings, and just emits the winning instance's own rendered string as the result -
+// no Spark computation needed at all, so no type information is ever lost to a common SQL array type.
+Class <<access.private>> meta::relational::functions::sqlQueryToString::databricks::ModeAccumulator
+{
+   numMax: String[1];
+   maxCount: Integer[1];
+   prevValue: Float[1];
+   prevCount: Integer[1];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::modeDatabricksHelper(values:String[*]):String[1]
+{
+   let sorted = $values->map(v | pair($v->parseFloat(), $v))->sortBy(p | $p.first);
+   let result = $sorted->fold({x, y |
+        let currCount = if($x.first == $y.prevValue, | $y.prevCount + 1, | 1);
+        if($currCount > $y.maxCount,
+           | ^$y(numMax = $x.second, maxCount = $currCount, prevValue = $x.first, prevCount = $currCount),
+           | ^$y(prevValue = $x.first, prevCount = $currCount)
+        );
+     }, ^ModeAccumulator(numMax = '', maxCount = 0, prevValue = 0.0, prevCount = 0));
+   $result.numMax;
+}
+
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
 {
   $l->insertValuesToDbTableForDatabricks($dbConfig);
@@ -504,7 +610,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       | let dynaFunc = $w.func->cast(@DynaFunction);
         let collectExpr = $dynaFunc.parameters->at(0)->processOperation($sgc);
         let separatorExpr = $dynaFunc.parameters->at(1)->processOperation($sgc);
-        'array_join(collect_list(' + $collectExpr + ') OVER (' + $windowSpec + '), ' + $separatorExpr + ')';
+        // A row-window whose collected values are all null/absent (e.g. a null/empty Variant array
+        // per row) makes array_join/collect_list return SQL NULL, but Pure's joinStrings identity for
+        // "nothing to join" is the empty string, not null.
+        'ifnull(array_join(collect_list(' + $collectExpr + ') OVER (' + $windowSpec + '), ' + $separatorExpr + '), \'\')';
       ,
       | $w.func->processOperation($sgc) +
         ' OVER (' +
@@ -951,7 +1060,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         // The first hop into the VARIANT value uses ':'; subsequent property hops use '.'.
         // Property names are always backticked so that names containing special characters
         // (e.g. `@type`) remain valid path identifiers.
-        let isNestedNavigation = $s.operand->instanceOf(SemiStructuredObjectNavigation);
+        //
+        // SemiStructuredArrayElementAccess and SemiStructuredPropertyAccess are both subtypes of
+        // SemiStructuredObjectNavigation, so checking only the base type here would treat a
+        // preceding array-index hop as "already inside a resolved dot-chain" too. It isn't:
+        // indexing into try_cast(... as array<variant>) yields a fresh bare VARIANT element (the
+        // try_cast only tags the array itself as ARRAY<VARIANT>, not its elements), so the next hop
+        // still needs the colon reset, exactly like the very first hop off a column. Only an actual
+        // preceding property hop is "nested" and should continue with '.'.
+        let isNestedNavigation = $s.operand->instanceOf(SemiStructuredPropertyAccess);
 
         let elementAccess = $s->match([
            p: SemiStructuredPropertyAccess[1]     | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),

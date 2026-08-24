@@ -136,12 +136,6 @@
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires [2, 3] parameters but the actual number is 4."
   }, {
-    "test" : "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""
-  }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
     "expectedError" : "[PARSE_SYNTAX_ERROR] Syntax error at or near '['."
   } ]
