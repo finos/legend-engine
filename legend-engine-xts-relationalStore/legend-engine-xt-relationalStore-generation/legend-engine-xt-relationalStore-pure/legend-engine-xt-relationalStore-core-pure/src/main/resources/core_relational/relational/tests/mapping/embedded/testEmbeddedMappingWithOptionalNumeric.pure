@@ -1,0 +1,160 @@
+// ©2026 JP Morgan Chase & Co. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+
+import meta::relational::functions::asserts::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::execute::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::csv::*;
+import meta::pure::metamodel::relation::*;
+
+import meta::relational::tests::mapping::embedded::optionalNumeric::*;
+import meta::relational::tests::mapping::embedded::optionalNumeric::model::*;
+import meta::relational::tests::mapping::embedded::optionalNumeric::store::*;
+import meta::relational::tests::mapping::embedded::optionalNumeric::mapping::*;
+
+Class meta::relational::tests::mapping::embedded::optionalNumeric::model::Person
+{
+   firstName : String[1];
+   address   : Address[0..1];
+}
+
+// streetNumber is the only nullable column in PERSON_ADDRESS_DENORM, so the
+// [0..1] multiplicity of the embedded property lines up exactly with the store.
+Class meta::relational::tests::mapping::embedded::optionalNumeric::model::Address
+{
+   name         : String[1];
+   streetNumber : Integer[0..1];
+}
+
+function meta::relational::tests::mapping::embedded::optionalNumeric::testRuntime():Runtime[1]
+{
+   meta::external::store::relational::tests::testRuntime(oDB);
+}
+
+function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::optionalNumeric::setUp():Boolean[1]
+{
+   meta::relational::tests::mapping::embedded::optionalNumeric::store::createTablesAndFillDb();
+}
+
+function meta::relational::tests::mapping::embedded::optionalNumeric::store::createTablesAndFillDb():Boolean[1]
+{
+   let connection = testRuntime().connectionByElement(oDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
+   meta::relational::functions::toDDL::dropAndCreateTableInDb(oDB, 'PERSON_ADDRESS_DENORM', $connection);
+
+   let s = 'insert into PERSON_ADDRESS_DENORM (PERSON_ID, PERSON_FIRSTNAME, ADDRESS_NAME, ADDRESS_STREETNUMBER) values ';
+
+   // Fabrice has no street number, so the embedded [0..1] property is exercised with a null
+   executeInDb($s + '(1, \'Peter\', \'1 the street\', 1);', $connection);
+   executeInDb($s + '(2, \'John\', \'5 Park Ave\', 5);', $connection);
+   executeInDb($s + '(5, \'Fabrice\', \'7 Palo Alto\', null);', $connection);
+
+   true;
+}
+
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedded::optionalNumeric::testProjectWithMapAndUnaryMinusOnEmbeddedOptionalProperty():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[
+                               firstName: p | $p.firstName,
+                               negatedStreetNumber: p | $p.address.streetNumber->map(n | -$n)
+                             ]),
+      testMappingEmbeddedOptionalNumeric,
+      testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+
+   // map(n | -$n) over the embedded [0..1] property must negate the column, giving the same
+   // SQL as the equivalent direct expression -$p.address.streetNumber->toOne().
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", -"root".ADDRESS_STREETNUMBER as "negatedStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+// Companion to the unary-minus case above, with a binary operator. Unary minus is the only
+// operator that ends up with no arguments at all, so it is the only one that fails loudly;
+// times() keeps its literal and emits `2`, silently returning 2 for every row instead of the
+// doubled column. That makes this the more dangerous shape of the same defect.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedded::optionalNumeric::testProjectWithMapAndMultiplyOnEmbeddedOptionalProperty():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[
+                               firstName: p | $p.firstName,
+                               doubledStreetNumber: p | $p.address.streetNumber->map(n | $n * 2)
+                             ]),
+      testMappingEmbeddedOptionalNumeric,
+      testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "doubledStreetNumber" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+// The cases above map over a primitive property, where the lambda parameter has to resolve to a
+// single source column. Here the parameter is the embedded Address itself, so the source carries
+// several columns and the body resolves through property mappings instead. Both shapes must work,
+// and only the first depends on the source column being carried into the lambda's scope.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::embedded::optionalNumeric::testProjectWithMapOverEmbeddedClassItself():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(~[
+                               firstName: p | $p.firstName,
+                               addressStreetNumberDoubled: p | $p.address->map(x | $x.streetNumber->toOne() * 2)
+                             ]),
+      testMappingEmbeddedOptionalNumeric,
+      testRuntime(),
+      meta::relational::extension::relationalExtensions()
+   );
+
+   assertEquals('select "root".PERSON_FIRSTNAME as "firstName", "root".ADDRESS_STREETNUMBER * 2 as "addressStreetNumberDoubled" from PERSON_ADDRESS_DENORM as "root"', $result->sqlRemoveFormatting());
+}
+
+###Relational
+
+Database meta::relational::tests::mapping::embedded::optionalNumeric::store::oDB
+(
+   // ADDRESS_STREETNUMBER is deliberately the only nullable column, matching the [0..1]
+   // multiplicity of the embedded streetNumber property it is mapped to.
+   Table PERSON_ADDRESS_DENORM
+   (
+      PERSON_ID INT PRIMARY KEY,
+      PERSON_FIRSTNAME VARCHAR(200) NOT NULL,
+      ADDRESS_NAME VARCHAR(200) NOT NULL,
+      ADDRESS_STREETNUMBER INT
+   )
+)
+
+###Mapping
+import meta::relational::tests::mapping::embedded::optionalNumeric::*;
+import meta::relational::tests::mapping::embedded::optionalNumeric::model::*;
+import meta::relational::tests::mapping::embedded::optionalNumeric::store::*;
+
+Mapping meta::relational::tests::mapping::embedded::optionalNumeric::mapping::testMappingEmbeddedOptionalNumeric
+(
+   Person: Relational
+   {
+      scope([oDB]PERSON_ADDRESS_DENORM)
+      (
+         firstName: PERSON_FIRSTNAME,
+         address
+         (
+            name: ADDRESS_NAME,
+            streetNumber: ADDRESS_STREETNUMBER
+         )
+      )
+   }
+)

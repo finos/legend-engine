@@ -1,4 +1,5 @@
 // Copyright 2021 Goldman Sachs
+// ©2026 JP Morgan Chase & Co. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -4181,8 +4182,24 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
 
       let isSemiStructuredPropertyMapping = ($newCurrentPropertyMapping->size() >= 1) && $newCurrentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));
       let isVariant = $f.parametersValues->at(0)->isVariantInput($vars, $state);
-      let extraColumn = if(($isSemiStructuredPropertyMapping || $isVariant) && ($select.columns->size() == 1),
-                            | $select.columns->toOne()->reprocessAliases($mainQuery.currentTreeNode.alias.name->map(n | ^OldAliasToNewAlias(first = $n, second = $newQuery.currentTreeNode.alias->toOne()))),
+      // The lambda's parameter binds to the source's column, so that column has to survive into
+      // sourceOp. It is needed whenever the parameter denotes a single value: a DataType, i.e. a
+      // primitive or an enumeration, and also semi-structured / variant inputs -- those are
+      // Class-typed (Variant is a Class) yet still back onto one column, which is why the test
+      // below is not simply "is it a DataType". For an ordinary Class parameter the body resolves
+      // through that class's own property mappings and dropping the source columns is correct.
+      // Covering only the semi-structured/variant cases left every DataType parameter with
+      // nothing to bind to: it resolved to empty and dropped out of the emitted SQL, silently
+      // for binary operators and as an empty-argument failure for unary minus.
+      let lambdaParamIsDataType = $func->match([
+                                      fd:FunctionDefinition<Any>[1] |
+                                         let params = $fd.classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->evaluateAndDeactivate();
+                                         $params->isNotEmpty() && $params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType);,
+                                      a:Any[*] | false
+                                   ]);
+      let extraColumn = if($lambdaParamIsDataType || $isSemiStructuredPropertyMapping || $isVariant,
+                            | let aliasRemap = $mainQuery.currentTreeNode.alias.name->map(n | ^OldAliasToNewAlias(first = $n, second = $newQuery.currentTreeNode.alias->toOne()));
+                              $select.columns->map(c | $c->reprocessAliases($aliasRemap));,
                             | []);
 
       $func->match(

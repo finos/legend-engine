@@ -119,6 +119,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Build & CI Guide](guides/build-and-ci.md) | Full build lifecycle, Maven plugins, profiles, GitHub Actions pipeline, Docker, releases |
 | [Contributor Workflow](guides/contributor-workflow.md) | How to add a grammar section, store extension, or function activator |
 | [Exploration & Discovery](guides/exploration.md) | Systematic approach for new engineers exploring the codebase |
+| [Pure IDE Delta-Compiler Debugging](guides/pure-ide-delta-compiler-debugging.md) | Driving the Pure IDE over HTTP to delta-compile and run `.pure` code in seconds instead of a full Maven rebuild |
 | [Identity, Authentication & Traceability](guides/identity-authentication-guide.md) | Identity model, credential types, authentication flows, vault integration, end-to-end traceability |
 | [Logging, Tracing & Observability](guides/logging-tracing-observability.md) | Structured logging with `LogInfo`, OpenTracing, OpenTelemetry, Prometheus metrics |
 

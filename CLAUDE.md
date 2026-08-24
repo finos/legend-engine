@@ -48,7 +48,9 @@ server legend-engine-config/legend-engine-server/legend-engine-server-http-serve
 ```
 Swagger: <http://127.0.0.1:6300/api/swagger>.
 
-Pure IDE (main: `org.finos.legend.engine.ide.PureIDELight`) — required for iterating on `.pure` code without rebuilding Java. Args: `server legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`. UI at <http://127.0.0.1:9200/ide>.
+Pure IDE (main: `org.finos.legend.engine.ide.PureIDELight`) — required for iterating on `.pure` code without rebuilding Java. Args: `server legend-engine-core/legend-engine-core-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-http-server/src/main/resources/ideLightConfig.json`. UI at <http://127.0.0.1:9010/ide> — read the port from `ideLightConfig.json` rather than assuming it.
+
+The IDE's delta compiler is drivable over HTTP (`POST /executeGo`), which turns a `.pure` edit-test cycle into seconds instead of a 15–25 min rebuild. **`openFiles` in that payload overwrites the target file on disk**, so every submission must be a delta of the existing version: `GET /fileAsJson/<path>` to read the current content in full, apply the edit to that text, submit the whole result. Never compose the file from scratch — anything you omit is silently deleted, and `welcome.pure` is gitignored so git cannot recover it. See `docs/engineering/guides/pure-ide-delta-compiler-debugging.md`.
 
 IntelliJ gotcha: **disable** `Clear output directory on rebuild` under `Preferences → Build → Compiler`. It wipes generated Pure-runtime resources the server needs to start, producing `ClassNotFoundException` for generated classes.
 
