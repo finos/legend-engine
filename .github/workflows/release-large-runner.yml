@@ -35,6 +35,30 @@ jobs:
   release:
     runs-on: ubuntu-latest-16-cores
     steps:
+      # Fail fast on a duplicate version: Central is immutable, and without
+      # this the collision only surfaces at the final upload step.
+      - name: Check release version is unused
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+          TAG: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+        run: |
+          if ! [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release version '$RELEASE_VERSION' is not of the form MAJOR.MINOR.PATCH"
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags "https://github.com/${{ github.repository }}.git" "refs/tags/$TAG" ; then
+            echo "::error::Tag $TAG already exists -- version $RELEASE_VERSION has already been released (or a failed release was not cleaned up)"
+            exit 1
+          fi
+          url="https://repo1.maven.org/maven2/org/finos/legend/engine/legend-engine/${RELEASE_VERSION}/legend-engine-${RELEASE_VERSION}.pom"
+          http_status=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+          if [ "$http_status" = "200" ]; then
+            echo "::error::Version $RELEASE_VERSION is already published on Maven Central: $url"
+            exit 1
+          elif [ "$http_status" != "404" ]; then
+            echo "::warning::Unexpected HTTP $http_status from Maven Central while checking $url -- continuing"
+          fi
+
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
