@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.plan.dependencies.util;
 
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class TestLibrary
 {
@@ -78,6 +80,47 @@ public class TestLibrary
         {
             String expectedErrorMsg = "The system is trying to get an element at offset 0 where the collection is of size 0";
             Assert.assertEquals(expectedErrorMsg, e.getMessage());
+        }
+    }
+
+    /**
+     * Weeks are numbered as ISO 8601 does it, whatever the JVM is set to: a week runs Monday to
+     * Sunday, and week 1 is the one holding the year's first Thursday. The dates here are ones where
+     * that differs from numbering weeks from Sunday, which is what a US default locale used to give,
+     * so the locales below would disagree if the numbering still followed them.
+     */
+    @Test
+    public void testWeekOfYearIsISO8601WhateverTheLocale()
+    {
+        Locale before = Locale.getDefault();
+        try
+        {
+            for (Locale locale : new Locale[]{Locale.US, Locale.UK, Locale.FRANCE, Locale.JAPAN, Locale.forLanguageTag("ar-EG")})
+            {
+                Locale.setDefault(locale);
+                String context = locale.toString();
+
+                // a week starts on Monday, so the Sunday closing 2020 is not yet week 1 of 2021
+                Assert.assertEquals(context, 52, Library.weekOfYear(PureDate.newPureDate(2020, 12, 27)));
+                Assert.assertEquals(context, 53, Library.weekOfYear(PureDate.newPureDate(2020, 12, 28)));
+
+                // 2021 opens on a Friday, so its first days finish 2020's last week
+                Assert.assertEquals(context, 53, Library.weekOfYear(PureDate.newPureDate(2021, 1, 1)));
+                Assert.assertEquals(context, 53, Library.weekOfYear(PureDate.newPureDate(2021, 1, 3)));
+                Assert.assertEquals(context, 1, Library.weekOfYear(PureDate.newPureDate(2021, 1, 4)));
+
+                // 2000 opens on a Saturday, so its first two days belong to the year before
+                Assert.assertEquals(context, 52, Library.weekOfYear(PureDate.newPureDate(2000, 1, 1)));
+                Assert.assertEquals(context, 1, Library.weekOfYear(PureDate.newPureDate(2000, 1, 3)));
+
+                // 2015 opens on a Thursday, so that week is its own week 1
+                Assert.assertEquals(context, 1, Library.weekOfYear(PureDate.newPureDate(2015, 1, 1)));
+                Assert.assertEquals(context, 16, Library.weekOfYear(PureDate.newPureDate(2015, 4, 15)));
+            }
+        }
+        finally
+        {
+            Locale.setDefault(before);
         }
     }
 

@@ -1700,4 +1700,114 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "}\n", "COMPILATION error at [17:1-29:1]: Data space template executable's executionContextKey, missing, is not valid. Please specify one from []");
     }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesTDS()
+    {
+        test("Class model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name']);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Id, Name\n" +
+                "          1 , Alice\n" +
+                "          2 , Bob;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesRelation()
+    {
+        test("Class model::Firm\n" +
+                "{\n" +
+                "  cases: Float[1];\n" +
+                "  fips: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 2;\n" +
+                "      title: 'Template 2';\n" +
+                "      query: |model::Firm.all()->project(~[Cases:x|$x.cases, Fips:x|$x.fips]);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Cases, Fips\n" +
+                "          10   , A\n" +
+                "          25   , BC;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

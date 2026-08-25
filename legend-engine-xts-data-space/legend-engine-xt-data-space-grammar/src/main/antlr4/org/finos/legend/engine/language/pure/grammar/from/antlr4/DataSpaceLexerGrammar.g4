@@ -33,6 +33,7 @@ DATA_SPACE_ELEMENTS:                        'elements';
 
 DATA_SPACE_EXECUTABLES:                     'executables';
 DATA_SPACE_EXECUTABLE:                      'executable';
+DATA_SPACE_EXECUTABLE_SAMPLE_VALUES:        'sampleValues';
 
 DATA_SPACE_SUPPORT_INFO:                    'supportInfo';
 DATA_SPACE_SUPPORT_DOC_URL:                 'documentationUrl';

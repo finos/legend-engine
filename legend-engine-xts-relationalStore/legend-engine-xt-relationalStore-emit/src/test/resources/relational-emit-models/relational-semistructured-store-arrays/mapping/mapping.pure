@@ -1,0 +1,87 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssd::TeamMapping
+(
+  // Array functions as property mappings. The query below is an ordinary projection of
+  // scalar properties - all of the array work happens in the store language.
+  *demo::ssd::Team: Relational
+  {
+    ~filter [demo::ssd::store::TeamDB] MultiScoreFilter
+    ~primaryKey
+    (
+      [demo::ssd::store::TeamDB]TEAM_TABLE.ID
+    )
+    ~mainTable [demo::ssd::store::TeamDB]TEAM_TABLE
+    id: [demo::ssd::store::TeamDB]TEAM_TABLE.ID,
+    label: [demo::ssd::store::TeamDB]TEAM_TABLE.LABEL,
+    scoreCount: array_size(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    // A lambda in the store language: filter the array, then count what survives. $d binds each
+    // element, and the body navigates into it.
+    largeDivisions: array_size(array_filter(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.DIVISIONS, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'headcount', 'INTEGER') > 100)),
+    // array_transform maps each element, so the result is still a collection - joined here to
+    // land a scalar the projection can carry.
+    divisionNames: array_to_string(array_transform(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.DIVISIONS, 'divisions', 'SEMISTRUCTURED[]'), d | extractFromSemiStructured($d, 'name', 'VARCHAR')), ','),
+    // Element first, then accumulator, as fold is written in Pure.
+    totalScore: array_reduce(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]'), (d, acc | plus($acc, $d)), 0),
+    topScore: array_max(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    lowScore: array_min(extractFromSemiStructured([demo::ssd::store::TeamDB]TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
+  }
+
+  // Same functions again, this time reached through a view that computes them.
+  demo::ssd::TeamStats: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssd::store::TeamDB]TEAM_STATS.ID
+    )
+    ~mainTable [demo::ssd::store::TeamDB]TEAM_STATS
+    id: [demo::ssd::store::TeamDB]TEAM_STATS.ID,
+    total: [demo::ssd::store::TeamDB]TEAM_STATS.TOTAL,
+    top: [demo::ssd::store::TeamDB]TEAM_STATS.TOP
+  }
+
+  testSuites:
+  [
+    mappingArraySuite:
+    {
+      function: |demo::ssd::Team.all()
+                  ->project(~[label: t | $t.label, scoreCount: t | $t.scoreCount, topScore: t | $t.topScore, lowScore: t | $t.lowScore, largeDivisions: t | $t.largeDivisions, divisionNames: t | $t.divisionNames, totalScore: t | $t.totalScore])
+                  ->sort([~label->ascending()]);
+      tests:
+      [
+        arrayFunctionsInMappingAndFilter:
+        {
+          data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
+          asserts: [ shouldAggregateInStore: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"label":"Falcons","scoreCount":3,"topScore":100,"lowScore":9,"largeDivisions":2,"divisionNames":"Alpha,Beta,Gamma","totalScore":129},{"label":"Ravens","scoreCount":3,"topScore":12,"lowScore":5,"largeDivisions":0,"divisionNames":"Delta","totalScore":24}]'; }#; }# ];
+        }
+      ];
+    },
+    viewArraySuite:
+    {
+      function: |demo::ssd::TeamStats.all()
+                  ->project(~[id: s | $s.id, total: s | $s.total, top: s | $s.top])
+                  ->sort([~id->ascending()]);
+      tests:
+      [
+        arrayFunctionsInViewColumns:
+        {
+          data: [ demo::ssd::store::TeamDB: Reference #{ demo::ssd::data::TeamData }# ];
+          asserts: [ shouldComputeViewColumns: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"id":1,"total":3,"top":100},{"id":2,"total":3,"top":12},{"id":3,"total":2,"top":40}]'; }#; }# ];
+        }
+      ];
+    }
+  ]
+)

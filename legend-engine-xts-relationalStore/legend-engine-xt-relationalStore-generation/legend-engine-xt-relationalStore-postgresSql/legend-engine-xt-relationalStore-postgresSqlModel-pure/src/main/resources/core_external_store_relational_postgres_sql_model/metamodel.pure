@@ -414,6 +414,14 @@ Class meta::external::query::sql::metamodel::ExistsPredicate extends meta::exter
   <<equality.Key>> query: meta::external::query::sql::metamodel::TableSubquery[1];
 }
 
+Class meta::external::query::sql::metamodel::QuantifiedComparisonExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> operator: meta::external::query::sql::metamodel::ComparisonOperator[1];
+  <<equality.Key>> quantifier: meta::external::query::sql::metamodel::Quantifier[1];
+  <<equality.Key>> subQuery: meta::external::query::sql::metamodel::SubqueryExpression[1];
+}
+
 Class meta::external::query::sql::metamodel::BetweenPredicate extends meta::external::query::sql::metamodel::Expression
 {
   <<equality.Key>> min: meta::external::query::sql::metamodel::Expression[1];
@@ -521,6 +529,15 @@ Enum meta::external::query::sql::metamodel::LogicalBinaryType
 {
   AND,
   OR
+}
+
+// SOME is a synonym for ANY in the standard; the grammar accepts it, and it is kept distinct here only so a
+// parsed query can be composed back the way it was written.
+Enum meta::external::query::sql::metamodel::Quantifier
+{
+  ANY,
+  SOME,
+  ALL
 }
 
 Enum meta::external::query::sql::metamodel::ArithmeticType

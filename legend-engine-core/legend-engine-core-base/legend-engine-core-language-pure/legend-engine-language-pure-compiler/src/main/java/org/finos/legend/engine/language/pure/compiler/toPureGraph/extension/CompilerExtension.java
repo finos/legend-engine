@@ -149,6 +149,22 @@ public interface CompilerExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    /**
+     * Completes construction of the compiled connection, for work that has to resolve other packageable elements and
+     * so cannot run in {@link #getExtraConnectionValueProcessors()}. Runs before
+     * {@link #getExtraConnectionSecondPassProcessors()}, so implementations of that hook can rely on the connection
+     * being fully built.
+     */
+    default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionValueSecondPassProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Reacts to a connection that has already been fully built. Do not use this to populate the connection itself -
+     * other implementations run in an unspecified order and would not see the result; use
+     * {@link #getExtraConnectionValueSecondPassProcessors()} instead.
+     */
     default List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return Collections.emptyList();

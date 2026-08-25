@@ -14,13 +14,53 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns the subject with the specified pattern — or all occurrences of the pattern, if replaceAll is true — either removed or replaced by a replacement string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+Replaces what a regular expression matches, either the first occurrence or all of them.
+
+`replaceAll` chooses between the two, and there is no default — pass `false` to rewrite only the
+first match. An empty `replacement` deletes the matched text rather than substituting for it.
+
+Matching is case sensitive, and `.` does not cross a newline; pass
+`regexpReplace(String[1], String[1], String[1], Boolean[1], RegexpParameter[1..*]):String[1]` to
+change either. Unlike `meta::pure::functions::string::replace(String[1], String[1], String[1]):String[1]`,
+which matches literally, the pattern here is a `java.util.regex` regular expression.
+
+**Parameters**
+- `string` — the string to rewrite.
+- `regexp` — the pattern to match.
+- `replacement` — the text to substitute, or `''` to delete. Capture groups are referenced Java
+  style as `$1`…`$9`, not as `\1`, so a literal `$` in the replacement has to be escaped.
+- `replaceAll` — `true` to rewrite every occurrence, `false` for only the first.
+
+**Returns** the rewritten string.
+
+**Examples**
+```pure
+'abc'->regexpReplace('(b|c)', 'X', false)   // 'aXc', only the first match
+'abc'->regexpReplace('(b|c)', 'X', true)    // 'aXX', every match
+```
+
+**See also** `regexpReplace(String[1], String[1], String[1], Boolean[1], RegexpParameter[1..*]):String[1]`,
+`regexpExtract(String[1], String[1], Boolean[1]):String[*]`,
+`meta::pure::functions::string::replace(String[1], String[1], String[1]):String[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpReplace(string:String[1], regexp:String[1], replacement:String[1], replaceAll:Boolean[1]):String[1]
 {
   $string->regexpReplace($regexp, $replacement, $replaceAll, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns the subject with the specified pattern — or all occurrences of the pattern, if replaceAll is true — either removed or replaced by a replacement string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpReplace(String[1], String[1], String[1], Boolean[1]):String[1]`, with the matching options
+given explicitly rather than left at the `CASE_SENSITIVE` default. The options are those described on
+`regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]`.
+
+**Examples**
+```pure
+'Abc abc'->regexpReplace('a', 'X', true, [RegexpParameter.CASE_INSENSITIVE])   // 'Xbc Xbc'
+```
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::regexpReplace(string:String[1], regexp:String[1], replacement:String[1], replaceAll:Boolean[1], regexpParameters:RegexpParameter[1..*]):String[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpReplace::testregexpReplace<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

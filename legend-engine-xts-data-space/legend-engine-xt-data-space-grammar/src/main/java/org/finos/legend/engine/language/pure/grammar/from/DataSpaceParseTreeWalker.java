@@ -22,12 +22,14 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtili
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
@@ -298,6 +300,9 @@ public class DataSpaceParseTreeWalker
         }
         executable.executable.sourceInformation = walkerSourceInformation.getSourceInformation(executableContext);
 
+        // sampleValues (optional)
+        executable.sampleValues = visitDataSpaceExecutableSampleValues(ctx);
+
         return executable;
     }
 
@@ -330,7 +335,27 @@ public class DataSpaceParseTreeWalker
         executable.title = title;
         executable.executionContextKey = executionContextKey;
         executable.sourceInformation = sourceInformation;
+        executable.sampleValues = visitDataSpaceExecutableSampleValues(ctx);
         return executable;
+    }
+
+    private RelationElement visitDataSpaceExecutableSampleValues(DataSpaceParserGrammar.ExecutableContext ctx)
+    {
+        DataSpaceParserGrammar.ExecutableSampleValuesContext sampleValuesCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableSampleValues(), "sampleValues", this.walkerSourceInformation.getSourceInformation(ctx));
+        if (sampleValuesCtx == null)
+        {
+            return null;
+        }
+        DataSpaceParserGrammar.EmbeddedDataContext embeddedDataCtx = sampleValuesCtx.embeddedData();
+        String type = PureGrammarParserUtility.fromIdentifier(embeddedDataCtx.identifier());
+        SourceInformation sourceInfo = this.walkerSourceInformation.getSourceInformation(embeddedDataCtx);
+        if (!"Relation".equals(type))
+        {
+            throw new EngineException("Data space executable sampleValues must be a standalone Relation element (e.g. sampleValues: Relation #{ ... }#), got type '" + type + "'", sourceInfo, EngineErrorType.PARSER);
+        }
+        String content = HelperTestAssertionGrammarParser.extractIslandContent(embeddedDataCtx.embeddedDataContent());
+        ParseTreeWalkerSourceInformation innerWalkerSourceInformation = HelperTestAssertionGrammarParser.buildIslandSourceInformation(embeddedDataCtx.ISLAND_OPEN(), this.walkerSourceInformation);
+        return HelperTestAssertionGrammarParser.parseRelationElement(content, innerWalkerSourceInformation, sourceInfo);
     }
 
     private LambdaFunction visitLambda(DataSpaceParserGrammar.CombinedExpressionContext ctx)

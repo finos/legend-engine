@@ -345,6 +345,25 @@ public class RelationNativeImplementation
         }
     }
 
+    // The whole group is the argument, so the lambda takes just the partition -- no current row, and no
+    // window for it to sit in. Used by the groupBy/aggregate FuncColSpec overloads.
+    public static class ColFuncSpecTransRel extends ColFuncSpecTrans
+    {
+        public SharedPureFunction func;
+
+        public ColFuncSpecTransRel(String newColName, SharedPureFunction func, FunctionType functionType)
+        {
+            super(newColName, functionType);
+            this.func = func;
+        }
+
+        @Override
+        public Object eval(Object partition, Object frame, Object row, ExecutionSupport es)
+        {
+            return func.execute(Lists.mutable.with(partition), es);
+        }
+    }
+
     public static <T> Relation<? extends Object> projectExtend(Relation<? extends T> rel, MutableList<ColFuncSpecTrans1> colFuncSpecTrans, boolean includeExistingColumns, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
@@ -417,45 +436,51 @@ public class RelationNativeImplementation
 
     private static ColumnValue performExtend(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> tds, ColFuncSpecTrans colFuncSpecTrans, ExecutionSupport es)
     {
+        return performExtend(window, tds, colFuncSpecTrans, false, es);
+    }
+
+    // compress: one value per partition rather than per row, which is what groupBy needs.
+    private static ColumnValue performExtend(Window window, Pair<TestTDS, MutableList<Pair<Integer, Integer>>> tds, ColFuncSpecTrans colFuncSpecTrans, boolean compress, ExecutionSupport es)
+    {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
-        long size = tds.getOne().getRowCount();
+        long size = compress ? tds.getTwo().size() : tds.getOne().getRowCount();
         boolean[] nulls = new boolean[(int) size];
 
         Type type = colFuncSpecTrans.functionType._returnType()._rawType();
         if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.String, ps)))
         {
             MutableList<String> res = Lists.mutable.empty();
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> res.add((String) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> res.add((String) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), res.toArray(new String[0]));
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Integer, ps)))
         {
             Long[] resultLong = new Long[(int) size];
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultLong[i] = (Long) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> processWithNull(i, val, nulls, () -> resultLong[i] = (Long) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultLong);
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Float, ps)))
         {
             Double[] resultDouble = new Double[(int) size];
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = (Double) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = (Double) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultDouble);
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Decimal, ps)))
         {
             BigDecimal[] resultDecimal = new BigDecimal[(int) size];
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDecimal[i] = (BigDecimal) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> processWithNull(i, val, nulls, () -> resultDecimal[i] = (BigDecimal) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultDecimal);
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Variant, ps)))
         {
             MutableList<Variant> variantRes = Lists.mutable.empty();
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> variantRes.add((Variant) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> variantRes.add((Variant) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), variantRes.toArray(new Variant[0]));
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Date, ps)))
         {
             MutableList<PureDate> pureDateRes = Lists.mutable.empty();
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) ->
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) ->
             {
                 PureDate date = (PureDate) val;
                 pureDateRes.add(DateFunctions.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), date.getSubsecond().substring(0, 3)));
@@ -465,13 +490,13 @@ public class RelationNativeImplementation
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Boolean, ps)))
         {
             Boolean[] resultBoolean = new Boolean[(int) size];
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (Boolean) val));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> processWithNull(i, val, nulls, () -> resultBoolean[i] = (Boolean) val));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultBoolean);
         }
         else if (ps.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, ps)))
         {
             Double[] resultDouble = new Double[(int) size];
-            extracted(tds, window, colFuncSpecTrans, es, (i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = ((Number) val).doubleValue()));
+            extracted(tds, window, colFuncSpecTrans, compress, es,(i, val) -> processWithNull(i, val, nulls, () -> resultDouble[i] = ((Number) val).doubleValue()));
             return new ColumnValue(colFuncSpecTrans.newColName, colFuncSpecTrans.functionType._returnType(), colFuncSpecTrans.functionType._returnMultiplicity(), resultDouble);
         }
         throw new PureExecutionException("The type " + PackageableElement.getUserPathForPackageableElement(colFuncSpecTrans.functionType._returnType()._rawType()) + " is not supported yet!");
@@ -496,7 +521,7 @@ public class RelationNativeImplementation
         void invoke();
     }
 
-    private static void extracted(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> tds, Window window, ColFuncSpecTrans colFuncSpecTrans, ExecutionSupport es, Procedure2<Integer, Object> func)
+    private static void extracted(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> tds, Window window, ColFuncSpecTrans colFuncSpecTrans, boolean compress, ExecutionSupport es, Procedure2<Integer, Object> func)
     {
         int size = tds.getTwo().size();
         int k = 0;
@@ -506,9 +531,18 @@ public class RelationNativeImplementation
             Pair<Integer, Integer> r = tds.getTwo().get(j);
             TestTDSCompiled subTDS = (TestTDSCompiled) tds.getOne().slice(r.getOne(), r.getTwo());
             TDSContainer winTDS = new TDSContainer(subTDS, ((CompiledExecutionSupport) es).getProcessorSupport());
-            for (int i = 0; i < r.getTwo() - r.getOne(); i++)
+            if (compress)
             {
-                func.value(k++, colFuncSpecTrans.eval(winTDS, frame, new RowContainer(subTDS, i), es));
+                // The row is passed for signature compatibility only; a compressed extraction is driven by
+                // ColFuncSpecTransRel, which reads the partition and ignores it.
+                func.value(k++, colFuncSpecTrans.eval(winTDS, frame, new RowContainer(subTDS, 0), es));
+            }
+            else
+            {
+                for (int i = 0; i < r.getTwo() - r.getOne(); i++)
+                {
+                    func.value(k++, colFuncSpecTrans.eval(winTDS, frame, new RowContainer(subTDS, i), es));
+                }
             }
         }
     }
@@ -638,6 +672,38 @@ public class RelationNativeImplementation
         TestTDS distinctTDS = sortRes.getOne()._distinct(sortRes.getTwo()).removeColumns(columnsToRemove);
 
         return new TDSContainer((TestTDSCompiled) aggregateTDS(null, Lists.fixedSize.empty(), sortRes, aggColSpecTransAll, true, es).injectInto(distinctTDS, TestTDS::addColumn), ps);
+    }
+
+    public static <T> Relation<? extends Object> groupByFunc(Relation<? extends T> rel, MutableList<ColFuncSpecTransRel> colFuncSpecTrans, ExecutionSupport es)
+    {
+        return groupByFunc(rel, Lists.mutable.empty(), colFuncSpecTrans, es);
+    }
+
+    public static <T> Relation<? extends Object> groupByFunc(Relation<? extends T> rel, ColSpec<?> cols, MutableList<ColFuncSpecTransRel> colFuncSpecTrans, ExecutionSupport es)
+    {
+        return groupByFunc(rel, Lists.mutable.with(cols._name()), colFuncSpecTrans, es);
+    }
+
+    public static <T> Relation<? extends Object> groupByFunc(Relation<? extends T> rel, ColSpecArray<?> cols, MutableList<ColFuncSpecTransRel> colFuncSpecTrans, ExecutionSupport es)
+    {
+        return groupByFunc(rel, Lists.mutable.withAll(cols._names()), colFuncSpecTrans, es);
+    }
+
+    // Mirrors groupBy above, but each new column is one lambda applied to the whole group rather than a
+    // map/reduce pair, so the value comes from performExtend in compressed mode instead of aggregateTDS.
+    private static <T> Relation<? extends Object> groupByFunc(Relation<? extends T> rel, MutableList<String> cols, MutableList<ColFuncSpecTransRel> colFuncSpecTrans, ExecutionSupport es)
+    {
+        ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
+        TestTDSCompiled tds = RelationNativeImplementation.getTDS(rel, es);
+
+        Pair<TestTDS, MutableList<Pair<Integer, Integer>>> sortRes = cols.isEmpty() ? tds.wrapFullTDS() : tds.sort(cols.collect(name -> new SortInfo(name, SortDirection.ASC)).toList());
+
+        MutableSet<String> columnsToRemove = tds.getColumnNames().clone().toSet();
+        columnsToRemove.removeAll(cols.toSet());
+        TestTDS distinctTDS = sortRes.getOne()._distinct(sortRes.getTwo()).removeColumns(columnsToRemove);
+
+        MutableList<ColumnValue> columnValues = colFuncSpecTrans.collect(c -> performExtend(new Window(), sortRes, c, true, es));
+        return new TDSContainer((TestTDSCompiled) columnValues.injectInto(distinctTDS, TestTDS::addColumn), ps);
     }
 
     public static <T> Relation<? extends Object> pivot(Relation<? extends T> rel, ColSpec<?> pivotCols, MutableList<AggColSpecTrans1> aggColSpecTrans, ExecutionSupport es)

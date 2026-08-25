@@ -127,7 +127,7 @@ function meta::relational::functions::sqlQueryToString::sybaseASE::getDynaFuncti
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
-    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPatternLegacy('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='hash(%s, \'MD5\')')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='datepart(MI, %s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='%s %% %s')),

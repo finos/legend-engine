@@ -241,7 +241,7 @@ legend-engine-xts-relationalStore/
           relationalMappingExecution.pure ← StoreContract bridge; SQLExecutionNode creation
           sqlQueryToString/
             dbExtension.pure             ← DbConfig, DbExtension, sqlQueryToString entry
-            dbExtension_default.pure     ← default implementations for all hook points
+            extensionDefaults.pure       ← default implementations for all hook points
 ```
 
 ### 4.3 The SelectSQLQuery AST
@@ -460,9 +460,9 @@ to their dialect-specific SQL equivalents. Each `DynaFunction` has a name (e.g. 
 ```pure
 Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
 {
-   funcName  : String[1];
-   states    : GenerationState[*];          // SELECT, WHERE, etc.
-   toSql     : ToSql[1];                    // format string + optional transform lambda
+   funcName   : String[1];
+   stateMatch : GenerationState[*];         // SELECT, WHERE, etc.
+   toSql      : ToSql[1];                   // format string + optional transform lambda
 }
 ```
 
@@ -471,7 +471,7 @@ A `ToSql` object combines:
 - `format` — a `%s`-placeholder string like `'date_trunc(\'%s\', %s)'`.
 - `transform` — an optional lambda that pre-processes the parameter strings before substitution.
 
-The default implementations live in `dbExtension_default.pure`. Dialects override only the
+The default implementations live in `extensionDefaults.pure`. Dialects override only the
 functions that differ.
 
 ### 5.5 Dialect Registration
@@ -800,7 +800,7 @@ which adjusts the literal format to match the dialect's timezone handling.
 | SQL AST (SelectSQLQuery) | `meta::relational::metamodel::relation::SelectSQLQuery` |
 | SQL text generation entry | `core_relational/relational/sqlQueryToString/dbExtension.pure` → `sqlQueryToString` |
 | Dialect plug-in | `DbExtension` class in `dbExtension.pure` |
-| Default implementations | `dbExtension_default.pure` |
+| Default implementations | `core_relational/relational/sqlQueryToString/extensionDefaults.pure` |
 | DynaFunction dispatch | `DynaFunctionToSql` + `getDynaFunctionDispatcher` |
 | JDBC adapter | `DatabaseManager` → one subclass per dialect |
 | Dialect discovery (Java) | `DatabaseManager.fromString(dbType)` via `ServiceLoader` |

@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::nested::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+// Firm 1's teams are spread across two divisions, so an implementation that fans out only the
+// outer array loses t3 rather than erroring. Firm 2 holds two teams in a single division, and
+// firm 3 has a division with no teams at all.
+function meta::relational::tests::semistructured::nested::nestedExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let firms =
+        'NESTED_SCHEMA\n' +
+        'FIRM_TABLE\n' +
+        'ID,FIRM_DETAILS\n' +
+        '1,"{""divisions"": [{""name"": ""Alpha"", ""teams"": [{""tid"": ""t1""}, {""tid"": ""t2""}]}, {""name"": ""Beta"", ""teams"": [{""tid"": ""t3""}]}]}"\n' +
+        '2,"{""divisions"": [{""name"": ""Gamma"", ""teams"": [{""tid"": ""t4""}, {""tid"": ""t5""}]}]}"\n' +
+        '3,"{""divisions"": [{""name"": ""Delta"", ""teams"": []}]}"\n'
+        ;
+
+  let teams =
+        'NESTED_SCHEMA\n' +
+        'TEAM_TABLE\n' +
+        'TID,LABEL\n' +
+        't1,Core\n' +
+        't2,Edge\n' +
+        't3,Ops\n' +
+        't4,Risk\n' +
+        't5,Data\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/nestedExplodeSemiStructured.legend';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, [$firms, $teams], $model, $func, 'nested::mapping::Mapping', 'nested::store::DB', $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::nested::testNestedExplode(conn: Connection[1]):Boolean[1]
+{
+  nestedExecute($conn,
+    'nested::nestedExplode__TabularDataSet_1_',
+    'Id,Team Id,Label\n' +
+    '1,t1,Core\n' +
+    '1,t2,Edge\n' +
+    '1,t3,Ops\n' +
+    '2,t4,Risk\n' +
+    '2,t5,Data\n' +
+    // Firm 3's only division holds an empty team list, so the inner lateral yields nothing and
+    // the left join back to the source keeps the firm with nulls rather than dropping it.
+    '3,null,null\n'
+  );
+}

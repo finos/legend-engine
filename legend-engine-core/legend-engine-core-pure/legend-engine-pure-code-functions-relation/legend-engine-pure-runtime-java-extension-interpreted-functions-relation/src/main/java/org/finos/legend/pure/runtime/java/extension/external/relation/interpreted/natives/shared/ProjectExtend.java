@@ -101,13 +101,13 @@ public class ProjectExtend extends AggregationShared
         TestTDS result;
         if (secondParameter instanceof FuncColSpec)
         {
-            result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), (FuncColSpec<?, ?>) secondParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
+            result = targetTds.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), (FuncColSpec<?, ?>) secondParameter, false, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, (GenericType) params.get(0).getValueForMetaPropertyToOne("genericType"), false));
         }
         else if (secondParameter instanceof FuncColSpecArray)
         {
             result = ((FuncColSpecArray<?, ?>) secondParameter)._funcSpecs().injectInto(
                     targetTds,
-                    (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
+                    (a, funcColSpec) -> a.addColumn(processFuncColSpec(tds.wrapFullTDS(), new Window(new Rows(true, true)), funcColSpec, false, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, false))
             );
         }
         else if (secondParameter instanceof AggColSpec)
@@ -148,13 +148,13 @@ public class ProjectExtend extends AggregationShared
             }
             else if (thirdParameter instanceof FuncColSpec)
             {
-                result = sortedPartitions.getOne().addColumn(processFuncColSpec(sortedPartitions, window, (FuncColSpec<?, ?>) thirdParameter, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true));
+                result = sortedPartitions.getOne().addColumn(processFuncColSpec(sortedPartitions, window, (FuncColSpec<?, ?>) thirdParameter, false, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true));
             }
             else if (thirdParameter instanceof FuncColSpecArray)
             {
                 result = ((FuncColSpecArray<?, ?>) thirdParameter)._funcSpecs().injectInto(
                         sortedPartitions.getOne(),
-                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(sortedPartitions, window, funcColSpec, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true))
+                        (a, funcColSpec) -> a.addColumn(processFuncColSpec(sortedPartitions, window, funcColSpec, false, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, sourceRelationType, true))
                 );
             }
             else
@@ -170,127 +170,6 @@ public class ProjectExtend extends AggregationShared
 
     }
 
-    private ColumnValue processFuncColSpec(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, Window window, FuncColSpec<?, ?> funcColSpec, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, GenericType relationType, boolean twoParamsFunc)
-    {
-        LambdaFunction<CoreInstance> lambdaFunction = (LambdaFunction<CoreInstance>) LambdaFunctionCoreInstanceWrapper.toLambdaFunction(funcColSpec.getValueForMetaPropertyToOne(M3Properties.function));
-        String name = funcColSpec.getValueForMetaPropertyToOne(M3Properties.name).getName();
-
-        VariableContext evalVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, lambdaFunction);
-
-        FunctionType functionType = ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getFirst()._rawType());
-        Type type = functionType._returnType()._rawType();
-        Multiplicity multiplicity = functionType._returnMultiplicity();
-
-        if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.String, processorSupport)))
-        {
-            String[] finalRes = new String[(int) source.getOne().getRowCount()];
-            processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Integer, processorSupport)))
-        {
-            Long[] finalRes = new Long[(int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).longValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Boolean, processorSupport)))
-        {
-            Boolean[] finalRes = new Boolean[ (int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getBooleanValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Float, processorSupport)))
-        {
-            Double[] finalRes = new Double[(int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Date, processorSupport)))
-        {
-            PureDate[] finalRes = new PureDate[(int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () ->
-            {
-                PureDate date = PrimitiveUtilities.getDateValue(val);
-                finalRes[j] = DateFunctions.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), date.getSubsecond().substring(0, 3));
-            }), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Variant, processorSupport)))
-        {
-            Variant[] finalRes = new Variant[(int) source.getOne().getRowCount()];
-            processOneColumn(source, window, lambdaFunction, (j, val) -> finalRes[j] = val == null ? null : (Variant) val, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Decimal, processorSupport)))
-        {
-            BigDecimal[] finalRes = new BigDecimal[(int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getDecimalValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, processorSupport)))
-        {
-            Double[] finalRes = new Double[(int) source.getOne().getRowCount()];
-            boolean[] nulls = new boolean[(int) source.getOne().getRowCount()];
-            Arrays.fill(nulls, Boolean.FALSE);
-            processOneColumn(source, window, lambdaFunction, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
-            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
-        }
-        else
-        {
-            throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(type) + " is not supported yet!");
-        }
-    }
-
-    private interface Proc
-    {
-        void invoke();
-    }
-
-    private void processWithNull(Integer j, CoreInstance val, boolean[] nulls, Proc p)
-    {
-        {
-            if (val == null)
-            {
-                nulls[j] = true;
-            }
-            else
-            {
-                p.invoke();
-            }
-        }
-    }
-
-    private void processOneColumn(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, Window window, LambdaFunction<CoreInstance> lambdaFunction, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, GenericType relationType, VariableContext evalVarContext, boolean twoParamsFunc)
-    {
-        FixedSizeList<CoreInstance> parameters = twoParamsFunc ? Lists.fixedSize.with((CoreInstance) null, (CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
-        int k = 0;
-        for (int j = 0; j < source.getTwo().size(); j++)
-        {
-            Pair<Integer, Integer> r = source.getTwo().get(j);
-            TestTDS sourceTDS = source.getOne().slice(r.getOne(), r.getTwo());
-            for (int i = 0; i < r.getTwo() - r.getOne(); i++)
-            {
-                if (twoParamsFunc)
-                {
-                    parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), true, processorSupport));
-                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new RepoPrimitiveHandler(repository)), true, processorSupport));
-                }
-                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType._typeArguments().getAny().getValueForMetaPropertyToOne("rawType"), -1, repository, false), true, processorSupport));
-                CoreInstance newValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
-                setter.value(k++, newValue.getValueForMetaPropertyToOne("values"));
-            }
-        }
-    }
 
     public static class RepoPrimitiveHandler implements Frame.PrimitiveHandler
     {

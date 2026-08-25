@@ -1,0 +1,53 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured
+title: "Relational Store — Modelled Semi-structured Data"
+description: |
+  A SEMISTRUCTURED column modelled as ordinary typed properties. One JSON document per
+  row is projected into scalars covering every target type the extraction whitelist
+  accepts, plus the edges of the path grammar: an element of an array of objects, an
+  element of an array of arrays, an array nested inside an object array, bracket-quoted
+  keys containing a space and a dot, and — against a second column whose root is a JSON
+  array — paths that lead with an index.
+
+  Navigation is exercised in two positions: property mappings, and a store filter
+  predicate that reads a value out of the document to decide row inclusion.
+
+modelSources:
+  model:
+    root: relational-semistructured
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-navigation
+  - store:relational-semistructured-array-index
+  - store:relational-filter
+stores:
+  - relational
+# Distinct non-scaffolding domains: execution, store = 2 -> basic.
+complexity: basic
+tags:
+  - semi-structured
+  - variant
+  - json

@@ -44,6 +44,47 @@ DataQualityRelationValidation demo::simplePersonValidation
 }
 
 
+###DataQualityValidation
+DataQualityRelationValidation demo::relationPersonValidation
+{
+   query: |#>{demo::PersonDB.PERSON_TBL}#->select(~[ID, FULL_NAME, EMAIL])->from(
+  demo::PersonRuntime
+);
+   validations: [
+   {
+     name: 'emailPresent';
+     description: 'Validates that every person has an email address';
+     assertion: rel|$rel->rowsWithEmptyColumn(
+  ~EMAIL
+)->assertRelationEmpty(
+  ~[
+     ID,
+     FULL_NAME
+   ]
+);
+    },
+   {
+     name: 'personHasSampleRow';
+     description: 'Validates that every person id has a matching SAMPLE_VAL_TBL row';
+     assertion: rel|$rel->filter(
+  row|$row.FULL_NAME->isNotEmpty()
+)->join(
+  #>{demo::PersonDB.SAMPLE_VAL_TBL}#->select(~[ID])->rename(~ID, ~sampleId),
+  meta::pure::functions::relation::JoinKind.LEFT,
+  {r1, r2 | $r1.ID == $r2.sampleId}
+)->rowsWithEmptyColumn(
+  ~sampleId
+)->assertRelationEmpty(
+  ~[
+     ID,
+     FULL_NAME
+   ]
+);
+    }
+   ];
+}
+
+
 ###Relational
 Database demo::PersonDB
 (

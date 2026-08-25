@@ -42,7 +42,7 @@ function meta::external::function::activator::snowflakeApp::tests::testRuntime(d
 
 function meta::external::function::activator::snowflakeApp::tests::testRuntimeWithTimeZone(db:Database[1]):Runtime[1]
 {
-    testRuntime(testDatabaseConnection($db, '+0530'));
+    testRuntime(testDatabaseConnection($db, 'Asia/Kolkata'));
 }
 
 function meta::external::function::activator::snowflakeApp::tests::defaultConfig():SnowflakeDeploymentConfiguration[1]

@@ -29,6 +29,7 @@ import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParserBas
 import org.finos.legend.engine.protocol.sql.metamodel.*;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -40,6 +41,12 @@ import java.util.stream.Collectors;
 class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 {
     private static final Pattern LITERAL_VALUE_PATTERN = Pattern.compile("(([\\+-]?[0-9]+)\\s([year|years|month|months|week|weeks|day|days|hour|hours|minute|minutes|second|seconds|millisecond|milliseconds|microsecond|microseconds]+))+");
+
+    //cmpOp also covers the regex and like operators, which SQL does not allow a quantifier on
+    private static final EnumSet<ComparisonOperator> QUANTIFIABLE_OPERATORS = EnumSet.of(
+            ComparisonOperator.EQUAL, ComparisonOperator.NOT_EQUAL,
+            ComparisonOperator.LESS_THAN, ComparisonOperator.LESS_THAN_OR_EQUAL,
+            ComparisonOperator.GREATER_THAN, ComparisonOperator.GREATER_THAN_OR_EQUAL);
 
     private long positionalIndex = 1;
 
@@ -1327,8 +1334,35 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitQuantifiedComparison(SqlBaseParser.QuantifiedComparisonContext context)
     {
-        //TODO
-        return unsupported("Quantified Comparison");
+        ComparisonOperator operator = getComparisonOperator(((TerminalNode) context.cmpOp().getChild(0)).getSymbol());
+        if (!QUANTIFIABLE_OPERATORS.contains(operator))
+        {
+            return unsupported("Quantified Comparison with operator " + operator.name());
+        }
+
+        //cmpOp ANY/ALL also accepts an array operand (x = ANY(ARRAY[...])), which has no subquery to compare against
+        Node operand = visit(context.primaryExpression());
+        if (!(operand instanceof SubqueryExpression))
+        {
+            return unsupported("Quantified Comparison against a non-subquery operand");
+        }
+
+        QuantifiedComparisonExpression comparison = new QuantifiedComparisonExpression();
+        comparison.value = (Expression) visit(context.value);
+        comparison.operator = operator;
+        comparison.quantifier = getQuantifier(context.setCmpQuantifier());
+        comparison.subQuery = (SubqueryExpression) operand;
+
+        return comparison;
+    }
+
+    private static Quantifier getQuantifier(SqlBaseParser.SetCmpQuantifierContext context)
+    {
+        if (context.ALL() != null)
+        {
+            return Quantifier.ALL;
+        }
+        return context.SOME() != null ? Quantifier.SOME : Quantifier.ANY;
     }
 
     @Override

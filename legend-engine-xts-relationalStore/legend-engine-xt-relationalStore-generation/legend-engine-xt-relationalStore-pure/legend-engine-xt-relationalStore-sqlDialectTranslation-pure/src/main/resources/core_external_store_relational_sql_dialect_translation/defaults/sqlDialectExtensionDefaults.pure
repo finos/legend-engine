@@ -186,6 +186,36 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::exi
   )
 }
 
+function meta::external::store::relational::sqlDialectTranslation::defaults::quantifiedComparisonExpressionProcessor_default(): NodeProcessor<QuantifiedComparisonExpression>[1]
+{
+  nodeProcessor(
+    QuantifiedComparisonExpression,
+    {sqlDialect, q, state, config |
+      let comparator = if(
+        [
+          pair(|$q.operator == ComparisonOperator.EQUAL, | '='),
+          pair(|$q.operator == ComparisonOperator.NOT_EQUAL, | '<>'),
+          pair(|$q.operator == ComparisonOperator.LESS_THAN, | '<'),
+          pair(|$q.operator == ComparisonOperator.LESS_THAN_OR_EQUAL, | '<='),
+          pair(|$q.operator == ComparisonOperator.GREATER_THAN, | '>'),
+          pair(|$q.operator == ComparisonOperator.GREATER_THAN_OR_EQUAL, | '>=')
+        ],
+        | fail('Unsupported operator for a quantified comparison: ' + $q.operator->toString()); '';
+      );
+      let quantifier = if(
+        [
+          pair(|$q.quantifier == Quantifier.ANY, | $sqlDialect->keyword('any', $state, $config)),
+          pair(|$q.quantifier == Quantifier.SOME, | $sqlDialect->keyword('some', $state, $config))
+        ],
+        | $sqlDialect->keyword('all', $state, $config);
+      );
+      $sqlDialect->executeNodeProcessor($q.value, $q, $state, $config) + ' ' + $comparator + ' ' + $quantifier + ' ' +
+        $sqlDialect->executeNodeProcessor($q.subQuery, $q, $state, $config);
+    },
+    {n | true}
+  )
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::allColumnsReferenceNodeProcessor_default(): NodeProcessor<AllColumnsReference>[1]
 {
   nodeProcessor(

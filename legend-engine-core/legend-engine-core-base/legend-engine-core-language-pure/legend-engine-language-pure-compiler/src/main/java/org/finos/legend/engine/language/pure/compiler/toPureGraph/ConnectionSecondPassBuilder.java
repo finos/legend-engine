@@ -36,7 +36,12 @@ public class ConnectionSecondPassBuilder implements ConnectionVisitor<Root_meta_
     @Override
     public Root_meta_core_runtime_Connection visit(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection connection)
     {
-        this.context.getCompilerExtensions().getExtraConnectionSecondPassProcessors().stream()
+        // Finish building the connection before letting extensions react to it. Extensions run in an unspecified
+        // order, so anything that populates the connection has to happen in the first phase or its consumers in the
+        // second phase may observe it as absent.
+        this.context.getCompilerExtensions().getExtraConnectionValueSecondPassProcessors()
+                .forEach(processor -> processor.value(connection, pureConnection, this.context));
+        this.context.getCompilerExtensions().getExtraConnectionSecondPassProcessors()
                 .forEach(processor -> processor.value(connection, pureConnection, this.context));
         return pureConnection;
     }

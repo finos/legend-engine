@@ -1,0 +1,155 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::postgresSql::parser::*;
+
+native function meta::external::store::relational::postgresSql::parser::parsePostgresDate(s: String[1]): Date[1];
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testISO(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('1999-01-08'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testISOTimestamp(): Boolean[1]
+{
+  assertEquals(%1999-01-08T04:05:06+0000, parsePostgresDate('1999-01-08 04:05:06'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testISOTimestampT(): Boolean[1]
+{
+  assertEquals(%1999-01-08T04:05:06+0000, parsePostgresDate('1999-01-08T04:05:06'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testISOTimestampFractional(): Boolean[1]
+{
+  assertEquals(%1999-01-08T04:05:06.789+0000, parsePostgresDate('1999-01-08 04:05:06.789'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testMonthNameComma(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('January 8, 1999'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testAbbrevMonthComma(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('Jan 8, 1999'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testDayMonthYear(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('8 January 1999'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testMonthNameTimestamp(): Boolean[1]
+{
+  assertEquals(%1999-01-08T04:05:06+0000, parsePostgresDate('January 8, 1999 04:05:06'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testYearMonAbbrevDay(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('1999-Jan-08'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testDayMonAbbrevYear(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('08-Jan-1999'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testMonAbbrevDayYear(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('Jan-08-1999'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testPostgresStyle(): Boolean[1]
+{
+  assertEquals(%1997-12-17, parsePostgresDate('Wed Dec 17 1997'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testCompact8(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('19990108'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testCompact6(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('990108'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testJulianDay(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('J2451187'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testYearDayOfYear(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('1999.008'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testBC(): Boolean[1]
+{
+  let d = parsePostgresDate('January 8, 99 BC');
+  assert($d->isNotEmpty());
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testAD(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('January 8, 1999 AD'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testEpoch(): Boolean[1]
+{
+  assertEquals(%1970-01-01T00:00:00+0000, parsePostgresDate('epoch'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testToday(): Boolean[1]
+{
+  let d = parsePostgresDate('today');
+  assert($d->isNotEmpty());
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testNow(): Boolean[1]
+{
+  let d = parsePostgresDate('now');
+  assert($d->isNotEmpty());
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testTimezoneOffset(): Boolean[1]
+{
+  assertEquals(%1999-01-08T02:05:06+0000, parsePostgresDate('1999-01-08 04:05:06+02'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testTimezoneAbbrevStripped(): Boolean[1]
+{
+  assertEquals(%1999-01-08T04:05:06+0000, parsePostgresDate('1999-01-08 04:05:06 PST'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testAMPM(): Boolean[1]
+{
+  assertEquals(%1999-01-08T16:05:06+0000, parsePostgresDate('1999-01-08 4:05:06 PM'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testTwoDigitYear(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('99-01-08'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testYearSlash(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('1999/1/8'));
+}
+
+function <<test.Test>> meta::external::store::relational::postgresSql::parser::testExtraWhitespace(): Boolean[1]
+{
+  assertEquals(%1999-01-08, parsePostgresDate('  1999-01-08  '));
+}

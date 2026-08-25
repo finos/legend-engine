@@ -1,4 +1,5 @@
 // Copyright 2021 Goldman Sachs
+// ©2026 JP Morgan Chase & Co. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,6 +26,55 @@ function <<test.Test>> meta::relational::tests::projection::function::testSimple
    assertSize($result.values.rows, 7);
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.getString('firstName'))->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+// Companion to the embedded [0..1] case in
+// meta::relational::tests::mapping::embedded::optionalNumeric: map(n | -$n) must negate the
+// column here too, where age is a plain (non-embedded) property of the shared simple model.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::function::testFunctionWithMapAndUnaryMinus():Boolean[1]
+{
+   let result = execute(|Person.all()->project(~[lastName: p | $p.lastName, negatedAge: p | $p.age->map(n | -$n)]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".LASTNAME as "lastName", -"root".AGE as "negatedAge" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+// Same defect with a binary operator. Unary minus is the only operator left with no arguments
+// at all, so it is the only one that raises; times() keeps its literal and emits `2`, quietly
+// returning 2 for every row rather than the doubled column.
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::function::testFunctionWithMapAndMultiply():Boolean[1]
+{
+   let result = execute(|Person.all()->project(~[lastName: p | $p.lastName, doubledAge: p | $p.age->map(n | $n * 2)]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".LASTNAME as "lastName", "root".AGE * 2 as "doubledAge" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+// The two above are AlloyOnly because project(~[...]) needs the Alloy execution path, so they
+// contribute nothing to a non-Alloy run. These legacy-TDS equivalents cover the same defect in
+// a form that executes in both modes, and assert the returned rows rather than the SQL alone.
+function <<test.Test>> meta::relational::tests::projection::function::testFunctionWithMapAndUnaryMinusLegacyTds():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.age->map(n | -$n)], ['lastName','negatedAge']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals('Allen=-22,Harris=-35,Hill=-12,Hill=-32,Johnson=-22,Roberts=-34,Smith=-23', $result.values.rows->map(r|$r.getString('lastName')+'='+$r.getInteger('negatedAge')->toOne()->toString())->sort()->joinStrings(','));
+   assertEquals('select "root".LASTNAME as "lastName", -"root".AGE as "negatedAge" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::projection::function::testFunctionWithMapAndMultiplyLegacyTds():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.age->map(n | $n * 2)], ['lastName','doubledAge']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals('Allen=44,Harris=70,Hill=24,Hill=64,Johnson=44,Roberts=68,Smith=46', $result.values.rows->map(r|$r.getString('lastName')+'='+$r.getInteger('doubledAge')->toOne()->toString())->sort()->joinStrings(','));
+   assertEquals('select "root".LASTNAME as "lastName", "root".AGE * 2 as "doubledAge" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+// The cases above reference the lambda parameter once, so they would still pass if the source
+// column were substituted only at the first occurrence. Multiplying the parameter by itself
+// pins that every occurrence resolves to the column: the operand count is what unary minus got
+// wrong, and this is the other half of it.
+function <<test.Test>> meta::relational::tests::projection::function::testFunctionWithMapMultiplyingTwoColumns():Boolean[1]
+{
+   let result = execute(|Person.all()->project([p|$p.lastName, p|$p.age->map(n | $n * $n)], ['lastName','ageSquared']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7);
+   assertEquals('Allen=484,Harris=1225,Hill=1024,Hill=144,Johnson=484,Roberts=1156,Smith=529', $result.values.rows->map(r|$r.getString('lastName')+'='+$r.getInteger('ageSquared')->toOne()->toString())->sort()->joinStrings(','));
+   assertEquals('select "root".LASTNAME as "lastName", "root".AGE * "root".AGE as "ageSquared" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::function::testFunctionAndPathOneSide():Boolean[1]

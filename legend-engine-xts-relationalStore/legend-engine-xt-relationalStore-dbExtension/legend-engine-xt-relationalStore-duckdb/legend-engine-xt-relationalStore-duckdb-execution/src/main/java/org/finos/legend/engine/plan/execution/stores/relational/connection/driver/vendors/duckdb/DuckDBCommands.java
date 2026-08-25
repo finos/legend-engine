@@ -68,6 +68,18 @@ public class DuckDBCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        return "CREATE TEMP TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(java.util.stream.Collectors.joining(", ")) + ")";
+    }
+
+    @Override
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        return "INSERT INTO " + tableName + " (" + columnName + ") VALUES (cast(? as JSON))";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);

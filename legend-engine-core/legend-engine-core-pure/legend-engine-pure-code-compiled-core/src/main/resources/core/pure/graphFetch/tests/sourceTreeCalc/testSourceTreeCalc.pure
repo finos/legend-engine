@@ -3008,6 +3008,96 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateAssoc::CEAsso
 )
 
 ###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: the intermediate back-edge machinery (calculateSourceTree ->
+// buildPropertyPathUptoOwner) builds its candidate map from allNestedProperties(),
+// which includes qualified properties. A qualified property that takes a parameter
+// must never be synthesized into the source tree - it is not present in the query
+// or the mapping, and downstream Java serialize generation would call it with no
+// arguments. Here QCompanyEmployee.aBetterEmployee(String[1]) returns the same
+// class as the real back-edge property `employee` and sorts alphabetically before
+// it, so pickIntermediateProperty selects it if qualified properties are not
+// filtered out.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson
+{
+  firstName : String[1];
+  lastName  : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QAddress
+{
+  street : String[1];
+  zip    : String[1];
+}
+
+Association meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson_QAddress
+{
+  resident : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QPerson[1];
+  address  : meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QAddress[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployee
+{
+  employee : QPerson[1];
+
+  aBetterEmployee(suffix : String[1])
+  {
+    $this.employee
+  } : QPerson[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeIntermediate
+{
+  ce : QCompanyEmployee[1];
+  person : QPerson[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeTarget
+{
+  employeeStreet : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::qwrap(ce:QCompanyEmployee[1]) : QCompanyEmployeeIntermediate[*]
+{
+  ^QCompanyEmployeeIntermediate(ce = $ce, person = $ce.employee)
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::testIntermediateBackEdgeIgnoresQualifiedProperties():Boolean[1]
+{
+  let tree = #{QCompanyEmployeeTarget {employeeStreet}}#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                      $tree,
+                      meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QualifiedBackEdgeMapping,
+                      meta::pure::extension::defaultExtensions());
+
+  let expected = #{
+    QCompanyEmployee
+    {
+      employee
+      {
+        address { street }
+      }
+    }
+  }#;
+  assertEquals($expected->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString(),
+               $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString());
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QualifiedBackEdgeMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployeeTarget : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::QCompanyEmployee
+    employeeStreet : $src->meta::pure::graphFetch::tests::sourceTreeCalc::intermediateQualified::qwrap().person.address.street->toOne()
+  }
+)
+
+###Pure
 import meta::pure::graphFetch::tests::sourceTreeCalc::collide::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
@@ -3690,5 +3780,287 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::Phant
   {
     ~src meta::pure::graphFetch::tests::sourceTreeCalc::unionInheritedProp::PhantomCommission
     chargedPartyId : $src.executionCommission.payBy.oe.identifier->toOne()
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: a class that declares a property returning its own type is legitimate
+// modelling, but it made the back-edge walk non-terminating. buildPropertyPathUptoOwner
+// walks backwards from the intermediate class to the owner - find a property returning
+// target, pick one, set target := picked.ownerClass(), recurse - and kept no record of
+// where it had been. Here the candidates returning SrTx are SrTx.interco (declared on
+// SrTx itself) and SrCollateral.tx; pickIntermediateProperty sorts by name, so 'interco'
+// wins, target never changes, and the walk spun until the 64-level backstop fired with
+// "buildPropertyPathUptoOwner recursion exceeded 64 levels".
+// Derived from a real model in which
+// TripartyRepoCollateralTransaction.intercoContract returns TripartyRepoCollateralTransaction.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx
+{
+  txId    : String[1];
+  interco : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrCollateral
+{
+  tx : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrEvent
+{
+  collateral : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrCollateral[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrPayload
+{
+  event : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut
+{
+  txInfo : meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut
+{
+  txId : String[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::testSelfReferencingPropertyBackEdge():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut {
+      txInfo { txId }
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SelfRefMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  // The back-edge must route around the self-reference: SrPayload -> event -> collateral
+  // -> tx -> txId. The self-referencing property must not appear in the source tree.
+  assert($str->contains('event'),      | 'expected event in source tree: '      + $str);
+  assert($str->contains('collateral'), | 'expected collateral in source tree: ' + $str);
+  assert($str->contains('tx'),         | 'expected tx in source tree: '         + $str);
+  assert($str->contains('txId'),       | 'expected txId in source tree: '       + $str);
+  assert(!$str->contains('interco'),   | 'self-referencing property must not be synthesised into the source tree: ' + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SelfRefMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrOut : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrPayload
+    txInfo[srTxCM] : ^meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx(
+       txId = $src.event.collateral.tx.txId->toOne()
+    )
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTxOut[srTxCM] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::selfRef::SrTx
+    txId : $src.txId
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Boundary case for the visited-set cycle guard. The guard makes the back-edge walk
+// terminate, but the walk is still greedy and does not backtrack, so it can take a wrong
+// turn into a cul-de-sac. Candidates returning McTx are McProfile.altTx and
+// McEvent.transaction; pickIntermediateProperty sorts by name so 'altTx' wins and the walk
+// steps into McProfile, whose only producer (McTx.profile) is already on the path. The
+// walk therefore fails - even though McEvent.transaction -> McPayload.event was a perfectly
+// good route. Before the guard this shape hung on the McTx <-> McProfile 2-cycle until the
+// depth backstop fired; now it fails immediately with an accurate diagnostic.
+//
+// If the DFS-with-backtracking alternative in
+// docs/engineering/architecture/source-tree-calculation.md section 11.6 is ever
+// implemented, this test flips from asserting an error to asserting the source tree
+// McPayload { event { transaction { txId } } }.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile
+{
+  altTx : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx
+{
+  txId    : String[1];
+  profile : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McEvent
+{
+  transaction : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx[*];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload
+{
+  event : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McEvent[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut
+{
+  txInfo : meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut
+{
+  txId : String[0..1];
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::testMutualCycleGivesClearError():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut {
+      txInfo { txId }
+    }
+  }#;
+  assertError(
+    | meta::pure::graphFetch::calculateSourceTree(
+        $tree,
+        meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping,
+        meta::pure::extension::defaultExtensions());,
+    'Could not build an acyclic path from meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload back to meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile: every property returning it is declared on a class already on the path. The back-edge search does not backtrack - see source-tree-calculation.md section 11.6.'
+  );
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::MutualCycleMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McOut : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McPayload
+    txInfo[mcTxCM] : ^meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx(
+       txId    = $src.event.transaction.txId->toOne(),
+       profile = ^meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McProfile()
+    )
+  }
+  meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTxOut[mcTxCM] : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::mutualCycle::McTx
+    txId : $src.txId
+  }
+)
+
+###Pure
+import meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::*;
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::routing::*;
+
+// Regression: a transform may navigate properties of purely constant reference data -
+// instances built by a function that consumes nothing from the source. The navigated
+// classes (CrRefWrap/CrRefLeaf) are unreachable from the source class, but no source
+// data flows into them, so nothing needs fetching: the correct source tree is the bare
+// root. The owner-reachability diagnostic must stay inert for this shape.
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+{
+  x : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefLeaf
+{
+  supported : Boolean[1];
+  label     : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefWrap
+{
+  leaf : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefLeaf[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt
+{
+  label : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt
+{
+  label : String[1];
+  xOut  : String[1];
+}
+
+function meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData() : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrRefWrap[*]
+{
+  [
+    ^CrRefWrap(leaf = ^CrRefLeaf(supported = true, label = 'A')),
+    ^CrRefWrap(leaf = ^CrRefLeaf(supported = true, label = 'B'))
+  ]
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::testConstantReferenceDataNavigation():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt {
+      label
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('CrSrcRoot'), | 'expected root class in source tree: '                             + $str);
+  assert(!$str->contains('leaf'),     | 'constant-derived leaf must not appear in the source tree: '       + $str);
+  assert(!$str->contains('label'),    | 'constant-derived label must not appear in the source tree: '      + $str);
+  assert(!$str->contains('supported'),| 'constant-derived supported must not appear in the source tree: '  + $str);
+  true;
+}
+
+function <<test.Test>>
+  meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::testConstantReferenceDataAlongsideSourceProperty():Boolean[1]
+{
+  let tree = #{
+    meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt {
+      label,
+      xOut
+    }
+  }#;
+  let sourceTree = meta::pure::graphFetch::calculateSourceTree(
+                     $tree,
+                     meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMixedMapping,
+                     meta::pure::extension::defaultExtensions());
+  let str = $sourceTree->meta::pure::graphFetch::sortTree()->meta::pure::graphFetch::treeToString();
+  assert($str->contains('x'),         | 'source-mapped x must appear in the source tree: '                 + $str);
+  assert(!$str->contains('leaf'),     | 'constant-derived leaf must not appear in the source tree: '       + $str);
+  assert(!$str->contains('label'),    | 'constant-derived label must not appear in the source tree: '      + $str);
+  assert(!$str->contains('supported'),| 'constant-derived supported must not appear in the source tree: '  + $str);
+  true;
+}
+
+###Mapping
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrTgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+    label : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData()
+              ->map(w | $w.leaf)
+              ->map(l | $l.label)
+              ->joinStrings(',')
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::ConstantReferenceMixedMapping
+(
+  *meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrMixedTgt : Pure
+  {
+    ~src meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::CrSrcRoot
+    label : meta::pure::graphFetch::tests::sourceTreeCalc::constantRef::referenceData()
+              ->map(w | $w.leaf)
+              ->map(l | $l.label)
+              ->joinStrings(','),
+    xOut  : $src.x
   }
 )

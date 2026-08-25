@@ -25,13 +25,18 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpecArray;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.variant.Variant;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
@@ -39,9 +44,11 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.ColumnValue;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
@@ -53,8 +60,9 @@ import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.operation.AdjustDate;
 import org.finos.legend.pure.runtime.java.interpreted.profiler.Profiler;
-import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 
+import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Stack;
 
@@ -446,5 +454,120 @@ public abstract class AggregationShared extends Shared
             throw new RuntimeException("Not Possible");
         }
         return ids;
+    }
+
+    protected ColumnValue processFuncColSpec(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, Window window, FuncColSpec<?, ?> funcColSpec, boolean relationParam, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, GenericType relationType, boolean twoParamsFunc)
+    {
+        LambdaFunction<CoreInstance> lambdaFunction = (LambdaFunction<CoreInstance>) LambdaFunctionCoreInstanceWrapper.toLambdaFunction(funcColSpec.getValueForMetaPropertyToOne(M3Properties.function));
+        String name = funcColSpec.getValueForMetaPropertyToOne(M3Properties.name).getName();
+
+        VariableContext evalVarContext = this.getParentOrEmptyVariableContextForLambda(variableContext, lambdaFunction);
+
+        FunctionType functionType = ((FunctionType) lambdaFunction._classifierGenericType()._typeArguments().getFirst()._rawType());
+        Type type = functionType._returnType()._rawType();
+        Multiplicity multiplicity = functionType._returnMultiplicity();
+
+        if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.String, processorSupport)))
+        {
+            String[] finalRes = new String[resultSize(source, relationParam)];
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> finalRes[j] = val == null ? null : PrimitiveUtilities.getStringValue(val), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Integer, processorSupport)))
+        {
+            Long[] finalRes = new Long[resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getIntegerValue(val).longValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Boolean, processorSupport)))
+        {
+            Boolean[] finalRes = new Boolean[ resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getBooleanValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Float, processorSupport)))
+        {
+            Double[] finalRes = new Double[resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Date, processorSupport)))
+        {
+            PureDate[] finalRes = new PureDate[resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () ->
+            {
+                PureDate date = PrimitiveUtilities.getDateValue(val);
+                finalRes[j] = DateFunctions.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), date.getSubsecond().substring(0, 3));
+            }), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Variant, processorSupport)))
+        {
+            Variant[] finalRes = new Variant[resultSize(source, relationParam)];
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> finalRes[j] = val == null ? null : (Variant) val, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Decimal, processorSupport)))
+        {
+            BigDecimal[] finalRes = new BigDecimal[resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getDecimalValue(val)), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else if (processorSupport.type_subTypeOf(type, _Package.getByUserPath(M3Paths.Number, processorSupport)))
+        {
+            Double[] finalRes = new Double[resultSize(source, relationParam)];
+            boolean[] nulls = new boolean[resultSize(source, relationParam)];
+            Arrays.fill(nulls, Boolean.FALSE);
+            processOneColumn(source, window, lambdaFunction, relationParam, (j, val) -> processWithNull(j, val, nulls, () -> finalRes[j] = PrimitiveUtilities.getFloatValue(val).doubleValue()), resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport, processorSupport, relationType, evalVarContext, twoParamsFunc);
+            return new ColumnValue(name, functionType._returnType(), multiplicity, finalRes);
+        }
+        else
+        {
+            throw new RuntimeException("The type " + PackageableElement.getUserPathForPackageableElement(type) + " is not supported yet!");
+        }
+    }
+
+    protected void processOneColumn(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, Window window, LambdaFunction<CoreInstance> lambdaFunction, boolean relationParam, Procedure2<Integer, CoreInstance> setter, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, ProcessorSupport processorSupport, GenericType relationType, VariableContext evalVarContext, boolean twoParamsFunc)
+    {
+        FixedSizeList<CoreInstance> parameters = twoParamsFunc ? Lists.fixedSize.with((CoreInstance) null, (CoreInstance) null, (CoreInstance) null) : Lists.fixedSize.with((CoreInstance) null);
+        int k = 0;
+        for (int j = 0; j < source.getTwo().size(); j++)
+        {
+            Pair<Integer, Integer> r = source.getTwo().get(j);
+            TestTDS sourceTDS = source.getOne().slice(r.getOne(), r.getTwo());
+            if (relationParam)
+            {
+                parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), true, processorSupport));
+                CoreInstance groupValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
+                setter.value(k++, groupValue.getValueForMetaPropertyToOne("values"));
+                continue;
+            }
+            for (int i = 0; i < r.getTwo() - r.getOne(); i++)
+            {
+                if (twoParamsFunc)
+                {
+                    parameters.set(0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSCoreInstance(sourceTDS, relationType, repository, processorSupport), true, processorSupport));
+                    parameters.set(1, ValueSpecificationBootstrap.wrapValueSpecification(window.convert(processorSupport, new ProjectExtend.RepoPrimitiveHandler(repository)), true, processorSupport));
+                }
+                parameters.set(twoParamsFunc ? 2 : 0, ValueSpecificationBootstrap.wrapValueSpecification(new TDSWithCursorCoreInstance(sourceTDS, i, "", null, relationType._typeArguments().getAny().getValueForMetaPropertyToOne("rawType"), -1, repository, false), true, processorSupport));
+                CoreInstance newValue = this.functionExecution.executeFunction(false, lambdaFunction, parameters, resolvedTypeParameters, resolvedMultiplicityParameters, evalVarContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
+                setter.value(k++, newValue.getValueForMetaPropertyToOne("values"));
+            }
+        }
+    }
+
+    private static int resultSize(Pair<TestTDS, MutableList<Pair<Integer, Integer>>> source, boolean relationParam)
+    {
+        return relationParam ? source.getTwo().size() : (int) source.getOne().getRowCount();
     }
 }

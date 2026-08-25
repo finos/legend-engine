@@ -113,7 +113,7 @@ tests:
     feature: "NULL in concatenation"
     category: "null_semantics"
     expected_tds_status: FAIL
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   # NULL in GROUP BY
   - id: null_group_by

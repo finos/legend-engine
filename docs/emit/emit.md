@@ -903,6 +903,13 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `store:relational-nested-join` | Nested (chained) join |
 | `store:relational-outer-join` | Full outer join |
 | `store:relational-right-outer-join` | Right outer join |
+| `store:relational-semistructured` | `SEMISTRUCTURED` column holding a JSON document |
+| `store:relational-semistructured-array-functions` | Collection functions over a semi-structured array |
+| `store:relational-semistructured-array-index` | Fixed-index access into a semi-structured array |
+| `store:relational-semistructured-binding` | JSON document typed as a model via an ExternalFormat binding |
+| `store:relational-semistructured-explode` | `explodeSemiStructured` fanning a JSON array into rows |
+| `store:relational-semistructured-flatten` | Lateral flatten of a to-many semi-structured property |
+| `store:relational-semistructured-navigation` | Path navigation into a semi-structured document |
 | `store:service-store` | Service store |
 | `store:flat-data-store` | Flat-data store |
 

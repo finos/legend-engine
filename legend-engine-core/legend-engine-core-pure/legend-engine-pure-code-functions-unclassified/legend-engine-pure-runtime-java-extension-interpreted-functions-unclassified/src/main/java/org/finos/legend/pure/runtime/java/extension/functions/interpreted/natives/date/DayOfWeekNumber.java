@@ -14,10 +14,9 @@
 
 package org.finos.legend.pure.runtime.java.extension.functions.interpreted.natives.date;
 
-import java.util.Calendar;
-
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.extract.NativeDateElementFunction;
 
@@ -35,40 +34,7 @@ public class DayOfWeekNumber extends NativeDateElementFunction
         {
             throw new InvalidDateElementException("Cannot get day of week for " + date);
         }
-        switch (date.getCalendar().get(Calendar.DAY_OF_WEEK))
-        {
-            case Calendar.MONDAY:
-            {
-                return 1;
-            }
-            case Calendar.TUESDAY:
-            {
-                return 2;
-            }
-            case Calendar.WEDNESDAY:
-            {
-                return 3;
-            }
-            case Calendar.THURSDAY:
-            {
-                return 4;
-            }
-            case Calendar.FRIDAY:
-            {
-                return 5;
-            }
-            case Calendar.SATURDAY:
-            {
-                return 6;
-            }
-            case Calendar.SUNDAY:
-            {
-                return 7;
-            }
-            default:
-            {
-                throw new RuntimeException("Error getting day of week for " + date);
-            }
-        }
+        // DayOfWeek numbers Monday 1 through Sunday 7, which is the numbering this function returns.
+        return PureDateToJava.start().toLocalDate(date).getDayOfWeek().getValue();
     }
 }

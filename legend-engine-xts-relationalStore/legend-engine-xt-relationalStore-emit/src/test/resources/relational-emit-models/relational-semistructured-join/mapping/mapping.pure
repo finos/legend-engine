@@ -1,0 +1,76 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssj::HrMapping
+(
+  *demo::ssj::Employee: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssj::store::HrDB]EMPLOYEE.ID
+    )
+    ~mainTable [demo::ssj::store::HrDB]EMPLOYEE
+    name: [demo::ssj::store::HrDB]EMPLOYEE.NAME,
+    firm: [demo::ssj::store::HrDB]@Employee_Firm
+  }
+
+  demo::ssj::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssj::store::HrDB]FIRM.ID
+    )
+    ~mainTable [demo::ssj::store::HrDB]FIRM
+    id: [demo::ssj::store::HrDB]FIRM.ID,
+    legalName: [demo::ssj::store::HrDB]FIRM.LEGAL_NAME
+  }
+
+  testSuites:
+  [
+    joinOnDocumentValueSuite:
+    {
+      function: |demo::ssj::Employee.all()
+                  ->project(~[name: e | $e.name, firmId: e | $e.firm.id, legalName: e | $e.firm.legalName])
+                  ->sort([~name->ascending()]);
+      tests:
+      [
+        joinAcrossDocumentValue:
+        {
+          data:
+          [
+            demo::ssj::store::HrDB:
+              Reference
+              #{
+                demo::ssj::data::HrData
+              }#
+          ];
+          asserts:
+          [
+            shouldResolveFirmFromDocument:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"name":"Alice","firmId":"f1","legalName":"Firm One"},{"name":"Bob","firmId":"f2","legalName":"Firm Two"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

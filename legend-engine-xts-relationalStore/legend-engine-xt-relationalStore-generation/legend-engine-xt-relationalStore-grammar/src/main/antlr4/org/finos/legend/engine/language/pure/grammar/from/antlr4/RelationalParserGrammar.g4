@@ -194,11 +194,16 @@ booleanOperator:                            AND | OR
 atomicOperation:                            (
                                                 groupOperation
                                                 | ( databasePointer? functionOperation )
+                                                | lambdaParameter
                                                 | columnOperation
                                                 | joinOperation
                                                 | constant
                                             )
                                             atomicOperationRight?
+;
+// $x inside a lambda body. Ahead of columnOperation because a bare identifier is a column
+// reference, so the parameter needs its own sigil to stay unambiguous.
+lambdaParameter:                            DOLLAR identifier
 ;
 atomicOperationRight:                       (atomicOperator atomicOperation) | atomicSelfOperator
 ;
@@ -212,7 +217,13 @@ constant:                                   STRING | INTEGER | FLOAT
 ;
 functionOperation:                          identifier PAREN_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? PAREN_CLOSE
 ;
-functionOperationArgument:                  operation | functionOperationArgumentArray
+functionOperationArgument:                  operation | functionOperationArgumentArray | functionOperationLambda
+;
+// A lambda, as filter/map/fold over an array take. The body is an ordinary operation, so it may
+// navigate, compare, or call another function. Parentheses are required for more than one
+// parameter, so that the names cannot be read as further arguments to the enclosing function.
+functionOperationLambda:                    identifier PIPE operation
+                                            | PAREN_OPEN identifier (COMMA identifier)* PIPE operation PAREN_CLOSE
 ;
 functionOperationArgumentArray:             BRACKET_OPEN (functionOperationArgument (COMMA functionOperationArgument)*)? BRACKET_CLOSE
 ;

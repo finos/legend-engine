@@ -36,9 +36,50 @@ on:
         default: false
 
 jobs:
+  # workflow_dispatch inputs cannot be validated at submission time, so this
+  # runs first and everything else gates on it. Central is immutable: a
+  # duplicate version would otherwise only surface at the final upload, after
+  # the tag has already been pushed and the full build and test matrix has run.
+  validate:
+    name: Check Release Version Is Unused
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+    steps:
+      - name: Check version format
+        run: |
+          if ! [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Release version '$RELEASE_VERSION' is not of the form MAJOR.MINOR.PATCH"
+            exit 1
+          fi
+
+      - name: Check release tag does not already exist
+        env:
+          TAG: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+        run: |
+          if git ls-remote --exit-code --tags "https://github.com/${{ github.repository }}.git" "refs/tags/$TAG" ; then
+            echo "::error::Tag $TAG already exists -- version $RELEASE_VERSION has already been released (or a failed release was not cleaned up)"
+            exit 1
+          fi
+
+      - name: Check version is not already on Maven Central
+        # Guards the case where the tag was deleted (e.g. by release cleanup)
+        # but artifacts still made it to Central, which cannot be overwritten.
+        run: |
+          url="https://repo1.maven.org/maven2/org/finos/legend/engine/legend-engine/${RELEASE_VERSION}/legend-engine-${RELEASE_VERSION}.pom"
+          http_status=$(curl -s -o /dev/null -w '%{http_code}' "$url")
+          if [ "$http_status" = "200" ]; then
+            echo "::error::Version $RELEASE_VERSION is already published on Maven Central: $url"
+            exit 1
+          elif [ "$http_status" != "404" ]; then
+            echo "::warning::Unexpected HTTP $http_status from Maven Central while checking $url -- continuing"
+          fi
+
   build:
     name: Prepare Release Artifacts
     runs-on: ubuntu-latest-16-cores
+    needs:
+      - validate
     outputs:
       testMatrix: ${{ steps.testMatrix.outputs.testMatrix }}
 

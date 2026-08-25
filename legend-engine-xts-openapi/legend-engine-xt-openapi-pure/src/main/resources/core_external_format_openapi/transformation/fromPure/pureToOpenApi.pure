@@ -26,6 +26,7 @@ import meta::external::query::sql::transformation::queryToPure::tests::*;
 import meta::pure::graphFetch::*;
 import meta::external::function::description::openapi::tostring::*;
 import meta::pure::metamodel::relation::*;
+import meta::pure::executionPlan::platformBinding::typeInfo::*;
 
 Class meta::external::function::description::openapi::transformation::fromPure::FunctionInfo
 {
@@ -133,35 +134,36 @@ function <<access.private>> meta::external::function::description::openapi::tran
 
 function <<access.private>> meta::external::function::description::openapi::transformation::fromPure::generateComponent(funcInfos: FunctionInfo[*], elements: PackageableElement[*]):Components[1]
 {
-  let functionClasses = $funcInfos->returnTypesFromFunctions();
-  let allClasses = if($funcInfos->exists(f|$f->getReturnType()->instanceOf(RootGraphFetchTree)),
-                      |$functionClasses
-                          ->concatenate($elements->filter(e|$e->instanceOf(Class))->map(e|^GenericType(rawType=$e->cast(@Class<Any>))))
-                          ->removeDuplicates(cmpGenericType_GenericType_1__GenericType_1__Boolean_1_),
-                      |$functionClasses
-                   );
-
-  let schema = $allClasses->map(
-                              c|pair(
-                                $c.rawType.name->toOne(),
-                                ^Schema
-                                (
-                                  type='object',
-                                  properties=newMap(
-                                    $c.rawType->cast(@Class<Any>).properties
-                                      ->filter(p|!$p.name->in(['elementOverride', 'classifierGenericType', 'generalizations', 'specializations']))
-                                      ->map(p|
-                                              pair
-                                              (
-                                                $p.name->toOne(),
-                                                $p->functionReturnType()->buildComponent($p.multiplicity)
-                                              )
-                                        )
+  let trees = $funcInfos->map(f|$f->getReturnType())->filter(r|$r->instanceOf(RootGraphFetchTree))->cast(@RootGraphFetchTree<Any>);
+  let schema = if($trees->isNotEmpty(),
+                | let treeInfo = $trees->fold({t, i|$i->addForGraphFetchTree($t)}, newTypeInfoSet());
+                  $treeInfo->allClassInfos()->map(ci|
+                                                  pair(
+                                                    $ci.class().name->toOne(),
+                                                    ^Schema
+                                                    (
+                                                      type='object',
+                                                      properties=newMap($treeInfo->allProperties($ci)->map(p|pair($p.name->toOne(), $p->functionReturnType()->buildComponent($p.multiplicity))))
+                                                    )
+                                                  )
+                  );,
+                | let allClasses = $funcInfos->returnTypesFromFunctions();
+                  $allClasses->map(c|
+                                   pair(
+                                    $c.rawType.name->toOne(),
+                                    ^Schema
+                                    (
+                                      type='object',
+                                      properties=newMap(
+                                        $c.rawType->cast(@Class<Any>).properties
+                                          ->filter(p|!$p.name->in(['elementOverride', 'classifierGenericType', 'generalizations', 'specializations']))
+                                          ->map(p|pair($p.name->toOne(), $p->functionReturnType()->buildComponent($p.multiplicity)))
+                                      )
+                                    )
                                   )
-                                )
-                              )
-                            );
-
+                  );
+               );
+  
   ^Components(schemas = newMap($schema));
 }
 

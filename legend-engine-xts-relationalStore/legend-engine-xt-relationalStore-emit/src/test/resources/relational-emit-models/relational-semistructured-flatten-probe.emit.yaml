@@ -1,0 +1,28 @@
+name: relational-semistructured-flatten-probe
+title: "Relational Store — What array_flatten Does to Each Array Shape"
+description: |
+  Probes array_flatten against flat, singly-nested, ragged, doubly-nested and empty-inner
+  arrays. A [*] path has to normalise at every step because JSON is irregular, and that
+  normalisation is only sound if flatten collapses one level and leaves a flat array alone.
+modelSources:
+  model:
+    root: relational-semistructured-flatten-probe
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-array-functions
+stores:
+  - relational
+complexity: basic
+tags:
+  - semi-structured
+  - array-functions
+  - json

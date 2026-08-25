@@ -24,11 +24,13 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DataspaceDataElementReferenceParser;
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperRelationElementsDataComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
@@ -166,6 +168,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
                 getTabString(3) + "executable: " + executable.executable.path + ";\n" +
                 (executable.executionContextKey != null ?  getTabString(3) + "executionContextKey: " +  convertString(executable.executionContextKey, true) + ";\n" : "") +
+                renderDataspaceExecutableSampleValues(executable.sampleValues) +
                 getTabString(2) + "}";
     }
 
@@ -177,7 +180,17 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
                 getTabString(3) + "query: " + executable.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(3)).build()) + ";\n" +
                 (executable.executionContextKey != null ?  getTabString(3) + "executionContextKey: " +  convertString(executable.executionContextKey, true) + ";\n" : "") +
+                renderDataspaceExecutableSampleValues(executable.sampleValues) +
                 getTabString(2) + "}";
+    }
+
+    private static String renderDataspaceExecutableSampleValues(RelationElement sampleValues)
+    {
+        if (sampleValues == null)
+        {
+            return "";
+        }
+        return getTabString(3) + "sampleValues: Relation\n" + HelperRelationElementsDataComposer.renderAlignedRelationElement(sampleValues, getTabString(4), true) + ";\n";
     }
 
     private static String renderDataSpace(DataSpace dataSpace, PureGrammarComposerContext context)

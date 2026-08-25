@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::functionRegistry::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::sqlTypes::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+
+// Carries the meaning that regexp_like used to carry here. The two are separated because
+// regexp_like means a substring match in PostgreSQL, and this model is PostgreSQL-shaped; a name
+// that contradicts the database it is modelled on made every emitter compensate with its own
+// anchoring. See docs/engineering/decisions/ADR-002-legend-regex-canonical-semantics.md.
+Class {sqlFunctionInfo.initializer = 'regexpFullMatch'} meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::RegexpFullMatch extends ExtensionSqlFunction
+[
+  $this.name == 'regexp_full_match'
+]
+{}
+
+function meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::regexpFullMatch(): SqlFunction[1]
+{
+  ^meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::RegexpFullMatch
+  (
+    name = 'regexp_full_match',
+    documentation = 'Returns whether the pattern matches the entire string. Backs Pure matches().',
+    variations = [
+      ^SqlFunctionVariation
+      (
+        parameterTypes = [AbstractStringSqlType, AbstractStringSqlType],
+        returnType = BooleanSqlType
+      )
+    ],
+    tests = [
+      sqlFunctionTest(
+        simpleFunctionCall('regexp_full_match', [literal('abcd'), literal('a.*d')]),
+        true
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('regexp_full_match', [literal('abcd'), literal('bc')]),
+        false
+      ),
+      // The anchoring has to span the alternation; '^cat|dog$' would parse as (^cat)|(dog$).
+      sqlFunctionTest(
+        simpleFunctionCall('regexp_full_match', [literal('catfish'), literal('cat|dog')]),
+        false
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('regexp_full_match', [literal('cat'), literal('cat|dog')]),
+        true
+      )
+    ]
+  )
+}

@@ -435,3 +435,15 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::explode::te
     'o6,t7\n'
   );
 }
+
+// Pins what explodeReturnType promises today. 'SEMISTRUCTURED' is the only spelling any mapping
+// passes and it is not in the lookup map - it reaches the document case by falling through, so
+// nothing else records that this is the contract. See section 11.12 for the gaps left open.
+function <<test.Test>> meta::relational::tests::semistructured::explode::testExplodeReturnTypeAcceptedNames():Boolean[1]
+{
+  assertEmpty('SEMISTRUCTURED'->meta::relational::functions::pureToSqlQuery::explodeReturnType(), 'SEMISTRUCTURED describes a nested document, so it has no scalar Pure type');
+  assertEquals(String, 'VARCHAR'->meta::relational::functions::pureToSqlQuery::explodeReturnType());
+  assertEquals(Integer, 'INTEGER'->meta::relational::functions::pureToSqlQuery::explodeReturnType());
+  assertEquals(DateTime, 'TIMESTAMP'->meta::relational::functions::pureToSqlQuery::explodeReturnType());
+  assertEquals(StrictDate, 'DATE'->meta::relational::functions::pureToSqlQuery::explodeReturnType());
+}

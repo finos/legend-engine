@@ -1,0 +1,354 @@
+# Column name resolution across a rename.
+#
+# Covers the "The column 'X' can't be found in the relation (...)" family
+#
+# Two distinct defects:
+#   * processDuplicateRenames suffixes every column of each join side with the SQL alias
+#     (name -> name_p) and records it in SQLColumnAlias.realias. processRename later emits
+#     renames without updating that map, so group-by keys and window partition/order keys
+#     resolved through it name columns the relation no longer has.
+#   * Statement-level ORDER BY expressions were never materialised, unlike window, GROUP BY
+#     and HAVING expressions, so the sort named a column nothing had created.
+#
+# The `p.name AS name` spelling is load-bearing. processGroupBy and processOlapGroupBy drop
+# $extensions from the select list they rename, and an aliased column reference only escapes
+# $extensions when its alias equals its own bare column name. Remove the alias and the
+# group-by/window cases stop reproducing. It is not contrived: an upstream casing-correction
+# pass emits it whenever stored column casing differs from the view SQL's.
+#
+# Those cases also need a join -- realias is only set by processDuplicateRenames, which only
+# runs for one. They are built on `persons p INNER JOIN departments d ON p.dept_id = d.id`,
+# the join shape already known to pass on both paths (smoke_select_join).
+#
+# WHY THE JOIN CASES EXPECT tds=PASS BUT rel=ERROR
+# The Relation path cannot execute JOIN + GROUP BY / window at all, independently of this
+# defect: all 21 pre-existing tests of that shape are rel=ERROR (12 of them tds=PASS). Fixing
+# name resolution moves those queries off "column can't be found" and onto that separate wall,
+# seen as "Bad value for type long : Alice" or "Can't find property 'salary_p'". The TDS column
+# is what demonstrates this fix for them; the rel column records today's reality, and
+# fix-detection will flag them for promotion when Relation-path joins land.
+#
+# Three of them are rel=FAIL rather than rel=ERROR: on that path they now execute and return
+# wrong rows instead of failing to compile. Worth knowing when Relation-path joins are picked
+# up -- wrong rows are a worse failure mode than an error, even in an area that cannot
+# currently execute these queries at all.
+#
+# Two cases -- window_two_sides_renamed_differently and its group-by twin -- return WRONG ROWS
+# rather than erroring when the alias repair is wrong, so only a cell-by-cell comparison
+# against Postgres catches them.
+tests:
+
+  # ==========================================================================
+  # Statement-level ORDER BY on an expression
+  #
+  # Pure's sort takes a column reference, so an expression key is turned into a
+  # column NAME by stringifying it. That only works if something extends a column
+  # by that name. Windows, GROUP BY and HAVING all did; statement-level ORDER BY
+  # did not, so the sort named a column nothing had created.
+  #
+  # No join needed -- this is a plain missing-extend, not a stale name.
+  # ==========================================================================
+
+  - id: colres_e3_order_by_function
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY UPPER(name)"
+    feature: "ORDER BY function expression"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_arithmetic
+    sql: "SELECT name, id FROM persons ORDER BY id * 2 DESC, name"
+    feature: "ORDER BY arithmetic expression"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_case
+    sql: "SELECT name, dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY CASE WHEN dept_id = 1 THEN 0 ELSE 1 END, name"
+    feature: "ORDER BY CASE expression"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # The shape the corpus actually produces. Engine rejects NULLS FIRST/LAST outright,
+  # so the upstream converter rewrites null ordering into a CASE key to preserve the
+  # source dialect's NULL placement -- and that key then hit this gap.
+  - id: colres_e3_order_by_null_ordering_case_key
+    sql: "SELECT name, age FROM persons ORDER BY CASE WHEN age IS NULL THEN 1 ELSE 0 END DESC, age, name"
+    feature: "ORDER BY null-ordering CASE guard"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_two_expressions
+    sql: "SELECT name, id FROM persons ORDER BY LENGTH(name) DESC, id * 2, name"
+    feature: "ORDER BY multiple expression keys"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_coalesce_over_nulls
+    sql: "SELECT name, age FROM persons ORDER BY COALESCE(age, 0), name"
+    feature: "ORDER BY COALESCE over nullable column"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_expression_mixed_with_plain_column
+    sql: "SELECT name, dept_id, salary FROM persons WHERE salary IS NOT NULL ORDER BY dept_id, UPPER(name)"
+    feature: "ORDER BY plain column then expression"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_expression_over_join
+    sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY UPPER(d.name), name"
+    feature: "ORDER BY expression over a join"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # --- design guards -----------------------------------------------------
+  #
+  # The order-by helper column is extended on its own, after the projection, rather
+  # than being added to the shared $extensions list. These two pin why.
+
+  # Routing order-by keys through $extensions would break this. Every other trigger of
+  # $extendRequired (aggregate, window, having, group-by) also suppresses the $project
+  # branch, so the extend is the only thing building the select list. An ORDER BY key does
+  # not suppress it -- so "calc" would be projected and then extended a SECOND time, with a
+  # lambda reading `salary`, which the projection has already dropped.
+  - id: colres_e3_order_by_expression_with_computed_select_item
+    sql: "SELECT name, id * 2 AS calc FROM persons ORDER BY UPPER(name)"
+    feature: "ORDER BY expression alongside a computed select item"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # The matching-unaliased-projection guard ('SELECT upper(x) FROM t ORDER BY upper(x)')
+  # lives in testTranspile.pure, not here: an unaliased expression projection has an
+  # implementation-defined column name -- Postgres reports "upper", Legend "UPPER(name)" --
+  # and ResultComparator compares names, so it could only ever FAIL in this harness.
+  # Aliasing the projection would change which code path it exercises.
+
+  # An integer key is an ordinal ("the Nth output column"), not a value to match against
+  # the select list. Engine resolves it by index; nothing here may rewrite it. Note the
+  # literal 1 in the select list -- a structural match would sort by `flag` instead.
+  - id: colres_e3_order_by_ordinal_not_treated_as_expression
+    sql: "SELECT name, 1 AS flag FROM persons ORDER BY 1"
+    feature: "ORDER BY ordinal with a literal in the select list"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: colres_e3_order_by_plain_column_unchanged
+    sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary DESC, name"
+    feature: "ORDER BY plain column (control)"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # DISTINCT is deliberately excluded from the materialisation: an extra column would take
+  # part in the distinct and silently change which rows survive. A plain column key is
+  # unaffected and must still work.
+  - id: colres_e3_distinct_order_by_plain_column
+    sql: "SELECT DISTINCT dept_id FROM persons WHERE dept_id IS NOT NULL ORDER BY dept_id"
+    feature: "DISTINCT with plain ORDER BY (exclusion control)"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ==========================================================================
+  # GROUP BY keys resolved against the pre-rename relation
+  #
+  # processGroupBy computed its key names from the pre-rename context, emitted
+  # rename(~name_p, ~name), then applied the stale keys to the renamed relation.
+  # ==========================================================================
+
+  - id: colres_e1_group_by_key_over_join
+    sql: "SELECT p.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.name ORDER BY 1"
+    feature: "GROUP BY qualified key over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_key_from_right_side
+    sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
+    feature: "GROUP BY key from the right join side"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_two_keys_both_sides
+    sql: "SELECT p.dept_id AS dept_id, d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id, d.name ORDER BY 1, 2"
+    feature: "GROUP BY keys from both join sides"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: FAIL
+
+  # The aggregate path, not the key list: createAggregation builds `x | $x.<col>` lambdas
+  # that read the renamed relation, so those names have to follow the rename too. Here the
+  # aggregated column belongs to the side that was renamed.
+  - id: colres_e1_group_by_aggregate_reads_renamed_side
+    sql: "SELECT d.name AS name, SUM(p.salary) AS total FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
+    feature: "GROUP BY over a join, aggregate over the other side"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_multiple_aggregates
+    sql: "SELECT d.name AS name, COUNT(*) AS c, MIN(p.age) AS min_age, MAX(p.age) AS max_age FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.age IS NOT NULL GROUP BY d.name ORDER BY 1"
+    feature: "GROUP BY over a join with several aggregates"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_having_over_join
+    sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 1 ORDER BY 1"
+    feature: "GROUP BY + HAVING over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_ordinal_over_join
+    sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY 1 ORDER BY 1"
+    feature: "GROUP BY ordinal over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # No aggregate at all -- processGroupBy takes its restrict+distinct branch, which resolves
+  # the key list through the same context.
+  - id: colres_e1_group_by_no_aggregates_over_join
+    sql: "SELECT p.dept_id AS dept_id FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY 1"
+    feature: "GROUP BY with no aggregates over a join"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: FAIL
+
+  # Both sides are the same table, so every column name collides and both sides get
+  # suffixed.
+  - id: colres_e1_group_by_self_join
+    sql: "SELECT a.dept_id AS dept_id, COUNT(*) AS c FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id GROUP BY a.dept_id ORDER BY 1"
+    feature: "GROUP BY over a self-join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: FAIL
+
+  - id: colres_e1_group_by_over_join_ordered_by_aggregate_alias
+    sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY c DESC, name"
+    feature: "GROUP BY over a join ordered by the aggregate's output alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # ==========================================================================
+  # Window PARTITION BY / ORDER BY keys -- the same desync, one function over
+  # ==========================================================================
+
+  - id: colres_e2_window_partition_over_join
+    sql: "SELECT p.name AS name, p.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 1"
+    feature: "window PARTITION BY over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e2_window_order_key_over_join
+    sql: "SELECT p.name AS name, p.salary AS salary, RANK() OVER (ORDER BY p.salary DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 3, 1"
+    feature: "window ORDER BY key over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e2_window_partition_and_order_from_both_sides
+    sql: "SELECT p.name AS name, d.name AS dept_name, ROW_NUMBER() OVER (PARTITION BY d.name ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 3"
+    feature: "window keys drawn from both join sides"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e2_two_window_functions_over_join
+    sql: "SELECT p.name AS name, p.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.name) AS rn, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.id DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 1"
+    feature: "two window functions over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e2_window_aggregate_over_join
+    sql: "SELECT p.name AS name, p.dept_id AS dept_id, SUM(p.salary) OVER (PARTITION BY p.dept_id) AS dept_total FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 2, 1"
+    feature: "window aggregate over a join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e2_window_self_join
+    sql: "SELECT a.name AS name, a.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY a.dept_id ORDER BY a.name) AS rn FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id ORDER BY 2, 1, 3"
+    feature: "window over a self-join with a self-named alias"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # ==========================================================================
+  # WRONG-RESULTS GUARDS
+  #
+  # These two do not error when the alias repair is wrong -- they return the wrong
+  # rows, which only a parity comparison catches. Both join sides expose a column
+  # called `name`, and the two are renamed to DIFFERENT output names (name and
+  # dept_name). A repair that decides "my old name is gone and my expected name is
+  # present" cannot tell which side owns the surviving `name`, and rebinds d.name
+  # onto p.name: the window then partitions by person instead of department (every
+  # partition size 1, every rn = 1), and the group-by collapses the wrong key.
+  # ==========================================================================
+
+  - id: colres_e2_window_two_sides_renamed_differently
+    sql: "SELECT p.name AS name, d.name AS dept_name, MAX(p.id) OVER (PARTITION BY d.name) AS max_id_in_dept FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 1"
+    feature: "window partition key when both join sides expose the same column name"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  - id: colres_e1_group_by_two_sides_renamed_differently
+    sql: "SELECT d.name AS dept_name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
+    feature: "GROUP BY key when both join sides expose the same column name"
+    category: "column_resolution"
+    expected_tds_status: PASS
+    expected_rel_status: ERROR
+
+  # ==========================================================================
+  # KNOWN GAPS -- expected to stay ERROR
+  #
+  # Recorded deliberately so the boundary of the fix is visible and so that if any of
+  # them starts passing, fix-detection reports it rather than letting it pass silently.
+  # ==========================================================================
+
+  # An ORDER BY expression is NOT materialised for an aggregate query: the group-by runs
+  # after the projection and would discard the helper column.
+  #
+  # ERROR here is taken from this suite's own existing coverage -- group_by.yaml already
+  # carries this exact SQL as ERROR/ERROR, and the fix does not touch the aggregate path.
+  # Note the ingest-harness run of the same query compiled, so the two harnesses disagree;
+  # if this suite reports PASS, trust this suite and update.
+  - id: colres_gap_order_by_aggregate_expression
+    sql: "SELECT dept_id, COUNT(*) AS c FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY COUNT(*) DESC, dept_id"
+    feature: "ORDER BY aggregate expression (excluded from materialisation)"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Nor for a window query, for the same reason.
+  - id: colres_gap_order_by_expression_in_window_query
+    sql: "SELECT name, dept_id, ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY name) AS rn FROM persons WHERE dept_id IS NOT NULL ORDER BY UPPER(name)"
+    feature: "ORDER BY expression in a window query (excluded from materialisation)"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # The helper extend lands after the projection, so the expression may only reference
+  # columns the projection kept. Here `age` is not projected, so the key cannot be built.
+  # The upstream converter avoids this by repointing ORDER BY at output columns first.
+  - id: colres_gap_order_by_expression_over_unprojected_column
+    sql: "SELECT name FROM persons WHERE age IS NOT NULL ORDER BY age * 2, name"
+    feature: "ORDER BY expression over a column the projection drops"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

@@ -14,7 +14,39 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Returns true or false depending on whether its pattern matches the given string. It only succeeds if its pattern matches the entire string. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+Whether a regular expression matches a string in full.
+
+**The pattern must match the entire string**, not merely occur somewhere in it, so `'abc'` does not
+match `'[a-z][a-z][a-z][a-z]'` and would not match a bare `'a'` either. Reach for
+`regexpLike(String[1], String[1]):Boolean[1]` when a containment search is what you want; it also
+takes matching options, which this does not.
+
+The whole pattern is anchored, not its first alternative: `'cat|dog'` matches `'cat'` and `'dog'`
+but neither `'catfish'` nor `'hotdog'`. Equivalently, `matches(s, p)` is
+`regexpLike(s, '^(?:' + p + ')$')`.
+
+Patterns use `java.util.regex` (Java regular expression) syntax. Not every construct survives
+pushdown to a relational store — see `docs/engineering/reference/regex-portability.md` for what is
+portable across execution targets.
+
+**Parameters**
+- `string` — the string to test.
+- `regexp` — the pattern, which must match the whole string.
+
+**Returns** `true` when the pattern matches the entire string.
+
+**Examples**
+```pure
+'hello'->matches('hello')                 // true
+'abc'->matches('[a-z][a-z][a-z]')         // true
+'abc'->matches('[a-z][a-z][a-z][a-z]')    // false, the pattern must cover the whole string
+'catfish'->matches('cat|dog')             // false, the anchoring spans the alternation
+```
+
+**See also** `regexpLike(String[1], String[1]):Boolean[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::matches(string:String[1], regexp:String[1]):Boolean[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatches<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
@@ -26,4 +58,31 @@ function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatches
 function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatchesNoMatch<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertFalse($f->eval(|'abc'->matches('[a-z][a-z][a-z][a-z]')));
+}
+
+'''
+Anchoring covers the whole pattern, including a top-level alternation.
+
+A store that builds the anchored form by concatenation produces `'^cat|dog$'`, which every SQL regex
+engine reads as `(^cat)|(dog$)` — matching `'catfish'` and `'hotdog'`. The anchors have to group the
+alternation for the result to agree with the platform.
+'''
+function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatchesAlternation<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assert($f->eval(|'cat'->matches('cat|dog')));
+  assert($f->eval(|'dog'->matches('cat|dog')));
+  assertFalse($f->eval(|'catfish'->matches('cat|dog')));
+  assertFalse($f->eval(|'hotdog'->matches('cat|dog')));
+}
+
+'''
+An unanchored pattern still has to cover the whole string.
+
+Separates `matches` from `regexpLike` on a store that implements the former with a containment
+operator: `'abcd'` contains `'bc'`, so a containment answer would be `true` here.
+'''
+function <<PCT.test>> meta::pure::functions::string::tests::matches::testMatchesUnanchoredIsFullMatch<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
+{
+  assertFalse($f->eval(|'abcd'->matches('bc')));
+  assert($f->eval(|'abcd'->matches('a.*d')));
 }

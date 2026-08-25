@@ -88,4 +88,9 @@ public class H2Commands extends RelationalDatabaseCommands
         return sql;
     }
 
+    @Override
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        return "INSERT INTO " + tableName + " (" + columnName + ") VALUES (legend_h2_extension_json_parse(?))";
+    }
 }

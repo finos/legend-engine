@@ -1,0 +1,68 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class wildcard::model::Firm
+{
+  id: Integer[1];
+  divisionNames: String[0..1];
+  teamLabels: String[0..1];
+  teamCount: Integer[0..1];
+  maxHeadcount: Integer[0..1];
+}
+
+function wildcard::wildcardPathInStoreLanguage():TabularDataSet[1]
+{
+    wildcard::model::Firm.all()->project([x|$x.id, x|$x.divisionNames, x|$x.teamLabels, x|$x.teamCount, x|$x.maxHeadcount],
+                                         ['Id', 'Division Names', 'Team Labels', 'Team Count', 'Max Headcount']);
+}
+
+###Relational
+Database wildcard::store::DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+###Mapping
+Mapping wildcard::mapping::Mapping
+(
+  wildcard::model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE
+    id: [wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID,
+
+    // One wildcard: the body yields scalars, so no flattening is required.
+    divisionNames: array_to_string(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].name', 'VARCHAR[]'), '|'),
+
+    // Two wildcards. Pure has no nested collection type, so this has to come back flat.
+    teamLabels: array_to_string(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].teams[*].label', 'VARCHAR[]'), '|'),
+
+    // Counted rather than joined: without the flatten this counts divisions, not teams.
+    teamCount: array_size(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].teams[*].label', 'VARCHAR[]')),
+
+    // Headcounts are ordered so a text comparison answers 9 rather than 100.
+    maxHeadcount: array_max(extractFromSemiStructured([wildcard::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions[*].headcount', 'INTEGER[]'))
+  }
+)

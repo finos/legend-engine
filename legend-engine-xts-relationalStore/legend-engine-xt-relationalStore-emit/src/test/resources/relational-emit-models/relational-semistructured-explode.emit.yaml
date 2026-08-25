@@ -1,0 +1,57 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured-explode
+title: "Relational Store — Exploding a JSON Array into Rows"
+description: |
+  A JSON array fanned out into rows inside a store join, each element's scalar then
+  equi-joined to an ordinary table. The class mapping mentions nothing semi-structured:
+  the to-many property is an ordinary join traversal, and its multiplicity comes from
+  the fan-out.
+
+  A view supplies the column being exploded, which is the only way a view participates —
+  explosion is legal solely inside a join operation, and its operand must be a plain
+  column of a table or a view. Elements that fail the join predicate drop out, so the
+  join filters and fans in one step.
+
+modelSources:
+  model:
+    root: relational-semistructured-explode
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-inline-view
+  - store:relational-inner-join
+  - store:relational-multi-table
+  - store:relational-semistructured
+  - store:relational-semistructured-explode
+  - store:relational-semistructured-navigation
+stores:
+  - relational
+# Distinct non-scaffolding domains: execution, store = 2 -> basic.
+complexity: basic
+tags:
+  - semi-structured
+  - explode
+  - view
+  - join
+  - json

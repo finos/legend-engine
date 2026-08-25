@@ -1,0 +1,96 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ss::FirmMapping
+(
+  *demo::ss::Firm: Relational
+  {
+    ~filter [demo::ss::store::FirmDB] LargeFirmFilter
+    ~primaryKey
+    (
+      [demo::ss::store::FirmDB]FIRM_TABLE.ID
+    )
+    ~mainTable [demo::ss::store::FirmDB]FIRM_TABLE
+    id: [demo::ss::store::FirmDB]FIRM_TABLE.ID,
+
+    // One property per entry of the target-type whitelist, which is scalar-only and
+    // matched case-insensitively.
+    legalName: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
+    ticker: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'ticker', 'CHAR'),
+    sector: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'sector', 'STRING'),
+    employeeCount: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER'),
+    isMnc: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'isMnc', 'BOOLEAN'),
+    revenue: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'revenue', 'FLOAT'),
+    marketCap: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'marketCap', 'DECIMAL'),
+    estDate: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'dates.estDate', 'DATE'),
+    lastUpdate: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'dates.lastUpdate', 'DATETIME'),
+    auditStamp: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'dates.auditStamp', 'TIMESTAMP'),
+
+    // Path-grammar edges.
+    firstOrderPrice: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'orders[0].price', 'INTEGER'),
+    // Consecutive indices into an array of arrays.
+    nestedCell: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'matrix[0][1]', 'INTEGER'),
+    // Index, then property, then index again.
+    nestedTag: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, 'items[0].tags[1]', 'VARCHAR'),
+    // Bracket-quoted keys, holding a space and a dot - unreachable with dot notation.
+    quotedKey: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS, '["odd keys"]["a.b c"]', 'VARCHAR'),
+    // Index-leading paths, against a document whose root is an array.
+    firstTag: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_TAGS, '[0]', 'VARCHAR'),
+    secondTagLabel: extractFromSemiStructured([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_TAGS, '[1].label', 'VARCHAR'),
+
+    detailsJson: toJson([demo::ss::store::FirmDB]FIRM_TABLE.FIRM_DETAILS)
+  }
+
+  testSuites:
+  [
+    semiStructuredSuite:
+    {
+      // Returning a Relation is what selects the execution target; the TDS form
+      // (->project([...], ['names'])) would silently run somewhere without a
+      // SEMISTRUCTURED type and stop testing anything here. detailsJson keeps that
+      // honest - it has no rendering outside a semi-structured-capable target.
+      function: |demo::ss::Firm.all()
+                  ->project(~[legalName: f | $f.legalName, ticker: f | $f.ticker, sector: f | $f.sector, employeeCount: f | $f.employeeCount, isMnc: f | $f.isMnc, revenue: f | $f.revenue, marketCap: f | $f.marketCap, estDate: f | $f.estDate, lastUpdate: f | $f.lastUpdate, auditStamp: f | $f.auditStamp, firstOrderPrice: f | $f.firstOrderPrice, nestedCell: f | $f.nestedCell, nestedTag: f | $f.nestedTag, quotedKey: f | $f.quotedKey, firstTag: f | $f.firstTag, secondTagLabel: f | $f.secondTagLabel, detailsJson: f | $f.detailsJson])
+                  ->sort([~legalName->ascending()]);
+      tests:
+      [
+        extractAndNavigate:
+        {
+          data:
+          [
+            demo::ss::store::FirmDB:
+              Reference
+              #{
+                demo::ss::data::FirmData
+              }#
+          ];
+          asserts:
+          [
+            shouldExtractScalarsAndIndexedArrayElement:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"legalName":"Firm X","ticker":"FX","sector":"Tech","employeeCount":4,"isMnc":true,"revenue":1234.5,"marketCap":"9876.54","estDate":"2020-01-15","lastUpdate":"2024-03-02T10:15:30.000000000+0000","auditStamp":"2024-03-02T10:15:30.000000000+0000","firstOrderPrice":100,"nestedCell":2,"nestedTag":"b","quotedKey":"quoted-hit","firstTag":"alpha","secondTagLabel":"beta","detailsJson":"{\\"legalName\\":\\"Firm X\\",\\"employeeCount\\":4,\\"isMnc\\":true,\\"ticker\\":\\"FX\\",\\"sector\\":\\"Tech\\",\\"revenue\\":1234.5,\\"marketCap\\":9876.54,\\"dates\\":{\\"estDate\\":\\"2020-01-15\\",\\"lastUpdate\\":\\"2024-03-02T10:15:30\\",\\"auditStamp\\":\\"2024-03-02T10:15:30\\"},\\"odd keys\\":{\\"a.b c\\":\\"quoted-hit\\"},\\"orders\\":[{\\"price\\":100},{\\"price\\":250}],\\"matrix\\":[[1,2],[3,4]],\\"items\\":[{\\"tags\\":[\\"a\\",\\"b\\"]}]}"}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

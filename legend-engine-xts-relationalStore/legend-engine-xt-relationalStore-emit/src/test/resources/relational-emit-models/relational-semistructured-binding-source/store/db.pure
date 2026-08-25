@@ -1,0 +1,132 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// One binding, one Firm class, four different sources feeding it. What varies is the
+// operation on the right of the binding, never the model.
+###Pure
+Class demo::ssn::Firm
+{
+  legalName: String[1];
+}
+
+Class demo::ssn::Person
+{
+  name: String[1];
+  profileJson: String[1];
+  firm: demo::ssn::Firm[1];
+}
+
+Class demo::ssn::TextPerson
+{
+  name: String[1];
+  firm: demo::ssn::Firm[1];
+}
+
+Class demo::ssn::Staff
+{
+  name: String[1];
+  profileJson: String[1];
+  // Staff with no manager still appear, with no value here.
+  managerFirm: demo::ssn::Firm[0..1];
+}
+
+// The bound property is itself to-many: the source yields a JSON array and each
+// element becomes an object. Two sibling arrays under one column are typed by two
+// different bindings.
+Class demo::ssn::Tag
+{
+  code: String[1];
+  category: String[1];
+}
+
+Class demo::ssn::Participant
+{
+  party: String[1];
+}
+
+Class demo::ssn::Record
+{
+  reference: String[1];
+  tags: demo::ssn::Tag[*];
+  participants: demo::ssn::Participant[*];
+}
+
+###ExternalFormat
+Binding demo::ssn::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Firm
+  ];
+}
+
+Binding demo::ssn::TagBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Tag
+  ];
+}
+
+Binding demo::ssn::ParticipantBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    demo::ssn::Participant
+  ];
+}
+
+###Relational
+Database demo::ssn::store::PersonDB
+(
+  Schema PERSON_SCHEMA
+  (
+    // Firm sits one level down, under "employment".
+    Table PERSON_NESTED
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE SEMISTRUCTURED
+    )
+    // Firm is the whole document.
+    Table PERSON_ROOT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE SEMISTRUCTURED
+    )
+    // JSON held in an ordinary VARCHAR, with no semi-structured column type.
+    Table PERSON_TEXT
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      PROFILE_JSON VARCHAR(1000)
+    )
+    Table STAFF
+    (
+      ID INTEGER PRIMARY KEY,
+      NAME VARCHAR(100),
+      MANAGER_ID INTEGER,
+      PROFILE SEMISTRUCTURED
+    )
+    Table RECORD_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      REFERENCE VARCHAR(100),
+      CONTENT SEMISTRUCTURED
+    )
+  )
+
+  Join Manager(PERSON_SCHEMA.STAFF.MANAGER_ID = {target}.ID)
+)

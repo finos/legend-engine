@@ -1,0 +1,50 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::semistructured::chain::*;
+import meta::pure::test::*;
+import meta::relational::metamodel::*;
+import meta::core::runtime::*;
+import meta::pure::mapping::*;
+
+// The divisions are ordered so that a chain which loses its filter, or takes the wrong survivor,
+// returns a different city rather than an error. Firm 1's first division is small and its first
+// large one is second in the array; firm 2's only large division is last; firm 3 has none, so the
+// chain has to survive an empty result.
+function meta::relational::tests::semistructured::chain::chainExecute(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  let csv =
+        'FIRM_SCHEMA\n' +
+        'FIRM_TABLE\n' +
+        'ID,FIRM_DETAILS\n' +
+        '1,"{""firm"": {""divisions"": [{""name"": ""Small"", ""headcount"": 10, ""address"": {""city"": ""Lisbon""}}, {""name"": ""Alpha"", ""headcount"": 150, ""address"": {""city"": ""Oslo""}}, {""name"": ""Beta"", ""headcount"": 300, ""address"": {""city"": ""Kyoto""}}]}}"\n' +
+        '2,"{""firm"": {""divisions"": [{""name"": ""Tiny"", ""headcount"": 5, ""address"": {""city"": ""Cairo""}}, {""name"": ""Gamma"", ""headcount"": 400, ""address"": {""city"": ""Lima""}}]}}"\n' +
+        '3,"{""firm"": {""divisions"": [{""name"": ""Mini"", ""headcount"": 2, ""address"": {""city"": ""Perth""}}]}}"\n'
+        ;
+
+  let model = '/core_relational/relational/tests/semistructured/model/complexChainInStoreLanguage.legend';
+
+  meta::relational::metamodel::execute::tests::executeLegendFunction($conn, $csv, $model, $func, 'chain::mapping::Mapping', 'chain::store::DB', $expected);
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::chain::testComplexChainInStoreLanguage(conn: Connection[1]):Boolean[1]
+{
+  chainExecute($conn,
+    'chain::complexChainInStoreLanguage__TabularDataSet_1_',
+    'Id,First Large Name,First Large City,Large Count,All Large Names,Total Large Headcount\n' +
+    '1,Alpha,Oslo,2,Alpha|Beta,450\n' +
+    '2,Gamma,Lima,1,Gamma,400\n' +
+    '3,,,0,,0\n'
+  );
+}

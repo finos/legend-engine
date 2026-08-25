@@ -257,6 +257,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     [
       pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($operandState)->cast(@TableSubquery))),
       pair(| $d.name == 'not',                    | convertNot($d, $state)),
+      pair(| isQuantifiedComparison($d),          | convertQuantifiedComparison($d, $state)),
       pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
       pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
       pair(| $d->instanceOf(UnionOrJoin),         | convertDynaFunction($d.parameters->reverse()->orFilters($state.extensions)->toOne()->cast(@DynaFunction), $state)),
@@ -342,12 +343,13 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('isNotNull',                 {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNotNullPredicate(value = $p->toOne())}),
     pair('isEmpty',                   {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNullPredicate(value = $p->toOne())}),
     pair('isNotEmpty',                {p:meta::external::query::sql::metamodel::Expression[*]| ^IsNotNullPredicate(value = $p->toOne())}),
-    pair('isNumeric',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_like', $p->concatenate(literal('[-]?[0-9]+(\\.[0-9]+)?')))}),
-    pair('isAlphaNumeric',            {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_like', $p->concatenate(literal('[a-zA-Z0-9]*')))}),
+    pair('isNumeric',                 {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_full_match', $p->concatenate(literal('[-]?[0-9]+(\\.[0-9]+)?')))}),
+    pair('isAlphaNumeric',            {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('regexp_full_match', $p->concatenate(literal('[a-zA-Z0-9]*')))}),
     pair('startsWith',                functionCall('startswith')),
     pair('endsWith',                  functionCall('endswith')),
     pair('contains',                  functionCall('contains')),
-    pair('matches',                   functionCall('regexp_like')),
+    pair('matches',                   functionCall('regexp_full_match')),
+    pair('regexpLike',                functionCall('regexp_like')),
     pair('sqlFalse',                  {p:meta::external::query::sql::metamodel::Expression[*]| literal(false)}),
     pair('sqlTrue',                   {p:meta::external::query::sql::metamodel::Expression[*]| literal(true)}),
     pair('convertDate',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_date', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD')), | $p))}),
@@ -457,6 +459,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('generateGuid',              functionCall('uuid')),
     pair('median',                    {p:meta::external::query::sql::metamodel::Expression[*]| medianConverter($p)}),
     pair('mode',                      {p:meta::external::query::sql::metamodel::Expression[*]| modeConverter($p)}),
+    pair('withinGroup',               {p:meta::external::query::sql::metamodel::Expression[*]| withinGroupConverter($p)}),
     pair('sinh',                      functionCall('sinh')),
     pair('tanh',                      functionCall('tanh'))
   ];
@@ -496,6 +499,36 @@ function <<access.private>> meta::relational::functions::toPostgresModel::binary
 function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1]):Function<{meta::external::query::sql::metamodel::Expression[*]->Node[1]}>[1]
 {
   {p:meta::external::query::sql::metamodel::Expression[*]| comparisonExpression($co, $p->at(0), $p->at(1))};
+}
+
+// A quantifier is carried as an anyOf/allOf wrapper around the sub-select rather than being fused into the
+// operator name, so the comparison is recognised by the shape of its right operand.
+function <<access.private>> meta::relational::functions::toPostgresModel::isQuantifiedComparison(d:DynaFunction[1]):Boolean[1]
+{
+  $d.name->in(['equal', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'])
+    && $d.parameters->size() == 2
+    && $d.parameters->at(1)->match([q:DynaFunction[1] | $q.name->in(['anyOf', 'allOf']), a:RelationalOperationElement[1] | false]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertQuantifiedComparison(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let operandState = ^$state(isRootSelect = false);
+  let quantifierFunc = $d.parameters->at(1)->cast(@DynaFunction);
+  let comparator = [
+    pair('equal', ComparisonOperator.EQUAL),
+    pair('lessThan', ComparisonOperator.LESS_THAN),
+    pair('lessThanEqual', ComparisonOperator.LESS_THAN_OR_EQUAL),
+    pair('greaterThan', ComparisonOperator.GREATER_THAN),
+    pair('greaterThanEqual', ComparisonOperator.GREATER_THAN_OR_EQUAL)
+  ]->newMap()->get($d.name)->toOne();
+
+  // The sub-select is converted with isRootSelect = false, so it arrives as a SubqueryExpression already.
+  ^QuantifiedComparisonExpression(
+    operator = $comparator,
+    quantifier = if($quantifierFunc.name == 'anyOf', | Quantifier.ANY, | Quantifier.ALL),
+    value = $d.parameters->at(0)->convertElementToExpression($operandState),
+    subQuery = $quantifierFunc.parameters->toOne()->convertElementToExpression($operandState)->cast(@SubqueryExpression)
+  );
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::comparisonExpression(co:ComparisonOperator[1], left:meta::external::query::sql::metamodel::Expression[1], right:meta::external::query::sql::metamodel::Expression[1]):ComparisonExpression[1]
@@ -621,6 +654,21 @@ function <<access.private>> meta::relational::functions::toPostgresModel::percen
       ]
     )    
   );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::withinGroupConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]
+{
+  let inner = $p->at(0)->cast(@FunctionCall);
+  let rest = $p->tail();
+  assert($rest->size() > 0 && $rest->size()->mod(2) == 0, | 'withinGroup expects an aggregate followed by column/direction pairs');
+  let items = range(0, $rest->size(), 2)->map(i |
+    ^SortItem(
+      sortKey = $rest->at($i),
+      ordering = if($rest->at($i + 1)->cast(@meta::external::query::sql::metamodel::StringLiteral).value == 'ASC', | SortItemOrdering.ASCENDING, | SortItemOrdering.DESCENDING),
+      nullOrdering = SortItemNullOrdering.UNDEFINED
+    )
+  );
+  ^$inner(orderBy = $items);
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::medianConverter(p:meta::external::query::sql::metamodel::Expression[*]):FunctionCall[1]

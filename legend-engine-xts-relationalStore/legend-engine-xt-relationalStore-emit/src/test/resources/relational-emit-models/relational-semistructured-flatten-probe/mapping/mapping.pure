@@ -1,0 +1,70 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping probe::M
+(
+  *probe::Row: Relational
+  {
+    ~primaryKey ( [probe::store::DB]T.ID )
+    ~mainTable [probe::store::DB]T
+    id: [probe::store::DB]T.ID,
+
+    // A transform whose body yields arrays produces an array of arrays; flattening it is what a
+    // wildcard path needs, since Pure has no nested collection type to represent the former.
+    transformOnly: array_to_string(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'a', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]')), ';'),
+    transformThenFlatten: array_to_string(array_flatten(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'a', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]'))), ','),
+
+    // An empty inner array, an explicit null and an absent key are all ordinary optional-field
+    // shapes, and all three have to contribute nothing rather than a null element.
+    emptyInner: array_to_string(array_flatten(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'e', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]'))), ','),
+    nullInner: array_to_string(array_flatten(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'n', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]'))), ','),
+    absentInner: array_to_string(array_flatten(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'k', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]'))), ','),
+    allEmpty: array_to_string(array_flatten(array_transform(extractFromSemiStructured([probe::store::DB]T.DOC, 'z', 'SEMISTRUCTURED[]'), x | extractFromSemiStructured($x, 'b', 'SEMISTRUCTURED[]'))), ',')
+  }
+
+  testSuites:
+  [
+    transformOnlySuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.transformOnly]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "[1, 2];[3]"\n} ]'; }#; }# ]; } ];
+    },
+    transformThenFlattenSuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.transformThenFlatten]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1,2,3"\n} ]'; }#; }# ]; } ];
+    },
+    emptyInnerSuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.emptyInner]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1"\n} ]'; }#; }# ]; } ];
+    },
+    nullInnerSuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.nullInner]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1"\n} ]'; }#; }# ]; } ];
+    },
+    absentInnerSuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.absentInner]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "1"\n} ]'; }#; }# ]; } ];
+    },
+    allEmptySuite:
+    {
+      function: |probe::Row.all()->project(~[id: r | $r.id, v: r | $r.allEmpty]);
+      tests: [ t: { data: [ probe::store::DB: Reference #{ probe::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : null\n} ]'; }#; }# ]; } ];
+    }
+  ]
+)

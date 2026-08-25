@@ -42,6 +42,12 @@ public class DatabricksCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        return "INSERT INTO " + tableName + " (" + columnName + ") SELECT parse_json(?)";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return visitor.visit(this);

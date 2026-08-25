@@ -77,8 +77,8 @@ tests:
     sql: "SELECT name, dept_id FROM persons ORDER BY CASE WHEN dept_id = 1 THEN 0 ELSE 1 END, name"
     feature: "CASE in ORDER BY"
     category: "case_expressions"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: case_in_group_by
     sql: "SELECT CASE WHEN age < 30 THEN 'young' ELSE 'older' END AS age_group, COUNT(*) AS cnt FROM persons GROUP BY CASE WHEN age < 30 THEN 'young' ELSE 'older' END ORDER BY 1"

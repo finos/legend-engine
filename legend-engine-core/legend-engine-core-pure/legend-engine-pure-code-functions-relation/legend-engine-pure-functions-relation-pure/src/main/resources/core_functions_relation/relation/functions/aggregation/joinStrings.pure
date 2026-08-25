@@ -1,0 +1,274 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+// Nulls in the joined column are skipped rather than rendered, matching LISTAGG/STRING_AGG.
+function <<PCT.function>>
+{
+    doc.doc='Concatenates the values of the given column across the rows of the given relation, separated by ' +
+            'the given separator. The order of the values is not constrained -- use the overload taking a ' +
+            'sort spec when it matters.'
+}
+meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1]):String[1]
+{
+    $rel->meta::pure::functions::relation::reduce(x|eval($col, $x), y|$y->meta::pure::functions::string::joinStrings($separator));
+}
+
+function <<PCT.function>>
+{
+    doc.doc='Concatenates the values of the given column across the rows of the given relation, separated by ' +
+            'the given separator, taking the rows in the order given by the sort spec. Generates SQL ' +
+            'LISTAGG/STRING_AGG with a WITHIN GROUP (ORDER BY ...) clause.'
+}
+meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
+{
+    $rel->meta::pure::functions::relation::reduce(x|eval($col, $x), y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);
+}
+
+function <<PCT.function>>
+{
+    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
+            'separator. The order of the values is not constrained -- use the overload taking a sort spec ' +
+            'when it matters.'
+}
+meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], f:Function<{T[1]->String[1]}>[1], separator:String[1]):String[1]
+{
+    $rel->meta::pure::functions::relation::reduce($f, y|$y->meta::pure::functions::string::joinStrings($separator));
+}
+
+function <<PCT.function>>
+{
+    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
+            'separator, taking the rows in the order given by the sort spec. Generates SQL ' +
+            'LISTAGG/STRING_AGG with a WITHIN GROUP (ORDER BY ...) clause.'
+}
+meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], f:Function<{T[1]->String[1]}>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
+{
+    $rel->meta::pure::functions::relation::reduce($f, y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_DirectOnRelation():Boolean[1]
+{
+    let r = #TDS
+              id, name
+              3, C
+              1, A
+              2, B
+            #;
+
+    assertEquals('A,B,C', $r->joinStrings(~name, ',', ~id->ascending()));
+    assertEquals('C,B,A', $r->joinStrings(~name, ',', ~id->descending()));
+    assertEquals('A-B-C', $r->joinStrings(~name, '-', ~name->ascending()));
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_MultipleSortColumns_DirectOnRelation():Boolean[1]
+{
+    let r = #TDS
+              grp, id, name
+              2, 1, D
+              1, 1, B
+              1, 2, A
+              2, 2, C
+            #;
+
+    assertEquals('A,B,C,D', $r->joinStrings(~name, ',', [~grp->ascending(), ~id->descending()]));
+    assertEquals('C,D,A,B', $r->joinStrings(~name, ',', [~grp->descending(), ~id->descending()]));
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_RowFunction():Boolean[1]
+{
+    let r = #TDS
+              id, first, last
+              3, Ada, Zed
+              1, Bo, Yan
+              2, Cy, Xu
+            #;
+
+    assertEquals('Bo Yan,Cy Xu,Ada Zed',
+                 $r->joinStrings(x|$x.first->toOne() + ' ' + $x.last->toOne(), ',', ~id->ascending()));
+    assertEquals('Ada Zed,Cy Xu,Bo Yan',
+                 $r->joinStrings(x|$x.first->toOne() + ' ' + $x.last->toOne(), ',', ~id->descending()));
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name
+                  1, 3, C
+                  1, 1, A
+                  1, 2, B
+                  2, 2, Y
+                  2, 1, X
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,A,B,C\n'+
+                  '   2,X,Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+// Filtering on the aggregated column forces the groupBy into a sub-select, where column references get
+// rewritten -- this catches the ordering and the aggregate being rewritten inconsistently.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_ForcingSubSelect<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name
+                  1, 3, C
+                  1, 1, A
+                  1, 2, B
+                  2, 2, Y
+                  2, 1, X
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', ~id->ascending()))
+                 ->filter(r | $r.names == 'A,B,C')
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,A,B,C\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name
+                  1, 3, C
+                  1, 1, A
+                  1, 2, B
+                  2, 2, Y
+                  2, 1, X
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', ~id->descending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,C,B,A\n'+
+                  '   2,Y,X\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_MultipleSortColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, major, minor, name
+                  1, 1, 2, B
+                  1, 2, 1, C
+                  1, 1, 1, A
+                  1, 2, 2, D
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ',', [~major->ascending(), ~minor->descending()]))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,B,A,D,C\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, rank, name
+                  1, 30, C
+                  1, 10, A
+                  1, 20, B
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, '|', ~rank->descending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,C|B|A\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Unordered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, name
+                  1, C
+                  1, A
+                  1, B
+                  2, Y
+                  2, X
+                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, ''))
+               };
+
+    let res = $f->eval($expr);
+    let resSorted = $res->extend(~namesSorted : c | $c.names->toOne()->chunk(1)->sort()->meta::pure::functions::string::joinStrings(''));
+
+    assertEquals( '#TDS\n'+
+                  '   grp,namesSorted\n'+
+                  '   1,ABC\n'+
+                  '   2,XY\n'+
+                  '#', $resSorted->sort(~grp->ascending())->select(~[grp, namesSorted])->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, name
+                  3, C
+                  1, A
+                  2, B
+                #->aggregate(~names : g | $g->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   names\n'+
+                  '   A,B,C\n'+
+                  '#', $res->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_RowFunction<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, first, last
+                  1, 2, Bo, Yan
+                  1, 1, Ada, Zed
+                  2, 1, Cy, Xu
+                #->groupBy(~grp, ~names : g | $g->joinStrings(x|$x.first->toOne() + ' ' + $x.last->toOne(), ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,Ada Zed,Bo Yan\n'+
+                  '   2,Cy Xu\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}

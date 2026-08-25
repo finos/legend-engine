@@ -16,10 +16,9 @@ package org.finos.legend.pure.runtime.java.extension.functions.interpreted.nativ
 
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
+import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.date.extract.NativeDateElementFunction;
-
-import java.util.Calendar;
 
 public class DayOfYear extends NativeDateElementFunction
 {
@@ -35,6 +34,6 @@ public class DayOfYear extends NativeDateElementFunction
         {
             throw new InvalidDateElementException("Cannot get day of year for " + date);
         }
-        return date.getCalendar().get(Calendar.DAY_OF_YEAR);
+        return PureDateToJava.start().toLocalDate(date).getDayOfYear();
     }
 }

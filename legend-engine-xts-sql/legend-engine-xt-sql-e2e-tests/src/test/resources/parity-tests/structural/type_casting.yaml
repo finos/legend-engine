@@ -92,5 +92,5 @@ tests:
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY CAST(salary AS INTEGER) DESC"
     feature: "CAST in ORDER BY"
     category: "type_casting"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS

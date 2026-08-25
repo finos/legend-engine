@@ -14,13 +14,59 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Returns the number of times that a pattern occurs in a string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+How many times a regular expression occurs in a string.
+
+Counts non-overlapping occurrences, and returns 0 rather than empty when there are none. Matching is
+case sensitive, and `.` does not cross a newline; pass
+`regexpCount(String[1], String[1], RegexpParameter[1..*]):Integer[1]` to change either.
+
+Patterns use `java.util.regex` (Java regular expression) syntax. Not every construct survives
+pushdown to a relational store — see `docs/engineering/reference/regex-portability.md` for what is
+portable across execution targets.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the pattern to count.
+
+**Returns** the number of occurrences, or 0 when there are none.
+
+**Examples**
+```pure
+'It was the best of times, it was the worst of times'->regexpCount('was')   // 2
+'ER-6842,LG-230,LG-150,ER-3379,ER-6210'->regexpCount('ER-[0-9]{4}')         // 3
+'aaaa'->regexpCount('aa')                                                   // 2, not 3: matches do not overlap
+'abc'->regexpCount('')                                                      // 4: an empty pattern matches at every position
+```
+
+**See also** `regexpCount(String[1], String[1], RegexpParameter[1..*]):Integer[1]`,
+`regexpLike(String[1], String[1]):Boolean[1]`,
+`regexpIndexOf(String[1], String[1]):Integer[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::regexpCount(string:String[1], regexp:String[1]):Integer[1]
 {
   $string->regexpCount($regexp, [RegexpParameter.CASE_SENSITIVE]);
 }
 
-native function <<PCT.function>> {doc.doc = 'Returns the number of times that a pattern occurs in a string. By default, it does case-sensitive matching and single-line mode, and POSIX wildcard character . does not match \n newline characters. The platform supports the full POSIX ERE (Extended Regular Expression) syntax.'}
+'''
+As `regexpCount(String[1], String[1]):Integer[1]`, with the matching options given explicitly rather
+than left at the `CASE_SENSITIVE` default. The options are those described on
+`regexpLike(String[1], String[1], RegexpParameter[1..*]):Boolean[1]`.
+
+**Parameters**
+- `string` — the string to search.
+- `regexp` — the pattern to count.
+- `regexpParameters` — one or more `RegexpParameter` values, which combine.
+
+**Returns** the number of occurrences, or 0 when there are none.
+
+**Examples**
+```pure
+'Excelence'->regexpCount('e', [RegexpParameter.CASE_INSENSITIVE])   // 4, counting the leading E
+```
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::regexpCount(string:String[1], regexp:String[1], regexpParameters:RegexpParameter[1..*]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::regexpCount::testRegexpCount<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

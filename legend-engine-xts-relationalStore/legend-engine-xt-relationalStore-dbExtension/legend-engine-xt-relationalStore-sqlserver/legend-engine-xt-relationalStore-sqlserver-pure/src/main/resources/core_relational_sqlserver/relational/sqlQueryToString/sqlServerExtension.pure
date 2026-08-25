@@ -166,7 +166,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='varp(%s)')),
     dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
+    // iso_week, not wk: the wk part counts weeks from whichever day SET DATEFIRST names, which the
+    // session can change, where weekOfYear is ISO 8601.
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(iso_week, %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSqlServer()}))
   ];

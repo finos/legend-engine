@@ -64,7 +64,7 @@ tests:
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY salary * 1.1 DESC"
     feature: "ORDER BY expression"
     category: "order_limit_offset"
-    expected_tds_status: ERROR
+    expected_tds_status: PASS
     expected_rel_status: ERROR
 
   # LIMIT
@@ -141,8 +141,8 @@ tests:
     sql: "SELECT name, salary FROM persons WHERE salary IS NOT NULL ORDER BY CASE WHEN salary > 70000 THEN 0 ELSE 1 END, name"
     feature: "ORDER BY CASE"
     category: "order_limit_offset"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # ORDER BY alias
   - id: order_by_alias

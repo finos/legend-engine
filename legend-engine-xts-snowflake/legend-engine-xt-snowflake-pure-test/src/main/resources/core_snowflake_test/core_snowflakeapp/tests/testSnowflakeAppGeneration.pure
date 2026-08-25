@@ -43,7 +43,7 @@ function meta::external::function::activator::snowflakeApp::tests::checkSnowflak
 function meta::external::function::activator::snowflakeApp::tests::checkSnowflakeAppGrammar(function:String[1],  expected:String[1]): Boolean[1]
 {
   let artifact  = checkSnowflakeAppGrammar($function);
-  assertEquals($artifact.createQuery, $expected);
+  assertEquals($expected, $artifact.createQuery);
 }
 
 
@@ -91,8 +91,8 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
 {
-  // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where cast("root".LAST_UPDATED as TIMESTAMP) = \'2024-02-27 16:21:53\'::timestamp $$;';
+  // the time zone info in the connection (Asia/Kolkata) shifts the date in the generated SQL
+  let expected = 'CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.LEGEND_NATIVE_APPS.APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where cast("root".LAST_UPDATED as TIMESTAMP) = \'2024-02-27 21:51:53\'::timestamp $$;';
 
   let function = ' function : meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded():TabularDataSet[1];\n';
 

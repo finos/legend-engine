@@ -36,6 +36,18 @@ public class RedshiftCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        return "CREATE TEMP TABLE " + tableName + "(" + columns.stream().map(c -> c.name + " " + c.type).collect(java.util.stream.Collectors.joining(", ")) + ")";
+    }
+
+    @Override
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        return "INSERT INTO " + tableName + " (" + columnName + ") VALUES (JSON_PARSE(?))";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return ((RelationalDatabaseCommandsVisitor<T>) visitor).visit(this);

@@ -1,0 +1,167 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssn::PersonMapping
+(
+  // Two documents with different shapes, reconciled onto one class: one leg navigates
+  // to the sub-document, the other binds the root. Neither the class nor the query
+  // knows which leg a row came from.
+  *demo::ssn::Person: Operation
+  {
+    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(Type_Nested, Type_Root)
+  }
+
+  demo::ssn::Person[Type_Nested]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_NESTED.ID
+    )
+    ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_NESTED
+    name: [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_NESTED.NAME,
+    profileJson: toJson([demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_NESTED.PROFILE),
+    // Binding fed by a navigation rather than by the column itself.
+    firm: Binding demo::ssn::FirmBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_NESTED.PROFILE, 'employment.firm', 'VARCHAR')
+  }
+
+  demo::ssn::Person[Type_Root]: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_ROOT.ID
+    )
+    ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_ROOT
+    name: [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_ROOT.NAME,
+    profileJson: toJson([demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_ROOT.PROFILE),
+    firm: Binding demo::ssn::FirmBinding : [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_ROOT.PROFILE
+  }
+
+  // JSON living in a plain VARCHAR column: parseJson turns the text into a document
+  // the binding can type. No SEMISTRUCTURED column is involved.
+  demo::ssn::TextPerson: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_TEXT.ID
+    )
+    ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_TEXT
+    name: [demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_TEXT.NAME,
+    firm: Binding demo::ssn::FirmBinding : parseJson([demo::ssn::store::PersonDB]PERSON_SCHEMA.PERSON_TEXT.PROFILE_JSON)
+  }
+
+  // Binding reached through a join, so the document typed here belongs to another row.
+  // Note this is the one form that cannot carry array operations.
+  demo::ssn::Staff: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssn::store::PersonDB]PERSON_SCHEMA.STAFF.ID
+    )
+    ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.STAFF
+    name: [demo::ssn::store::PersonDB]PERSON_SCHEMA.STAFF.NAME,
+    profileJson: toJson([demo::ssn::store::PersonDB]PERSON_SCHEMA.STAFF.PROFILE),
+    managerFirm: Binding demo::ssn::FirmBinding : [demo::ssn::store::PersonDB]@Manager | [demo::ssn::store::PersonDB]PERSON_SCHEMA.STAFF.PROFILE
+  }
+
+  // The bound property is to-many here, so the binding types a JSON array rather than a
+  // single object. Two sibling arrays under the same column are typed independently.
+  // SEMISTRUCTURED[] says the extraction yields an array of documents, which is what lets
+  // the elements stay documents rather than being read back as text.
+  demo::ssn::Record: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.ID
+    )
+    ~mainTable [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE
+    reference: [demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.REFERENCE,
+    tags: Binding demo::ssn::TagBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.tags', 'SEMISTRUCTURED[]'),
+    participants: Binding demo::ssn::ParticipantBinding : extractFromSemiStructured([demo::ssn::store::PersonDB]PERSON_SCHEMA.RECORD_TABLE.CONTENT, 'payload.participants', 'SEMISTRUCTURED[]')
+  }
+
+  testSuites:
+  [
+    unionSuite:
+    {
+      function: |demo::ssn::Person.all()
+                  ->project(~[name: p | $p.name, legalName: p | $p.firm.legalName, profileJson: p | $p.profileJson])
+                  ->sort([~name->ascending()]);
+      tests:
+      [
+        reconcileShapes:
+        {
+          data: [ demo::ssn::store::PersonDB: Reference #{ demo::ssn::data::PersonData }# ];
+          asserts: [ shouldReconcile: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"name":"Alice","legalName":"Firm One","profileJson":"{\\"employment\\":{\\"firm\\":{\\"legalName\\":\\"Firm One\\"}},\\"grade\\":3}"},{"name":"Bob","legalName":"Firm Two","profileJson":"{\\"legalName\\":\\"Firm Two\\"}"}]'; }#; }# ];
+        }
+      ];
+    },
+    parseJsonSuite:
+    {
+      function: |demo::ssn::TextPerson.all()
+                  ->project(~[name: p | $p.name, legalName: p | $p.firm.legalName])
+                  ->sort([~name->ascending()]);
+      tests:
+      [
+        typeTextColumn:
+        {
+          data: [ demo::ssn::store::PersonDB: Reference #{ demo::ssn::data::PersonData }# ];
+          asserts: [ shouldTypeText: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"name":"Cara","legalName":"Firm Three"}]'; }#; }# ];
+        }
+      ];
+    },
+    joinBindingSuite:
+    {
+      function: |demo::ssn::Staff.all()
+                  ->project(~[name: s | $s.name, managerLegalName: s | $s.managerFirm.legalName, profileJson: s | $s.profileJson])
+                  ->sort([~name->ascending()]);
+      tests:
+      [
+        bindThroughJoin:
+        {
+          data: [ demo::ssn::store::PersonDB: Reference #{ demo::ssn::data::PersonData }# ];
+          asserts: [ shouldBindThroughJoin: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"name":"Dan","managerLegalName":"Eve Firm","profileJson":"{\\"legalName\\":\\"Dan Firm\\"}"},{"name":"Eve","managerLegalName":null,"profileJson":"{\\"legalName\\":\\"Eve Firm\\"}"}]'; }#; }# ];
+        }
+      ];
+    },
+    boundArraySuite:
+    {
+      function: |demo::ssn::Record.all()
+                  ->project(~[reference: r | $r.reference, tagCode: r | $r.tags.code, tagCategory: r | $r.tags.category])
+                  ->sort([~reference->ascending(), ~tagCode->ascending()]);
+      tests:
+      [
+        bindArrayOfObjects:
+        {
+          data: [ demo::ssn::store::PersonDB: Reference #{ demo::ssn::data::PersonData }# ];
+          asserts: [ shouldTypeEachElement: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"reference":"R-1","tagCode":"T1","tagCategory":"Primary"},{"reference":"R-1","tagCode":"T2","tagCategory":"Secondary"},{"reference":"R-2","tagCode":"T9","tagCategory":"Primary"}]'; }#; }# ];
+        }
+      ];
+    },
+    siblingArraySuite:
+    {
+      function: |demo::ssn::Record.all()
+                  ->project(~[reference: r | $r.reference, party: r | $r.participants.party])
+                  ->sort([~reference->ascending(), ~party->ascending()]);
+      tests:
+      [
+        bindSiblingArray:
+        {
+          data: [ demo::ssn::store::PersonDB: Reference #{ demo::ssn::data::PersonData }# ];
+          asserts: [ shouldTypeSecondArray: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[{"reference":"R-1","party":"P1"},{"reference":"R-2","party":"P8"},{"reference":"R-2","party":"P9"}]'; }#; }# ];
+        }
+      ];
+    }
+  ]
+)

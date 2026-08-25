@@ -218,6 +218,7 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::endsWith(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::jaroWinklerSimilarity(), 
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::regexpLike(),
+    meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::regexpFullMatch(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha1(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::sha256(),
     meta::external::store::relational::sqlDialectTranslation::functionRegistry::extensionFunctions::string::startsWith(),

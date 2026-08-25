@@ -38,16 +38,18 @@ public class Test_Relational_Snowflake_Semistructured
         String testPackage = "meta::relational::tests::pct::snowflake::semistructured";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        Map<CoreInstance, String> failures = Maps.mutable.with(
-            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_", "Invalid argument types for function 'GET': (VARCHAR(134217728), VARCHAR(8))",
-            "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_", "Invalid argument types for function 'GET': (VARCHAR(134217728), VARCHAR(8))"
-        ).collect((k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
+        // Empty: the union-with-binding failures these used to record are fixed by declaring
+        // the extraction SEMISTRUCTURED rather than VARCHAR, so the binding is handed a
+        // document instead of text.
+        Map<CoreInstance, String> failures = Maps.mutable.<String, String>empty()
+            .collect((k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
+            Object result;
             try
             {
-                return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
+                result = PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
             catch (Exception e)
             {
@@ -62,6 +64,13 @@ public class Test_Relational_Snowflake_Semistructured
                 }
                 throw e;
             }
+            // Reached only when the test passed. An entry that no longer reproduces is worse
+            // than no entry: it silently suppresses whatever regresses into it next.
+            if (failures.containsKey(test))
+            {
+                throw new AssertionError("Expected this test to fail with: " + failures.get(test) + ", but it passed. Remove the entry.");
+            }
+            return result;
         };
 
         return wrapSuite(

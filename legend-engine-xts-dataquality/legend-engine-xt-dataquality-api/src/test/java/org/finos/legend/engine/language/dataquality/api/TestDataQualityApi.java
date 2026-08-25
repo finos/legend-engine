@@ -21,6 +21,7 @@ import io.dropwizard.testing.junit.ResourceTestRule;
 
 import javax.ws.rs.client.Entity;
 
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -487,5 +488,65 @@ public class TestDataQualityApi
         {
             assertTrue("id block should appear before fullName block", idPos < fullNamePos);
         }
+    }
+
+    // Executes a relation validation against the seeded H2 database and asserts the defect rows.
+    //
+    // The rowsWith* helpers had no execution coverage of any kind: doRelationTest stops at lambda
+    // generation, and the helper tests in dataquality_relation_helper_test.pure run over an in-memory
+    // #TDS, so neither reaches the router that translates these validations to SQL.
+    //
+    // Eve Davis is the only seeded person with a NULL email.
+    @Test
+    public void testExecuteRelationValidation_rowsWithEmptyColumn() throws IOException
+    {
+        assertDefectRows("emailPresent", Sets.mutable.of("Eve Davis"));
+    }
+
+    // Person ids are -1 and 1..5, SAMPLE_VAL_TBL ids are 1..10, so the left join leaves exactly one
+    // person unmatched. A join that degraded to an inner join, or a null check applied to the wrong
+    // side, changes which rows come back rather than only the SQL text.
+    @Test
+    public void testExecuteRelationValidation_rowsWithEmptyColumnAfterFilterAndJoin() throws IOException
+    {
+        assertDefectRows("personHasSampleRow", Sets.mutable.of("Smith Failsson"));
+    }
+
+    private void assertDefectRows(String validationName, Set<String> expectedNames) throws IOException
+    {
+        DataQualityExecuteTrialInput input = new DataQualityExecuteTrialInput();
+        input.clientVersion = "vX_X_X";
+        input.packagePath = "demo::relationPersonValidation";
+        input.model = new PureModelContextPointer();
+        input.validationNames = Sets.mutable.of(validationName);
+
+        Response response = resources.target("pure/v1/dataquality/execute")
+                .request()
+                .post(Entity.json(input));
+
+        String resultAsString = response.readEntity(String.class);
+        assertEquals(resultAsString, 200, response.getStatus());
+
+        JsonNode result = objectMapper.readTree(resultAsString);
+        JsonNode columns = result.path("builder").path("columns");
+        JsonNode rows = result.path("result").path("rows");
+        assertTrue(resultAsString, rows.isArray());
+
+        int nameIndex = -1;
+        for (int i = 0; i < columns.size(); i++)
+        {
+            if ("FULL_NAME".equals(columns.get(i).path("name").asText()))
+            {
+                nameIndex = i;
+            }
+        }
+        assertTrue("FULL_NAME column not found in " + columns, nameIndex >= 0);
+
+        Set<String> actual = new LinkedHashSet<>();
+        for (JsonNode row : rows)
+        {
+            actual.add(row.path("values").get(nameIndex).asText());
+        }
+        assertEquals(resultAsString, expectedNames, actual);
     }
 }

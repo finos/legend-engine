@@ -1,0 +1,71 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::ssb::PersonMapping
+(
+  *demo::ssb::Person: Relational
+  {
+    ~primaryKey
+    (
+      [demo::ssb::store::PersonDB]PERSON_TABLE.ID
+    )
+    ~mainTable [demo::ssb::store::PersonDB]PERSON_TABLE
+    firstName: [demo::ssb::store::PersonDB]PERSON_TABLE.FIRST_NAME,
+    detailsJson: toJson([demo::ssb::store::PersonDB]PERSON_TABLE.FIRM_DETAILS),
+    // One line types the whole document. Nothing below firm is mapped: the property
+    // mappings for address, geo and their scalars are synthesised during planning,
+    // each nesting one more navigation onto the column expression.
+    firm: Binding demo::ssb::FirmBinding : [demo::ssb::store::PersonDB]PERSON_TABLE.FIRM_DETAILS
+  }
+
+  testSuites:
+  [
+    bindingSuite:
+    {
+      // Relation return type selects the execution target; detailsJson is the canary
+      // that fails loudly if this ever routes somewhere without a SEMISTRUCTURED type.
+      function: |demo::ssb::Person.all()
+                  ->project(~[firstName: p | $p.firstName, legalName: p | $p.firm.legalName, employeeCount: p | $p.firm.employeeCount, addressName: p | $p.firm.address.name, street: p | $p.firm.address.street, lat: p | $p.firm.address.geo.lat, lon: p | $p.firm.address.geo.lon])
+                  ->sort([~firstName->ascending()]);
+      tests:
+      [
+        navigateBoundModel:
+        {
+          data:
+          [
+            demo::ssb::store::PersonDB:
+              Reference
+              #{
+                demo::ssb::data::PersonData
+              }#
+          ];
+          asserts:
+          [
+            shouldNavigateNestedTypedProperties:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"firstName":"Alice","legalName":"Firm X","employeeCount":4,"addressName":"HQ","street":"1 Main St","lat":40.7,"lon":-74.0},{"firstName":"Bob","legalName":"Firm A","employeeCount":9,"addressName":"Annex","street":null,"lat":51.5,"lon":-0.1}]';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

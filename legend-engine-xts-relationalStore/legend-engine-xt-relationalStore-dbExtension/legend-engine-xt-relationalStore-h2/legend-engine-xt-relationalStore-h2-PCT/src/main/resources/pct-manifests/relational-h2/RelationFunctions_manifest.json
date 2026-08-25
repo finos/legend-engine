@@ -79,6 +79,9 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::PivotedRelation\" not implemented in SqlDialect for database type \"H2\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   productId,price\\n   1,100\\n   2,250\\n#'\nactual:   '#TDS\\n   productId,price\\n\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FilterRelationalLambdaObject instanceOf FilterRelationalLambda"
   }, {

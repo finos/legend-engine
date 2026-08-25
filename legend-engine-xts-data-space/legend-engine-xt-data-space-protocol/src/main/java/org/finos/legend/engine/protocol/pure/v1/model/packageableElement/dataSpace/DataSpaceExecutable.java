@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSp
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DataSpacePackageableElementExecutable.class)
 @JsonSubTypes({
@@ -30,5 +31,6 @@ public abstract class DataSpaceExecutable
     public String executionContextKey;
     public String title;
     public String description;
+    public RelationElement sampleValues;
     public SourceInformation sourceInformation;
 }

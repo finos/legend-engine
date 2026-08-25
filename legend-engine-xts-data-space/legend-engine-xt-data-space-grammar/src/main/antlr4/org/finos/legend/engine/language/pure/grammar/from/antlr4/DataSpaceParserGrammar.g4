@@ -27,6 +27,7 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_ELEMENTS
                                     | DATA_SPACE_EXECUTABLES
                                     | DATA_SPACE_EXECUTABLE
+                                    | DATA_SPACE_EXECUTABLE_SAMPLE_VALUES
                                     | DATA_SPACE__TEMPLATE_QUERY
                                     | DATA_SPACE__EXECUTABLE__ID
                                     | DATA_SPACE__EXECUTION_CONTEXT_KEY
@@ -141,6 +142,7 @@ executable:                         BRACE_OPEN
                                             | executableTemplateQuery
                                             | executableId
                                             | executableExecutionContextKey
+                                            | executableSampleValues
                                         )*
                                     BRACE_CLOSE
 ;
@@ -155,6 +157,8 @@ executableTemplateQuery:            DATA_SPACE__TEMPLATE_QUERY COLON combinedExp
 executableId:                       DATA_SPACE__EXECUTABLE__ID COLON (VALID_STRING | INTEGER | DECIMAL) SEMI_COLON
 ;
 executableExecutionContextKey:      DATA_SPACE__EXECUTION_CONTEXT_KEY COLON STRING SEMI_COLON
+;
+executableSampleValues:             DATA_SPACE_EXECUTABLE_SAMPLE_VALUES COLON embeddedData SEMI_COLON
 ;
 
 // NOTE: we would need to potentially come up with extension mechanism later

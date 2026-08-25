@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class arrayStore::model::Team
+{
+  id: Integer[1];
+  topScore: Integer[1];
+  lowScore: Integer[1];
+  scoreCount: Integer[1];
+}
+
+function arrayStore::arrayFunctionsInMapping():TabularDataSet[1]
+{
+    arrayStore::model::Team.all()->project([x|$x.id, x|$x.topScore, x|$x.lowScore, x|$x.scoreCount], ['Id', 'Top', 'Low', 'Count']);
+}
+
+function arrayStore::arrayFunctionInFilter():TabularDataSet[1]
+{
+    arrayStore::model::Team.all()->filter(x|$x.topScore > 20)->project([x|$x.id, x|$x.topScore], ['Id', 'Top']);
+}
+
+###Relational
+Database arrayStore::store::DB
+(
+  Schema TEAM_SCHEMA
+  (
+    Table TEAM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      SCORES SEMISTRUCTURED
+    )
+  )
+)
+
+###Mapping
+Mapping arrayStore::mapping::Mapping
+(
+  arrayStore::model::Team: Relational
+  {
+    ~primaryKey
+    (
+      [arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE.ID
+    )
+    ~mainTable [arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE
+    id: [arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE.ID,
+    // The [] suffix states the element type, which is what lets the dialect cast the
+    // extraction to a typed list. Without it the array_* family receives a document.
+    topScore: array_max(extractFromSemiStructured([arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    lowScore: array_min(extractFromSemiStructured([arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE.SCORES, 'values', 'INTEGER[]')),
+    scoreCount: array_size(extractFromSemiStructured([arrayStore::store::DB]TEAM_SCHEMA.TEAM_TABLE.SCORES, 'values', 'INTEGER[]'))
+  }
+)

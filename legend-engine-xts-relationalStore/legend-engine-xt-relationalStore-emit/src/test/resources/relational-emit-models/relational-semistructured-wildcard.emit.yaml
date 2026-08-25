@@ -1,0 +1,29 @@
+name: relational-semistructured-wildcard
+title: "Relational Store — Wildcard Paths in the Store Language"
+description: |
+  A [*] segment maps over every element at that level and flattens the result, so a path can
+  reach through several arrays and still yield the flat collection Pure's type system requires.
+  The resulting array is collapsed by the array_* family, as a relational property mapping
+  produces one value per column.
+modelSources:
+  model:
+    root: relational-semistructured-wildcard
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-wildcard-path
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - semi-structured
+  - json
+  - wildcard

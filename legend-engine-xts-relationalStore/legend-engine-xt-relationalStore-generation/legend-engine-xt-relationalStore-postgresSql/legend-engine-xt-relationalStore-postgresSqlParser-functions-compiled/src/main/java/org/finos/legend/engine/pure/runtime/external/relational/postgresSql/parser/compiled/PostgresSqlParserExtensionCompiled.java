@@ -19,6 +19,7 @@ import org.finos.legend.pure.runtime.java.compiled.extension.AbstractCompiledExt
 import org.finos.legend.pure.runtime.java.compiled.extension.CompiledExtension;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.Native;
 import org.finos.legend.engine.pure.runtime.external.relational.postgresSql.parser.compiled.natives.ParseSqlStatementToJson;
+import org.finos.legend.engine.pure.runtime.external.relational.postgresSql.parser.compiled.natives.ParsePostgresDate;
 
 import java.util.List;
 
@@ -28,7 +29,8 @@ public class PostgresSqlParserExtensionCompiled extends AbstractCompiledExtensio
     public List<Native> getExtraNatives()
     {
         return Lists.fixedSize.with(
-                new ParseSqlStatementToJson()
+                new ParseSqlStatementToJson(),
+                new ParsePostgresDate()
         );
     }
 

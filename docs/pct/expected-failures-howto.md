@@ -131,4 +131,42 @@ Open the correct manifest and add the entry to the `exclusions` array:
 
 ---
 
+## Classifying an exclusion
+
+A manifest entry records *that* a test is excluded, not *why*. The two causes need opposite
+responses — one is a permanent property of the database, the other is a bug of ours sitting behind
+a green build — so classify every exclusion you add.
+
+Read the cause off the shape of `expectedError`:
+
+| `expectedError` shape | Cause | Qualifier |
+|---|---|---|
+| `[unsupported-api] ... is not supported yet` | The function is not wired for that dialect. Nothing about the database prevents it. | `needsImplementation` |
+| `Couldn't find DynaFunction to Postgres model translation for X()` | Missing `toPostgresModel` arm. | `needsImplementation` |
+| A `java.sql.SQLException` or engine parse error | The database genuinely cannot express it. | `unsupportedFeature` |
+| `expected: X actual: Y`, or `Assert failed` | **We emit SQL that runs and returns the wrong answer.** | `needsImplementation` unless provably impossible |
+
+That last row is the dangerous one: the query succeeds and the user gets wrong data. Never file it
+as `unsupportedFeature` without showing the engine cannot do it.
+
+**Evidence rule.** A `needsImplementation` classification is only accepted alongside a companion
+SQL-generation golden test — in the dialect's `sqlQueryToString/tests/` directory, e.g.
+`testDuckDBSQLGeneration.pure` — asserting the SQL we currently generate, with a comment naming
+the defect. These run without a database, so they are cheap. The fixer then edits the golden
+expectation and deletes the manifest entry in the same commit, which keeps the label from rotting.
+
+**Do not add a `qualifiers` key to a manifest.** `PCTManifest$PCTManifestExclusion` has only
+`test` and `expectedError`, and `PCTManifestLoader` uses a bare `ObjectMapper` — an unknown
+property throws and takes down that adapter's entire suite. Until the upstream `legend-pure` change
+lands, classification lives in prose next to the feature it covers; see
+[../engineering/reference/regex-portability.md](../engineering/reference/regex-portability.md#exclusion-classification)
+for a worked example.
+
+**Sizing the change.** Only Snowflake and Databricks carry the `pct-cloud-test` profile; the other
+sixteen PCT modules run in the default build, several via Testcontainers. A newly added
+`<<PCT.test>>` in a broadly scoped repository therefore needs exclusion entries across roughly a
+dozen manifests in the same commit. Stage new test families one axis per PR.
+
+---
+
 Once all failures are fixed or recorded in the manifests and the build succeeds, you are ready to submit your PR. If your change is relied upon by downstream repos you will need to import and test the SNAPSHOT build there as well.
