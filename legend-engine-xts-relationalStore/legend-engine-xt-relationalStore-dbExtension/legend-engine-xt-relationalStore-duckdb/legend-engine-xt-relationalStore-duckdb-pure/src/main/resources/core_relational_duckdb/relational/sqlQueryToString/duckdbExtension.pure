@@ -756,6 +756,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 {
    let processedOperand = $s.operand->processOperation($sgc);
 
+   // The navigation is parenthesised because DuckDB binds '->' looser than a trailing
+   // predicate - a naked x->'k' is null parses as x->('k' is null).
    // A SemiStructuredPropertyAccess carries an OPTIONAL index of its own - 'addresses'->at(0)
    // is one property access with index 0, not a separate SemiStructuredArrayElementAccess.
    // Dropping that index makes every element of an array resolve to the same value.
@@ -763,12 +765,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
    // String, and rendering the String form through processOperation would quote it into a key.
    let navigation = $s->match([
       p: SemiStructuredPropertyAccess[1] |
-            let propertyAccess = '%s->%s'->format([$processedOperand, $p.property->processOperation($sgc)]);
+            let propertyAccess = '(%s->%s)'->format([$processedOperand, $p.property->processOperation($sgc)]);
             if($p.index->isEmpty(),
                | $propertyAccess,
-               | '%s->\'$[%s]\''->format([$propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()]));,
+               | '(%s->\'$[%s]\')'->format([$propertyAccess, $p.index->toOne()->cast(@Literal).value->toString()]));,
       a: SemiStructuredArrayElementAccess[1] |
-            '%s->\'$[%s]\''->format([$processedOperand, $a.index->cast(@Literal).value->toString()])
+            '(%s->\'$[%s]\')'->format([$processedOperand, $a.index->cast(@Literal).value->toString()])
    ]);
 
    // '->' yields JSON, so a navigated string comes back still quoted. Cast to the navigated
