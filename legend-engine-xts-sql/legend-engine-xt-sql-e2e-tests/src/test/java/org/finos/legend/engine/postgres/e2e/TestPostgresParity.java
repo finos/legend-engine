@@ -145,6 +145,7 @@ public class TestPostgresParity
             "parity-tests/structural/json_operators.yaml",
             "parity-tests/structural/interval_arithmetic.yaml",
             "parity-tests/structural/column_resolution_across_renames.yaml",
+            "parity-tests/structural/column_resolution_corpus_shapes.yaml",
             "parity-tests/window_frames/frame_types.yaml",
             "parity-tests/window_frames/partition_ordering.yaml",
             "parity-tests/window_frames/frame_exclusion.yaml",
@@ -339,8 +340,10 @@ public class TestPostgresParity
         }
         catch (Exception e)
         {
-            report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, null, e.getMessage(), null));
+            String errorMsg = e.getMessage();
+            report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, null, errorMsg, null));
             statusUpdater.recordResult(tc.id, path, "BUG");
+            assertNoRegression(tc, path, "BUG", errorMsg);
             return;
         }
         String rewrittenSql;
