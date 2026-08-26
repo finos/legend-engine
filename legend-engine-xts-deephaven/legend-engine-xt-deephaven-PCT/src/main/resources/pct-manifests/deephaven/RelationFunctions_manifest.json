@@ -476,6 +476,9 @@
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction",
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_SubQueryOverConcatenatedRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",

@@ -662,6 +662,10 @@
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     },
     {
+      "test": "meta::pure::functions::relation::tests::in::testIn_SubQueryOverConcatenatedRelation_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
       "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     },

@@ -126,7 +126,7 @@ tests:
     feature: "Subquery with UNION"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # IN (subquery) where the outer relation is a UNION - the subquery has to be planned from an empty
   # query rather than from the union it sits under
@@ -138,7 +138,7 @@ tests:
     expected_rel_status: PASS
 
   - id: subquery_in_over_union_wildcard
-    sql: "SELECT * FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 3) sub WHERE sub.id IN (SELECT person_id FROM orders WHERE status = 'completed') ORDER BY 1"
+    sql: "SELECT * FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 3) sub WHERE sub.id IN (SELECT person_id FROM orders WHERE status = 'completed') ORDER BY sub.id"
     feature: "IN (subquery) over a UNION"
     category: "subqueries"
     expected_tds_status: ERROR
