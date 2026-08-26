@@ -5,7 +5,7 @@ tests:
     feature: "3-table JOIN + aggregation"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LEFT JOIN preserving empty groups
   - id: comp_left_join_empty_groups
@@ -13,7 +13,7 @@ tests:
     feature: "LEFT JOIN preserving empty groups"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # HAVING on joined aggregate
   - id: comp_join_having
@@ -21,7 +21,7 @@ tests:
     feature: "JOIN + HAVING"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # COUNT(DISTINCT) across join
   - id: comp_count_distinct_join
@@ -29,7 +29,7 @@ tests:
     feature: "COUNT(DISTINCT) across JOIN"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Self-join with aggregation
   - id: comp_self_join_agg
@@ -37,7 +37,7 @@ tests:
     feature: "Self-join + aggregation"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # JOIN + CASE + aggregation
   - id: comp_join_case_agg
@@ -45,7 +45,7 @@ tests:
     feature: "JOIN + CASE + aggregation"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LEFT JOIN with COALESCE and multiple aggs
   - id: comp_left_join_coalesce_multi
@@ -53,7 +53,7 @@ tests:
     feature: "LEFT JOIN + COALESCE + multi-agg"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # 3-table join with filter
   - id: comp_three_table_filter
@@ -69,4 +69,4 @@ tests:
     feature: "JOIN with derived table"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

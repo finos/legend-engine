@@ -170,21 +170,21 @@ tests:
     feature: "GROUP BY qualified key over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_key_from_right_side
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY 1"
     feature: "GROUP BY key from the right join side"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_two_keys_both_sides
     sql: "SELECT p.dept_id AS dept_id, d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id, d.name ORDER BY 1, 2"
     feature: "GROUP BY keys from both join sides"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # The aggregate path, not the key list: createAggregation builds `x | $x.<col>` lambdas
   # that read the renamed relation, so those names have to follow the rename too. Here the
@@ -194,28 +194,28 @@ tests:
     feature: "GROUP BY over a join, aggregate over the other side"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_multiple_aggregates
     sql: "SELECT d.name AS name, COUNT(*) AS c, MIN(p.age) AS min_age, MAX(p.age) AS max_age FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.age IS NOT NULL GROUP BY d.name ORDER BY 1"
     feature: "GROUP BY over a join with several aggregates"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_having_over_join
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 1 ORDER BY 1"
     feature: "GROUP BY + HAVING over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_ordinal_over_join
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY 1 ORDER BY 1"
     feature: "GROUP BY ordinal over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # No aggregate at all -- processGroupBy takes its restrict+distinct branch, which resolves
   # the key list through the same context.
@@ -224,7 +224,7 @@ tests:
     feature: "GROUP BY with no aggregates over a join"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # Both sides are the same table, so every column name collides and both sides get
   # suffixed.
@@ -233,14 +233,14 @@ tests:
     feature: "GROUP BY over a self-join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: colres_e1_group_by_over_join_ordered_by_aggregate_alias
     sql: "SELECT d.name AS name, COUNT(*) AS c FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY c DESC, name"
     feature: "GROUP BY over a join ordered by the aggregate's output alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ==========================================================================
   # Window PARTITION BY / ORDER BY keys -- the same desync, one function over
@@ -251,28 +251,28 @@ tests:
     feature: "window PARTITION BY over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e2_window_order_key_over_join
     sql: "SELECT p.name AS name, p.salary AS salary, RANK() OVER (ORDER BY p.salary DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 3, 1"
     feature: "window ORDER BY key over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e2_window_partition_and_order_from_both_sides
     sql: "SELECT p.name AS name, d.name AS dept_name, ROW_NUMBER() OVER (PARTITION BY d.name ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 3"
     feature: "window keys drawn from both join sides"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e2_two_window_functions_over_join
     sql: "SELECT p.name AS name, p.dept_id AS dept_id, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.name) AS rn, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.id DESC) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 2, 1"
     feature: "two window functions over a join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: colres_e2_window_aggregate_over_join
     sql: "SELECT p.name AS name, p.dept_id AS dept_id, SUM(p.salary) OVER (PARTITION BY p.dept_id) AS dept_total FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL ORDER BY 2, 1"
@@ -286,7 +286,7 @@ tests:
     feature: "window over a self-join with a self-named alias"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ==========================================================================
   # WRONG-RESULTS GUARDS
@@ -312,7 +312,7 @@ tests:
     feature: "GROUP BY key when both join sides expose the same column name"
     category: "column_resolution"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ==========================================================================
   # KNOWN GAPS -- expected to stay ERROR
