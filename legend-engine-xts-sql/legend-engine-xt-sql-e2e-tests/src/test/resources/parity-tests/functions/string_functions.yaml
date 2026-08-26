@@ -704,71 +704,71 @@ tests:
     sql: SELECT REGEXP_COUNT(val, 'HELLO', 1, 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_count
     signature: regexp_count(text, text, integer, text) → integer
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count__txt_txt_int_txt__flag_c
     sql: SELECT REGEXP_COUNT(val, 'hello', 1, 'c') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_count
     signature: regexp_count(text, text, integer, text) → integer
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count__txt_txt_int_txt__flag_m
     sql: SELECT REGEXP_COUNT(val, '^[a-z]', 1, 'm') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_count
     signature: regexp_count(text, text, integer, text) → integer
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count__txt_txt_int_txt__flag_n
     sql: SELECT REGEXP_COUNT(val, '^[a-z]', 1, 'n') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_count
     signature: regexp_count(text, text, integer, text) → integer
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_count__txt_txt_int_txt__flag_s
     sql: SELECT REGEXP_COUNT(val, '.', 1, 's') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_count
     signature: regexp_count(text, text, integer, text) → integer
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int_int_txt__flag_i
     sql: SELECT REGEXP_SUBSTR(val, 'HELLO', 1, 1, 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_substr
     signature: regexp_substr(text, text, integer, integer, text) → text
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int_int_txt__flag_c
     sql: SELECT REGEXP_SUBSTR(val, 'hello', 1, 1, 'c') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_substr
     signature: regexp_substr(text, text, integer, integer, text) → text
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int_int_txt__flag_m
     sql: SELECT REGEXP_SUBSTR(val, '^[a-z]+', 1, 1, 'm') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_substr
     signature: regexp_substr(text, text, integer, integer, text) → text
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int_int_txt__flag_n
     sql: SELECT REGEXP_SUBSTR(val, '^[a-z]+', 1, 1, 'n') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_substr
     signature: regexp_substr(text, text, integer, integer, text) → text
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_substr__txt_txt_int_int_txt__flag_s
     sql: SELECT REGEXP_SUBSTR(val, 'hello.world', 1, 1, 's') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_substr
     signature: regexp_substr(text, text, integer, integer, text) → text
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # ---------------------------------------------------------------------------
   # Divergence tests: fromPure function_processors.pure silently discards the
