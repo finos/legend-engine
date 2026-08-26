@@ -3032,7 +3032,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             COUNT: x | regexpCount($x.String, '[aeiou]'),
             INSTR: x | regexpIndexOf($x.String, '[0-9]') + 1,
             REPLACE: x | regexpReplace($x.String, '[aeiou]', 'X', false),
-            SUBSTR: x | regexpExtract($x.String, '[0-9]+', false)
+            SUBSTR: x | regexpExtract($x.String, '[0-9]+', false)->toOne()
           ])
       }
     ]
@@ -3054,7 +3054,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LIKE_I: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
             COUNT_I: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
             REPLACE_I: x | regexpReplace($x.String, '[aeiou]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE]),
-            SUBSTR_I: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE])
+            SUBSTR_I: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE])->toOne()
           ])
       }
     ]
@@ -3076,7 +3076,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LIKE_C: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
             COUNT_C: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
             REPLACE_C: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE]),
-            SUBSTR_C: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE])
+            SUBSTR_C: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_SENSITIVE])->toOne()
           ])
       }
     ]
@@ -3098,7 +3098,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LIKE_S: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
             COUNT_S: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
             REPLACE_S: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE]),
-            SUBSTR_S: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE])
+            SUBSTR_S: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.NON_NEWLINE_SENSITIVE])->toOne()
           ])
       }
     ]
@@ -3120,7 +3120,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LIKE_N: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
             COUNT_N: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
             REPLACE_N: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.MULTILINE]),
-            SUBSTR_N: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])
+            SUBSTR_N: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])->toOne()
           ])
       }
     ]
@@ -3140,7 +3140,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->project(~[
             LIKE_M: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
             COUNT_M: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.MULTILINE]),
-            SUBSTR_M: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])
+            SUBSTR_M: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.MULTILINE])->toOne()
           ])
       }
     ]
@@ -3194,7 +3194,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             LIKE_IN: x | regexpLike($x.String, '^test$', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
             COUNT_IN: x | regexpCount($x.String, '[a-z]', [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
             REPLACE_IN: x | regexpReplace($x.String, '[a-z]', 'X', false, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE]),
-            SUBSTR_IN: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE])
+            SUBSTR_IN: x | regexpExtract($x.String, '[a-z]+', false, 0, [meta::pure::functions::string::RegexpParameter.CASE_INSENSITIVE, meta::pure::functions::string::RegexpParameter.MULTILINE])->toOne() //toOne() is important for now to get compile working properly as extract returns a collection. really first is more correct but will fail in pure2sql
           ])
       }
     ]
@@ -3296,7 +3296,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   test(
     'SELECT ' +
-    ' concat(true, false, Boolean) as BOOLEANS, ' + 
+    ' concat(true, false, Boolean) as BOOLEANS, ' +
     ' concat(1, 2, \'abc\', 1.1) as MIXED, ' +
     ' true || false || Boolean as BOOLEANS_OP, ' +
     ' 1 || 2 || \'abc\' || 1.1 as MIXED_OP ' +
