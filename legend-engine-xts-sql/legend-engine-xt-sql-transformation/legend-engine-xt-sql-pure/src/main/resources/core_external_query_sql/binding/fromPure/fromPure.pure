@@ -558,10 +558,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
     //  debug(|'processed where: '+$withWhere.expression->evaluateAndDeactivate()->map(x|$x->meta::pure::metamodel::serialization::grammar::printValueSpecification(^GContext(space='')))->joinStrings(''), $context.debug->indent());
 
-      let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $withWhere);
+      let rewrittenOrderBy = $querySpec.orderBy->rewriteNullOrdering();
+
+      let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $rewrittenOrderBy.sortKey, $withWhere);
 
       let query = $querySpec.limit->processLimitOffset($querySpec.offset,
-        $querySpec.orderBy->processOrderBy($projection.second.selectItems,
+        $rewrittenOrderBy->processOrderBy($projection.second.selectItems,
           $querySpec.having->processHaving($projection.second,
             $projection.first
           )
@@ -1807,6 +1809,27 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]->getValue($joinType, | unsupported('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::rewriteNullOrdering(sortItems: SortItem[*]):SortItem[*]
+{
+  $sortItems->map(si |
+    if ($si.nullOrdering == SortItemNullOrdering.UNDEFINED,
+      | $si,
+      | let nullCase = ^SearchedCaseExpression(
+            whenClauses = [^WhenClause(operand = ^IsNullPredicate(value = $si.sortKey), result = ^IntegerLiteral(value = 0))],
+            defaultValue = ^IntegerLiteral(value = 1));
+
+        let caseDirection = if ($si.nullOrdering == SortItemNullOrdering.FIRST,
+                              | SortItemOrdering.ASCENDING,
+                              | SortItemOrdering.DESCENDING);
+
+        [
+          ^SortItem(sortKey = $nullCase, ordering = $caseDirection, nullOrdering = SortItemNullOrdering.UNDEFINED),
+          ^SortItem(sortKey = $si.sortKey, ordering = $si.ordering, nullOrdering = SortItemNullOrdering.UNDEFINED)
+        ];
+    )
+  );
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processOrderBy', $_context.debug);
@@ -1828,8 +1851,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunction(si:SortItem[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
 {
-    assert($si.nullOrdering == SortItemNullOrdering.UNDEFINED, 'null ordering type not yet supported');
-
     let column = extractColumnNameFromExpression($si.sortKey, $selectItems, $context);
 
     ^TDSBuilder().sortItem($si, $column, $context.relation->isTrue());
