@@ -6872,7 +6872,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::exclude
 function <<access.private>> meta::relational::functions::pureToSqlQuery::buildRelationSubSelect(expression:FunctionExpression[1], relationParamIndex:Integer[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    let innerNodeId = buildNodeId($nodeId, '_e' + $relationParamIndex->toString());
-   let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(parent = $operation), $vars, ^$state(inFilter = false, shouldIsolate = false, correlatedScopeId = $innerNodeId), JoinType.INNER, $innerNodeId, $aggFromMap, $context, $extensions)
+   let inner = processValueSpecification($expression.parametersValues->at($relationParamIndex), $currentPropertyMapping, ^$operation(select = ^SelectSQLQuery(), parent = $operation, currentTreeNode = [], positionBeforeLastApplyJoinTreeNode = []), $vars, ^$state(inFilter = false, shouldIsolate = false, correlatedScopeId = $innerNodeId), JoinType.INNER, $innerNodeId, $aggFromMap, $context, $extensions)
                  ->toOne()->cast(@SelectWithCursor);
 
    // Renamed here rather than while the sub-relation was being built: everything that keys off the

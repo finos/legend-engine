@@ -297,6 +297,37 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Grouped
                  '#', $res->sort(~departmentId->ascending())->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_SubQueryOverConcatenatedRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let accounts = #TDS
+                                   accountId, accountName
+                                   1, Alice
+                                   2, Bob
+                                   3, Carol
+                                 #;
+                  let eligibility = #TDS
+                                      eligibleId, businessLine
+                                      1, PWM
+                                      2, PWM
+                                      4, OTHER
+                                    #;
+                  $accounts->extend(~status : a | 'A')
+                           ->concatenate($accounts->extend(~status : a | 'B'))
+                           ->filter(r | $r.accountId->in($eligibility->filter(e | $e.businessLine == 'PWM')->select(~eligibleId)->distinct()));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   accountId,accountName,status\n'+
+                 '   1,Alice,A\n'+
+                 '   1,Alice,B\n'+
+                 '   2,Bob,A\n'+
+                 '   2,Bob,B\n'+
+                 '#', $res->sort([~accountId->ascending(), ~status->ascending()])->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_DerivedRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {|

@@ -128,6 +128,38 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  # IN (subquery) where the outer relation is a UNION - the subquery has to be planned from an empty
+  # query rather than from the union it sits under
+  - id: subquery_in_over_union
+    sql: "SELECT sub.id, sub.name FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 2) sub WHERE sub.id IN (SELECT person_id FROM orders WHERE amount > 100) ORDER BY 1"
+    feature: "IN (subquery) over a UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_in_over_union_wildcard
+    sql: "SELECT * FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 3) sub WHERE sub.id IN (SELECT person_id FROM orders WHERE status = 'completed') ORDER BY 1"
+    feature: "IN (subquery) over a UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: subquery_in_over_union_outer_filter
+    sql: "SELECT sub.id, sub.name FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 2) sub WHERE sub.name <> 'Bob' AND sub.id IN (SELECT o.person_id FROM orders o WHERE o.status = 'completed') ORDER BY 1"
+    feature: "IN (subquery) over a UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # DISTINCT in the subquery merges onto the query it is handed, so it sees the outer columns as well
+  # when the subquery is not started from an empty one
+  - id: subquery_in_distinct_over_union
+    sql: "SELECT sub.id, sub.name FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 2) sub WHERE sub.id IN (SELECT DISTINCT person_id FROM orders WHERE amount > 200) ORDER BY 1"
+    feature: "IN (DISTINCT subquery) over a UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
   # Lateral-style derived table with aggregation
   - id: subquery_derived_agg_filter
     sql: "SELECT sub.dept_id, sub.total FROM (SELECT dept_id, SUM(salary) AS total FROM persons WHERE salary IS NOT NULL AND dept_id IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000) sub ORDER BY 1"
