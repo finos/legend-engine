@@ -97,7 +97,6 @@
         <dependency>
             <groupId>io.trino</groupId>
             <artifactId>trino-jdbc</artifactId>
-            <version>422</version>
             <scope>provided</scope>
         </dependency>
         <!-- Trino - iceberg SQL execution engine-->

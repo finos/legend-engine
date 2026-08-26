@@ -294,7 +294,6 @@
         <dependency>
             <groupId>io.trino</groupId>
             <artifactId>trino-jdbc</artifactId>
-            <version>438</version>
             <scope>runtime</scope>
         </dependency>
 
