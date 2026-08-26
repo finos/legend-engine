@@ -456,3 +456,24 @@ tests:
     signature: "TIMESTAMPTZ 'dateTtime+tz'"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  # ===== Non-padded ISO date =====
+
+  # YYYY-M-D (single-digit month and day)
+  - id: date_literal__iso_non_padded
+    sql: "SELECT DATE '9999-1-1' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY-M-D'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Compact date with time =====
+
+  # YYYYMMDD HH:MI:SS.S (compact date followed by time)
+  - id: date_literal__compact_with_time
+    sql: "SELECT TIMESTAMP '99991201 00:00:00.0' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'YYYYMMDD HH:MI:SS.S'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
