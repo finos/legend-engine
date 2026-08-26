@@ -80,7 +80,7 @@ public class PostgresDateParser
                 .toFormatter(Locale.ENGLISH));
         TIMESTAMP_FORMATTERS.add(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 
-        // AM/PM with ISO date — must be before 24h patterns to avoid TZ stripping eating "PM"
+        // ISO with flexible (non-padded) month/day: 9999-1-1 04:05:06
         TIMESTAMP_FORMATTERS.add(new DateTimeFormatterBuilder()
                 .append(DateTimeFormatter.ISO_LOCAL_DATE)
                 .appendLiteral(' ')
@@ -125,8 +125,18 @@ public class PostgresDateParser
                 .appendPattern("M-d HH:mm" + OPTIONAL_SECONDS)
                 .toFormatter(Locale.ENGLISH));
 
+        // Compact yyyyMMdd with time: 19990108 04:05:06
+        TIMESTAMP_FORMATTERS.add(new DateTimeFormatterBuilder()
+                .appendPattern("yyyyMMdd HH:mm" + OPTIONAL_SECONDS)
+                .toFormatter(Locale.ENGLISH));
+
         // === Date-only formatters ===
         DATE_FORMATTERS.add(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        // ISO with flexible (non-padded) month/day: 9999-1-1
+        DATE_FORMATTERS.add(new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-M-d")
+                .toFormatter(Locale.ENGLISH));
 
         // Month name with comma
         addDateFormatter("MMMM d, yyyy");
@@ -237,7 +247,7 @@ public class PostgresDateParser
             throw new UnsupportedOperationException("Numeric dash-separated date format (e.g. '1-8-1999') is ambiguous without Postgres DateStyle context and is not supported");
         }
 
-//        // Sub-millisecond precision (>3 fractional digits) is not supported — downstream stores (e.g. H2) truncate to milliseconds
+//        // Sub-millisecond precision (>3 fractional digits) is not supported ? downstream stores (e.g. H2) truncate to milliseconds
 //        if (SUB_MILLISECOND_PATTERN.matcher(trimmed).find())
 //        {
 //            throw new UnsupportedOperationException("Sub-millisecond precision (more than 3 fractional digits) is not supported");
@@ -295,7 +305,7 @@ public class PostgresDateParser
         // Normalize multiple spaces to single
         String normalized = trimmed.replaceAll("\\s+", " ");
 
-        // Strip timezone abbreviations (e.g., PST, UTC) — but not AM/PM
+        // Strip timezone abbreviations (e.g., PST, UTC) ? but not AM/PM
         normalized = TZ_ABBREV_PATTERN.matcher(normalized).replaceFirst("");
 
         // Try offset (timezone-aware) formatters first
