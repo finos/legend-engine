@@ -4737,8 +4737,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testLateralTableFunction():Boolean[1]
 {
   test([
-    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(string_to_array(String, \',\')) AS value',
-    'SELECT table1."Boolean" FROM service."/service/service1" table1, LATERAL unnest(string_to_array(String, \',\')) AS a(value)'
+    'SELECT table1."Boolean", cast(value as integer) as value FROM service."/service/service1" table1, LATERAL unnest(string_to_array(String, \',\')) AS value',
+    'SELECT table1."Boolean", cast(a.value as integer) value FROM service."/service/service1" table1, LATERAL unnest(string_to_array(table1.String, \',\')) AS a(value)'
     ],
 
     [
@@ -4748,7 +4748,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->lateral(r |
               $r.String->split(',')->meta::pure::functions::relation::variant::flatten(~value)
           )
-          ->select(~[Boolean])
+          ->project(~[
+            Boolean: x | $x.Boolean,
+            value: x | parseInteger($x.value->toOne())
+          ])
       })
     ]
   )

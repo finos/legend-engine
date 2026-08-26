@@ -18,7 +18,7 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
       assert($ctx.name->isNotEmpty(), | 'context name must be populated for unnest');
 
       let commonType = $args.genericType.rawType->bestCommonType();
-      let relationType = buildRelationType(newRelationColumn($ctx.name->toOne(), $commonType, ZeroOne));
+      let relationType = buildRelationType(newRelationColumn($ctx.aliasColumns->toOne(), $commonType, ZeroOne));
 
       sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $relationType, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.aliasColumns->toOne()))]);
     }),

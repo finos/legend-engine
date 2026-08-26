@@ -1701,7 +1701,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let processed = processRelation($aliased.relation, ^$context(name = $name, aliasColumns = if ($aliased.columnNames->isEmpty(), | $name, | $aliased.columnNames)));
 
-  let columns = if ($aliased.columnNames->isEmpty(), | $processed.columns, | $aliased.columnNames->map(c | ^QueryColumn(name = $c)));
+  let aliasedColumns = $aliased.columnNames->map(c | $processed.columnByName($c, false)->orElse(^QueryColumn(name = $c)));
+
+  let columns = if ($aliased.columnNames->isEmpty(), | $processed.columns, | $aliasedColumns);
   let aliases = if ($aliased.columnNames->isEmpty(), | $processed.aliases, | $aliased.columnNames->map(c | ^SQLColumnAlias(name = $c)));
 
   ^$processed(name = $aliased.alias, aliases = $aliases, columns = $columns);
@@ -4789,11 +4791,11 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       $indent + 'name: ' + $this.name->orElse('[]') + '\n' +
       $indent + 'root: ' + $this.root->toString() + '\n' +
       if ($this.aliases->isNotEmpty(), | $indent + 'aliases: \n' + $indent + '  ' + $this.aliases.toString()->joinStrings('\n' + $indent + '  ') + '\n', | '') +
-      if ($this.columns->isNotEmpty(), | $indent + 'columns: \n' + $indent + '  ' + $this.columns->map(c | $c.name)->joinStrings('\n' + $indent + '  ') + '\n', | '') +
+      if ($this.columns->isNotEmpty(), | $indent + 'columns: \n' + $indent + '  ' + $this.columns->map(c | $c.name + ':' + $c.type.name->orElse('UNKNOWN'))->joinStrings('\n' + $indent + '  ') + '\n', | '') +
       if ($this.contexts->isNotEmpty(), | $indent + 'contexts: \n' + $this.contexts->map(c | $c.toString($indent + '    '))->joinStrings('\n'), | '') +
       if ($this.assignments->isNotEmpty(), | $indent + 'assigments: ' + $this.assignments->size()->toString(), | '') +
       if ($this.parameters->isNotEmpty(), | $indent + 'parameters: ' + $this.parameters->map(p | $p.toString)->joinStrings('\n'), | '') +
-      if ($this.withQueries->isNotEmpty(), | $indent + 'ctes: ' + $this.withQueries.context.name->joinStrings('[', ',', ']'), | '')
+      if ($this.withQueries->isNotEmpty(), | $indent + 'ctes: ' + $this.withQueries.context.name->joinStrings('[', ',', ']'), | '');
   }:String[1];
 
   context(name:String[0..1]){
