@@ -756,7 +756,7 @@ function <<access.private>> meta::relational::milestoning::hasAnyUnresolvableOrP
 {
    let vars = $f->collectVariableExpressions();
    $vars->exists(v| let resolved = $inScopeVars->get($v.name);
-                    $resolved->isEmpty() || $resolved.values->at(0)->instanceOf(PlanVarPlaceHolder);)
+                    $resolved->isEmpty() || $resolved.values->at(0)->instanceOf(PlanVarPlaceHolder););
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]
