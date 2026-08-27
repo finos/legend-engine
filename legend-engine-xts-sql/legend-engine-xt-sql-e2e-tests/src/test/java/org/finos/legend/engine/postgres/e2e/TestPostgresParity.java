@@ -360,7 +360,7 @@ public class TestPostgresParity
             {
                 String prefix = "TDS".equals(path) ? "tds" : "rel";
                 AstFromRewriter rewriter = new AstFromRewriter(prefix, knownTables);
-                rewrittenSql = rewriter.hasTableReferences(tc.sql) ? rewriter.rewrite(tc.sql) : tc.sql;
+                rewrittenSql = rewriter.rewrite(tc.sql);
             }
         }
         catch (Exception e)
