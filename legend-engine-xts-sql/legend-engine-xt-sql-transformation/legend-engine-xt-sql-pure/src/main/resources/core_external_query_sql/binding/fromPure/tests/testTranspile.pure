@@ -905,7 +905,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               || ($row.getDateTime('DateTime') <= now())
               || ($row.getDateTime('DateTime') > %2023-01-03T00:00:00)
               || ($row.getDateTime('DateTime') > firstDayOfMonth($row.getDateTime('DateTime')))
-              || ($row.getDateTime('DateTime') > parseDate('2026' + ('/01' + '/01')))
+              || ($row.getDateTime('DateTime') > parseDate('2026' + '/01' + '/01'))
               || (%2026-01-01 > $row.getDateTime('DateTime'))
           )
         }, true, false),
@@ -923,7 +923,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                  || ($x.DateTime >= %2023-01-02T00:00:00) || ($x.DateTime <= now())
                  || ($x.DateTime > %2023-01-03T00:00:00)
                  || ($x.DateTime > firstDayOfMonth($x.DateTime))
-                 || ($x.DateTime > parseDate('2026' + ('/01' + '/01')))
+                 || ($x.DateTime > parseDate('2026' + '/01' + '/01'))
                  || (%2026-01-01 > $x.DateTime)
           )
         }, true, false)
@@ -3269,9 +3269,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   test(
     'SELECT ' +
-      '\'a\' || \'b\' as SIMPLE,' +
+      '\'a\' || \'b\' || \'c\' as SIMPLE,' +
       '\'a\' || null as "NULL",' +
-      '\'a\' || case when 1 = 1 then null else \'b\' end as NULLABLE, ' +
+      '\'a\' || (\'b\' || NULL) as "NULL_BRACKETS",' +
+      '\'a\' || case when 1 = 1 then null else \'b\' end || \'c\' as NULLABLE, ' +
       'concat(\'a\', \'b\') as SIMPLE_CONCAT,' +
       'concat(\'a\', \'b\', null) as NULL_CONCAT,' +
       'concat(\'a\', case when 1 = 1 then null else \'b\' end) as NULLABLE_CONCAT,' +
@@ -3281,9 +3282,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       c({| FlatInput.all()->project(
             ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
           )->project(~[
-            SIMPLE : x | 'a' + 'b',
+            SIMPLE : x | 'a' + 'b' + 'c',
             NULL : x | []->cast(@String),
-            NULLABLE : x | if (false || if (1 == 1, | [], | 'b')->isEmpty(), | []->cast(@String), | 'a' + if (1 == 1, | [], | 'b')->toOne()),
+            NULL_BRACKETS : x | []->cast(@String),
+            NULLABLE : x | if(false || if(1 == 1, |[], |'b')->isEmpty(), |[]->cast(@String), |'a' + if(1 == 1, |[], |'b')->toOne() + 'c'),
             SIMPLE_CONCAT : x | 'a' + 'b',
             NULL_CONCAT : x | 'a' + 'b',
             NULLABLE_CONCAT : x | 'a' + if (1 == 1, | [], | 'b')->toOne(),
@@ -3307,8 +3309,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           )->project(~[
             BOOLEANS: x | 't' + 'f' + if ($x.Boolean, | 't', | if ($x.Boolean->isEmpty(), | '', | 'f')),
             MIXED: x | 1->toString() + 2->toString() + 'abc' + 1.1->toString(),
-            BOOLEANS_OP: x | true->toString() + (false->toString() + $x.Boolean->toString()),
-            MIXED_OP: x | 1->toString() + (2->toString() + ('abc' + 1.1->toString()))
+            BOOLEANS_OP: x | true->toString() + false->toString() + $x.Boolean->toString(),
+            MIXED_OP: x | 1->toString() + 2->toString() + 'abc' + 1.1->toString()
           ])
       })
     ]
