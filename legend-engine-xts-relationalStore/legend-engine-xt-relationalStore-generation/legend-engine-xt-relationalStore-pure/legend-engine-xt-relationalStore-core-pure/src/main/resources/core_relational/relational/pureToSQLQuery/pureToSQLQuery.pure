@@ -4181,6 +4181,8 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
       let milestoningContext=$newQuery.milestoningContext->concatenate($operation.milestoningContext)->first();
 
       let isSemiStructuredPropertyMapping = ($newCurrentPropertyMapping->size() >= 1) && $newCurrentPropertyMapping->forAll(pm | $pm->instanceOf(SemiStructuredRelationalPropertyMapping));
+      // in a filter the processed input is carried by filteringOperation, not columns
+      let mappedInput = $state.inFilter->if(|$select.filteringOperation, |$select.columns);
       let isVariant = $f.parametersValues->at(0)->isVariantInput($vars, $state);
       // The lambda's parameter binds to the source's column, so that column has to survive into
       // sourceOp. It is needed whenever the parameter denotes a single value: a DataType, i.e. a
@@ -4199,7 +4201,7 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
                                    ]);
       let extraColumn = if($lambdaParamIsDataType || $isSemiStructuredPropertyMapping || $isVariant,
                             | let aliasRemap = $mainQuery.currentTreeNode.alias.name->map(n | ^OldAliasToNewAlias(first = $n, second = $newQuery.currentTreeNode.alias->toOne()));
-                              $select.columns->map(c | $c->reprocessAliases($aliasRemap));,
+                              $mappedInput->map(c | $c->reprocessAliases($aliasRemap));,
                             | []);
 
       $func->match(
@@ -4438,7 +4440,10 @@ function meta::relational::functions::pureToSqlQuery::processEmpty(f:FunctionExp
             $fe.genericType.rawType->match(
                   [
                      d:DataType[1]| $f->processSubEmpty($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-                     ,c:Class<Any>[1] | processExists($f, $not, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)
+                     ,c:Class<Any>[1] | if($fe->isScalarVariantExpression(),
+                                                | $f->processSubEmpty($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
+                                                | processExists($f, $not, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)
+                                          )
                   ]
             )
         ,a:Any[1] | $f->processSubEmpty($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
@@ -4508,7 +4513,7 @@ function meta::relational::functions::pureToSqlQuery::processSubEmpty(f:Function
    let parameters = $f.parametersValues->at(0);
    let isParameterPlanVarOfTypeList = isParamPlanVar($parameters, $vars, $state.inScopeVars) && $parameters.multiplicity == ZeroMany;
 
-   let isEmptyExpressionValid = $parameters->match([v:FunctionExpression[1]| $v.func == map_T_m__Function_1__V_m_  || $v.func == map_T_MANY__Function_1__V_MANY_ || !$v.genericType.rawType->toOne()->instanceOf(Class);,
+   let isEmptyExpressionValid = $parameters->match([v:FunctionExpression[1]| $v.func == map_T_m__Function_1__V_m_  || $v.func == map_T_MANY__Function_1__V_MANY_ || !$v.genericType.rawType->toOne()->instanceOf(Class) || $v->isScalarVariantExpression();,
                                                     a:Any[1]| true;]);
 
 
