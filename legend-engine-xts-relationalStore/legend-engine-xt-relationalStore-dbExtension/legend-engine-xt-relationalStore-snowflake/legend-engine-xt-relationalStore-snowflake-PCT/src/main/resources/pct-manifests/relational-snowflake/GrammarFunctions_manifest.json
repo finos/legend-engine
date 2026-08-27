@@ -110,7 +110,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 10 unexpected '<EOF>'."
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error:\nsyntax error line 1 at position 10 unexpected '<EOF>'."
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 6.0D\nactual:   6.0\""

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake;
 
+import net.snowflake.client.api.connection.SnowflakeConnection;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.QuoteMode;
 import org.eclipse.collections.api.factory.Maps;
@@ -23,8 +24,11 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
 
-import java.util.Arrays;
+import java.io.InputStream;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class SnowflakeCommands extends RelationalDatabaseCommands
@@ -58,18 +62,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     @Override
     public List<String> createAndLoadTempTable(String tableName, List<Column> columns, String optionalCSVFileLocation)
     {
-        if (optionalCSVFileLocation.startsWith("/"))
-        {
-            optionalCSVFileLocation = optionalCSVFileLocation.substring(1);
-        }
-        List<String> strings = Arrays.asList(
-                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(",", "(", ")")),
-                "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
-                "PUT file:///" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
-                "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + optionalCSVFileLocation + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",
-                "DROP STAGE " + tempStageName()
-        );
-        return strings;
+        throw new UnsupportedOperationException("Snowflake should use input stream to temp table load. This method should not be triggered for Snowflake.");
     }
 
     @Override
@@ -87,7 +80,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
-        return IngestionMethod.CLIENT_FILE;
+        return IngestionMethod.CLIENT_STREAM;
     }
 
     public boolean supportsHeaderOnCsvFile()
@@ -101,4 +94,47 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
         return visitor.visit(this);
     }
 
+    /**
+     * Streaming data to session-scoped temp table without creating file on local file system.
+     * Source rows are consumed from {@code csvInputStream} and pushed straight to a Snowflake internal stage via the JDBC driver's {@code SnowflakeConnection.uploadStream} method.
+     */
+    @Override
+    public void ingestFromStream(Connection connection, String tableName, List<Column> columns, InputStream csvInputStream) throws Exception
+    {
+        String stageFileName = "legend_stream_" + UUID.randomUUID().toString().replace("-", "") + ".csv";
+        String stagedObjectName = stageFileName + ".gz";
+        String createTable = "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(",", "(", ")"));
+        String createStage = "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName();
+        String copyInto = "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + stagedObjectName + " file_format = (type = CSV field_optionally_enclosed_by= '\"')" + " ON_ERROR = ABORT_STATEMENT";
+        String dropStage = "DROP STAGE " + tempStageName();
+
+        try (Statement statement = connection.createStatement())
+        {
+            statement.execute(dropTempTable(tableName));
+            statement.execute(createTable);
+            statement.execute(createStage);
+        }
+
+        try
+        {
+            SnowflakeConnection snowflakeConnection = connection.unwrap(SnowflakeConnection.class);
+            snowflakeConnection.uploadStream(tempStageName(), stageFileName, csvInputStream);
+
+            try (Statement copyStatement = connection.createStatement())
+            {
+                copyStatement.execute(copyInto);
+            }
+        }
+        finally
+        {
+            try (Statement dropStatement = connection.createStatement())
+            {
+                dropStatement.execute(dropStage);
+            }
+            catch (Exception dropEx)
+            {
+                //the stage is session-scoped and auto-drops with the session anyway so ignoring this exception to not mask exception with copy
+            }
+        }
+    }
 }

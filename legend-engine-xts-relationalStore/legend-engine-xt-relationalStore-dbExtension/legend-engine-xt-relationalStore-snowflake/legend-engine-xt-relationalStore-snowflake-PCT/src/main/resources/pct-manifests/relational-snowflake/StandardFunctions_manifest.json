@@ -17,7 +17,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
@@ -125,33 +125,33 @@
     "expectedError" : "\nexpected: '#TDS\\n   id,val,newCol\\n   1,1.0,1.8\\n   1,2.0,1.8\\n   1,3.0,1.8\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4\\n   3,1.5,1.4\\n   3,2.0,1.4\\n#'\nactual:   '#TDS\\n   id,val,newCol\\n   1,1.0,1.7999999999999998\\n   1,2.0,1.7999999999999998\\n   1,3.0,1.7999999999999998\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4\\n   3,1.5,1.4\\n   3,2.0,1.4\\n#'"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::sum::testSum_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 32.0\nactual:   32\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"
   } ]
 }
