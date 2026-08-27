@@ -829,6 +829,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testBetweenStrictDateAndDateTime():Boolean[1]
+{
+  test(
+    'SELECT ' +
+    'DateTime between \'2025-01-01\'::date and \'2025-01-03 00:00:00\'::timestamp as TIMESTAMP, ' +
+    'StrictDate between \'2025-01-01 00:00:00\'::timestamp and \'2025-01-03\'::date as DATE ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({| FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->project(~[
+              TIMESTAMP: x | between($x.DateTime, %2025-01-01, %2025-01-03T00:00:00),
+              DATE: x | between($x.StrictDate, %2025-01-01T00:00:00, %2025-01-03)
+            ])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsString():Boolean[1]
 {
   test(

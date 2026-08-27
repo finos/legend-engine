@@ -2728,7 +2728,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(Number, between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_),
     pair(String, between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_),
     pair(StrictDate, between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_),
-    pair(DateTime, between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_)
+    pair(DateTime, between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_),
+    pair(Date, between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_)
   ]->filter(p | $p.first == $types->first()->preciseToPrimitive()).second->first();
 
   if ($func->isNotEmpty(),
