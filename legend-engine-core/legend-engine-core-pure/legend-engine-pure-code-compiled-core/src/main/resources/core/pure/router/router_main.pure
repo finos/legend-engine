@@ -29,7 +29,7 @@ import meta::core::runtime::*;
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:Extension[*]):FunctionDefinition<Any>[1]
 {
-   $f->routeFunction(^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
+   $f->routeFunction(^meta::pure::runtime::ExecutionContext(), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]

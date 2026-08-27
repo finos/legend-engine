@@ -24,7 +24,7 @@ import meta::pure::executionPlan::*;
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan(^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
+   $f->executionPlan(^meta::pure::runtime::ExecutionContext(), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
@@ -34,7 +34,7 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan($context, $extensions, noDebug());
+   $f->executionPlan($context, $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
@@ -44,7 +44,7 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
+   $f->executionPlan($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
@@ -54,7 +54,7 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan($m, $runtime, $context, $extensions, noDebug());
+   $f->executionPlan($m, $runtime, $context, $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 Class meta::pure::executionPlan::NodeAndVars
