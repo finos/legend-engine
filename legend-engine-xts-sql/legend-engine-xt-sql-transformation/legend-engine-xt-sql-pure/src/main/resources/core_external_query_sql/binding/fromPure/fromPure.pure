@@ -467,7 +467,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   assert($context.withSupported, | 'with queries currently not supported');
 
-  assert(hasSingleExecutionContext($context), 'With queries with multiple runtimes/mappings currently not supported');
+  assert($context.singleExecutionContext, 'With queries with multiple runtimes/mappings currently not supported');
 
   $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery(^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
 }
@@ -2300,16 +2300,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //It is not free either. from()'s return type is a bare type parameter, so wrapping replaces the
 //expression's concrete Relation<(...)> with T unless that type is carried across by hand; anything
 //that later re-derives the schema from the expression then sees no columns.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasSingleExecutionContext(context:SqlTransformContext[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasSingleExecutionContext(sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):Boolean[1]
 {
-  ($context.sources->distinctRuntimes($context.extensions)->size() <= 1) && ($context.sources->distinctMappings()->size() <= 1);
+  ($sources->distinctRuntimes($extensions)->size() <= 1) && ($sources->distinctMappings()->size() <= 1);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(context:SqlTransformContext[1]):SqlTransformContext[1]
 {
   let requiresFrom = requiresWrapWithFrom($context.expression->toOne());
 
-  if ($requiresFrom && $context.source->isNotEmpty() && !hasSingleExecutionContext($context),
+  if ($requiresFrom && $context.source->isNotEmpty() && !$context.singleExecutionContext,
     | wrapWithFrom($context.expression->toOne(), $context.source->toOne(), $context),
     | $context);
 }
@@ -4791,7 +4791,10 @@ function meta::external::query::sql::transformation::queryToPure::isRelation(f:F
 function meta::external::query::sql::transformation::queryToPure::context(id:Integer[1], root:Boolean[1], sources: SQLSource[*],
   extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], relation:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], debug:DebugContext[1]):SqlTransformContext[1]
 {
-  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug, scopeVariables = ^Map<String, ValueSpecification>());
+  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions,
+                       singleExecutionContext = hasSingleExecutionContext($sources, $extensions),
+                       scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug,
+                       scopeVariables = ^Map<String, ValueSpecification>());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::positionalName(i:Integer[1]):String[1]
@@ -4821,6 +4824,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   positionals: VariableExpression[*];
   source: SQLSource[0..1];
   extensions: meta::pure::extension::Extension[*];
+  singleExecutionContext: Boolean[1];
   aliases:SQLColumnAlias[*];
   name: String[0..1];
   scopeWithFrom: Boolean[0..1];
