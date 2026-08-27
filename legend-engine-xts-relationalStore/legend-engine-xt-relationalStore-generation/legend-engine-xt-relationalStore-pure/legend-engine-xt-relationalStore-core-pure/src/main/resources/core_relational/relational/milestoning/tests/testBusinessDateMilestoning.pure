@@ -1541,7 +1541,8 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testD
 {
    // Concrete root Date + Integer plan-param offset: adjust($concreteLet, $planParam, DAYS)
    // Change A target — collectVariableExpressions finds $offsetDays as PlanVarPlaceHolder, routes through processFunctionExpression
-   let f = {offsetDays:Integer[1] | let busDate = %2015-10-16; Order.all()->project([col([o|$o.product($busDate->adjust($offsetDays, DurationUnit.DAYS)).name],'prodName')])}->cast(@FunctionDefinition<Any>);
+   let busDate = %2015-10-16;
+   let f = {offsetDays:Integer[1] | Order.all()->project([col([o|$o.product($busDate->adjust($offsetDays, DurationUnit.DAYS)).name],'prodName')])}->cast(@FunctionDefinition<Any>);
    let plan = executionPlan($f, milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let planStr = $plan->planToString(meta::relational::extension::relationalExtensions());
    assert($planStr->contains('dateadd'));
