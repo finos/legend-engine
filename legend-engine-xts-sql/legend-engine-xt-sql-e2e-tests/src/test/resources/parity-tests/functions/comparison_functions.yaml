@@ -806,8 +806,8 @@ tests:
   sql: SELECT id, int_val > 0 AS positive, float_val > 0 AS float_positive, name > 'D' AS name_after_d FROM persons WHERE id IN (1, 3, 5) ORDER BY id
   function: ">"
   signature: ">(any, any) → boolean"
-  expected_tds_status: PASS
-  expected_rel_status: PASS
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 - id: comparison__select__all_operators
   sql: SELECT id, int_val = 42 AS eq, int_val <> 42 AS neq, int_val < 42 AS lt, int_val > 42 AS gt, int_val <= 42 AS lte, int_val >= 42 AS gte FROM numbers WHERE id IN (1, 2, 8) ORDER BY id

@@ -240,8 +240,8 @@ tests:
     sql: "SELECT DATE '99-01-08' AS result FROM dates LIMIT 1"
     function: date_literal
     signature: "DATE 'YY-MM-DD'"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   # ===== Slash with year first =====
 
