@@ -705,6 +705,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let standard = $originalSelect.selectItems->removeAll($aggregates)->removeAll($directWindows)->removeAll($nestedWindowItems);
 
   let havingExtensions = extractAggregatesFromExpression($having)->map(e | ^SingleColumn(expression = $e));
+  //Left unaliased on purpose: processExtend names these through
+  //processSelectItems(.., useContextForNameResolve = false), and extensionColumnName below is the
+  //same derivation, so the key that reads the column spells it exactly as the extend wrote it.
   let groupByExtensions = $groupBy->map(g | $g->match([
     i:IntegerLiteral[1] | [],
     q:QualifiedNameReference[1] | [],
@@ -952,7 +955,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     clone(^$context(expression = $rename), $context),
     renamePairs($renamedItems, $context));
 
-  let groupByColumns = $groupBy->map(g | $g->extractColumnNameFromExpression($select.selectItems, $renamed));
+  //An ordinal names a select item and a plain column reference names a real column, so both keep
+  //resolving as before. An expression key was materialised into an extend by groupByExtensions and
+  //has to use that column's name - see materialisedKeyName.
+  let groupByColumns = $groupBy->map(g | $g->match([
+    i:IntegerLiteral[1] | $i->extractColumnNameFromExpression($select.selectItems, $renamed),
+    e:meta::external::query::sql::metamodel::Expression[1] | materialisedKeyName($e, $renamed)
+  ]));
 
   let additionalGroupColumns = $select.selectItems->removeAll($aggregates)->map(s | $s->match([
     s:SingleColumn[1] | extractNameFromSingleColumn($s, $renamed),
@@ -1091,10 +1100,47 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 //we need to pull out the partition and order expressions and extend the TDS so the call to olapGroupBy can take in the qualified name references of these columns
 //ideally there would be a project/olap implementation which accepts lambdas, instead of column references.
+//A window PARTITION BY / ORDER BY key, or a GROUP BY key, that is not a plain column reference has
+//no column to name, so processProjection materialises it into an extend. Two places then have to
+//agree on what that column is called: processExtend, which creates it, and the key itself, which
+//reads it.
+//
+//processExtend names it through processSelectItems(.., useContextForNameResolve = false) - with no
+//context, so a column reference inside the expression is spelled as written. The key used to be
+//resolved through the live context instead, where the same reference carries its join-alias suffix
+//and may also have been re-spelled by the projection's rename. Both differences broke the match, in
+//opposite directions: over a join the extend built COALESCE(salary, 0) while the key asked for
+//COALESCE(salary_p, 0), and once the projection renamed a column the key asked for UPPER(name) while
+//the extend had written UPPER(name_p).
+//
+//Deriving the name the same context-free way on both sides removes the disagreement entirely rather
+//than moving it. The name is internal - the extend's own lambda still resolves the underlying columns
+//through the context, so only the label is context-free.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extensionColumnName(e:meta::external::query::sql::metamodel::Expression[1]):String[1]
+{
+  extractNameFromExpression($e, []);
+}
+
+//A plain column reference names a real column and must keep resolving through the context - that is
+//what keeps a key pointing at the right join side, and at a column the projection has renamed.
+//Anything else was materialised by extractWindowExtensionExpressions or groupByExtensions and has to
+//use the extension's name.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::materialisedKeyName(e:meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[1]):String[1]
+{
+  $e->match([
+    q:QualifiedNameReference[1] | $q->extractNameFromExpression($context),
+    x:meta::external::query::sql::metamodel::Expression[1] | extensionColumnName($x)
+  ]);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowExtensionExpressions(s:SingleColumn[*], context:SqlTransformContext[1]):SingleColumn[*]
 {
   let functionCall = $s.expression->cast(@FunctionCall);
   let window = $functionCall.window->map(w | getWindow($w, $context.windows));
+
+  //Left unaliased on purpose - see extensionColumnName. A plain column reference is excluded here
+  //because it already names a real column of the relation; everything else is materialised into an
+  //extend, and the key that reads it must spell it the way processExtend wrote it.
   $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->map(e | ^SingleColumn(expression = $e));
 }
 
@@ -1117,8 +1163,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   unsupported($relation || ($window.orderBy->size() <= 1), | 'multiple window sort items not yet supported');
   assertRelation($window.windowFrame->isEmpty() || $context.relation->isTrue(), 'window frame');
 
-  let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
-  let sorts = $window.orderBy->map(si | $si->createSortItemFunction($context));
+  let partitions = $window.partitions->map(partition | materialisedKeyName($partition, $context));
+  let sorts = $window.orderBy->map(si | createSortItemFunctionForColumn($si, materialisedKeyName($si.sortKey, $context), $context));
   let frame = createFrame($window.windowFrame);
 
   let processor = functionProcessor($functionCall.name);
@@ -1851,6 +1897,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   createSortItemFunction($si, [], $context);
 }
 
+//Same as createSortItemFunction but for a key whose column has already been resolved. Window keys
+//need this because a materialised key does not resolve through the context - see materialisedKeyName.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunctionForColumn(si:SortItem[1], column:String[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+    assert($si.nullOrdering == SortItemNullOrdering.UNDEFINED, 'null ordering type not yet supported');
+
+    ^TDSBuilder().sortItem($si, $column, $context.relation->isTrue());
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunction(si:SortItem[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
 {
     let column = extractColumnNameFromExpression($si.sortKey, $selectItems, $context);
@@ -2240,12 +2295,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     let mapping = if ($source.mapping->isEmpty(), | emptyMapping(), | $source.mapping->toOne());
     let relation = $context.relation->isTrue();
 
+    //from() does not alter the schema, but its return type is the type parameter T, so the
+    //two-argument sfe() stamps the wrapped expression with T rather than the concrete
+    //Relation<(...)>. Anything that later re-derives the schema from the expression -
+    //resolveRelationColumns, and through it the type TDSBuilder builds for extend/groupBy/restrict -
+    //then sees no columns, and every name it is asked to look up is silently dropped from the type
+    //it produces. The emitted SQL stays correct, so the failure surfaces downstream as a result set
+    //whose shape does not match the relation that was declared: a missing column, or a value read
+    //under a neighbouring column's type. Only processStandardJoin calls wrapWithFrom, which is why
+    //single-table queries were never affected. Carry the input's own generic type through instead.
+    let inputType = $expression->evaluateAndDeactivate().genericType;
+
     let scopedExpression = if ($relation,
       | [
             pair($source.mapping->isEmpty() && $source.runtime->isNotEmpty(), |
-                sfe(meta::pure::mapping::from_T_m__Runtime_1__T_m_,[$expression, iv($source.runtime->toOne())])),
+                sfe(meta::pure::mapping::from_T_m__Runtime_1__T_m_, $inputType, [$expression, iv($source.runtime->toOne())])),
             pair($source.mapping->isNotEmpty() && $source.runtime->isNotEmpty(), |
-                sfe(meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, [$expression, iv($source.mapping->toOne()), iv($source.runtime->toOne())]))
+                sfe(meta::pure::mapping::from_T_m__Mapping_1__Runtime_1__T_m_, $inputType, [$expression, iv($source.mapping->toOne()), iv($source.runtime->toOne())]))
         ]->getValue(true, | $expression)->eval(),
       | [
            pair($source.runtime->isNotEmpty() && $executionContext->isNotEmpty(), |

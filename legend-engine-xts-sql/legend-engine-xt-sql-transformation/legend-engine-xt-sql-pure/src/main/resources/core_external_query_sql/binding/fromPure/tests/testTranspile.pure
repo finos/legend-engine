@@ -5738,6 +5738,38 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// ---------------------------------------------------------------------------
+// A window or GROUP BY key that is an expression, over a join.
+//
+// Such a key is not a column, so processProjection synthesises a SingleColumn to
+// carry it into an extend and give it something to name. The extend named that
+// column through processSelectItems(.., useContextForNameResolve = false) - an
+// empty context, so a column reference inside the expression kept its pre-join
+// spelling - while the key lookup resolved through the live context, where the
+// same reference carries its join-alias suffix. Over a join the two disagreed:
+// the extend built COALESCE(Float, 0) and the lookup asked for
+// COALESCE(Float_t1, 0), which the relation does not have.
+//
+// The join is load-bearing. Without it there are no suffixes, the two spellings
+// coincide, and none of this reproduces - which is exactly why it went unnoticed.
+// ---------------------------------------------------------------------------
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeyExpressionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", ' +
+    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", 0)) AS "rn" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByNullsLast():Boolean[1]
 {
   // NULLS LAST: rewritten as CASE WHEN String IS NULL THEN 0 ELSE 1 END DESC, String ASC
@@ -5751,6 +5783,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->descending(), ~String->ascending()])
             ->select(~[String, Integer])
         }
+    ]
+  )
+}
+
+// The partition key takes the same path as the sort key, so it fails the same way.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowPartitionKeyExpressionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", ' +
+    'row_number() OVER (PARTITION BY upper("t1"."String") ORDER BY "t1"."Integer") AS "rn" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
     ]
   )
 }
@@ -5772,6 +5822,25 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// An expression key drawing from both join sides, so both suffixes have to resolve
+// inside one synthesised name.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeyExpressionAcrossBothJoinSides():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", ' +
+    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", "t2"."Integer")) AS "rn" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByMultiColumnMixedNulls():Boolean[1]
 {
   // String NULLS FIRST, Integer DESC NULLS LAST: two CASE extend columns, four sort keys
@@ -5785,6 +5854,42 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->ascending(), ~String->ascending(), ~'CASE WHEN Integer IS NULL THEN 0 ELSE 1 END'->descending(), ~Integer->descending()])
             ->select(~[String, Integer])
         }
+    ]
+  )
+}
+
+// GROUP BY on an expression over a join: same synthesised-extension path as the
+// window keys, resolved by processGroupBy instead of processOlapGroupBy.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByExpressionKeyOverJoin():Boolean[1]
+{
+  test(
+    'SELECT upper("t1"."String") AS "u", count(*) AS "n" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY upper("t1"."String")',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Control: the same expression key with no join. It passed before the change and
+// must still pass, which is what pins the fix to the suffixed case.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeyExpressionSingleTable():Boolean[1]
+{
+  test(
+    'SELECT "String", row_number() OVER (PARTITION BY "Integer" ORDER BY coalesce("Float", 0)) AS "rn" ' +
+    'FROM service."/service/service1"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
     ]
   )
 }

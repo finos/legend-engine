@@ -34,7 +34,7 @@ tests:
     feature: "SELECT multiple table.*"
     category: "select_star"
     expected_tds_status: FAIL
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   # SELECT * from subquery
   - id: star_from_subquery

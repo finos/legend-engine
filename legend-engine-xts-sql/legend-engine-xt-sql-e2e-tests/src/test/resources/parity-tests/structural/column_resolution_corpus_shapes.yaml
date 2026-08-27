@@ -260,42 +260,42 @@ tests:
     feature: "window ORDER BY CASE null guard plus real key, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_win_order_case_null_guard_only_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN p.salary IS NULL THEN 1 ELSE 0 END, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CASE null guard as the leading key, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_win_order_case_null_guard_desc_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN p.hire_date IS NULL THEN 1 ELSE 0 END DESC, p.hire_date ASC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CASE null guard with DESC, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_win_order_case_null_guard_right_side_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN d.budget IS NULL THEN 1 ELSE 0 END, d.budget DESC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CASE null guard on the right join side"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_win_order_case_null_guard_over_left_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN p.salary IS NULL THEN 1 ELSE 0 END, p.salary DESC, p.name) AS rn FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CASE null guard over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_dedup_case_null_guard_filtered
     sql: "SELECT a.name, a.budget FROM (SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN p.salary IS NULL THEN 1 ELSE 0 END, p.salary DESC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id) a WHERE a.rn = 1 ORDER BY 1"
     feature: "ROW_NUMBER dedup with a CASE null guard, filtered on rn = 1"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1b_win_order_case_null_guard_no_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CASE WHEN p.salary IS NULL THEN 1 ELSE 0 END, p.salary DESC, p.name) AS rn FROM persons p ORDER BY 1"
@@ -318,21 +318,21 @@ tests:
     feature: "window ORDER BY UPPER(col) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_cast_to_date_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY CAST(d.created_at AS DATE), p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY CAST(col AS DATE) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_coalesce_one_side_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY COALESCE(p.salary, 0) DESC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY COALESCE(col, literal) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # A single sort key reading columns from both join sides, so both suffixes
   # have to resolve inside one expression.
@@ -341,14 +341,14 @@ tests:
     feature: "window ORDER BY an expression reading both join sides"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_substring_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY SUBSTRING(p.name FROM 1 FOR 3), p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY SUBSTRING(col ...) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_arithmetic_both_sides_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY COALESCE(p.salary, 0) + d.budget DESC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
@@ -362,21 +362,21 @@ tests:
     feature: "window ORDER BY EXTRACT(part FROM col) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_nested_case_in_function_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY UPPER(CASE WHEN p.active = true THEN p.name ELSE d.name END), p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY a CASE nested inside a function, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_expression_matching_a_projection_over_join
     sql: "SELECT p.name AS name, UPPER(p.name) AS upper_name, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY UPPER(p.name)) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY an expression the projection already computes"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ------------------------------------------------------------------
   # Single-table controls for the same expression keys.
@@ -463,63 +463,63 @@ tests:
     feature: "GROUP BY key over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_over_left_join_self_named_alias
     sql: "SELECT p.dept_id AS dept_id, MAX(d.budget) AS max_budget FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY 1"
     feature: "GROUP BY alias.col AS col over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_over_three_way_join
     sql: "SELECT p.dept_id AS dept_id, COUNT(o.id) AS order_count FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id GROUP BY p.dept_id ORDER BY 1"
     feature: "GROUP BY key over a three-way join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_keys_from_all_three_sides
     sql: "SELECT p.dept_id AS dept_id, d.name AS dept_name, o.status AS status, COUNT(*) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id GROUP BY p.dept_id, d.name, o.status ORDER BY 1, 2, 3"
     feature: "GROUP BY keys drawn from all three sides of a join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_over_derived_table_join
     sql: "SELECT x.dept_id AS dept_id, COUNT(*) AS n FROM (SELECT id, dept_id FROM persons) x INNER JOIN (SELECT id FROM departments) y ON x.dept_id = y.id GROUP BY x.dept_id ORDER BY 1"
     feature: "GROUP BY key over a join of two derived tables"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_from_the_derived_side
     sql: "SELECT y.bucket AS bucket, COUNT(*) AS n FROM persons p INNER JOIN (SELECT id, CASE WHEN budget > 500000 THEN 'large' ELSE 'small' END AS bucket FROM departments) y ON p.dept_id = y.id GROUP BY y.bucket ORDER BY 1"
     feature: "GROUP BY a column computed inside the derived join side"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_by_expression_key_over_join
     sql: "SELECT EXTRACT(YEAR FROM p.hire_date) AS hire_year, COUNT(*) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY EXTRACT(YEAR FROM p.hire_date) ORDER BY 1"
     feature: "GROUP BY an expression key over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_by_concatenation_expression_over_join
     sql: "SELECT CAST(EXTRACT(YEAR FROM d.created_at) AS VARCHAR(4)) || '-' || d.name AS bucket, COUNT(DISTINCT p.id) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY CAST(EXTRACT(YEAR FROM d.created_at) AS VARCHAR(4)) || '-' || d.name ORDER BY 1"
     feature: "GROUP BY a concatenation expression with COUNT(DISTINCT), over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_by_having_over_left_join
     sql: "SELECT p.dept_id AS dept_id, COUNT(*) AS n FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id HAVING COUNT(*) > 1 ORDER BY 1"
     feature: "GROUP BY with HAVING over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_by_ordered_by_null_ordered_aggregate
     sql: "SELECT p.dept_id AS dept_id, MAX(p.salary) AS max_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY MAX(p.salary) DESC NULLS LAST, 1"
@@ -541,57 +541,57 @@ tests:
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY CAST(d.created_at AS DATE) ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY CAST(col AS DATE) over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_case_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY CASE WHEN p.salary > 60000 THEN 1 ELSE 0 END ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY a CASE expression over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_substring_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY SUBSTRING(p.name FROM 1 FOR 1) ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY SUBSTRING(col ...) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_coalesce_both_sides_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY COALESCE(p.dept_id, d.id) ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY an expression reading both join sides"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_upper_over_left_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY UPPER(COALESCE(d.name, 'NONE')) ORDER BY p.name) AS rn FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY UPPER(...) over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_extract_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY EXTRACT(YEAR FROM p.hire_date) ORDER BY p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window PARTITION BY EXTRACT(part FROM col) over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_expression_and_order_expression_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY CASE WHEN p.active = true THEN 1 ELSE 0 END ORDER BY COALESCE(p.salary, 0) DESC, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window with expression keys in both PARTITION BY and ORDER BY, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g3_partition_by_bare_key_over_three_way_join
     sql: "SELECT p.name AS name, o.id AS order_id, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY o.id) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id ORDER BY 1, 2"
     feature: "window PARTITION BY a bare key over a three-way join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # processOlapGroupBy folds over the window columns while holding the
   # resolution context fixed at the first iteration, so a second window column
@@ -603,7 +603,7 @@ tests:
     feature: "two window functions with expression keys, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g3_two_windows_with_null_ordered_keys_over_join
     sql: "SELECT p.name AS name, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.salary DESC NULLS LAST, p.name) AS rn, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.hire_date ASC NULLS FIRST, p.name) AS rk FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
@@ -671,7 +671,7 @@ tests:
     feature: "statement ORDER BY an ordinal over a join (control)"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g4_distinct_order_by_qualified_key_over_join
     sql: "SELECT DISTINCT p.dept_id AS dept_id FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.dept_id"
@@ -732,14 +732,14 @@ tests:
     feature: "EXISTS correlated on an outer alias, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_in_subquery_correlated_over_join
     sql: "SELECT p.name AS name FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.id IN (SELECT o.person_id FROM orders o WHERE o.amount > 100 AND o.person_id = p.id) ORDER BY 1"
     feature: "IN (correlated subquery) over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_correlated_max_then_compare_comma_join
     sql: "SELECT p.name AS name, o.amount AS amount FROM persons p, orders o WHERE o.person_id = p.id AND o.amount = (SELECT MAX(o1.amount) FROM orders o1 WHERE o1.person_id = p.id) ORDER BY 1, 2"
@@ -755,14 +755,14 @@ tests:
     feature: "join whose right side is itself a join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_nested_join_predicate_reads_the_inner_join
     sql: "SELECT p.name AS name, o.status AS status FROM persons p INNER JOIN (orders o INNER JOIN departments d ON d.id = o.person_id) ON p.id = o.person_id WHERE o.amount > 100 ORDER BY 1, 2"
     feature: "predicate reading a column of a nested join side"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # A derived-table alias referenced in the ON of a later join, with a function
   # applied on the other side of the equality.
@@ -774,14 +774,14 @@ tests:
     feature: "derived-table alias referenced in a later join's ON, through a function"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_three_derived_sides_chained_on_clauses
     sql: "SELECT a.id AS id, b.n AS order_count, c.budget AS budget FROM (SELECT id, dept_id FROM persons) a INNER JOIN (SELECT person_id, COUNT(*) AS n FROM orders GROUP BY person_id) b ON b.person_id = a.id INNER JOIN (SELECT id, budget FROM departments) c ON c.id = a.dept_id ORDER BY 1"
     feature: "three derived join sides with chained ON clauses"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ------------------------------------------------------------------
   # Outer alias shadowed by a derived table's internal alias
@@ -810,14 +810,14 @@ tests:
     feature: "derived table internally re-using the enclosing query's table alias"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_derived_table_reuses_outer_alias_in_on_predicate
     sql: "SELECT s.name AS name, latest.top_amount AS top_amount FROM persons s INNER JOIN (SELECT s.id AS person_id, MAX(o.amount) AS top_amount FROM persons s INNER JOIN orders o ON o.person_id = s.id GROUP BY s.id) latest ON latest.person_id = s.id AND s.salary > latest.top_amount ORDER BY 1"
     feature: "ON predicate comparing an outer alias against a derived table that re-uses that alias"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Three-way left-nested join whose right side is a derived table re-using an
   # alias from the left. Join(Join(a, b), c) is the common parse shape, and
@@ -828,28 +828,28 @@ tests:
     feature: "left-nested three-way join whose derived right side re-uses a left alias"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_derived_table_reuses_two_outer_aliases
     sql: "SELECT p.name AS name, d.budget AS budget, agg.n AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN (SELECT d.id AS dept_id, COUNT(p.id) AS n FROM departments d LEFT OUTER JOIN persons p ON p.dept_id = d.id GROUP BY d.id) agg ON agg.dept_id = d.id ORDER BY 1"
     feature: "derived table re-using both enclosing aliases"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_derived_table_reuses_outer_alias_two_levels_deep
     sql: "SELECT p.name AS name, outerq.top_amount AS top_amount FROM persons p INNER JOIN (SELECT inner1.person_id AS person_id, inner1.top_amount AS top_amount FROM (SELECT p.id AS person_id, MAX(o.amount) AS top_amount FROM persons p INNER JOIN orders o ON o.person_id = p.id GROUP BY p.id) inner1) outerq ON outerq.person_id = p.id ORDER BY 1"
     feature: "outer alias re-used two subquery levels down"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_derived_table_with_a_fresh_alias_control
     sql: "SELECT p.name AS name, latest.top_amount AS top_amount FROM persons p INNER JOIN (SELECT q.id AS person_id, MAX(o.amount) AS top_amount FROM persons q INNER JOIN orders o ON o.person_id = q.id GROUP BY q.id) latest ON latest.person_id = p.id ORDER BY 1"
     feature: "control: same shape with a non-colliding alias inside the derived table"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ------------------------------------------------------------------
   # The same five shapes with the aggregate removed -- THIS is the acceptance test
@@ -875,35 +875,35 @@ tests:
     feature: "alias re-use in a non-aggregating derived join side"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_alias_reuse_simple_derived_side_in_on_predicate
     sql: "SELECT s.name AS name, latest.amt AS amt FROM persons s INNER JOIN (SELECT s.id AS person_id, s.salary AS amt FROM persons s WHERE s.active = true) latest ON latest.person_id = s.id AND s.salary >= latest.amt ORDER BY 1"
     feature: "alias re-use, outer alias also read in the ON predicate"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_alias_reuse_simple_derived_side_left_nested
     sql: "SELECT p.name AS name, d.budget AS budget, latest.amt AS amt FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN (SELECT p.id AS person_id, p.salary AS amt FROM persons p WHERE p.active = true) latest ON latest.person_id = p.id ORDER BY 1"
     feature: "alias re-use in a non-aggregating derived side of a left-nested three-way join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   - id: crcs_g5_alias_reuse_simple_derived_side_two_aliases
-    sql: "SELECT p.name AS name, d.budget AS budget, both.amt AS amt FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN (SELECT p.id AS person_id, d.id AS dept_key, p.salary AS amt FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.active = true) both ON both.person_id = p.id ORDER BY 1"
+    sql: "SELECT p.name AS name, d.budget AS budget, combo.amt AS amt FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN (SELECT p.id AS person_id, d.id AS dept_key, p.salary AS amt FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.active = true) combo ON combo.person_id = p.id ORDER BY 1"
     feature: "alias re-use of both enclosing aliases, no aggregate"
     category: "column_resolution_corpus"
-    expected_tds_status: BUG
-    expected_rel_status: BUG
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g5_alias_reuse_simple_derived_side_two_levels_deep
     sql: "SELECT p.name AS name, outerq.amt AS amt FROM persons p INNER JOIN (SELECT inner1.person_id AS person_id, inner1.amt AS amt FROM (SELECT p.id AS person_id, p.salary AS amt FROM persons p WHERE p.active = true) inner1) outerq ON outerq.person_id = p.id ORDER BY 1"
     feature: "alias re-use two subquery levels down, no aggregate"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # THE CONTROL. Identical to crcs_g5_alias_reuse_simple_derived_side except the derived
   # table names nothing, so no alias can collide. If this fails, stop reading the block.
@@ -912,7 +912,7 @@ tests:
     feature: "control: non-aggregating derived side with no colliding alias"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # Both derived sides publish a column of the same name, so the duplicate-rename
   # pass has to disambiguate two identically-named columns that neither side
@@ -923,6 +923,43 @@ tests:
   # has a relation name: PostgreSQL rejects it ("subquery in FROM must have an
   # alias"), so it cannot arrive as real SQL and does not belong in a parity
   # suite. If that fallback needs cover it has to be a Pure-level test.
+  # ------------------------------------------------------------------
+  # Alias re-use, isolated on a base shape that is observed to pass
+  #
+  # Every earlier attempt at isolating alias re-use was confounded: the control
+  # failed too, so nothing could be attributed to the re-use. Both earlier blocks
+  # join a base table to a derived table, and that shape does not survive the
+  # Relation path on its own.
+  #
+  # This pair is built on crcs_g5_two_derived_sides_sharing_a_column_name instead
+  # -- two derived sides, no base table at the outer level -- which is the one
+  # derived-table join shape in this file observed to pass on both paths.
+  #
+  # The two differ in exactly one character: whether the right subquery names its
+  # source `l`, colliding with the outer left alias. The outer `l` exposes column
+  # `k` and the right side exposes `m`, so a binding that resolves `l.k` against
+  # the wrong side cannot silently return different rows -- it has to fail to find
+  # the column. That makes the outcome unambiguous rather than a row diff.
+  #
+  # If the control passes and the re-use case does not, alias re-use is the cause.
+  # If both pass, the row-map guard in processStandardJoin has nothing to fix and
+  # should be reverted.
+  # ------------------------------------------------------------------
+
+  - id: crcs_g5_alias_reuse_isolated_control
+    sql: "SELECT l.k AS left_k, r.m AS right_m FROM (SELECT id AS k FROM persons) l INNER JOIN (SELECT id AS m FROM departments) r ON l.k = r.m ORDER BY 1"
+    feature: "control: two derived join sides, no alias collision"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: crcs_g5_alias_reuse_isolated
+    sql: "SELECT l.k AS left_k, r.m AS right_m FROM (SELECT id AS k FROM persons) l INNER JOIN (SELECT l.id AS m FROM departments l) r ON l.k = r.m ORDER BY 1"
+    feature: "two derived join sides where the right subquery re-uses the outer left alias"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   - id: crcs_g5_two_derived_sides_sharing_a_column_name
     sql: "SELECT l.k AS left_k, r.k AS right_k FROM (SELECT id AS k FROM persons) l INNER JOIN (SELECT id AS k FROM departments) r ON l.k = r.k ORDER BY 1"
     feature: "join of two derived sides that publish the same column name"
@@ -979,14 +1016,14 @@ tests:
     feature: "derived table wrapping a join, columns read from outside"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g6_select_star_group_by_over_join
     sql: "SELECT x.dept_id AS dept_id, COUNT(*) AS n FROM (SELECT p.* FROM persons p INNER JOIN departments d ON p.dept_id = d.id) x GROUP BY x.dept_id ORDER BY 1"
     feature: "GROUP BY over a derived table built from SELECT alias.* on a join"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # A quoted, reserved-word-shaped column name carried through a UNION of
   # derived selects and then read from the outer query in lower case.
@@ -1002,7 +1039,7 @@ tests:
     feature: "quoted reserved-word alias through a UNION ALL, grouped from outside"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # COUNT(*) as both a group-adjacent select item and a sort key, alongside
   # EXTRACT group keys -- single table, no join, so it isolates the aggregate
@@ -1029,7 +1066,7 @@ tests:
     feature: "UNION ALL of aggregate branches over different joins"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g6_union_all_branches_with_correlated_filters
     sql: "SELECT b.name AS name FROM (SELECT p.name AS name FROM persons p, departments d WHERE p.dept_id = d.id AND p.salary = (SELECT MAX(p1.salary) FROM persons p1 WHERE p1.dept_id = p.dept_id) UNION ALL SELECT p.name AS name FROM persons p WHERE p.dept_id IS NULL) b ORDER BY 1"
@@ -1043,7 +1080,7 @@ tests:
     feature: "SELECT DISTINCT over a join whose right side is a DISTINCT derived table"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: FAIL
+    expected_rel_status: PASS
 
   # Both sides project a column of the same base name, so the duplicate-rename
   # pass has real work to do rather than being a formality.
@@ -1059,7 +1096,7 @@ tests:
     feature: "colliding base names with a window partitioned on the colliding column"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # A self join produces several rows per `a`, so the window keys must be tied
   # off on b.id as well -- ordering only on a's columns leaves the row numbers
@@ -1069,7 +1106,7 @@ tests:
     feature: "self join with an expression key in the window ORDER BY"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g6_self_join_with_null_ordered_window_key
     sql: "SELECT a.name AS name, b.id AS b_id, ROW_NUMBER() OVER (PARTITION BY a.dept_id ORDER BY a.salary DESC NULLS LAST, a.name, b.id) AS rn FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id ORDER BY 1, 2"
