@@ -2210,6 +2210,34 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testC
                  '#', $res->sort(~id->ascending())->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testConcatenateFilterInSubQuery<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let accounts = #TDS
+                                   accountId, accountName
+                                   1, Alice
+                                   2, Bob
+                                   3, Carol
+                                 #;
+                  $accounts->concatenate($accounts)
+                           ->filter(r | $r.accountId->meta::pure::functions::relation::in(#TDS
+                                                           eligibleId
+                                                           1
+                                                           2
+                                                         #->select(~eligibleId)));
+               };
+ 
+    let res = $f->eval($expr);
+ 
+    assertEquals('#TDS\n'+
+                 '   accountId,accountName\n'+
+                 '   1,Alice\n'+
+                 '   1,Alice\n'+
+                 '   2,Bob\n'+
+                 '   2,Bob\n'+
+                 '#', $res->sort(~accountId->ascending())->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
    let tds = #TDS
