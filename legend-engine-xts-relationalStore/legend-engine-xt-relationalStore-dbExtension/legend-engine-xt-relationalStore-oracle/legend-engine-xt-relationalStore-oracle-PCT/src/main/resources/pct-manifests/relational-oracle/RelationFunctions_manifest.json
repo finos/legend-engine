@@ -148,7 +148,7 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversionToMany_Function_1__Boolean_1_",
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",

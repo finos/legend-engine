@@ -76,7 +76,7 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversionToMany_Function_1__Boolean_1_",
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: CREATE TEMPORARY TABLE leSchema.tb"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
