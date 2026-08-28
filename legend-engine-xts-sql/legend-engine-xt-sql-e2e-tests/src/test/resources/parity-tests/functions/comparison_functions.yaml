@@ -375,6 +375,27 @@ tests:
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
+- id: between__timestamp__in_range
+  sql: SELECT id, ts BETWEEN TIMESTAMP '2020-01-01 00:00:00' AND TIMESTAMP '2024-12-31 23:59:59' AS result FROM dates WHERE id IN (1, 2, 6, 8) ORDER BY id
+  function: between
+  signature: "between(timestamp, timestamp, timestamp) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__date_and_timestamp__mixed_bounds
+  sql: SELECT id, d BETWEEN TIMESTAMP '2020-01-01 00:00:00' AND DATE '2024-12-31' AS result FROM dates WHERE id IN (1, 2, 6, 8) ORDER BY id
+  function: between
+  signature: "between(date, timestamp, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__timestamp_and_date__mixed_bounds
+  sql: SELECT id, ts BETWEEN DATE '2020-01-01' AND TIMESTAMP '2024-12-31 23:59:59' AS result FROM dates WHERE id IN (1, 2, 6, 8) ORDER BY id
+  function: between
+  signature: "between(timestamp, date, timestamp) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
 # ---------------------------------------------------------------------------
 # IS DISTINCT FROM / IS NOT DISTINCT FROM
 # ---------------------------------------------------------------------------
