@@ -106,6 +106,10 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-lsp-server</artifactId>
+        </dependency>
         <!-- PURE -->
 
         <dependency>
