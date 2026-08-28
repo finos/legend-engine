@@ -4103,7 +4103,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     [
       c({| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->from(dummyMapping, dummyRuntime())
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       }->meta::pure::router::preeval::preval(sqlExtensions()), true, false)
 
 
@@ -4124,7 +4124,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     $sql,
 
     {|
-      FlatInput.all()->project(x | $x.stringIn, 'String')->from(emptyMapping(), dummyRuntime())
+      FlatInput.all()->project(x | $x.stringIn, 'String')
     }->meta::pure::router::preeval::preval(sqlExtensions()), $tdsSources, true, false, true);
 
 
@@ -4148,7 +4148,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       c({|
         FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')->from(dummyMapping, dummyRuntime())
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict('Integer')
       }->meta::pure::router::preeval::preval(sqlExtensions()), true, false)
 
       //TODO enable
@@ -4201,15 +4201,51 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->restrict('Integer')
+        ->union(
+          FlatInput.all()
+            ->project(
+              [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
+              [ 'ID', 'Integer', 'String' ])
+            ->restrict('Integer')
+        )->toOne()
+      }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
+}
+
+//The from() tests above all resolve to a single mapping and runtime, so they exercise only the branch
+//where wrapping is skipped. These two cover the other side: that the single-execution-context decision
+//itself is right, and that from() is still emitted when the sources genuinely span two of each.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSingleExecutionContextDetection():Boolean[1]
+{
+  let single = rootContext(testSources(), sqlExtensions());
+  assert($single.singleExecutionContext, | 'testSources() share one mapping and one runtime, so this must be a single execution context');
+
+  let crossStore = rootContext([serviceToSource(Service1()), serviceToSource(Service2XStore())], sqlExtensions());
+  assert(!$crossStore.singleExecutionContext, | 'Service1 and Service2XStore use different mappings and runtimes, so this must not be a single execution context');
+
+  true;
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFromScopingCrossStore():Boolean[1]
+{
+  test(
+    'SELECT Integer FROM service."/service/service1" UNION SELECT Integer FROM service."/service/service2"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict('Integer')->from(dummyMapping, dummyRuntime())
         ->union(
           FlatInput.all()
             ->project(
               [ x | $x.idIn, x | $x.integerIn, x | $x.stringIn ],
               [ 'ID', 'Integer', 'String' ])
-            ->restrict('Integer')->from(dummyMapping, dummyRuntime())
+            ->restrict('Integer')->from(dummyMapping2, dummyRuntime2())
         )->toOne()
-      }->meta::pure::router::preeval::preval(sqlExtensions()), testSources(), true, false, true)
+      }->meta::pure::router::preeval::preval(sqlExtensions()),
+      [serviceToSource(Service1()), serviceToSource(Service2XStore())], true, false, true)
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedAllSupplied():Boolean[1]

@@ -309,8 +309,8 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
                                                                   ):meta::pure::executionPlan::ExecutionPlan[1]
 {
   //NOTE: we should remove this once issues with enum mappings in plan transformation are fixed.
-  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | emptyMapping());
-  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | ^meta::core::runtime::Runtime());
+  let mapping = getMappingUseEmpty($sources);
+  let runtime = getRuntime($sources, $extensions);
   let lambda = $context.lambda($context.scopeWithFrom->isTrue())->meta::pure::router::preeval::preval($extensions);
 
 //  println('Generated Pure Function:'+$lambda->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -323,26 +323,42 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
   trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $executionContext, $extensions), 'generating plan');
 }
 
+//A query's mapping and runtime are derived from its sources in four places: plan generation, the
+//relation-path result, from() wrapping, and the with-clause check. They must all deduplicate the same
+//way or they can disagree about whether x-store is in play, so the two deduplication rules are defined
+//once here and everything below is built on them.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::distinctMappings(sources: SQLSource[*]):Mapping[*]
+{
+  $sources.mapping->removeDuplicates()
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::distinctRuntimes(sources: SQLSource[*], extensions: meta::pure::extension::Extension[*]):Runtime[*]
+{
+  $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})
+}
+
 function meta::external::query::sql::transformation::queryToPure::getMapping(sources: SQLSource[*]):Mapping[0..1]
 {
-    if ($sources.mapping->isNotEmpty(),
-      | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(),
-      | [])
+  let mappings = $sources->distinctMappings();
+  if ($mappings->isNotEmpty(), | $mappings->toOneMany()->mergeMappings(), | []);
 }
 
 function meta::external::query::sql::transformation::queryToPure::getMappingUseEmpty(sources: SQLSource[*]):Mapping[1]
 {
-    if ($sources.mapping->isNotEmpty(),
-      | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(),
-      | emptyMapping())
+  let mapping = $sources->getMapping();
+  if ($mapping->isNotEmpty(), | $mapping->toOne(), | emptyMapping());
 }
 
+function meta::external::query::sql::transformation::queryToPure::getRuntimeIfAny(sources: SQLSource[*], extensions: meta::pure::extension::Extension[*]):Runtime[0..1]
+{
+  let runtimes = $sources->distinctRuntimes($extensions);
+  if ($runtimes->isNotEmpty(), | $runtimes->toOneMany()->mergeRuntimes(), | []);
+}
 
 function meta::external::query::sql::transformation::queryToPure::getRuntime(sources: SQLSource[*], extensions: meta::pure::extension::Extension[*]):Runtime[1]
 {
-    if ($sources.runtime->isNotEmpty(),
-      | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(),
-      | ^Runtime());
+  let runtime = $sources->getRuntimeIfAny($extensions);
+  if ($runtime->isNotEmpty(), | $runtime->toOne(), | ^Runtime());
 }
 
 function meta::external::query::sql::transformation::queryToPure::parameterConstantValue(value:ValueSpecification[1], many:Boolean[1]):Any[0..1]
@@ -451,10 +467,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   assert($context.withSupported, | 'with queries currently not supported');
 
-  let runtimes = $context.sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $context.extensions)});
-  let mapping = $context.sources.mapping->removeDuplicates();
-
-  assert(($runtimes->size() <=1) && ($mapping->size() <=1), 'With queries with multiple runtimes/mappings currently not supported');
+  assert($context.singleExecutionContext, 'With queries with multiple runtimes/mappings currently not supported');
 
   $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery(^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
 }
@@ -2256,8 +2269,8 @@ function meta::external::query::sql::transformation::queryToPure::requiresWrapWi
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithLambdaFrom(lambda:LambdaFunction<Any>[1], sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):LambdaFunction<Any>[1]
 {
-  let mapping = if ($sources.mapping->isNotEmpty(), | $sources.mapping->removeDuplicates()->toOneMany()->mergeMappings(), | []);
-  let runtime = if ($sources.runtime->isNotEmpty(), | $sources.runtime->removeDuplicates({t, t2 | meta::core::runtime::runtimeEquality($t, $t2, $extensions)})->toOneMany()->mergeRuntimes(), | []);
+  let mapping = getMapping($sources);
+  let runtime = getRuntimeIfAny($sources, $extensions);
 
 
   if ($mapping->isEmpty() && $runtime->isEmpty(),
@@ -2277,12 +2290,28 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
-//TODO we can be much smarter by understanding whether x-store is in play and not wrap if true.
+//from() scopes an expression to a mapping and a runtime, which only says anything when there is more
+//than one to choose between - that is, when x-store is in play. Whichever path the query takes, the
+//caller is already given a single merged mapping and runtime built from the same sources: getPlan
+//deduplicates and merges them before calling executionPlan, and getPlanResult returns them alongside
+//the lambda for the relation path. So when the sources reduce to one of each, from() tells the caller
+//nothing it does not already have.
+//
+//It is not free either. from()'s return type is a bare type parameter, so wrapping replaces the
+//expression's concrete Relation<(...)> with T unless that type is carried across by hand; anything
+//that later re-derives the schema from the expression then sees no columns.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasSingleExecutionContext(sources:SQLSource[*], extensions: meta::pure::extension::Extension[*]):Boolean[1]
+{
+  ($sources->distinctRuntimes($extensions)->size() <= 1) && ($sources->distinctMappings()->size() <= 1);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(context:SqlTransformContext[1]):SqlTransformContext[1]
 {
   let requiresFrom = requiresWrapWithFrom($context.expression->toOne());
 
-  if ($requiresFrom && $context.source->isNotEmpty(), | wrapWithFrom($context.expression->toOne(), $context.source->toOne(), $context), | $context);
+  if ($requiresFrom && $context.source->isNotEmpty() && !$context.singleExecutionContext,
+    | wrapWithFrom($context.expression->toOne(), $context.source->toOne(), $context),
+    | $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::wrapWithFrom(expression:ValueSpecification[1], source:SQLSource[1], context:SqlTransformContext[1]):SqlTransformContext[1]
@@ -4779,7 +4808,10 @@ function meta::external::query::sql::transformation::queryToPure::isRelation(f:F
 function meta::external::query::sql::transformation::queryToPure::context(id:Integer[1], root:Boolean[1], sources: SQLSource[*],
   extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], relation:Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], debug:DebugContext[1]):SqlTransformContext[1]
 {
-  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug, scopeVariables = ^Map<String, ValueSpecification>());
+  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions,
+                       singleExecutionContext = hasSingleExecutionContext($sources, $extensions),
+                       scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug,
+                       scopeVariables = ^Map<String, ValueSpecification>());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::positionalName(i:Integer[1]):String[1]
@@ -4809,6 +4841,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   positionals: VariableExpression[*];
   source: SQLSource[0..1];
   extensions: meta::pure::extension::Extension[*];
+  singleExecutionContext: Boolean[1];
   aliases:SQLColumnAlias[*];
   name: String[0..1];
   scopeWithFrom: Boolean[0..1];

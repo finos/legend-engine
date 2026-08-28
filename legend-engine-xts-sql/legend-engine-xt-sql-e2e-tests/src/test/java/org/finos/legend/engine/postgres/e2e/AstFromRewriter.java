@@ -113,21 +113,4 @@ public class AstFromRewriter extends SQLSerializer
 
         return tableName;
     }
-
-    /**
-     * Checks if the SQL contains any table references that would be rewritten.
-     */
-    public boolean hasTableReferences(String sql)
-    {
-        Matcher matcher = FROM_TABLE_PATTERN.matcher(sql);
-        while (matcher.find())
-        {
-            String tableName = matcher.group(2);
-            if (knownTables.contains(tableName.toLowerCase()))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
 }
