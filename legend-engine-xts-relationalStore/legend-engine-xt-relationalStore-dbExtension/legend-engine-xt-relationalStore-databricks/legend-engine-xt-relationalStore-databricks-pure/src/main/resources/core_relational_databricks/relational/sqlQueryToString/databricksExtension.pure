@@ -361,7 +361,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
                             && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).name == 'toVariantList'
                             && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).parameters->isEmpty(),
                           | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format=$func.name + '(cast(array() as ARRAY<STRING>))', transform={p:String[1] | []})),
-                          | $baseDispatch->eval($func, $sgc)
+                          | // parseJson()'s argument is normally a STRING column holding raw JSON text.
+                            // Databricks/Spark's parse_json strictly requires a STRING input
+                            // (DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE otherwise); a column declared
+                            // SEMISTRUCTURED in the Pure relational model is physically stored as native
+                            // VARIANT on Databricks (unlike other dialects, where it is just text), so
+                            // it is already the parsed value and must pass through unchanged rather than
+                            // being re-wrapped in parse_json.
+                            if($func.name == 'parseJson' && $func.parameters->size() == 1 && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
+                               | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s')),
+                               | $baseDispatch->eval($func, $sgc)
+                            )
                        )
                   )
              )
@@ -1277,12 +1287,31 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildMapLambdaForDatabricks(lambda:MapRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
-   'transform(%s, `%s` -> %s)'->format([
-      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
-      $lambda.parameters->at(0).name,
-      $lambda.body->processOperation($sgc)
-   ]);
+   let collection = $lambda.parameters->at(0).value;
+   // e.g. addresses->filter(...)->first().name: first()/last() reduce a semi-structured array to
+   // a single VARIANT element (array_first/array_last render as try_element_at(arr, 1)/(-1), not a
+   // collection), but the shared router still represents the trailing `.name` property access as a
+   // MapRelationalLambda, as if mapping over a collection. Feeding that scalar VARIANT straight into
+   // `transform(%s, ...)` asks Spark to run a HOF over a non-array value
+   // (DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE: "the first parameter requires the ARRAY type"). This
+   // MapRelationalLambda's output must stay an ARRAY like every other invocation (a downstream
+   // consumer, e.g. joinStrings' array_to_string template, casts it as one) - re-boxing the scalar
+   // into a fresh one-element array gives `transform` something array-shaped to iterate while still
+   // returning an array (0 elements if try_element_at returned NULL - array_join then correctly
+   // drops the resulting null element rather than rendering it).
+   if($collection->instanceOf(DynaFunction) && $collection->cast(@DynaFunction).name->in(['array_first', 'array_last']),
+      | 'transform(array(%s), `%s` -> %s)'->format([
+            $collection->processOperation($sgc),
+            $lambda.parameters->at(0).name,
+            $lambda.body->processOperation($sgc)
+        ]),
+      | // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
+        'transform(%s, `%s` -> %s)'->format([
+            lambdaCollectionExprForDatabricks($collection, $sgc),
+            $lambda.parameters->at(0).name,
+            $lambda.body->processOperation($sgc)
+        ])
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFilterLambdaForDatabricks(lambda:FilterRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
