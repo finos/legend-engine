@@ -1,10 +1,7 @@
 {
   "adapter" : "meta::relational::tests::pct::clickhouse::testAdapterForRelationalWithClickHouseExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_",
-    "expectedError" : "Assert failed"
-  }, {
-    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_",
+    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
