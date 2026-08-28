@@ -569,14 +569,6 @@ function meta::relational::functions::pureToSqlQuery::processVariantAt(f:Functio
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));
 }
 
-// Variant is a Class in the metamodel but a value in SQL, so a to-one Variant expression is a
-// scalar: a null check on it is a plain IS NULL predicate, not the existence check needed for a
-// to-many navigation (a variant array, or a navigation to a mapped class).
-function meta::relational::functions::pureToSqlQuery::isScalarVariantExpression(v: ValueSpecification[1]):Boolean[1]
-{
-  $v.genericType.rawType == meta::pure::metamodel::variant::Variant && $v.multiplicity->hasToOneUpperBound();
-}
-
 function meta::relational::functions::pureToSqlQuery::processMapGet(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
   let params = $f.parametersValues->evaluateAndDeactivate();
