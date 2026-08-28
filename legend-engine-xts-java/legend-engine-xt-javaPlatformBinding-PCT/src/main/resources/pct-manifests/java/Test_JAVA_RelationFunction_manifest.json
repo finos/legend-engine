@@ -1798,6 +1798,14 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
+      "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+      "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
+    },
+    {
       "test": "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
       "expectedError": "\"meta::pure::functions::relation::variant::flatten_T_MANY__ColSpec_1__Relation_1_ is not supported yet!\""
     },

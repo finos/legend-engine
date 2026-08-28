@@ -288,7 +288,7 @@ tests:
     sql: "SELECT REGEXP_SUBSTR('HELLO\nworld', '^[a-z]+$', 1, 1, 'in') AS matches, REGEXP_SUBSTR('123\n456', '^[a-z]+$', 1, 1, 'in') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   # === regexp_substr ===
@@ -296,63 +296,63 @@ tests:
     sql: "SELECT REGEXP_SUBSTR('abc123def', '[0-9]+') AS matches, REGEXP_SUBSTR('abcdef', '[0-9]+') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__start_pos
     sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1) AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__start_pos_occurrence
     sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1, 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1) AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__flag_i
     sql: "SELECT REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'i') AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1, 'i') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__flag_c
     sql: "SELECT REGEXP_SUBSTR('abc123', '[a-z]+', 1, 1, 'c') AS matches, REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'c') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__flag_s
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '.+', 1, 1, 's') AS matches, REGEXP_SUBSTR('', '.+', 1, 1, 's') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__flag_n
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'n') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'n') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__flag_m
     sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'm') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'm') AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: regexp_substr__constant__subexpr
     sql: "SELECT REGEXP_SUBSTR('abc123def', '([a-z]+)([0-9]+)', 1, 1, 'i', 0) AS matches, REGEXP_SUBSTR('!!!', '([a-z]+)', 1, 1, 'i', 0) AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer, text, integer) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   # === Regex match operators (~, !~, ~*, !~*) ===

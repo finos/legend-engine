@@ -81,7 +81,7 @@ public class TestCaseLoader
         public String signature;  // exact catalog signature this test covers
         public String feature;   // structural feature being tested (for structural parity)
         public String category;  // structural parity grouping (joins, window_frames, etc.)
-        public String expected_tds_status;  // expected status for TDS path: PASS, FAIL, ERROR, SKIP
-        public String expected_rel_status;  // expected status for Relation path: PASS, FAIL, ERROR, SKIP
+        public String expected_tds_status;  // expected status for TDS path: PASS, FAIL, ERROR, SKIP, BUG
+        public String expected_rel_status;  // expected status for Relation path: PASS, FAIL, ERROR, SKIP, BUG
     }
 }

@@ -80,7 +80,7 @@ tests:
     feature: "Derived table (subquery in FROM)"
     category: "subqueries"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Correlated subquery
   - id: subquery_correlated

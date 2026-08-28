@@ -48,7 +48,7 @@ tests:
     feature: "LEFT JOIN"
     category: "joins"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # RIGHT JOIN
   - id: join_right_basic
@@ -130,7 +130,7 @@ tests:
     feature: "Multi-table JOIN"
     category: "joins"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # JOIN with aggregation
   - id: join_with_agg
@@ -138,18 +138,18 @@ tests:
     feature: "JOIN + aggregation"
     category: "joins"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: join_with_agg_having
     sql: "SELECT d.name AS dept_name, COUNT(*) AS emp_count FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name HAVING COUNT(*) > 2 ORDER BY 1"
     feature: "JOIN + aggregation"
     category: "joins"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: join_with_agg_avg
     sql: "SELECT d.name AS dept_name, AVG(p.salary) AS avg_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY d.name ORDER BY 1"
     feature: "JOIN + aggregation"
     category: "joins"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

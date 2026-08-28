@@ -74,7 +74,7 @@ tests:
     feature: "IN subquery + JOIN"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Derived table with window
   - id: nested_derived_window

@@ -17,13 +17,8 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
       assertRelation($ctx.relation, 'unnest');
       assert($ctx.name->isNotEmpty(), | 'context name must be populated for unnest');
 
-      $fc.arguments->match([
-        a:ArrayLiteral[1] | assert($a.values->forAll(v | !$v->instanceOf(ArrayLiteral))),
-        e:meta::external::query::sql::metamodel::Expression[1] | 'unnest only currently supports simple array literals'
-      ]);
-
       let commonType = $args.genericType.rawType->bestCommonType();
-      let relationType = buildRelationType(newRelationColumn($ctx.name->toOne(), $commonType, ZeroOne));
+      let relationType = buildRelationType(newRelationColumn($ctx.aliasColumns->toOne(), $commonType, ZeroOne));
 
       sfe(flatten_T_MANY__ColSpec_1__Relation_1_, $relationType, [$args->at(0), iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $ctx.aliasColumns->toOne()))]);
     }),
@@ -144,7 +139,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       math('exp', exp_Number_1__Float_1_),
       math('floor', floor_Number_1__Integer_1_),
       math('ln', log_Number_1__Float_1_),
-      math('log', Float, {args, fc, expCtx, ctx | 
+      math('log', Float, {args, fc, expCtx, ctx |
         unsupported($args->size() <= 2, | 'invalid arguments to log function');
         unsupported($args->size() == 1 || $args->at(0)->instanceOf(InstanceValue) && $args->at(0)->cast(@InstanceValue).values == 10, | 'only base 10 supported for log function');
 
@@ -282,10 +277,12 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           | parsePostgresRegexpFlags($args->at(4)),
           | []);
 
+        let type = ^GenericType(rawType = String);
+
         if ($regexpParams->isEmpty(),
-          | nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__String_MANY_, [$args->at(0), $args->at(1), iv(false)]),
-          | nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_,
-                      [$args->at(0), $args->at(1), iv(false), iv(0), iv($regexpParams)]));
+          | createToOne(nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__String_MANY_, [$args->at(0), $args->at(1), iv(false)])),
+          | createToOne(nullOrSfe(regexpExtract_String_1__String_1__Boolean_1__Integer_1__RegexpParameter_$1_MANY$__String_MANY_,
+                      [$args->at(0), $args->at(1), iv(false), iv(0), iv($regexpParams)])));
       }),
       string('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       string('replace', replace_String_1__String_1__String_1__String_1_),

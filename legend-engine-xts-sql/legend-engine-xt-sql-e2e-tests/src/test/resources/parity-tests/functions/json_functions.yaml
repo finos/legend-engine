@@ -68,30 +68,30 @@ tests:
   sql: SELECT json_val #> '{a,b,c}' AS result FROM json_data WHERE id = 2
   function: "#>"
   signature: json #> text[] → json
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 - id: jsonb_hash_arrow_path
   sql: SELECT jsonb_val #> '{a,b,c}' AS result FROM json_data WHERE id = 2
   function: "#>"
   signature: jsonb #> text[] → jsonb
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 # #>> operator (get JSON object at specified path as text)
 - id: json_hash_arrow_text_path
   sql: SELECT json_val #>> '{a,b,c}' AS result FROM json_data WHERE id = 2
   function: "#>>"
   signature: json #>> text[] → text
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 - id: jsonb_hash_arrow_text_path
   sql: SELECT jsonb_val #>> '{a,b,c}' AS result FROM json_data WHERE id = 2
   function: "#>>"
   signature: jsonb #>> text[] → text
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 # @> operator (does left JSON contain right?)
 - id: jsonb_contains
@@ -168,8 +168,8 @@ tests:
   sql: SELECT jsonb_val #- '{a,b}' AS result FROM json_data WHERE id = 2
   function: "#-"
   signature: jsonb #- text[] → jsonb
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 # @? operator (does JSON path return any item?)
 - id: jsonb_path_exists_op
@@ -235,8 +235,8 @@ tests:
   sql: SELECT TO_JSON(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
   function: to_json
   signature: to_json(anyelement) → json
-  expected_tds_status: ERROR
-  expected_rel_status: ERROR
+  expected_tds_status: BUG
+  expected_rel_status: BUG
 
 - id: to_jsonb__from_column
   sql: SELECT TO_JSONB(val) AS result FROM strings WHERE val IS NOT NULL ORDER BY 1

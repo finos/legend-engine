@@ -220,6 +220,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
   }, {
+    "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError": "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
+  }, {
+    "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError": "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
   }, {
