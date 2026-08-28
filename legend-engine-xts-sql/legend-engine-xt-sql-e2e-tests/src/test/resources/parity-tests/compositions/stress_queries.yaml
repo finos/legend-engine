@@ -37,7 +37,7 @@ tests:
     feature: "Multi-aggregate + COALESCE + JOINs"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Percentile simulation via ROW_NUMBER
   - id: stress_percentile_sim
@@ -68,8 +68,8 @@ tests:
     sql: "SELECT name, salary, CASE WHEN RANK() OVER (ORDER BY salary DESC) <= 3 THEN 'Top 3' WHEN RANK() OVER (ORDER BY salary DESC) <= 6 THEN 'Mid' ELSE 'Bottom' END AS tier FROM persons WHERE salary IS NOT NULL ORDER BY 1"
     feature: "Nested CASE with window function"
     category: "compositions"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # COALESCE chain with window
   - id: stress_coalesce_window

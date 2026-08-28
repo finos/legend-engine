@@ -69,15 +69,22 @@ public class Test_Relational_Databricks_Semistructured
                 .withKeyValue(
                         "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
                         "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'");
+                // Note: testSemiStructuredArrayFilterAtIndex, testSemiStructuredArrayFilterFirstJoinStrings,
+                // and testJoinOnSemiStructuredPropertyWithQPFilter were quarantined here on master (with the
+                // pre-fix error text) but were fixed and confirmed genuinely passing on Databricks this
+                // session (databricksExtension.pure: try_element_at rewrite, buildMapLambdaForDatabricks
+                // re-boxing, and the isSemiStructuredOperandForDatabricks parseJson dispatch, respectively)
+                // -- those fixes merged in unconflicted, so their manifest entries are correctly omitted here.
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
         {
+            Object result;
             try
             {
-                return PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
+                result = PureTestBuilderCompiled.executeFn(test, null, Maps.mutable.empty(), executionSupport, params);
             }
             // Throwable rather than Exception: a wrong-result test fails with an AssertionError.
             // Anything not named in pathToReason is still rethrown untouched.
@@ -94,6 +101,14 @@ public class Test_Relational_Databricks_Semistructured
                 }
                 throw e;
             }
+            // Reached only when the test passed. An entry that no longer reproduces is worse
+            // than no entry: it silently suppresses whatever regresses into it next. Raised
+            // outside the try because the catch above takes Throwable and would swallow it.
+            if (failures.containsKey(test))
+            {
+                throw new AssertionError("Expected this test to fail with: " + failures.get(test) + ", but it passed. Remove the entry.");
+            }
+            return result;
         };
 
         TestConnectionIntegration databricks = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.Databricks).getFirst();

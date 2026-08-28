@@ -98,8 +98,113 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  - id: concat_op__txt_txt__from_table
+    sql: SELECT val || '-' || nullable_val AS result FROM strings ORDER BY 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__int_bool
+    sql: SELECT 'abc' || 1 || true || false AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__int
+    sql: SELECT name || '-' || age AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__decimal
+    sql: SELECT 'salary=' || salary AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__date
+    sql: SELECT 'hired:' || hire_date AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__boolean
+    sql: SELECT 'active=' || active AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__null_handling
+    sql: SELECT 'val=' || NULL || '-' || 42 AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: FAIL
+    expected_rel_status: PASS
+
+  - id: concat_op__mixed_types__all_types
+    sql: SELECT name || '|' || age || '|' || salary || '|' || hire_date || '|' || active AS result FROM persons WHERE id = 1
+    function: "||"
+    signature: "text || text → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
   - id: concat__variadic__from_table
     sql: SELECT CONCAT(val, '-', nullable_val) AS result FROM strings ORDER BY 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__int_bool
+    sql: SELECT CONCAT('abc', 1, true, false) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__int
+    sql: SELECT CONCAT(name, '-', age) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__decimal
+    sql: SELECT CONCAT('salary=', salary) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__date
+    sql: SELECT CONCAT('hired:', hire_date) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__boolean
+    sql: SELECT CONCAT('active=', active) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__null_handling
+    sql: SELECT CONCAT('val=', NULL, '-', 42) AS result FROM persons WHERE id = 1
+    function: concat
+    signature: concat(VARIADIC "any") → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: concat__mixed_types__all_types
+    sql: SELECT CONCAT(name, '|', age, '|', salary, '|', hire_date, '|', active) AS result FROM persons WHERE id = 1
     function: concat
     signature: concat(VARIADIC "any") → text
     expected_tds_status: PASS
@@ -508,8 +613,208 @@ tests:
     sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X', 'gi') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, text) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_g
+    sql: SELECT REGEXP_REPLACE(val, '[aeiou]', 'X', 'g') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_i
+    sql: SELECT REGEXP_REPLACE(val, 'HELLO', 'world', 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_m
+    sql: SELECT REGEXP_REPLACE(val, '^', 'X', 'm') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_n
+    sql: SELECT REGEXP_REPLACE(val, '^[a-z]', 'X', 'n') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_s
+    sql: SELECT REGEXP_REPLACE(val, '.', 'X', 's') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__txt_txt_txt_txt__flag_c
+    sql: SELECT REGEXP_REPLACE(val, 'HELLO', 'world', 'c') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_replace
+    signature: regexp_replace(text, text, text, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_i
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, 'HELLO', 'i') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_c
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, 'hello', 'c') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_m
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, '^hello', 'm') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_n
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, '^hello', 'n') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_s
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, 'hello.world', 's') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__txt_txt_txt__flag_im
+    sql: SELECT val AS result FROM strings WHERE REGEXP_LIKE(val, '^HELLO', 'im') ORDER BY 1
+    function: regexp_like
+    signature: regexp_like(text, text, text) → boolean
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__txt_txt_int_txt__flag_i
+    sql: SELECT REGEXP_COUNT(val, 'HELLO', 1, 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_count
+    signature: regexp_count(text, text, integer, text) → integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__txt_txt_int_txt__flag_c
+    sql: SELECT REGEXP_COUNT(val, 'hello', 1, 'c') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_count
+    signature: regexp_count(text, text, integer, text) → integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__txt_txt_int_txt__flag_m
+    sql: SELECT REGEXP_COUNT(val, '^[a-z]', 1, 'm') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_count
+    signature: regexp_count(text, text, integer, text) → integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__txt_txt_int_txt__flag_n
+    sql: SELECT REGEXP_COUNT(val, '^[a-z]', 1, 'n') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_count
+    signature: regexp_count(text, text, integer, text) → integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__txt_txt_int_txt__flag_s
+    sql: SELECT REGEXP_COUNT(val, '.', 1, 's') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_count
+    signature: regexp_count(text, text, integer, text) → integer
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_substr__txt_txt_int_int_txt__flag_i
+    sql: SELECT REGEXP_SUBSTR(val, 'HELLO', 1, 1, 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_substr__txt_txt_int_int_txt__flag_c
+    sql: SELECT REGEXP_SUBSTR(val, 'hello', 1, 1, 'c') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_substr__txt_txt_int_int_txt__flag_m
+    sql: SELECT REGEXP_SUBSTR(val, '^[a-z]+', 1, 1, 'm') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_substr__txt_txt_int_int_txt__flag_n
+    sql: SELECT REGEXP_SUBSTR(val, '^[a-z]+', 1, 1, 'n') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_substr__txt_txt_int_int_txt__flag_s
+    sql: SELECT REGEXP_SUBSTR(val, 'hello.world', 1, 1, 's') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer, text) → text
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ---------------------------------------------------------------------------
+  # Divergence tests: fromPure function_processors.pure silently discards the
+  # `start` and `N` (occurrence) positional args of REGEXP_SUBSTR, and the
+  # `start` arg of REGEXP_COUNT. These tests document the gap by picking a row
+  # whose `val` has multiple non-overlapping matches ("the quick brown fox"
+  # has four [a-z]+ tokens, sixteen [a-z] characters). Postgres honours the
+  # positional args and returns the correct match/count; Legend returns the
+  # first match / total count and the results diverge → FAIL. When the Pure
+  # processor is fixed to honour start/N, `FIX DETECTED` will fire and the
+  # expected_*_status here should be flipped to PASS.
+  # ---------------------------------------------------------------------------
+  - id: regexp_substr__nth_occurrence__ignored_by_legend
+    sql: SELECT REGEXP_SUBSTR(val, '[a-z]+', 1, 2) AS result FROM strings WHERE id = 10
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer) → text
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: regexp_substr__nth_occurrence_last__ignored_by_legend
+    sql: SELECT REGEXP_SUBSTR(val, '[a-z]+', 1, 4) AS result FROM strings WHERE id = 10
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer) → text
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: regexp_substr__start_position__ignored_by_legend
+    sql: SELECT REGEXP_SUBSTR(val, '[a-z]+', 5) AS result FROM strings WHERE id = 10
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer) → text
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: regexp_substr__start_and_nth__ignored_by_legend
+    sql: SELECT REGEXP_SUBSTR(val, '[a-z]+', 5, 2) AS result FROM strings WHERE id = 10
+    function: regexp_substr
+    signature: regexp_substr(text, text, integer, integer) → text
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: regexp_count__start_position__ignored_by_legend
+    sql: SELECT REGEXP_COUNT(val, '[a-z]', 5) AS result FROM strings WHERE id = 10
+    function: regexp_count
+    signature: regexp_count(text, text, integer) → integer
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
 
   - id: regexp_split_to_array__txt_txt__from_table
     sql: SELECT REGEXP_SPLIT_TO_ARRAY(val, '\s+') AS result FROM strings WHERE val IS NOT NULL AND val <> '' ORDER BY 1
@@ -1019,15 +1324,15 @@ tests:
     sql: SELECT REGEXP_REPLACE(name, '([aeiou])', '*', 1) AS result FROM persons WHERE id = 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, integer) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_replace_text_text_text_integer_int_cov
-    sql: SELECT REGEXP_REPLACE(name, '([aeiou])', '*', 1) AS result FROM persons WHERE id = 1
+    sql: SELECT REGEXP_REPLACE(name, '([aeiou])', '*', 1, 1) AS result FROM persons WHERE id = 1
     function: regexp_replace
     signature: regexp_replace(text, text, text, integer, integer) → text
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: regexp_split_to_table_text_text_cov
     sql: SELECT REGEXP_SPLIT_TO_TABLE(NULL) AS result FROM persons WHERE id = 1

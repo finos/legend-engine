@@ -63,6 +63,11 @@ public abstract class RelationalDatabaseCommands
         throw new RuntimeException("Create Temp not implemented for " + this.getClass().getSimpleName());
     }
 
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        throw new RuntimeException("Insert into semi structured column in temp table not implemented for " + this.getClass().getSimpleName());
+    }
+
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)
 //    {
 //        buildTempTableFromResult(config, connection, result, tableName, this.getDefaultIngestionMethod());

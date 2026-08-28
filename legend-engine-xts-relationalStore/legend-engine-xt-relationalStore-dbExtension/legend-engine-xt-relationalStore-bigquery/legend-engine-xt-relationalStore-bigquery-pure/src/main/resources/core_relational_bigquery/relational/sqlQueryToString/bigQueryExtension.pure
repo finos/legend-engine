@@ -99,7 +99,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='CURRENT_DATE()')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
+    // isoweek, not week: BigQuery's week counts from Sunday and numbers the days before the year's
+    // first Sunday as week 0, where weekOfYear is ISO 8601 everywhere else it is pushed down.
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(isoweek from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateBigQuery()}))
   ];

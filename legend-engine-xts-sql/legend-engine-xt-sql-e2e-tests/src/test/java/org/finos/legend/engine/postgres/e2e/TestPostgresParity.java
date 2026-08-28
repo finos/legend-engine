@@ -110,10 +110,12 @@ public class TestPostgresParity
             "parity-tests/functions/math_functions.yaml",
             "parity-tests/functions/string_functions.yaml",
             "parity-tests/functions/binary_functions.yaml",
+            "parity-tests/functions/comparison_functions.yaml",
             "parity-tests/functions/pgcrypto_functions.yaml",
             "parity-tests/functions/pattern_matching.yaml",
             "parity-tests/functions/formatting_functions.yaml",
             "parity-tests/functions/datetime_functions.yaml",
+            "parity-tests/functions/date_literals.yaml",
             "parity-tests/functions/conditional_functions.yaml",
             "parity-tests/functions/json_functions.yaml",
             "parity-tests/functions/array_functions.yaml",
@@ -142,6 +144,8 @@ public class TestPostgresParity
             "parity-tests/structural/multiple_schemas.yaml",
             "parity-tests/structural/json_operators.yaml",
             "parity-tests/structural/interval_arithmetic.yaml",
+            "parity-tests/structural/column_resolution_across_renames.yaml",
+            "parity-tests/structural/column_resolution_corpus_shapes.yaml",
             "parity-tests/window_frames/frame_types.yaml",
             "parity-tests/window_frames/partition_ordering.yaml",
             "parity-tests/window_frames/frame_exclusion.yaml",
@@ -330,15 +334,19 @@ public class TestPostgresParity
             return;
         }
         ResultMatrix expected;
+        String postgresBugError = null;
         try
         {
             expected = directRunner.execute(tc.sql);
         }
         catch (Exception e)
         {
-            report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, null, e.getMessage(), null));
-            statusUpdater.recordResult(tc.id, path, "BUG");
-            return;
+            // Reference SQL fails on Postgres. We do NOT short-circuit here: we still run the
+            // Legend path and require it to also error. Legend accepting SQL that Postgres
+            // rejects means either the fixture is stale or the Legend parser/planner is
+            // over-permissive — both worth surfacing.
+            postgresBugError = e.getMessage();
+            expected = null;
         }
         String rewrittenSql;
         try
@@ -352,11 +360,19 @@ public class TestPostgresParity
             {
                 String prefix = "TDS".equals(path) ? "tds" : "rel";
                 AstFromRewriter rewriter = new AstFromRewriter(prefix, knownTables);
-                rewrittenSql = rewriter.hasTableReferences(tc.sql) ? rewriter.rewrite(tc.sql) : tc.sql;
+                rewrittenSql = rewriter.rewrite(tc.sql);
             }
         }
         catch (Exception e)
         {
+            if (postgresBugError != null)
+            {
+                String errorMsg = "Postgres: " + postgresBugError + " | Legend rewrite: " + e.getMessage();
+                report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, null, errorMsg, null));
+                statusUpdater.recordResult(tc.id, path, "BUG");
+                assertNoRegression(tc, path, "BUG", errorMsg);
+                return;
+            }
             String errorMsg = "Rewrite failed: " + e.getMessage();
             report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, null, errorMsg, null));
             statusUpdater.recordResult(tc.id, path, "ERROR");
@@ -370,10 +386,34 @@ public class TestPostgresParity
         }
         catch (Exception e)
         {
+            if (postgresBugError != null)
+            {
+                String errorMsg = "Postgres: " + postgresBugError + " | Legend: " + e.getMessage();
+                report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, rewrittenSql, errorMsg, null));
+                statusUpdater.recordResult(tc.id, path, "BUG");
+                assertNoRegression(tc, path, "BUG", errorMsg);
+                return;
+            }
             String errorMsg = e.getMessage();
             report.record(new ParityReport.TestResult(tc.id, category, path, "ERROR", tc.sql, rewrittenSql, errorMsg, null));
             statusUpdater.recordResult(tc.id, path, "ERROR");
             assertNoRegression(tc, path, "ERROR", errorMsg);
+            return;
+        }
+        if (postgresBugError != null)
+        {
+            // Legend executed a query that Postgres rejected. There is no reliable ground truth
+            // to diff against. We record BUG, warn loudly, and route through assertNoRegression
+            // so that a yaml entry of `expected_*_status: BUG` acts as an explicit acknowledgement
+            // ("known asymmetric bug, don't break the build"). Any other expected status still
+            // fails via the standard regression / status-mismatch paths, and a future run where
+            // Postgres accepts the SQL will trip FIX DETECTED and force the yaml back to PASS.
+            String errorMsg = "Postgres rejected reference SQL but Legend executed it successfully. "
+                    + "Fix the reference SQL or the Legend parser/planner. Postgres error: " + postgresBugError;
+            LOGGER.warn("POSTGRES_BUG_LEGEND_OK: {}|{} — {}", tc.id, path, errorMsg);
+            report.record(new ParityReport.TestResult(tc.id, category, path, "BUG", tc.sql, rewrittenSql, errorMsg, null));
+            statusUpdater.recordResult(tc.id, path, "BUG");
+            assertNoRegression(tc, path, "BUG", errorMsg);
             return;
         }
         boolean hasOrderBy = tc.sql.toUpperCase().contains("ORDER BY");

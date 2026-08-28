@@ -1,0 +1,53 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: relational-semistructured-binding
+title: "Relational Store — JSON Document Typed as a Model"
+description: |
+  A JSON document typed as an ordinary class graph through an ExternalFormat binding,
+  so the modeller works with classes and properties and never with a document-shaped
+  API. A single mapping line binds the column; every property below it — nested
+  objects, their scalars — is resolved during planning without being mapped.
+
+  Queries navigate four levels of typed properties. One document omits an optional
+  branch, so a [0..1] property must return no value rather than fail. Navigation is
+  pushed down to the database: the binding contributes a type, not a deserialisation
+  step.
+
+modelSources:
+  model:
+    root: relational-semistructured-binding
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+
+features:
+  - execution:data-element
+  - execution:external-format-binding
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-binding
+  - store:relational-semistructured-navigation
+stores:
+  - relational
+# Distinct non-scaffolding domains: execution, store = 2 -> basic.
+complexity: basic
+tags:
+  - semi-structured
+  - binding
+  - json

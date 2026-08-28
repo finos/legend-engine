@@ -174,6 +174,34 @@ public class TestRelationNotUsingDatabaseAccessor extends TestCompilationFromGra
     }
 
     @Test
+    public void testInAcrossPrecisePrimitivesOfDifferentWidth()
+    {
+        Pair<PureModelContextData, PureModel> data = test(
+                "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   'ab'->cast(@meta::pure::precisePrimitives::Varchar(32))->in(1->cast(@meta::pure::metamodel::relation::Relation<(c:meta::pure::precisePrimitives::Varchar(64))>))\n" +
+                        "}"
+        );
+
+        SimpleFunctionExpression in = (SimpleFunctionExpression) data.getTwo().getConcreteFunctionDefinition_safe("test::f__Any_MANY_")._expressionSequence().getOnly();
+        Assert.assertEquals("in_U_$0_1$__Relation_1__Boolean_1_", in._func()._name());
+        Assert.assertEquals("Varchar", GenericType.print(in._resolvedTypeParameters().getFirst(), data.getTwo().getExecutionSupport().getProcessorSupport()));
+    }
+
+    @Test
+    public void testInAcrossUnrelatedPrimitivesStillFails()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   1->in(1->cast(@meta::pure::metamodel::relation::Relation<(c:meta::pure::precisePrimitives::Varchar(64))>))\n" +
+                        "}", "COMPILATION error at [4:13-16]: in(..., Relation) expects the value and the relation column to be of the same type, got Integer and (c:Varchar(64))"
+        );
+    }
+
+    @Test
     public void testMerge()
     {
         PureModel pureModel = test(

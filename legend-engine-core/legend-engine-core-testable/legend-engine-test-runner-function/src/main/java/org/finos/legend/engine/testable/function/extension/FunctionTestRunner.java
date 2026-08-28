@@ -24,6 +24,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionSecondPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
@@ -336,6 +337,7 @@ public class FunctionTestRunner implements TestRunner
                     Pair<Connection, List<Closeable>> closeableMockedConnections = buildTestConnection(connection, storeTestDataList);
                     Connection mockedConnection = closeableMockedConnections.getOne();
                     Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(this.context.getConnectionVisitor());
+                    mockedConnection.accept(new ConnectionSecondPassBuilder(this.context.getPureModel().getContext(), mockedCompileConnection));
                     connectionStores.forEach(connectionStore ->
                     {
                         Root_meta_core_runtime_Connection realConnection = connectionStore._connection();

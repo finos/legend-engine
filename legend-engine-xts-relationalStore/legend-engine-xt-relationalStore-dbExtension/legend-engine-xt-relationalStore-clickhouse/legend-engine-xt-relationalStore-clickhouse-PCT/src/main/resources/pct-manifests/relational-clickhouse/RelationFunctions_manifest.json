@@ -220,6 +220,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
   }, {
+    "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError": "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
+  }, {
+    "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError": "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: ClickHouse\""
   }, {
@@ -273,6 +279,30 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
     "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_ForcingSubSelect_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_MultipleSortColumns_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_RowFunction_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated_Function_1__Boolean_1_",
+    "expectedError" : "Code: 62. DB::Exception: Syntax error"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Unordered_Function_1__Boolean_1_",
+    "expectedError" : "is not under aggregate function and not in GROUP BY keys"
   }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   10,0,J,null\\n   8,1,H,null\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,null\\n   1,2,A,E\\n   7,3,G,null\\n   3,3,C,G\\n   4,4,D,null\\n   9,5,I,null\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,J\\n   8,1,H,H\\n   6,1,F,H\\n   2,1,B,F\\n   5,2,E,E\\n   1,2,A,E\\n   7,3,G,G\\n   3,3,C,G\\n   4,4,D,D\\n   9,5,I,I\\n#'"

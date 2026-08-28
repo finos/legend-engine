@@ -1700,4 +1700,347 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  ];\n" +
                 "}\n", "COMPILATION error at [17:1-29:1]: Data space template executable's executionContextKey, missing, is not valid. Please specify one from []");
     }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesTDS()
+    {
+        test("Class model::Firm\n" +
+                "{\n" +
+                "  id: Integer[1];\n" +
+                "  name: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name']);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Id, Name\n" +
+                "          1 , Alice\n" +
+                "          2 , Bob;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceInfoProfileStereotypes()
+    {
+        String mappingAndRuntime = "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n";
+
+        // Verified (existing, sanity check)
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+
+        // InDevelopment
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.InDevelopment>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+
+
+        // External
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.External>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceInfoProfileTags()
+    {
+        String mappingAndRuntime = "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n";
+
+        // deprecationNotice (existing, sanity check)
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.deprecationNotice = 'Please use model::newDataSpace instead'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+
+        // relatedDataSpaces
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::RatesDataSpace, model::FXDataSpace'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+
+        // topics
+        test(mappingAndRuntime +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.topics = 'Securities, Equities, Positions'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceInfoProfileCombined()
+    {
+        // All new stereotypes and tags combined on a single DataSpace
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###DataSpace\n" +
+                "DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.Verified>>" +
+                " {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.topics = 'Securities, Equities'," +
+                " meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::OtherDataSpace'," +
+                " meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.deprecationNotice = 'Use model::NewDataSpace'}" +
+                " model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'Securities Data Space';\n" +
+                "  description: 'A certified data space covering securities and equities.';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceInfoProfileInvalidStereotype()
+    {
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###DataSpace\n" +
+                "DataSpace <<meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.NonExistent>> model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [16:71-81]: Can't find stereotype 'NonExistent' in profile 'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo'");
+    }
+
+    @Test
+    public void testDataSpaceInfoProfileInvalidTag()
+    {
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.nonExistentTag = 'value'} model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [16:70-83]: Can't find tag 'nonExistentTag' in profile 'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo'");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesRelation()
+    {
+        test("Class model::Firm\n" +
+                "{\n" +
+                "  cases: Float[1];\n" +
+                "  fips: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 2;\n" +
+                "      title: 'Template 2';\n" +
+                "      query: |model::Firm.all()->project(~[Cases:x|$x.cases, Fips:x|$x.fips]);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Cases, Fips\n" +
+                "          10   , A\n" +
+                "          25   , BC;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

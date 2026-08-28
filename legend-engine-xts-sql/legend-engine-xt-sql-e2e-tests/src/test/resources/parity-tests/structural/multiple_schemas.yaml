@@ -4,15 +4,15 @@ tests:
     sql: "SELECT name FROM public.persons ORDER BY 1"
     feature: "schema-qualified table"
     category: "multiple_schemas"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: schema_qualified_select_star
     sql: "SELECT * FROM public.departments ORDER BY id"
     feature: "schema-qualified SELECT *"
     category: "multiple_schemas"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Schema-qualified in JOIN
   - id: schema_qualified_join
@@ -28,7 +28,7 @@ tests:
     feature: "schema-qualified subquery"
     category: "multiple_schemas"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Default schema resolution (unqualified should resolve same as public-qualified)
   - id: schema_default_resolution
@@ -36,7 +36,7 @@ tests:
     feature: "default schema resolution"
     category: "multiple_schemas"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # information_schema access
   - id: schema_information_tables

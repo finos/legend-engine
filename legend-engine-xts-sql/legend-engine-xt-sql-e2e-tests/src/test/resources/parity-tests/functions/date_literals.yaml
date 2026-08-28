@@ -1,0 +1,479 @@
+tests:
+  # ===== ISO 8601 / SQL Standard Formats (Table 8.10) =====
+
+  # ISO 8601 date only (recommended)
+  - id: date_literal__iso_date
+    sql: "SELECT DATE '1999-01-08' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY-MM-DD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ISO with time (space separator)
+  - id: date_literal__iso_datetime_space
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'YYYY-MM-DD HH:MI:SS'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ISO with T separator
+  - id: date_literal__iso_datetime_t
+    sql: "SELECT TIMESTAMP '1999-01-08T04:05:06' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'YYYY-MM-DDTHH:MI:SS'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ISO with milliseconds
+  - id: date_literal__iso_datetime_milliseconds
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.789' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'YYYY-MM-DD HH:MI:SS.MS'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Month Name Variants (Table 8.11) =====
+
+  # Month name full with comma
+  - id: date_literal__month_name_full
+    sql: "SELECT DATE 'January 8, 1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Month DD, YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Abbreviated month name with comma
+  - id: date_literal__month_name_abbrev
+    sql: "SELECT DATE 'Jan 8, 1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Mon DD, YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Day month year (day first)
+  - id: date_literal__day_month_year
+    sql: "SELECT DATE '8 January 1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'DD Month YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Month name with timestamp
+  - id: date_literal__month_name_timestamp
+    sql: "SELECT TIMESTAMP 'January 8, 1999 04:05:06' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'Month DD, YYYY HH:MI:SS'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== MDY format variants =====
+
+  # M/D/Y (US style)
+  - id: date_literal__mdy_us_style
+    sql: "SELECT DATE '1/8/1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'M/D/YYYY' (MDY)"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # M/D/Y with timestamp
+  - id: date_literal__mdy_timestamp
+    sql: "SELECT TIMESTAMP '1/8/1999 04:05:06' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'M/D/YYYY HH:MI:SS'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== DMY format variants =====
+
+  # D.M.Y (German/European style with dots)
+  - id: date_literal__dmy_dots
+    sql: "SELECT DATE '8.1.1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'D.M.YYYY' (DMY)"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== Mixed formats with month abbreviation =====
+
+  # YYYY-Mon-DD
+  - id: date_literal__year_mon_day
+    sql: "SELECT DATE '1999-Jan-08' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY-Mon-DD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # DD-Mon-YYYY
+  - id: date_literal__day_mon_year
+    sql: "SELECT DATE '08-Jan-1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'DD-Mon-YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Mon-DD-YYYY
+  - id: date_literal__mon_day_year
+    sql: "SELECT DATE 'Jan-08-1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Mon-DD-YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Postgres-style =====
+
+  # Day-of-week Mon DD YYYY
+  - id: date_literal__postgres_style
+    sql: "SELECT DATE 'Wed Dec 17 1997' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Dy Mon DD YYYY'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Compact formats =====
+
+  # YYYYMMDD (no separators, 8 digits)
+  - id: date_literal__compact_no_separators
+    sql: "SELECT DATE '19990108' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYYMMDD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # YYMMDD (no separators, 6 digits)
+  - id: date_literal__compact_6_digits
+    sql: "SELECT DATE '990108' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYMMDD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Julian day =====
+
+  # Julian day number
+  - id: date_literal__julian_day
+    sql: "SELECT DATE 'J2451187' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Jnnnnnnn'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Year + day-of-year =====
+
+  # YYYY.DDD format
+  - id: date_literal__year_day_of_year
+    sql: "SELECT DATE '1999.008' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY.DDD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== BC/AD =====
+
+  # BC date
+  - id: date_literal__bc_date
+    sql: "SELECT DATE 'January 8, 99 BC' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Month DD, YY BC'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # AD date
+  - id: date_literal__ad_date
+    sql: "SELECT DATE 'January 8, 1999 AD' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'Month DD, YYYY AD'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Special Date Values =====
+
+  # epoch
+  - id: date_literal__epoch
+    sql: "SELECT TIMESTAMP 'epoch' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'epoch'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # infinity (should error)
+  - id: date_literal__infinity
+    sql: "SELECT TIMESTAMP 'infinity' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'infinity'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== Timezone Variants =====
+
+  # Positive timezone offset
+  - id: date_literal__tz_positive_offset
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08 04:05:06+02' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ '+HH'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Timezone abbreviation stripped (PST)
+  - id: date_literal__tz_abbrev_stripped
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08 04:05:06 PST' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ 'PST'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== AM/PM =====
+
+  # PM time
+  - id: date_literal__ampm
+    sql: "SELECT TIMESTAMP '1999-01-08 4:05:06 PM' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'h:MI:SS PM'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Two-digit year =====
+
+  # YY-MM-DD
+  - id: date_literal__two_digit_year
+    sql: "SELECT DATE '99-01-08' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YY-MM-DD'"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+
+  # ===== Slash with year first =====
+
+  # YYYY/M/D
+  - id: date_literal__ymd_slashes
+    sql: "SELECT DATE '1999/1/8' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY/M/D'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Dash with MDY order =====
+
+  # M-D-YYYY
+  - id: date_literal__mdy_dashes
+    sql: "SELECT DATE '1-8-1999' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'M-D-YYYY'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== Edge cases =====
+
+  # Leap year
+  - id: date_literal__leap_year
+    sql: "SELECT DATE '2024-02-29' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'leap year'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Year boundary
+  - id: date_literal__year_boundary
+    sql: "SELECT DATE '1999-12-31' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'year boundary'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Early date
+  - id: date_literal__early_date
+    sql: "SELECT DATE '1900-01-01' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'early date'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Far future
+  - id: date_literal__far_future
+    sql: "SELECT DATE '2999-12-31' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'far future'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Start of Unix epoch
+  - id: date_literal__unix_epoch
+    sql: "SELECT TIMESTAMP '1970-01-01 00:00:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'unix epoch'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Y2K
+  - id: date_literal__y2k
+    sql: "SELECT TIMESTAMP '2000-01-01 00:00:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'Y2K'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Cast Syntax Variants =====
+
+  # Cast string to date
+  - id: date_literal__cast_string_to_date
+    sql: "SELECT '1999-01-08'::date AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "'string'::date"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Cast string to timestamp
+  - id: date_literal__cast_string_to_timestamp
+    sql: "SELECT '1999-01-08 04:05:06'::timestamp AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "'string'::timestamp"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Cast string to timestamptz
+  - id: date_literal__cast_string_to_timestamptz
+    sql: "SELECT '1999-01-08 04:05:06+02:00'::timestamptz AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "'string'::timestamptz"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # CAST function syntax
+  - id: date_literal__cast_function_date
+    sql: "SELECT CAST('1999-01-08' AS date) AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "CAST('string' AS date)"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # CAST function to timestamp
+  - id: date_literal__cast_function_timestamp
+    sql: "SELECT CAST('1999-01-08 04:05:06' AS timestamp) AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "CAST('string' AS timestamp)"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Timestamp with various precisions =====
+
+  # Single fractional digit
+  - id: date_literal__fractional_1_digit
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.1' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'SS.S'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Two fractional digits
+  - id: date_literal__fractional_2_digits
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.12' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'SS.SS'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Six fractional digits (max postgres precision)
+  - id: date_literal__fractional_6_digits
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.123456' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'SS.SSSSSS'"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  # Nine fractional digits (nanoseconds)
+  - id: date_literal__fractional_9_digits
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05:06.123456789' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'SS.SSSSSSSSS'"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  # ===== Time variants =====
+
+  # Hours and minutes only (no seconds)
+  - id: date_literal__time_no_seconds
+    sql: "SELECT TIMESTAMP '1999-01-08 04:05' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'HH:MI'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Midnight
+  - id: date_literal__midnight
+    sql: "SELECT TIMESTAMP '1999-01-08 00:00:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP '00:00:00'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # End of day
+  - id: date_literal__end_of_day
+    sql: "SELECT TIMESTAMP '1999-01-08 23:59:59' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP '23:59:59'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # 24:00:00 (end of day = start of next day per SQL standard)
+  - id: date_literal__24_hours
+    sql: "SELECT TIMESTAMP '1999-01-08 24:00:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP '24:00:00'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Additional timezone variants =====
+
+  # Negative timezone offset
+  - id: date_literal__tz_negative_offset
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08 04:05:06-05:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ '-HH:MM'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # UTC timezone (+00:00)
+  - id: date_literal__tz_utc
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08 04:05:06+00:00' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ '+00:00'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Timezone with subseconds
+  - id: date_literal__tz_with_subseconds
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08 04:05:06.789+05:30' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ 'SS.MS+TZ'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # Timestamp with timezone and T separator
+  - id: date_literal__datetime_t_with_tz
+    sql: "SELECT TIMESTAMP WITH TIME ZONE '1999-01-08T04:05:06+05:30' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMPTZ 'dateTtime+tz'"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ===== Non-padded ISO date =====
+
+  # YYYY-M-D (single-digit month and day)
+  - id: date_literal__iso_non_padded
+    sql: "SELECT DATE '9999-1-1' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "DATE 'YYYY-M-D'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ===== Compact date with time =====
+
+  # YYYYMMDD HH:MI:SS.S (compact date followed by time)
+  - id: date_literal__compact_with_time
+    sql: "SELECT TIMESTAMP '99991201 00:00:00.0' AS result FROM dates LIMIT 1"
+    function: date_literal
+    signature: "TIMESTAMP 'YYYYMMDD HH:MI:SS.S'"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+

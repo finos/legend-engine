@@ -139,6 +139,12 @@
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
   }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle"
+  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
   }, {

@@ -42,6 +42,7 @@ function meta::relational::functions::sqlQueryToString::spanner::createDbExtensi
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       joinStringsProcessor = processJoinStringsOperationForSpanner_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSpanner_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForSpanner_String_1__DbConfig_1__String_1_,
@@ -151,7 +152,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     // dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
-    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
+    // isoweek, not week: GoogleSQL's week counts from Sunday and numbers the days before the year's
+    // first Sunday as week 0, where weekOfYear is ISO 8601 everywhere else it is pushed down.
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(isoweek from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
     // dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateSpanner()}))

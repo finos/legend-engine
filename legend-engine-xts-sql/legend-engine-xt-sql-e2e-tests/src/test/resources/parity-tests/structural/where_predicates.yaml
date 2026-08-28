@@ -74,8 +74,8 @@ tests:
     sql: "SELECT name FROM persons WHERE name LIKE '_o%' ORDER BY 1"
     feature: "LIKE with _"
     category: "where_predicates"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: where_not_like
     sql: "SELECT name FROM persons WHERE name NOT LIKE 'A%' ORDER BY 1"
@@ -88,15 +88,15 @@ tests:
     sql: "SELECT name FROM persons WHERE name ILIKE 'a%' ORDER BY 1"
     feature: "ILIKE"
     category: "where_predicates"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: where_not_ilike
     sql: "SELECT name FROM persons WHERE name NOT ILIKE 'a%' ORDER BY 1"
     feature: "NOT ILIKE"
     category: "where_predicates"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # EXISTS
   - id: where_exists

@@ -907,4 +907,67 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  ];\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesTDS()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::Mapping;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->project([x|$x.id, x|$x.name], ['Id', 'Name']);\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Id, Name\n" +
+                "          1 , Alice;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceWithExecutableSampleValuesRelation()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::Mapping;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      id: 1;\n" +
+                "      title: 'Template 1';\n" +
+                "      query: |model::Firm.all()->project(~[Cases:x|$x.cases, Fips:x|$x.fips]);\n" +
+                "      sampleValues: Relation\n" +
+                "        #{\n" +
+                "          Cases, Fips\n" +
+                "          10   , A;\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+    }
 }

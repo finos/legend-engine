@@ -39,6 +39,7 @@ function meta::relational::mapping::postProcessorList():meta::pure::metamodel::f
    [
       meta::relational::postProcessor::processInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
       meta::relational::postProcessor::processObjectReferenceInOperation_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
+      meta::relational::mutation::executionPlan::qualifyVariantTempTableNames_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
       meta::relational::mapping::defaultProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
       meta::relational::mapping::connectionAwareProcessors_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_,
       meta::relational::mapping::dbSpecificProcessor_SQLQuery_1__Runtime_1__Database_$0_1$__ExecutionContext_1__Extension_MANY__PostProcessorResult_1_

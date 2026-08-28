@@ -19,8 +19,19 @@ import meta::core::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::doc::*;
 
+Class meta::pure::metamodel::dataSpace::analytics::DataSpaceInfoAnalysisResult
+{
+  isVerified: Boolean[0..1];
+  isInDevelopment: Boolean[0..1];
+  isExternal: Boolean[0..1];
+  topics: String[*];
+  relatedDataSpaces: String[*];
+  deprecationNotice: String[0..1];
+}
+
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult
 {
+  info: DataSpaceInfoAnalysisResult[0..1];
   diagramModels: meta::pure::metamodel::diagram::analytics::modelCoverage::DiagramModelCoverageAnalysisResult[1];
   executionContexts: DataSpaceExecutionContextAnalysisResult[*];
   elementDocs: DataSpaceModelDocumentationEntry[*];
@@ -31,14 +42,32 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceCoverageAnalysisResu
   executionContexts: DataSpaceExecutionContextAnalysisResult[*];
 }
 
+function <<access.private>> meta::pure::metamodel::dataSpace::analytics::resolveDataSpaceInfoAnalysisResult(dataSpace: DataSpace[1]): DataSpaceInfoAnalysisResult[0..1]
+{
+  let profilePath = 'meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo';
+  let hasAnnotations = $dataSpace.stereotypes->exists(s | $s.profile->elementToPath() == $profilePath) || $dataSpace.taggedValues->exists(t | $t.tag.profile->elementToPath() == $profilePath);
+  if($hasAnnotations,
+    | ^DataSpaceInfoAnalysisResult(
+        isVerified        = if($dataSpace.stereotypes->exists(s | $s.profile->elementToPath() == $profilePath && $s.value == 'Verified'), | true, | []),
+        isInDevelopment   = if($dataSpace.stereotypes->exists(s | $s.profile->elementToPath() == $profilePath && $s.value == 'InDevelopment'), | true, | []),
+        isExternal        = if($dataSpace.stereotypes->exists(s | $s.profile->elementToPath() == $profilePath && $s.value == 'External'), | true, | []),
+        topics            = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'topics')->map(t | $t.value->split(',')->map(s | $s->trim())->filter(s | $s->length() > 0)),
+        relatedDataSpaces = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'relatedDataSpaces')->map(t | $t.value->split(',')->map(s | $s->trim())->filter(s | $s->length() > 0)),
+        deprecationNotice = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'deprecationNotice')->map(t | $t.value)->first()
+      ),
+    | []
+  );
+}
+
 function meta::pure::metamodel::dataSpace::analytics::analyzeDataSpace(dataSpace: DataSpace[1], allAvailableRuntimes: meta::pure::runtime::PackageableRuntime[*], returnLightGraph: Boolean[1]): DataSpaceAnalysisResult[1]
 {
   let mappingCoverage = $dataSpace.executionContexts.mapping->removeDuplicates()->map(mapping | pair($mapping, meta::analytics::mapping::modelCoverage::analyze($mapping, $returnLightGraph, false, $returnLightGraph)))->newMap();
   ^DataSpaceAnalysisResult
   (
-    diagramModels = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
+    info              = resolveDataSpaceInfoAnalysisResult($dataSpace),
+    diagramModels     = meta::pure::metamodel::diagram::analytics::modelCoverage::getDiagramModelCoverage($dataSpace.diagrams.diagram),
     executionContexts = analyzeDataSpaceExecutionContexts($dataSpace, $allAvailableRuntimes, $returnLightGraph, $mappingCoverage),
-    elementDocs = getModelsDoc($dataSpace)
+    elementDocs       = getModelsDoc($dataSpace)
   );
 }
 

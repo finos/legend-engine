@@ -463,7 +463,10 @@ function meta::relational::functions::pureToSqlQuery::processVariantInstanceOf(f
   let keyProp = $variantToMetadata.typeName->orElse('_type');
   let className = $variantToMetadata.typeLookup->filter(p | $p.second == $class)->head().first->orElse($class.name->toOne());
 
-  let typeProp = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = $keyProp), returnType = String);
+  // avoidCastIfPrimitive: the navigation is immediately wrapped in its own variantTo conversion
+  // below, so the renderer must not also cast. Dialects whose unquote is not idempotent (DuckDB
+  // renders variantTo on VARCHAR as ->>'$', which requires JSON input) fail on the double cast.
+  let typeProp = ^SemiStructuredPropertyAccess(operand = $variant, property = ^Literal(value = $keyProp), returnType = String, avoidCastIfPrimitive = true);
   let typePropCasted = newDynaFunction('variantTo', [$typeProp, ^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Varchar(size=100))]);
   let instanceOf = newDynaFunction('equal', [$typePropCasted, ^Literal(value = $className)]);
 
@@ -564,6 +567,14 @@ function meta::relational::functions::pureToSqlQuery::processVariantAt(f:Functio
 
   let select = $operation.select;
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOpElement),|^$select(columns = $relOpElement)));
+}
+
+// Variant is a Class in the metamodel but a value in SQL, so a to-one Variant expression is a
+// scalar: a null check on it is a plain IS NULL predicate, not the existence check needed for a
+// to-many navigation (a variant array, or a navigation to a mapped class).
+function meta::relational::functions::pureToSqlQuery::isScalarVariantExpression(v: ValueSpecification[1]):Boolean[1]
+{
+  $v.genericType.rawType == meta::pure::metamodel::variant::Variant && $v.multiplicity->hasToOneUpperBound();
 }
 
 function meta::relational::functions::pureToSqlQuery::processMapGet(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -1023,6 +1034,23 @@ function meta::relational::functions::pureToSqlQuery::extractExplodeSemiStructur
       d:DynaFunction[1] | if($d.name == meta::relational::functions::sqlQueryToString::DynaFunctionRegistry.explodeSemiStructured.name, | $d, | [])->concatenate($d.parameters->map(p|$p->extractExplodeSemiStructured())),
       a:Any[1]| []
     ]);
+}
+
+// Innermost first, so index 0 is the explode whose input must be a column and each later entry
+// fans out an array held inside the elements the previous one produced.
+function meta::relational::functions::pureToSqlQuery::explodeSemiStructuredChain(op: DynaFunction[1]):DynaFunction[*]
+{
+  let inner = $op.parameters->at(0);
+  if($inner->instanceOf(DynaFunction) && $inner->cast(@DynaFunction).name == meta::relational::functions::sqlQueryToString::DynaFunctionRegistry.explodeSemiStructured.name,
+     | $inner->cast(@DynaFunction)->explodeSemiStructuredChain()->concatenate($op),
+     | $op);
+}
+
+function meta::relational::functions::pureToSqlQuery::buildSemiStructuredNavigationForExplode(path: String[1], operand: RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+  let pathNavigation = meta::relational::functions::sqlQueryToString::parseSemiStructuredPathNavigation($path);
+  let initialNavigation = if($pathNavigation->at(0)->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$operand,index=^Literal(value = $pathNavigation->at(0))), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $pathNavigation->at(0)->substring(1, $pathNavigation->at(0)->length()-1)), operand=$operand));
+  $pathNavigation->slice(1, $pathNavigation->size())->fold({property, navigation | if($property->isDigit(), | ^SemiStructuredArrayElementAccess(operand=$navigation,index=^Literal(value = $property)), |  ^SemiStructuredPropertyAccess(property=^Literal(value = $property->substring(1, $property->length()-1)), operand=$navigation)) }, $initialNavigation);
 }
 
 function meta::relational::functions::pureToSqlQuery::explodeReturnType(typeName:String[1]):Type[0..1]

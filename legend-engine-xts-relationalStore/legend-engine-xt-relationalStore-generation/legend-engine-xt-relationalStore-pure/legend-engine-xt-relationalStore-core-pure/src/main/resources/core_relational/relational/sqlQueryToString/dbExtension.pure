@@ -113,6 +113,15 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
    }: String[1];
 
+   // Defaults rather than requiring every dialect to opt in; a dialect with no ordered-set aggregates
+   // overrides this to fail with a clear message.
+   withinGroupProcessor(f:DynaFunction[1], sgc:SqlGenerationContext[1])
+   {
+     if($this.dbExtension.withinGroupProcessor->isEmpty(),
+        | meta::relational::functions::sqlQueryToString::default::processWithinGroup($f, $sgc),
+        | $this.dbExtension.withinGroupProcessor->toOne()->eval($f, $sgc));
+   }: String[1];
+
    selectSQLQueryProcessor(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
    {
      let cte = $s.commonTableExpressions->isNotEmpty()->if(
@@ -280,6 +289,9 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   // Unrendered, because dialects place the ordering differently: a WITHIN GROUP suffix, inside the
+   // aggregate's parentheses, or -- on H2's GROUP_CONCAT -- before the SEPARATOR.
+   withinGroupProcessor: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
    commonTableExpressionsProcessor: meta::pure::metamodel::function::Function<{CommonTableExpression[*], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
@@ -509,7 +521,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                             | '',
                                             | processTableAlias($c.alias, $dbConfig, $config)) + processColumnName($c.column.name->toOne(), $dbConfig)
                                           ,                                                                
-                                          l:Literal[1]| processLiteral($l, $dbConfig),
+                                          l:Literal[1]| processLiteral($l, $dbConfig, $sgc),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
                                           u:UpsertSQLQuery[1]| $u->processUpsertSQLQuery($sgc),
@@ -623,6 +635,14 @@ function meta::relational::functions::sqlQueryToString::processColumnName(name:S
 function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1]) : String[1]
 {
    $literal.value->processLiteralValue($dbConfig);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::processLiteral(literal:Literal[1], dbConfig : DbConfig[1], sgc:SqlGenerationContext[1]) : String[1]
+{
+  let processor = if($literal.value->instanceOf(TableFunctionParamPlaceHolder),
+                      |$literal.value->cast(@RelationalOperationElement)->processOperation($sgc),
+                      |$literal.value->processLiteralValue($dbConfig)
+                    );
 }
 
 function meta::relational::functions::sqlQueryToString::processLiteralValue(a:Any[1], dbConfig : DbConfig[1]) : String[1]
@@ -868,6 +888,9 @@ function meta::relational::functions::sqlQueryToString::parseSemiStructuredPathN
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
+   if ($func.name == 'withinGroup',
+      | $sgc.dbConfig.withinGroupProcessor($func, $sgc),
+      |
    if ($func->isEqualsFromFilter($sgc.config),
       | processEqualFromFilter($func,$sgc),
       |
@@ -895,7 +918,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
         let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
         $result->toOne().toSql($params, $paramWiseSgcs);
-   ))));
+   )))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processExtractFromSemiStructured(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
@@ -907,10 +930,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
   let result = $sgc.dbConfig.dynaFuncDispatch($func, $sgc)->toOne();
   let p0 = $params->at(0)->processOperation($newSgc);
   let p1 = $params->at(1)->cast(@Literal).value->cast(@String);
-  assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specfication must follow regex: ' + extractFromSemiStructuredPathRegex());
+  assert($p1->matches(extractFromSemiStructuredPathRegex()), 'path specification must follow regex: ' + extractFromSemiStructuredPathRegex());
   let p2 = $params->at(2)->cast(@Literal).value->cast(@String)->toUpper();
-  let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP'];
-  assertContains($supportedTypes, $p2, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', '));
+  // SEMISTRUCTURED says the extraction yields a document rather than a scalar, so the
+  // dialect leaves it as the store's own semi-structured type instead of unquoting it to
+  // text. That is what a binding over a sub-document needs: rendered as text, the property
+  // accesses the binding synthesises are handed a string where a document is required.
+  let supportedTypes = ['BOOLEAN', 'CHAR', 'VARCHAR', 'STRING', 'INTEGER', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'TIMESTAMP', 'SEMISTRUCTURED'];
+  // A trailing [] denotes an array of the named type. The element type has to be stated:
+  // it is what lets a dialect cast the extraction to a typed list rather than leave it as
+  // an untyped document, and it is not recoverable from anywhere else.
+  let elementType = if($p2->endsWith('[]'), | $p2->substring(0, $p2->length() - 2), | $p2);
+  assertContains($supportedTypes, $elementType, $p2 + ' must be one of ' + $supportedTypes->joinStrings(', ') + ', each optionally suffixed with [] for an array');
   let processedParams = $result.toSql.transform->toOne()->eval([$p0, $p1, $p2]);
   format($result.toSql.format, $processedParams);
 }
@@ -1240,6 +1271,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   parseJson,
   parseBoolean,
   percentile,
+  withinGroup,
   percentRank,
   plus,
   position,

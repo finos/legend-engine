@@ -386,7 +386,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Reverse, simpleFunctionProcessor('legend_h2_extension_reverse_string')),
     pair(StringToArray, simpleFunctionProcessor('legend_h2_extension_split')),
     pair(SplitPart, simpleFunctionProcessor('legend_h2_extension_split_part')),
-    pair(StringAgg, simpleFunctionProcessor('listagg')),
+    pair(StringAgg, withinGroupFunctionProcessor('listagg')),
     pair(Concat, simpleFunctionProcessor('concat')),
     pair(StartsWith, customFunctionProcessor(processorForStartsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
     pair(EndsWith, customFunctionProcessor(processorForEndsWith_FunctionCall_1__SqlDialect_1__SqlDialectTranslationState_1__SqlDialectTranslationConfig_1__String_1_)),
@@ -903,7 +903,12 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
           pair(| $returnType == 'date',                           | 'date'),
           pair(| $returnType == 'boolean',                        | 'boolean'),
           pair(| $returnType == 'float',                          | 'float'),
-          pair(| $returnType == 'integer',                        | 'integer')
+          pair(| $returnType == 'integer',                        | 'integer'),
+          // H2 has no native semi-structured type - it holds the document in a VARCHAR, which is
+          // what the SemiStructured datatype renders as too - so the cast is a no-op that leaves
+          // the document as the store's own representation. Without an arm here the type name
+          // reaches H2 verbatim and it answers "Unknown data type: SEMISTRUCTURED".
+          pair(| $returnType == 'semistructured',                 | 'varchar')
         ],
         | $returnType
       );

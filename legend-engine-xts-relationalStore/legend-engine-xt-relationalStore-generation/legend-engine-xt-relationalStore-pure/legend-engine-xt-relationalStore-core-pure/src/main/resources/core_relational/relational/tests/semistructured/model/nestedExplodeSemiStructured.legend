@@ -1,0 +1,84 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class nested::model::Firm
+{
+  id: Integer[1];
+  teams: nested::model::Team[*];
+}
+
+Class nested::model::Team
+{
+  tid: String[1];
+  label: String[1];
+}
+
+function nested::nestedExplode():TabularDataSet[1]
+{
+    nested::model::Firm.all()->project([x|$x.id, x|$x.teams.tid, x|$x.teams.label],
+                                       ['Id', 'Team Id', 'Label']);
+}
+
+###Relational
+Database nested::store::DB
+(
+  Schema NESTED_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+    Table TEAM_TABLE
+    (
+      TID VARCHAR(100) PRIMARY KEY,
+      LABEL VARCHAR(100)
+    )
+  )
+
+  // One row per (division, team): the outer explode fans out divisions, the inner one fans out
+  // the teams held inside each division.
+  Join Firm_Team(extractFromSemiStructured(
+                   explodeSemiStructured(
+                     explodeSemiStructured(NESTED_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'divisions', 'SEMISTRUCTURED'),
+                     'teams', 'SEMISTRUCTURED'),
+                   'tid', 'VARCHAR') = NESTED_SCHEMA.TEAM_TABLE.TID)
+)
+
+###Mapping
+Mapping nested::mapping::Mapping
+(
+  nested::model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [nested::store::DB]NESTED_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [nested::store::DB]NESTED_SCHEMA.FIRM_TABLE
+    id: [nested::store::DB]NESTED_SCHEMA.FIRM_TABLE.ID,
+    teams: [nested::store::DB]@Firm_Team
+  }
+
+  nested::model::Team: Relational
+  {
+    ~primaryKey
+    (
+      [nested::store::DB]NESTED_SCHEMA.TEAM_TABLE.TID
+    )
+    ~mainTable [nested::store::DB]NESTED_SCHEMA.TEAM_TABLE
+    tid: [nested::store::DB]NESTED_SCHEMA.TEAM_TABLE.TID,
+    label: [nested::store::DB]NESTED_SCHEMA.TEAM_TABLE.LABEL
+  }
+)

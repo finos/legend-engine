@@ -27,166 +27,332 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  - id: regexp_count__txt_txt__from_table
-    sql: "SELECT REGEXP_COUNT(val, '[aeiou]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+  - id: like__txt_txt__underscore
+    sql: "SELECT 'abc' LIKE 'a_c' AS matches, 'abbc' LIKE 'a_c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__middle_percent
+    sql: "SELECT 'abc' LIKE 'a%c' AS matches, 'abd' LIKE 'a%c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__underscore_and_percent
+    sql: "SELECT 'axbc' LIKE 'a_b%' AS matches, 'abc' LIKE 'a_b%' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__multiple_underscores
+    sql: "SELECT 'abcd' LIKE 'a__d' AS matches, 'abd' LIKE 'a__d' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__escaped_underscore
+    sql: "SELECT 'a_c' LIKE 'a\\_c' AS matches, 'abc' LIKE 'a\\_c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__percent_in_middle
+    sql: "SELECT 'abcdef' LIKE 'ab%ef' AS matches, 'abcxyz' LIKE 'ab%ef' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__case_insensitive
+    sql: "SELECT 'Hello' ILIKE 'hello' AS matches, 'world' ILIKE 'hello' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__case_insensitive_wildcard
+    sql: "SELECT 'Hello World' ILIKE '%hello%' AS matches, 'Goodbye' ILIKE '%hello%' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: ilike__txt_txt__from_table
+    sql: "SELECT val ILIKE '%LO%' AS result FROM strings ORDER BY 1"
+    function: like
+    signature: "ilike(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: like__txt_txt__regex_special_chars
+    sql: "SELECT 'a.c' LIKE 'a.c' AS matches, 'abc' LIKE 'a.c' AS noMatch FROM strings LIMIT 1"
+    function: like
+    signature: "like(text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # === regexp_count ===
+  - id: regexp_count__constant__no_flags
+    sql: "SELECT REGEXP_COUNT('hello world', '[aeiou]') AS matches, REGEXP_COUNT('xyz', '[aeiou]') AS noMatch FROM strings WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_count__txt_txt_int__from_table
-    sql: "SELECT REGEXP_COUNT(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+  - id: regexp_count__constant__start_pos
+    sql: "SELECT REGEXP_COUNT('hello world', '[a-z]', 1) AS matches, REGEXP_COUNT('123', '[a-z]', 1) AS noMatch FROM strings WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
-  - id: regexp_count__txt_txt_int_txt__from_table
-    sql: "SELECT REGEXP_COUNT(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+  - id: regexp_count__constant__flag_i
+    sql: "SELECT REGEXP_COUNT('Hello World', '[a-z]', 1, 'i') AS matches, REGEXP_COUNT('123', '[a-z]', 1, 'i') AS noMatch FROM strings WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text, integer, text) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
-  - id: regexp_instr__txt_txt__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[0-9]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+  - id: regexp_count__constant__flag_c
+    sql: "SELECT REGEXP_COUNT('Hello', '[a-z]', 1, 'c') AS matches, REGEXP_COUNT('HELLO', '[a-z]', 1, 'c') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__constant__flag_s
+    sql: "SELECT REGEXP_COUNT('hello\nworld', '.', 1, 's') AS matches, REGEXP_COUNT('', '.', 1, 's') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__constant__flag_n
+    sql: "SELECT REGEXP_COUNT('hello\nworld', '^[a-z]+$', 1, 'n') AS matches, REGEXP_COUNT('123', '^[a-z]+$', 1, 'n') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__constant__flag_m
+    sql: "SELECT REGEXP_COUNT('hello\nworld', '^[a-z]+$', 1, 'm') AS matches, REGEXP_COUNT('123', '^[a-z]+$', 1, 'm') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_count
+    signature: "regexp_count(text, text, integer, text) → integer"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # === regexp_instr ===
+  - id: regexp_instr__constant__no_flags
+    sql: "SELECT REGEXP_INSTR('abc123', '[0-9]') AS matches, REGEXP_INSTR('abcdef', '[0-9]') AS noMatch FROM strings WHERE id = 1"
     function: regexp_instr
     signature: "regexp_instr(text, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_instr__txt_txt_int__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
+  - id: regexp_instr__constant__extra_args_error
+    sql: "SELECT REGEXP_INSTR('abc123', '[0-9]', 1) AS result FROM strings WHERE id = 1"
     function: regexp_instr
     signature: "regexp_instr(text, text, integer) → integer"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  - id: regexp_instr__txt_txt_int_int__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_instr__txt_txt_int_int_int__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer, integer, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_instr__txt_txt_int_int_int_txt__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer, integer, integer, text) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_instr__txt_txt_int_int_int_txt_int__from_table
-    sql: "SELECT REGEXP_INSTR(val, '[a-z]', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer, integer, integer, text, integer) → integer"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_like__txt_txt__from_table
-    sql: "SELECT REGEXP_LIKE(val, '^[A-Z]') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+  # === regexp_like ===
+  - id: regexp_like__constant__no_flags
+    sql: "SELECT REGEXP_LIKE('hello', '^[a-z]+$') AS matches, REGEXP_LIKE('HELLO', '^[a-z]+$') AS noMatch FROM strings WHERE id = 1"
     function: regexp_like
     signature: "regexp_like(text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_like__txt_txt_txt__from_table
-    sql: "SELECT REGEXP_LIKE(val, '^[a-z]', 'i') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+  - id: regexp_like__constant__flag_i
+    sql: "SELECT REGEXP_LIKE('HELLO', '^[a-z]+$', 'i') AS matches, REGEXP_LIKE('123', '^[a-z]+$', 'i') AS noMatch FROM strings WHERE id = 1"
     function: regexp_like
     signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_substr__txt_txt__from_table
-    sql: "SELECT REGEXP_SUBSTR(val, '[0-9]+') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
-    function: regexp_substr
-    signature: "regexp_substr(text, text) → text"
+  - id: regexp_like__constant__flag_c
+    sql: "SELECT REGEXP_LIKE('hello', '^[a-z]+$', 'c') AS matches, REGEXP_LIKE('HELLO', '^[a-z]+$', 'c') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_substr__txt_txt_int__from_table
-    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_substr
-    signature: "regexp_substr(text, text, integer) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_substr__txt_txt_int_int__from_table
-    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_substr
-    signature: "regexp_substr(text, text, integer, integer) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_substr__txt_txt_int_int_txt__from_table
-    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_substr
-    signature: "regexp_substr(text, text, integer, integer, text) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  - id: regexp_substr__txt_txt_int_int_txt_int__from_table
-    sql: "SELECT REGEXP_SUBSTR(val, '[a-z]+', 1) AS result FROM strings WHERE val IS NOT NULL AND id = 1"
-    function: regexp_substr
-    signature: "regexp_substr(text, text, integer, integer, text, integer) → text"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
-  # === Auto-generated tests for previously UNTESTED signatures ===
-  - id: like_bytea_bytea_cov
-    sql: "SELECT LIKE(NULL) AS result FROM persons WHERE id = 1"
-    function: like
-    signature: "like(bytea, bytea) → boolean"
-    expected_tds_status: BUG
-    expected_rel_status: BUG
-
-  - id: regexp_count_text_text_integer_cov
-    sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
-    function: regexp_count
-    signature: "regexp_count(text, text, integer) → integer"
+  - id: regexp_like__constant__flag_s
+    sql: "SELECT REGEXP_LIKE('hello\nworld', '.*', 's') AS matches, REGEXP_LIKE('', 'a+', 's') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_count_text_text_integer_text_cov
-    sql: "SELECT REGEXP_COUNT(name, '[aeiou]') AS result FROM persons WHERE id = 1"
+  - id: regexp_like__constant__flag_n
+    sql: "SELECT REGEXP_LIKE('hello\nworld', '^world$', 'n') AS matches, REGEXP_LIKE('hello\nworld', '^nothere$', 'n') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_like__constant__flag_m
+    sql: "SELECT REGEXP_LIKE('hello\nworld', '^world$', 'm') AS matches, REGEXP_LIKE('hello\nworld', '^nothere$', 'm') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # === regexp_replace ===
+  - id: regexp_replace__constant__no_flags
+    sql: "SELECT REGEXP_REPLACE('hello world', '[aeiou]', 'X') AS matches, REGEXP_REPLACE('xyz', '[aeiou]', 'X') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_g
+    sql: "SELECT REGEXP_REPLACE('hello world', '[aeiou]', 'X', 'g') AS matches, REGEXP_REPLACE('xyz', '[aeiou]', 'X', 'g') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_i
+    sql: "SELECT REGEXP_REPLACE('Hello World', '[a-z]', 'X', 'i') AS matches, REGEXP_REPLACE('123', '[a-z]', 'X', 'i') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_gi
+    sql: "SELECT REGEXP_REPLACE('Hello World', '[a-z]', 'X', 'gi') AS matches, REGEXP_REPLACE('123', '[a-z]', 'X', 'gi') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_c
+    sql: "SELECT REGEXP_REPLACE('Hello', '[a-z]', 'X', 'c') AS matches, REGEXP_REPLACE('HELLO', '[a-z]', 'X', 'c') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_s
+    sql: "SELECT REGEXP_REPLACE('hello\nworld', '.+', 'X', 's') AS matches, REGEXP_REPLACE('', '.+', 'X', 's') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_n
+    sql: "SELECT REGEXP_REPLACE('hello\nworld', '^world$', 'X', 'n') AS matches, REGEXP_REPLACE('hello', '^nothere$', 'X', 'n') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_replace__constant__flag_gs
+    sql: "SELECT REGEXP_REPLACE('hello\nworld', '.', 'X', 'gs') AS matches, REGEXP_REPLACE('', '.', 'X', 'gs') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # === multi-flag combinations ===
+  - id: regexp_like__constant__flag_in
+    sql: "SELECT REGEXP_LIKE('HELLO\nworld', '^world$', 'in') AS matches, REGEXP_LIKE('HELLO\nworld', '^nothere$', 'in') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_like
+    signature: "regexp_like(text, text, text) → boolean"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: regexp_count__constant__flag_in
+    sql: "SELECT REGEXP_COUNT('Hello\nWorld', '^[a-z]+$', 1, 'in') AS matches, REGEXP_COUNT('123\n456', '^[a-z]+$', 1, 'in') AS noMatch FROM strings WHERE id = 1"
     function: regexp_count
     signature: "regexp_count(text, text, integer, text) → integer"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_instr_text_text_integer_cov
-    sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer) → integer"
+  - id: regexp_replace__constant__flag_gin
+    sql: "SELECT REGEXP_REPLACE('Hello\nWorld', '^[a-z]+$', 'X', 'gin') AS matches, REGEXP_REPLACE('123\n456', '^[a-z]+$', 'X', 'gin') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_replace
+    signature: "regexp_replace(text, text, text, text) → text"
     expected_tds_status: PASS
     expected_rel_status: PASS
 
-  - id: regexp_instr_text_text_integer_integer_cov
-    sql: "SELECT REGEXP_INSTR(name, '[aeiou]') AS result FROM persons WHERE id = 1"
-    function: regexp_instr
-    signature: "regexp_instr(text, text, integer, integer) → integer"
-    expected_tds_status: PASS
+  - id: regexp_substr__constant__flag_in
+    sql: "SELECT REGEXP_SUBSTR('HELLO\nworld', '^[a-z]+$', 1, 1, 'in') AS matches, REGEXP_SUBSTR('123\n456', '^[a-z]+$', 1, 1, 'in') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
-  - id: regexp_substr_text_text_integer_cov
-    sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
+  # === regexp_substr ===
+  - id: regexp_substr__constant__no_flags
+    sql: "SELECT REGEXP_SUBSTR('abc123def', '[0-9]+') AS matches, REGEXP_SUBSTR('abcdef', '[0-9]+') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__start_pos
+    sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1) AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
-  - id: regexp_substr_text_text_integer_integer_cov
-    sql: "SELECT REGEXP_SUBSTR(name, '[A-Z][a-z]+') AS result FROM persons WHERE id = 1"
+  - id: regexp_substr__constant__start_pos_occurrence
+    sql: "SELECT REGEXP_SUBSTR('abc123def', '[a-z]+', 1, 1) AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1) AS noMatch FROM strings WHERE id = 1"
     function: regexp_substr
     signature: "regexp_substr(text, text, integer, integer) → text"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__flag_i
+    sql: "SELECT REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'i') AS matches, REGEXP_SUBSTR('123', '[a-z]+', 1, 1, 'i') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__flag_c
+    sql: "SELECT REGEXP_SUBSTR('abc123', '[a-z]+', 1, 1, 'c') AS matches, REGEXP_SUBSTR('ABC123', '[a-z]+', 1, 1, 'c') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__flag_s
+    sql: "SELECT REGEXP_SUBSTR('hello\nworld', '.+', 1, 1, 's') AS matches, REGEXP_SUBSTR('', '.+', 1, 1, 's') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__flag_n
+    sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'n') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'n') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__flag_m
+    sql: "SELECT REGEXP_SUBSTR('hello\nworld', '^world$', 1, 1, 'm') AS matches, REGEXP_SUBSTR('hello\nworld', '^nothere$', 1, 1, 'm') AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: regexp_substr__constant__subexpr
+    sql: "SELECT REGEXP_SUBSTR('abc123def', '([a-z]+)([0-9]+)', 1, 1, 'i', 0) AS matches, REGEXP_SUBSTR('!!!', '([a-z]+)', 1, 1, 'i', 0) AS noMatch FROM strings WHERE id = 1"
+    function: regexp_substr
+    signature: "regexp_substr(text, text, integer, integer, text, integer) → text"
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   # === Regex match operators (~, !~, ~*, !~*) ===
@@ -270,7 +436,7 @@ tests:
   # regexp_like inside the supported envelope: a fully anchored, case-sensitive literal. The existing
   # regexp_like cases above all sit outside it, so nothing tested that the envelope works.
   - id: regexp_like__txt_txt__fully_anchored_supported
-    sql: "SELECT REGEXP_LIKE(val, '^hello$') AS result FROM strings WHERE val IS NOT NULL ORDER BY 1"
+    sql: "SELECT REGEXP_LIKE('hello', '^hello$') AS matches, REGEXP_LIKE('world', '^hello$') AS noMatch FROM strings WHERE id = 1"
     function: regexp_like
     signature: "regexp_like(text, text) → boolean"
     expected_tds_status: PASS

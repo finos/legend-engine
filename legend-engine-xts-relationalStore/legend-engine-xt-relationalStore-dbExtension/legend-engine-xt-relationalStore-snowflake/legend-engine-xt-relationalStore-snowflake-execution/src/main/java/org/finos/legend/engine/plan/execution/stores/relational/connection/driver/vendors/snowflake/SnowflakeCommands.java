@@ -79,6 +79,12 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String getSemiStructuredInsertStatement(String tableName, String columnName)
+    {
+        return "INSERT INTO " + tableName + " (" + columnName + ") SELECT parse_json(?)";
+    }
+
+    @Override
     public IngestionMethod getDefaultIngestionMethod()
     {
         return IngestionMethod.CLIENT_FILE;

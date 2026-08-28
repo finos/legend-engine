@@ -1,0 +1,83 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping wild::M
+(
+  *wild::Row: Relational
+  {
+    ~primaryKey ( [wild::store::DB]T.ID )
+    ~mainTable [wild::store::DB]T
+    id: [wild::store::DB]T.ID,
+
+    // One wildcard: map each division to its name. No flattening is needed because the body
+    // produces scalars.
+    oneLevel: array_to_string(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions[*].name', 'VARCHAR[]'), ','),
+
+    // Two wildcards. Alpha holds two teams and Beta one, so a result that keeps the levels
+    // nested would read [Core,Edge],[Ops] rather than the flat sequence Pure requires.
+    twoLevels: array_to_string(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions[*].teams[*].label', 'VARCHAR[]'), ','),
+
+    // The same path counted rather than joined: without the flatten this is 2, one per
+    // division, which looks like a plausible answer.
+    countLeaves: array_size(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions[*].teams[*].label', 'VARCHAR[]')),
+
+    // Headcounts are 9 then 100, so a lexicographic comparison answers 9.
+    maxLeaf: array_max(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions[*].headcount', 'INTEGER[]')),
+
+    // A path ending in [*] has no trailing segment, so the level before it produces the arrays.
+    countDivisions: array_size(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions[*]', 'SEMISTRUCTURED[]')),
+
+    // The desugaring names its own lambda parameters wc1, wc2 and so on. A hand-written lambda
+    // using the same name has to keep its own binding: if the two share a scope the inner path
+    // resolves against the wrong element and returns a wrong answer rather than failing.
+
+
+    shadowed: array_to_string(array_transform(extractFromSemiStructured([wild::store::DB]T.DOC, 'divisions', 'SEMISTRUCTURED[]'), wc1 | array_to_string(extractFromSemiStructured($wc1, 'teams[*].label', 'VARCHAR[]'), '|')), ',')
+  }
+
+  testSuites:
+  [
+    oneLevelSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.oneLevel]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "Alpha,Beta"\n} ]'; }#; }# ]; } ];
+    },
+    twoLevelsSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.twoLevels]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "Core,Edge,Ops"\n} ]'; }#; }# ]; } ];
+    },
+    countLeavesSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.countLeaves]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 3\n} ]'; }#; }# ]; } ];
+    },
+    maxLeafSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.maxLeaf]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 100\n} ]'; }#; }# ]; } ];
+    },
+    shadowedSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.shadowed]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "Core|Edge,Ops"\n} ]'; }#; }# ]; } ];
+    },
+    countDivisionsSuite:
+    {
+      function: |wild::Row.all()->project(~[id: r | $r.id, v: r | $r.countDivisions]);
+      tests: [ t: { data: [ wild::store::DB: Reference #{ wild::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 2\n} ]'; }#; }# ]; } ];
+    }
+  ]
+)

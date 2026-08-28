@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class demo::sse::Block
+{
+  id: String[1];
+  account: String[1];
+  // To-many, but backed by a join rather than by a binding: the multiplicity comes
+  // from the row fan-out the explosion produces, not from the model.
+  orders: demo::sse::Order[*];
+}
+
+Class demo::sse::Order
+{
+  id: String[1];
+  orderName: String[1];
+}
+
+###Relational
+Database demo::sse::store::TradingDB
+(
+  Schema TRADING
+  (
+    Table BLOCKS
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      ACCOUNT VARCHAR(100),
+      BLOCKDATA SEMISTRUCTURED
+    )
+    Table ORDERS
+    (
+      ID VARCHAR(100) PRIMARY KEY,
+      ORDER_NAME VARCHAR(100)
+    )
+
+    // The view exists to supply the column that gets exploded. That is the only way a
+    // view takes part: explodeSemiStructured is legal solely inside a join operation,
+    // and its operand must be a plain column of a table or a view.
+    View ACTIVE_BLOCKS
+    (
+      ID: TRADING.BLOCKS.ID PRIMARY KEY,
+      ACCOUNT: TRADING.BLOCKS.ACCOUNT,
+      BLOCKDATA: TRADING.BLOCKS.BLOCKDATA
+    )
+  )
+
+  // Fans the JSON array into one row per element, then equi-joins each element's
+  // scalar to a real table. The explode expression is repeated, which is allowed:
+  // the one-explode-per-join check runs after duplicates are removed.
+  Join Block_Order(extractFromSemiStructured(explodeSemiStructured(TRADING.ACTIVE_BLOCKS.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tag', 'VARCHAR') = 'order'
+    and extractFromSemiStructured(explodeSemiStructured(TRADING.ACTIVE_BLOCKS.BLOCKDATA, 'relatedEntities', 'SEMISTRUCTURED'), 'tagId', 'VARCHAR') = TRADING.ORDERS.ID)
+)

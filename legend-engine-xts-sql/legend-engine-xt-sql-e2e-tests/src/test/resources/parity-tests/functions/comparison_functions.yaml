@@ -1,0 +1,856 @@
+tests:
+# =============================================================================
+# Comparison Operators and Functions
+# https://www.postgresql.org/docs/current/functions-comparison.html
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# = (equal) operator
+# ---------------------------------------------------------------------------
+- id: eq__int__match
+  sql: SELECT id, int_val = 42 AS result FROM numbers WHERE id = 1
+  function: "="
+  signature: "=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__int__no_match
+  sql: SELECT id, int_val = 999 AS result FROM numbers WHERE id = 1
+  function: "="
+  signature: "=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__int__null
+  sql: SELECT id, int_val = 42 AS result FROM numbers WHERE id = 5
+  function: "="
+  signature: "=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__float__match
+  sql: SELECT id, float_val = 3.14159 AS result FROM numbers WHERE id = 1
+  function: "="
+  signature: "=(double precision, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__varchar__match
+  sql: SELECT id, name = 'Alice' AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__varchar__case_sensitive
+  sql: SELECT id, name = 'alice' AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__boolean__match
+  sql: SELECT id, active = true AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(boolean, boolean) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__date__match
+  sql: SELECT id, d = DATE '2023-01-15' AS result FROM dates WHERE id = 1
+  function: "="
+  signature: "=(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__decimal__match
+  sql: SELECT id, salary = 50000.00 AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__null_null
+  sql: SELECT NULL = NULL AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(unknown, unknown) → boolean"
+  expected_tds_status: FAIL
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# <> / != (not equal) operator
+# ---------------------------------------------------------------------------
+- id: neq__int__match
+  sql: SELECT id, int_val <> 42 AS result FROM numbers WHERE id = 1
+  function: "<>"
+  signature: "<>(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__int__different
+  sql: SELECT id, int_val <> 999 AS result FROM numbers WHERE id = 1
+  function: "<>"
+  signature: "<>(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__int__null
+  sql: SELECT id, int_val <> 42 AS result FROM numbers WHERE id = 5
+  function: "<>"
+  signature: "<>(integer, integer) → boolean"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: neq_bang__int__match
+  sql: SELECT id, int_val != 42 AS result FROM numbers WHERE id = 1
+  function: "!="
+  signature: "!=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__varchar__match
+  sql: SELECT id, name <> 'Alice' AS result FROM persons WHERE id = 1
+  function: "<>"
+  signature: "<>(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__boolean__match
+  sql: SELECT id, active <> true AS result FROM persons WHERE id = 1
+  function: "<>"
+  signature: "<>(boolean, boolean) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__date__match
+  sql: SELECT id, d <> DATE '2023-01-15' AS result FROM dates WHERE id = 1
+  function: "<>"
+  signature: "<>(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# < (less than) operator
+# ---------------------------------------------------------------------------
+- id: lt__int__true
+  sql: SELECT id, int_val < 100 AS result FROM numbers WHERE id = 1
+  function: "<"
+  signature: "<(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__int__false
+  sql: SELECT id, int_val < 10 AS result FROM numbers WHERE id = 1
+  function: "<"
+  signature: "<(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__int__null
+  sql: SELECT id, int_val < 100 AS result FROM numbers WHERE id = 5
+  function: "<"
+  signature: "<(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: FAIL
+
+- id: lt__float__from_table
+  sql: SELECT id, float_val < 1.0 AS result FROM numbers WHERE id IN (1, 2, 3) ORDER BY id
+  function: "<"
+  signature: "<(double precision, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__varchar__lexicographic
+  sql: SELECT id, name < 'Charlie' AS result FROM persons WHERE id IN (1, 2, 3) ORDER BY id
+  function: "<"
+  signature: "<(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__date__from_table
+  sql: SELECT id, d < DATE '2020-01-01' AS result FROM dates WHERE id IN (1, 3, 4, 8) ORDER BY id
+  function: "<"
+  signature: "<(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__decimal__from_table
+  sql: SELECT id, salary < 60000 AS result FROM persons WHERE id IN (1, 2, 3) ORDER BY id
+  function: "<"
+  signature: "<(numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__timestamp__from_table
+  sql: SELECT id, ts < TIMESTAMP '2020-01-01 00:00:00' AS result FROM dates WHERE id IN (1, 3, 4, 8) ORDER BY id
+  function: "<"
+  signature: "<(timestamp, timestamp) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# > (greater than) operator
+# ---------------------------------------------------------------------------
+- id: gt__int__true
+  sql: SELECT id, int_val > 10 AS result FROM numbers WHERE id = 1
+  function: ">"
+  signature: ">(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__int__false
+  sql: SELECT id, int_val > 100 AS result FROM numbers WHERE id = 1
+  function: ">"
+  signature: ">(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__int__null
+  sql: SELECT id, int_val > 10 AS result FROM numbers WHERE id = 5
+  function: ">"
+  signature: ">(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: FAIL
+
+- id: gt__float__from_table
+  sql: SELECT id, float_val > 0 AS result FROM numbers WHERE id IN (1, 2, 3) ORDER BY id
+  function: ">"
+  signature: ">(double precision, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__varchar__lexicographic
+  sql: SELECT id, name > 'Charlie' AS result FROM persons WHERE id IN (1, 2, 3) ORDER BY id
+  function: ">"
+  signature: ">(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__date__from_table
+  sql: SELECT id, d > DATE '2023-01-01' AS result FROM dates WHERE id IN (1, 6, 7, 10) ORDER BY id
+  function: ">"
+  signature: ">(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__decimal__from_table
+  sql: SELECT id, salary > 70000 AS result FROM persons WHERE id IN (1, 3, 5) ORDER BY id
+  function: ">"
+  signature: ">(numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# <= (less than or equal) operator
+# ---------------------------------------------------------------------------
+- id: lte__int__less
+  sql: SELECT id, int_val <= 42 AS result FROM numbers WHERE id = 1
+  function: "<="
+  signature: "<=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lte__int__equal
+  sql: SELECT id, int_val <= 42 AS result FROM numbers WHERE id = 1
+  function: "<="
+  signature: "<=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lte__int__greater
+  sql: SELECT id, int_val <= 10 AS result FROM numbers WHERE id = 1
+  function: "<="
+  signature: "<=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lte__varchar__from_table
+  sql: SELECT id, name <= 'Charlie' AS result FROM persons WHERE id IN (1, 2, 3) ORDER BY id
+  function: "<="
+  signature: "<=(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lte__date__from_table
+  sql: SELECT id, d <= DATE '2023-01-15' AS result FROM dates WHERE id IN (1, 3, 4, 8) ORDER BY id
+  function: "<="
+  signature: "<=(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# >= (greater than or equal) operator
+# ---------------------------------------------------------------------------
+- id: gte__int__greater
+  sql: SELECT id, int_val >= 42 AS result FROM numbers WHERE id = 1
+  function: ">="
+  signature: ">=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gte__int__equal
+  sql: SELECT id, int_val >= 42 AS result FROM numbers WHERE id = 1
+  function: ">="
+  signature: ">=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gte__int__less
+  sql: SELECT id, int_val >= 100 AS result FROM numbers WHERE id = 1
+  function: ">="
+  signature: ">=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gte__varchar__from_table
+  sql: SELECT id, name >= 'Charlie' AS result FROM persons WHERE id IN (1, 2, 3) ORDER BY id
+  function: ">="
+  signature: ">=(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gte__date__from_table
+  sql: SELECT id, d >= DATE '2023-01-15' AS result FROM dates WHERE id IN (1, 6, 7, 10) ORDER BY id
+  function: ">="
+  signature: ">=(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# BETWEEN
+# ---------------------------------------------------------------------------
+- id: between__int__in_range
+  sql: SELECT id, int_val BETWEEN 0 AND 100 AS result FROM numbers WHERE id IN (1, 2, 3, 8) ORDER BY id
+  function: between
+  signature: "between(integer, integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__int__null
+  sql: SELECT id, int_val BETWEEN 0 AND 100 AS result FROM numbers WHERE id = 5
+  function: between
+  signature: "between(integer, integer, integer) → boolean"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: between__float__in_range
+  sql: SELECT id, float_val BETWEEN -1.0 AND 5.0 AS result FROM numbers WHERE id IN (1, 2, 3, 6, 7) ORDER BY id
+  function: between
+  signature: "between(double precision, double precision, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__varchar__in_range
+  sql: SELECT id, name BETWEEN 'A' AND 'D' AS result FROM persons WHERE id IN (1, 2, 3, 4) ORDER BY id
+  function: between
+  signature: "between(varchar, varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__date__in_range
+  sql: SELECT id, d BETWEEN DATE '2020-01-01' AND DATE '2024-12-31' AS result FROM dates WHERE id IN (1, 2, 6, 8) ORDER BY id
+  function: between
+  signature: "between(date, date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between__decimal__in_range
+  sql: SELECT id, salary BETWEEN 50000 AND 80000 AS result FROM persons WHERE id IN (1, 2, 3, 4) ORDER BY id
+  function: between
+  signature: "between(numeric, numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: not_between__int__from_table
+  sql: SELECT id, int_val NOT BETWEEN 0 AND 100 AS result FROM numbers WHERE id IN (1, 2, 4, 10) ORDER BY id
+  function: not_between
+  signature: "not_between(integer, integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: between_symmetric__int
+  sql: SELECT id, int_val BETWEEN SYMMETRIC 100 AND 0 AS result FROM numbers WHERE id IN (1, 2, 3, 8) ORDER BY id
+  function: between_symmetric
+  signature: "between_symmetric(integer, integer, integer) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# IS DISTINCT FROM / IS NOT DISTINCT FROM
+# ---------------------------------------------------------------------------
+- id: is_distinct_from__int__both_non_null
+  sql: SELECT id, int_val IS DISTINCT FROM 42 AS result FROM numbers WHERE id = 1
+  function: is_distinct_from
+  signature: "is_distinct_from(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_distinct_from__int__one_null
+  sql: SELECT id, int_val IS DISTINCT FROM 42 AS result FROM numbers WHERE id = 5
+  function: is_distinct_from
+  signature: "is_distinct_from(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: FAIL
+
+- id: is_distinct_from__null_null
+  sql: SELECT NULL IS DISTINCT FROM NULL AS result FROM persons WHERE id = 1
+  function: is_distinct_from
+  signature: "is_distinct_from(unknown, unknown) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_not_distinct_from__int__both_non_null
+  sql: SELECT id, int_val IS NOT DISTINCT FROM 42 AS result FROM numbers WHERE id = 1
+  function: is_not_distinct_from
+  signature: "is_not_distinct_from(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_not_distinct_from__null_null
+  sql: SELECT NULL IS NOT DISTINCT FROM NULL AS result FROM persons WHERE id = 1
+  function: is_not_distinct_from
+  signature: "is_not_distinct_from(unknown, unknown) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# IS NULL / IS NOT NULL
+# ---------------------------------------------------------------------------
+- id: is_null__int__null
+  sql: SELECT id, int_val IS NULL AS result FROM numbers WHERE id = 5
+  function: is_null
+  signature: "is_null(integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_null__int__not_null
+  sql: SELECT id, int_val IS NULL AS result FROM numbers WHERE id = 1
+  function: is_null
+  signature: "is_null(integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_null__varchar__null
+  sql: SELECT id, nullable_val IS NULL AS result FROM strings WHERE id = 3
+  function: is_null
+  signature: "is_null(varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_null__date__null
+  sql: SELECT id, d IS NULL AS result FROM dates WHERE id = 5
+  function: is_null
+  signature: "is_null(date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_not_null__int__not_null
+  sql: SELECT id, int_val IS NOT NULL AS result FROM numbers WHERE id = 1
+  function: is_not_null
+  signature: "is_not_null(integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: is_not_null__int__null
+  sql: SELECT id, int_val IS NOT NULL AS result FROM numbers WHERE id = 5
+  function: is_not_null
+  signature: "is_not_null(integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# IS TRUE / IS FALSE / IS UNKNOWN (boolean tests)
+# ---------------------------------------------------------------------------
+- id: is_true__boolean__true
+  sql: SELECT id, active IS TRUE AS result FROM persons WHERE id = 1
+  function: is_true
+  signature: "is_true(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_true__boolean__false
+  sql: SELECT id, active IS TRUE AS result FROM persons WHERE id = 3
+  function: is_true
+  signature: "is_true(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_true__boolean__null
+  sql: SELECT id, active IS TRUE AS result FROM persons WHERE id = 8
+  function: is_true
+  signature: "is_true(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_false__boolean__false
+  sql: SELECT id, active IS FALSE AS result FROM persons WHERE id = 3
+  function: is_false
+  signature: "is_false(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_false__boolean__null
+  sql: SELECT id, active IS FALSE AS result FROM persons WHERE id = 8
+  function: is_false
+  signature: "is_false(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_unknown__boolean__null
+  sql: SELECT id, active IS UNKNOWN AS result FROM persons WHERE id = 8
+  function: is_unknown
+  signature: "is_unknown(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_unknown__boolean__not_null
+  sql: SELECT id, active IS UNKNOWN AS result FROM persons WHERE id = 1
+  function: is_unknown
+  signature: "is_unknown(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_not_true__boolean__false
+  sql: SELECT id, active IS NOT TRUE AS result FROM persons WHERE id = 3
+  function: is_not_true
+  signature: "is_not_true(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_not_false__boolean__true
+  sql: SELECT id, active IS NOT FALSE AS result FROM persons WHERE id = 1
+  function: is_not_false
+  signature: "is_not_false(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: is_not_unknown__boolean__not_null
+  sql: SELECT id, active IS NOT UNKNOWN AS result FROM persons WHERE id = 1
+  function: is_not_unknown
+  signature: "is_not_unknown(boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# IN / NOT IN
+# ---------------------------------------------------------------------------
+- id: in__int__match
+  sql: SELECT id, int_val IN (42, 100, 7) AS result FROM numbers WHERE id IN (1, 8, 9) ORDER BY id
+  function: in
+  signature: "in(integer, list) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: in__int__no_match
+  sql: SELECT id, int_val IN (999, 888) AS result FROM numbers WHERE id = 1
+  function: in
+  signature: "in(integer, list) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: in__int__null
+  sql: SELECT id, int_val IN (42, NULL) AS result FROM numbers WHERE id IN (1, 5) ORDER BY id
+  function: in
+  signature: "in(integer, list) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: in__varchar__match
+  sql: SELECT id, name IN ('Alice', 'Bob', 'Charlie') AS result FROM persons WHERE id IN (1, 4, 5) ORDER BY id
+  function: in
+  signature: "in(varchar, list) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: not_in__int__from_table
+  sql: SELECT id, int_val NOT IN (42, 100, 7) AS result FROM numbers WHERE id IN (1, 2, 3) ORDER BY id
+  function: not_in
+  signature: "not_in(integer, list) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# GREATEST / LEAST
+# ---------------------------------------------------------------------------
+- id: greatest__int__from_table
+  sql: SELECT GREATEST(int_val, small_val, 0) AS result FROM numbers WHERE id IN (1, 2, 8) ORDER BY 1
+  function: greatest
+  signature: "greatest(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: greatest__varchar__literals
+  sql: SELECT GREATEST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
+  function: greatest
+  signature: "greatest(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: greatest__int__with_null
+  sql: SELECT GREATEST(int_val, NULL, 0) AS result FROM numbers WHERE id = 1
+  function: greatest
+  signature: "greatest(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: least__int__from_table
+  sql: SELECT LEAST(int_val, small_val, 0) AS result FROM numbers WHERE id IN (1, 2, 8) ORDER BY 1
+  function: least
+  signature: "least(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: least__varchar__literals
+  sql: SELECT LEAST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
+  function: least
+  signature: "least(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: least__int__with_null
+  sql: SELECT LEAST(int_val, NULL, 0) AS result FROM numbers WHERE id = 1
+  function: least
+  signature: "least(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# NULLIF
+# ---------------------------------------------------------------------------
+- id: nullif__int__equal
+  sql: SELECT NULLIF(int_val, 42) AS result FROM numbers WHERE id = 1
+  function: nullif
+  signature: "nullif(integer, integer) → integer"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: nullif__int__not_equal
+  sql: SELECT NULLIF(int_val, 999) AS result FROM numbers WHERE id = 1
+  function: nullif
+  signature: "nullif(integer, integer) → integer"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: nullif__varchar__equal
+  sql: SELECT NULLIF(name, 'Alice') AS result FROM persons WHERE id = 1
+  function: nullif
+  signature: "nullif(varchar, varchar) → varchar"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: nullif__varchar__not_equal
+  sql: SELECT NULLIF(name, 'Nobody') AS result FROM persons WHERE id = 1
+  function: nullif
+  signature: "nullif(varchar, varchar) → varchar"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# Comparison with filter (WHERE clause usage)
+# ---------------------------------------------------------------------------
+- id: eq__filter__int
+  sql: SELECT id, name FROM persons WHERE age = 30 ORDER BY id
+  function: "="
+  signature: "=(integer, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: neq__filter__int
+  sql: SELECT id, name FROM persons WHERE age <> 30 ORDER BY id
+  function: "<>"
+  signature: "<>(integer, integer) → boolean"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: lt__filter__decimal
+  sql: SELECT id, name FROM persons WHERE salary < 60000 ORDER BY id
+  function: "<"
+  signature: "<(numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__filter__decimal
+  sql: SELECT id, name FROM persons WHERE salary > 90000 ORDER BY id
+  function: ">"
+  signature: ">(numeric, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lte__filter__date
+  sql: SELECT id FROM dates WHERE d <= DATE '2000-01-01' ORDER BY id
+  function: "<="
+  signature: "<=(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gte__filter__date
+  sql: SELECT id FROM dates WHERE d >= DATE '2025-01-01' ORDER BY id
+  function: ">="
+  signature: ">=(date, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Cross-type comparisons (integer vs numeric/float)
+# ---------------------------------------------------------------------------
+- id: eq__int_vs_decimal
+  sql: SELECT id, int_val = 42.0 AS result FROM numbers WHERE id = 1
+  function: "="
+  signature: "=(integer, numeric) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__int_vs_float
+  sql: SELECT id, int_val < 42.5 AS result FROM numbers WHERE id = 1
+  function: "<"
+  signature: "<(integer, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__int_vs_float
+  sql: SELECT id, int_val > 41.5 AS result FROM numbers WHERE id = 1
+  function: ">"
+  signature: ">(integer, double precision) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__bigint_vs_int
+  sql: SELECT id, big_val > 1000 AS result FROM numbers WHERE id IN (1, 2, 3) ORDER BY id
+  function: ">"
+  signature: ">(bigint, integer) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Postgres unknown-type inference: string literal vs typed column
+# In Postgres, unquoted string literals are type 'unknown' and get
+# auto-cast to the comparison target type.
+# ---------------------------------------------------------------------------
+- id: gt__varchar_vs_int_literal__pg_unknown_cast
+  sql: SELECT CASE WHEN '8' > '10' THEN 'lexicographic' ELSE 'numeric' END AS result FROM persons WHERE id = 1
+  function: ">"
+  signature: ">(varchar, varchar) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: gt__string_literal_date__pg_unknown_cast
+  sql: SELECT CASE WHEN '2026-01-01' > d THEN true ELSE false END AS result FROM dates WHERE id = 1
+  function: ">"
+  signature: ">(unknown, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: eq__string_literal_date__pg_unknown_cast
+  sql: SELECT CASE WHEN '2023-01-15' = d THEN true ELSE false END AS result FROM dates WHERE id = 1
+  function: "="
+  signature: "=(unknown, date) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: lt__string_literal_int__pg_unknown_cast
+  sql: SELECT CASE WHEN '5' < int_val THEN true ELSE false END AS result FROM numbers WHERE id = 1
+  function: "<"
+  signature: "<(unknown, integer) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: gte__string_literal_decimal__pg_unknown_cast
+  sql: SELECT CASE WHEN '50000.00' >= salary THEN true ELSE false END AS result FROM persons WHERE id = 1
+  function: ">="
+  signature: ">=(unknown, numeric) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: eq__string_literal_boolean__pg_unknown_cast
+  sql: SELECT CASE WHEN 'true' = active THEN 'match' ELSE 'no match' END AS result FROM persons WHERE id = 1
+  function: "="
+  signature: "=(unknown, boolean) → boolean"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: neq__string_literal_timestamp__pg_unknown_cast
+  sql: SELECT CASE WHEN '2023-01-15 10:30:00' <> ts THEN true ELSE false END AS result FROM dates WHERE id = 1
+  function: "<>"
+  signature: "<>(unknown, timestamp) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Chained / compound comparisons
+# ---------------------------------------------------------------------------
+- id: compound__and__int_comparisons
+  sql: SELECT id FROM numbers WHERE int_val > 0 AND int_val < 100 ORDER BY id
+  function: "and"
+  signature: "and(boolean, boolean) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: compound__or__int_comparisons
+  sql: SELECT id FROM numbers WHERE int_val < -100 OR int_val > 100 ORDER BY id
+  function: "or"
+  signature: "or(boolean, boolean) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: compound__not__comparison
+  sql: SELECT id FROM numbers WHERE NOT (int_val > 0) AND int_val IS NOT NULL ORDER BY id
+  function: "not"
+  signature: "not(boolean) → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Comparison in SELECT expressions (computed boolean columns)
+# ---------------------------------------------------------------------------
+- id: comparison__select__multi_type
+  sql: SELECT id, int_val > 0 AS positive, float_val > 0 AS float_positive, name > 'D' AS name_after_d FROM persons WHERE id IN (1, 3, 5) ORDER BY id
+  function: ">"
+  signature: ">(any, any) → boolean"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: comparison__select__all_operators
+  sql: SELECT id, int_val = 42 AS eq, int_val <> 42 AS neq, int_val < 42 AS lt, int_val > 42 AS gt, int_val <= 42 AS lte, int_val >= 42 AS gte FROM numbers WHERE id IN (1, 2, 8) ORDER BY id
+  function: comparison
+  signature: "comparison operators → boolean"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# COALESCE (comparison-related, often grouped with comparison functions)
+# ---------------------------------------------------------------------------
+- id: coalesce__int__first_non_null
+  sql: SELECT COALESCE(int_val, 0) AS result FROM numbers WHERE id = 5
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: coalesce__int__already_non_null
+  sql: SELECT COALESCE(int_val, 0) AS result FROM numbers WHERE id = 1
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: coalesce__varchar__first_non_null
+  sql: SELECT COALESCE(nullable_val, 'default') AS result FROM strings WHERE id = 3
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: coalesce__multi__chain
+  sql: SELECT COALESCE(NULL, NULL, int_val, 0) AS result FROM numbers WHERE id = 1
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: coalesce__all_null
+  sql: SELECT COALESCE(NULL, NULL, NULL) AS result FROM persons WHERE id = 1
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+

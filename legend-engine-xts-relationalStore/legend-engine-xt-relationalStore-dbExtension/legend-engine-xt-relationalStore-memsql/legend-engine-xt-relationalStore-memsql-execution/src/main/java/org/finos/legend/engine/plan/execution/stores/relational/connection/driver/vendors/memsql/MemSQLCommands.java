@@ -56,6 +56,12 @@ public class MemSQLCommands extends RelationalDatabaseCommands
     }
 
     @Override
+    public String createTempTable(String tableName, List<Column> columns)
+    {
+        return "CREATE TEMPORARY TABLE " + tableName + " (" + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(", ")) + ")";
+    }
+
+    @Override
     public <T> T accept(RelationalDatabaseCommandsVisitor<T> visitor)
     {
         return ((RelationalDatabaseCommandsVisitor<T>)visitor).visit(this);
