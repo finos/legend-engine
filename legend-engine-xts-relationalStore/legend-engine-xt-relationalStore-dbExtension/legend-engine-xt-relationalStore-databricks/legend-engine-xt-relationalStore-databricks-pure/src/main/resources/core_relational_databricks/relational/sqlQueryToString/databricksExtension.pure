@@ -2,6 +2,7 @@ import meta::relational::functions::sqlQueryToString::databricks::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
@@ -59,6 +60,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
+      joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
@@ -312,6 +314,108 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 // needs the operand's relational type (only available on the DynaFunction node, not the rendered SQL),
 // so it is made here rather than inside a `ToSql` transform.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
+{
+   if($func->isQuantifiedComparisonForDatabricks(),
+      | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$func->rewriteQuantifiedComparisonForDatabricks($sgc)]})),
+      | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+}
+
+// The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
+// greaterThanEqualAny/greaterThanEqualAll/lessThanEqualAny/lessThanEqualAll to ANSI quantified-comparison
+// syntax (`value = any (subquery)` / `value > all (subquery)`) - processRelationQuantifiedComparison in
+// pureToSQLQuery.pure represents the quantifier as an anyOf/allOf DynaFunction wrapping the sub-select,
+// rather than fusing it into the comparator name. Databricks/Spark's parser rejects this syntax outright
+// ([PARSE_SYNTAX_ERROR]) - Spark has no quantified-comparison operator at all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isQuantifiedComparisonForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.parameters->size() == 2
+      && $func.parameters->at(1)->instanceOf(DynaFunction)
+      && $func.parameters->at(1)->cast(@DynaFunction).name->in(['anyOf', 'allOf']);
+}
+
+// Rewrites to the semantically-equivalent EXISTS/NOT EXISTS form Spark supports, reusing the same
+// 'exists'/'not' DynaFunctions that meta::pure::functions::relation::exists()/in() already render
+// correctly on every dialect (see extensionDefaults.pure's generic 'exists' registration) - this is not
+// a new SQL shape, just the same one built by hand instead of by processRelationExists.
+//
+//   x <cmp> ANY (sub)  ⟺  EXISTS (sub WHERE x <cmp> col)
+//   x <cmp> ALL (sub)  ⟺  NOT EXISTS (sub WHERE NOT (x <cmp> col))  =  NOT EXISTS (sub WHERE x <negated cmp> col)
+//
+// Both equivalences hold exactly (not just "happens to produce the same boolean result") once the
+// sub-select's column has no nulls, which processRelationQuantifiedComparison already guarantees before
+// Databricks ever sees this tree (excludeNullsFromQuantifiedSubSelect / excludeNullsFromSearchedColumn).
+//
+// A negated equal/equalAll (e.g. testEqualAny_Negated) never reaches here as a literal 'notEqual' node:
+// the shared processNot (dbExtension.pure) redirects non-literal 'equal' negation to a renamed
+// 'nullSafeNotEqual' DynaFunction and re-dispatches it, so that renamed shape is what actually needs
+// recognizing, with the negation baked in directly (comparatorInfoForDatabricksQuantifiedComparison
+// below). A negated inequality (e.g. testGreaterThanAll_Negated), by contrast, is never renamed -
+// processNot instead just prepends the literal text 'not ' in front of this function's own (non-negated)
+// rendering, so no special-casing is needed there: composing 'not ' with an already-correct
+// 'not exists (...)' yields a harmless (if slightly redundant) 'not not exists (...)', which is valid SQL
+// and evaluates back to the exact intended result.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::rewriteQuantifiedComparisonForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let value = $func.parameters->at(0);
+   let quantifierFunc = $func.parameters->at(1)->cast(@DynaFunction);
+   let subSelect = $quantifierFunc.parameters->toOne()->cast(@SelectSQLQuery);
+   let isAny = $quantifierFunc.name == 'anyOf';
+
+   let comparatorInfo = $func.name->comparatorInfoForDatabricksQuantifiedComparison();
+   let baseComparator = $comparatorInfo.first;
+   let isNegatedAtNode = $comparatorInfo.second;
+
+   let effectiveComparator = if($isAny, | $baseComparator, | $baseComparator->negateComparatorForDatabricksQuantifiedComparison());
+   let useOuterNot = if($isAny, | $isNegatedAtNode, | !$isNegatedAtNode);
+
+   // The Relation<Z=(?:U)> signature guarantees a single column (see processRelationQuantifiedComparison).
+   let col = $subSelect.columns->toOne()->match([a: Alias[1] | $a.relationalElement, r: RelationalOperationElement[1] | $r]);
+   let comparison = ^DynaFunction(name = $effectiveComparator, parameters = [$value, $col]);
+
+   // A correlated filter on the sub-select's own (possibly aggregated) column belongs in HAVING rather
+   // than WHERE when the sub-select is grouped, mirroring excludeNullsFromSearchedColumn's same choice.
+   let filteredSub = if($subSelect.groupBy->isEmpty(),
+                        | ^$subSelect(filteringOperation = $subSelect.filteringOperation->concatenate($comparison)->andFilters($sgc.extensions)),
+                        | ^$subSelect(havingOperation = $subSelect.havingOperation->concatenate($comparison)->andFilters($sgc.extensions)));
+
+   // A correlated EXISTS never needs the inner columns, and `select 1` keeps it valid when the inner
+   // relation is a group-by (mirrors processRelationExists).
+   let existsExpr = ^DynaFunction(name = 'exists', parameters = ^$filteredSub(columns = [^Literal(value = 1)]));
+
+   (if($useOuterNot, | ^DynaFunction(name = 'not', parameters = $existsExpr), | $existsExpr))->processOperation($sgc);
+}
+
+// Maps a comparator DynaFunction name to (its ANY-quantifier base comparator, whether the name already
+// bakes in a negation) - see the note on rewriteQuantifiedComparisonForDatabricks above for why 'equal'
+// negation surfaces as a renamed 'nullSafeNotEqual' node here rather than as a literal 'notEqual' one.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::comparatorInfoForDatabricksQuantifiedComparison(name:String[1]):Pair<String,Boolean>[1]
+{
+   [
+      pair('equal',            pair('equal', false)),
+      pair('notEqual',         pair('equal', true)),
+      pair('nullSafeEqual',    pair('equal', false)),
+      pair('nullSafeNotEqual', pair('equal', true)),
+      pair('greaterThan',      pair('greaterThan', false)),
+      pair('greaterThanEqual', pair('greaterThanEqual', false)),
+      pair('lessThan',         pair('lessThan', false)),
+      pair('lessThanEqual',    pair('lessThanEqual', false))
+   ]->newMap()->get($name)
+    ->toOne('Unexpected comparator for a Databricks quantified-comparison rewrite: ' + $name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::negateComparatorForDatabricksQuantifiedComparison(name:String[1]):String[1]
+{
+   [
+      pair('equal',            'notEqual'),
+      pair('greaterThan',      'lessThanEqual'),
+      pair('greaterThanEqual', 'lessThan'),
+      pair('lessThan',         'greaterThanEqual'),
+      pair('lessThanEqual',    'greaterThan')
+   ]->newMap()->get($name)
+    ->toOne('Unexpected base comparator to negate for a Databricks quantified-comparison rewrite: ' + $name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
    let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
    if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
@@ -1157,8 +1261,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
            // before subscripting with '[index]' (bracket-indexing a bare VARIANT raises
            // INVALID_EXTRACT_BASE_FIELD_TYPE). try_cast (not cast) mirrors the sibling flatten
            // functions below: a plain cast of a VARIANT holding a JSON-string array representation
-           // raises INVALID_VARIANT_CAST.
-           a: SemiStructuredArrayElementAccess[1] | 'try_cast(' + $processedOperand + ' as array<variant>)[' + $a.index->cast(@Literal).value->toString() + ']'
+           // raises INVALID_VARIANT_CAST. try_element_at (not bracket '[index]') is required on top
+           // of that: Databricks' bracket subscript on an ARRAY raises INVALID_ARRAY_INDEX when the
+           // (possibly filtered-down-to-empty) array doesn't have that many elements, whereas Pure's
+           // at() must tolerate an out-of-range index by returning null (mirroring array_first/
+           // array_last's use of try_element_at above). Pure's index is 0-based; try_element_at is
+           // 1-based, hence the '+ 1'.
+           a: SemiStructuredArrayElementAccess[1] | 'try_element_at(try_cast(' + $processedOperand + ' as array<variant>), ' + ($a.index->cast(@Literal).value->cast(@Integer) + 1)->toString() + ')'
         ]);
 
         if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForDatabricksSemiStructuredData($s.returnType));
@@ -1217,6 +1326,119 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    + $j.alias
          ->map(a|^$a(name = '`' + $a.name + '`'))
          ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
+}
+
+// Databricks/Spark has no native AS OF JOIN syntax (unlike Snowflake's `asof join ... match_condition(...)`
+// or DuckDB's `asof left join`). The default generic joinProcessor (extensionDefaults.pure) explicitly
+// asserts on any AsOfJoin, so it must be fully replaced here - not just extended - meaning the non-AsOf
+// Join branch below has to reproduce the default's rendering exactly (mirrored from
+// meta::relational::functions::sqlQueryToString::default::processJoin).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinForDatabricks(j:JoinTreeNode[1], dbConfig:DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   $j.join->match([
+      asOf: AsOfJoin[1] | $j->processAsOfJoinForDatabricks($asOf, $dbConfig, $format, $extensions),
+      join: Join[1]      | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+                            + $j.alias->map(a|^$a(name = '"' + $a.name + '"'))
+                                ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                            + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
+   ]);
+}
+
+// Rewrites an AsOfJoin to a correlated LEFT JOIN LATERAL: the right-hand relation, filtered by the as-of
+// match condition (and, optionally, the equality "key match" condition supplied as asOfJoin()'s 4th
+// argument), ordered by the matched column in the direction that puts the as-of match on top, LIMIT 1.
+// Mirrors processJoinForSnowflake's AsOfJoin[1]/Join[1] match shape, but rewrites to LATERAL instead of
+// native `asof join ... match_condition`, since Spark has no such operator at all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processAsOfJoinForDatabricks(j:JoinTreeNode[1], asOf:AsOfJoin[1], dbConfig:DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   assert($asOf.operation->instanceOf(DynaFunction), | 'Error: the AsOf join operation is not a DynaFunction');
+   let dFunc = $asOf.operation->cast(@DynaFunction);
+
+   // A key-match (4-argument asOfJoin()) folds an equality condition alongside the as-of match via 'and'
+   // (see processRelationJoin's finalOp) - mirrors processJoinForSnowflake's own 'and' split for
+   // MATCH_CONDITION vs ON.
+   let matchCondition = if($dFunc.name == 'and', | $dFunc.parameters->at(0)->cast(@DynaFunction), | $dFunc);
+   let keyCondition = if($dFunc.name == 'and', | [$dFunc.parameters->at(1)], | []);
+
+   assert(['lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual']->contains($matchCondition.name),
+          | 'AsOfJoin match condition "' + $matchCondition.name + '" is not supported on Databricks');
+
+   let rightAlias = $j.alias->toOne();
+   let baseSubSelect = $rightAlias.relationalElement->cast(@SelectSQLQuery);
+   assert($baseSubSelect.orderBy->isEmpty() && $baseSubSelect.fromRow->isEmpty() && $baseSubSelect.toRow->isEmpty(),
+          | 'AsOfJoin on Databricks does not yet support a right-hand relation that already has its own sort/limit applied');
+
+   // processJoinCondition (pureToSQLQuery.pure) built the match/key conditions against the right-hand
+   // side's *outer* alias, as if both sides were plain sibling table aliases in the same FROM clause -
+   // correct for a real join, but that outer alias name is not a valid reference from *inside* the
+   // LATERAL subquery it is about to become (it is the name attached to the parenthesized subquery as a
+   // whole, not visible within it). Swap each such reference for the expression the right relation's own
+   // SELECT list already uses for that column - which *is* valid there, since the filter/order added
+   // below run in that same inner scope. Left-side (outer, correlated) references are left untouched:
+   // Spark LATERAL makes the outer alias visible inside the subquery, unlike the right alias's own name.
+   let matchColumnName = $matchCondition.parameters->filter(p | $p->isColumnOfAliasForDatabricks($rightAlias))
+                            ->toOne('Could not identify the matched column on the right-hand side of an AsOf join')
+                            ->cast(@TableAliasColumn).column.name;
+   // x > y picks the closest preceding y (largest y not exceeding x -> order the candidates by y DESC);
+   // x < y picks the closest following y (smallest y not preceded by x -> order the candidates by y ASC).
+   let direction = if($matchCondition.name->in(['greaterThan', 'greaterThanEqual']),
+                      | meta::relational::metamodel::SortDirection.DESC,
+                      | meta::relational::metamodel::SortDirection.ASC);
+
+   let matchedColumn = $baseSubSelect->columnExpressionByNameForDatabricksAsOfJoin($matchColumnName);
+   let rewrittenMatchCondition = $matchCondition->rewriteRightSideForLateralForDatabricks($rightAlias, $baseSubSelect)->cast(@DynaFunction);
+   let rewrittenKeyCondition = $keyCondition->map(k | $k->rewriteRightSideForLateralForDatabricks($rightAlias, $baseSubSelect));
+
+   // A correlated filter on the right-hand relation's own (possibly aggregated) column belongs in HAVING
+   // rather than WHERE when that relation is grouped, mirroring the same choice made for quantified
+   // comparisons above (excludeNullsFromSearchedColumn's pattern).
+   let filteredSubSelect = if($baseSubSelect.groupBy->isEmpty(),
+                              | ^$baseSubSelect(filteringOperation = $baseSubSelect.filteringOperation->concatenate($rewrittenMatchCondition)->concatenate($rewrittenKeyCondition)->andFilters($extensions)),
+                              | ^$baseSubSelect(havingOperation = $baseSubSelect.havingOperation->concatenate($rewrittenMatchCondition)->concatenate($rewrittenKeyCondition)->andFilters($extensions)));
+
+   let orderedLimitedSubSelect = ^$filteredSubSelect(orderBy = ^OrderBy(column = $matchedColumn, direction = $direction), toRow = ^Literal(value = 1));
+
+   let subSelectAlias = ^$rightAlias(name = '`' + $rightAlias.name + '`', relationalElement = $orderedLimitedSubSelect);
+
+   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+   + 'lateral '
+   + $subSelectAlias->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isColumnOfAliasForDatabricks(op:RelationalOperationElement[1], alias:TableAlias[1]):Boolean[1]
+{
+   $op->instanceOf(TableAliasColumn) && $op->cast(@TableAliasColumn).alias.name == $alias.name;
+}
+
+// A SelectSQLQuery's columns are Alias-wrapped when the projected name differs from (or needs to be
+// distinguished from) the underlying column's own name, but pass through as bare TableAliasColumn
+// otherwise (see e.g. createAliasWithColumns in pureToSQLQuery.pure) - both shapes occur across the
+// asOfJoin PCT tests, so both need handling here.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::columnExpressionByNameForDatabricksAsOfJoin(select:SelectSQLQuery[1], name:String[1]):RelationalOperationElement[1]
+{
+   $select.columns->filter(c | $c->match([
+                                   a: Alias[1]             | $a.name == $name,
+                                   t: TableAliasColumn[1]  | $t.column.name == $name,
+                                   r: RelationalOperationElement[1] | false
+                                ]))
+      ->toOne('Could not find column \'' + $name + '\' on the right-hand side of an AsOf join')
+      ->match([
+          a: Alias[1] | $a.relationalElement,
+          r: RelationalOperationElement[1] | $r
+      ]);
+}
+
+// Recursively replaces every reference to a column of $rightAlias with the expression $rightSelect's own
+// SELECT list already uses for that same column - see the note on processAsOfJoinForDatabricks above.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::rewriteRightSideForLateralForDatabricks(op:RelationalOperationElement[1], rightAlias:TableAlias[1], rightSelect:SelectSQLQuery[1]):RelationalOperationElement[1]
+{
+   if($op->isColumnOfAliasForDatabricks($rightAlias),
+      | $rightSelect->columnExpressionByNameForDatabricksAsOfJoin($op->cast(@TableAliasColumn).column.name),
+      | if($op->instanceOf(DynaFunction),
+          | ^DynaFunction(name = $op->cast(@DynaFunction).name, parameters = $op->cast(@DynaFunction).parameters->map(p | $p->rewriteRightSideForLateralForDatabricks($rightAlias, $rightSelect))),
+          | $op
+        )
+   );
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks(schema:String[1], functionName:String[1], params:FunctionParameter[*]):String[1]

@@ -68,15 +68,7 @@ public class Test_Relational_Databricks_Semistructured
                 // issue as testSemiStructuredUnionMappingWithBindingAndFilter above.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'")
-                // [needsInvestigation] Filtering a semi-structured array then indexing it
-                // with at(0): filtering to zero matches still reaches the index-access SQL,
-                // which throws a hard out-of-bounds error instead of the NULL Pure's at()
-                // semantics expect for an empty collection. Needs a `get()`/try_element_at-
-                // style tolerant index rewrite in the Databricks array-index codegen.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
-                        "[INVALID_ARRAY_INDEX]");
+                        "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
