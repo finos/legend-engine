@@ -2635,8 +2635,25 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ])->evaluateAndDeactivate();
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(s:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+//we flatten otherwise nested creates huge resultant pure due to null checking
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenStringConcatenate(expr: StringConcatenate[1]): StringConcatenate[1]
 {
+  ^StringConcatenate(values = $expr.values->map(v | $v->flattenStringConcatenateValues()));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenStringConcatenateValues(expr: meta::external::query::sql::metamodel::Expression[1]): meta::external::query::sql::metamodel::Expression[*]
+{
+  $expr->match([
+    s: StringConcatenate[1] |
+      $s.values->map(v | $v->flattenStringConcatenateValues());,
+    e: meta::external::query::sql::metamodel::Expression[1] | $e
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStringConcatenate(original:StringConcatenate[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let s = flattenStringConcatenate($original);
+
   //we clear the type to ensure things that are concatenating to create a date are not processed as date e.g. where date > cast('2026' || '/01/01' as date)
   processStringConcatenateWithArgumentTransform($s.values->map(v | $v->processExpression(^$expContext(type = []), $context)), [], false, false, $expContext);
 }
