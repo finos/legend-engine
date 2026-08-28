@@ -101,12 +101,20 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  # FAIL, not ERROR, and the distinction is the whole point: the sort key now
+  # resolves, which exposes that the helper column it resolves to holds the wrong
+  # value. processProjection materialises UPPER(d.name) with processExtend against
+  # projectedContext, whose contexts list is empty, so the qualifier `d` cannot
+  # resolve and the inner reference falls back to the bare name `name` -- p's
+  # column. The generated SQL reads upper("name_p"). Resolving the key against the
+  # projected relation did not cause this and cannot repair it; the fix is to
+  # rewrite the key's references to their output names before extending.
   - id: colres_e3_order_by_expression_over_join
     sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY UPPER(d.name), name"
     feature: "ORDER BY expression over a join"
     category: "column_resolution"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
 
   # --- design guards -----------------------------------------------------
   #
@@ -332,8 +340,8 @@ tests:
     sql: "SELECT dept_id, COUNT(*) AS c FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY COUNT(*) DESC, dept_id"
     feature: "ORDER BY aggregate expression (excluded from materialisation)"
     category: "column_resolution"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Nor for a window query, for the same reason.
   - id: colres_gap_order_by_expression_in_window_query

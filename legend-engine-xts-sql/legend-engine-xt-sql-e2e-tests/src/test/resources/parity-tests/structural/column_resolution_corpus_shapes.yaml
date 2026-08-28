@@ -233,15 +233,15 @@ tests:
     sql: "SELECT p.name AS name, p.salary AS salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.salary DESC NULLS LAST, p.name"
     feature: "statement-level ORDER BY ... NULLS LAST over a join (control: no window)"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g1a_statement_order_nulls_first_over_join
     sql: "SELECT p.name AS name, p.hire_date AS hire_date FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id ORDER BY p.hire_date ASC NULLS FIRST, p.name"
     feature: "statement-level ORDER BY ... NULLS FIRST over a LEFT JOIN (control: no window)"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # ==========================================================================
   # G1b. The CASE null-ordering guard inside a window's ORDER BY, over a join
@@ -618,8 +618,17 @@ tests:
   # Mostly bare qualified references. The ORDER BY extension collection in
   # processProjection skips QualifiedNameReference keys by construction, and the
   # alias repair runs only inside processGroupBy / processOlapGroupBy, never in
-  # the plain projection path -- so a qualified sort key over a join has neither
-  # mechanism behind it.
+  # the plain projection path -- so a qualified sort key over a join had neither
+  # mechanism behind it and named a pre-projection column the sorted relation no
+  # longer had.
+  #
+  # projectedSortKeyName now resolves these against the relation the sort applies
+  # to rather than against the context, which is why most of this section is PASS.
+  # Two shapes it deliberately does not reach, and their status says which:
+  #   * a key the projection keeps only through a CAST is materialised by nothing,
+  #     so there is no column to resolve to -- still ERROR;
+  #   * an expression key over a join resolves to a helper column that processExtend
+  #     computed from the wrong join side -- FAIL, and a separate defect.
   # ==========================================================================
 
   # Two derived tables projecting the SAME output name is load-bearing: with a
@@ -628,22 +637,22 @@ tests:
     sql: "SELECT a.id AS id, org.val AS org_val, ent.val AS ent_val FROM persons a LEFT OUTER JOIN (SELECT person_id, MAX(status) AS val FROM orders GROUP BY person_id) org ON a.id = org.person_id LEFT OUTER JOIN (SELECT person_id, MIN(status) AS val FROM orders GROUP BY person_id) ent ON a.id = ent.person_id ORDER BY a.id"
     feature: "statement ORDER BY a qualified key, two derived sides sharing an output name"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_qualified_key_over_left_join
     sql: "SELECT p.name AS name, d.budget AS budget FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id ORDER BY p.name"
     feature: "statement ORDER BY a qualified key over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_qualified_key_over_three_way_join
     sql: "SELECT p.name AS name, o.id AS order_id, d.budget AS budget FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id ORDER BY p.name, o.id"
     feature: "statement ORDER BY qualified keys over a three-way join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_column_projected_only_through_a_cast
     sql: "SELECT CAST(p.id AS VARCHAR(10)) AS id_text, p.name AS name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.id"
@@ -652,19 +661,24 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+  # FAIL rather than ERROR: the key resolves to its materialised helper column, and
+  # that column holds UPPER(p.name). See colres_e3_order_by_expression_over_join in
+  # column_resolution_across_renames.yaml for the root cause -- processExtend cannot
+  # resolve the qualifier `d` against projectedContext, so d.name falls back to the
+  # bare name and picks up p's column instead.
   - id: crcs_g4_order_by_expression_over_join
     sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY UPPER(d.name), p.name"
     feature: "statement ORDER BY an expression over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
 
   - id: crcs_g4_order_by_aggregate_expression_over_join
     sql: "SELECT p.dept_id AS dept_id, COUNT(*) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY COUNT(*) DESC, p.dept_id"
     feature: "statement ORDER BY an aggregate expression over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_ordinal_over_join
     sql: "SELECT p.name AS name, d.budget AS budget FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1, 2"
@@ -677,15 +691,54 @@ tests:
     sql: "SELECT DISTINCT p.dept_id AS dept_id FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.dept_id"
     feature: "SELECT DISTINCT with a qualified statement ORDER BY key, over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_qualified_key_renamed_by_projection
     sql: "SELECT p.name AS person_name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.name"
     feature: "statement ORDER BY a source column the projection renamed away"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # The ordinal picking the RIGHT side, so it is not the mirror of
+  # join_inner_basic: what the two share is the base-name collision that makes
+  # the suffix appear at all.
+  - id: crcs_g4_order_by_ordinal_over_join_with_colliding_base_name
+    sql: "SELECT d.name, p.name AS person_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
+    feature: "statement ORDER BY an ordinal naming an unaliased column whose base name collides across the join"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # A results test, not a compile test. Both output names exist, so resolving the
+  # key by its bare rendering picks `name` (p.name) and still compiles -- it just
+  # sorts by the wrong join side. Only a row comparison catches that, which is
+  # why this case is here and not only in testTranspile.pure.
+  - id: crcs_g4_order_by_qualified_key_names_the_second_join_side
+    sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY d.name, p.name"
+    feature: "statement ORDER BY a qualified key whose base name also matches an earlier select item"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Grouping has already discarded p.salary by the time the sort runs, so the key
+  # can only resolve by matching the select item that computes it.
+  - id: crcs_g4_order_by_aliased_aggregate_over_join
+    sql: "SELECT p.dept_id AS dept_id, MAX(p.salary) AS max_sal FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY MAX(p.salary) DESC, p.dept_id"
+    feature: "statement ORDER BY an aggregate the projection aliased, over a join"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # The output alias as the key, rather than the source column: no select item
+  # renders to `person_name`, so this exercises the fallback rather than a match.
+  - id: crcs_g4_order_by_output_alias_over_join
+    sql: "SELECT p.name AS person_name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY person_name"
+    feature: "statement ORDER BY the projection's own output alias, over a join"
+    category: "column_resolution_corpus"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # ==========================================================================
   # G5. Correlated subqueries and nested joins
@@ -1048,15 +1101,15 @@ tests:
     sql: "SELECT EXTRACT(MONTH FROM o.order_date) AS order_month, EXTRACT(YEAR FROM o.order_date) AS order_year, COUNT(*) AS n FROM orders o GROUP BY EXTRACT(MONTH FROM o.order_date), EXTRACT(YEAR FROM o.order_date) ORDER BY EXTRACT(MONTH FROM o.order_date) DESC, EXTRACT(YEAR FROM o.order_date) DESC, COUNT(*) DESC"
     feature: "COUNT(*) as a sort key with EXTRACT group keys"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g6_count_star_as_sort_key_over_join
     sql: "SELECT d.name AS dept_name, COUNT(*) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY d.name ORDER BY COUNT(*) DESC, d.name"
     feature: "COUNT(*) as a sort key over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # UNION ALL of aggregate branches drawn from different joins, each branch
   # grouping on its own side, so the two arms reach processUnion with separately

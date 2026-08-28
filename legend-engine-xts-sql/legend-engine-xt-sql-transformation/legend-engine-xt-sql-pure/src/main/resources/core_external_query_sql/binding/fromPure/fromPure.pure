@@ -1891,13 +1891,92 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
+//The select item an ORDER BY ordinal points at. extractColumnNameFromExpression carries its own copy
+//of these asserts for the GROUP BY path, which must keep resolving pre-projection and so cannot share
+//this code.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ordinalSelectItem(ordinal:IntegerLiteral[1], selectItems:SelectItem[*]):SingleColumn[1]
+{
+  let index = $ordinal.value - 1; //0 index offset in sql is 1;
+  assert($index < $selectItems->size(), 'No select column at index ' + $ordinal.value->toString());
+  assert($selectItems->at($index)->instanceOf(SingleColumn), 'select * not currently supported for index order by');
+  $selectItems->at($index)->cast(@SingleColumn);
+}
+
+//The select item a statement-level sort key names, or nothing. A qualified key is matched on its
+//full name parts first, so 'ORDER BY d.name' over 'SELECT p.name, d.name AS dept_name' finds
+//d.name rather than the first item that happens to end in 'name'. Anything else - an aggregate, an
+//expression - is matched on its context-free rendering, which is how 'ORDER BY COUNT(*)' finds the
+//item the projection called 'cnt'.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedSortKeySelectItem(sortKey:meta::external::query::sql::metamodel::Expression[1], selectItems:SelectItem[*]):SingleColumn[0..1]
+{
+  let columns = $selectItems->filter(si | $si->instanceOf(SingleColumn))->cast(@SingleColumn);
+
+  //empty for anything but a qualified reference, which then matches no select item
+  let keyParts = if (!$sortKey->instanceOf(QualifiedNameReference), | [], | $sortKey->cast(@QualifiedNameReference).name.parts->joinStrings('.'));
+
+  let qualified = $columns->filter(si | $si.expression->instanceOf(QualifiedNameReference))
+                          ->filter(si | $si.expression->cast(@QualifiedNameReference).name.parts->joinStrings('.') == $keyParts)
+                          ->first();
+
+  let rendered = extractNameFromExpression($sortKey, []);
+
+  if ($qualified->isNotEmpty(),
+    | $qualified,
+    | $columns->filter(si | extractNameFromExpression($si.expression, []) == $rendered)->first());
+}
+
+//The statement-level sibling of extensionColumnName and materialisedKeyName. processOrderBy runs
+//after the projection, so its keys have to name columns of the relation the projection produced -
+//and there is no single derivation that always does.
+//
+//The projection uses two naming schemes. When it renames, an output column takes the select item's
+//AS alias ('SELECT p.name AS person_name' over a join yields person_name); when it does not -
+//allColumnsSimpleSelect, or an unaliased item on the GROUP BY path - the column keeps the physical
+//name processDuplicateRenames gave it ('name_p'). Resolving through the context always yields the
+//latter, which is why keys broke over a join; resolving through the select list always yields the
+//former, which breaks the queries the projection left alone.
+//
+//So both are derived and offered as candidates, and the relation itself decides. That is sound here
+//because a candidate is only ever accepted if the relation has a column of that name, and each
+//candidate is join-side precise: the select-list one via the name-parts match above, the context one
+//via the alias map. Only the last resort - the context-free rendering, which names a key
+//processProjection materialised into an extend - is a bare name, and it is reached only when neither
+//precise candidate exists.
+//
+//columns is the post-projection schema: processProjection's closing clone recomputed it, and neither
+//having nor sort alters it. When it is empty there is nothing to probe, so the pre-existing context
+//resolution stands - which is also what a key naming no column at all reports, keeping those errors
+//as informative as they were.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedSortKeyName(sortKey:meta::external::query::sql::metamodel::Expression[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):String[1]
+{
+  let contextName = extractColumnNameFromExpression($sortKey, $selectItems, $context);
+
+  let outputName = $sortKey->match([
+    i:IntegerLiteral[1] | ordinalSelectItem($i, $selectItems)->extractNameFromSingleColumn([]),
+    e:meta::external::query::sql::metamodel::Expression[1] | projectedSortKeySelectItem($e, $selectItems)->map(si | $si->extractNameFromSingleColumn([]))
+  ]);
+
+  //an ordinal names a select item, never a materialised key, so it has no extend to fall back on
+  let extendName = $sortKey->match([
+    i:IntegerLiteral[1] | [],
+    e:meta::external::query::sql::metamodel::Expression[1] | extractNameFromExpression($e, [])
+  ]);
+
+  let candidates = $outputName->concatenate($contextName)->concatenate($extendName)->removeDuplicates();
+
+  let available = $context.columns.name;
+  let resolved = $candidates->filter(c | $c->in($available))->first();
+
+  if ($resolved->isEmpty(), | $contextName, | $resolved->toOne());
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processOrderBy', $_context.debug);
 
   let context = ^$_context(debug = $_context.debug->indent());
 
-  let sortInformation = $sortItems->map(si| createSortItemFunction($si, $selectItems, $context));
+  let sortInformation = $sortItems->map(si| createProjectedSortItemFunction($si, $selectItems, $context));
 
   let newExp = ^TDSBuilder().sort($context.expression->toOne(), $sortInformation, $context.relation->isTrue());
 
@@ -1924,6 +2003,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     let column = extractColumnNameFromExpression($si.sortKey, $selectItems, $context);
 
     ^TDSBuilder().sortItem($si, $column, $context.relation->isTrue());
+}
+
+//Statement-level keys only. They apply to the projected relation, so their column comes from
+//projectedSortKeyName rather than from the context - see the comment there. The two functions above
+//keep resolving through the context: the 3-arg form is reached from ordered aggregation, which runs
+//before any projection, and createSortItemFunctionForColumn serves the window path.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createProjectedSortItemFunction(si:SortItem[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+    ^TDSBuilder().sortItem($si, projectedSortKeyName($si.sortKey, $selectItems, $context), $context.relation->isTrue());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLimitOffset(limit: meta::external::query::sql::metamodel::Expression[0..1], offset: meta::external::query::sql::metamodel::Expression[0..1], _context: SqlTransformContext[1]): SqlTransformContext[1]
