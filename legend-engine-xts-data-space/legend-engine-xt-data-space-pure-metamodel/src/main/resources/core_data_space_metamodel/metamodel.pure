@@ -18,10 +18,14 @@ import meta::pure::metamodel::dataSpace::*;
 Profile meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo
 {
     stereotypes: [
-        Verified
+        Verified,
+        InDevelopment,
+        External
     ];
     tags: [
-        deprecationNotice
+        deprecationNotice,
+        relatedDataSpaces,
+        topics
     ];
 }
 

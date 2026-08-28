@@ -473,6 +473,20 @@ public class DataSpaceAnalyticsHelper
         result.title = dataSpaceProtocol.title;
         result.description = dataSpaceProtocol.description;
 
+        // Resolve DataSpaceInfo profile annotations into structured info result
+        org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceInfoAnalysisResult pureInfo = analysisResult._info();
+        if (pureInfo != null)
+        {
+            DataSpaceInfoAnalysisResult dataSpaceInfo = new DataSpaceInfoAnalysisResult();
+            dataSpaceInfo.isVerified = pureInfo._isVerified();
+            dataSpaceInfo.isInDevelopment = pureInfo._isInDevelopment();
+            dataSpaceInfo.isExternal = pureInfo._isExternal();
+            dataSpaceInfo.topics = pureInfo._topics() == null || pureInfo._topics().toList().isEmpty() ? null : new ArrayList<>(pureInfo._topics().toList());
+            dataSpaceInfo.relatedDataSpaces = pureInfo._relatedDataSpaces() == null || pureInfo._relatedDataSpaces().toList().isEmpty() ? null : new ArrayList<>(pureInfo._relatedDataSpaces().toList());
+            dataSpaceInfo.deprecationNotice = pureInfo._deprecationNotice();
+            result.info = dataSpaceInfo;
+        }
+
         result.taggedValues = ListIterate.collect(dataSpace._taggedValues().toList(), taggedValue ->
         {
             DataSpaceTaggedValueInfo info = new DataSpaceTaggedValueInfo();
