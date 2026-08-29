@@ -1517,8 +1517,8 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
  
    assertEquals('#TDS\n'+
                 '   id,payload\n'+
-                '   1,\'{"person": {"name": "Jose"}}\'\n'+
-                '   3,\'{"person": {"name": "Pedro"}}\'\n'+
+                '   1,\'{"person":{"name":"Jose"}}\'\n'+
+                '   3,\'{"person":{"name":"Pedro"}}\'\n'+
                 '#', $res->toString());
 }
 
