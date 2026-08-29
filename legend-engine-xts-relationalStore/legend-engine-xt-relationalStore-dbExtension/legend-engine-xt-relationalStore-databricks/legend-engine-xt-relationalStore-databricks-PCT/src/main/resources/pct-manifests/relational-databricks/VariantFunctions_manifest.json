@@ -36,5 +36,17 @@
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToClass_Function_1__Boolean_1_",
     "expectedError" : "\"mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Person\""
+  }, {
+    "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyFromNonArray_Function_1__Boolean_1_",
+    "expectedError" : "Expect variant that contains an 'ARRAY', but got 'STRING'"
+  }, {
+    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '[1]'"
+  }, {
+    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_",
+    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
+  }, {
+    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testMapOfMap_Function_1__Boolean_1_",
+    "expectedError" : "cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
   } ]
 }

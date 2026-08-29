@@ -16,6 +16,15 @@
     "test" : "meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_",
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(0)"
   }, {
+    "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_",
+    "expectedError" : "Any is not managed yet!"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_",
+    "expectedError" : "Any is not managed yet!"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
+    "expectedError" : "Parameter to IN operation isn't a literal!"
+  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
     "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES]"
   }, {
@@ -37,11 +46,41 @@
     "test" : "meta::pure::functions::collection::tests::find::testFindUsingVarForFunction_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
+    "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
+    "expectedError" : "Any is not managed yet!"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
+    "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
+  }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
   }, {
+    "test" : "meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_",
+    "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'"
+  }, {
     "test" : "meta::pure::functions::collection::tests::forall::testforAllOnNonEmptySetIsFalse_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::collection::tests::forall::testforAllOnNonEmptySetIsTrue_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyListExplicit_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'"
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveNonStandardFunction_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -51,6 +90,18 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionMixedTypes_Function_1__Boolean_1_",
     "expectedError" : "\"Any is not managed yet!\""
+  }, {
+    "test" : "meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_",
+    "expectedError" : "The low bound (3) can't be higher than the high bound (2) in a slice operation"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_",
+    "expectedError" : "Not supported: Number"
+  }, {
+    "test" : "meta::pure::functions::collection::tests::sort::testSimpleSortReversed_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'sort_T_m__Function_$0_1$__Function_$0_1$__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::collection::tests::sort::testSimpleSortWithFunctionVariables_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'sort_T_m__Function_$0_1$__Function_$0_1$__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
@@ -132,6 +183,18 @@
   }, {
     "test" : "meta::pure::functions::date::tests::testDateFromMinute_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::date::tests::testDateFromMonth_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::date::tests::testDateFromSecond_Function_1__Boolean_1_",
+    "expectedError" : "\nactual:   %1973-11-13T23:09:11.000000000+0000"
+  }, {
+    "test" : "meta::pure::functions::date::tests::testDateFromSubSecond_Function_1__Boolean_1_",
+    "expectedError" : "\nactual:   %1973-11-13T23:09:11.000000000+0000"
+  }, {
+    "test" : "meta::pure::functions::date::tests::testDateFromYear_Function_1__Boolean_1_",
+    "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 1973-11"
@@ -300,6 +363,12 @@
   }, {
     "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
+  }, {
+    "test" : "meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_",
+    "expectedError" : "expected %2014-02-27 to be an instance of DateTime, actual: StrictDate"
+  }, {
+    "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: 123.12300D\nactual:   123.123D"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_",
     "expectedError" : "[CAST_INVALID_INPUT] The value '3.14159d' of the type \"STRING\" cannot be cast to \"DECIMAL(10,0)\""
