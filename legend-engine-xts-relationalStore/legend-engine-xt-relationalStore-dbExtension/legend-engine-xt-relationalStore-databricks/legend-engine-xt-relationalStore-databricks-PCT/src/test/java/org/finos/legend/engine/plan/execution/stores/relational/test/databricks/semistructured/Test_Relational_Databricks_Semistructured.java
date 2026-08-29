@@ -55,26 +55,21 @@ public class Test_Relational_Databricks_Semistructured
                 // sub-selects, not a Databricks-specific fix.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy_Connection_1__Boolean_1_",
-                        "[AMBIGUOUS_REFERENCE]")
-                // [needsInvestigation] Union-mapping-with-binding drops non-Databricks
-                // input rows -- expected 3 firms (A/B/D) but only firm_D returned.
-                // Likely a binding-selection bug in the union router; needs the actual
-                // generated SQL to diagnose further.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBindingAndFilter_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D'")
-                // [needsInvestigation] Union-mapping-with-binding: expected 6 firms
-                // (A/B/C/D/E/F) but returned 3 real firms + 3 nulls. Same class of
-                // issue as testSemiStructuredUnionMappingWithBindingAndFilter above.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::union::testSemiStructuredUnionMappingWithBinding_Connection_1__Boolean_1_",
-                        "actual:   'Firm/FirmName\\nfirm_D\\nfirm_E\\nfirm_F\\nnull\\nnull\\nnull'");
+                        "[AMBIGUOUS_REFERENCE]");
                 // Note: testSemiStructuredArrayFilterAtIndex, testSemiStructuredArrayFilterFirstJoinStrings,
                 // and testJoinOnSemiStructuredPropertyWithQPFilter were quarantined here on master (with the
                 // pre-fix error text) but were fixed and confirmed genuinely passing on Databricks this
                 // session (databricksExtension.pure: try_element_at rewrite, buildMapLambdaForDatabricks
                 // re-boxing, and the isSemiStructuredOperandForDatabricks parseJson dispatch, respectively)
                 // -- those fixes merged in unconflicted, so their manifest entries are correctly omitted here.
+                //
+                // testSemiStructuredUnionMappingWithBindingAndFilter and testSemiStructuredUnionMappingWithBinding
+                // were quarantined here as a confirmed shared-router bug (addMissingColumnIfUnion /
+                // processSemiStructuredRelationalPropertyMapping in pureToSQLQuery.pure /
+                // pureToSQLQuery_variant.pure, out of scope for this module). Post-merge with origin/master
+                // (2026-08-28), the safety check above ("Expected this test to fail... but it passed")
+                // fired for both: master's independent commits fixed the underlying shared-router bug, so
+                // both now genuinely pass on Databricks. Entries removed accordingly.
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
