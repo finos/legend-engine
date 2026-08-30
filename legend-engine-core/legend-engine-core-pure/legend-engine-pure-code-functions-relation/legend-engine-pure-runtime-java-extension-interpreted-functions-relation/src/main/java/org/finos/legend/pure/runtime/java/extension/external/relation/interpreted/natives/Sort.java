@@ -27,6 +27,7 @@ import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.Shared;
 import org.finos.legend.pure.runtime.java.extension.external.relation.interpreted.natives.shared.TDSCoreInstance;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.NullOrder;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.TestTDS;
@@ -60,7 +61,9 @@ public class Sort extends Shared
         {
             String name = c.getValueForMetaPropertyToOne("column").getValueForMetaPropertyToOne("name").getName();
             SortDirection direction = SortDirection.valueOf(c.getValueForMetaPropertyToOne("direction").getName());
-            return new SortInfo(name, direction);
+            CoreInstance nullOrderInstance = c.getValueForMetaPropertyToOne("nullOrder");
+            NullOrder nullOrder = nullOrderInstance == null ? null : NullOrder.valueOf(nullOrderInstance.getName());
+            return new SortInfo(name, direction, nullOrder);
         });
         return sortInfos;
     }

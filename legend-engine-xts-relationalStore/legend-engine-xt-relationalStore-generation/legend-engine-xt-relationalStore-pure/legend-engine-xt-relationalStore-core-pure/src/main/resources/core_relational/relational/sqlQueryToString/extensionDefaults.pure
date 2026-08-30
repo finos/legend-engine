@@ -333,7 +333,7 @@ function meta::relational::functions::sqlQueryToString::default::processWindowCo
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | '') + $s.nullOrder->renderNullOrder())->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrame($sgc),
@@ -507,7 +507,14 @@ function meta::relational::functions::sqlQueryToString::default::processOrderBy(
    $orderBy->map(o | $o.column->match([
         a:Alias[1]|$dbConfig.identifierProcessor($a.name),
         r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $config, $extensions)
-   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'));
+   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc') + $o.nullOrder->renderNullOrder());
+}
+
+function meta::relational::functions::sqlQueryToString::default::renderNullOrder(nullOrder:meta::relational::metamodel::NullOrder[0..1]):String[1]
+{
+   if($nullOrder->isEmpty(),
+      | '',
+      | if($nullOrder->toOne() == meta::relational::metamodel::NullOrder.FIRST, | ' nulls first', | ' nulls last'));
 }
 
 function meta::relational::functions::sqlQueryToString::default::processLimit(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*],
@@ -801,12 +808,16 @@ function meta::relational::functions::sqlQueryToString::default::transformLikePa
       ->concatenate('');
 }
 
-// Alternating column/direction parameters follow the aggregate; see processRelationReduce.
+// column/direction/nullOrder triples follow the aggregate; see processRelationReduce.
 function meta::relational::functions::sqlQueryToString::default::withinGroupOrderBy(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let rest = $f.parameters->tail();
-   assert($rest->size() > 0 && $rest->size()->mod(2) == 0, | 'withinGroup expects an aggregate followed by column/direction pairs, got ' + $rest->size()->toString() + ' trailing parameters');
-   range(0, $rest->size(), 2)->map(i | $rest->at($i)->processOperation($sgc) + ' ' + $rest->at($i + 1)->cast(@Literal).value->cast(@String)->toLower())->joinStrings(', ');
+   assert($rest->size() > 0 && $rest->size()->mod(3) == 0, | 'withinGroup expects an aggregate followed by column/direction/nullOrder triples, got ' + $rest->size()->toString() + ' trailing parameters');
+   range(0, $rest->size(), 3)->map(i |
+      let nullOrder = $rest->at($i + 2)->cast(@Literal).value->cast(@String);
+      $rest->at($i)->processOperation($sgc) + ' ' + $rest->at($i + 1)->cast(@Literal).value->cast(@String)->toLower()
+         + if($nullOrder == 'NONE', | '', | ' nulls ' + $nullOrder->toLower());
+   )->joinStrings(', ');
 }
 
 // Dialects wanting the ordering inside the aggregate's parentheses override this and rebuild from the inner

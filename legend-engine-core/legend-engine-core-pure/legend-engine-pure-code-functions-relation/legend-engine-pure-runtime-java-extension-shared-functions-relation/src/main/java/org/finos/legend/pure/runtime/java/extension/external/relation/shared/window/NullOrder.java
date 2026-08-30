@@ -12,17 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::test::pct::*;
-import meta::pure::metamodel::relation::*;
+package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
 
-function <<PCT.function,
-           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1]):SortInfo<T>[1]
+public enum NullOrder
 {
-   ^SortInfo<T>(column=$column, direction=SortType.DESC)
-}
-
-function <<PCT.function,
-           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1], nullOrder:NullOrder[1]):SortInfo<T>[1]
-{
-   ^SortInfo<T>(column=$column, direction=SortType.DESC, nullOrder=$nullOrder)
+    FIRST,
+    LAST
 }
