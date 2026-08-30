@@ -15,14 +15,13 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-function <<PCT.function,
-           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1]):SortInfo<T>[1]
+function
+   <<PCT.function,
+     functionType.NormalizeRequiredFunction>>
+   {
+      doc.doc = 'Places null values first in the sort defined by the given sort spec (SQL \'NULLS FIRST\'). Without a null order the platform\'s canonical order applies: nulls sort as the largest value, i.e. NULLS LAST on ascending, NULLS FIRST on descending.'
+   }
+   meta::pure::functions::relation::nullsFirst<T>(sortInfo:SortInfo<T>[1]):SortInfo<T>[1]
 {
-   ^SortInfo<T>(column=$column, direction=SortType.DESC)
-}
-
-function <<PCT.function,
-           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1], nullOrder:NullOrder[1]):SortInfo<T>[1]
-{
-   ^SortInfo<T>(column=$column, direction=SortType.DESC, nullOrder=$nullOrder)
+   ^$sortInfo(nullOrder=NullOrder.FIRST)
 }

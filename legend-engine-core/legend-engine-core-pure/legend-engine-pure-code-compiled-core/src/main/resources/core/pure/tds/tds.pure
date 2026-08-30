@@ -162,6 +162,7 @@ Class meta::pure::tds::SortInformation
 {
    column : String[1];
    direction : SortDirection[1];
+   nullOrder : meta::pure::functions::relation::NullOrder[0..1];
 }
 
 Class meta::pure::tds::ColumnSort<T>

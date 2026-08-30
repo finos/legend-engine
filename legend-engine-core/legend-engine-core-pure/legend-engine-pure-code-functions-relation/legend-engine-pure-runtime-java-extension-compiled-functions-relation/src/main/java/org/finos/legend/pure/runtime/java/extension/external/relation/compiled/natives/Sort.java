@@ -42,12 +42,12 @@ public class Sort extends AbstractNative implements Native
     public static void processSortInfo(StringBuilder result, String param)
     {
         result.append("((RichIterable<? extends  Root_meta_pure_functions_relation_SortInfo<?>>)(Object)CompiledSupport.toPureCollection(" + param + "))");
-        result.append(".collect(new DefendedFunction<Root_meta_pure_functions_relation_SortInfo<? extends Object>, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>>()\n" +
+        result.append(".collect(new DefendedFunction<Root_meta_pure_functions_relation_SortInfo<? extends Object>, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>>>()\n" +
                 "{\n" +
                 "    @Override\n" +
-                "    public org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String> valueOf(Root_meta_pure_functions_relation_SortInfo<?> it)\n" +
+                "    public org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>> valueOf(Root_meta_pure_functions_relation_SortInfo<?> it)\n" +
                 "    {\n" +
-                "        return org.eclipse.collections.impl.tuple.Tuples.pair(it._direction(), it._column()._name());\n" +
+                "        return org.eclipse.collections.impl.tuple.Tuples.pair(it._direction(), org.eclipse.collections.impl.tuple.Tuples.pair(it._nullOrder(), it._column()._name()));\n" +
                 "    }\n" +
                 "})");
     }
