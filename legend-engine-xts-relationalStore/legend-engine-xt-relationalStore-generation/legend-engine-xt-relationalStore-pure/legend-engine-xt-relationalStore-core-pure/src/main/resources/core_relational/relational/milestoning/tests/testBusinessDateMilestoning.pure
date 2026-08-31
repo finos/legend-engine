@@ -1671,8 +1671,8 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testD
    );
 }
 
-// ToFix: row-property date ($o.orderDetails.settlementDate) needs parent query scope in processFunctionExpression
-function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromNestedQualifiedProperty():Boolean[1]
+// Row-property date: $o.orderDetails.settlementDate varies per row, resolved via subquery
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromNestedQualifiedProperty():Boolean[1]
 {
    let result = execute(|Order.all()->project([o|$o.id, o|$o.product($o.orderDetails.settlementDate->adjust(-1, DurationUnit.DAYS)).classificationType],['orderId','classificationType']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameSQL('select "root".id as "orderId", "productclassificationtable_0".type as "classificationType" from OrderTable as "root" left outer join (select "ordertable_2".id as id, "orderdetailstable_0".settlementDate as settlementDate, "producttable_0".type as type from OrderTable as "ordertable_2" left outer join OrderDetailsTable as "orderdetailstable_0" on ("ordertable_2".id = "orderdetailstable_0".id) left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id) where "producttable_0".from_z <= dateadd(day, -1, "orderdetailstable_0".settlementDate) and "producttable_0".thru_z > dateadd(day, -1, "orderdetailstable_0".settlementDate)) as "ordertable_1" on ("root".id = "ordertable_1".id) left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".from_z as from_z, "productclassificationtable_1".thru_z as thru_z from ProductClassificationTable as "productclassificationtable_1") as "productclassificationtable_0" on ("productclassificationtable_0".from_z <= dateadd(day, -1, "ordertable_1".settlementDate) and "productclassificationtable_0".thru_z > dateadd(day, -1, "ordertable_1".settlementDate) and "ordertable_1".type = "productclassificationtable_0".type)', $result);
