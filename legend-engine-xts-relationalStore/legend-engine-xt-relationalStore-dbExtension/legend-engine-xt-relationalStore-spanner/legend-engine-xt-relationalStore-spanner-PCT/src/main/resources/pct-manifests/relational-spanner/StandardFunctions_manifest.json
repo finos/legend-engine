@@ -1,6 +1,10 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_",
+    "expectedError" : "The Postgres Type is not supported: timestamp without time zone - Statement: 'select (((Timestamp'1032-01-01 00:32:34.000000000' is not null and Timestamp'1031-12-31 07:22:22.000000000' is not null) and Timestamp'1032-01-01 00:32:34.000000000' >= Timestamp'1031-12-31 07:22:22.000000000') and ((Timestamp'1032-01-01 00:32:34.000000000' is not null and Timestamp'1951-10-01 14:01:01.000000000' is not null) and Timestamp'1032-01-01 00:32:34.000000000' <= Timestamp'1951-10-01 14:01:01.000000000'))'"
+  },
+    {
     "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
     "expectedError" : "The Postgres Type is not supported: timestamp without time zone"
   }, {

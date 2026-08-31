@@ -1,6 +1,10 @@
 {
   "adapter" : "meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""
+  },
+    {
     "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""
   }, {
