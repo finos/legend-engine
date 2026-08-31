@@ -222,7 +222,8 @@ public class Handlers
         List<ValueSpecification> processed = parameters.stream().map(p -> p.accept(valueSpecificationBuilder)).collect(Collectors.toList());
         GenericType gt = processed.get(1)._genericType();
 
-        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName()))
+        if (valueSpecificationBuilder.getContext().pureModel.taxonomyTypes("cov_relation_Relation").contains(gt._rawType().getName())
+                && !gt._typeArguments().isEmpty())
         {
             GenericType relationType = gt._typeArguments().getOnly();
             if (relationType._rawType() instanceof RelationType)
