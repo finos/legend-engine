@@ -2,7 +2,7 @@
   "adapter" : "meta::relational::tests::pct::snowflake::testAdapterForRelationalWithSnowflakeExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: The following string is not a legal base64-encoded value: 'SGVsbG8sIFdvcmxkIQ'"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: The following string is not a legal base64-encoded value: 'SGVsbG8sIFdvcmxkIQ'"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
     "expectedError" : "\"Assert failed\""
