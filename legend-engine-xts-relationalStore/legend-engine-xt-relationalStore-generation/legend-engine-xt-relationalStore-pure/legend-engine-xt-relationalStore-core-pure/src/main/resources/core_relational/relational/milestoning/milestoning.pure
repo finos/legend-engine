@@ -666,9 +666,12 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
                                                                                                                                                                                               getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_
                                                                                                                                                                                               ]), 
                                                                                                                                                                                              | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()), 
-                                                                                                                                                                                             | if($f->hasAnyUnresolvableOrPlaceholderVar($inScopeVars),
+                                                                                                                                                                                             | if($f->hasAnyPlanVarPlaceholder($inScopeVars),
                                                                                                                                                                                                   | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()),
-                                                                                                                                                                                                  | $f->reactivate($inScopeVars)->map(d|^DateWrapper(date=^Literal(value=$d->cast(@Date))))
+                                                                                                                                                                                                  | if($f->allVarsResolveToDate($inScopeVars),
+                                                                                                                                                                                                       | $f->reactivate($inScopeVars)->map(d|^DateWrapper(date=^Literal(value=$d->cast(@Date)))),
+                                                                                                                                                                                                       | ^DateWrapper()
+                                                                                                                                                                                                    )
                                                                                                                                                                                                )
                                                                                                                                                                                           )
                                                                                                                                                                                                                            ,| if($f->referencesVariableExpression()
@@ -752,11 +755,18 @@ function <<access.private>> meta::relational::milestoning::referencesThis(v:Valu
                                   v:ValueSpecification[1] | false])
 }
 
-function <<access.private>> meta::relational::milestoning::hasAnyUnresolvableOrPlaceholderVar(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+function <<access.private>> meta::relational::milestoning::hasAnyPlanVarPlaceholder(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
 {
    let vars = $f->collectVariableExpressions();
    $vars->exists(v| let resolved = $inScopeVars->get($v.name);
-                    $resolved->isEmpty() || !$resolved.values->at(0)->instanceOf(Date););
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(PlanVarPlaceHolder););
+}
+
+function <<access.private>> meta::relational::milestoning::allVarsResolveToDate(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   let vars = $f->collectVariableExpressions();
+   $vars->forAll(v| let resolved = $inScopeVars->get($v.name);
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(Date););
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]
