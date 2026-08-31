@@ -1,0 +1,25 @@
+{
+  "port": 9100,
+  "repoRoots": [
+    "/home/developer/projects/finos-legend-pure",
+    "/home/developer/projects/finos-legend-engine"
+  ],
+  "classpathRepositoryNames": [],
+  "pureOptions": {
+    "ExecPlan": true,
+    "PlanLocal": true,
+    "FullInteractiveExec": true,
+    "ExecDebug": false,
+    "ForceInterpreted": false,
+    "ShowLocalPlan": false
+  },
+  "backendServer": {
+    "host": "127.0.0.1",
+    "port": "9090",
+    "clientVersion": "vX_X_X",
+    "serverVersion": "v1",
+    "serializationKind": "json",
+    "h2Port": "9092"
+  },
+  "additionalSystemProperties": {}
+}
