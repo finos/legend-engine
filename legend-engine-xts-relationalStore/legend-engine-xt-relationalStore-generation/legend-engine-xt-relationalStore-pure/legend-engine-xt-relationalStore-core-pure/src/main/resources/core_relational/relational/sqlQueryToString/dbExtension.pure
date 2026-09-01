@@ -1295,6 +1295,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   rowNumber,
   rpad,
   rtrim,
+  scalarSubQuery,
   second,
   sha1,
   sha256,

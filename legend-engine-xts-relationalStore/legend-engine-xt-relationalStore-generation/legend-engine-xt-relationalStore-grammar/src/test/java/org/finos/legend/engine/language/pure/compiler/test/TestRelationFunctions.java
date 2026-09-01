@@ -1664,6 +1664,64 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "}");
     }
 
+    @Test
+    public void testScalarComparisonWithSingleColumnRelation()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThan(#>{a::A.tb}#->select(~id)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testScalarComparisonWithMultiColumnRelationError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThan(#>{a::A.tb}#->select(~[id, name])))\n" +
+                        "}", "COMPILATION error at [7:60-65]: greaterThan(..., Relation) expects a relation with a single column, got (id:Int, name:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testScalarComparisonWithMismatchedColumnTypeError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->equalTo(#>{a::A.tb}#->select(~name)))\n" +
+                        "}", "COMPILATION error at [7:56-61]: equalTo(..., Relation) expects the value and the relation column to be of the same type, got Int and (name:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testPrimitiveComparisonsStillResolveAlongsideTheRelationOverloads()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|($x.id > 1) && ($x.id >= 1) && ($x.id < 10) && ($x.id <= 10) && ($x.name == 'a'))\n" +
+                        "}");
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {

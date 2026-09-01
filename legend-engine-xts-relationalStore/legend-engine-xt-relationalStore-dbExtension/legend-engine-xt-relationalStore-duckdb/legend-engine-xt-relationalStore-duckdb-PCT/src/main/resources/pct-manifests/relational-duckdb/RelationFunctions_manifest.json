@@ -4,6 +4,15 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
+    "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
+    "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
+  }, {
     "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
     "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
   } ]
