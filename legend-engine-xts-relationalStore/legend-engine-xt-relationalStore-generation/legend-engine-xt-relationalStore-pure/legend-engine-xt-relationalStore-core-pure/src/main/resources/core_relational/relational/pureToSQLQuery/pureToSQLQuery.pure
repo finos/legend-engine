@@ -7206,7 +7206,7 @@ function meta::relational::functions::pureToSqlQuery::joinKindToType(jk:JoinKind
       pair(|$jk == JoinKind.RIGHT, |JoinType.RIGHT_OUTER),
       pair(|$jk == JoinKind.FULL, |JoinType.FULL_OUTER)
     ],
-    | fail('Unsupported JoinKind %!'->format($jk)); JoinType.LEFT_OUTER;
+    | fail('Unsupported JoinKind ' + $jk.name + '!'); JoinType.LEFT_OUTER;
   );
 }
 
