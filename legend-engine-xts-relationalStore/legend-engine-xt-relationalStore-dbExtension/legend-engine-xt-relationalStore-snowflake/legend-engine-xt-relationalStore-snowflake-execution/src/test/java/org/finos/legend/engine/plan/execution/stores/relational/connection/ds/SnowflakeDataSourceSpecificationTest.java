@@ -192,6 +192,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("jdbc:snowflake://organisation_division.organisationSample.us-east-1.aws.privatelink.snowflakecomputing.com", url);
 
         Properties properties = profile.getConnectionProperties();
+        Assert.assertEquals("true", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
         Assert.assertEquals("organisation_division", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME));
         Assert.assertEquals("us-east-1", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
         Assert.assertEquals("aws", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
@@ -229,6 +230,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("jdbc:snowflake://organisation_division.us-east-1.privatelink.snowflakecomputing.com", url);
 
         Properties properties = profile.getConnectionProperties();
+        Assert.assertEquals("true", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
         Assert.assertEquals("organisation_division", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME));
         Assert.assertEquals("us-east-1", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
         Assert.assertEquals("privatelink", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
@@ -266,6 +268,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("jdbc:snowflake://organisation_division.us-east-1.privatelink.snowflakecomputing.com", url);
 
         Properties properties = profile.getConnectionProperties();
+        Assert.assertEquals("true", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
         Assert.assertEquals("organisation_division", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ACCOUNT_NAME));
         Assert.assertEquals("us-east-1", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
         Assert.assertEquals("privatelink", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
@@ -301,6 +304,7 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
         Assert.assertEquals("jdbc:snowflake://account1.us-east-1.aws.snowflakecomputing.com", url);
 
         Properties properties = profile.getConnectionProperties();
+        Assert.assertEquals("true", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
         Assert.assertEquals("us-east-1", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_REGION));
         Assert.assertEquals("aws", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_CLOUD_TYPE));
         Assert.assertEquals(false, properties.get(SnowflakeDataSourceSpecification.SNOWFLAKE_QUOTE_IDENTIFIERS));
@@ -453,5 +457,29 @@ public class SnowflakeDataSourceSpecificationTest extends SnowflakeDataSourceSpe
     {
         RelationalDatabaseConnection connection = getConnectionWithQuotedIdentifiersIgnoreCase(true, false);
         Assert.assertEquals("false", computeAndGetQuotedIdentifiersIgnoreCaseFromJdbcProperties(connection));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecificationAllowsUnderscoresInHostByDefault()
+    {
+        SnowflakeDataSourceSpecification ds = buildSnowflakeDataSource("organisation_division", "us-east-1", "DEMO_WH", "DEMO_DB", "aws", false);
+        Properties properties = ds.getConnectionProperties();
+        Assert.assertEquals("true", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
+    }
+
+    @Test
+    public void testSnowflakeDataSourceSpecificationAllowUnderscoresInHostCanBeOverridden()
+    {
+        Properties extraUserProperties = new Properties();
+        extraUserProperties.put(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST, "false");
+
+        SnowflakeDataSourceSpecification ds = new SnowflakeDataSourceSpecification(
+                new SnowflakeDataSourceSpecificationKey("organisation_division", "us-east-1", "DEMO_WH", "DEMO_DB", "aws", false),
+                new SnowflakeManager(),
+                new SnowflakePublicAuthenticationStrategy("SF_KEY", "SF_PASS", "LEGEND_RO_PIERRE"),
+                extraUserProperties);
+
+        Properties properties = ds.getConnectionProperties();
+        Assert.assertEquals("false", properties.getProperty(SnowflakeDataSourceSpecification.SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST));
     }
 }
