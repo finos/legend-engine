@@ -198,14 +198,14 @@ public class DataSpaceAnalyticsHelper
                                 serviceExecutableInfo.id = executable._id();
                                 serviceExecutableInfo.executionContextKey = executable._executionContextKey();
                                 serviceExecutableInfo.query = ((PureSingleExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
-                                serviceExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
+                                serviceExecutableInfo.mapping = execution._mapping() == null ? null : HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
                                 if (serviceProtocol.execution instanceof PureSingleExecution && ((PureSingleExecution) serviceProtocol.execution).runtime instanceof RuntimePointer)
                                 {
                                     serviceExecutableInfo.runtime = pureModel.getRuntimePath(execution._runtime());
                                 }
                                 if (buildResult)
                                 {
-                                    serviceExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
+                                    serviceExecutableInfo.datasets = execution._mapping() == null ? java.util.Collections.emptyList() : LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
                                 }
                                 executableAnalysisResult.info = serviceExecutableInfo;
                                 lambdaFunc = execution._func();
@@ -447,6 +447,7 @@ public class DataSpaceAnalyticsHelper
             result.supportInfo.sourceInformation = null;
         }
 
+        DataSpaceAnalyticsExtensionLoader.extensions().forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));
         return result;
     }
 
@@ -629,6 +630,7 @@ public class DataSpaceAnalyticsHelper
         });
 
         // executables
+        List<DataSpaceAnalyticsExtension> analyticsExtensions = DataSpaceAnalyticsExtensionLoader.extensions();
         result.executables = buildDataSpaceExecutableAnalysisResult(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, entitlementServiceExtensions, generatorExtensions, true);
 
         // support
@@ -638,6 +640,7 @@ public class DataSpaceAnalyticsHelper
             result.supportInfo.sourceInformation = null;
         }
 
+        analyticsExtensions.forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));
         return result;
     }
 

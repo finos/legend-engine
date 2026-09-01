@@ -17,6 +17,8 @@ package org.finos.legend.engine.generation.analytics.model;
 import org.finos.legend.engine.protocol.pure.m3.type.generics.GenericType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElement;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class DataSpaceExecutableAnalysisResult
 {
     public String title;
@@ -26,4 +28,6 @@ public class DataSpaceExecutableAnalysisResult
     public DataSpaceExecutableResult result;
     public GenericType executableReturnType;
     public RelationElement sampleValues;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public DataSpaceExecutableAccessorInfo executableAccessorInfo;
 }
