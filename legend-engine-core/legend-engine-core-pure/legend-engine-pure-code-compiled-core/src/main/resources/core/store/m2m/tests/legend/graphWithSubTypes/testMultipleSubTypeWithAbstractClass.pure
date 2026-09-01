@@ -72,7 +72,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::mostSpecifi
           )
        )]);
  let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
- assertJsonStringsEqual('[{"data":{"paymentField":"P1","adjustField":"A1"}}]', $result);
+ assertJsonStringsEqual('{"data":{"paymentField":"P1","adjustField":"A1"}}', $result);
 }
 
 // Abstract 'data' routes for a single-match base input
@@ -98,7 +98,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::mostSpecifi
           )
        )]);
  let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
- assertJsonStringsEqual('[{"data":{"paymentField":"P1"}}]', $result);
+ assertJsonStringsEqual('{"data":{"paymentField":"P1"}}', $result);
 }
 
 ###Mapping
