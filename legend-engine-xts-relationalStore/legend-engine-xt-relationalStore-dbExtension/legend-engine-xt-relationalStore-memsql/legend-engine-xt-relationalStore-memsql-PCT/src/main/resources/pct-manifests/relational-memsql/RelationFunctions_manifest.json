@@ -274,6 +274,9 @@
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testConcatenateFilterInSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression."
+  }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {

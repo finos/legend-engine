@@ -126,7 +126,15 @@ tests:
     feature: "Subquery with UNION"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
+
+  # IN (subquery) where the outer relation is a UNION
+  - id: subquery_in_over_union
+    sql: "SELECT sub.id, sub.name FROM (SELECT id, name FROM persons WHERE dept_id = 1 UNION ALL SELECT id, name FROM persons WHERE dept_id = 2) sub WHERE sub.id IN (SELECT person_id FROM orders WHERE amount > 100) ORDER BY 1"
+    feature: "IN (subquery) over a UNION"
+    category: "subqueries"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
 
   # Lateral-style derived table with aggregation
   - id: subquery_derived_agg_filter
