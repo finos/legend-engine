@@ -1483,6 +1483,45 @@ Class <<access.private>> meta::pure::functions::relation::tests::composition::Pe
   <<equality.Key>> name: String[1];
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, '{"person": {"name": "Jose"}}'
+                  2, '{}'
+                  3, '{"person": {"name": "Pedro"}}'
+                #->filter(x | $x.payload->get('person')->to(@meta::pure::functions::relation::tests::composition::Person)->isEmpty())
+              };
+ 
+   let res =  $f->eval($expr);
+ 
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   2,\'{}\'\n'+
+                '#', $res->toString());
+}
+ 
+function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, payload:meta::pure::metamodel::variant::Variant
+                  1, '{"person": {"name": "Jose"}}'
+                  2, '{}'
+                  3, '{"person": {"name": "Pedro"}}'
+                #->filter(x | $x.payload->get('person')->to(@meta::pure::functions::relation::tests::composition::Person)->isNotEmpty())
+              };
+ 
+   let res =  $f->eval($expr);
+ 
+   assertEquals('#TDS\n'+
+                '   id,payload\n'+
+                '   1,\'{"person":{"name":"Jose"}}\'\n'+
+                '   3,\'{"person":{"name":"Pedro"}}\'\n'+
+                '#', $res->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testMultiIfTDS<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {

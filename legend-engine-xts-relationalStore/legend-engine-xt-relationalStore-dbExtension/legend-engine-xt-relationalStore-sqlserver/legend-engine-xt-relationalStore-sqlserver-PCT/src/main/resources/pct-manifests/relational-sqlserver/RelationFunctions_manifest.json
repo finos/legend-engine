@@ -160,6 +160,12 @@
     "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
+  }, {
     "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
   }, {

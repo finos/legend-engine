@@ -178,6 +178,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {

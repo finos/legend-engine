@@ -4440,7 +4440,7 @@ function meta::relational::functions::pureToSqlQuery::processEmpty(f:FunctionExp
             $fe.genericType.rawType->match(
                   [
                      d:DataType[1]| $f->processSubEmpty($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
-                     ,c:Class<Any>[1] | if($fe->isScalarVariantExpression(),
+                     ,c:Class<Any>[1] | if($fe.multiplicity->hasToOneUpperBound() && $fe->isVariantInput($vars, $state),
                                                 | $f->processSubEmpty($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions),
                                                 | processExists($f, $not, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)
                                           )
@@ -4513,7 +4513,7 @@ function meta::relational::functions::pureToSqlQuery::processSubEmpty(f:Function
    let parameters = $f.parametersValues->at(0);
    let isParameterPlanVarOfTypeList = isParamPlanVar($parameters, $vars, $state.inScopeVars) && $parameters.multiplicity == ZeroMany;
 
-   let isEmptyExpressionValid = $parameters->match([v:FunctionExpression[1]| $v.func == map_T_m__Function_1__V_m_  || $v.func == map_T_MANY__Function_1__V_MANY_ || !$v.genericType.rawType->toOne()->instanceOf(Class) || $v->isScalarVariantExpression();,
+   let isEmptyExpressionValid = $parameters->match([v:FunctionExpression[1]| $v.func == map_T_m__Function_1__V_m_  || $v.func == map_T_MANY__Function_1__V_MANY_ || !$v.genericType.rawType->toOne()->instanceOf(Class) || ($v.multiplicity->hasToOneUpperBound() && $v->isVariantInput($vars, $state));,
                                                     a:Any[1]| true;]);
 
 
