@@ -1488,3 +1488,205 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::milestoning::bus
 
    assertJsonStringsEqual('{"authors":[{"authorId":["5001"]}],"id":"101"}', $result);
 }
+
+// Derived-date arg regression tests: outer-var, plan-param, literal, bi-temporal, nested-qualified
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromOuterVarInProjectLambda():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($businessDate->adjust(-1, DurationUnit.DAYS)).name],['orderId','productName']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(['1,TDSNull', '2,ProductName1'],$tds.rows->map(r|$r.values->makeString(',')));
+   assertEqualsH2Compatible(
+    'select "root".id as "orderId", "producttable_0".name as "productName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-15\' and "producttable_0".thru_z > \'2015-10-15\')',
+    'select "root".id as "orderId", "producttable_0".name as "productName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= DATE\'2015-10-15\' and "producttable_0".thru_z > DATE\'2015-10-15\')',
+    $result->sqlRemoveFormatting()
+   );
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromOuterVarInFilterLambda():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->filter(o|$o.product($businessDate->adjust(-1, DurationUnit.DAYS)).name == 'ProductName1'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let orders = $result.values;
+   assertEquals(1, $orders->size());
+   assertEquals(2, $orders->at(0).id);
+   assertEqualsH2Compatible(
+    'select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= \'2015-10-15\' and "producttable_0".thru_z > \'2015-10-15\') where "producttable_0".name = \'ProductName1\'',
+    'select "root".id as "pk_0", "root".id as "id", "root".orderDate as "orderDate" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= DATE\'2015-10-15\' and "producttable_0".thru_z > DATE\'2015-10-15\') where "producttable_0".name = \'ProductName1\'',
+    $result->sqlRemoveFormatting()
+   );
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromOuterVarInMapLambda():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+   let result = execute(|Order.all()->map(o|$o.product($businessDate->adjust(-1, DurationUnit.DAYS)).name), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "producttable_0".name from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".from_z <= \'2015-10-15\' and "producttable_0".thru_z > \'2015-10-15\'',
+    'select "producttable_0".name from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id) where "producttable_0".from_z <= DATE\'2015-10-15\' and "producttable_0".thru_z > DATE\'2015-10-15\'',
+    $result->sqlRemoveFormatting()
+   );
+}
+
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromPlanParamInProjectLambda():Boolean[1]
+{
+   let f = {productBusDate:Date[1] | Order.all()->project([col([o|$o.product($productBusDate->adjust(-1, DurationUnit.DAYS)).name],'prodName')])}->cast(@FunctionDefinition<Any>);
+   let plan = executionPlan($f, milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [productBusDate:Date[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(DAY, -1, \'${productBusDate}\') and "producttable_0".thru_z > dateadd(DAY, -1, \'${productBusDate}\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n',
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [productBusDate:Date[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(day, -1, TIMESTAMP\'${productBusDate}\') and "producttable_0".thru_z > dateadd(day, -1, TIMESTAMP\'${productBusDate}\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n'
+   ,$plan->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+// Concrete root Date + Integer plan-param offset
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgMixedConcreteRootWithPlanParamOffset():Boolean[1]
+{
+   let busDate = %2015-10-16;
+   let f = {offsetDays:Integer[1] | Order.all()->project([col([o|$o.product($busDate->adjust($offsetDays, DurationUnit.DAYS)).name],'prodName')])}->cast(@FunctionDefinition<Any>);
+   let plan = executionPlan($f, milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [offsetDays:Integer[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(DAY, ${offsetDays}, \'2015-10-16\') and "producttable_0".thru_z > dateadd(DAY, ${offsetDays}, \'2015-10-16\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n',
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [offsetDays:Integer[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(day, ${offsetDays}, DATE\'2015-10-16\') and "producttable_0".thru_z > dateadd(day, ${offsetDays}, DATE\'2015-10-16\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n'
+   ,$plan->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+// Literal date root + Integer plan-param offset
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgLiteralRootWithPlanParamOffset():Boolean[1]
+{
+   let f = {offsetDays:Integer[1] | Order.all()->project([col([o|$o.product(%2015-10-16->adjust($offsetDays, DurationUnit.DAYS)).name],'prodName')])}->cast(@FunctionDefinition<Any>);
+   let plan = executionPlan($f, milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [offsetDays:Integer[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(DAY, ${offsetDays}, \'2015-10-16\') and "producttable_0".thru_z > dateadd(DAY, ${offsetDays}, \'2015-10-16\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n',
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [offsetDays:Integer[1]]\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(prodName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("prodName", VARCHAR(200))]\n' +
+   '      sql = select "producttable_0".name as "prodName" from OrderTable as "root" left outer join ProductTable as "producttable_0" on ("root".prodFk = "producttable_0".id and "producttable_0".from_z <= dateadd(day, ${offsetDays}, DATE\'2015-10-16\') and "producttable_0".thru_z > dateadd(day, ${offsetDays}, DATE\'2015-10-16\'))\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n'
+   ,$plan->planToString(meta::relational::extension::relationalExtensions()));
+}
+
+// Bi-temporal: derived processing-date and business-date args with concrete date roots
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgBiTemporalInProjectLambda():Boolean[1]
+{
+   let procDate = %2015-10-16;
+   let busDate = %2015-10-16;
+   let sql = toSQLString(|Order.all()->project([o|$o.id, o|$o.biTemporalProduct($procDate->adjust(-1, DurationUnit.DAYS), $busDate->adjust(-2, DurationUnit.DAYS)).id],['orderId','btProductId']), milestoningmap, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assertEqualsH2Compatible(
+    'select "root".id as "orderId", "BiTemporalProductTable_d#6_d_m2".id as "btProductId" from OrderTable as "root" left outer join BiTemporalProductTable as "BiTemporalProductTable_d#6_d_m2" on ("root".prodFk = "BiTemporalProductTable_d#6_d_m2".id and "BiTemporalProductTable_d#6_d_m2".in_z <= \'2015-10-15\' and "BiTemporalProductTable_d#6_d_m2".out_z > \'2015-10-15\' and "BiTemporalProductTable_d#6_d_m2".from_z <= \'2015-10-14\' and "BiTemporalProductTable_d#6_d_m2".thru_z > \'2015-10-14\')',
+    'select "root".id as "orderId", "BiTemporalProductTable_d#6_d_m2".id as "btProductId" from OrderTable as "root" left outer join BiTemporalProductTable as "BiTemporalProductTable_d#6_d_m2" on ("root".prodFk = "BiTemporalProductTable_d#6_d_m2".id and "BiTemporalProductTable_d#6_d_m2".in_z <= DATE\'2015-10-15\' and "BiTemporalProductTable_d#6_d_m2".out_z > DATE\'2015-10-15\' and "BiTemporalProductTable_d#6_d_m2".from_z <= DATE\'2015-10-14\' and "BiTemporalProductTable_d#6_d_m2".thru_z > DATE\'2015-10-14\')',
+    $sql->sqlRemoveFormatting()
+   );
+}
+
+// Row-property date: $o.orderDetails.settlementDate varies per row, resolved via subquery
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgFromNestedQualifiedProperty():Boolean[1]
+{
+   let result = execute(|Order.all()->project([o|$o.id, o|$o.product($o.orderDetails.settlementDate->adjust(-1, DurationUnit.DAYS)).classificationType],['orderId','classificationType']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSameSQL('select "root".id as "orderId", "productclassificationtable_0".type as "classificationType" from OrderTable as "root" left outer join (select "ordertable_2".id as id, "orderdetailstable_0".settlementDate as settlementDate, "producttable_0".type as type from OrderTable as "ordertable_2" left outer join OrderDetailsTable as "orderdetailstable_0" on ("ordertable_2".id = "orderdetailstable_0".id) left outer join ProductTable as "producttable_0" on ("ordertable_2".prodFk = "producttable_0".id) where "producttable_0".from_z <= dateadd(day, -1, "orderdetailstable_0".settlementDate) and "producttable_0".thru_z > dateadd(day, -1, "orderdetailstable_0".settlementDate)) as "ordertable_1" on ("root".id = "ordertable_1".id) left outer join (select "productclassificationtable_1".type as type, "productclassificationtable_1".from_z as from_z, "productclassificationtable_1".thru_z as thru_z from ProductClassificationTable as "productclassificationtable_1") as "productclassificationtable_0" on ("productclassificationtable_0".from_z <= dateadd(day, -1, "ordertable_1".settlementDate) and "productclassificationtable_0".thru_z > dateadd(day, -1, "ordertable_1".settlementDate) and "ordertable_1".type = "productclassificationtable_0".type)', $result);
+}
+
+// ToFix: now()/today() reactivate to plan-time literals; ideally should produce current_timestamp SQL
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgWithNowInProjectLambda():Boolean[1]
+{
+   let sql = toSQLString(|Order.all()->project([o|$o.id, o|$o.product(now()->adjust(-1, DurationUnit.DAYS)).name],['orderId','productName']), milestoningmap, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assert($sql->contains('from_z'));
+}
+
+function <<test.Test, test.ToFix>> meta::relational::tests::milestoning::businessdate::testDerivedDateArgWithTodayInProjectLambda():Boolean[1]
+{
+   let sql = toSQLString(|Order.all()->project([o|$o.id, o|$o.product(today()->adjust(-1, DurationUnit.DAYS)).name],['orderId','productName']), milestoningmap, meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
+   assert($sql->contains('from_z'));
+}
