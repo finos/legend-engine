@@ -38,21 +38,31 @@ meta::pure::functions::boolean::between(value:String[0..1], lower:String[0..1], 
 function
     <<PCT.function>>
     {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports StrictDate (e.g. 2025-04-09) values and bounds'
+        doc.doc='between returns true if the value is >= lower and <= upper; supports any Date values and bounds (StrictDate, DateTime, or partial dates)'
     }
-meta::pure::functions::boolean::between(value:StrictDate[0..1], lower:StrictDate[0..1], upper:StrictDate[0..1]):Boolean[1]
+meta::pure::functions::boolean::between(value:Date[0..1], lower:Date[0..1], upper:Date[0..1]):Boolean[1]
 {
   ($value >= $lower) && ($value <= $upper);
 }
 
-function
-    <<PCT.function>>
-    {
-        doc.doc='between returns true if the value is >= lower and <= upper; supports DateTime values and bounds'
-    }
-meta::pure::functions::boolean::between(value:DateTime[0..1], lower:DateTime[0..1], upper:DateTime[0..1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  ($value >= $lower) && ($value <= $upper);
+  let date1 = %1951-10-01;
+  let date2 = %1972-08-23T14:01:01.000000000+0000;
+  let date3 = %2025-04-03;
+
+  let date4 = %1032-01-01T00:32:34.000000000+0000;
+  let date5 = %1031-12-31;
+  let date6 = %1032-12-31T23:59:59.000000000+0000;
+
+  assert($f->eval(|between($date2, $date1, $date3)));
+  assert($f->eval(|between($date4, $date5, $date6)));
+
+  assert($f->eval(|between($date2, $date1, $date2)));
+  assertFalse($f->eval(|between($date2, $date2, $date1)));
+
+  assertFalse($f->eval(|between($date2, $date3, $date1)));
+  assertFalse($f->eval(|between($date4, $date6, $date5)));
 }
 
 function <<PCT.test>> meta::pure::functions::boolean::tests::inequalities::between::testBetween_NumberInteger<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

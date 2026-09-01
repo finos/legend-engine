@@ -157,8 +157,7 @@ meta::pure::functions::boolean::lessThan_String_1__String_$0_1$__Boolean_1_
 meta::pure::functions::boolean::lessThan_String_1__String_1__Boolean_1_
 meta::pure::functions::boolean::not_Boolean_1__Boolean_1_
 meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_
-meta::pure::functions::boolean::between_StrictDate_$0_1$__StrictDate_$0_1$__StrictDate_$0_1$__Boolean_1_
-meta::pure::functions::boolean::between_DateTime_$0_1$__DateTime_$0_1$__DateTime_$0_1$__Boolean_1_
+meta::pure::functions::boolean::between_Date_$0_1$__Date_$0_1$__Date_$0_1$__Boolean_1_
 meta::pure::functions::boolean::between_Number_$0_1$__Number_$0_1$__Number_$0_1$__Boolean_1_
 meta::pure::functions::boolean::between_String_$0_1$__String_$0_1$__String_$0_1$__Boolean_1_
 meta::pure::functions::collection::add_T_MANY__T_1__T_$1_MANY$_
