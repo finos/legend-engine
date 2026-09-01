@@ -1,163 +1,114 @@
 # NULLS FIRST / NULLS LAST — Handover
 
-Plan: `~/artifacts/null-ordering-plan.html` (§ references below refer to it).
-Repos: `legend-pure` (`~/legend-pure`, branch `nulls-first-last`) and `legend-engine` (this repo, branch `nulls-first-last`, fork `gs-rpant1729/legend-engine`).
+Repos: `legend-pure` (`~/legend-pure`, branch `nulls-first-last`) and `legend-engine`
+(this repo).
 
-## Status as of 2026-09-01
+## Branch and policy
 
-**H2 relational PCT: 1332 tests, 0 failures, 0 errors — fully green**, including the 3 new
-`meta::pure::functions::relation::tests::sort` null-order tests. In-memory (compiled +
-interpreted) Relation PCT: 459/459 green.
+Branch: `nulls-high-db-extensions`, forked from `338364667f` (one commit before the opt-in-only
+follow-up on `nulls-first-last`).
 
-Not yet run: DuckDB / cloud-store PCT (explicitly out of scope for this session — no cloud
-creds / instruction not to run cloud tests), Legend SQL parity suite, other dbExtension PCT
-suites (postgres/snowflake/databricks/etc.).
+The platform contract on this branch is nulls-high even when a query does not specify null
+ordering:
 
-## Decisions taken
+- ascending defaults to nulls last;
+- descending defaults to nulls first;
+- explicit `NULLS FIRST` / `NULLS LAST` is always honored;
+- database-specific native behavior and rendering live in each `DbExtension`;
+- shared null-ordering generation is database agnostic.
 
-1. **legend-pure PR 0 (shipped).** `NullOrder` enum + `SortInfo.nullOrder[0..1]` (legend-pure,
-   commit `81fb9df6`) + relational `OrderBy`/`SortByInfo.nullOrder[0..1]` (legend-pure,
-   same commit). Installed locally as version `5.96.0` (the branch's own pom is
-   `5.97.2-SNAPSHOT`, but engine is pinned to `5.96.0` — see **Build gotchas** below for how
-   to rebuild it).
+## Architecture
 
-2. **API surface (shipped, WIP commit `e6d27f29a1`).** `nullsFirst`/`nullsLast` modifiers,
-   2-arg `ascending(col, NullOrder)` / `descending(col, NullOrder)` sugar, in-memory
-   compiled+interpreted natives, TDS bridge, relational SQL generation (root ORDER BY, window,
-   WITHIN GROUP), Legend SQL CASE-WHEN revert. See commit message for full file list.
+`DbExtension` now requires a `NullOrderingSupport` capability with:
 
-3. **`nullsFirst`/`nullsLast` body: explicit construction, not a copy.**
-   `nullsFirst.pure`/`nullsLast.pure` now do
-   `^SortInfo<T>(column=$sortInfo.column, direction=$sortInfo.direction, nullOrder=NullOrder.FIRST)`
-   instead of `^$sortInfo(nullOrder=NullOrder.FIRST)`, matching `ascending`/`descending`'s
-   style. (This alone did not fix the NPE below — kept for consistency.)
+- `nativeNullOrdering`: reports the dialect's native position for a direction;
+- `sortItemProcessor`: renders a requested position using either a native clause or dialect
+  emulation.
 
-4. **Root cause + fix for the `->nullsFirst()`/`->nullsLast()` NPE on the relational path.**
-   `X->nullsLast()` (chained modifier) NPE'd only when relationally routed — never in-memory.
-   Traced (via a temporary `printStackTrace` patch to legend-pure's
-   `CompiledSupport.executePCTTest`, since the PCT surveyor collapses every `NullPointerException`
-   to the string `"NullPointer exception"`) to:
-   `router preval → addToScope → resolveGenericType` NPE, because `Handlers.java`'s
-   `nullsFirst`/`nullsLast` registrations computed their resolved type parameter as
-   `ps.get(0)._genericType()._typeArguments().getFirst()` — copied verbatim from
-   `ascending`/`descending`, whose argument is a `ColSpec<T>` (always carries its type
-   argument). `nullsFirst`/`nullsLast`'s argument is a `SortInfo<T>` produced by a **nested**
-   normalize-required call (e.g. `descending(~id)`), whose `genericType` has **no** type
-   arguments yet at handler time → `.getFirst()` → `null` → `resolvedTypeParameters = [null]`
-   → NPE in `resolveGenericType`.
-   **Fix:** `Handlers.java` — guard with
-   `ta.isEmpty() ? ps.get(0)._genericType() : ta.getFirst()`, mirroring the existing
-   `over(SortInfo...)` handlers, which face the same shape and already do this.
+`DbConfig.processSortItem` delegates to that capability. Root `ORDER BY`, window `ORDER BY`, and
+`WITHIN GROUP` all use this entry point. The shared code computes only the platform's nulls-high
+target; it contains no `DatabaseType` checks or dialect matrix.
 
-5. **H2 unspecified-sort → canonical (shipped, pending your sign-off — see Decisions pending).**
-   `toPostgresModel::convertOrderBy` now emits the canonical clause (`NULLS LAST` on ASC,
-   `NULLS FIRST` on DESC) when `OrderBy.nullOrder` is empty, unconditionally. In production
-   this only affects **H2** (`useDialectTranslation` gates the whole `toPostgresModel` path to
-   H2 today — see `relationalMappingExecution.pure:429-432` — postgres/snowflake/duckdb
-   `SqlDialect` defs exist but aren't live), so it's currently H2-scoped in practice despite
-   being unconditional in the code.
+For root ORDER BY aliases, the displayed sort key and the null-check expression are passed
+separately. CASE-based dialects rank nulls using the underlying relational expression and retain
+the alias for the actual sort key. This avoids invalid forms such as
+`CASE WHEN "projectedAlias" IS NULL ...` on SQL Server.
 
-6. **Other-DB unspecified-sort reconciliation, legacy string path (shipped, per §2.3, NOT
-   cloud-verified).** `extensionDefaults.pure`:
-   - `renderNullOrder(nullOrder, direction, dbConfig)` — was 1-arg (explicit-only), now 3-arg.
-   - `reconcileUnspecifiedNullOrder` / `supportsNullOrderingSyntax` / `nativeNullOrdering` —
-     new classification helpers.
-   - Wired into the 3 shared chokepoints every dialect but 3 goes through: `processOrderBy`
-     (root), default `processWindowColumn` (window), `withinGroupOrderBy` (ordered
-     aggregates). DuckDB/Databricks/Snowflake override `processWindowColumn` with their own
-     logic (DuckDB/Databricks already nullOrder-aware from the WIP; Snowflake hardcodes
-     canonical unconditionally, pre-existing, untouched) — see **Per-DB status** below.
+## Dialect declarations
 
-## Decisions pending (yours to make)
+| Extension behavior | Databases |
+|---|---|
+| Native nulls-high; omit unspecified clauses | H2, DB2, Oracle, Postgres/Aurora, Redshift, Snowflake, Composite, DebugPrint |
+| Native nulls-low; add a clause for unspecified ordering | BigQuery, Databricks, Hive, SparkSQL, Spanner |
+| Native NULLS LAST for both directions; add `NULLS FIRST` for unspecified DESC | ClickHouse, DuckDB, Presto, Trino/Athena |
+| Native nulls-low without clause syntax; use CASE rank key | SQL Server, MemSQL/SingleStore, Sybase ASE, Sybase IQ |
 
-1. **H2 approach.** Two options were on the table (see conversation with the user — they said
-   "I will decide for H2"):
-   - **(A) Keep `convertOrderBy`'s unconditional canonical emit** (current state, H2 PCT green
-     with it). Cost: every H2 dialect-translation ORDER BY now carries an explicit
-     `NULLS LAST`/`NULLS FIRST` — **untested** against the SQL-string-assertion test corpus
-     outside the PCT suite (roughly a dozen files across `sqlQueryToString/tests`, Legend-SQL
-     H2 tests, execution-plan tests reference `H2`+`order by`; exact count not measured).
-   - **(B) `;DEFAULT_NULL_ORDERING=HIGH` on the H2 JDBC URLs** (`H2Defaults.java`,
-     `H2Manager.java`, `TestH2Abstract.java` — H2 currently runs `MODE=LEGACY`, which defaults
-     `DEFAULT_NULL_ORDERING` to `LOW`) + **revert** `convertOrderBy` back to
-     `nullOrdering = $o.nullOrder->convertNullOrder()` (UNDEFINED on empty). Zero SQL-string
-     churn — H2 handles it natively. Cost: flips H2's null-order for **all** Legend queries,
-     not just Relation API; any existing test asserting H2's nulls-low *result* order (not
-     just SQL text) would flip. Not yet probed for how many, if any, exist.
-   - If you pick (B): revert `toPostgresModel.pure`'s `convertOrderBy` hunk, add the URL param
-     in the three files above, then re-run the full H2 PCT + a broader `mvn test` sweep of
-     `sqlQueryToString`/Legend-SQL/exec-plan H2 tests to confirm zero churn.
+The CASE form is:
 
-2. **§2.3 per-dialect null-ordering matrix — NOT cloud-probe-verified.** The classification in
-   `extensionDefaults.pure::nativeNullOrdering` is built from vendor-documentation knowledge,
-   not empirical probes, **except H2** (confirmed empirically this session: nulls-low under
-   `MODE=LEGACY`). Plan §2.3 explicitly says: "verify each with a one-off probe PCT test before
-   wiring the config — do not trust documentation." This has not been done for any store other
-   than H2. Do this via `-P pct-cloud-test` before treating the matrix as authoritative.
+`CASE WHEN <underlying expression> IS NULL THEN 0 ELSE 1 END [DESC], <sort key> [DESC]`
 
-## Per-DB status
+The rank key is ascending for nulls first and descending for nulls last.
 
-| DB | Classification (unverified except H2) | Root ORDER BY | Window ORDER BY | WITHIN GROUP | Notes |
-|---|---|---|---|---|---|
-| **H2** | nulls-low, `MODE=LEGACY` (**verified**) | canonical emitted (dialect-translation path, `convertOrderBy`) | n/a — H2 uses dialect-translation only, no separate window fix needed there | n/a | See "Decisions pending #1" |
-| Postgres | canonical (nulls-high) | no-op (shared helper) | no-op (uses default `processWindowColumn`) | no-op | `toPostgresModel` dialect-translation SqlDialect exists but not live in prod (`useDialectTranslation` = H2 only) |
-| Oracle | canonical | no-op | no-op | no-op | |
-| Redshift | canonical | no-op | no-op | no-op | |
-| Trino / Presto | canonical | no-op | no-op | no-op | Not cloud-verified |
-| Snowflake | canonical | no-op (shared helper) | **unaffected by this change** — `processWindowColumnForSnowflake` hardcodes canonical unconditionally (pre-existing code, redundant-but-correct SQL even on unspecified) | no-op | Not cloud-verified |
-| Databricks | nulls-low | canonical emitted via shared helper | already nullOrder-aware from WIP (`processWindowColumnForDatabricks`) | canonical emitted via shared helper | Not cloud-verified |
-| SparkSQL | nulls-low | canonical emitted | uses default `processWindowColumn` → canonical emitted | canonical emitted | Not cloud-verified |
-| Hive | nulls-low | canonical emitted | uses default → canonical emitted | canonical emitted | Not cloud-verified |
-| BigQuery | nulls-low | canonical emitted | uses default → canonical emitted | canonical emitted | Not cloud-verified |
-| Spanner | nulls-low | canonical emitted | uses default → canonical emitted | canonical emitted | Not cloud-verified |
-| DuckDB | uniform NULLS LAST (diverges on DESC only) | canonical emitted on DESC via shared helper | already nullOrder-aware from WIP (`processWindowColumnForDuckDB`) | canonical emitted via shared helper | Not cloud/local-DuckDB-verified this session |
-| ClickHouse | uniform NULLS LAST (diverges on DESC only) | canonical emitted on DESC | uses default → canonical emitted | canonical emitted | Not verified |
-| **SQL Server** | nulls-low, **no `NULLS FIRST/LAST` syntax** | **not reconciled** — `supportsNullOrderingSyntax` returns false, so unspecified sorts render nothing (unchanged from before this session) | same | same | **Emulation not implemented.** Needs an `isnull(col)`/`CASE` prefix sort key in the dialect's own ORDER BY processor (plan §2.3), or a PCT `expectedError` exclusion. Not started. |
-| **MemSQL / SingleStore** | nulls-low, no syntax | not reconciled | same | same | Same as SQL Server — not started |
-| **Sybase ASE** | nulls-low, no syntax | not reconciled | same | same | Same — not started |
-| **Sybase IQ** | nulls-low, no syntax | not reconciled | same | same | Same — not started |
-| DB2 | canonical (assumed) | no-op | no-op | no-op | Not verified |
-| Aurora, Athena | assumed canonical (postgres/trino-compatible) | no-op | no-op | no-op | Not verified — not in the plan's explicit matrix, included here by inference only |
+## H2
 
-## Known follow-ups (not started)
+H2 2.x is configured as nulls-high at its two shared default-property sites:
 
-- Emulation for the 4 no-syntax dialects (SQL Server, MemSQL, Sybase ASE, Sybase IQ).
-- Cloud probe verification of the whole matrix (`-P pct-cloud-test`).
-- PCT manifest exclusions for adapters/positions that can't be reconciled (plan §J).
-- `order_limit_offset.yaml` Legend-SQL parity refresh (plan §I).
-- New PCT tests: window `over` with explicit null order, `joinStrings`/ordered-aggregate with
-  nulls in the sort key (plan §5) — the WIP only added the 3 root-sort tests.
-- `docs/engineering/reference/tds-and-relation.md` + `docs/pct/*` documentation (plan §J).
+- `H2Manager` for execution-plan connections, including embedded file URLs;
+- `H2Defaults` for the H2 2.1.214 extension runtime.
 
-## Build gotchas (read before touching anything here)
+Both append `DEFAULT_NULL_ORDERING=HIGH` alongside `MODE=LEGACY`. The H2 dialect-translation path
+no longer injects canonical null clauses when ordering is unspecified; absent order maps to
+`SortItemNullOrdering.UNDEFINED`, while explicit FIRST/LAST is preserved.
 
-- **Always `mvn -o clean install -DskipTests -pl <module>`** for any module you change, never
-  bare `install`/`test` — a stale `target/` + the PAR-generation plugin double-registers the
-  module's own code repository (`Error serializing Pure PAR: The code repository
-  core_functions_unclassified already exists!` / same for `core_relational_h2_pct` etc.) unless
-  `clean` runs first. Full detail: `[[build-legend-engine-stale-modules]]` (session memory) —
-  also holds true for the PCT test module itself (`mvn -o clean test -pl <h2-PCT>`).
-- **legend-pure `-pl` builds fail** on this branch (`nulls-first-last`) because its pom is
-  `5.97.2-SNAPSHOT` but engine is pinned to `5.96.0` (deps don't resolve). To rebuild any
-  legend-pure module against what engine actually uses: `git checkout legend-pure-5.96.0`
-  (detached tag — the nullOrder commit `81fb9df6` is a descendant of it, not the tag itself, so
-  the tag alone does NOT have nullOrder; only rebuild modules that don't touch the nullOrder
-  files, e.g. `legend-pure-runtime-java-engine-compiled`), build, then `git checkout
-  nulls-first-last` to restore.
-- **A temporary debug patch is currently baked into the locally-installed pure 5.96.0 jar**
-  (`~/.m2/repository/org/finos/legend/pure/legend-pure-runtime-java-engine-compiled/5.96.0/`):
-  a `System.err.println(...) + e.printStackTrace()` in `CompiledSupport.executePCTTest`'s
-  `catch (Throwable e)` block, added to get the real NPE stack past the PCT surveyor's
-  `"NullPointer exception"` masking. The source is `git stash`ed in `~/legend-pure` (not
-  committed anywhere). It's harmless — just noisy stderr on every already-expected PCT failure
-  — but should be cleaned up: `git checkout legend-pure-5.96.0 && git stash pop` (drops it) or
-  just checkout-clean + rebuild `legend-pure-runtime-java-engine-compiled` at the tag.
+## Existing Relation API work
 
-## Files changed this session (uncommitted → see accompanying commit)
+- `NullOrder` and optional `nullOrder` fields exist in the legend-pure and relational metamodels
+  (legend-pure commit `81fb9df6`).
+- Relation supports `nullsFirst` / `nullsLast` and the two-argument
+  `ascending(column, NullOrder)` / `descending(column, NullOrder)` forms.
+- Compiled and interpreted in-memory execution carries explicit null ordering.
+- TDS and relational bridges carry null order into root, window, and ordered-aggregate models.
+- Relational routing of chained `->nullsFirst()` / `->nullsLast()` no longer NPEs.
 
-- `Handlers.java` — nullsFirst/nullsLast type-param guard
-- `nullsFirst.pure`, `nullsLast.pure` — copy → explicit construction
-- `pureToSQLQuery_deprecated.pure` — window `SortByInfo.nullOrder` wiring (pre-existing
-  uncommitted change from before this session, carried through untouched)
-- `toPostgresModel.pure` — H2 unspecified-sort canonical emit (decision #1 above)
-- `extensionDefaults.pure` — other-DB reconciliation helpers (decision #2 above)
+## Validation
+
+- Scoped `legend-engine-xt-relationalStore-core-pure` clean install: passed after the final
+  alias-safe contract and focused tests were added.
+- Scoped clean install of 19 directly touched dialect/H2 modules: passed. No `-am` or dependent
+  rebuild was used.
+- Focused `TestNullOrderingSupport`: 5 tests, 0 failures, 0 errors. Covers native nulls-high,
+  native nulls-low, uniform NULLS LAST, explicit clause rendering, and CASE rendering with a
+  separate underlying null-check expression.
+
+Earlier RelationFunctions PCT history on the parent work:
+
+- H2: 459 tests, with three unspecified-order expectation failures and one stale compiled-reference
+  error before H2 was switched to nulls-high.
+- DuckDB: 459 tests, with two unspecified DESC expectation failures and the same stale-reference
+  error before DuckDB reconciliation was finalized here.
+
+H2 and DuckDB RelationFunctions PCT have not yet been rerun on this branch after the final changes.
+
+## Follow-ups
+
+- Rerun H2 and DuckDB RelationFunctions PCT using freshly rebuilt direct PCT modules when desired.
+- Add end-to-end SQL assertions for explicit root, window, and ordered-aggregate null ordering in
+  representative clause and CASE dialects.
+- Verify cloud dialect native defaults against live instances before treating the declarations as
+  empirically confirmed.
+- Refresh Legend SQL parity expectations and documentation as needed.
+
+## Build constraints
+
+- Follow repository `AGENTS.md`: no full builds, Maven `-am`, or dependent rebuilds.
+- Rebuild only directly touched modules from the repository root with
+  `mvn clean install -DskipTests -pl <package-path>`.
+- The engine is pinned to legend-pure `5.96.0`; the legend-pure feature branch POM may use a newer
+  snapshot version.
+
+## Relevant commits
+
+- `e6d27f29a1` — WIP end-to-end Relation API null-ordering support.
+- `338364667f` — relational chained-modifier NPE fix and first shared reconciliation attempt.
+- `644f8c94a8` — opt-in-only alternative on the sibling `nulls-first-last` branch; intentionally
+  not included here.

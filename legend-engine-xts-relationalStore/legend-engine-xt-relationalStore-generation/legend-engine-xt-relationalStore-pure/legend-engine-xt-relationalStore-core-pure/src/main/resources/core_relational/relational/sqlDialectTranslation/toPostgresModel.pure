@@ -186,11 +186,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 {
   $orderBy->map(o|^SortItem(sortKey = $o.column->convertElementToExpression($state),
                             ordering = $o.direction->convertSortDirection(),
-                            nullOrdering = if($o.nullOrder->isNotEmpty(),
-                                              | $o.nullOrder->convertNullOrder(),
-                                              // No explicit null order => render the platform's canonical order (nulls sort high:
-                                              // NULLS LAST on ASC, NULLS FIRST on DESC) so it is portable across dialects whose native default diverges.
-                                              | if($o.direction == meta::relational::metamodel::SortDirection.DESC, | SortItemNullOrdering.FIRST, | SortItemNullOrdering.LAST))
+                            nullOrdering = $o.nullOrder->convertNullOrder()
                           ));
 }
 
@@ -877,9 +873,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
   let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
                                                   ordering = $s.sortDirection->convertSortDirection(),
-                                                  nullOrdering = if($s.nullOrder->isNotEmpty(),
-                                                                    | $s.nullOrder->convertNullOrder(),
-                                                                    | if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | SortItemNullOrdering.LAST, | SortItemNullOrdering.FIRST))
+                                                  nullOrdering = $s.nullOrder->convertNullOrder()
                                                 ));
   let windowFrame = if($w.window.frame->isNotEmpty(),
                        | $w.window.frame->toOne()->convertWindowFrame($state),

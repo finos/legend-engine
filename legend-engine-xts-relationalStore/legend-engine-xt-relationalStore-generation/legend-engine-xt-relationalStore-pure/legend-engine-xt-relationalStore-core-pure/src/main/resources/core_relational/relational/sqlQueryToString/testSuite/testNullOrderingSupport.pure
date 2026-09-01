@@ -1,0 +1,31 @@
+import meta::relational::functions::sqlQueryToString::*;
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsHighOrderingSupport():Boolean[1]
+{
+   let support = nullsHighWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], []));
+   assertEquals('key desc', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, []));
+   assertEquals('key nulls first', $support.processSortItem('key', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsLowOrderingSupport():Boolean[1]
+{
+   let support = nullsLowWithClauseSupport();
+   assertEquals('key nulls last', $support.processSortItem('key', 'source.key', [], []));
+   assertEquals('key desc nulls first', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, []));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUniformNullsLastOrderingSupport():Boolean[1]
+{
+   let support = nullsLastWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], []));
+   assertEquals('key desc nulls first', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, []));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testCaseNullOrderingSupportUsesUnderlyingExpression():Boolean[1]
+{
+   let support = nullsLowWithCaseSupport();
+   assertEquals('case when source.key is null then 0 else 1 end desc, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], []));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, []));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST));
+}

@@ -113,6 +113,16 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.joinStringsProcessor->toOne()->eval($j, $sgc);
    }: String[1];
 
+   processSortItem(expression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[0..1])
+   {
+     $this.processSortItem($expression, $expression, $direction, $nullOrder);
+   }: String[1];
+
+   processSortItem(expression:String[1], nullCheckExpression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[0..1])
+   {
+     $this.dbExtension.nullOrderingSupport.processSortItem($expression, $nullCheckExpression, $direction, $nullOrder);
+   }: String[1];
+
    // Defaults rather than requiring every dialect to opt in; a dialect with no ordered-set aggregates
    // overrides this to fail with a clear message.
    withinGroupProcessor(f:DynaFunction[1], sgc:SqlGenerationContext[1])
@@ -289,6 +299,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
+   nullOrderingSupport: NullOrderingSupport[1];
    // Unrendered, because dialects place the ordering differently: a WITHIN GROUP suffix, inside the
    // aggregate's parentheses, or -- on H2's GROUP_CONCAT -- before the SEPARATOR.
    withinGroupProcessor: meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1] -> String[1]}>[0..1];
@@ -316,6 +327,70 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    buildDummyConnection : meta::pure::metamodel::function::Function<{->RelationalDatabaseConnection[1]}>[0..1];
 
    processTestConnectionDatasourceSpecification : meta::pure::metamodel::function::Function<{meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1], meta::relational::metamodel::Database[*] -> meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1]}>[0..1];
+}
+
+Class meta::relational::functions::sqlQueryToString::NullOrderingSupport
+{
+   nativeNullOrdering: meta::pure::metamodel::function::Function<{meta::relational::metamodel::SortDirection[1] -> meta::relational::metamodel::NullOrder[1]}>[1];
+   sortItemProcessor: meta::pure::metamodel::function::Function<{String[1], String[1], meta::relational::metamodel::SortDirection[0..1], meta::relational::metamodel::NullOrder[1] -> String[1]}>[1];
+
+   processSortItem(expression:String[1], nullCheckExpression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[0..1])
+   {
+      let resolvedDirection = $direction->defaultIfEmpty(meta::relational::metamodel::SortDirection.ASC)->toOne();
+      let canonicalNullOrder = if($resolvedDirection == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST);
+      let resolvedNullOrder = $nullOrder->defaultIfEmpty($canonicalNullOrder)->toOne();
+
+      if($nullOrder->isEmpty() && $this.nativeNullOrdering->eval($resolvedDirection) == $canonicalNullOrder,
+         | $expression + $direction->renderSortDirection(),
+         | $this.sortItemProcessor->eval($expression, $nullCheckExpression, $direction, $resolvedNullOrder));
+   }: String[1];
+}
+
+function meta::relational::functions::sqlQueryToString::renderSortDirection(direction:meta::relational::metamodel::SortDirection[0..1]):String[1]
+{
+   if($direction->isEmpty(), | '', | ' ' + $direction->toOne().name->toLower());
+}
+
+function meta::relational::functions::sqlQueryToString::processSortItemWithNullOrderingClause(expression:String[1], nullCheckExpression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[1]):String[1]
+{
+   $expression + $direction->renderSortDirection() + if($nullOrder == meta::relational::metamodel::NullOrder.FIRST, | ' nulls first', | ' nulls last');
+}
+
+function meta::relational::functions::sqlQueryToString::processSortItemWithNullOrderingCase(expression:String[1], nullCheckExpression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[1]):String[1]
+{
+   'case when ' + $nullCheckExpression + ' is null then 0 else 1 end' + if($nullOrder == meta::relational::metamodel::NullOrder.FIRST, | '', | ' desc') + ', ' + $expression + $direction->renderSortDirection();
+}
+
+function meta::relational::functions::sqlQueryToString::nullsHighWithClauseSupport():NullOrderingSupport[1]
+{
+   ^NullOrderingSupport(
+      nativeNullOrdering = {direction:meta::relational::metamodel::SortDirection[1]| if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST)},
+      sortItemProcessor = processSortItemWithNullOrderingClause_String_1__String_1__SortDirection_$0_1$__NullOrder_1__String_1_
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::nullsLowWithClauseSupport():NullOrderingSupport[1]
+{
+   ^NullOrderingSupport(
+      nativeNullOrdering = {direction:meta::relational::metamodel::SortDirection[1]| if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.LAST, | meta::relational::metamodel::NullOrder.FIRST)},
+      sortItemProcessor = processSortItemWithNullOrderingClause_String_1__String_1__SortDirection_$0_1$__NullOrder_1__String_1_
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::nullsLastWithClauseSupport():NullOrderingSupport[1]
+{
+   ^NullOrderingSupport(
+      nativeNullOrdering = {direction:meta::relational::metamodel::SortDirection[1]| meta::relational::metamodel::NullOrder.LAST},
+      sortItemProcessor = processSortItemWithNullOrderingClause_String_1__String_1__SortDirection_$0_1$__NullOrder_1__String_1_
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::nullsLowWithCaseSupport():NullOrderingSupport[1]
+{
+   ^NullOrderingSupport(
+      nativeNullOrdering = {direction:meta::relational::metamodel::SortDirection[1]| if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.LAST, | meta::relational::metamodel::NullOrder.FIRST)},
+      sortItemProcessor = processSortItemWithNullOrderingCase_String_1__String_1__SortDirection_$0_1$__NullOrder_1__String_1_
+   );
 }
 
 Class meta::relational::functions::sqlQueryToString::RelationalDDLCommandsTranslator
