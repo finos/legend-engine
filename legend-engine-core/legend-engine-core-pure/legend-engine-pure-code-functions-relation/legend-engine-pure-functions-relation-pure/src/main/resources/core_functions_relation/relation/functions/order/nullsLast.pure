@@ -23,5 +23,7 @@ function
    }
    meta::pure::functions::relation::nullsLast<T>(sortInfo:SortInfo<T>[1]):SortInfo<T>[1]
 {
-   ^$sortInfo(nullOrder=NullOrder.LAST)
+   // Explicit construction (not a ^$sortInfo(..) copy) so the router's NormalizeRequiredFunction
+   // preval folds this the same way it folds ascending()/descending().
+   ^SortInfo<T>(column=$sortInfo.column, direction=$sortInfo.direction, nullOrder=NullOrder.LAST)
 }

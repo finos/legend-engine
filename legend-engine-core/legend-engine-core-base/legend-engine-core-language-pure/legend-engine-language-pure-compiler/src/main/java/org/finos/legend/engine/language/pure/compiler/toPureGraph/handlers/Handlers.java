@@ -2371,8 +2371,11 @@ public class Handlers
         register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
         register(h("meta::pure::functions::relation::ascending_ColSpec_1__NullOrder_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
         register(h("meta::pure::functions::relation::descending_ColSpec_1__NullOrder_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
-        register(h("meta::pure::functions::relation::nullsFirst_SortInfo_1__SortInfo_1_", "nullsFirst", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
-        register(h("meta::pure::functions::relation::nullsLast_SortInfo_1__SortInfo_1_", "nullsLast", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
+        // The SortInfo<T> argument may itself be the not-yet-fully-resolved result of ascending()/descending(),
+        // whose genericType can carry no typeArguments at handler time; fall back to the whole genericType then
+        // (mirrors the over(SortInfo...) handlers) instead of NPEing on an absent type argument during preval.
+        register(h("meta::pure::functions::relation::nullsFirst_SortInfo_1__SortInfo_1_", "nullsFirst", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
+        register(h("meta::pure::functions::relation::nullsLast_SortInfo_1__SortInfo_1_", "nullsLast", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
 
         register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 

@@ -186,7 +186,11 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 {
   $orderBy->map(o|^SortItem(sortKey = $o.column->convertElementToExpression($state),
                             ordering = $o.direction->convertSortDirection(),
-                            nullOrdering = $o.nullOrder->convertNullOrder()
+                            nullOrdering = if($o.nullOrder->isNotEmpty(),
+                                              | $o.nullOrder->convertNullOrder(),
+                                              // No explicit null order => render the platform's canonical order (nulls sort high:
+                                              // NULLS LAST on ASC, NULLS FIRST on DESC) so it is portable across dialects whose native default diverges.
+                                              | if($o.direction == meta::relational::metamodel::SortDirection.DESC, | SortItemNullOrdering.FIRST, | SortItemNullOrdering.LAST))
                           ));
 }
 
