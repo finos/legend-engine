@@ -1400,6 +1400,16 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "}");
     }
 
+    @Test
+    public void testInWithEmptyCollectionFallsThroughToCollectionOverload()
+    {
+        test(
+                "###Pure\n" +
+                        "function test::f(names: String[*]): Boolean[1]\n" +
+                        "{\n" +
+                        "   'x'->in([]) || 'x'->in($names)\n" +
+                        "}");
+    }
 
 
     @Test
