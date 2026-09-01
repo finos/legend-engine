@@ -705,7 +705,8 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
    $singleTemporalStrategyAndParam->map(dp | let d = $dp.second;
                                             $d->byPassRouterInfo()->match([ v: VariableExpression[1] | let resolvedVar = $inScopeVars->get($v.name).values->at(0);
                                                                                             let dateRoe = $resolvedVar->match([d:Date[1]|^Literal(value=$d),
-                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.genericType.rawType->toOne()));]);
+                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.genericType.rawType->toOne())),
+                                                                                                                               a:Any[*]|resolveMilestoningDateParams($temporalStrategy, ^InstanceValue(genericType=^GenericType(rawType=Date), multiplicity=PureOne, values=$a)->cast(@ValueSpecification), $currentMilestoningContext, $state, $vars, $context, $extensions).date->first();]);
                                                                                             ^DateWrapper(date=$dateRoe);,
                                                                  i: InstanceValue[1] | $i.values->at(0)->match([
                                                                                           d: Date[1]               | ^DateWrapper(date=^Literal(value=$d));,
@@ -716,14 +717,20 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
                                                                                             let isThisMilestonedGeneratedDateProperty = $f->isThisMilestonedGeneratedDateProperty();
                                                                                             if($isThisMilestonedGeneratedDateProperty && $currentMilestoningContext->isNotEmpty(),| let tp = TemporalMilestoningContext.properties->filter(p|$p.name->toOne() == $f.func.name)->toOne();
                                                                                                                                                                                     $tp->eval($currentMilestoningContext)->map(d|^DateWrapper(date=$d->cast(@RelationalOperationElement)));
-                                                                                                                                                                                 ,|if($f->isNonThisRootVariableExpression(),| 
+                                                                                                                                                                                 ,|if($f->isNonThisRootVariableExpression() || ($f->referencesVariableExpression() && !$f->referencesThis()),| 
                                                                                                                                                                                           if($state.functionExpressionStack->last()->evaluateAndDeactivate().func->in([
                                                                                                                                                                                               getAll_Class_1__Date_1__Date_1__T_MANY_, 
                                                                                                                                                                                               getAll_Class_1__Date_1__T_MANY_, 
                                                                                                                                                                                               getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_
                                                                                                                                                                                               ]), 
                                                                                                                                                                                              | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()), 
-                                                                                                                                                                                             | ^DateWrapper() //change this so we look at the state + add test for range
+                                                                                                                                                                                             | if($f->hasAnyPlanVarPlaceholder($inScopeVars),
+                                                                                                                                                                                                  | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()),
+                                                                                                                                                                                                  | if($f->allVarsResolveToDate($inScopeVars),
+                                                                                                                                                                                                       | $f->reactivate($inScopeVars)->map(d|^DateWrapper(date=^Literal(value=$d->cast(@Date)))),
+                                                                                                                                                                                                       | ^DateWrapper()
+                                                                                                                                                                                                    )
+                                                                                                                                                                                               )
                                                                                                                                                                                           )
                                                                                                                                                                                                                            ,| if($f->referencesVariableExpression()
                                                                                                                                                                                                                                  ,|  let new = newThisMilestonedPropertyExpression($singleTemporalStrategy);
@@ -781,6 +788,43 @@ function <<access.private>> meta::relational::milestoning::isNonThisRootVariable
    $v->byPassRouterInfo()->match([f:FunctionExpression[1] | if($f.parametersValues->isNotEmpty(),|$f.parametersValues->at(0)->isNonThisRootVariableExpression(),|false),
                                   v:VariableExpression[1] | $v.name != 'this',
                                   v:ValueSpecification[1] | false])
+}
+
+function <<access.private>> meta::relational::milestoning::getRootVariableName(v:ValueSpecification[1]):String[0..1]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | if($f.parametersValues->isNotEmpty(),|$f.parametersValues->at(0)->getRootVariableName(),|[]),
+                                  v:VariableExpression[1] | $v.name,
+                                  v:ValueSpecification[1] | []])
+}
+
+function <<access.private>> meta::relational::milestoning::collectVariableExpressions(v:ValueSpecification[1]):VariableExpression[*]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->map(p|$p->collectVariableExpressions()),
+                                  v:VariableExpression[1] | $v,
+                                  e:ExtendedRoutedValueSpecification[1] | $e->byPassRouterInfo()->collectVariableExpressions(),
+                                  v:ValueSpecification[1] | []])
+}
+
+function <<access.private>> meta::relational::milestoning::referencesThis(v:ValueSpecification[1]):Boolean[1]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->fold({x, y| $x->referencesThis() || $y }, false),
+                                  v:VariableExpression[1] | $v.name == 'this',
+                                  e:ExtendedRoutedValueSpecification[1] | $e->byPassRouterInfo()->referencesThis(),
+                                  v:ValueSpecification[1] | false])
+}
+
+function <<access.private>> meta::relational::milestoning::hasAnyPlanVarPlaceholder(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   let vars = $f->collectVariableExpressions();
+   $vars->exists(v| let resolved = $inScopeVars->get($v.name);
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(PlanVarPlaceHolder););
+}
+
+function <<access.private>> meta::relational::milestoning::allVarsResolveToDate(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   let vars = $f->collectVariableExpressions();
+   $vars->forAll(v| let resolved = $inScopeVars->get($v.name);
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(Date););
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]
