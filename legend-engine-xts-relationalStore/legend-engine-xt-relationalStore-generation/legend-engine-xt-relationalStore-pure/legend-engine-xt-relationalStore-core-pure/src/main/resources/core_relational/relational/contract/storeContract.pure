@@ -282,7 +282,7 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                         );
      
         let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-            let originalQuery = $sq.vs->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
+            let originalQuery = $sq.vs->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions, $storeRuntime)),  $extensions);
             let resultNode = $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
                                            ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
             // Nested flatten(source, col) case: variant-flatten appears as a sub-expression (e.g. flatten(src,~col)->filter(...)).

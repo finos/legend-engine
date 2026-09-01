@@ -86,6 +86,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    supportedFunctions:Map<meta::pure::metamodel::function::Function<Any>,meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>[1];
    contextBasedSupportedFunctions:Map<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>[1];
    mapping:Mapping[0..1];
+   runtime:meta::core::runtime::Runtime[0..1];  //runtime is only used to override infinity date - it should not be used for anything else in pureToSql
    inProject:Boolean[1]; // should we fetch all properties in getAll ('NOT'ed)
    inProjectFunctions:Boolean[1];
    filterChainDepth:Integer[1];
@@ -349,6 +350,12 @@ function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mappi
 function meta::relational::functions::pureToSqlQuery::getClassMappingById(state: State[1], id: String[1]): SetImplementation[*]
 {
   $state.idToClassMapping->getClassMappingById($id);
+}
+
+function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*], runtime:meta::core::runtime::Runtime[0..1]):State[1]
+{
+   let baseState = defaultState($mapping, $inScopeVars, $exeCtx, $extensions);
+   ^$baseState(runtime = $runtime);
 }
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
@@ -5182,10 +5189,11 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
              ]);
 }
 
-function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilters(select: SelectWithCursor[1], milestoningContext: TemporalMilestoningContext[1], state:State[1], innerJoinFilterExists: Boolean[1], isFromView:Boolean[1], extensions:Extension[*]):SelectWithCursor[1]
+function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilters(select: SelectWithCursor[1], oldMilestoningContext: TemporalMilestoningContext[1], state:State[1], innerJoinFilterExists: Boolean[1], isFromView:Boolean[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    let query = $select.select;
-   let milestoningStrategy = $milestoningContext.currentMilestoningStrategy->toOne();
+   let milestoningStrategy = $oldMilestoningContext.currentMilestoningStrategy->toOne();
+   let milestoningContext = ^$oldMilestoningContext(runtime=$state.runtime, extensions=$extensions);
    let nestedRoot = if($select.currentTreeNode->isNotEmpty(), | $select.alias.relationalElement, | $query.data.alias.relationalElement)->toOne()->instanceOf(SelectSQLQuery);
 
    if(!$milestoningContext.isAllVersions() && !$milestoningContext.isAllForEachDate() && if($nestedRoot && $innerJoinFilterExists ,| $select.alias.relationalElement->toOne()->cast(@SelectSQLQuery).data.alias.relationalElement->toOne()->relationalElementIsMilestoned(),|($query.data.alias.relationalElement->toOne()->relationalElementIsMilestoned() || $isFromView))
