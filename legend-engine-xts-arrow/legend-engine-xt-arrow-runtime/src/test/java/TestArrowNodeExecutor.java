@@ -122,6 +122,50 @@ public class TestArrowNodeExecutor
 
     }
 
+    @Test
+    public void testExternalizeTimestampWithTimeZone() throws Exception
+    {
+        // Reproduces the Snowflake 4.x arrow failure: the JDBC driver now surfaces
+        // TIMESTAMP_TZ / TIMESTAMP_LTZ columns as java.sql.Types.TIMESTAMP_WITH_TIMEZONE (2014).
+        // H2 2.x does the same for TIMESTAMP WITH TIME ZONE columns, so we can trigger the
+        // same code path (JdbcToArrowUtils.getArrowTypeFromJdbcType -> "Unmapped JDBC type: 2014")
+        // without needing a live Snowflake connection.
+        ArrowRuntimeExtension extension = new ArrowRuntimeExtension();
+        ExternalFormatExternalizeTDSExecutionNode node = new ExternalFormatExternalizeTDSExecutionNode();
+        RelationalExecutionNode mockExecutionNode = Mockito.mock(RelationalExecutionNode.class);
+        DatabaseConnection mockDatabaseConnection = Mockito.mock(DatabaseConnection.class);
+
+        mockExecutionNode.connection = mockDatabaseConnection;
+        Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
+
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:mem:test;TIME ZONE=America/New_York", "sa", "");
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
+        {
+            conn.createStatement().execute("DROP TABLE IF EXISTS testtz");
+            conn.createStatement().execute("CREATE TABLE testtz (testInt INTEGER, testTsTz TIMESTAMP WITH TIME ZONE)");
+            conn.createStatement().execute("INSERT INTO testtz (testInt, testTsTz) VALUES "
+                    + "(1, TIMESTAMP WITH TIME ZONE '2020-01-01 00:00:00-05:00'), "
+                    + "(2, TIMESTAMP WITH TIME ZONE '2020-01-01 00:00:00-02:00')");
+
+            RelationalResult result = new RelationalResult(
+                    FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtz", null)),
+                    mockExecutionNode,
+                    FastList.newListWith(
+                            new SQLResultColumn("testInt", "INTEGER"),
+                            new SQLResultColumn("testTsTz", "TIMESTAMP")),
+                    null, "America/New_York", conn,
+                    Identity.getAnonymousIdentity(), null, null, new RequestContext());
+
+            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, Identity.getAnonymousIdentity(), null);
+            nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
+
+            String expected = "TESTINT\tTESTTSTZ\n"
+                    + "1\t1577854800000\n"
+                    + "2\t1577844000000\n";
+            assertArrow(outputStream, expected);
+        }
+    }
+
     private void assertArrow(ByteArrayOutputStream actualOutputStream, String expectedTSV) throws IOException //input a TSV String
     {
         actualOutputStream.flush();
