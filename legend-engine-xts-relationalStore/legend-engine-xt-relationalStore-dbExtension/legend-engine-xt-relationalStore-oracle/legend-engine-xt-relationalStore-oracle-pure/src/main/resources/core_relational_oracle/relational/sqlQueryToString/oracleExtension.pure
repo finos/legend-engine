@@ -256,7 +256,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as number)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='to_char(%s)')),
-    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->toTimestampOracle()})),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[2],s:SqlGenerationContext[1] | $p->toTimestampOracle($s)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateOracle()}))
@@ -513,8 +513,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    ]->filter(p | $p.first.values->contains($day)).second->toOne();
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::toTimestampOracle(params: String[2]): String[0..1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::toTimestampOracle(params: String[2], context: SqlGenerationContext[1]): String[1]
 {
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
    let maybeDate = $params->at(0)->replace('\'','')->parseDate();
-   convertDateToSqlStringOracle($maybeDate, $params->at(1));
+   convertDateToSqlStringOracle($maybeDate, $context.dbConfig.dbTimeZone);
 }
