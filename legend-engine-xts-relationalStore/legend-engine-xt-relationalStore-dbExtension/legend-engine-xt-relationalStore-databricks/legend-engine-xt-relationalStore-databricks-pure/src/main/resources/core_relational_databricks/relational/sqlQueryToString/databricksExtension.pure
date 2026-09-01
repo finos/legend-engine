@@ -856,7 +856,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         + if($s.pivot->isEmpty(), | '', | processPivotForDatabricks($s, $s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions))
   ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(',')) +
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if (eq($qualifyStr, ''), |'', | ' ' + $format.separator + 'qualify ' + $qualifyStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +

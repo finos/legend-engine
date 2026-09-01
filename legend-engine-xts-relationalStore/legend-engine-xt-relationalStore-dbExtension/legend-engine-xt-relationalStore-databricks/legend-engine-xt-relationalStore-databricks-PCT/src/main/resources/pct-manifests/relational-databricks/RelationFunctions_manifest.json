@@ -1,9 +1,6 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
-    "test" : "meta::pure::functions::relation::tests::composition::testGroupBy_Conflicting_Alias_With_Table_Columns_Function_1__Boolean_1_",
-    "expectedError" : "[MISSING_AGGREGATION] org.apache.spark.sql.catalyst.ExtendedAnalysisException: [MISSING_AGGREGATION] The non-aggregating expression \"name\" is based on columns which are not participating in the GROUP BY clause.\nAdd the columns or the expression to the GROUP BY, aggregate the expression, or use \"any_value(name)\" if you do not care which of the values within a group is returned."
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',\\n#'\nactual:   '#TDS\\n   id,payload,joined\\n   1,\\'[1,2,3]\\',1,2,3\\n   2,\\'[4,5,6]\\',4,5,6\\n   3,\\'[7,8,9]\\',7,8,9\\n   4,\\'null\\',null\\n#'"
   }, {
@@ -42,12 +39,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated_Function_1__Boolean_1_",
     "expectedError" : "The function `array_join` does not support WITHIN GROUP (ORDER BY ...)"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""

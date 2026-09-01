@@ -47,15 +47,15 @@ public class Test_Relational_Databricks_Semistructured
         // the inline comments below. If a run produces a different error message the
         // executor will re-throw wrapped in an AssertionError so we don't silently mask
         // regressions.
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                // [needsInvestigation] Router bug: generated SQL references `Id`
-                // unqualified when both `blocks_1.Id` (from the exploded array) and
-                // `root.Id` (from the base row) are in scope after array explode + group-by.
-                // Needs an alias-injection pass in the aggregate router for exploded
-                // sub-selects, not a Databricks-specific fix.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy_Connection_1__Boolean_1_",
-                        "[AMBIGUOUS_REFERENCE]");
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty();
+                // testAggregationAggregateExplodedPropertyUsingGroupBy was quarantined here for an
+                // [AMBIGUOUS_REFERENCE] Spark error: GROUP BY rendered `Id` unqualified while both
+                // `blocks_1.Id` (exploded array alias) and `root.Id` (base row) were in scope. Fixed
+                // (2026-09-01) by rendering groupBy columns fully-qualified on Databricks
+                // (databricksExtension.pure: processSelectSQLQueryForDatabricks's `group by` call now
+                // passes supportsAliasInGroupBy=false, matching Trino/Presto/SQL Server/Oracle/Sybase
+                // ASE/DB2's existing handling of the same quirk) -- confirmed genuinely passing on a
+                // live-cluster run. Entry removed accordingly.
                 // Note: testSemiStructuredArrayFilterAtIndex, testSemiStructuredArrayFilterFirstJoinStrings,
                 // and testJoinOnSemiStructuredPropertyWithQPFilter were quarantined here on master (with the
                 // pre-fix error text) but were fixed and confirmed genuinely passing on Databricks this
