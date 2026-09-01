@@ -374,4 +374,68 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  ];\n" +
                 "}\n");
     }
+
+    /**
+     * A zone id round-trips through its quotes and a UTC offset round-trips without them, which only holds if the
+     * parser strips the quotes the grammar requires and the composer puts them back.
+     */
+    @Test
+    public void testRelationalDatabaseConnectionTimezone()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: 'US/Arizona';\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: 'UTC';\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: 'GMT+05:00';\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: +0700;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+        test("###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: -0500;\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n");
+    }
 }
