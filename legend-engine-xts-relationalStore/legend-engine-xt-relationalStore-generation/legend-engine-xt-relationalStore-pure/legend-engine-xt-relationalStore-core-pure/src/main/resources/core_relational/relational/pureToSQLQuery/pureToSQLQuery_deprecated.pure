@@ -138,11 +138,10 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
 
                                               if($valueParam->isFunctionWithName('getEnum'),
                                                 | let enumPropertyMapping = getEnumExprPropertyMapping($valueParam->cast(@FunctionExpression), $paths);
+                                                  let columnName = $valueParam->cast(@FunctionExpression)->instanceValueAtParameter(1)->toString();
+                                                  assert($enumPropertyMapping->isNotEmpty(), | 'Could not resolve enumeration mapping for projected TDS enum column \'' + $columnName + '\' in IN predicate. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
                                                   let mappedEnumValues = $mergedCollectionArg.values->map(a|$a.value->match([
-                                                    e: Enum[1]| if($enumPropertyMapping->isNotEmpty(),
-                                                                  | $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
-                                                                  | $e.name
-                                                                ),
+                                                    e: Enum[1]| $enumPropertyMapping.transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($e)->distinct(),
                                                     a: Any[1] | $a
                                                   ]));
                                                   let enumMappedCollectionArg = ^LiteralList(values=$mappedEnumValues->map(v|^Literal(value=$v)));
@@ -640,10 +639,22 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 {
    let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
    $cols->map(cs|
-         let newElement = processTdsLambda($cs.func->cast(@FunctionDefinition<Any>).expressionSequence->at(0), $mainQuery.select.columns->cast(@Alias), false, $vars, $updatedState, $currentPropertyMapping, $paths, $context)->at(0);
+         let expression = $cs.func->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
+         let newElement = processTdsLambda($expression, $mainQuery.select.columns->cast(@Alias), false, $vars, $updatedState, $currentPropertyMapping, $paths, $context)->at(0);
+         let propertyMapping = $expression->match([
+                                  f:FunctionExpression[1] |
+                                    if(['getNumber', 'getInteger', 'getDecimal', 'getString', 'getFloat', 'getDate', 'getDateTime', 'getStrictDate', 'getBoolean', 'getEnum']->contains($f.func.functionName->toOne()),
+                                      | let name = $f->instanceValueAtParameter(1)->cast(@String);
+                                        let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
+                                        if($matchedPath->isEmpty(), | [], | $matchedPath->toOne().second.propertyMapping->cast(@RelationalPropertyMapping));,
+                                      | []
+                                    );,
+                                  a:Any[1] | []
+                                ]);
          let alias = ^Alias(name=$cs.name->addQuotesIfNecessary(), relationalElement=$newElement);
          let path = pair($cs.name, ^PathInformation(type=$cs.func->functionReturnType().rawType->toOne(),
-                                                    relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
+                                                    relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping(),
+                                                    propertyMapping = if($propertyMapping->isEmpty(), | [], | $propertyMapping->toOne())));
          pair($alias,$path);
          );
 }

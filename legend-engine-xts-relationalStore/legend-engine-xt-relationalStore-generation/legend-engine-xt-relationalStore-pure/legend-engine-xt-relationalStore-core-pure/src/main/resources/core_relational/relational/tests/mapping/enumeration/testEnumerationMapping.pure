@@ -443,6 +443,43 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
   assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\', \'FTE\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
 }
 
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnNestedProject():Boolean[1]
+{
+  let result = execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    [col(row: meta::pure::tds::TDSRow[1] | $row.getEnum('Type'), 'Dominant Asset Category')]
+                  )->filter(
+                    row: meta::pure::tds::TDSRow[1] | $row.getEnum('Dominant Asset Category')->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME])
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertSameElements([EmployeeType.CONTRACT, EmployeeType.FULL_TIME, EmployeeType.CONTRACT], $tds->columnValues('Dominant Asset Category'));
+  assertSameSQL('select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTC\', \'FTO\', \'FTE\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnNestedProjectSingleValue():Boolean[1]
+{
+  let result = execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    [col(row: meta::pure::tds::TDSRow[1] | $row.getEnum('Type'), 'Dominant Asset Category')]
+                  )->filter(
+                    row: meta::pure::tds::TDSRow[1] | $row.getEnum('Dominant Asset Category')->in(EmployeeType.FULL_TIME)
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 1);
+  assertSameElements([EmployeeType.FULL_TIME], $tds->columnValues('Dominant Asset Category'));
+  let sql = $result->sqlRemoveFormatting();
+  assert($sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTE\')' || $sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type = \'FTE\'', | 'Unexpected SQL for single enum IN on nested project: ' + $sql);
+}
+
 function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumVarEquality():Boolean[1]
 {  
   let result =  execute({|let enum = if(5 > 3, | EmployeeType.CONTRACT, | EmployeeType.FULL_TIME);
