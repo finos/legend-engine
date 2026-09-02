@@ -19,6 +19,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.relation.RelationElem
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Collections;
+import java.util.List;
+
 public class DataSpaceExecutableAnalysisResult
 {
     public String title;
@@ -28,6 +31,6 @@ public class DataSpaceExecutableAnalysisResult
     public DataSpaceExecutableResult result;
     public GenericType executableReturnType;
     public RelationElement sampleValues;
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    public DataSpaceExecutableAccessorInfo executableAccessorInfo;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<DataSpaceExecutableAccessorInfo> executableAccessorInfo = Collections.emptyList();
 }

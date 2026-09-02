@@ -54,5 +54,5 @@ public class DataSpaceAnalysisResult
     public Map<String, MappingModelCoverageAnalysisResult> mappingToMappingCoverageResult;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public Map<String, DataSpaceMappingProvidersAndExecutableAccessorsInfo> mappingProviderDeploymentInfo = Collections.emptyMap();
+    public List<DataSpaceReferencesMetadata> dataSpaceReferencesMetadataInfo = Collections.emptyList();
 }

@@ -17,6 +17,7 @@ package org.finos.legend.engine.generation.analytics.model;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "_type")
-public abstract class DataSpaceMappingProvidersAndExecutableAccessorsInfo
+public abstract class DataSpaceReferencesMetadata
 {
 }
+
