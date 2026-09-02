@@ -5773,7 +5773,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
             ->sort([~String->ascending()->nullsFirst()])
-            ->select(~[String, Integer])
         }
     ]
   )
@@ -5821,7 +5820,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
             ->sort([~String->ascending()->nullsLast()])
-            ->select(~[String, Integer])
         }
     ]
   )
@@ -5855,7 +5853,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
             ->sort([~String->descending()->nullsFirst()])
-            ->select(~[String, Integer])
         }
     ]
   )
@@ -5890,7 +5887,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
             ->sort([~String->ascending()->nullsFirst(), ~Integer->descending()->nullsLast()])
-            ->select(~[String, Integer])
         }
     ]
   )

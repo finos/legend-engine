@@ -2,6 +2,18 @@
   "adapter": "meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution_Function_1__X_o_",
   "exclusions": [
     {
+      "test": "meta::pure::functions::relation::tests::sort::testSortNullOrderTwoArgAndCanonical_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::sort::testSortNullsFirst_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::sort::testSortNullsLast_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
       "test": "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },

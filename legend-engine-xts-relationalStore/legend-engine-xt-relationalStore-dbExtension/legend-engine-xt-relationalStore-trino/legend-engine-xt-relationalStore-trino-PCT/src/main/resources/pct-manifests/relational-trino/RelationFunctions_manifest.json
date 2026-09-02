@@ -316,8 +316,6 @@
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: Trino"
   }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '#TDS\\n   p,o,i,newCol\\n   300,2,20,30\\n   300,1,10,30\\n   200,null,20,30\\n   200,null,10,30\\n   200,3,30,90\\n   200,3,30,90\\n   200,1,10,110\\n   200,1,10,110\\n   100,null,30,50\\n   100,null,20,50\\n   100,3,30,100\\n   100,2,20,110\\n   100,1,10,110\\n   0,null,30,30\\n   0,1,10,50\\n   0,1,10,50\\n#'\nactual:   '#TDS\\n   p,o,i,newCol\\n   300,2,20,30\\n   300,1,10,30\\n   200,null,20,110\\n   200,null,10,110\\n   200,3,30,60\\n   200,3,30,60\\n   200,1,10,80\\n   200,1,10,80\\n   100,null,30,110\\n   100,null,20,110\\n   100,3,30,50\\n   100,2,20,60\\n   100,1,10,60\\n   0,null,30,50\\n   0,1,10,20\\n   0,1,10,20\\n#'"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "Unexpected parameters (integer, varchar(5), varchar(3)) for function concat. Expected: concat(E, array(E)) E, concat(array(E)) E, concat(array(E), E) E, concat(char(x), char(y)), concat(varbinary), concat(varchar)"
@@ -420,9 +418,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: Trino"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "is not equivalent to"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"

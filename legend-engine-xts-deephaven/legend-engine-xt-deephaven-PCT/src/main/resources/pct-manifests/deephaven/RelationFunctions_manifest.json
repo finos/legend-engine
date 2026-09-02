@@ -1,6 +1,12 @@
 {
   "adapter" : "meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortNullOrderTwoArgAndCanonical_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortNullsLast_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Neema\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n   3,David\\n#'"
+  }, {
     "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_"
   }, {

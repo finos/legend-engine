@@ -1,6 +1,12 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter_Function_1__Boolean_1_",
+    "expectedError" : "ORDER BY list of RANGE window frame has total size of 1036 bytes. Largest size supported is 900 bytes."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns_Function_1__Boolean_1_",
+    "expectedError" : "ORDER BY list of RANGE window frame has total size of 1036 bytes. Largest size supported is 900 bytes."
+  }, {
     "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {

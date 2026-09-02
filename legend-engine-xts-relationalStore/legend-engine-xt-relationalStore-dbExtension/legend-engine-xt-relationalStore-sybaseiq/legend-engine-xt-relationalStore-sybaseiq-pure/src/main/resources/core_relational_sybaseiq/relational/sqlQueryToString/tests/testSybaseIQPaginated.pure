@@ -31,7 +31,7 @@ function <<test.Test>> meta::relational::tests::query::function::sybaseIQ::testP
    let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->paginated(3, 5);};
 
    let s4 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit 10,5', $s4);
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by case when "root".FIRSTNAME is null then 0 else 1 end desc, "firstName" limit 10,5', $s4);
 
    // Third type of function - subQuery
 

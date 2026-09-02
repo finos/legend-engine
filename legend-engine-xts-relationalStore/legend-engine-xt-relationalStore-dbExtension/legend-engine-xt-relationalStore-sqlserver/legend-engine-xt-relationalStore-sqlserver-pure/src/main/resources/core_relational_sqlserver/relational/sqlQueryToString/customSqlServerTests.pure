@@ -137,7 +137,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testTriminSqlServer()
 function <<test.Test>> meta::relational::sqlServer::tests::testSortQuotesSqlServer():Boolean[1]
 {
    let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
+   assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by case when "root".FIRSTNAME is null then 0 else 1 end desc, "name",case when "addressTable_d#3_1_d#3_m2".NAME is null then 0 else 1 end, "address" desc', $query);
 }
 
 function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]

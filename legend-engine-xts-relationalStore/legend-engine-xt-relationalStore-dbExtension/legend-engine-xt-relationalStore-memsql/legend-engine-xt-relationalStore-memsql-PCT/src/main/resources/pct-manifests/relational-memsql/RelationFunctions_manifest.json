@@ -1,6 +1,9 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithMemSQLExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_ForcingSubSelect_Function_1__Boolean_1_",
+    "expectedError" : "java.sql.SQLException: (conn=31) Feature 'Different ORDER BY clauses in multiple GROUP_CONCAT or JSON_AGG aggregates' is not supported by SingleStore."
+  }, {
     "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_",
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
