@@ -52,4 +52,7 @@ public class DataSpaceAnalysisResult
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
 
     public Map<String, MappingModelCoverageAnalysisResult> mappingToMappingCoverageResult;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<DataSpaceReferencesMetadata> dataSpaceReferencesMetadataInfo = Collections.emptyList();
 }
