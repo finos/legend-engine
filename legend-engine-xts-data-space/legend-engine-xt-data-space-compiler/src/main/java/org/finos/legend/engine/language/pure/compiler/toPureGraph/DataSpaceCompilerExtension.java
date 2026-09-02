@@ -136,6 +136,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         if (executionContextSet.add(executionContext.name))
                         {
+                            if (executionContext.defaultRuntime == null && executionContext.mapping != null && executionContext.mappingProvider == null)
+                            {
+                                throw new EngineException("Data space execution context '" + executionContext.name + "' must specify a defaultRuntime when a mapping is set", executionContext.sourceInformation, EngineErrorType.COMPILATION);
+                            }
                             Root_meta_pure_runtime_PackageableRuntime runtime = executionContext.defaultRuntime != null ? context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation) : null;
                             Mapping mapping = executionContext.mapping != null
                                     ? context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation)
