@@ -406,6 +406,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsFirst_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsLast_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -682,7 +688,13 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_NullsLast_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_NullsFirst_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",

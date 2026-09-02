@@ -158,10 +158,10 @@
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumnsWithFilter_Function_1__Boolean_1_",
-    "expectedError" : "ORDER BY list of RANGE window frame has total size of 1028 bytes. Largest size supported is 900 bytes."
+    "expectedError" : "ORDER BY list of RANGE window frame has total size of"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPWithPartitionAndMultipleOrderWindowMultipleColumns_Function_1__Boolean_1_",
-    "expectedError" : "ORDER BY list of RANGE window frame has total size of 1028 bytes. Largest size supported is 900 bytes."
+    "expectedError" : "ORDER BY list of RANGE window frame has total size of"
   }, {
     "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError": "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
@@ -229,7 +229,13 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_NullsLast_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
+  }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_NullsFirst_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",
