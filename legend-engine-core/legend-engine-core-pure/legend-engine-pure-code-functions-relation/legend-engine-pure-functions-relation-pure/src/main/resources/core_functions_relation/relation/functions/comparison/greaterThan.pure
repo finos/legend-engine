@@ -1,0 +1,271 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+'''
+Whether the given value is greater than the single value in the single column of the given relation.
+
+This is the scalar subquery comparison — `x > (select max(y) from t)` — as distinct from the
+quantified forms. The relation must hold at most one row; more than one is an error.
+
+The relation must carry exactly one column, of the same type as the value; the compiler rejects
+anything else. A null in that column is ignored rather than making the comparison undecided —
+`Boolean[1]` is two-valued and has no UNKNOWN to return.
+
+An empty relation, a column holding only a null, and an empty value all answer `false`.
+
+**Parameters**
+- `value` — the value to compare; may be empty.
+- `rel` — a relation with a single column of the same type as `value`, holding at most one row.
+
+**Returns** `true` when the column's single non-null value `c` satisfies `value > c`.
+
+**See also** `greaterThanAny(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`greaterThanAll(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`equalTo(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`
+'''
+function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::greaterThan<U,Z>(value:U[0..1], rel:Relation<Z=(?:U)>[1]):Boolean[1]
+{
+   assert($rel->size() <= 1, | 'a scalar subquery returned more than one row');
+
+   let col = $rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,U|0..1>);
+   $value->isNotEmpty() && $rel->meta::pure::functions::relation::exists({row:Z[1] | $col->eval($row)->isNotEmpty() && (meta::pure::functions::lang::compare($value->toOne(), $col->eval($row)->toOne()) > 0)});
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testSimpleGreaterThan<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #;
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   3,400\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_Negated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #;
+                  $products->filter(p | !$p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  // a column of nothing but nulls types as Varchar, so the value keeps the column typed and
+                  // the filter leaves the single null row the comparison is about
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 400
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #;
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,400\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Negating greaterThan against an empty relation: the un-negated form answers false, so the negation must
+// answer true and keep every row - there is no value there to compare against, empty or not.
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NegatedEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | !$p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Same as above with a single null in the relation rather than zero rows - still nothing to compare
+// against, so the negation keeps every row here too.
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NegatedNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | !$p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Value and relation both absent at once - untested by the individually-empty cases above. Still false,
+// for the same reason either side alone is: an absent value has nothing to compare against.
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValueAgainstEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 400
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Same combination with a single null row rather than zero rows on the relation side - still false.
+function <<PCT.test>> meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValueAgainstNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 400
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | $p.price->greaterThan($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}

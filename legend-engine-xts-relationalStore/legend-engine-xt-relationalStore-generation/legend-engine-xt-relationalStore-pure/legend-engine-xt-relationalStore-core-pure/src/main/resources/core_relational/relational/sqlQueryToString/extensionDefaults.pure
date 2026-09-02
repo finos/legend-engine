@@ -193,6 +193,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
     dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('scalarSubQuery',         $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
     dynaFnToSql('anyOf',                  $allStates,            ^ToSql(format='any %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
     dynaFnToSql('allOf',                  $allStates,            ^ToSql(format='all %s', transform={p:String[1] | $p->meta::relational::functions::sqlQueryToString::default::bracketSubQuery()})),
     dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),

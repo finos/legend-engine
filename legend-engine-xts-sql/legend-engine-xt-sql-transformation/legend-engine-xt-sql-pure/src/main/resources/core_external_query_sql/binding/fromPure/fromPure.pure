@@ -3173,6 +3173,78 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ])->getValue($operator);
 }
 
+// A subquery sitting where a value is expected - x = (select max(y) from t) - is a scalar subquery.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processScalarSubqueryComparison(c:ComparisonExpression[1], negated:Boolean[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug(|'processScalarSubqueryComparison', $context.debug);
+  assertRelation($context.relation, 'scalar subquery comparison');
+
+  let leftIsSubquery = $c.left->instanceOf(SubqueryExpression);
+  unsupported(!($c.left->instanceOf(SubqueryExpression) && $c.right->instanceOf(SubqueryExpression)),
+              | 'a comparison between two scalar subqueries');
+
+  let subQuery = if ($leftIsSubquery, | $c.left, | $c.right)->cast(@SubqueryExpression);
+  let value = if ($leftIsSubquery, | $c.right, | $c.left)->processExpression($expContext, $context);
+
+  let operator = if ($leftIsSubquery, | $c.operator->mirrorComparisonOperator(), | $c.operator);
+
+  if ($operator == ComparisonOperator.NOT_EQUAL,
+    | processScalarSubqueryComparison(^$c(left = $c.left, right = $c.right, operator = ComparisonOperator.EQUAL), !$negated, $expContext, $context),
+    |
+      unsupported($operator->isScalarComparableOperator(), | 'a scalar subquery compared with ' + $operator.name);
+
+      let relContext = processSubRelation($subQuery.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      assert($relContext.columns->size() == 1,
+             | 'a scalar subquery must return exactly one column, got ' + $relContext.columns->size()->toString());
+
+      let comparison = sfe(scalarComparisonFunction($operator), [$value, $rel]);
+
+      if ($negated,
+        | sfe(and_Boolean_1__Boolean_1__Boolean_1_, [sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value), sfe(not_Boolean_1__Boolean_1_, $comparison)]),
+        | $comparison);
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isScalarComparableOperator(operator:ComparisonOperator[1]):Boolean[1]
+{
+  $operator->in([
+    ComparisonOperator.EQUAL,
+    ComparisonOperator.NOT_EQUAL,
+    ComparisonOperator.LESS_THAN,
+    ComparisonOperator.LESS_THAN_OR_EQUAL,
+    ComparisonOperator.GREATER_THAN,
+    ComparisonOperator.GREATER_THAN_OR_EQUAL
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::mirrorComparisonOperator(operator:ComparisonOperator[1]):ComparisonOperator[1]
+{
+  [
+    pair(ComparisonOperator.LESS_THAN,             ComparisonOperator.GREATER_THAN),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    ComparisonOperator.GREATER_THAN_OR_EQUAL),
+    pair(ComparisonOperator.GREATER_THAN,          ComparisonOperator.LESS_THAN),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ComparisonOperator.LESS_THAN_OR_EQUAL)
+  ]->getValue($operator, $operator);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::scalarComparisonFunction(operator:ComparisonOperator[1]):meta::pure::metamodel::function::Function<Any>[1]
+{
+  [
+    pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalTo_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqual_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_)
+  ]->getValue($operator);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasScalarSubqueryOperand(c:ComparisonExpression[1]):Boolean[1]
+{
+  $c.left->instanceOf(SubqueryExpression) || $c.right->instanceOf(SubqueryExpression);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQualifiedNameReference(q:QualifiedNameReference[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processQualififedNameReference', $context.debug);
@@ -3953,9 +4025,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processNotExpression', $context.debug);
 
   //a quantified comparison builds its own negation, since negating its two-valued result would keep the
-  //rows SQL leaves unknown
+  //rows SQL leaves unknown. A scalar subquery comparison is the same: negating the guarded predicate it would
+  //otherwise produce is not the negation SQL asks for, and both forms compile
   $n.value->match([
     q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, true, $expContext, $context),
+    c:ComparisonExpression[1] |
+      if ($c->hasScalarSubqueryOperand(),
+        | processScalarSubqueryComparison($c, true, $expContext, $context),
+        | nullOrSfe(not_Boolean_1__Boolean_1_, $c->processExpression($expContext, $context)));,
     e:meta::external::query::sql::metamodel::Expression[1] | nullOrSfe(not_Boolean_1__Boolean_1_, $e->processExpression($expContext, $context))
   ]);
 }
@@ -4241,12 +4318,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processComparisonExpression', $context.debug);
 
-  //in postgres a StringLiteral is unknown type by default. In this case, we can try to use the right hand side type to force correct typing
+  if ($c->hasScalarSubqueryOperand(),
+    | processScalarSubqueryComparison($c, false, $expContext, $context),
+    | processStandardComparisonExpression($c, $expContext, $context));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStandardComparisonExpression(c:ComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
   let leftExpressionContext = if ($c.left->instanceOf(StringLiteral),
     | ^$expContext(type = getExpressionType($c.right, $context)),
     | $expContext);
-
-
 
   let left = $c.left->processExpression($leftExpressionContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
@@ -4629,7 +4710,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     b:BitwiseBinaryExpression[1] | walk($b.left, $b.right, $accumulator, $extras),
     b:BitwiseShiftExpression[1] | walk($b.value, $b.shift, $accumulator, $extras),
     c:Cast[1] | walk($c.expression, $accumulator, $extras),
-    c:ComparisonExpression[1] | walk($c.left, $c.right, $accumulator, $extras),
+    c:ComparisonExpression[1] | walk([$c.left, $c.right]->filter(e | !$e->instanceOf(SubqueryExpression)), $accumulator, $extras),
     e:Extract[1] | walk($e.expression, $accumulator, $extras),
     f:FunctionCall[1] |
       let w1 = walk($f.window.partitions, $f.window.orderBy.sortKey, $f.group.orderBy.sortKey, $accumulator, $extras);

@@ -106,6 +106,15 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Column ''2000__|__newcol'' cannot be resolved"
   }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
+    "expectedError" : "Scalar sub-query has returned multiple rows"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
+    "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
+    "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {

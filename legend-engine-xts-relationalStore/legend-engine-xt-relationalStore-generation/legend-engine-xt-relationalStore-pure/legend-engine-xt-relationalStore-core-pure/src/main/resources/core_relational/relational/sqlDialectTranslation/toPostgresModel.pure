@@ -257,6 +257,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     [
       pair(| $d.name == 'exists',                 | ^ExistsPredicate(query = $d.parameters->toOne()->convertElement($operandState)->cast(@TableSubquery))),
       pair(| $d.name == 'not',                    | convertNot($d, $state)),
+      pair(| isScalarComparison($d),              | convertScalarComparison($d, $state)),
       pair(| isQuantifiedComparison($d),          | convertQuantifiedComparison($d, $state)),
       pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
       pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
@@ -503,6 +504,34 @@ function <<access.private>> meta::relational::functions::toPostgresModel::compar
 
 // A quantifier is carried as an anyOf/allOf wrapper around the sub-select rather than being fused into the
 // operator name, so the comparison is recognised by the shape of its right operand.
+// A scalar subquery is carried as a scalarSubQuery wrapper around the sub-select rather than a quantifier, so
+// the comparison is recognised by the shape of its right operand in the same way.
+function <<access.private>> meta::relational::functions::toPostgresModel::isScalarComparison(d:DynaFunction[1]):Boolean[1]
+{
+  $d.name->in(['equal', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'])
+    && $d.parameters->size() == 2
+    && $d.parameters->at(1)->match([q:DynaFunction[1] | $q.name == 'scalarSubQuery', a:RelationalOperationElement[1] | false]);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertScalarComparison(d:DynaFunction[1], state:ModelConversionState[1]):Node[1]
+{
+  let operandState = ^$state(isRootSelect = false);
+  let scalarFunc = $d.parameters->at(1)->cast(@DynaFunction);
+  let comparator = [
+    pair('equal', ComparisonOperator.EQUAL),
+    pair('lessThan', ComparisonOperator.LESS_THAN),
+    pair('lessThanEqual', ComparisonOperator.LESS_THAN_OR_EQUAL),
+    pair('greaterThan', ComparisonOperator.GREATER_THAN),
+    pair('greaterThanEqual', ComparisonOperator.GREATER_THAN_OR_EQUAL)
+  ]->newMap()->get($d.name)->toOne();
+
+  // an ordinary comparison whose right operand is the subquery - no new node, which is why no dialect needs a
+  // processor for this the way the quantified form did
+  comparisonExpression($comparator,
+                       $d.parameters->at(0)->convertElementToExpression($operandState),
+                       $scalarFunc.parameters->toOne()->convertElementToExpression($operandState));
+}
+
 function <<access.private>> meta::relational::functions::toPostgresModel::isQuantifiedComparison(d:DynaFunction[1]):Boolean[1]
 {
   $d.name->in(['equal', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'])

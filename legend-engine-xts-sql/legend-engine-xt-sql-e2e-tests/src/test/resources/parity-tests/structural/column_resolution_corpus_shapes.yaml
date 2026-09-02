@@ -704,21 +704,21 @@ tests:
     feature: "correlated subquery referencing an outer alias, outer is a comma join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_correlated_subquery_outer_is_explicit_join
     sql: "SELECT p.name AS name FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary = (SELECT MAX(p1.salary) FROM persons p1 WHERE p1.dept_id = p.dept_id) ORDER BY 1"
     feature: "correlated subquery referencing an outer alias, outer is an explicit join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_correlated_subquery_referencing_both_join_sides
     sql: "SELECT p.name AS name FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary > (SELECT AVG(p1.salary) FROM persons p1 WHERE p1.dept_id = d.id) ORDER BY 1"
     feature: "correlated subquery referencing both outer join sides"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g5_correlated_subquery_in_select_list_over_join
     sql: "SELECT p.name AS name, (SELECT COUNT(*) FROM orders o WHERE o.person_id = p.id) AS order_count FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
@@ -746,7 +746,7 @@ tests:
     feature: "correlated MAX comparison against an outer alias, comma join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # A join whose right side is itself a join: the duplicate-rename pass is
   # skipped for that side, so suffixed and unsuffixed names coexist.
@@ -1073,7 +1073,7 @@ tests:
     feature: "UNION ALL where one branch carries a correlated filter over a comma join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g6_distinct_over_join_with_derived_side
     sql: "SELECT DISTINCT p.dept_id AS dept_id, y.bucket AS bucket FROM persons p INNER JOIN (SELECT DISTINCT id, CASE WHEN budget > 500000 THEN 'large' ELSE 'small' END AS bucket FROM departments) y ON p.dept_id = y.id ORDER BY 1, 2"

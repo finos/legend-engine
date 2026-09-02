@@ -1,0 +1,426 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+import meta::pure::functions::relation::*;
+
+'''
+Whether the given value is equal to the single value in the single column of the given relation.
+
+This is the scalar subquery comparison — `x = (select max(y) from t)` — as distinct from the
+quantified forms. Named `equalTo` rather than `equal` because `equal`, `eq` and `is` cannot be
+defined in Pure. The relation must hold at most one row; more than one is an error.
+
+The relation must carry exactly one column, of the same type as the value; the compiler rejects
+anything else. A null in that column is ignored rather than making the comparison undecided —
+`Boolean[1]` is two-valued and has no UNKNOWN to return.
+
+An empty relation answers `false`, as does a column holding only a null. An empty value also
+answers `false` - including when the relation is empty or null too. This is the one place
+`equalTo` disagrees with Pure's own `==`, which treats two empty things as equal: `equalTo`
+models SQL's scalar `=`, where `NULL = NULL` is UNKNOWN rather than `TRUE`, not Pure's equality.
+There is no notEqual: `!$value->equalTo($rel)` is it, but the negation is only exact once the
+value is known present, so a translation layer building `<>` needs
+`$value->isNotEmpty() && !$value->equalTo($rel)`.
+
+**Parameters**
+- `value` — the value to compare; may be empty.
+- `rel` — a relation with a single column of the same type as `value`, holding at most one row.
+
+**Returns** `true` when the column's single non-null value `c` satisfies `value = c`.
+
+**Examples**
+```pure
+let bounds = #TDS
+              threshold
+              250
+            #->select(~threshold);
+
+#TDS
+  productId, price
+  1, 100
+  2, 250
+  3, 400
+#->filter(p | $p.price->equalTo($bounds))
+```
+
+**See also** `equalAny(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`equalAll(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`greaterThan(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`
+'''
+function <<PCT.function, functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::equalTo<U,Z>(value:U[0..1], rel:Relation<Z=(?:U)>[1]):Boolean[1]
+{
+   assert($rel->size() <= 1, | 'a scalar subquery returned more than one row');
+
+   let col = $rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,U|0..1>);
+   $value->isNotEmpty() && $rel->meta::pure::functions::relation::exists({row:Z[1] | $col->eval($row)->isNotEmpty() && ($col->eval($row) == $value)});
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testSimpleEqualTo<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #;
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_Negated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #;
+                  $products->filter(p | !$p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   3,400\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Negating equalTo against an empty relation: the un-negated form answers false, so the negation must
+// answer true and keep every row - there is no value there to be equal to, empty or not.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | !$p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Same as above with a single null in the relation rather than zero rows - the comparison treats both as
+// having no value to be equal to, so the negation keeps every row here too.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | !$p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                100
+                              #;
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// The one combination the other empty/null tests don't hit: value AND relation both absent. Pure's own ==
+// treats two empty things as equal ('nothing is nothing' - see booleanLibraryTests.pure), but equalTo answers
+// false here, same as it does for either side empty alone: it models SQL's scalar `=`, where NULL = NULL is
+// UNKNOWN rather than TRUE, not Pure's own equality.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValueAgainstEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Same combination with a single null row rather than zero rows on the relation side - still false, for the
+// same reason: an absent value is not a value equalTo holds for, regardless of what the relation contains.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValueAgainstNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, null
+                                 #;
+                  let bounds = #TDS
+                                threshold, tag
+                                150, 1
+                                null, 2
+                              #->filter(l | $l.tag == 2);
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                 threshold
+                                 100
+                                 250
+                               #;
+                  $products->filter(p | $p.price->equalTo($bounds->select(~threshold)));
+               };
+
+    assertError(|$f->eval($expr), 'a scalar subquery returned more than one row');
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_String<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let people = #TDS
+                                 personId, name
+                                 1, Alice
+                                 2, Bob
+                               #;
+                  let target = #TDS
+                                 wanted
+                                 Bob
+                               #;
+                  $people->filter(p | $p.name->equalTo($target->select(~wanted)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   personId,name\n'+
+                 '   2,Bob\n'+
+                 '#', $res->sort(~personId->ascending())->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_CorrelatedSubQuery<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                 #;
+                  let bounds = #TDS
+                                 productId, threshold
+                                 1, 100
+                                 2, 999
+                               #;
+                  $products->filter(p | $p.price->equalTo($bounds->filter(l | $l.productId == $p.productId)->select(~threshold)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Negating equalTo where it is buried inside an and(), rather than sitting directly under the negation, is not
+// itself a shape this file gives special SQL treatment to (see processNegatedRelationScalarComparison and
+// buriedRelationScalarComparisonConnective in pureToSQLQuery.pure) - relational stores reject it at compile time
+// instead of silently miscompiling it. Every other engine has no such restriction: the expression below is
+// plain two-valued Pure, so it evaluates directly and every row is kept regardless of price, since an empty
+// relation makes equalTo false no matter what, and !(false && anything) is true.
+//
+// The other operand is a plain numeric comparison rather than a stored boolean column: a Boolean column
+// materialized into an actual relational table round-trips through some adapters' native boolean representation
+// (e.g. as a small integer) before this shape is even reached, which is a separate, unrelated concern this test
+// isn't after - a live comparison sidesteps it and keeps the test isolated to the negation shape itself.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | !($p.price->equalTo($bounds->select(~threshold)) && ($p.price > 200)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '   2,250\n'+
+                 '   3,400\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}
+
+// Same shape as above with or() instead of and() - relational stores reject this one too, and the two are
+// covered separately since buriedRelationScalarComparisonConnective phrases its rejection message differently
+// depending on which connective was found. Here `false || (price > 200)` reduces to `price > 200`, so negating
+// keeps exactly the rows with price <= 200 - a different selection from the and() case above (which keeps every
+// row), which is what makes this worth its own test rather than a copy of it.
+function <<PCT.test>> meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let products = #TDS
+                                   productId, price
+                                   1, 100
+                                   2, 250
+                                   3, 400
+                                 #;
+                  let bounds = #TDS
+                                threshold
+                                250
+                              #->filter(l | $l.threshold > 1000);
+                  $products->filter(p | !($p.price->equalTo($bounds->select(~threshold)) || ($p.price > 200)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   productId,price\n'+
+                 '   1,100\n'+
+                 '#', $res->sort(~productId->ascending())->toString());
+}

@@ -721,6 +721,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'scalarSubQuery',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
+            )
+         ])
+      ),
+
+      pair(
          'anyOf',
          list([
             pair(
