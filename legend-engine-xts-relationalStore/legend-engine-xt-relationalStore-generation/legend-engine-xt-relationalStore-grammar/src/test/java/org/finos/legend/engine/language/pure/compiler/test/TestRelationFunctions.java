@@ -1664,6 +1664,240 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "}");
     }
 
+    @Test
+    public void testEqualAnyAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.name->equalAny(#>{a::A.other}#->select(~oname)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testEqualAnyAcrossDifferentIntegerWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->equalAny(#>{a::A.other}#->select(~oid)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testEqualAllAcrossDifferentDecimalPrecisions()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(amount DECIMAL(18,6))\n" +
+                        "   Table other(oamount DECIMAL(20,2))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.amount->equalAll(#>{a::A.other}#->select(~oamount)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testGreaterThanAllAcrossDifferentIntegerWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThanAll(#>{a::A.other}#->select(~oid)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testGreaterThanEqualAnyAcrossDifferentDecimalPrecisions()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(amount DECIMAL(18,6))\n" +
+                        "   Table other(oamount DECIMAL(20,2))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.amount->greaterThanEqualAny(#>{a::A.other}#->select(~oamount)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testGreaterThanEqualAllAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.name->greaterThanEqualAll(#>{a::A.other}#->select(~oname)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testLessThanAnyAcrossDifferentVarcharWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.name->lessThanAny(#>{a::A.other}#->select(~oname)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testLessThanAllAcrossDifferentIntegerWidths()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(id Integer, name VARCHAR(32))\n" +
+                        "   Table other(oid BIGINT, oname VARCHAR(64))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->lessThanAll(#>{a::A.other}#->select(~oid)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testLessThanEqualAnyAcrossDifferentDecimalPrecisions()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A\n" +
+                        "(\n" +
+                        "   Table tb(amount DECIMAL(18,6))\n" +
+                        "   Table other(oamount DECIMAL(20,2))\n" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.amount->lessThanEqualAny(#>{a::A.other}#->select(~oamount)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testEqualAnyWithStringLiteralAgainstVarcharColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|'abc'->equalAny(#>{a::A.tb}#->select(~name)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testGreaterThanAnyWithIntegerLiteralAgainstIntColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|1->greaterThanAny(#>{a::A.tb}#->select(~id)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testLessThanEqualAllWithEmptyValueAgainstVarcharColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(32)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|[]->lessThanEqualAll(#>{a::A.tb}#->select(~name)))\n" +
+                        "}");
+    }
+
+    @Test
+    public void testEqualAnyWithMismatchedColumnTypeError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->equalAny(#>{a::A.tb}#->select(~name)))\n" +
+                        "}", "COMPILATION error at [7:57-62]: equalAny(..., Relation) expects the value and the relation column to be of the same type, got Int and (name:Varchar(200))"
+        );
+    }
+
+    @Test
+    public void testGreaterThanAllWithMultiColumnRelationError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, name VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->filter(x|$x.id->greaterThanAll(#>{a::A.tb}#->select(~[id, name])))\n" +
+                        "}", "COMPILATION error at [7:63-68]: greaterThanAll(..., Relation) expects a relation with a single column, got (id:Int, name:Varchar(200))"
+        );
+    }
+
     @Override
     public String getDuplicatedElementTestCode()
     {
