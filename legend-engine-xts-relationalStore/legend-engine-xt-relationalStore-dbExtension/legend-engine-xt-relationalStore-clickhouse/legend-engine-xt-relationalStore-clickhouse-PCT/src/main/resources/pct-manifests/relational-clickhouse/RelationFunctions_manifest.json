@@ -520,7 +520,6 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: ClickHouse\""
   }, {
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
     "expectedError" : "Frame end offset for 'RANGE' frame must be a nonnegative 32-bit integer, '2.1' of type 'Float64' given."
   }, {

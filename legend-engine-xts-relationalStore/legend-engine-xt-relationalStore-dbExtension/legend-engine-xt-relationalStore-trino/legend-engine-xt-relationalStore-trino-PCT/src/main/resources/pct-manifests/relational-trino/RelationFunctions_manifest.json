@@ -316,7 +316,6 @@
     "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: Trino"
   }, {
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "Unexpected parameters (integer, varchar(5), varchar(3)) for function concat. Expected: concat(E, array(E)) E, concat(array(E)) E, concat(array(E), E) E, concat(char(x), char(y)), concat(varbinary), concat(varchar)"
   }, {
