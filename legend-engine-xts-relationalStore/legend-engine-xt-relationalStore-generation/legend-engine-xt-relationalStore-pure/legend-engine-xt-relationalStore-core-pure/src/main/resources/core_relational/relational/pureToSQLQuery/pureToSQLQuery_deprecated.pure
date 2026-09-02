@@ -651,8 +651,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                     );,
                                   a:Any[1] | []
                                 ]);
+         let returnType = $cs.func->functionReturnType().rawType->toOne();
+         let pathType = if($returnType == meta::pure::metamodel::type::Enum,
+                           | $propertyMapping->match([
+                               rpm:RelationalPropertyMapping[1] | let enumTransformer = $rpm.transformer->cast(@EnumerationMapping<Any>);
+                                                                 if($enumTransformer->isEmpty(), | $returnType, | $enumTransformer->toOne().enumeration);,
+                               pm:PropertyMapping[0..1] | $returnType
+                             ]),
+                           | $returnType);
          let alias = ^Alias(name=$cs.name->addQuotesIfNecessary(), relationalElement=$newElement);
-         let path = pair($cs.name, ^PathInformation(type=$cs.func->functionReturnType().rawType->toOne(),
+         let path = pair($cs.name, ^PathInformation(type=$pathType,
                                                     relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping(),
                                                     propertyMapping = if($propertyMapping->isEmpty(), | [], | $propertyMapping->toOne())));
          pair($alias,$path);

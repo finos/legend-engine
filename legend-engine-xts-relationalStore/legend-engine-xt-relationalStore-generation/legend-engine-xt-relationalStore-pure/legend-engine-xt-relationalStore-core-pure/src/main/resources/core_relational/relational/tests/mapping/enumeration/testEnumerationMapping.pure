@@ -457,7 +457,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
 
   let tds = $result.values->at(0);
   assertSize($tds.rows, 3);
-  assertSameElements([EmployeeType.CONTRACT, EmployeeType.FULL_TIME, EmployeeType.CONTRACT], $tds->columnValues('Dominant Asset Category'));
+  assertEquals('CONTRACT,FULL_TIME,CONTRACT', $tds->columnValues('Dominant Asset Category')->map(e|$e->cast(@Enum)->id())->makeString(','));
   assertSameSQL('select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTC\', \'FTO\', \'FTE\')', $result);
 }
 
@@ -475,7 +475,7 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
 
   let tds = $result.values->at(0);
   assertSize($tds.rows, 1);
-  assertSameElements([EmployeeType.FULL_TIME], $tds->columnValues('Dominant Asset Category'));
+  assertEquals('FULL_TIME', $tds->columnValues('Dominant Asset Category')->map(e|$e->cast(@Enum)->id())->makeString(','));
   let sql = $result->sqlRemoveFormatting();
   assert($sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTE\')' || $sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type = \'FTE\'', | 'Unexpected SQL for single enum IN on nested project: ' + $sql);
 }
