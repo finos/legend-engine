@@ -223,7 +223,25 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> (element.exclude != null && element.exclude ? "-" : "") + element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, executable -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutable(executable, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
+                (dataSpace.operationalMetadata != null ? (getTabString() + "operationalMetadata: " + renderDataSpaceOperationalMetadata(dataSpace.operationalMetadata) + ";\n") : "") +
                 "}";
+    }
+
+    private static String renderDataSpaceOperationalMetadata(DataSpaceOperationalMetadata operationalMetadata)
+    {
+        StringBuilder builder = new StringBuilder("{\n");
+        if (operationalMetadata.coverageRegions != null && !operationalMetadata.coverageRegions.isEmpty())
+        {
+            builder.append(getTabString(2)).append("coverageRegions: [")
+                    .append(ListIterate.collect(operationalMetadata.coverageRegions, Enum::name).makeString(", "))
+                    .append("];\n");
+        }
+        if (operationalMetadata.updateFrequency != null)
+        {
+            builder.append(getTabString(2)).append("updateFrequency: ").append(operationalMetadata.updateFrequency.name()).append(";\n");
+        }
+        builder.append(getTabString()).append("}");
+        return builder.toString();
     }
 
     @Override

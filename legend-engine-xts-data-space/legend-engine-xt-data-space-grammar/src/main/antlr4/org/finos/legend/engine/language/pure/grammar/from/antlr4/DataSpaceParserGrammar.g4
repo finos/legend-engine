@@ -41,6 +41,10 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_SUPPORT_FAQ_URL
                                     | DATA_SPACE_SUPPORT_SUPPORT_URL
 
+                                    | DATA_SPACE_OPERATIONAL_METADATA
+                                    | DATA_SPACE_OM_COVERAGE_REGIONS
+                                    | DATA_SPACE_OM_UPDATE_FREQUENCY
+
                                     // deprecated
                                     | DATA_SPACE_GROUP_ID
                                     | DATA_SPACE_ARTIFACT_ID
@@ -64,6 +68,7 @@ dataSpaceElement:                   documentation? DATA_SPACE stereotypes? tagge
                                                 | elements
                                                 | executables
                                                 | supportInfo
+                                                | operationalMetadata
 
                                                 // deprecated
                                                 | groupId
@@ -201,6 +206,23 @@ combinedInfoWebsite:                DATA_SPACE_SUPPORT_WEBSITE COLON STRING SEMI
 combinedInfoFaqUrl:                 DATA_SPACE_SUPPORT_FAQ_URL COLON STRING SEMI_COLON
 ;
 combinedInfoSupportUrl:             DATA_SPACE_SUPPORT_SUPPORT_URL COLON STRING SEMI_COLON
+;
+
+
+// -------------------------------------- OPERATIONAL METADATA --------------------------------------
+
+operationalMetadata:                DATA_SPACE_OPERATIONAL_METADATA COLON
+                                        BRACE_OPEN
+                                            (
+                                                omCoverageRegions
+                                                | omUpdateFrequency
+                                            )*
+                                        BRACE_CLOSE
+                                    SEMI_COLON
+;
+omCoverageRegions:                  DATA_SPACE_OM_COVERAGE_REGIONS COLON BRACKET_OPEN ( identifier (COMMA identifier)* )? BRACKET_CLOSE SEMI_COLON
+;
+omUpdateFrequency:                  DATA_SPACE_OM_UPDATE_FREQUENCY COLON identifier SEMI_COLON
 ;
 
 

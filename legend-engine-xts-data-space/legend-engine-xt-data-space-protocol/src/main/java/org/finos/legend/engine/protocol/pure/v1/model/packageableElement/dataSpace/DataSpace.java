@@ -45,6 +45,7 @@ public class DataSpace extends PackageableElement
     public List<DataSpaceDiagram> diagrams;
 
     public DataSpaceSupportInfo supportInfo;
+    public DataSpaceOperationalMetadata operationalMetadata;
 
     @Deprecated
     // NOTE: this field will be deprecated, we should consider adding this to the list of diagrams during deserialization phase

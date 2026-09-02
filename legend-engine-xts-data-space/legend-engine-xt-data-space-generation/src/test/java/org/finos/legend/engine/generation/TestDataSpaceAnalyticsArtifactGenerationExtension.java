@@ -730,4 +730,247 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
         String expectedContent = "{\"defaultExecutionContext\":\"dummyContext\",\"description\":\"this is description of this COVIDDataspace\",\"diagrams\":[],\"elementDocs\":[],\"elements\":[],\"executables\":[{\"description\":\"template with TDS return type\",\"executableReturnType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::tds::TabularDataSet\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"info\":{\"_type\":\"templateExecutableInfo\",\"executionContextKey\":\"dummyContext\",\"id\":\"1\",\"query\":\"|domain::COVIDData.all()->project([x: domain::COVIDData[1]|$x.cases], ['Cases'])->from(mapping::CovidDataMapping, runtime::H2Runtime)\"},\"result\":{\"_type\":\"tds\",\"columns\":[{\"name\":\"Cases\",\"relationalType\":\"INTEGER\",\"type\":\"Float\"}]},\"sampleValues\":{\"columns\":[\"Cases\"],\"paths\":[],\"rows\":[{\"values\":[\"10.0\"]},{\"values\":[\"25.0\"]}]},\"title\":\"tds template\"},{\"description\":\"template with Relation return type\",\"executableReturnType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::metamodel::relation::Relation\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Float\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"Cases\"},{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"String\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"Fips\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]},\"info\":{\"_type\":\"templateExecutableInfo\",\"executionContextKey\":\"dummyContext\",\"id\":\"2\",\"query\":\"|domain::COVIDData.all()->project(~[Cases:x: domain::COVIDData[1]|$x.cases, Fips:x: domain::COVIDData[1]|$x.fips])->from(mapping::CovidDataMapping, runtime::H2Runtime)\"},\"result\":{\"_type\":\"tds\",\"columns\":[{\"name\":\"Cases\",\"relationalType\":\"INTEGER\",\"type\":\"Float\"},{\"name\":\"Fips\",\"relationalType\":\"VARCHAR(200)\",\"type\":\"String\"}]},\"sampleValues\":{\"columns\":[\"Cases\",\"Fips\"],\"paths\":[],\"rows\":[{\"values\":[\"10.0\",\"'A'\"]},{\"values\":[\"25.0\",\"'BC'\"]}]},\"title\":\"relation template\"},{\"description\":\"executable pointing to a function returning Relation\",\"executable\":\"domain::COVIDData_QueryFunctionRelation__Relation_1_\",\"executableReturnType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"meta::pure::metamodel::relation::Relation\"},\"typeArguments\":[{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"relationType\",\"columns\":[{\"genericType\":{\"multiplicityArguments\":[],\"rawType\":{\"_type\":\"packageableType\",\"fullPath\":\"Float\"},\"typeArguments\":[],\"typeVariableValues\":[]},\"multiplicity\":{\"lowerBound\":0,\"upperBound\":1},\"name\":\"Cases\"}]},\"typeArguments\":[],\"typeVariableValues\":[]}],\"typeVariableValues\":[]},\"info\":{\"_type\":\"functionPointerExecutableInfo\",\"executionContextKey\":\"dummyContext\",\"function\":\"domain::COVIDData_QueryFunctionRelation__Relation_1_\",\"id\":\"3\",\"query\":\"|domain::COVIDData.all()->project(~[Cases:x: domain::COVIDData[1]|$x.cases])->from(mapping::CovidDataMapping, runtime::H2Runtime)\"},\"result\":{\"_type\":\"tds\",\"columns\":[{\"name\":\"Cases\",\"relationalType\":\"INTEGER\",\"type\":\"Float\"}]},\"sampleValues\":{\"columns\":[\"Cases\"],\"paths\":[],\"rows\":[{\"values\":[\"10.0\"]},{\"values\":[\"25.0\"]}]},\"title\":\"relation function pointer\"}],\"executionContexts\":[{\"compatibleRuntimes\":[\"runtime::H2Runtime\"],\"datasets\":[{\"_type\":\"relationalDatabaseTable\",\"database\":\"CovidDataStore\",\"name\":\"default.DEMOGRAPHICS\",\"schema\":\"default\",\"table\":\"DEMOGRAPHICS\",\"type\":\"H2\"},{\"_type\":\"relationalDatabaseTable\",\"database\":\"CovidDataStore\",\"name\":\"default.COVID_DATA\",\"schema\":\"default\",\"table\":\"COVID_DATA\",\"type\":\"H2\"}],\"defaultRuntime\":\"runtime::H2Runtime\",\"mapping\":\"mapping::CovidDataMapping\",\"name\":\"dummyContext\",\"runtimeMetadata\":{\"connectionPath\":\"runtime::connection::H2Connection\",\"connectionType\":\"H2\",\"storePath\":\"store::CovidDataStore\"}}],\"mappingToMappingCoverageResult\":{},\"model\":{\"_type\":\"data\",\"elements\":[]},\"name\":\"COVIDDataspace\",\"package\":\"domain\",\"path\":\"domain::COVIDDataspace\",\"stereotypes\":[],\"taggedValues\":[],\"title\":\"COVID Sample Data\"}";
         Assert.assertEquals(expectedContent, analyticsArtifact.content);
     }
+
+    @Test
+    public void testAnalyticsForDataSpaceWithOperationalMetadata() throws Exception
+    {
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "  operationalMetadata: {\n" +
+                "    coverageRegions: [APAC, EMEA, NAMR];\n" +
+                "    updateFrequency: DAILY;\n" +
+                "  };\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+            DataSpaceAnalysisResult result = objectMapper.readValue(analyticsResult.content, DataSpaceAnalysisResult.class);
+
+            Assert.assertNotNull(result.operationalMetadata);
+            Assert.assertEquals(3, result.operationalMetadata.coverageRegions.size());
+            Assert.assertEquals(
+                    java.util.Arrays.asList(
+                            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion.APAC,
+                            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion.EMEA,
+                            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion.NAMR),
+                    result.operationalMetadata.coverageRegions);
+            Assert.assertEquals(
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDeliveryFrequency.DAILY,
+                    result.operationalMetadata.updateFrequency);
+        }
+    }
+
+    @Test
+    public void testAnalyticsForDataSpaceWithVendorTags() throws Exception
+    {
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorLicenseStatus = 'ACTIVE'," +
+                "           meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorRelationshipOwner = 'jane.doe@example.org'," +
+                "           meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.vendorProviderName = 'Acme Data Co.'} " +
+                "model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+            DataSpaceAnalysisResult result = objectMapper.readValue(analyticsResult.content, DataSpaceAnalysisResult.class);
+
+            Assert.assertNotNull(result.info);
+            Assert.assertEquals("ACTIVE", result.info.vendorLicenseStatus);
+            Assert.assertEquals("jane.doe@example.org", result.info.vendorRelationshipOwner);
+            Assert.assertEquals("Acme Data Co.", result.info.vendorProviderName);
+        }
+    }
+
+    @Test
+    public void testAnalyticsInfoRelatedDataSpacesSplitting() throws Exception
+    {
+        // relatedDataSpaces uses the same comma-split logic as topics; assert it explicitly
+        // so a regression that special-cased only topics would be caught here.
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace {meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::A, model::B'," +
+                "           meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo.relatedDataSpaces = 'model::C'} " +
+                "model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+            DataSpaceAnalysisResult result = objectMapper.readValue(analyticsResult.content, DataSpaceAnalysisResult.class);
+
+            Assert.assertNotNull(result.info);
+            Assert.assertEquals(java.util.Arrays.asList("model::A", "model::B", "model::C"), result.info.relatedDataSpaces);
+        }
+    }
+
+    @Test
+    public void testAnalyticsForDataSpaceWithOperationalMetadataUpdateFrequencyOnly() throws Exception
+    {
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "  operationalMetadata: {\n" +
+                "    updateFrequency: ON_DEMAND;\n" +
+                "  };\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+            DataSpaceAnalysisResult result = objectMapper.readValue(analyticsResult.content, DataSpaceAnalysisResult.class);
+
+            Assert.assertNotNull(result.operationalMetadata);
+            Assert.assertEquals(
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDeliveryFrequency.ON_DEMAND,
+                    result.operationalMetadata.updateFrequency);
+            // coverageRegions absent — Jackson should have omitted the empty list via @JsonInclude(NON_EMPTY)
+            Assert.assertFalse("coverageRegions should be omitted from JSON when unset",
+                    analyticsResult.content.contains("coverageRegions"));
+        }
+    }
+
+    @Test
+    public void testAnalyticsJsonOmitsInfoAndOperationalMetadataWhenAbsent() throws Exception
+    {
+        // Guards the @JsonInclude(NON_NULL) contract: a bare DataSpace must not surface `info`
+        // or `operationalMetadata` keys in the analytics JSON at all.
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+
+            Assert.assertFalse("info key must be omitted from JSON when no DataSpaceInfo annotations present",
+                    analyticsResult.content.contains("\"info\""));
+            Assert.assertFalse("operationalMetadata key must be omitted from JSON when absent",
+                    analyticsResult.content.contains("\"operationalMetadata\""));
+        }
+    }
 }

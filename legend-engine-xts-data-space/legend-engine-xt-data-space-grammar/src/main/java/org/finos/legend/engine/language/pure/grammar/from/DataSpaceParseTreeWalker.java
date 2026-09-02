@@ -39,6 +39,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDeliveryFrequency;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
@@ -156,7 +159,50 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);
         dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext) : null;
 
+        // Operational metadata (optional)
+        DataSpaceParserGrammar.OperationalMetadataContext operationalMetadataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.operationalMetadata(), "operationalMetadata", dataSpace.sourceInformation);
+        dataSpace.operationalMetadata = operationalMetadataContext != null ? this.visitDataSpaceOperationalMetadata(operationalMetadataContext) : null;
+
         return dataSpace;
+    }
+
+    private DataSpaceOperationalMetadata visitDataSpaceOperationalMetadata(DataSpaceParserGrammar.OperationalMetadataContext ctx)
+    {
+        DataSpaceOperationalMetadata operationalMetadata = new DataSpaceOperationalMetadata();
+        operationalMetadata.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.OmCoverageRegionsContext coverageRegionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.omCoverageRegions(), "coverageRegions", operationalMetadata.sourceInformation);
+        if (coverageRegionsContext != null)
+        {
+            operationalMetadata.coverageRegions = ListIterate.collect(coverageRegionsContext.identifier(), identifierContext ->
+            {
+                String value = PureGrammarParserUtility.fromIdentifier(identifierContext);
+                try
+                {
+                    return DataSpaceRegion.valueOf(value);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    throw new EngineException("Unknown coverage region '" + value + "'. Valid values: " + java.util.Arrays.toString(DataSpaceRegion.values()), this.walkerSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
+                }
+            });
+        }
+
+        DataSpaceParserGrammar.OmUpdateFrequencyContext updateFrequencyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.omUpdateFrequency(), "updateFrequency", operationalMetadata.sourceInformation);
+        if (updateFrequencyContext != null)
+        {
+            String value = PureGrammarParserUtility.fromIdentifier(updateFrequencyContext.identifier());
+            try
+            {
+                operationalMetadata.updateFrequency = DataSpaceDeliveryFrequency.valueOf(value);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw new EngineException("Unknown update frequency '" + value + "'. Valid values: " + java.util.Arrays.toString(DataSpaceDeliveryFrequency.values()), this.walkerSourceInformation.getSourceInformation(updateFrequencyContext.identifier()), EngineErrorType.PARSER);
+            }
+        }
+
+        return operationalMetadata;
     }
 
     private DataSpaceExecutionContext visitDataSpaceExecutionContext(DataSpaceParserGrammar.ExecutionContextContext ctx)

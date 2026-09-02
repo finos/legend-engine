@@ -970,4 +970,43 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  ];\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDataSpaceWithOperationalMetadata()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  operationalMetadata: {\n" +
+                "    coverageRegions: [APAC, EMEA, NAMR];\n" +
+                "    updateFrequency: DAILY;\n" +
+                "  };\n" +
+                "}\n");
+
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  operationalMetadata: {\n" +
+                "    updateFrequency: ON_DEMAND;\n" +
+                "  };\n" +
+                "}\n");
+    }
 }
