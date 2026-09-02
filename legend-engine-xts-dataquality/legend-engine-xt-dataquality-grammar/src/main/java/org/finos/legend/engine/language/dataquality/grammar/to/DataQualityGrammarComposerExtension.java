@@ -28,6 +28,7 @@ import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataG
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQuality;
+import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPersistenceStrategy;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityPropertyGraphFetchTree;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRelationComparison;
 import org.finos.legend.engine.protocol.dataquality.metamodel.DataQualityRootGraphFetchTree;
@@ -106,18 +107,18 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "{\n" +
                 "   query: " + renderRelationQuery(dataqualityRelationValidation, context) +
                 "   validations: " + renderValidations(dataqualityRelationValidation.validations, context) +
-                renderPersistenceStrategy(dataqualityRelationValidation, context) +
+                renderPersistenceStrategy(dataqualityRelationValidation.persistenceStrategy, context) +
                 renderRelationValidationTestSuites(dataqualityRelationValidation, context) +
                 "}";
     }
 
-    private static String renderPersistenceStrategy(DataqualityRelationValidation dataqualityRelationValidation, PureGrammarComposerContext context)
+    private static String renderPersistenceStrategy(DataQualityPersistenceStrategy persistenceStrategy, PureGrammarComposerContext context)
     {
-        if (Objects.isNull(dataqualityRelationValidation.persistenceStrategy))
+        if (Objects.isNull(persistenceStrategy))
         {
             return "";
         }
-        return "   persistenceStrategy: " + IDataQualityGrammarComposerExtension.renderPersistenceStrategy(dataqualityRelationValidation.persistenceStrategy, 1, context) + ";\n";
+        return "   persistenceStrategy: " + IDataQualityGrammarComposerExtension.renderPersistenceStrategy(persistenceStrategy, 1, context) + ";\n";
     }
 
     private static String renderDataQualityRelationComparison(DataQualityRelationComparison relationComparison, PureGrammarComposerContext context)
@@ -134,6 +135,7 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   strategy: " + renderReconStrategy(relationComparison.strategy) + ";\n" +
                 (Objects.isNull(relationComparison.expectedMatch) ? "" :
                     "   expectedMatch: " + relationComparison.expectedMatch + ";\n") +
+                renderPersistenceStrategy(relationComparison.persistenceStrategy, context) +
                 renderRelationComparisonTestSuites(relationComparison, context) +
                 "}";
     }

@@ -171,6 +171,12 @@ public class DataQualityTreeWalker
             relationComparison.testSuites = ListIterate.collect(testSuitesContext.dqTestSuite(), this::visitRelationComparisonTestSuite);
         }
 
+        DataQualityParserGrammar.PersistenceStrategyContext persistenceStrategyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.persistenceStrategy(), "persistenceStrategy", relationComparison.sourceInformation);
+        if (Objects.nonNull(persistenceStrategyContext))
+        {
+            relationComparison.persistenceStrategy = IDataQualityGrammarParserExtension.parsePersistenceStrategy(persistenceStrategyContext.islandDefinition(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        }
+
         return relationComparison;
     }
 

@@ -334,6 +334,11 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         metamodel._expectedMatch(relationComparison.expectedMatch);
                     }
 
+                    if (relationComparison.persistenceStrategy != null)
+                    {
+                        metamodel._persistenceStrategy(buildPersistenceStrategy(relationComparison.persistenceStrategy, compileContext));
+                    }
+
                     processDataQualityTestSuites(relationComparison.testSuites, metamodel, relationComparison.sourceInformation, compileContext);
 
                     metamodel._validate(true, SourceInformationHelper.toM3SourceInformation(relationComparison.sourceInformation), compileContext.getExecutionSupport());
