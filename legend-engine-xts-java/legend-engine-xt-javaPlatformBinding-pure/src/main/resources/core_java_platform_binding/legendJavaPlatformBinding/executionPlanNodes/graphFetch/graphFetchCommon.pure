@@ -152,20 +152,47 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                ['public'], javaVoid(), $conventions->setterName($p), $param, 
                $field->j_assign($param)
             );
-            let adder  = javaMethod(
+            let adder = javaMethod(
                ['public'], javaVoid(), 'add' + $fieldName->toUpperFirstCharacter()->toOne(), [$object],
                if ($fieldType->isJavaList(),
-                   | [
-                        $field->j_eq(j_null())->j_if($field->j_assign(javaArrayList($elType)->j_new([]))),
-                        $field->j_invoke('add', [$object], javaVoid())
-                     ],
-                   | [
-                        j_cast($field, javaObject())->j_ne(j_null())->j_if(javaIllegalStateException()->j_new(j_string('Found multiple objects for property \'' + $p.name->toOne() + '\' of multiplicity with bound 1'))->j_throw()),
-                        $field->j_assign($object)
-                     ]
+                  | [
+                       $field->j_eq(j_null())->j_if($field->j_assign(javaArrayList($elType)->j_new([]))),
+                       $field->j_invoke('add', [$object], javaVoid())
+                    ],
+                  {|
+                     let returnType = $p->functionReturnType().rawType->toOne();
+                     let subtypes = $context.typeInfos->allClassInfos().type
+                        ->filter(c | $c != $returnType && $c->meta::pure::functions::meta::_subTypeOf($returnType));
+                     let errorMessage = 'Found multiple objects for property \'' + $p.name->toOne() + '\' of multiplicity with bound 1';
+                     if ($subtypes->isEmpty(),
+                        | [
+                             j_cast($field, javaObject())->j_ne(j_null())
+                                ->j_if(javaIllegalStateException()->j_new(j_string($errorMessage))->j_throw()),
+                             $field->j_assign($object)
+                          ],
+                        {|
+                           let ifaces = $subtypes->map(s | $conventions->className($s));
+                           let objMore = $ifaces->tail()->fold(
+                              {s, acc | $acc->j_or($object->j_instanceof($s)->j_and($field->j_instanceof($s)->j_not()))},
+                              $object->j_instanceof($ifaces->at(0))->j_and($field->j_instanceof($ifaces->at(0))->j_not())
+                           );
+                           let fldMore = $ifaces->tail()->fold(
+                              {s, acc | $acc->j_or($field->j_instanceof($s)->j_and($object->j_instanceof($s)->j_not()))},
+                              $field->j_instanceof($ifaces->at(0))->j_and($object->j_instanceof($ifaces->at(0))->j_not())
+                           );
+                           [
+                              $field->j_eq(j_null())->j_or($objMore->j_and($fldMore->j_not()))
+                                 ->j_if(
+                                    $field->j_assign($object),
+                                    $fldMore->j_and($objMore->j_not())->j_not()
+                                       ->j_if(javaIllegalStateException()->j_new(j_string($errorMessage))->j_throw())
+                                 )
+                           ];
+                        }
+                     );
+                  }
                )
             );
-
             $javaClass->addField(javaField(['private'], $fieldType, $fieldName))->addMethods([$getter, $setter, $adder]);
          }
       );
