@@ -186,8 +186,15 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 {
   $orderBy->map(o|^SortItem(sortKey = $o.column->convertElementToExpression($state),
                             ordering = $o.direction->convertSortDirection(),
-                            nullOrdering = SortItemNullOrdering.UNDEFINED
+                            nullOrdering = $o.nullOrder->convertNullOrder()
                           ));
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertNullOrder(n:meta::relational::metamodel::NullOrder[0..1]):SortItemNullOrdering[1]
+{
+  if($n->isEmpty(),
+     | SortItemNullOrdering.UNDEFINED,
+     | if($n->toOne() == meta::relational::metamodel::NullOrder.FIRST, | SortItemNullOrdering.FIRST, | SortItemNullOrdering.LAST));
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertSortDirection(s:meta::relational::metamodel::SortDirection[0..1]):SortItemOrdering[1]
@@ -660,13 +667,18 @@ function <<access.private>> meta::relational::functions::toPostgresModel::within
 {
   let inner = $p->at(0)->cast(@FunctionCall);
   let rest = $p->tail();
-  assert($rest->size() > 0 && $rest->size()->mod(2) == 0, | 'withinGroup expects an aggregate followed by column/direction pairs');
-  let items = range(0, $rest->size(), 2)->map(i |
+  assert($rest->size() > 0 && $rest->size()->mod(3) == 0, | 'withinGroup expects an aggregate followed by column/direction/nullOrder triples');
+  let items = range(0, $rest->size(), 3)->map(i |
+    let nullOrder = $rest->at($i + 2)->cast(@meta::external::query::sql::metamodel::StringLiteral).value;
     ^SortItem(
       sortKey = $rest->at($i),
       ordering = if($rest->at($i + 1)->cast(@meta::external::query::sql::metamodel::StringLiteral).value == 'ASC', | SortItemOrdering.ASCENDING, | SortItemOrdering.DESCENDING),
-      nullOrdering = SortItemNullOrdering.UNDEFINED
-    )
+      nullOrdering = [
+         pair('FIRST', SortItemNullOrdering.FIRST),
+         pair('LAST', SortItemNullOrdering.LAST),
+         pair('NONE', SortItemNullOrdering.UNDEFINED)
+      ]->newMap()->get($nullOrder)->toOne()
+    );
   );
   ^$inner(orderBy = $items);
 }
@@ -861,7 +873,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let partitions = $w.window.partition->map(p|$p->convertElementToExpression($state));
   let orderBy = $w.window.sortBy->map(s|^SortItem(sortKey = $s.sortByElement->convertElementToExpression($state),
                                                   ordering = $s.sortDirection->convertSortDirection(),
-                                                  nullOrdering = if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | SortItemNullOrdering.LAST, | SortItemNullOrdering.FIRST)
+                                                  nullOrdering = $s.nullOrder->convertNullOrder()
                                                 ));
   let windowFrame = if($w.window.frame->isNotEmpty(),
                        | $w.window.frame->toOne()->convertWindowFrame($state),

@@ -576,6 +576,52 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   '#', $res->sort(~id->descending())->toString());
 }
 
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsLast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, value
+                  2, 20
+                  null, 40
+                  1, 10
+                  3, 30
+                #->extend(over(~id->ascending()->nullsLast()), ~runningTotal:{p,w,r|$r.value}:y|$y->plus())
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   id,value,runningTotal\n'+
+                 '   1,10,10\n'+
+                 '   2,20,30\n'+
+                 '   3,30,60\n'+
+                 '   null,40,100\n'+
+                 '#', $res->sort(~id->ascending()->nullsLast())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsFirst<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                | #TDS
+                  id, value
+                  2, 20
+                  null, 40
+                  1, 10
+                  3, 30
+                #->extend(over(~id->ascending()->nullsFirst()), ~runningTotal:{p,w,r|$r.value}:y|$y->plus())
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   id,value,runningTotal\n'+
+                 '   null,40,40\n'+
+                 '   1,10,50\n'+
+                 '   2,20,70\n'+
+                 '   3,30,100\n'+
+                 '#', $res->sort(~id->ascending()->nullsFirst())->toString());
+}
+
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {

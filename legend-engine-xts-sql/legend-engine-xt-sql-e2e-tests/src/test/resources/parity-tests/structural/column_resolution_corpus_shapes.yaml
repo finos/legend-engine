@@ -99,28 +99,28 @@ tests:
     feature: "window ORDER BY ... DESC NULLS LAST over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_asc_nulls_first_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.salary ASC NULLS FIRST) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY ... ASC NULLS FIRST over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_asc_nulls_last_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.hire_date ASC NULLS LAST) AS rk FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY ... ASC NULLS LAST over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_desc_nulls_first_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.hire_date DESC NULLS FIRST) AS rk FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY ... DESC NULLS FIRST over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Multi-key window sorts are permitted only on the Relation path -- see the
   # unsupported() guard on $window.orderBy->size() in processWindowSingleColumn --
@@ -130,21 +130,21 @@ tests:
     feature: "window ORDER BY with a null-ordered key plus a plain key, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_two_null_ordered_keys
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.hire_date ASC NULLS FIRST, p.salary DESC NULLS LAST) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY with two null-ordered keys, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_three_keys_mixed_null_ordering
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.active DESC NULLS LAST, p.salary DESC NULLS LAST, p.name ASC) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window ORDER BY with three keys and mixed null ordering, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # The null-ordered key is drawn from the right-hand side of the join, so its
   # physical name carries that side's suffix rather than the driving table's.
@@ -153,14 +153,14 @@ tests:
     feature: "window ORDER BY null-ordered key from the right join side"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_partition_right_order_left_nulls_last
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY d.id ORDER BY p.salary DESC NULLS LAST, p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "window partitioned on one join side, null-ordered on the other"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LEFT JOIN keeps the row whose dept_id is NULL, so there is a NULL partition
   # as well as a NULL sort key. Every join case in
@@ -171,21 +171,21 @@ tests:
     feature: "window ORDER BY ... NULLS LAST over a LEFT OUTER JOIN"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_nulls_last_over_three_way_join
     sql: "SELECT p.name AS name, o.id AS order_id, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY o.amount DESC NULLS LAST, o.id) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id INNER JOIN orders o ON o.person_id = p.id ORDER BY 1, 2"
     feature: "window ORDER BY ... NULLS LAST over a three-way join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_order_nulls_last_over_derived_table_join
     sql: "SELECT x.name AS name, y.budget AS budget, ROW_NUMBER() OVER (PARTITION BY x.dept_id ORDER BY x.salary DESC NULLS LAST, x.name) AS rn FROM (SELECT id, name, salary, dept_id FROM persons) x INNER JOIN (SELECT id, budget FROM departments) y ON x.dept_id = y.id ORDER BY 1"
     feature: "window ORDER BY ... NULLS LAST over a join of two derived tables"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LEAD/LAG read a neighbouring row, so the window's sort order decides the
   # answer rather than just the row numbering -- a null-ordered key here changes
@@ -195,14 +195,14 @@ tests:
     feature: "LEAD over a null-ordered window, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_win_lag_nulls_first_over_join
     sql: "SELECT p.name AS name, LAG(p.salary) OVER (PARTITION BY p.dept_id ORDER BY p.salary ASC NULLS FIRST, p.name) AS prev_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "LAG over a null-ordered window, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Rank inside a derived table, then filter to the winner. The window lives one
   # scope down from the predicate that consumes it, so the synthesised rank column
@@ -212,14 +212,14 @@ tests:
     feature: "ROW_NUMBER dedup with NULLS LAST in a derived table, filtered on rn = 1"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_dedup_row_number_nulls_last_left_join_filtered
     sql: "SELECT a.name, a.budget FROM (SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY p.hire_date DESC NULLS LAST, p.name) AS rn FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id) a WHERE a.rn = 1 ORDER BY 1"
     feature: "ROW_NUMBER dedup with NULLS LAST over a LEFT JOIN, filtered on rn = 1"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Controls that isolate one variable at a time from the cases above.
   - id: crcs_g1a_win_order_nulls_last_no_join
@@ -227,7 +227,7 @@ tests:
     feature: "window ORDER BY ... NULLS LAST, single table (control: no join)"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1a_statement_order_nulls_last_over_join
     sql: "SELECT p.name AS name, p.salary AS salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY p.salary DESC NULLS LAST, p.name"
@@ -610,7 +610,7 @@ tests:
     feature: "two window functions with null-ordered keys, over a join"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ==========================================================================
   # G4. Statement-level ORDER BY over a renaming projection
@@ -972,7 +972,7 @@ tests:
     feature: "window over a join of two derived sides sharing a column name"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # ==========================================================================
   # G6. Remaining shapes
@@ -1113,4 +1113,4 @@ tests:
     feature: "self join with NULLS LAST in the window ORDER BY"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

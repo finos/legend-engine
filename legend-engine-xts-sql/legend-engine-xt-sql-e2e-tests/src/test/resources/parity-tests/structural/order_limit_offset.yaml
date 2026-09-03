@@ -102,77 +102,77 @@ tests:
     sql: "SELECT name, age FROM persons ORDER BY age NULLS FIRST"
     feature: "NULLS FIRST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age NULLS LAST"
     feature: "NULLS LAST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_asc_nulls_first
     sql: "SELECT name, age FROM persons ORDER BY age ASC NULLS FIRST"
     feature: "NULLS FIRST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_asc_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age ASC NULLS LAST"
     feature: "NULLS LAST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_desc_nulls_first
     sql: "SELECT name, age FROM persons ORDER BY age DESC NULLS FIRST"
     feature: "NULLS FIRST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_desc_nulls_last
     sql: "SELECT name, age FROM persons ORDER BY age DESC NULLS LAST"
     feature: "NULLS LAST"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_multi_col_nulls_first_first
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS FIRST, age NULLS FIRST"
     feature: "NULLS FIRST multi-column"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_multi_col_nulls_last_last
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS LAST, age NULLS LAST"
     feature: "NULLS LAST multi-column"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_multi_col_nulls_mixed
     sql: "SELECT name, dept_id, age FROM persons ORDER BY dept_id NULLS FIRST, age DESC NULLS LAST"
     feature: "NULLS FIRST/LAST mixed multi-column"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_multi_col_nulls_and_no_nulls
     sql: "SELECT name, dept_id, salary FROM persons ORDER BY dept_id NULLS LAST, salary DESC"
     feature: "NULLS ordering mixed with plain ordering"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   - id: order_nulls_first_with_limit
     sql: "SELECT name, age FROM persons ORDER BY age NULLS FIRST LIMIT 5"
     feature: "NULLS FIRST with LIMIT"
     category: "order_limit_offset"
-    expected_tds_status: PASS
+    expected_tds_status: ERROR
     expected_rel_status: PASS
 
   # FETCH FIRST

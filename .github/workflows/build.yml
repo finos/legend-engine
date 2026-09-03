@@ -206,7 +206,9 @@ jobs:
           path: |
             ~/**/target/
             !~/**/target/*.jar
-          retention-days: 1
+          # Kept a few days (rather than the default 1) so scripts/bootstrap-from-ci.sh
+          # can find a usable master build even a day or two behind HEAD.
+          retention-days: 3
           overwrite: true
           include-hidden-files: true
           if-no-files-found: error
@@ -216,7 +218,8 @@ jobs:
         with:
           name: m2-repo
           path: ~/.m2/repository/org/finos/legend/engine/
-          retention-days: 1
+          # See retention-days comment on "Upload build output" above.
+          retention-days: 3
           overwrite: true
           if-no-files-found: error
 

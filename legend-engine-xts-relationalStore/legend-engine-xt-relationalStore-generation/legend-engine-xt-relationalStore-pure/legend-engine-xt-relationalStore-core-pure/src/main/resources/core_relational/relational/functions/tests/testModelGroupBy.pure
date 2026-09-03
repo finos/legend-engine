@@ -46,7 +46,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimple():Boolean[1]
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0, ^TDSNull(), 5.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 5.0, 'Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testStdDevSample():Bool
              ,simpleRelationalMapping
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
-   assertEquals(['Firm X', 208.59650045003153, 'Firm C', 10.2810505299799, 'Firm A', 10.535653752852738, ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals([^TDSNull(), ^TDSNull(), 'Firm X', 208.59650045003153, 'Firm C', 10.2810505299799, 'Firm A', 10.535653752852738], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", stddev_samp("root".quantity) as "stdDevSample" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -84,7 +84,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testStdDevPopulation():
              ,simpleRelationalMapping
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
-   assertEquals(['Firm X', 147.5, 'Firm C', 9.19565114605812, 'Firm A', 8.602325267042627, ^TDSNull(), 0.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 0.0, 'Firm X', 147.5, 'Firm C', 9.19565114605812, 'Firm A', 8.602325267042627], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", stddev_pop("root".quantity) as "stdDevPopulation" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -103,7 +103,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testVarianceSample():Bo
              ,simpleRelationalMapping
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
-   assertEquals(['Firm X', 43512.5, 'Firm C', 105.7, 'Firm A', 111.0, ^TDSNull(), ^TDSNull()], $result.values.rows.values);
+   assertEquals([^TDSNull(), ^TDSNull(), 'Firm X', 43512.5, 'Firm C', 105.7, 'Firm A', 111.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", var_samp("root".quantity) as "varianceSample" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -122,7 +122,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testVariancePopulation(
              ,simpleRelationalMapping
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
-   assertEquals(['Firm X', 21756.25, 'Firm C', 84.56, 'Firm A', 74.0, ^TDSNull(), 0.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 0.0, 'Firm X', 21756.25, 'Firm C', 84.56, 'Firm A', 74.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", var_pop("root".quantity) as "variancePopulation" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -139,7 +139,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleOneAggInAnArr
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0, ^TDSNull(), 5.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 5.0, 'Firm X', 345.0, 'Firm C', 176.0, 'Firm A', 66.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -159,7 +159,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testSimpleTwoAggs():Boo
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 345.0, 690.0, 'Firm C', 176.0, 352.0, 'Firm A', 66.0, 132.0, ^TDSNull(), 5.0, 10.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 5.0, 10.0, 'Firm X', 345.0, 690.0, 'Firm C', 176.0, 352.0, 'Firm A', 66.0, 132.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) as "cnt", sum("root".quantity) * 2 as "cnt2" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -179,7 +179,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testMax():Boolean[1]
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 320.0, 'Firm C', 45.0, 'Firm A', 32.0, ^TDSNull(), 5.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 5.0, 'Firm X', 320.0, 'Firm C', 45.0, 'Firm A', 32.0], $result.values.rows.values);
    assertSameSQL('select "producttable_0".NAME as "prodName", max("root".quantity) as "max" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
 
@@ -198,7 +198,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testMin():Boolean[1]
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 25.0, 'Firm C', 22.0, 'Firm A', 11.0, ^TDSNull(), 5.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 5.0, 'Firm X', 25.0, 'Firm C', 22.0, 'Firm A', 11.0], $result.values.rows.values);
    assertSameSQL('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
 
@@ -217,7 +217,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAMultiplyInThe
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 132.0, ^TDSNull(), 10.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 10.0, 'Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 132.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity) * 2 as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -238,7 +238,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAFunctionInThe
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 0.0, ^TDSNull(), 0.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 0.0, 'Firm X', 690.0, 'Firm C', 352.0, 'Firm A', 0.0], $result.values.rows.values);
 
    assertEqualsH2Compatible(
     'select "producttable_0".NAME as "prodName", (sum(case when (("producttable_0".NAME is not null and "producttable_0".NAME like \'%X\') or ("producttable_0".NAME is not null and "producttable_0".NAME like \'%C\')) then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc',
@@ -269,7 +269,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingAnAssociationI
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 50.0, 'Firm C', 142.0, 'Firm A', 86.0, ^TDSNull(), 0.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 0.0, 'Firm X', 50.0, 'Firm C', 142.0, 'Firm A', 86.0], $result.values.rows.values);
 
    assertEqualsH2Compatible(
     'select "producttable_0".NAME as "prodName", (sum(case when ("accounttable_0".name is not null and "accounttable_0".name like \'Account 1%\') then "root".quantity else 0.0 end) * 2) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) group by "prodName" order by "prodName" desc',
@@ -403,7 +403,7 @@ function <<test.Test>> meta::relational::tests::groupBy::testUsingFunctionInMapL
              ,meta::external::store::relational::tests::testRuntime()
           , meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X', 1380.0, 'Firm C', 704.0, 'Firm A', 264.0, ^TDSNull(), 20.0], $result.values.rows.values);
+   assertEquals([^TDSNull(), 20.0, 'Firm X', 1380.0, 'Firm C', 704.0, 'Firm A', 264.0], $result.values.rows.values);
 
    assertSameSQL('select "producttable_0".NAME as "prodName", sum("root".quantity * 2) * 2 as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -1193,8 +1193,8 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::test
    let result = execute($query,simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let resultWithJoinOrderRespected = execute($query,simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(),^RelationalExecutionContext(preserveJoinOrder=true), meta::relational::extension::relationalExtensions());
    //should produce same results;
-   assertEquals(['Account 1', 2, ^TDSNull(),  'Account 2', 3,^TDSNull()], $result.values.rows.values);
-   assertEquals(['Account 1', 2, ^TDSNull(),  'Account 2', 3,^TDSNull()], $resultWithJoinOrderRespected.values.rows.values);
+   assertEquals([^TDSNull(),  'Account 2', 3,^TDSNull(), 'Account 1', 2], $result.values.rows.values);
+   assertEquals([^TDSNull(),  'Account 2', 3,^TDSNull(), 'Account 1', 2], $resultWithJoinOrderRespected.values.rows.values);
 
    assertSameSQL('select "accounttable_0".name as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else null end as "uniqueValue" from tradeTable as "root" left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) where "producttable_0".NAME = \'Firm C\' group by "prodName"', $result);
    assertSameSQL('select "accounttable_0".name as "prodName", count(distinct("root".quantity)) as "count", case when count(distinct("root".quantity)) = 1 then max("root".quantity) else null end as "uniqueValue" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join accountTable as "accounttable_0" on ("root".accountID = "accounttable_0".ID) where "producttable_0".NAME = \'Firm C\' group by "prodName"', $resultWithJoinOrderRespected);
@@ -1216,7 +1216,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::groupBy::testGro
              meta::external::store::relational::tests::testRuntime(),
              meta::relational::extension::relationalExtensions());
 
-   assertEquals(['Firm X|290.5|320.0|246.25', 'Firm C|44.6|38.0|44.0', 'Firm A|30.2|23.0|27.5', 'TDSNull|5.0|5.0|5.0'], $result.values.rows->map(r|$r.values->makeString('|')));
+   assertEquals(['TDSNull|5.0|5.0|5.0', 'Firm X|290.5|320.0|246.25', 'Firm C|44.6|38.0|44.0', 'Firm A|30.2|23.0|27.5'], $result.values.rows->map(r|$r.values->makeString('|')));
    assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(cast(0.9 as float)) within group (order by "root".quantity asc) as "p1", percentile_disc(cast(0.5 as float)) within group (order by "root".quantity desc) as "p2", percentile_cont(cast(0.75 as float)) within group (order by "root".quantity asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
 

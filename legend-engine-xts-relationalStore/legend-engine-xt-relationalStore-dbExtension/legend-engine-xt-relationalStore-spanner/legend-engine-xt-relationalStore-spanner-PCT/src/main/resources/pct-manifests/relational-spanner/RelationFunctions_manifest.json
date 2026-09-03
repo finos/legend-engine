@@ -217,6 +217,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsFirst_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsLast_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {

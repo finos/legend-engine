@@ -90,6 +90,87 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSo
                 '#', $res3->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsLast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+                null, Neema
+                3, David
+              #->sort([~id->ascending()->nullsLast(), ~name->ascending()]);
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   3,David\n'+
+               '   null,Neema\n'+
+               '   null,Pierre\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsFirst<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+                3, David
+              #->sort([~id->descending()->nullsLast(), ~name->ascending()]);
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   3,David\n'+
+               '   2,George\n'+
+               '   1,Sachin\n'+
+               '   null,Pierre\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullOrderTwoArgAndCanonical<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  // 2-argument sugar - nulls first on ascending
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+              #->sort(~id->ascending(meta::pure::functions::relation::NullOrder.FIRST));
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   null,Pierre\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '#', $res->toString());
+
+  // unspecified => canonical (nulls sort high): NULLS LAST on ascending
+  let canonical = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+              #->sort(~id->ascending());
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   null,Pierre\n'+
+               '#', $canonical->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {| 

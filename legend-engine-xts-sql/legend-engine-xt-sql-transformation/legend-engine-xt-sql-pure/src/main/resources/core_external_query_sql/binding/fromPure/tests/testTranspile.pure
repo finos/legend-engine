@@ -5668,8 +5668,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
-// The shape seen in practice: Engine rejects NULLS FIRST/LAST, so the upstream
-// converter rewrites null ordering into a CASE sort key, which hits the gap above.
+// A user-written CASE expression as an ORDER BY key still has to be materialised
+// through the same expression path as testOrderByFunctionExpression above.
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByNullOrderingCaseKey():Boolean[1]
 {
   test(
@@ -5765,16 +5765,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByNullsFirst():Boolean[1]
 {
-  // NULLS FIRST: rewritten as CASE WHEN String IS NULL THEN 0 ELSE 1 END ASC, String ASC
+  // NULLS FIRST renders natively as a sort-spec modifier
   test(
     'SELECT "String", "Integer" FROM service."/service/service1" ORDER BY "String" NULLS FIRST',
     [
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->extend(~['CASE WHEN String IS NULL THEN 0 ELSE 1 END': x | $x.String->isEmpty()->if(|0, |1)])
-            ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->ascending(), ~String->ascending()])
-            ->select(~[String, Integer])
+            ->sort([~String->ascending()->nullsFirst()])
         }
     ]
   )
@@ -5814,16 +5812,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByNullsLast():Boolean[1]
 {
-  // NULLS LAST: rewritten as CASE WHEN String IS NULL THEN 0 ELSE 1 END DESC, String ASC
+  // NULLS LAST renders natively as a sort-spec modifier
   test(
     'SELECT "String", "Integer" FROM service."/service/service1" ORDER BY "String" NULLS LAST',
     [
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->extend(~['CASE WHEN String IS NULL THEN 0 ELSE 1 END': x | $x.String->isEmpty()->if(|0, |1)])
-            ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->descending(), ~String->ascending()])
-            ->select(~[String, Integer])
+            ->sort([~String->ascending()->nullsLast()])
         }
     ]
   )
@@ -5849,16 +5845,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByDescNullsFirst():Boolean[1]
 {
-  // DESC NULLS FIRST: rewritten as CASE WHEN String IS NULL THEN 0 ELSE 1 END ASC, String DESC
+  // DESC NULLS FIRST renders natively as a sort-spec modifier
   test(
     'SELECT "String", "Integer" FROM service."/service/service1" ORDER BY "String" DESC NULLS FIRST',
     [
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->extend(~['CASE WHEN String IS NULL THEN 0 ELSE 1 END': x | $x.String->isEmpty()->if(|0, |1)])
-            ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->ascending(), ~String->descending()])
-            ->select(~[String, Integer])
+            ->sort([~String->descending()->nullsFirst()])
         }
     ]
   )
@@ -5885,16 +5879,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByMultiColumnMixedNulls():Boolean[1]
 {
-  // String NULLS FIRST, Integer DESC NULLS LAST: two CASE extend columns, four sort keys
+  // String NULLS FIRST, Integer DESC NULLS LAST render natively as sort-spec modifiers
   test(
     'SELECT "String", "Integer" FROM service."/service/service1" ORDER BY "String" NULLS FIRST, "Integer" DESC NULLS LAST',
     [
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->extend(~['CASE WHEN String IS NULL THEN 0 ELSE 1 END': x | $x.String->isEmpty()->if(|0, |1), 'CASE WHEN Integer IS NULL THEN 0 ELSE 1 END': x | $x.Integer->isEmpty()->if(|0, |1)])
-            ->sort([~'CASE WHEN String IS NULL THEN 0 ELSE 1 END'->ascending(), ~String->ascending(), ~'CASE WHEN Integer IS NULL THEN 0 ELSE 1 END'->descending(), ~Integer->descending()])
-            ->select(~[String, Integer])
+            ->sort([~String->ascending()->nullsFirst(), ~Integer->descending()->nullsLast()])
         }
     ]
   )
