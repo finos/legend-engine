@@ -714,6 +714,30 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
     }
 
     @Test
+    public void testDataSpaceExecutionContextWithMappingMissingDefaultRuntime()
+    {
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [11:5-15:5]: Data space execution context 'Context 1' must specify a defaultRuntime when a mapping is set");
+    }
+
+    @Test
     public void testDataSpaceWithElements()
     {
         test("Class model::element {}\n" +
@@ -1611,32 +1635,6 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::element[1]|$src;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n");
-    }
-
-    @Test
-    public void testDataSpaceWithExecutionContextWithoutRuntimeCompiles()
-    {
-        String models = "Class model::element {}\n" +
-                "###Mapping\n" +
-                "Mapping model::dummyMapping\n" +
-                "(\n" +
-                ")\n" +
-                "\n";
-
-        test(models +
-                "###DataSpace\n" +
-                "DataSpace model::dataSpace\n" +
-                "{\n" +
-                "  executionContexts:\n" +
-                "  [\n" +
-                "    {\n" +
-                "      name: 'Context 1';\n" +
-                "      mapping: model::dummyMapping;\n" +
-                "    }\n" +
-                "  ];\n" +
-                "  defaultExecutionContext: 'Context 1';\n" +
-                "  title: 'some title';\n" +
                 "}\n");
     }
 
