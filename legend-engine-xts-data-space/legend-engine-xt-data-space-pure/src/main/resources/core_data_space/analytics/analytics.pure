@@ -27,6 +27,9 @@ Class meta::pure::metamodel::dataSpace::analytics::DataSpaceInfoAnalysisResult
   topics: String[*];
   relatedDataSpaces: String[*];
   deprecationNotice: String[0..1];
+  vendorLicenseStatus: String[0..1];
+  vendorRelationshipOwner: String[0..1];
+  vendorProviderName: String[0..1];
 }
 
 Class meta::pure::metamodel::dataSpace::analytics::DataSpaceAnalysisResult
@@ -53,7 +56,10 @@ function <<access.private>> meta::pure::metamodel::dataSpace::analytics::resolve
         isExternal        = if($dataSpace.stereotypes->exists(s | $s.profile->elementToPath() == $profilePath && $s.value == 'External'), | true, | []),
         topics            = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'topics')->map(t | $t.value->split(',')->map(s | $s->trim())->filter(s | $s->length() > 0)),
         relatedDataSpaces = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'relatedDataSpaces')->map(t | $t.value->split(',')->map(s | $s->trim())->filter(s | $s->length() > 0)),
-        deprecationNotice = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'deprecationNotice')->map(t | $t.value)->first()
+        deprecationNotice = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'deprecationNotice')->map(t | $t.value)->first(),
+        vendorLicenseStatus = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'vendorLicenseStatus')->map(t | $t.value)->first(),
+        vendorRelationshipOwner = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'vendorRelationshipOwner')->map(t | $t.value)->first(),
+        vendorProviderName = $dataSpace.taggedValues->filter(t | $t.tag.profile->elementToPath() == $profilePath && $t.tag.value == 'vendorProviderName')->map(t | $t.value)->first()
       ),
     | []
   );

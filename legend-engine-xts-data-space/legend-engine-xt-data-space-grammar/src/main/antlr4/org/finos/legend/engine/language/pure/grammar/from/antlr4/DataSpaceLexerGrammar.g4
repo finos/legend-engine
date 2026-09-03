@@ -47,6 +47,10 @@ DATA_SPACE_SUPPORT_WEBSITE:                 'website';
 DATA_SPACE_SUPPORT_FAQ_URL:                 'faqUrl';
 DATA_SPACE_SUPPORT_SUPPORT_URL:             'supportUrl';
 
+DATA_SPACE_OPERATIONAL_METADATA:            'operationalMetadata';
+DATA_SPACE_OM_COVERAGE_REGIONS:             'coverageRegions';
+DATA_SPACE_OM_UPDATE_FREQUENCY:             'updateFrequency';
+
 
 // ------------------------------------ DEPRECATED --------------------------------------
 

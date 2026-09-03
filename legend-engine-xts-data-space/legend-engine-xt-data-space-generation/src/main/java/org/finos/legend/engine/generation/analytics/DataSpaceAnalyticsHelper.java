@@ -446,6 +446,12 @@ public class DataSpaceAnalyticsHelper
         {
             result.supportInfo.sourceInformation = null;
         }
+        // operational metadata
+        result.operationalMetadata = dataSpaceProtocol.operationalMetadata;
+        if (result.operationalMetadata != null)
+        {
+            result.operationalMetadata.sourceInformation = null;
+        }
 
         DataSpaceAnalyticsExtensionLoader.extensions().forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));
         return result;
@@ -485,6 +491,9 @@ public class DataSpaceAnalyticsHelper
             dataSpaceInfo.topics = pureInfo._topics() == null || pureInfo._topics().toList().isEmpty() ? null : new ArrayList<>(pureInfo._topics().toList());
             dataSpaceInfo.relatedDataSpaces = pureInfo._relatedDataSpaces() == null || pureInfo._relatedDataSpaces().toList().isEmpty() ? null : new ArrayList<>(pureInfo._relatedDataSpaces().toList());
             dataSpaceInfo.deprecationNotice = pureInfo._deprecationNotice();
+            dataSpaceInfo.vendorLicenseStatus = pureInfo._vendorLicenseStatus();
+            dataSpaceInfo.vendorRelationshipOwner = pureInfo._vendorRelationshipOwner();
+            dataSpaceInfo.vendorProviderName = pureInfo._vendorProviderName();
             result.info = dataSpaceInfo;
         }
 
@@ -638,6 +647,12 @@ public class DataSpaceAnalyticsHelper
         if (result.supportInfo != null)
         {
             result.supportInfo.sourceInformation = null;
+        }
+        // operational metadata
+        result.operationalMetadata = dataSpaceProtocol.operationalMetadata;
+        if (result.operationalMetadata != null)
+        {
+            result.operationalMetadata.sourceInformation = null;
         }
 
         analyticsExtensions.forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));

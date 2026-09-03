@@ -1,4 +1,4 @@
-// Copyright 2024 Goldman Sachs
+// Copyright 2026 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,33 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.generation.analytics.model;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
+import java.util.Collections;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DataSpaceInfoAnalysisResult
+public class DataSpaceOperationalMetadata
 {
-    // Stereotypes — only present in result when true
-    public Boolean isVerified;
-    public Boolean isInDevelopment;
-    public Boolean isExternal;
-
-    // Tags
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public List<String> topics;
+    public SourceInformation sourceInformation;
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    public List<String> relatedDataSpaces;
+    public List<DataSpaceRegion> coverageRegions = Collections.emptyList();
 
-    public String deprecationNotice;
-
-    public String vendorLicenseStatus;
-
-    public String vendorRelationshipOwner;
-
-    public String vendorProviderName;
+    public DataSpaceDeliveryFrequency updateFrequency;
 }
 

@@ -25,7 +25,10 @@ Profile meta::pure::metamodel::dataSpace::profiles::DataSpaceInfo
     tags: [
         deprecationNotice,
         relatedDataSpaces,
-        topics
+        topics,
+        vendorLicenseStatus,
+        vendorRelationshipOwner,
+        vendorProviderName
     ];
 }
 
@@ -42,6 +45,32 @@ Class meta::pure::metamodel::dataSpace::DataSpace extends PackageableElement
   executables: DataSpaceExecutable[*];
 
   supportInfo: DataSpaceSupportInfo[0..1];
+  operationalMetadata: DataSpaceOperationalMetadata[0..1];
+}
+
+Enum meta::pure::metamodel::dataSpace::Region
+{
+    APAC,
+    EMEA,
+    LAMR,
+    NAMR
+}
+
+Enum meta::pure::metamodel::dataSpace::DeliveryFrequency
+{
+    INTRADAY,
+    DAILY,
+    WEEKLY,
+    MONTHLY,
+    QUARTERLY,
+    YEARLY,
+    ON_DEMAND
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceOperationalMetadata
+{
+    coverageRegions: Region[*];
+    updateFrequency: DeliveryFrequency[0..1];
 }
 
 Class meta::pure::metamodel::dataSpace::DataSpaceExecutionContext
