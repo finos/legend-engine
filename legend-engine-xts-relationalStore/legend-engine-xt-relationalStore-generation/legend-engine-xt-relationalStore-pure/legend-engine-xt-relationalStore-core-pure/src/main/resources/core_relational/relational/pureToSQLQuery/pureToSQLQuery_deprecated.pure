@@ -43,7 +43,7 @@ function meta::relational::functions::pureToSqlQuery::processTDSSortColumns(f:Fu
 
 function meta::relational::functions::pureToSqlQuery::processTDSSortSortInfo(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let sortInfo = $f->instanceValuesAtParameter(1,$vars, $state.inScopeVars)->cast(@SortInfo<Any>)->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC)));
+   let sortInfo = $f->instanceValuesAtParameter(1,$vars, $state.inScopeVars)->cast(@SortInfo<Any>)->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
    $f->processTDSSort($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $sortInfo, $extensions);
 }
 
@@ -63,7 +63,8 @@ function meta::relational::functions::pureToSqlQuery::processTDSSort(f:FunctionE
                      let direction = if ($info.direction == meta::pure::tds::SortDirection.DESC,
                         | meta::relational::metamodel::SortDirection.DESC,
                         | meta::relational::metamodel::SortDirection.ASC);
-                     ^OrderBy(column = $info.column->findAliasOrFail($mainSelect), direction = $direction);
+                     ^OrderBy(column = $info.column->findAliasOrFail($mainSelect), direction = $direction,
+                              nullOrder = $info.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST)));
                      )->concatenate($mainSelect.orderBy)
                   )
       );
@@ -420,8 +421,9 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    assert(!$mainSelect.columns->map(col | $col->extractColumnName())->contains($newColumnName), | 'Attempting to reuse the same column name: '+ $newColumnName);
 
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
-   let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement, 
-                                                    sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC)));
+   let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement,
+                                                    sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC),
+                                                    nullOrder = $si.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
    let newFrame = if($frame->isEmpty(), | [], | $frame->toOne()->processWindowFrame());
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,

@@ -1,0 +1,29 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::*;
+import meta::pure::metamodel::relation::*;
+
+function
+   <<PCT.function,
+     functionType.NormalizeRequiredFunction>>
+   {
+      doc.doc = 'Places null values first in the sort defined by the given sort spec (SQL \'NULLS FIRST\'). Without a null order the platform\'s canonical order applies: nulls sort as the largest value, i.e. NULLS LAST on ascending, NULLS FIRST on descending.'
+   }
+   meta::pure::functions::relation::nullsFirst<T>(sortInfo:SortInfo<T>[1]):SortInfo<T>[1]
+{
+   // Explicit construction (not a ^$sortInfo(..) copy) so the router's NormalizeRequiredFunction
+   // preval folds this the same way it folds ascending()/descending().
+   ^SortInfo<T>(column=$sortInfo.column, direction=$sortInfo.direction, nullOrder=NullOrder.FIRST)
+}

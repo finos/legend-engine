@@ -333,7 +333,7 @@ function meta::relational::functions::sqlQueryToString::default::processWindowCo
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name, | '') + renderNullOrder($s.nullOrder, $s.sortDirection, $sgc.dbConfig))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrame($sgc),
@@ -507,7 +507,59 @@ function meta::relational::functions::sqlQueryToString::default::processOrderBy(
    $orderBy->map(o | $o.column->match([
         a:Alias[1]|$dbConfig.identifierProcessor($a.name),
         r:RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $config, $extensions)
-   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc'));
+   ]) + if ($o.direction == meta::relational::metamodel::SortDirection.ASC, |'', | ' desc') + renderNullOrder($o.nullOrder, $o.direction, $dbConfig));
+}
+
+// Renders the ' nulls first' / ' nulls last' suffix for a sort key.
+//  - explicit null order  => always rendered
+//  - no explicit order    => render the platform's canonical order (nulls sort high: NULLS LAST on ASC,
+//                            NULLS FIRST on DESC) only for dialects whose native default diverges from it
+//                            and that support the NULLS FIRST/LAST syntax. Dialects that already match
+//                            canonical emit nothing, so their SQL is byte-identical to before.
+function meta::relational::functions::sqlQueryToString::default::renderNullOrder(nullOrder:meta::relational::metamodel::NullOrder[0..1], direction:meta::relational::metamodel::SortDirection[0..1], dbConfig:DbConfig[1]):String[1]
+{
+   let effective = if($nullOrder->isNotEmpty(),
+                      | $nullOrder,
+                      | reconcileUnspecifiedNullOrder($direction, $dbConfig));
+   if($effective->isEmpty(),
+      | '',
+      | if($effective->toOne() == meta::relational::metamodel::NullOrder.FIRST, | ' nulls first', | ' nulls last'));
+}
+
+function meta::relational::functions::sqlQueryToString::default::reconcileUnspecifiedNullOrder(direction:meta::relational::metamodel::SortDirection[0..1], dbConfig:DbConfig[1]):meta::relational::metamodel::NullOrder[0..1]
+{
+   let dir = $direction->defaultIfEmpty(meta::relational::metamodel::SortDirection.ASC)->toOne();
+   let canonical = if($dir == meta::relational::metamodel::SortDirection.DESC,
+                      | meta::relational::metamodel::NullOrder.FIRST,
+                      | meta::relational::metamodel::NullOrder.LAST);
+   // Dialects with no NULLS FIRST/LAST syntax cannot be reconciled here; emulation is a follow-up.
+   if(!$dbConfig.dbType->supportsNullOrderingSyntax(),
+      | [],
+      | if($dbConfig.dbType->nativeNullOrdering($dir) == $canonical, | [], | $canonical));
+}
+
+function meta::relational::functions::sqlQueryToString::default::supportsNullOrderingSyntax(dbType:meta::relational::runtime::DatabaseType[1]):Boolean[1]
+{
+   !$dbType->in([meta::relational::runtime::DatabaseType.SqlServer, meta::relational::runtime::DatabaseType.MemSQL,
+                 meta::relational::runtime::DatabaseType.Sybase, meta::relational::runtime::DatabaseType.SybaseIQ]);
+}
+
+// The dialect's NULLS position when no explicit clause is given. Verify each against a real instance
+// (PCT cloud probe) before trusting -- vendor documentation is unreliable here.
+function meta::relational::functions::sqlQueryToString::default::nativeNullOrdering(dbType:meta::relational::runtime::DatabaseType[1], direction:meta::relational::metamodel::SortDirection[1]):meta::relational::metamodel::NullOrder[1]
+{
+   let nullsLow = $dbType->in([meta::relational::runtime::DatabaseType.H2, meta::relational::runtime::DatabaseType.Hive,
+                               meta::relational::runtime::DatabaseType.SparkSQL, meta::relational::runtime::DatabaseType.Databricks,
+                               meta::relational::runtime::DatabaseType.BigQuery, meta::relational::runtime::DatabaseType.Spanner,
+                               meta::relational::runtime::DatabaseType.SqlServer, meta::relational::runtime::DatabaseType.MemSQL,
+                               meta::relational::runtime::DatabaseType.Sybase, meta::relational::runtime::DatabaseType.SybaseIQ]);
+   let uniformLast = $dbType->in([meta::relational::runtime::DatabaseType.DuckDB, meta::relational::runtime::DatabaseType.ClickHouse]);
+   if($uniformLast,
+      | meta::relational::metamodel::NullOrder.LAST,
+      | if($nullsLow,
+           | if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.LAST, | meta::relational::metamodel::NullOrder.FIRST),
+           // Canonical / nulls-high: Postgres, Oracle, Redshift, Aurora, Athena, Presto, Trino, Snowflake, DB2, ...
+           | if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST)));
 }
 
 function meta::relational::functions::sqlQueryToString::default::processLimit(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*],
@@ -801,12 +853,19 @@ function meta::relational::functions::sqlQueryToString::default::transformLikePa
       ->concatenate('');
 }
 
-// Alternating column/direction parameters follow the aggregate; see processRelationReduce.
+// column/direction/nullOrder triples follow the aggregate; see processRelationReduce.
 function meta::relational::functions::sqlQueryToString::default::withinGroupOrderBy(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let rest = $f.parameters->tail();
-   assert($rest->size() > 0 && $rest->size()->mod(2) == 0, | 'withinGroup expects an aggregate followed by column/direction pairs, got ' + $rest->size()->toString() + ' trailing parameters');
-   range(0, $rest->size(), 2)->map(i | $rest->at($i)->processOperation($sgc) + ' ' + $rest->at($i + 1)->cast(@Literal).value->cast(@String)->toLower())->joinStrings(', ');
+   assert($rest->size() > 0 && $rest->size()->mod(3) == 0, | 'withinGroup expects an aggregate followed by column/direction/nullOrder triples, got ' + $rest->size()->toString() + ' trailing parameters');
+   range(0, $rest->size(), 3)->map(i |
+      let directionStr = $rest->at($i + 1)->cast(@Literal).value->cast(@String);
+      let nullOrderStr = $rest->at($i + 2)->cast(@Literal).value->cast(@String);
+      let direction = if($directionStr->toUpper() == 'DESC', | meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::SortDirection.ASC);
+      let explicitNullOrder = [pair('FIRST', meta::relational::metamodel::NullOrder.FIRST), pair('LAST', meta::relational::metamodel::NullOrder.LAST)]->newMap()->get($nullOrderStr);
+      $rest->at($i)->processOperation($sgc) + ' ' + $directionStr->toLower()
+         + renderNullOrder($explicitNullOrder, $direction, $sgc.dbConfig);
+   )->joinStrings(', ');
 }
 
 // Dialects wanting the ordering inside the aggregate's parentheses override this and rebuild from the inner
