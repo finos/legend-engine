@@ -132,3 +132,31 @@ Class meta::pure::metamodel::dataSpace::DataSpaceSupportCombinedInfo extends Dat
   faqUrl: String[0..1];
   supportUrl: String[0..1];
 }
+
+Class meta::pure::metamodel::dataSpace::DataSpaceLink
+{
+  label: String[0..1];
+  url: String[1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceEmail
+{
+  title: String[1];
+  address: String[1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceExpertise
+{
+  description: String[0..1];
+  expertIds: String[*];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceSupportFullInfo extends DataSpaceSupportInfo
+{
+  documentation: DataSpaceLink[0..1];
+  website: DataSpaceLink[0..1];
+  faqUrl: DataSpaceLink[0..1];
+  supportUrl: DataSpaceLink[0..1];
+  emails: DataSpaceEmail[*];
+  expertise: DataSpaceExpertise[*];
+}
