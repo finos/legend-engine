@@ -18,30 +18,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.JDBCType;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.TimeZone;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -53,7 +29,10 @@ import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalRes
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodePartialClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
-import org.finos.legend.engine.plan.execution.result.*;
+import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassMappingInfo;
@@ -91,7 +70,31 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.TimeZone;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class RelationalResult extends StreamingResult implements IRelationalResult, StoreExecutable
 {
@@ -563,9 +566,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 java.sql.Timestamp timestamp = this.resultSet.getTimestamp(
                         columnIndex,
-                        getRelationalDatabaseTimeZone() == null ?
-                                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
-                                new GregorianCalendar(TimeZone.getTimeZone(getRelationalDatabaseTimeZone()))
+                        TimeZones.newCalendar((getRelationalDatabaseTimeZone() == null) ? "GMT" : getRelationalDatabaseTimeZone())
                 );
                 if (timestamp != null)
                 {
@@ -736,7 +737,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     private Calendar getCalendar()
     {
         String timeZoneId = getRelationalDatabaseTimeZone();
-        TimeZone timeZone = (timeZoneId != null) ? TimeZone.getTimeZone(timeZoneId) : TimeZone.getTimeZone("GMT");
+        TimeZone timeZone = TimeZones.parseTimeZone((timeZoneId != null) ? timeZoneId : "GMT");
         if (calendar == null)
         {
             //TODO, throw exception, TZ should always be specified
