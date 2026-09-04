@@ -5936,6 +5936,101 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// ---------------------------------------------------------------------------
+// Statement-level ORDER BY keys resolved against the projected relation.
+//
+// processOrderBy runs after the projection but used to resolve its keys through
+// the pre-projection context, so over a join it asked for the suffixed name
+// processDuplicateRenames had set - 'String_t1' for a column the projection
+// outputs as 'String'. projectedSortKeyName matches the key against the select
+// list instead and takes the matching item's output name.
+//
+// The join is load-bearing throughout: without it there are no suffixes and the
+// two spellings coincide.
+// ---------------------------------------------------------------------------
+
+// The ordinal path. Select item 1 is unaliased and its base name collides with
+// the other join side, which is what makes the suffix appear.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByOrdinalOverJoinWithCollidingBaseName():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String", "t2"."String" AS "other" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY 1',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// An explicit qualified key naming a column the projection renamed: the key must
+// follow the rename onto "s" rather than keep spelling the source column.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualifiedKeyRenamedByProjectionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "s", "t2"."ID" AS "i" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY "t1"."String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// An aggregate key the projection aliased. The key is not a column at all, so it
+// can only resolve by matching the select item that computes it and taking its
+// alias - grouping has already discarded anything the aggregate was built from.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByAggregateKeyAliasedByProjectionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "s", count(*) AS "n" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY "t1"."String" ORDER BY count(*) DESC',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Both sides project a column called String under different output names, and the
+// key names the second one. Matching on the rendered name alone would drop the
+// qualifier and pick "a", so the key is matched on its full name parts first.
+//
+// Compiles either way - both "a" and "b" exist - so this asserts nothing beyond
+// that. What discriminates is the parity case of the same shape, which compares
+// rows: sorting by the wrong side shows up there as FAIL, not ERROR.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualifiedKeyPicksTheNamedJoinSide():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "a", "t2"."String" AS "b" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY "t2"."String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
 function meta::external::query::sql::transformation::queryToPure::tests::testSources():SQLSource[*]
 {
   [

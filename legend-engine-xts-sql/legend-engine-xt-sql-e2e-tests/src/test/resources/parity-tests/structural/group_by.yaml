@@ -72,15 +72,15 @@ tests:
     sql: "SELECT dept_id, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY SUM(salary) DESC"
     feature: "ORDER BY aggregate"
     category: "group_by"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: group_by_order_count
     sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY COUNT(*) DESC, dept_id"
     feature: "ORDER BY aggregate"
     category: "group_by"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Conditional aggregation
   - id: group_by_cond_agg

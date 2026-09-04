@@ -26,8 +26,8 @@ tests:
     sql: "SELECT p.*, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY p.id"
     feature: "SELECT table.* with join"
     category: "select_star"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: star_multiple_tables
     sql: "SELECT p.*, d.* FROM persons p JOIN departments d ON p.dept_id = d.id WHERE p.id <= 3 ORDER BY p.id"
