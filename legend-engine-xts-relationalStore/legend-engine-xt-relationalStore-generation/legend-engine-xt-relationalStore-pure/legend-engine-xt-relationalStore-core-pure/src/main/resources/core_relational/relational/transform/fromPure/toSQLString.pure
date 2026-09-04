@@ -34,7 +34,7 @@ import meta::pure::router::store::metamodel::clustering::*;
 
 function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='\n', indent='\t'), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='\n', indent='\t'), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):String[1]
@@ -47,7 +47,7 @@ function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->A
 {
    let databaseConnection = $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->toOne()->cast(@DatabaseConnection);
    let postProcessors = meta::relational::mapping::sqlQueryDefaultPostProcessors()->map(pp | {select:SelectSQLQuery[*] | $pp->eval($select, $databaseConnection, ^meta::pure::runtime::ExecutionContext(), $extensions)})->concatenate($databaseConnection.sqlQueryPostProcessors);
-   let sql = toSQL($f, $mapping, $databaseConnection.type, $databaseConnection.timeZone, $postProcessors, $extensions, noDebug());
+   let sql = toSQL($f, $mapping, $databaseConnection.type, $databaseConnection.timeZone, $postProcessors, $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()));
 
    if ($databaseConnection.sqlQueryPostProcessorsConnectionAware->isEmpty(), | $sql, | let newSql = $sql.sqlQueries->map(s | $databaseConnection.sqlQueryPostProcessorsConnectionAware->fold({pp,q|$pp->eval($q, $databaseConnection->cast(@DatabaseConnection)).values->toOne()}, $s->cast(@SelectSQLQuery)));
                                                                                        ^$sql(sqlQueries=$newSql););
@@ -57,17 +57,17 @@ function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->A
 
 function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, $dbTimeZone, [], ^Format(newLine='\n', indent='\t'), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, $dbTimeZone, [], ^Format(newLine='\n', indent='\t'), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='', indent=''), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, [], [], ^Format(newLine='', indent=''), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], quoteIdentifier:Boolean[0..1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, [], $quoteIdentifier, [], ^Format(newLine='', indent=''), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, [], $quoteIdentifier, [], ^Format(newLine='', indent=''), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], extensions:Extension[*], debug:DebugContext[1]):String[1]
@@ -77,12 +77,12 @@ function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinitio
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, $dbTimeZone, [], ^Format(newLine='', indent=''), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, $dbTimeZone, [], ^Format(newLine='', indent=''), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toNonExecutableSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], extensions:Extension[*]):String[1]
 {
-   toSQLString($f, $mapping, $databaseType, [], {select:SelectSQLQuery[1] | meta::relational::postProcessor::nonExecutable_SelectSQLQuery_1__Extension_MANY__Result_1_->eval($select, $extensions)}, ^Format(newLine='', indent=''), $extensions, noDebug())
+   toSQLString($f, $mapping, $databaseType, [], {select:SelectSQLQuery[1] | meta::relational::postProcessor::nonExecutable_SelectSQLQuery_1__Extension_MANY__Result_1_->eval($select, $extensions)}, ^Format(newLine='', indent=''), $extensions, if(isOptionSet('ExecDebug'), | debug(), | noDebug()))
 }
 
 function meta::relational::functions::sqlstring::toSQLString(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], databaseType:DatabaseType[1], dbTimeZone:String[0..1], sqlQueryPostProcessors: Function<{SelectSQLQuery[1]->Result<SelectSQLQuery|1>[1]}>[*], format:Format[1], extensions:Extension[*], debug:DebugContext[1]):String[1]
