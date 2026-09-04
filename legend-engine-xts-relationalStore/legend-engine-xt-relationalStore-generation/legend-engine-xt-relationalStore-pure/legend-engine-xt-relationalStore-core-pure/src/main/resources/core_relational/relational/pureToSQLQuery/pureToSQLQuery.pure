@@ -1248,9 +1248,10 @@ function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionEx
                                     | let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
                                       let name = $fe.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@String);
                                       let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
-                                      let pm = $matchedPath->toOne().second;
-                                      assert(!$pm->isEmpty(), 'Could not find property mapping for enum');
-                                      $pm.propertyMapping;,
+                                                         assert($matchedPath->isNotEmpty(), | 'Could not resolve projected TDS column \'' + $name + '\' for getEnum().');
+                                                         let pm = $matchedPath->toOne().second.propertyMapping;
+                                                         assert(!$pm->isEmpty(), | 'Could not resolve enumeration mapping for projected TDS column \'' + $name + '\'. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
+                                                         $pm;,
                                     | [];
                                     );
 
@@ -5954,12 +5955,15 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                       let newLiteral = if($literal.value->instanceOf(Enum),
                                             |if($valueArg->instanceOf(VariableExpression),
                                                 | ^DynaFunction(name = 'equal', parameters = [$value, $collection]),
-                                                | let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0);
-                                                  let vals = $enumPropMapping->getEnumPropMappingTransformer()->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($literal.value);
-                                                  if($vals->size() == 1,
-                                                      | ^DynaFunction(name = 'equal', parameters=[$value, ^Literal(value=$vals->at(0))]),
-                                                      | ^DynaFunction(name = 'in', parameters = [$value, ^LiteralList(values=$vals->map(v|^Literal(value=$v)))]);
-                                                    );
+                                                                        | let enumPropMappings = $processedValueArg.currentPropertyMapping;
+                                                                           let columnName = if($valueArg->instanceOf(FunctionExpression) && $valueArg->cast(@FunctionExpression).func.functionName == 'getEnum', | $valueArg->cast(@FunctionExpression)->instanceValueAtParameter(1)->toString(), | 'value');
+                                                                           assert($enumPropMappings->isNotEmpty(), | 'Could not resolve enumeration mapping for projected TDS enum column \'' + $columnName + '\' in IN predicate. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
+                                                                           assertEquals(1, $enumPropMappings->size(), | 'Expected exactly one property mapping for projected TDS enum column \'' + $columnName + '\'.');
+                                                                           let transformer = $enumPropMappings->getEnumPropMappingTransformer();
+                                                                           assert($transformer->isNotEmpty() && $transformer->toOne()->instanceOf(EnumerationMapping), | 'Missing an EnumerationMapping for projected TDS enum column \'' + $columnName + '\'.');
+                                                                           let vals = $transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($literal.value);
+                                                                           assert($vals->isNotEmpty(), | 'Enumeration mapping for projected TDS enum column \'' + $columnName + '\' did not produce any source values for enum \'' + $literal.value->toString() + '\'.');
+                                                                           ^DynaFunction(name = 'in', parameters = [$value, ^LiteralList(values=$vals->map(v|^Literal(value=$v)))]);
                                                 );,
                                             |let literalValue = $literal.value;
                                              if($literalValue->instanceOf(VarPlaceHolder),
@@ -5969,10 +5973,14 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                );,
                | let literalList = $collection->cast(@LiteralList);
                  let newCollection =
-                     if ($literalList.values->at(0).value->instanceOf(Enum) && !$valueArg->instanceOf(VariableExpression),
-                     |let enum = $literalList.values->at(0).value;
-                      let enumPropMapping = $processedValueArg.currentPropertyMapping->at(0);
-                      ^LiteralList(values=$literalList.values->map(v|$enumPropMapping->getEnumPropMappingTransformer()->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($v.value))->map(v|^Literal(value=$v)));,
+                     if ($literalList.values->isNotEmpty() && $literalList.values->at(0).value->instanceOf(Enum) && !$valueArg->instanceOf(VariableExpression),
+                     |let columnName = if($valueArg->instanceOf(FunctionExpression) && $valueArg->cast(@FunctionExpression).func.functionName == 'getEnum', | $valueArg->cast(@FunctionExpression)->instanceValueAtParameter(1)->toString(), | 'value');
+                      let enumPropMappings = $processedValueArg.currentPropertyMapping;
+                      assert($enumPropMappings->isNotEmpty(), | 'Could not resolve enumeration mapping for projected TDS enum column \'' + $columnName + '\' in IN predicate. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
+                      assertEquals(1, $enumPropMappings->size(), | 'Expected exactly one property mapping for projected TDS enum column \'' + $columnName + '\'.');
+                      let transformer = $enumPropMappings->getEnumPropMappingTransformer();
+                      assert($transformer->isNotEmpty() && $transformer->toOne()->instanceOf(EnumerationMapping), | 'Missing an EnumerationMapping for projected TDS enum column \'' + $columnName + '\'.');
+                      ^LiteralList(values=$literalList.values->map(v|$transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($v.value))->map(v|^Literal(value=$v)));,
                      |$literalList
                   );
                ^DynaFunction(name = 'in', parameters=[$value,$newCollection]);
@@ -6715,29 +6723,16 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
   let colSpecCursor = ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery);
   let colSpecState = $state->withRelationVarScope($f->cast(@FunctionDefinition<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType), $colSpecCursor);
-  let newElement = $expressionToRoute->match([
-                                              f:FunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
-                                              i:InstanceValue[1] | let transformedValues = $i.values->map(v | $v->match([
-                                                                                                                          s:String[1] | ^Literal(value=$s),
-                                                                                                                          n:Number[1] | ^Literal(value=$n),
-                                                                                                                          d:Date[1] | ^Literal(value=$d),
-                                                                                                                          b:Boolean[1] | ^Literal(value=$b),
-                                                                                                                          e:Enum[1] | ^Literal(value=$e),
-                                                                                                                          e:Enumeration<Any>[1] | ^Literal(value=$e),
-                                                                                                                          f:SimpleFunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
-                                                                                                                          i:InstanceValue[1] | $i->processInstanceValue($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0),
-                                                                                                                          v:PlanVarPlaceHolder[1] | ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
-                                                                                                                        ])
-                                                                                                          );
-                                                                   if($transformedValues->isNotEmpty(),
-                                                                     | $transformedValues->toOne(),
-                                                                     | ^Literal(value = ^SQLNull())
-                                                                   );
-                                            ]);
+   let routedElement = processValueSpecificationReturnPropertyMapping($expressionToRoute, $currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
+   let newElement = $routedElement.element->match([
+                                                                        s:SelectWithCursor[1] | $s.select.columns->toOne(),
+                                                                        r:RelationalOperationElement[1] | $r
+                                                                     ]);
 
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
-                                            relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
+                                                                  relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping(),
+                                                                  propertyMapping = if($routedElement.currentPropertyMapping->isEmpty(), | [], | $routedElement.currentPropertyMapping->at(0))));
   pair($alias,$path);
 }
 

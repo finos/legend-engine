@@ -443,6 +443,65 @@ function <<test.Test>> meta::relational::tests::projection::enumeration::testTds
   assertSameSQL('select case when "root".type in (\'FTC\', \'FTO\', \'FTE\') then \'yes\' else \'no\' end as "Type" from employeeTable as "root"', $result);
 }
 
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnNestedProject():Boolean[1]
+{
+  let result = execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    [col(row: meta::pure::tds::TDSRow[1] | $row.getEnum('Type'), 'Dominant Asset Category')]
+                  )->filter(
+                    row: meta::pure::tds::TDSRow[1] | $row.getEnum('Dominant Asset Category')->in([EmployeeType.CONTRACT, EmployeeType.FULL_TIME])
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 3);
+  assertEquals('CONTRACT,FULL_TIME,CONTRACT', $tds->columnValues('Dominant Asset Category')->map(e|$e->cast(@Enum)->id())->makeString(','));
+  assertSameSQL('select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTC\', \'FTO\', \'FTE\')', $result);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnNestedProjectSingleValue():Boolean[1]
+{
+  let result = execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    [col(row: meta::pure::tds::TDSRow[1] | $row.getEnum('Type'), 'Dominant Asset Category')]
+                  )->filter(
+                    row: meta::pure::tds::TDSRow[1] | $row.getEnum('Dominant Asset Category')->in(EmployeeType.FULL_TIME)
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 1);
+  assertEquals('FULL_TIME', $tds->columnValues('Dominant Asset Category')->map(e|$e->cast(@Enum)->id())->makeString(','));
+  let sql = $result->sqlRemoveFormatting();
+  assert($sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type in (\'FTE\')' || $sql == 'select "root".type as "Dominant Asset Category" from employeeTable as "root" where "root".type = \'FTE\'', | 'Unexpected SQL for single enum IN on nested project: ' + $sql);
+}
+
+function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsFilterWithGetEnumInOnNestedProjectWithExtraProjectionAndIf():Boolean[1]
+{
+  let result = execute(|Employee.all()->project(
+                    [x|$x.type],
+                    ['Type']
+                  )->project(
+                    [
+                      col(row: meta::pure::tds::TDSRow[1] | today(), 'RunDate'),
+                      col(row: meta::pure::tds::TDSRow[1] | $row.getEnum('Type'), 'Dominant Asset Category')
+                    ]
+                  )->filter(
+                    row: meta::pure::tds::TDSRow[1] | if($row.getEnum('Dominant Asset Category')->in(EmployeeType.FULL_TIME), | false, | true)
+                  ), employeeTestMapping, enumTestRuntime(), meta::relational::extension::relationalExtensions()
+                );
+
+  let tds = $result.values->at(0);
+  assertSize($tds.rows, 2);
+  assertSize($tds->columnValues('RunDate'), 2);
+  assertEquals('CONTRACT,CONTRACT', $tds->columnValues('Dominant Asset Category')->map(e|$e->cast(@Enum)->id())->makeString(','));
+  assertSameSQL('select cast(now() as date) as "RunDate", "root".type as "Dominant Asset Category" from employeeTable as "root" where case when "root".type in (\'FTE\') then false else true end', $result);
+}
+
 function <<test.Test>> meta::relational::tests::projection::enumeration::testTdsProjectWithEnumVarEquality():Boolean[1]
 {  
   let result =  execute({|let enum = if(5 > 3, | EmployeeType.CONTRACT, | EmployeeType.FULL_TIME);
