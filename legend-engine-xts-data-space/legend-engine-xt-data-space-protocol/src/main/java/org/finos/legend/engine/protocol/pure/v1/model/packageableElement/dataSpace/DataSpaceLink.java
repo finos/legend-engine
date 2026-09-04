@@ -1,4 +1,4 @@
-//  Copyright 2022 Goldman Sachs
+//  Copyright 2026 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,18 +14,14 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = DataSpaceSupportEmail.class, name = "email"),
-        @JsonSubTypes.Type(value = DataSpaceSupportCombinedInfo.class, name = "combined"),
-        @JsonSubTypes.Type(value = DataSpaceSupportFullInfo.class, name = "full")
-})
-public abstract class DataSpaceSupportInfo
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class DataSpaceLink
 {
-    public String documentationUrl;
     public SourceInformation sourceInformation;
+    public String label;
+    public String url;
 }
+
