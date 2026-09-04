@@ -47,32 +47,29 @@ public class Test_Relational_Databricks_Semistructured
         // the inline comments below. If a run produces a different error message the
         // executor will re-throw wrapped in an AssertionError so we don't silently mask
         // regressions.
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                // [needsInvestigation] Router bug: generated SQL references `Id`
-                // unqualified when both `blocks_1.Id` (from the exploded array) and
-                // `root.Id` (from the base row) are in scope after array explode + group-by.
-                // Needs an alias-injection pass in the aggregate router for exploded
-                // sub-selects, not a Databricks-specific fix.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::explode::testAggregationAggregateExplodedPropertyUsingGroupBy_Connection_1__Boolean_1_",
-                        "[AMBIGUOUS_REFERENCE]")
-                // [needsInvestigation] Filtering a semi-structured array then indexing
-                // it: the filtered value stays VARIANT, so the [] extract cannot descend
-                // into it (needs a complex STRUCT/ARRAY/MAP base).
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterAtIndex_Connection_1__Boolean_1_",
-                        "[INVALID_EXTRACT_BASE_FIELD_TYPE]")
-                // [needsInvestigation] filter+first+joinStrings over a semi-structured
-                // array: try_element_at receives a VARIANT rather than an ARRAY, so the
-                // subsequent transform cannot resolve.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::flattening::testSemiStructuredArrayFilterFirstJoinStrings_Connection_1__Boolean_1_",
-                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]")
-                // [needsInvestigation] parse_json is emitted over a column that is already
-                // VARIANT (not STRING) for the qualified-property join filter.
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]");
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty();
+                // testAggregationAggregateExplodedPropertyUsingGroupBy was quarantined here for an
+                // [AMBIGUOUS_REFERENCE] Spark error: GROUP BY rendered `Id` unqualified while both
+                // `blocks_1.Id` (exploded array alias) and `root.Id` (base row) were in scope. Fixed
+                // (2026-09-01) by rendering groupBy columns fully-qualified on Databricks
+                // (databricksExtension.pure: processSelectSQLQueryForDatabricks's `group by` call now
+                // passes supportsAliasInGroupBy=false, matching Trino/Presto/SQL Server/Oracle/Sybase
+                // ASE/DB2's existing handling of the same quirk) -- confirmed genuinely passing on a
+                // live-cluster run. Entry removed accordingly.
+                // Note: testSemiStructuredArrayFilterAtIndex, testSemiStructuredArrayFilterFirstJoinStrings,
+                // and testJoinOnSemiStructuredPropertyWithQPFilter were quarantined here on master (with the
+                // pre-fix error text) but were fixed and confirmed genuinely passing on Databricks this
+                // session (databricksExtension.pure: try_element_at rewrite, buildMapLambdaForDatabricks
+                // re-boxing, and the isSemiStructuredOperandForDatabricks parseJson dispatch, respectively)
+                // -- those fixes merged in unconflicted, so their manifest entries are correctly omitted here.
+                //
+                // testSemiStructuredUnionMappingWithBindingAndFilter and testSemiStructuredUnionMappingWithBinding
+                // were quarantined here as a confirmed shared-router bug (addMissingColumnIfUnion /
+                // processSemiStructuredRelationalPropertyMapping in pureToSQLQuery.pure /
+                // pureToSQLQuery_variant.pure, out of scope for this module). Post-merge with origin/master
+                // (2026-08-28), the safety check above ("Expected this test to fail... but it passed")
+                // fired for both: master's independent commits fixed the underlying shared-router bug, so
+                // both now genuinely pass on Databricks. Entries removed accordingly.
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));

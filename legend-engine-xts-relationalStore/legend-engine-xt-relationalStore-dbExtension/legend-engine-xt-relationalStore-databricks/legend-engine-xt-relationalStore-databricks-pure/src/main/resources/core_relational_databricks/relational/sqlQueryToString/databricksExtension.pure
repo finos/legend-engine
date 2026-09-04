@@ -2,6 +2,7 @@ import meta::relational::functions::sqlQueryToString::databricks::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
@@ -59,6 +60,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
+      joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
@@ -93,7 +95,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->at(0) + ' + INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
+    // Spark's 'INTERVAL <value> <unit>' literal syntax requires <value> to be a compile-time
+    // constant; it cannot take an arbitrary SQL expression (e.g. a computed window offset like
+    // 'lead(x) - 1'). make_interval(...) takes ordinary function arguments instead, so it accepts
+    // computed expressions as well as literals.
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->at(0) + ' + ' + adjustIntervalForDatabricks($p->at(1), $p->at(2))})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -123,7 +129,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
-    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='(locate(%s) - 1)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='array_join(collect_list(%s), %s)')),
@@ -147,6 +153,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as bigint)')),
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->transformPercentileDatabricks()})),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s, %s)')),
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_sub(%s, case when dayofweek(%s) = %s then 7 else dayofweek(%s) - %s end)', transform={p:String[1..2] | $p->formatMostRecentDatabricks('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
@@ -160,6 +167,51 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    // The shared default templates for variance/varianceSample handle a literal Pure collection
+    // argument (N>1 flattened args, same router mechanism that affects average/mode - see Group 7)
+    // by re-joining the flattened args into a bracket-list string, e.g. var_samp('[1.0,2.0,3.0]').
+    // Spark has no '[...]' array-literal syntax at all (hard PARSE_SYNTAX_ERROR), and even given
+    // valid array syntax, var_samp/var_pop are true row-aggregating functions that won't accept a
+    // single ARRAY argument. For the literal-array case, replicate the variance formula directly
+    // using Spark's aggregate() higher-order function (the same pattern already used for
+    // array_sum above) over a proper array(...) literal built from the N args. The N==1 (real
+    // column reference) case is left exactly as-is.
+    dynaFnToSql('variance',               $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [variancePopulationOrSampleDatabricks($p->init(), $p->last() == 'true')]
+    })),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [variancePopulationOrSampleDatabricks($p, true)]
+    })),
+    // Neither 'corr' nor 'mode' has native Spark aggregates that accept a literal Pure collection
+    // argument (same literal-array-vs-real-column ambiguity as variance/average above) - see
+    // corrDatabricksHelper for the literal-array Pearson-correlation rewrite.
+    dynaFnToSql('corr',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [corrDatabricksHelper($p)]
+    })),
+    dynaFnToSql('mode',                   $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        if($p->size() == 1,
+           | 'mode(' + $p->at(0) + ')',
+           | modeDatabricksHelper($p))
+    })),
+    // The shared default template ('avg(1.0 * %s)') has exactly one %s placeholder, assuming the
+    // sole Pure-level argument always renders as a single relational column reference - true for
+    // the Relation_Aggregate/Relation_Window forms. A literal Pure collection argument (e.g.
+    // average([5d,1.0,2,8,3])) instead gets each element flattened into its own rendered SQL string
+    // by the router's generic aggregate-argument handling, so N>1 args reach format() and it throws
+    // "Unused format args". A single rendered arg is unambiguously the real-column case (a column
+    // reference always renders as exactly one string); N>1 is unambiguously the literal-array case,
+    // for which the arithmetic mean can be computed directly from the N rendered literal strings.
+    dynaFnToSql('average',                $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        if($p->size() == 1,
+           | 'avg(1.0 * ' + $p->at(0) + ')',
+           | '((' + $p->joinStrings('+') + ') * 1.0 / ' + $p->size()->toString() + ')')
+    })),
+    // parseDate() always calls toTimestamp with a single fixed 'YYYY-MM-DD HH24:MI:SS' format literal
+    // (see processParseDate), which cannot describe the optional milliseconds/'Z'/offset suffixes or
+    // date-only strings parseDate actually needs to accept. The literal format is ignored here in favor
+    // of Spark's own flexible ISO-8601 timestamp/date string parsing (cast to TIMESTAMP), which handles
+    // all of those variants natively without needing a matching pattern per input shape.
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='cast(%s as TIMESTAMP)', transform={p:String[2] | [$p->at(0)]})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
@@ -181,7 +233,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('array_size',             $allStates,            ^ToSql(format='ifnull(size(%s), 0)')),
     dynaFnToSql('array_append',           $allStates,            ^ToSql(format='array_append(%s, %s)')),
     dynaFnToSql('array_position',         $allStates,            ^ToSql(format='ifnull(array_position(%s, %s) - 1, -1)')),
-    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='slice(%s, greatest(%s, 0) + 1, greatest(%s - %s, 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]})),
+    // Pure's slice(set, from, to) clamps each bound independently to >= 0 before computing length
+    // (e.g. [2,3,4,5]->slice(-1,10) == [2,3,4,5], from clamped to 0 - not "count from the end").
+    // Clamping only the difference (greatest(to - from, 0)) instead of each bound independently
+    // gives the wrong length whenever from/to are themselves negative.
+    // Pure's slice(set, from, to) errors when the (clamped) low bound is higher than the (clamped)
+    // high bound instead of silently returning an empty array; the message interpolates the clamped
+    // bound values actually used by the slice below. The from/to bounds must render as literals (not
+    // bind markers) since they appear in a WHEN condition.
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='(case when greatest(%s, 0) > greatest(%s, 0) then raise_error(concat(\'The low bound (\', cast(greatest(%s, 0) as string), \') can\'\'t be higher than the high bound (\', cast(greatest(%s, 0) as string), \') in a slice operation\')) else slice(%s, greatest(%s, 0) + 1, greatest(greatest(%s, 0) - greatest(%s, 0), 0)) end)', transform={vals:String[*] | [$vals->at(1), $vals->at(2), $vals->at(1), $vals->at(2), $vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]}, parametersWithinWhenClause = [false, true, true])),
     dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='slice(%s, greatest(%s, 0) + 1, greatest(size(%s) - greatest(%s, 0), 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(0), $vals->at(1)]})),
     dynaFnToSql('array_take',             $allStates,            ^ToSql(format='slice(%s, 1, greatest(%s, 0))')),
     dynaFnToSql('array_first',            $allStates,            ^ToSql(format='try_element_at(%s, 1)')),
@@ -192,15 +252,38 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->transformRangeDatabricks()})),
     dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='ifnull(array_contains(%s, %s), false)')),
     dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='array_distinct(%s)')),
-    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='array_join(cast(%s as ARRAY<STRING>), %s)')),
+    // A per-row (non-windowed) Variant->String[*] joinStrings (e.g. x.payload->toMany(@String)-
+    // >joinStrings(',')) routes here via processVariantJoinStrings, not through the windowed
+    // joinStrings path above. For the row where the Variant payload column holds a JSON null (not
+    // an array), this still renders the string "null" instead of Pure's expected joinStrings
+    // identity value, the empty string - see plan.md section 1e for the extensive (as of
+    // 2026-08-24, still unresolved) investigation: confirmed via direct SQL tracing that
+    // toMany(@String) lowers to a 'variantTo' DynaFunction wrapping this operand (processToMany,
+    // pureToSQLQuery.pure:4765), and a Databricks-specific 'variantTo' override using
+    // is_variant_null() DOES correctly select an "empty result" branch for this row (confirmed via
+    // a branch-marker experiment), but neither returning NULL nor a genuine empty array from that
+    // branch changes the final observed value - it renders as the string "null" in both cases,
+    // suggesting the bug is downstream of SQL generation (e.g. Java-side JDBC/TDS value mapping for
+    // Databricks VARIANT columns), not fixable via a dialect SQL template alone.
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='ifnull(array_join(cast(%s as ARRAY<STRING>), %s), \'\')')),
     dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='flatten(%s)')),
 
     // Bit functions
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ %s)')),
     dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
-    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='shiftleft(%s, %s)')),
-    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='shiftright(%s, %s)')),
+    // Spark's shiftleft/shiftright take the shift amount modulo 32 when the base operand is INT,
+    // modulo 64 when it's BIGINT (matching Java/Scala '<<' truncation rules). A bare integer literal
+    // operand infers as 32-bit INT, so e.g. shiftleft(1, 46) silently computes 1 << (46 mod 32) = 1
+    // << 14 instead of the correct 64-bit 1 << 46. Casting to bigint forces 64-bit shift semantics
+    // regardless of whether the operand renders as a literal or a DECIMAL(19,0)-typed column.
+    // Spark's shiftleft/shiftright silently wrap the shift amount modulo 64 instead of erroring for
+    // out-of-range values, so Pure's expected "max bits allowed is 62" validation is added explicitly.
+    // The shift-amount parameter is reused three times (bounds check, twice) and the value parameter
+    // once; the shift amount must render as a literal (not a bind marker) since it appears in a WHEN
+    // condition.
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(case when %s < 0 or %s > 62 then raise_error(\'Unsupported number of bits to shift - max bits allowed is 62\') else shiftleft(cast(%s as bigint), %s) end)', transform={p:String[2] | [$p->at(1), $p->at(1), $p->at(0), $p->at(1)]}, parametersWithinWhenClause = [false, true])),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(case when %s < 0 or %s > 62 then raise_error(\'Unsupported number of bits to shift - max bits allowed is 62\') else shiftright(cast(%s as bigint), %s) end)', transform={p:String[2] | [$p->at(1), $p->at(1), $p->at(0), $p->at(1)]}, parametersWithinWhenClause = [false, true])),
     dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='(%s ^ %s)')),
 
     // Variant/semi-structured functions
@@ -209,7 +292,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='map(%s)', transform={p:String[*] | $p->transformToVariantObjectDatabricks()})),
     dynaFnToSql('keys',                   $allStates,            ^ToSql(format='map_keys(%s)')),
     dynaFnToSql('values',                 $allStates,            ^ToSql(format='map_values(%s)')),
-    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='map_concat(%s, %s)')),
+    // put/putAll are semantically "override if key exists", desugared to mapConcatenate(oldMap,
+    // newMap). Spark's map_concat (like the map(...) literal constructor) throws DUPLICATED_MAP_KEY
+    // by default when the same key appears in both inputs - there is no last-value-wins default
+    // short of a session-wide spark.sql.mapKeyDedupPolicy config change, which would affect every
+    // other query sharing the session. Instead, strip from the old map any key also present in the
+    // new map before concatenating, so the new map's value always wins on overlap.
+    dynaFnToSql('mapConcatenate',         $allStates,            ^ToSql(format='%s', transform={p:String[2] |
+        'map_concat(map_filter(' + $p->at(0) + ', (k, v) -> not array_contains(map_keys(' + $p->at(1) + '), k)), ' + $p->at(1) + ')'
+    })),
     dynaFnToSql('parseBoolean',           $allStates,            ^ToSql(format='cast(%s as BOOLEAN)')),
 
     // Other functions
@@ -224,11 +315,230 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 // so it is made here rather than inside a `ToSql` transform.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
+   if($func->isQuantifiedComparisonForDatabricks(),
+      | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$func->rewriteQuantifiedComparisonForDatabricks($sgc)]})),
+      | $func->dynaFuncDispatchForDatabricksNonQuantified($sgc, $baseDispatch));
+}
+
+// The shared router lowers equalAny/equalAll/greaterThanAny/greaterThanAll/lessThanAny/lessThanAll/
+// greaterThanEqualAny/greaterThanEqualAll/lessThanEqualAny/lessThanEqualAll to ANSI quantified-comparison
+// syntax (`value = any (subquery)` / `value > all (subquery)`) - processRelationQuantifiedComparison in
+// pureToSQLQuery.pure represents the quantifier as an anyOf/allOf DynaFunction wrapping the sub-select,
+// rather than fusing it into the comparator name. Databricks/Spark's parser rejects this syntax outright
+// ([PARSE_SYNTAX_ERROR]) - Spark has no quantified-comparison operator at all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isQuantifiedComparisonForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.parameters->size() == 2
+      && $func.parameters->at(1)->instanceOf(DynaFunction)
+      && $func.parameters->at(1)->cast(@DynaFunction).name->in(['anyOf', 'allOf']);
+}
+
+// Rewrites to the semantically-equivalent EXISTS/NOT EXISTS form Spark supports, reusing the same
+// 'exists'/'not' DynaFunctions that meta::pure::functions::relation::exists()/in() already render
+// correctly on every dialect (see extensionDefaults.pure's generic 'exists' registration) - this is not
+// a new SQL shape, just the same one built by hand instead of by processRelationExists.
+//
+//   x <cmp> ANY (sub)  ⟺  EXISTS (sub WHERE x <cmp> col)
+//   x <cmp> ALL (sub)  ⟺  NOT EXISTS (sub WHERE NOT (x <cmp> col))  =  NOT EXISTS (sub WHERE x <negated cmp> col)
+//
+// Both equivalences hold exactly (not just "happens to produce the same boolean result") once the
+// sub-select's column has no nulls, which processRelationQuantifiedComparison already guarantees before
+// Databricks ever sees this tree (excludeNullsFromQuantifiedSubSelect / excludeNullsFromSearchedColumn).
+//
+// A negated equal/equalAll (e.g. testEqualAny_Negated) never reaches here as a literal 'notEqual' node:
+// the shared processNot (dbExtension.pure) redirects non-literal 'equal' negation to a renamed
+// 'nullSafeNotEqual' DynaFunction and re-dispatches it, so that renamed shape is what actually needs
+// recognizing, with the negation baked in directly (comparatorInfoForDatabricksQuantifiedComparison
+// below). A negated inequality (e.g. testGreaterThanAll_Negated), by contrast, is never renamed -
+// processNot instead just prepends the literal text 'not ' in front of this function's own (non-negated)
+// rendering, so no special-casing is needed there: composing 'not ' with an already-correct
+// 'not exists (...)' yields a harmless (if slightly redundant) 'not not exists (...)', which is valid SQL
+// and evaluates back to the exact intended result.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::rewriteQuantifiedComparisonForDatabricks(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let value = $func.parameters->at(0);
+   let quantifierFunc = $func.parameters->at(1)->cast(@DynaFunction);
+   let subSelect = $quantifierFunc.parameters->toOne()->cast(@SelectSQLQuery);
+   let isAny = $quantifierFunc.name == 'anyOf';
+
+   let comparatorInfo = $func.name->comparatorInfoForDatabricksQuantifiedComparison();
+   let baseComparator = $comparatorInfo.first;
+   let isNegatedAtNode = $comparatorInfo.second;
+
+   let effectiveComparator = if($isAny, | $baseComparator, | $baseComparator->negateComparatorForDatabricksQuantifiedComparison());
+   let useOuterNot = if($isAny, | $isNegatedAtNode, | !$isNegatedAtNode);
+
+   // The Relation<Z=(?:U)> signature guarantees a single column (see processRelationQuantifiedComparison).
+   let col = $subSelect.columns->toOne()->match([a: Alias[1] | $a.relationalElement, r: RelationalOperationElement[1] | $r]);
+   let comparison = ^DynaFunction(name = $effectiveComparator, parameters = [$value, $col]);
+
+   // A correlated filter on the sub-select's own (possibly aggregated) column belongs in HAVING rather
+   // than WHERE when the sub-select is grouped, mirroring excludeNullsFromSearchedColumn's same choice.
+   let filteredSub = if($subSelect.groupBy->isEmpty(),
+                        | ^$subSelect(filteringOperation = $subSelect.filteringOperation->concatenate($comparison)->andFilters($sgc.extensions)),
+                        | ^$subSelect(havingOperation = $subSelect.havingOperation->concatenate($comparison)->andFilters($sgc.extensions)));
+
+   // A correlated EXISTS never needs the inner columns, and `select 1` keeps it valid when the inner
+   // relation is a group-by (mirrors processRelationExists).
+   let existsExpr = ^DynaFunction(name = 'exists', parameters = ^$filteredSub(columns = [^Literal(value = 1)]));
+
+   (if($useOuterNot, | ^DynaFunction(name = 'not', parameters = $existsExpr), | $existsExpr))->processOperation($sgc);
+}
+
+// Maps a comparator DynaFunction name to (its ANY-quantifier base comparator, whether the name already
+// bakes in a negation) - see the note on rewriteQuantifiedComparisonForDatabricks above for why 'equal'
+// negation surfaces as a renamed 'nullSafeNotEqual' node here rather than as a literal 'notEqual' one.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::comparatorInfoForDatabricksQuantifiedComparison(name:String[1]):Pair<String,Boolean>[1]
+{
+   [
+      pair('equal',            pair('equal', false)),
+      pair('notEqual',         pair('equal', true)),
+      pair('nullSafeEqual',    pair('equal', false)),
+      pair('nullSafeNotEqual', pair('equal', true)),
+      pair('greaterThan',      pair('greaterThan', false)),
+      pair('greaterThanEqual', pair('greaterThanEqual', false)),
+      pair('lessThan',         pair('lessThan', false)),
+      pair('lessThanEqual',    pair('lessThanEqual', false))
+   ]->newMap()->get($name)
+    ->toOne('Unexpected comparator for a Databricks quantified-comparison rewrite: ' + $name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::negateComparatorForDatabricksQuantifiedComparison(name:String[1]):String[1]
+{
+   [
+      pair('equal',            'notEqual'),
+      pair('greaterThan',      'lessThanEqual'),
+      pair('greaterThanEqual', 'lessThan'),
+      pair('lessThan',         'greaterThanEqual'),
+      pair('lessThanEqual',    'greaterThan')
+   ]->newMap()->get($name)
+    ->toOne('Unexpected base comparator to negate for a Databricks quantified-comparison rewrite: ' + $name);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
+{
    let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
    if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = $variantOverride->toOne()),
-      | $baseDispatch->eval($func, $sgc)
+      | // Databricks/Spark has no direct `CAST(MAP<..> AS VARIANT)`. A bare Map value passed to
+        // `toVariant()` renders as `cast(map(...) as VARIANT)` by default, which Spark rejects
+        // (DATATYPE_MISMATCH.CAST_WITHOUT_SUGGESTION). Route a Map operand through a JSON round-trip
+        // instead, which Databricks does support for constructing a VARIANT from a MAP.
+        if($func.name == 'toVariant' && $func.parameters->size() == 1 && $func.parameters->at(0)->isMapOperandForDatabricks(),
+           | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='parse_json(to_json(%s))')),
+           | // Databricks represents Pure Integer as DECIMAL(19,0) for a genuine stored/declared
+             // column, but as BIGINT in computed/array contexts (parseInteger, range(), etc. - see
+             // the comments on those elsewhere in this file). array_position(ARRAY<BIGINT>, ...)
+             // then fails Spark's strict same-element-type check when the scalar search value is a
+             // real Integer column (DECIMAL(19,0)). Only cast the scalar operand when it is actually
+             // Integer-typed, so ARRAY<STRING>/ARRAY<DOUBLE> callers are untouched.
+             if($func.name == 'array_position' && $func.parameters->size() == 2
+                  && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->isNotEmpty()
+                  && meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(1), false)->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
+                | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='ifnull(array_position(%s, cast(%s as bigint)) - 1, -1)')),
+                | // percentile_disc (continuous=false) should return a value of its input's own type,
+                  // but the Databricks-generated computed-array branch of transformPercentileDatabricks
+                  // passes the exploded array element through uncast, and Spark's percentile_disc comes
+                  // back as a DOUBLE for an Integer-typed input. The element type is only observable from
+                  // the DynaFunction node (not the rendered SQL text), so, as with array_position above,
+                  // the decision is made here rather than inside a ToSql transform. Continuous vs discrete
+                  // is instead checked downstream from the rendered args text (see
+                  // castIntegerPercentileDiscForDatabricks), since it is already reliably available there.
+                  if($func.name == 'percentile' && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isIntegerLikeForDatabricksPercentile(),
+                     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s', transform={p:String[*] | [$p->transformPercentileDatabricks()->castIntegerPercentileDiscForDatabricks($p)]})),
+                     | // The shared toVariantFriendlyValue() renders a genuinely empty, untyped literal
+                       // collection (e.g. []) as `cast(toVariantList(), array<VARIANT>)`, since Nil's
+                       // relational type is SemiStructured. VARIANT is not an orderable type in Spark, so
+                       // array_distinct/sort(default, no comparator - which lowers to the 'array_sort'
+                       // DynaFunction, see pureToSQLQuery_variant.pure) fail with INVALID_ORDERING_TYPE
+                       // even though the array is empty and its element type is unobservable. This is
+                       // scoped to only these two consumers (rather than a generic 'cast' override) because
+                       // other VARIANT-array consumers - e.g. array_append, used when folding into an
+                       // initially-empty accumulator - legitimately rely on the bare VARIANT placeholder
+                       // accepting any later-appended element type; forcing a concrete STRING placeholder
+                       // there breaks e.g. appending a numeric value (DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES).
+                       if($func.name->in(['array_distinct', 'array_sort']) && $func.parameters->size() == 1
+                            && $func.parameters->at(0)->instanceOf(DynaFunction)
+                            && $func.parameters->at(0)->cast(@DynaFunction).name == 'cast'
+                            && $func.parameters->at(0)->cast(@DynaFunction).parameters->size() == 2
+                            && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->instanceOf(DynaFunction)
+                            && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).name == 'toVariantList'
+                            && $func.parameters->at(0)->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).parameters->isEmpty(),
+                          | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format=$func.name + '(cast(array() as ARRAY<STRING>))', transform={p:String[1] | []})),
+                          | // parseJson()'s argument is normally a STRING column holding raw JSON text.
+                            // Databricks/Spark's parse_json strictly requires a STRING input
+                            // (DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE otherwise); a column declared
+                            // SEMISTRUCTURED in the Pure relational model is physically stored as native
+                            // VARIANT on Databricks (unlike other dialects, where it is just text), so
+                            // it is already the parsed value and must pass through unchanged rather than
+                            // being re-wrapped in parse_json.
+                            if($func.name == 'parseJson' && $func.parameters->size() == 1 && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
+                               | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format='%s')),
+                               | $baseDispatch->eval($func, $sgc)
+                            )
+                       )
+                  )
+             )
+        )
    );
+}
+
+// True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a
+// zero-scale Decimal - Databricks represents Pure Integer as DECIMAL(19,0) for a genuine
+// stored/declared column, but as BIGINT in computed/array contexts - see the comments on
+// array_position above). The computed-array form (e.g. range(10)->map(x|x+1)) renders the operand
+// as a MapRelationalLambda wrapping the per-element mapping lambda; the shared inferRelationalType
+// has no case for the lambda's own bound-parameter node (RelationalLambdaParameter) and throws
+// ('Not supported yet') if asked to infer through it, so the lambda body is walked directly here
+// instead of delegating to inferRelationalType for that shape.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isIntegerLikeForDatabricksPercentile(op:RelationalOperationElement[1]):Boolean[1]
+{
+   if($op->instanceOf(meta::relational::metamodel::RelationalLambda),
+      | $op->cast(@meta::relational::metamodel::RelationalLambda).body->isIntegerPreservingLambdaBodyForDatabricksPercentile(),
+      | let inferred = meta::relational::functions::typeInference::inferRelationalType($op, false);
+        $inferred->isNotEmpty() && (
+           $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer) ||
+           $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::BigInt) ||
+           ($inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Decimal) && $inferred->toOne()->cast(@meta::relational::metamodel::datatype::Decimal).scale == 0)
+        );
+   );
+}
+
+// Conservatively recognizes an Integer-preserving arithmetic expression over a lambda's own
+// (Integer-typed) bound parameter and Integer literals, without delegating to inferRelationalType
+// (which cannot introspect RelationalLambdaParameter - see isIntegerLikeForDatabricksPercentile).
+// Deliberately excludes divide/pow, which can promote Integer operands to Float in Pure.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isIntegerPreservingLambdaBodyForDatabricksPercentile(body:RelationalOperationElement[1]):Boolean[1]
+{
+   if($body->instanceOf(meta::relational::metamodel::RelationalLambdaParameter),
+      | let paramType = $body->cast(@meta::relational::metamodel::RelationalLambdaParameter).type;
+        $paramType->instanceOf(meta::relational::metamodel::datatype::Integer) ||
+        $paramType->instanceOf(meta::relational::metamodel::datatype::BigInt) ||
+        ($paramType->instanceOf(meta::relational::metamodel::datatype::Decimal) && $paramType->cast(@meta::relational::metamodel::datatype::Decimal).scale == 0);
+      ,
+      | if($body->instanceOf(Literal),
+           | $body->cast(@Literal).value->instanceOf(Integer),
+           | $body->instanceOf(DynaFunction)
+                && $body->cast(@DynaFunction).name->in(['plus', 'minus', 'times', 'mod', 'abs'])
+                && $body->cast(@DynaFunction).parameters->forAll(p | $p->isIntegerPreservingLambdaBodyForDatabricksPercentile());
+      )
+   );
+}
+
+// Wraps the rendered percentile SQL in an integer-compatible cast when the call is discrete
+// (continuous=false) - percentile_cont always interpolates and must keep its native DOUBLE result.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::castIntegerPercentileDiscForDatabricks(sql:String[1], args:String[*]):String[1]
+{
+   let continuous = if($args->size() > 3, | $args->at(3), | 'true');
+   if($continuous == 'false', | 'cast(' + $sql + ' as decimal(19,0))', | $sql);
+}
+
+// True when the operand renders to a Databricks MAP value (e.g. the `cast(map(...), MAP<..>)`
+// produced when building a Pure Map literal).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isMapOperandForDatabricks(op:RelationalOperationElement[1]):Boolean[1]
+{
+   let inferred = meta::relational::functions::typeInference::inferRelationalType($op, false);
+   $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Object);
 }
 
 // True when the operand renders to a Databricks VARIANT value: a semi-structured navigation, or any
@@ -258,7 +568,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       pair('array_size',        ^ToSql(format='ifnull(size(cast(%s as array<variant>)), 0)')),
       pair('array_append',      ^ToSql(format='array_append(cast(%s as array<variant>), cast(%s as variant))')),
       pair('array_position',    ^ToSql(format='ifnull(array_position(cast(%s as array<variant>), cast(%s as variant)) - 1, -1)')),
-      pair('array_slice',       ^ToSql(format='slice(cast(%s as array<variant>), greatest(%s, 0) + 1, greatest(%s - %s, 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]})),
+      pair('array_slice',       ^ToSql(format='(case when greatest(%s, 0) > greatest(%s, 0) then raise_error(concat(\'The low bound (\', cast(greatest(%s, 0) as string), \') can\'\'t be higher than the high bound (\', cast(greatest(%s, 0) as string), \') in a slice operation\')) else slice(cast(%s as array<variant>), greatest(%s, 0) + 1, greatest(greatest(%s, 0) - greatest(%s, 0), 0)) end)', transform={vals:String[*] | [$vals->at(1), $vals->at(2), $vals->at(1), $vals->at(2), $vals->at(0), $vals->at(1), $vals->at(2), $vals->at(1)]}, parametersWithinWhenClause = [false, true, true])),
       pair('array_drop',        ^ToSql(format='slice(cast(%s as array<variant>), greatest(%s, 0) + 1, greatest(size(cast(%s as array<variant>)) - greatest(%s, 0), 0))', transform={vals:String[*] | [$vals->at(0), $vals->at(1), $vals->at(0), $vals->at(1)]})),
       pair('array_take',        ^ToSql(format='slice(cast(%s as array<variant>), 1, greatest(%s, 0))')),
       pair('array_first',       ^ToSql(format='try_element_at(cast(%s as array<variant>), 1)')),
@@ -293,6 +603,49 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
   format('date_format(%s,%s)', [$params->at(0), $sqlFmt]);
 }
 
+// percentile_cont's ORDER BY expression must resolve to a NUMERIC type. Databricks rejects the
+// default template unchanged when the ordering column is a BIGINT/ARRAY-derived expression (e.g.
+// from a fold/transform lambda) with DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE, so the column is cast
+// to DOUBLE first. Booleans here render as bare `true`/`false` per getLiteralProcessorsForDatabricks.
+//
+// args->at(0) is usually a per-row scalar column reference (e.g. from the Relation_Window/
+// Relation_Aggregate forms), but the plain (non-relation) percentile() call over a computed
+// collection - e.g. percentile(range(10)->map(x|x+1), 0.75) - renders it to a full ARRAY-typed SQL
+// expression instead (Databricks' own range()/transform() codegen: a nested CASE/sequence/transform
+// call). Blindly cast(<array-expr> as DOUBLE) fails DATATYPE_MISMATCH.CAST_WITHOUT_SUGGESTION on an
+// ARRAY, so that case is instead routed through an explode()-based rewrite so percentile_cont/disc
+// gets its usual per-row scalar ordering column. A plain column reference renders as a bare
+// (optionally backticked/dotted) identifier with no function-call parens, unlike a computed
+// expression - that shape is used to tell the two cases apart, mirroring the same distinction
+// 'adjust' (adjustIntervalForDatabricks) already relies on elsewhere in this file.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformPercentileDatabricks(args: String[*]): String[1]
+{
+   let arg0       = $args->at(0);
+   let percentile = $args->at(1);
+   let ascending  = if($args->size() > 2, | $args->at(2), | 'true');
+   let continuous = if($args->size() > 3, | $args->at(3), | 'true');
+
+   assert($ascending->in(['true', 'false']), 'Ascending argument for percentile should be true or false. Got: ' + $ascending);
+   assert($continuous->in(['true', 'false']), 'Continuous argument for percentile should be true or false. Got: ' + $continuous);
+
+   if(!$arg0->contains('('),
+      | $percentile->percentileFuncAndOrderDatabricks($ascending, $continuous, 'cast(' + $arg0 + ' as DOUBLE)'),
+      | // percentile_disc returns a value of the ORDER BY expression's own type (it picks an actual
+        // row value, not an interpolated one) - casting to DOUBLE here would turn an Integer input
+        // back into a Double. Only percentile_cont needs the DOUBLE cast (for its interpolation).
+        let orderExpr = if($continuous == 'true', | 'cast(v as DOUBLE)', | 'v');
+        '(select ' + $percentile->percentileFuncAndOrderDatabricks($ascending, $continuous, $orderExpr) + ' from (select explode(' + $arg0 + ') as v))';
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::percentileFuncAndOrderDatabricks(percentile:String[1], ascending:String[1], continuous:String[1], orderExpr:String[1]):String[1]
+{
+   let func  = if($continuous == 'true', | 'percentile_cont', | 'percentile_disc');
+   let order = if($ascending == 'true', | 'asc', | 'desc');
+
+   $func + '(' + $percentile + ') within group (order by ' + $orderExpr + ' ' + $order + ')';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRangeDatabricks(params:String[3]):String[1]
 {
    // Pure/Snowflake `range` treats stop as EXCLUSIVE; Databricks `sequence` treats it as INCLUSIVE and
@@ -302,10 +655,91 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    let stop = $params->at(1);
    let step = $params->at(2);
    'case ' +
-   'when ' + $step + ' = 0 then sequence(' + $start + ', ' + $stop + ', ' + $step + ') ' +
+   'when ' + $step + ' = 0 then raise_error(\'range step must not be 0\') ' +
    'when ' + $step + ' > 0 and ' + $start + ' < ' + $stop + ' then sequence(' + $start + ', ' + $stop + ' - 1, ' + $step + ') ' +
    'when ' + $step + ' < 0 and ' + $start + ' > ' + $stop + ' then sequence(' + $start + ', ' + $stop + ' + 1, ' + $step + ') ' +
    'else cast(array() as array<bigint>) end';
+}
+
+// A single arg is a real per-row column reference (always renders to exactly one string) - keep
+// the plain var_samp/var_pop(column) form unchanged. N>1 args is the literal-Pure-collection case;
+// build the array from the N rendered literal strings and compute variance directly via Spark's
+// aggregate() higher-order function (same pattern as array_sum above), since var_samp/var_pop
+// cannot take a single ARRAY argument.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::variancePopulationOrSampleDatabricks(values:String[*], sample:Boolean[1]):String[1]
+{
+   if($values->size() == 1,
+      | if($sample, | 'var_samp(' + $values->at(0) + ')', | 'var_pop(' + $values->at(0) + ')');
+      ,
+      | let arr = 'array(' + $values->joinStrings(',') + ')';
+        let n = $values->size()->toString();
+        let mean = '(aggregate(' + $arr + ', cast(0 as double), (acc, x) -> acc + x) / ' + $n + ')';
+        let sumSquares = 'aggregate(' + $arr + ', cast(0 as double), (acc, x) -> acc + power(x - ' + $mean + ', 2))';
+        let denominator = if($sample, | '(' + $n + ' - 1)', | $n);
+        $sumSquares + ' / ' + $denominator;
+   );
+}
+
+// 2 args is the real column-pair case (Relation_Aggregate/Relation_Window forms via rowMapper) -
+// Spark's native corr(%s, %s) applies unchanged. A literal-array pair (e.g. corr([1,2],[10,20]))
+// flattens both arrays into one combined list of rendered element strings, so N>2 here is
+// unambiguously the literal-array case: the first half is series A, the second half is series B
+// (both arrays are always the same length for a well-formed call). Pearson's correlation is
+// computed directly from the paired elements - population covariance over the product of
+// population standard deviations - without needing any Spark array/aggregate function, since the
+// element count is already known at SQL-generation time. N==1 means one array was empty (e.g.
+// corr([1],[])), which Pure's corr() defines as no correlation ([]); NULL is SQL's equivalent of
+// that empty optional.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::corrDatabricksHelper(values:String[*]):String[1]
+{
+   if($values->size() == 2,
+      | 'corr(' + $values->at(0) + ', ' + $values->at(1) + ')',
+      | if($values->size() == 1,
+           | 'cast(null as double)',
+           | let n = ($values->size() / 2)->floor();
+             let seriesA = $values->take($n);
+             let seriesB = $values->drop($n);
+             let meanA = '((' + $seriesA->joinStrings('+') + ') * 1.0 / ' + $n->toString() + ')';
+             let meanB = '((' + $seriesB->joinStrings('+') + ') * 1.0 / ' + $n->toString() + ')';
+             let sumProd = range($n)->map(i | '((' + $seriesA->at($i) + ' - ' + $meanA + ') * (' + $seriesB->at($i) + ' - ' + $meanB + '))')->joinStrings('+');
+             let sumSqA = range($n)->map(i | 'power((' + $seriesA->at($i) + ' - ' + $meanA + '), 2)')->joinStrings('+');
+             let sumSqB = range($n)->map(i | 'power((' + $seriesB->at($i) + ' - ' + $meanB + '), 2)')->joinStrings('+');
+             '((' + $sumProd + ') / sqrt((' + $sumSqA + ') * (' + $sumSqB + ')))';
+        )
+   );
+}
+
+// meta::pure::functions::math::mode's native semantics (core_functions_standard/math/aggregator/mode.pure)
+// group elements by numeric equality (Integer 3 and Float 3.0 count as the same value) and, when
+// tied, the winning VALUE's returned Pure TYPE depends on argument order: sorting is stable, so equal
+// values keep their original relative order, and the accumulator's numMax is overwritten with the raw
+// current element on every element that pushes the running count to a new strictly-higher maximum -
+// meaning the final type is whichever tied instance most recently set a new max, not simply "the first"
+// or "the majority type". A Spark array/aggregate is homogeneously typed, so pushing this down as
+// mode(array(3, 3.0, 3, 2, 2)) computes the correct value but always returns it coerced to DOUBLE (see
+// 1c status notes in plan.md). Since a literal Pure collection is fully known at SQL-generation time,
+// this instead reimplements the native sort-then-fold algorithm directly in Pure against the N already-
+// rendered literal strings, and just emits the winning instance's own rendered string as the result -
+// no Spark computation needed at all, so no type information is ever lost to a common SQL array type.
+Class <<access.private>> meta::relational::functions::sqlQueryToString::databricks::ModeAccumulator
+{
+   numMax: String[1];
+   maxCount: Integer[1];
+   prevValue: Float[1];
+   prevCount: Integer[1];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::modeDatabricksHelper(values:String[*]):String[1]
+{
+   let sorted = $values->map(v | pair($v->parseFloat(), $v))->sortBy(p | $p.first);
+   let result = $sorted->fold({x, y |
+        let currCount = if($x.first == $y.prevValue, | $y.prevCount + 1, | 1);
+        if($currCount > $y.maxCount,
+           | ^$y(numMax = $x.second, maxCount = $currCount, prevValue = $x.first, prevCount = $currCount),
+           | ^$y(prevValue = $x.first, prevCount = $currCount)
+        );
+     }, ^ModeAccumulator(numMax = '', maxCount = 0, prevValue = 0.0, prevCount = 0));
+   $result.numMax;
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
@@ -347,12 +781,61 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST') , | ''))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
-        |$w.window.frame->toOne()->processWindowFrame($sgc),
+        |$w.window.frame->toOne()->processWindowFrameForDatabricks($sgc),
         |'');
-   $w.func->processOperation($sgc) +
-   ' OVER (' +
-   [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ') +
-   + ')';
+   let windowSpec = [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ');
+
+   // joinStrings renders as the two-level-nested array_join(collect_list(x), sep) (see the
+   // 'joinStrings' dynaFn registration below). The OVER clause must attach to collect_list, the
+   // actual row-set aggregate, not to the outer array_join scalar wrapper - appending OVER after
+   // the whole rendered expression (as done generically below) misplaces it and Spark reports
+   // MISSING_GROUP_BY, since array_join(...) OVER (...) looks like a non-aggregated projection.
+   if($w.func->instanceOf(DynaFunction) && $w.func->cast(@DynaFunction).name == 'joinStrings',
+      | let dynaFunc = $w.func->cast(@DynaFunction);
+        let collectExpr = $dynaFunc.parameters->at(0)->processOperation($sgc);
+        let separatorExpr = $dynaFunc.parameters->at(1)->processOperation($sgc);
+        // A row-window whose collected values are all null/absent (e.g. a null/empty Variant array
+        // per row) makes array_join/collect_list return SQL NULL, but Pure's joinStrings identity for
+        // "nothing to join" is the empty string, not null.
+        'ifnull(array_join(collect_list(' + $collectExpr + ') OVER (' + $windowSpec + '), ' + $separatorExpr + '), \'\')';
+      ,
+      | $w.func->processOperation($sgc) +
+        ' OVER (' +
+        $windowSpec +
+        + ')';
+   );
+}
+
+// The shared default processFrameValue hard-fails on FrameIntervalValue ('Window function with
+// range frame using interval is not supported for this database type'). Databricks/Spark SQL does
+// support RANGE BETWEEN INTERVAL n unit PRECEDING/FOLLOWING window frames, so this overrides just
+// that one arm - mirroring DuckDB's/Snowflake's equivalent overrides - using the same singular-unit
+// mapToDBUnitType() convention the 'adjust'/dateDiff functions in this file already rely on.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processFrameValueForDatabricks(frameValue:meta::relational::metamodel::FrameValue[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $frameValue->match([
+      u: meta::relational::metamodel::UnboundedFrameValue[1]   | 'UNBOUNDED ' + $u.direction->processFrameValueDirection(),
+      c: meta::relational::metamodel::FrameCurrentRowValue[1]  | 'CURRENT ROW',
+      i: meta::relational::metamodel::FrameIntervalValue[1]    | 'INTERVAL ' + $i.value->processOperation($sgc) + ' ' + $i.durationUnit->toString()->mapToDBUnitType() + ' ' + $i.direction->processFrameValueDirection(),
+      l: meta::relational::metamodel::FrameLiteralValue[1]     | $l.value->processOperation($sgc) + ' ' + $l.direction->processFrameValueDirection()
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowFrameForDatabricks(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
+   // Spark requires both RANGE frame bounds to be the same interval type (e.g. both SECOND, or
+   // both DAY) - 'RANGE BETWEEN INTERVAL 1 SECOND FOLLOWING AND INTERVAL 1 DAY FOLLOWING' fails
+   // with DATATYPE_MISMATCH.SPECIFIED_WINDOW_FRAME_DIFF_TYPES. There is no single-unit rewrite that
+   // preserves both bounds' distinct calendar semantics (a DAY offset isn't a fixed number of
+   // SECONDs), so mixed-unit interval frames keep the original "not supported" behavior.
+   if($frame.offsetFrom->instanceOf(meta::relational::metamodel::FrameIntervalValue)
+        && $frame.offsetTo->instanceOf(meta::relational::metamodel::FrameIntervalValue)
+        && $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit != $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit,
+      | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString()); '';
+      ,
+      | $frameType + ' ' + $frame.offsetFrom->processFrameValueForDatabricks($sgc) + ' AND ' + $frame.offsetTo->processFrameValueForDatabricks($sgc);
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
@@ -362,16 +845,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSelectSQLQueryForDatabricks(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
-  assertEmpty($s.pivot, 'pivot is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let qualifyStr = if($s.qualifyOperation->isEmpty(), |'', |$s.qualifyOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
-  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if($s.data == [],|'',
+    | ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)
+        + if($s.pivot->isEmpty(), | '', | processPivotForDatabricks($s, $s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions))
+  ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(',')) +
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(',')) +
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if (eq($qualifyStr, ''), |'', | ' ' + $format.separator + 'qualify ' + $qualifyStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(',')) +
@@ -384,6 +869,50 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       processOffsetDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_,
       processSliceDatabricks_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_
   );
+}
+
+// Spark SQL's PIVOT clause requires the IN-list values to be literal constants
+// (NON_LITERAL_PIVOT_VALUES otherwise) - dynamic pivot (an ANY-ORDER-BY-style IN-list) has no
+// equivalent on Databricks, unlike Snowflake/DuckDB. Static pivot (StaticPivot.values : Literal[1..*])
+// is fully within Spark's grammar, so only that case is implemented. The dynamic-pivot message is
+// deliberately kept identical to the original blanket message (rather than a more specific one) -
+// every dynamic pivot test already has a manifest exclusion recorded against that exact text from
+// before pivot support existed at all, and changing the message would turn those already-recorded,
+// still-genuinely-unsupported failures into manifest mismatches.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processPivotForDatabricks(s:SelectSQLQuery[1], p:Pivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+   $p->match([
+      staticPivot: StaticPivot[1] | processStaticPivotForDatabricks($s, $staticPivot, $dbConfig, $format, $config, $extensions),
+      dynamicPivot: Pivot[1] | fail('pivot is not supported'); '';
+   ]);
+}
+
+// Unlike Snowflake, Spark's PIVOT clause has no derived-table-level `AS alias(col1, col2, ...)`
+// rename form - column naming is controlled entirely by the per-value `[AS] column_alias` inside
+// the `IN (...)` list. With a single aggregate expression (true for every Legend static pivot, which
+// has exactly one aggColumns entry), Spark names the pivoted output column exactly that alias (no
+// `alias_aggColumnAlias` concatenation, which only applies with 2+ aggregates).
+//
+// The per-value alias text must be the exact same '"\'<value>__|__<aggName>\'"' string the shared,
+// dialect-agnostic processStaticPivot (pureToSQLQuery.pure) already bakes into the resulting
+// TdsSelectSqlQuery's outer ColumnName references (see newPivotedColumns there) - that shared code
+// is not dialect-aware, so it always builds downstream column references assuming this exact
+// (Snowflake-shaped) name text, regardless of which store renders the PIVOT clause itself. Using a
+// "cleaner" alias here would make Databricks' actual output column name diverge from what the outer
+// query then tries to select by name. dbConfig.identifierProcessor (backtick-quoting) is applied to
+// this same string on both sides, so as long as the text matches, the reference resolves correctly
+// even though the resulting backtick-quoted identifier looks unusual (it contains literal ' and "
+// characters, which is valid inside a backtick-quoted Databricks identifier).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processStaticPivotForDatabricks(s:SelectSQLQuery[1], staticPivot:StaticPivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+   let pivotColumnName = $dbConfig.identifierProcessor($staticPivot.pivotColumns->toOne()->cast(@ColumnName).name);
+   let aggColumn = $staticPivot.aggColumns->cast(@Alias)->toOne();
+   let processedAggColumn = processSelectColumns($aggColumn.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
+   let staticPivotValueAliases = $staticPivot.values->map(v | ^Alias(name = '"\'' + $v.value->toString() + pivotColumnDelimeter() + $aggColumn.name + '\'"', relationalElement = $v));
+   let processedStaticPivotValues = $staticPivotValueAliases->map(a | $a->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+   ' ' + $format.separator + 'pivot (' + $processedAggColumn +
+   ' ' + $format.separator + 'for ' + $pivotColumnName +
+   ' ' + $format.separator + 'in (' + $processedStaticPivotValues + '))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processTakeDatabricks(s:SelectSQLQuery[1], format:Format[1], dbConfig: DbConfig[1], extensions:Extension[*]):String[1]
@@ -523,6 +1052,40 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]
 {
    $schemaName->replace('$', '.');
+}
+
+// make_interval(years, months, weeks, days, hours, mins, secs) accepts arbitrary SQL expressions
+// for every slot (unlike the 'INTERVAL <value> <unit>' literal syntax, which requires <value> to be
+// a compile-time constant). YEAR/MONTH must use their own calendar-aware slots rather than a
+// fixed-seconds approximation, since a year/month is not a fixed duration. MILLISECOND/MICROSECOND
+// have no dedicated slot - only the fractional 'secs' one - so they're expressed as a fraction of a
+// second there.
+//
+// A plain literal offset keeps the original 'INTERVAL <value> <unit>' rendering: make_interval's
+// day/hour/etc. slots are 32-bit INT parameters, so routing an out-of-INT-range literal through it
+// changes an out-of-range offset from an interval-literal parse error to a make_interval CAST_OVERFLOW
+// error - a different (still-correct) error, but PCT pins the exact expected error text, so switching
+// unconditionally would regress the existing overflow-boundary tests. Literal offsets render as a
+// bare (optionally negative) digit string with no parens/spaces, unlike a computed SQL expression
+// (e.g. a window function call), so that shape is used to decide which rendering applies.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::adjustIntervalForDatabricks(valueExpr:String[1], unit:String[1]):String[1]
+{
+   let u = $unit->mapToDBUnitType();
+   if(!$valueExpr->contains('(') && !$valueExpr->contains(' '),
+      | 'INTERVAL ' + $valueExpr + ' ' + $u,
+      | let slot = [
+           pair('YEAR',        'make_interval(' + $valueExpr + ', 0, 0, 0, 0, 0, 0)'),
+           pair('MONTH',       'make_interval(0, ' + $valueExpr + ', 0, 0, 0, 0, 0)'),
+           pair('WEEK',        'make_interval(0, 0, ' + $valueExpr + ', 0, 0, 0, 0)'),
+           pair('DAY',         'make_interval(0, 0, 0, ' + $valueExpr + ', 0, 0, 0)'),
+           pair('HOUR',        'make_interval(0, 0, 0, 0, ' + $valueExpr + ', 0, 0)'),
+           pair('MINUTE',      'make_interval(0, 0, 0, 0, 0, ' + $valueExpr + ', 0)'),
+           pair('SECOND',      'make_interval(0, 0, 0, 0, 0, 0, ' + $valueExpr + ')'),
+           pair('MILLISECOND', 'make_interval(0, 0, 0, 0, 0, 0, (' + $valueExpr + ') / 1000.0)'),
+           pair('MICROSECOND', 'make_interval(0, 0, 0, 0, 0, 0, (' + $valueExpr + ') / 1000000.0)')
+        ]->filter(p | $p.first == $u).second;
+        $slot->toOne('Unit not found: ' + $u);
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dateDiffDatabricks(p:String[2..3]):String[1]
@@ -678,19 +1241,51 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredObjectNavigationForDatabricks(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // Databricks addresses semi-structured VARIANT data with the colon operator - `col:field.subField[index]`.
-   // The first hop into the VARIANT value uses ':'; subsequent property hops use '.'.
-   // Property names are always backticked so that names containing special characters
-   // (e.g. `@type`) remain valid path identifiers.
    let processedOperand = $s.operand->processOperation($sgc);
-   let isNestedNavigation = $s.operand->instanceOf(SemiStructuredObjectNavigation);
 
-   let elementAccess = $processedOperand + $s->match([
-      p: SemiStructuredPropertyAccess[1]     | if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
-      a: SemiStructuredArrayElementAccess[1] | '[' + $a.index->cast(@Literal).value->toString() + ']'
-   ]);
+   if($s.operand->isMapOperandForDatabricks(),
+      | // Map.get() always builds a SemiStructuredPropertyAccess node regardless of whether the
+        // underlying value is a genuine dialect-native MAP or a Variant. Databricks has a real
+        // native MAP<K,V> type, which must be read with element_at(map, key), not the ':'
+        // colon-path operator below (Spark rewrites ':' to its internal
+        // semi_structured_extract_json_multi, whose first argument must be STRING/VARIANT, not
+        // MAP). element_at already returns the map's concrete value type, so - unlike the VARIANT
+        // path - no additional cast suffix is needed afterward.
+        let key = $s->cast(@SemiStructuredPropertyAccess).property->processOperation($sgc);
+        'element_at(' + $processedOperand + ', ' + $key + ')';
+      ,
+      | // Databricks addresses semi-structured VARIANT data with the colon operator - `col:field.subField[index]`.
+        // The first hop into the VARIANT value uses ':'; subsequent property hops use '.'.
+        // Property names are always backticked so that names containing special characters
+        // (e.g. `@type`) remain valid path identifiers.
+        //
+        // SemiStructuredArrayElementAccess and SemiStructuredPropertyAccess are both subtypes of
+        // SemiStructuredObjectNavigation, so checking only the base type here would treat a
+        // preceding array-index hop as "already inside a resolved dot-chain" too. It isn't:
+        // indexing into try_cast(... as array<variant>) yields a fresh bare VARIANT element (the
+        // try_cast only tags the array itself as ARRAY<VARIANT>, not its elements), so the next hop
+        // still needs the colon reset, exactly like the very first hop off a column. Only an actual
+        // preceding property hop is "nested" and should continue with '.'.
+        let isNestedNavigation = $s.operand->instanceOf(SemiStructuredPropertyAccess);
 
-   if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForDatabricksSemiStructuredData($s.returnType));
+        let elementAccess = $s->match([
+           p: SemiStructuredPropertyAccess[1]     | $processedOperand + if($isNestedNavigation, | '.', | ':') + '`' + $p.property->cast(@Literal).value->cast(@String) + '`' + if($p.index->isEmpty(),|'',|'['+ $p.index->toOne()->cast(@Literal).value->toString()+']'),
+           // A bare VARIANT (e.g. straight out of parse_json(...)) is still generically VARIANT
+           // until cast to a concrete complex type - Databricks requires a concrete STRUCT/ARRAY/MAP
+           // before subscripting with '[index]' (bracket-indexing a bare VARIANT raises
+           // INVALID_EXTRACT_BASE_FIELD_TYPE). try_cast (not cast) mirrors the sibling flatten
+           // functions below: a plain cast of a VARIANT holding a JSON-string array representation
+           // raises INVALID_VARIANT_CAST. try_element_at (not bracket '[index]') is required on top
+           // of that: Databricks' bracket subscript on an ARRAY raises INVALID_ARRAY_INDEX when the
+           // (possibly filtered-down-to-empty) array doesn't have that many elements, whereas Pure's
+           // at() must tolerate an out-of-range index by returning null (mirroring array_first/
+           // array_last's use of try_element_at above). Pure's index is 0-based; try_element_at is
+           // 1-based, hence the '+ 1'.
+           a: SemiStructuredArrayElementAccess[1] | 'try_element_at(try_cast(' + $processedOperand + ' as array<variant>), ' + ($a.index->cast(@Literal).value->cast(@Integer) + 1)->toString() + ')'
+        ]);
+
+        if($s.avoidCastIfPrimitive == true, | $elementAccess, | $elementAccess + castSuffixForDatabricksSemiStructuredData($s.returnType));
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processSemiStructuredArrayFlattenForDatabricks(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
@@ -747,6 +1342,119 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
          ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
 }
 
+// Databricks/Spark has no native AS OF JOIN syntax (unlike Snowflake's `asof join ... match_condition(...)`
+// or DuckDB's `asof left join`). The default generic joinProcessor (extensionDefaults.pure) explicitly
+// asserts on any AsOfJoin, so it must be fully replaced here - not just extended - meaning the non-AsOf
+// Join branch below has to reproduce the default's rendering exactly (mirrored from
+// meta::relational::functions::sqlQueryToString::default::processJoin).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processJoinForDatabricks(j:JoinTreeNode[1], dbConfig:DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   $j.join->match([
+      asOf: AsOfJoin[1] | $j->processAsOfJoinForDatabricks($asOf, $dbConfig, $format, $extensions),
+      join: Join[1]      | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+                            + $j.alias->map(a|^$a(name = '"' + $a.name + '"'))
+                                ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                            + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
+   ]);
+}
+
+// Rewrites an AsOfJoin to a correlated LEFT JOIN LATERAL: the right-hand relation, filtered by the as-of
+// match condition (and, optionally, the equality "key match" condition supplied as asOfJoin()'s 4th
+// argument), ordered by the matched column in the direction that puts the as-of match on top, LIMIT 1.
+// Mirrors processJoinForSnowflake's AsOfJoin[1]/Join[1] match shape, but rewrites to LATERAL instead of
+// native `asof join ... match_condition`, since Spark has no such operator at all.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processAsOfJoinForDatabricks(j:JoinTreeNode[1], asOf:AsOfJoin[1], dbConfig:DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+   assert($asOf.operation->instanceOf(DynaFunction), | 'Error: the AsOf join operation is not a DynaFunction');
+   let dFunc = $asOf.operation->cast(@DynaFunction);
+
+   // A key-match (4-argument asOfJoin()) folds an equality condition alongside the as-of match via 'and'
+   // (see processRelationJoin's finalOp) - mirrors processJoinForSnowflake's own 'and' split for
+   // MATCH_CONDITION vs ON.
+   let matchCondition = if($dFunc.name == 'and', | $dFunc.parameters->at(0)->cast(@DynaFunction), | $dFunc);
+   let keyCondition = if($dFunc.name == 'and', | [$dFunc.parameters->at(1)], | []);
+
+   assert(['lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual']->contains($matchCondition.name),
+          | 'AsOfJoin match condition "' + $matchCondition.name + '" is not supported on Databricks');
+
+   let rightAlias = $j.alias->toOne();
+   let baseSubSelect = $rightAlias.relationalElement->cast(@SelectSQLQuery);
+   assert($baseSubSelect.orderBy->isEmpty() && $baseSubSelect.fromRow->isEmpty() && $baseSubSelect.toRow->isEmpty(),
+          | 'AsOfJoin on Databricks does not yet support a right-hand relation that already has its own sort/limit applied');
+
+   // processJoinCondition (pureToSQLQuery.pure) built the match/key conditions against the right-hand
+   // side's *outer* alias, as if both sides were plain sibling table aliases in the same FROM clause -
+   // correct for a real join, but that outer alias name is not a valid reference from *inside* the
+   // LATERAL subquery it is about to become (it is the name attached to the parenthesized subquery as a
+   // whole, not visible within it). Swap each such reference for the expression the right relation's own
+   // SELECT list already uses for that column - which *is* valid there, since the filter/order added
+   // below run in that same inner scope. Left-side (outer, correlated) references are left untouched:
+   // Spark LATERAL makes the outer alias visible inside the subquery, unlike the right alias's own name.
+   let matchColumnName = $matchCondition.parameters->filter(p | $p->isColumnOfAliasForDatabricks($rightAlias))
+                            ->toOne('Could not identify the matched column on the right-hand side of an AsOf join')
+                            ->cast(@TableAliasColumn).column.name;
+   // x > y picks the closest preceding y (largest y not exceeding x -> order the candidates by y DESC);
+   // x < y picks the closest following y (smallest y not preceded by x -> order the candidates by y ASC).
+   let direction = if($matchCondition.name->in(['greaterThan', 'greaterThanEqual']),
+                      | meta::relational::metamodel::SortDirection.DESC,
+                      | meta::relational::metamodel::SortDirection.ASC);
+
+   let matchedColumn = $baseSubSelect->columnExpressionByNameForDatabricksAsOfJoin($matchColumnName);
+   let rewrittenMatchCondition = $matchCondition->rewriteRightSideForLateralForDatabricks($rightAlias, $baseSubSelect)->cast(@DynaFunction);
+   let rewrittenKeyCondition = $keyCondition->map(k | $k->rewriteRightSideForLateralForDatabricks($rightAlias, $baseSubSelect));
+
+   // A correlated filter on the right-hand relation's own (possibly aggregated) column belongs in HAVING
+   // rather than WHERE when that relation is grouped, mirroring the same choice made for quantified
+   // comparisons above (excludeNullsFromSearchedColumn's pattern).
+   let filteredSubSelect = if($baseSubSelect.groupBy->isEmpty(),
+                              | ^$baseSubSelect(filteringOperation = $baseSubSelect.filteringOperation->concatenate($rewrittenMatchCondition)->concatenate($rewrittenKeyCondition)->andFilters($extensions)),
+                              | ^$baseSubSelect(havingOperation = $baseSubSelect.havingOperation->concatenate($rewrittenMatchCondition)->concatenate($rewrittenKeyCondition)->andFilters($extensions)));
+
+   let orderedLimitedSubSelect = ^$filteredSubSelect(orderBy = ^OrderBy(column = $matchedColumn, direction = $direction), toRow = ^Literal(value = 1));
+
+   let subSelectAlias = ^$rightAlias(name = '`' + $rightAlias.name + '`', relationalElement = $orderedLimitedSubSelect);
+
+   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
+   + 'lateral '
+   + $subSelectAlias->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isColumnOfAliasForDatabricks(op:RelationalOperationElement[1], alias:TableAlias[1]):Boolean[1]
+{
+   $op->instanceOf(TableAliasColumn) && $op->cast(@TableAliasColumn).alias.name == $alias.name;
+}
+
+// A SelectSQLQuery's columns are Alias-wrapped when the projected name differs from (or needs to be
+// distinguished from) the underlying column's own name, but pass through as bare TableAliasColumn
+// otherwise (see e.g. createAliasWithColumns in pureToSQLQuery.pure) - both shapes occur across the
+// asOfJoin PCT tests, so both need handling here.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::columnExpressionByNameForDatabricksAsOfJoin(select:SelectSQLQuery[1], name:String[1]):RelationalOperationElement[1]
+{
+   $select.columns->filter(c | $c->match([
+                                   a: Alias[1]             | $a.name == $name,
+                                   t: TableAliasColumn[1]  | $t.column.name == $name,
+                                   r: RelationalOperationElement[1] | false
+                                ]))
+      ->toOne('Could not find column \'' + $name + '\' on the right-hand side of an AsOf join')
+      ->match([
+          a: Alias[1] | $a.relationalElement,
+          r: RelationalOperationElement[1] | $r
+      ]);
+}
+
+// Recursively replaces every reference to a column of $rightAlias with the expression $rightSelect's own
+// SELECT list already uses for that same column - see the note on processAsOfJoinForDatabricks above.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::rewriteRightSideForLateralForDatabricks(op:RelationalOperationElement[1], rightAlias:TableAlias[1], rightSelect:SelectSQLQuery[1]):RelationalOperationElement[1]
+{
+   if($op->isColumnOfAliasForDatabricks($rightAlias),
+      | $rightSelect->columnExpressionByNameForDatabricksAsOfJoin($op->cast(@TableAliasColumn).column.name),
+      | if($op->instanceOf(DynaFunction),
+          | ^DynaFunction(name = $op->cast(@DynaFunction).name, parameters = $op->cast(@DynaFunction).parameters->map(p | $p->rewriteRightSideForLateralForDatabricks($rightAlias, $rightSelect))),
+          | $op
+        )
+   );
+}
+
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks(schema:String[1], functionName:String[1], params:FunctionParameter[*]):String[1]
 {
    if($schema == '', | $functionName, | $schema + '.' + $functionName) + '(' + $params->map(p|$p.name)->joinStrings(', ') + ')';
@@ -792,11 +1500,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFoldLambdaForDatabricks(lambda:FoldRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // Databricks higher-order function lambdas do not accept parameter type annotations.
-   // Syntax: `aggregate(array, zero, (acc, x) -> body)`
+   // Databricks higher-order function lambdas do not accept parameter type annotations, so `acc`'s
+   // type is whatever the zero literal renders as. A bare Integer zero (e.g. `0`) renders as a plain
+   // SQL INT constant, but Integer-typed array elements arrive as BIGINT (see parseInteger/array<bigint>
+   // conventions elsewhere in this file), so `acc + x` infers as BIGINT while `aggregate`'s third
+   // parameter must match the zero's own (INT) type exactly. Casting an Integer-typed zero to bigint
+   // aligns it with that BIGINT arithmetic; non-Integer accumulators (String, etc.) are left untouched.
+   let identityValue = $lambda.parameters->at(1).value;
+   let identityType = meta::relational::functions::typeInference::inferRelationalType($identityValue, false);
+   let identitySql = if($identityType->isNotEmpty() && $identityType->toOne()->instanceOf(meta::relational::metamodel::datatype::Integer),
+      | 'cast(' + $identityValue->processOperation($sgc) + ' as bigint)',
+      | $identityValue->processOperation($sgc)
+   );
    'aggregate(%s, %s, (`%s`, `%s`) -> %s)'->format([
       lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
-      $lambda.parameters->at(1).value->processOperation($sgc),
+      $identitySql,
       $lambda.parameters->at(1).name,
       $lambda.parameters->at(0).name,
       $lambda.body->processOperation($sgc)
@@ -805,12 +1523,31 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildMapLambdaForDatabricks(lambda:MapRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
 {
-   // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
-   'transform(%s, `%s` -> %s)'->format([
-      lambdaCollectionExprForDatabricks($lambda.parameters->at(0).value, $sgc),
-      $lambda.parameters->at(0).name,
-      $lambda.body->processOperation($sgc)
-   ]);
+   let collection = $lambda.parameters->at(0).value;
+   // e.g. addresses->filter(...)->first().name: first()/last() reduce a semi-structured array to
+   // a single VARIANT element (array_first/array_last render as try_element_at(arr, 1)/(-1), not a
+   // collection), but the shared router still represents the trailing `.name` property access as a
+   // MapRelationalLambda, as if mapping over a collection. Feeding that scalar VARIANT straight into
+   // `transform(%s, ...)` asks Spark to run a HOF over a non-array value
+   // (DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE: "the first parameter requires the ARRAY type"). This
+   // MapRelationalLambda's output must stay an ARRAY like every other invocation (a downstream
+   // consumer, e.g. joinStrings' array_to_string template, casts it as one) - re-boxing the scalar
+   // into a fresh one-element array gives `transform` something array-shaped to iterate while still
+   // returning an array (0 elements if try_element_at returned NULL - array_join then correctly
+   // drops the resulting null element rather than rendering it).
+   if($collection->instanceOf(DynaFunction) && $collection->cast(@DynaFunction).name->in(['array_first', 'array_last']),
+      | 'transform(array(%s), `%s` -> %s)'->format([
+            $collection->processOperation($sgc),
+            $lambda.parameters->at(0).name,
+            $lambda.body->processOperation($sgc)
+        ]),
+      | // Databricks `transform(array, x -> body)` - lambda param has no type annotation.
+        'transform(%s, `%s` -> %s)'->format([
+            lambdaCollectionExprForDatabricks($collection, $sgc),
+            $lambda.parameters->at(0).name,
+            $lambda.body->processOperation($sgc)
+        ])
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::buildFilterLambdaForDatabricks(lambda:FilterRelationalLambda[1], sgc:SqlGenerationContext[1]): String[1]
