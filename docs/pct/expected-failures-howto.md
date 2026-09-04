@@ -88,14 +88,19 @@ A manifest file looks like this:
 When a PCT test fails, the test runner prints the JSON snippet for you. Paste it directly into the `exclusions` array of the appropriate manifest file:
 
 ```
-Test failure in meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_
-
-Add the following to your manifest exclusions:
+PCT expected-failure mismatch for meta::pure::functions::collection::tests::add::testAdd_Function_1__Boolean_1_
+  expected : (none - no exclusion for this test)
+  actual   : [unsupported-api] The function 'array_append' (state: [Select, false]) is not supported yet
+To record this as an expected failure, set the exclusion in the manifest to:
 {
-  "test": "meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_",
-  "expectedError": "\"->at(...) function is supported only after direct access of 1->MANY properties\""
+  "test" : "meta::pure::functions::collection::tests::add::testAdd_Function_1__Boolean_1_",
+  "expectedError" : "[unsupported-api] The function 'array_append' (state: [Select, false]) is not supported yet"
 }
 ```
+
+`expectedError` is matched as a substring, so where the message carries a volatile tail — a source
+line and column, a timing, generated Java — trimming it is both safe and more durable than pasting
+the whole thing.
 
 ##### Example: Adding Expected Failures
 

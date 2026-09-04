@@ -31,8 +31,62 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       selectSQLQueryProcessor = processSelectSQLQueryForBigQuery_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      dataTypeToSqlText = dataTypeToSqlTextBigQuery_DataType_1__String_1_,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForBigQuery(),
       dynaFuncDispatch = $dynaFuncDispatch
    );
+}
+
+function meta::relational::functions::sqlQueryToString::bigQuery::getDDLCommandsTranslatorForBigQuery(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+    createSchema = translateCreateSchemaStatementForBigQuery_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+    dropSchema = translateDropSchemaStatementForBigQuery_DropSchemaSQL_1__DbConfig_1__String_1_,
+    createTable = translateCreateTableStatementForBigQuery_CreateTableSQL_1__DbConfig_1__String_1_,
+    dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+    loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateCreateSchemaStatementForBigQuery(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   // A schema is a dataset; the connection already names one, so 'default' resolves to it
+   if($createSchemaSQL.schema.name == 'default',
+    | [],
+    | 'Create Schema if not exists ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateDropSchemaStatementForBigQuery(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+   'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ' cascade;';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateCreateTableStatementForBigQuery(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+   // BigQuery has no explicit NULL constraint, and will only accept a primary key it does not enforce
+   let t = $createTableSQL.table;
+   let applyConstraints = $createTableSQL.applyConstraints;
+   'Create Table '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' + $dbConfig.dataTypeToSqlText($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false || $c.nullable == true, | '', | ' NOT NULL'))
+         ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ') NOT ENFORCED')
+      +');';
+}
+
+function {doc.doc='Given the platform (ie DB agnostic) data types, convert to BigQuery specific type'} meta::relational::functions::sqlQueryToString::bigQuery::dataTypeToSqlTextBigQuery(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+    // BigQuery has no VARCHAR/CHAR, and FLOAT/DOUBLE are spelled FLOAT64
+    $type->match([
+        v : meta::relational::metamodel::datatype::Varchar[1] | 'STRING',
+        c : meta::relational::metamodel::datatype::Char[1] | 'STRING',
+        f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT64',
+        d : meta::relational::metamodel::datatype::Double[1] | 'FLOAT64',
+        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',
+        j : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+        a : meta::relational::metamodel::datatype::DataType[1] | $a->meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault()
+    ]);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
