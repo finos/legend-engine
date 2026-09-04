@@ -26,6 +26,7 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -59,6 +60,7 @@ public class SQLCompilerExtension implements CompilerExtension
 {
     //TODO added as a temporary backout if issues detected.
     private static final  boolean useCompile = Boolean.valueOf(System.getProperty("legend.sql.compile", "true"));
+    private static final RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_DynamicSQLSource> SOURCES = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSources__DynamicSQLSource_MANY_(PureModel.getCorePureModel().getExecutionSupport());
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -84,7 +86,6 @@ public class SQLCompilerExtension implements CompilerExtension
 
                         Root_meta_external_query_sql_metamodel_Statement statement = new ModifiedTranslator().translate(parsed, context.pureModel);
 
-                        RichIterable<? extends Root_meta_external_query_sql_transformation_queryToPure_DynamicSQLSource> sources = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSources__DynamicSQLSource_MANY_(context.pureModel.getExecutionSupport());
                         PureMap scopedVariables = processingContext.inferredVariableList.isEmpty() ? new PureMap(Maps.mutable.empty()) : new PureMap(processingContext.inferredVariableList.getLast());
                         RichIterable<? extends PackageableElement> extraElements = FastList.newList(new TableFunctionElementExtractor(context.pureModel).visit(parsed));
 
@@ -98,8 +99,8 @@ public class SQLCompilerExtension implements CompilerExtension
                         });
 
                         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<? extends Object> x = useCompile ?
-                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, sources, extraElements, scopedVariables, compile, context.pureModel.getExecutionSupport()) :
-                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, sources, extraElements, scopedVariables, context.pureModel.getExecutionSupport());
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, compile, context.pureModel.getExecutionSupport()) :
+                                core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_sqlToPure_Query_1__SQLSource_MANY__PackageableElement_MANY__Map_1__Function_1_((Root_meta_external_query_sql_metamodel_Query) statement, SOURCES, extraElements, scopedVariables, context.pureModel.getExecutionSupport());
 
                         GenericType returnType = ((FunctionType) x._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType();
                         if (!Type.subTypeOf(returnType._rawType(), context.pureModel.getClass("meta::pure::metamodel::relation::Relation"), context.pureModel.getExecutionSupport().getProcessorSupport()))
