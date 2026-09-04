@@ -37,7 +37,7 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
 
 function meta::external::query::sql::transformation::queryToPure::functionProcessors():FunctionProcessor[1..*]
 {
-  time('SQL-FunctionProcessors', | [
+  [
       //AGGREGATE FUNCTIONS
       aggregate('count', count_Any_MANY__Integer_1_),
       aggregate('bool_and', and_Boolean_MANY__Boolean_1_),
@@ -606,7 +606,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         processHash($value, $type, $expCtx, true);
       })      
-  ]);
+  ];
 }
 
 
@@ -623,7 +623,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
 function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:String[1], processors:FunctionProcessor[*]):FunctionProcessor[1]
 {
-  time('SQL-functionProcessor', {|let coreProcessor = $processors->filter(p | $p.name == $name->toLower());
+  let coreProcessor = $processors->filter(p | $p.name == $name->toLower());
 
   let udfProcessor = if ($coreProcessor->isEmpty(),
   | meta::external::query::sql::getSQLExtensions().udf($name),
@@ -643,7 +643,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
   assertEquals(1, $processor->size(), | 'No function matches the given name "' + $name + '"');
 
-  $processor->toOne();})
+  $processor->toOne();
 }
 
 function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:QualifiedName[1], processors:FunctionProcessor[*]):AggregateFunctionProcessor[1]
