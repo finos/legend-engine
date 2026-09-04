@@ -3265,8 +3265,28 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processQualififedNameReference', $context.debug);
 
+  // A correlated owner is a NAMED enclosing relation that uniquely owns a bare
+  // column this relation does not own itself.
+  // When one is found, the column metadata comes from it, so the row variable must
+  // come from it too - reading the right column off the wrong row passes here and
+  // then fails downstream in compileViaGrammar with "The column 'x' can't be found
+  // in the relation (...)".
+  let correlated = $context.correlatedOwner($q.name.parts);
+  let ownerName  = if ($correlated->isEmpty(), | '', | $correlated->toOne().name->toOne());
+  let outerVar   = if ($correlated->isEmpty(), | [], | $expContext.varMap->get($ownerName));
 
-  createTdsColumn($q.name, $expContext.var($q.name), $expContext, $context);
+  // CorrelatedOwner only returns named owners in relation mode, so varMap is guaranteed to hold
+  // one - a miss means $context.contexts and $expContext.varMap have drifted apart.
+  assert($correlated->isEmpty() || $outerVar->isNotEmpty(),
+         | 'correlated reference \'' + $q.name.parts->joinStrings('.') +
+           '\' resolved to enclosing relation \'' + $ownerName +
+           '\' but no row variable is mapped for it');
+
+  let var = if ($correlated->isEmpty(),
+                | $expContext.var($q.name),
+                | $outerVar->toOne());
+
+  createTdsColumn($q.name, $var, $expContext, $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCast(c:Cast[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -5004,22 +5024,50 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   }:String[1];
 
   context(name:String[0..1]){
-      let found = if ($name->isNotEmpty(),
-        | $this.contexts->filter(c | $c.name == $name),
-        | $this);
-
-      if ($found->isEmpty(), | $this, | $found->toOne());
-
+    let inner = $this.contexts->filter(c | $c.name == $name);
+    let found = if ($name->isEmpty() || $this.name == $name || $inner->isEmpty(),
+                    | $this,
+                    | $inner->toOne());
+    $found;
   }:SqlTransformContext[1];
+
+  // The enclosing relation that owns a BARE column this relation does not own itself.
+  //
+  // Relation mode only: the TDS path builds an empty varMap (rowExpressionContext's
+  // non-relation branch), so an owner found here could never be routed to a row
+  // variable. Named contexts only, for the same reason - varMap is keyed by name,
+  // and unnamed contexts exist (see the isNotEmpty filters in processSubRelation
+  // and processLateralJoin).
+  //
+  // The local-ownership check is what keeps every ordinary query on
+  // its existing path. Loosening it would silently reroute locally-owned columns
+  // to an outer row.
+  correlatedOwner(parts:String[*])
+  {
+    let single   = $parts->size() == 1 && $this.relation->isTrue();
+    let n        = if ($single, | $parts->toOne(), | '');
+    let localHit = $single && $this.columnByName($n, false)->isNotEmpty();
+    let owners   = if (!$single || $localHit,
+                       | [],
+                       | $this.contexts->filter(c |
+                             $c.name->isNotEmpty() && $c.columnByName($n, false)->isNotEmpty()));
+    if ($owners->size() == 1, | $owners->toOne(), | []);
+  }:SqlTransformContext[0..1];
+
   columnByNameParts(parts:String[*], failIfNotFound:Boolean[1])
   {
     let name = if ($parts->size() > 1, | $parts->last(), | $parts)->joinStrings('.');
     let contextName = $parts->init()->joinStrings('.');
 
     let foundContext = $this.contexts->filter(c | $c.name == $contextName);
-    let context = if ($contextName->isEmpty() || $foundContext->isEmpty(), | $this, | $foundContext->toOne());
+    let context = if ($contextName->isEmpty() || $this.name == $contextName || $foundContext->isEmpty(),
+                      | $this,
+                      | $foundContext->toOne());
 
-    $context.columnByName($name, $failIfNotFound);
+    let correlated = $this.correlatedOwner($parts);
+    if ($correlated->isNotEmpty(),
+      | $correlated->toOne().columnByName($name, $failIfNotFound),
+      | $context.columnByName($name, $failIfNotFound));
   }:meta::external::query::sql::transformation::queryToPure::QueryColumn[0..1];
   columnByName(name:String[1], failIfNotFound:Boolean[1]){
     let columns = $this.columns;
