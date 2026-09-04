@@ -10,7 +10,7 @@ import meta::external::query::sql::transformation::queryToPure::*;
 
 
 //TODO we likely want to mix this with normal function processors below.
-function meta::external::query::sql::transformation::queryToPure::tableFunctionProcessors():FunctionProcessor[*]
+function meta::external::query::sql::transformation::queryToPure::tableFunctionProcessors():FunctionProcessor[1..*]
 {
   [
     array('unnest', Relation, {args, fc, expCtx, ctx |
@@ -35,7 +35,7 @@ function meta::external::query::sql::transformation::queryToPure::tableFunctionP
   ]
 }
 
-function meta::external::query::sql::transformation::queryToPure::functionProcessors():FunctionProcessor[*]
+function meta::external::query::sql::transformation::queryToPure::functionProcessors():FunctionProcessor[1..*]
 {
   [
       //AGGREGATE FUNCTIONS
@@ -89,10 +89,10 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       aggregate('percentile_cont', Number, {args, fc, expCtx, ctx |
         processPercentile('percentile_cont', $args, true, $fc, $expCtx)
-      }, percentilePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_),
+      }, percentilePreProcessor_Expression_1__FunctionCall_1__SqlTransformContext_1__AggregateFunctionPreProcessorWrapper_1_),
       aggregate('percentile_disc', Number, {args, fc, expCtx, ctx |
         processPercentile('percentile_disc', $args, false, $fc, $expCtx)
-      }, percentilePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_),
+      }, percentilePreProcessor_Expression_1__FunctionCall_1__SqlTransformContext_1__AggregateFunctionPreProcessorWrapper_1_),
       aggregate('stddev_pop', stdDevPopulation_Number_MANY__Number_1_),
       aggregate('stddev_samp', stdDevSample_Number_MANY__Number_1_),
       aggregate('stddev', stdDevSample_Number_MANY__Number_1_),
@@ -606,30 +606,19 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         processHash($value, $type, $expCtx, true);
       })      
-  ]
+  ];
 }
 
 
+function meta::external::query::sql::transformation::queryToPure::tableFunctionProcessor(name:String[1], processors:FunctionProcessor[*]):FunctionProcessor[1]
+{
+  functionProcessor($name, $processors);
+}
 
-function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:QualifiedName[1]):FunctionProcessor[1]
+function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:QualifiedName[1], processors:FunctionProcessor[*]):FunctionProcessor[1]
 {
   assertEquals(1, $name.parts->size(), | 'function name has more than 1 part ' + $name->extractNameFromQualifiedName([]));
-  functionProcessor($name.parts->at(0));
-}
-
-function meta::external::query::sql::transformation::queryToPure::allProcessors():FunctionProcessor[*]
-{
-  functionProcessors()->concatenate(tableFunctionProcessors())
-}
-
-function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:String[1]):FunctionProcessor[1]
-{
-  functionProcessor($name, functionProcessors());
-}
-
-function meta::external::query::sql::transformation::queryToPure::tableFunctionProcessor(name:String[1]):FunctionProcessor[1]
-{
-  functionProcessor($name, tableFunctionProcessors());
+  functionProcessor($name.parts->at(0), $processors);
 }
 
 function meta::external::query::sql::transformation::queryToPure::functionProcessor(name:String[1], processors:FunctionProcessor[*]):FunctionProcessor[1]
@@ -657,15 +646,15 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   $processor->toOne();
 }
 
-function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:QualifiedName[1]):AggregateFunctionProcessor[1]
+function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:QualifiedName[1], processors:FunctionProcessor[*]):AggregateFunctionProcessor[1]
 {
   assertEquals(1, $name.parts->size(), | 'function name has more than 1 part ' + $name->extractNameFromQualifiedName([]));
-  aggregateProcessor($name.parts->at(0));
+  aggregateProcessor($name.parts->at(0), $processors);
 }
 
-function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:String[1]):AggregateFunctionProcessor[1]
+function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:String[1], processors:FunctionProcessor[*]):AggregateFunctionProcessor[1]
 {
-  let processor = functionProcessor($name);
+  let processor = functionProcessor($name, $processors);
   assert($processor->instanceOf(AggregateFunctionProcessor), | 'processor for ' + $name + ' is not aggregate processor');
   $processor->cast(@AggregateFunctionProcessor);
 }
@@ -769,10 +758,10 @@ function meta::external::query::sql::transformation::queryToPure::aggregate(name
 
 function meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1] ->ValueSpecification[1]}>[1]):AggregateFunctionProcessor[1]
 {
-  aggregate($name, $returnType, $transform, defaultAggregatePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_);
+  aggregate($name, $returnType, $transform, defaultAggregatePreProcessor_Expression_1__FunctionCall_1__SqlTransformContext_1__AggregateFunctionPreProcessorWrapper_1_);
 }
 
-function meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1]->ValueSpecification[1]}>[1], preProcessor:Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1]):AggregateFunctionProcessor[1]
+function meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1], SqlTransformContext[1]->ValueSpecification[1]}>[1], preProcessor:Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1], SqlTransformContext[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1]):AggregateFunctionProcessor[1]
 {
   ^AggregateFunctionProcessor(name = $name, returnType = $returnType, transform = $transform, preProcessor = $preProcessor, type = ProcessorFunctionType.AGGREGATE);
 }
@@ -789,7 +778,7 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
   sortItems:meta::external::query::sql::metamodel::SortItem[*];
 }
 
-function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
+function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   assert($aggregate.group->isNotEmpty(), 'percentile must be within group');
   unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
@@ -800,12 +789,12 @@ function meta::external::query::sql::transformation::queryToPure::percentilePreP
   );
 }
 
-function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
+function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   // WITHIN GROUP (ORDER BY ...) carries a single key; the in-paren form carries any number.
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.arguments->first(),
-    aggregate = $column->replaceAggregateArguments(),
+    aggregate = $column->replaceAggregateArguments($context),
     sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy)
   );
 }
@@ -815,11 +804,11 @@ function meta::external::query::sql::transformation::queryToPure::simpleFunction
   {args:ValueSpecification[*], f:FunctionCall[1], e:SqlTransformExpressionContext[1], c:SqlTransformContext[1] | nullOrSfe($func, $args)}
 }
 
-function meta::external::query::sql::transformation::queryToPure::replaceAggregateArguments(column:meta::external::query::sql::metamodel::Expression[1]):meta::external::query::sql::metamodel::Expression[1]
+function meta::external::query::sql::transformation::queryToPure::replaceAggregateArguments(column:meta::external::query::sql::metamodel::Expression[1], context:SqlTransformContext[1]):meta::external::query::sql::metamodel::Expression[1]
 {
   $column->walk([
       f:FunctionCall[1] |
-        let processor = $f.name->functionProcessor();
+        let processor = $f.name->functionProcessor($context.functionProcessors);
         let var = ^QualifiedNameReference(name=^QualifiedName());
         if ($processor.isAggregate,
           // The ordering is lifted into AggregateFunctionPreProcessorWrapper.sortItems and must not survive here:
@@ -840,9 +829,9 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
   $this.type == ProcessorFunctionType.AGGREGATE
 ]
 {
-  preProcessor: Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1];
-  preProcess(column:meta::external::query::sql::metamodel::Expression[1], aggregate:meta::external::query::sql::metamodel::FunctionCall[1]){
-    $this.preProcessor->eval($column, $aggregate)
+  preProcessor: Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1], SqlTransformContext[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1];
+  preProcess(column:meta::external::query::sql::metamodel::Expression[1], aggregate:meta::external::query::sql::metamodel::FunctionCall[1], context:SqlTransformContext[1]){
+    $this.preProcessor->eval($column, $aggregate, $context)
   }:AggregateFunctionPreProcessorWrapper[1];
 }
 
