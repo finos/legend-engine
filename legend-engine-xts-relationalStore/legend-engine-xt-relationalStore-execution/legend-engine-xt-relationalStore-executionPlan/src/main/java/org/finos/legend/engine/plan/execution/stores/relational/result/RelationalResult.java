@@ -84,6 +84,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +126,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public Builder builder;
     private Calendar calendar;
+    private boolean readsLocalDate = true;
+    private boolean readsLocalDateTime = true;
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan)
     {
@@ -551,13 +557,11 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         {
             case Types.DATE:
             {
-                java.sql.Date date = this.resultSet.getDate(columnIndex);
-                return (date == null) ? null : PureDate.fromSQLDate(date);
+                return readDay(columnIndex);
             }
             case Types.TIMESTAMP:
             {
-                java.sql.Timestamp timestamp = this.resultSet.getTimestamp(columnIndex, getCalendar());
-                return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);
+                return readMoment(columnIndex);
             }
             case Types.TINYINT:
             case Types.SMALLINT:
@@ -753,5 +757,72 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     private static String unquote(String s)
     {
         return (s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
+    }
+
+    /**
+     * Read a date column.
+     *
+     * <p>The column carries a day and no zone, and {@link ResultSet#getObject(int, Class)} for a
+     * {@link LocalDate} hands that day over as it stands. Reading it as a {@link java.sql.Date}
+     * instead gives an instant, which yields a day only once a zone is chosen to read it in, and
+     * drivers do not agree on the zone they built that instant in. A driver need not answer the
+     * first call, and is asked once rather than once a row.
+     */
+    private PureDate readDay(int columnIndex) throws SQLException
+    {
+        if (this.readsLocalDate)
+        {
+            try
+            {
+                LocalDate day = this.resultSet.getObject(columnIndex, LocalDate.class);
+                return (day == null) ? null : toPureDate(day);
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDate = false;
+            }
+        }
+        java.sql.Date date = this.resultSet.getDate(columnIndex);
+        return (date == null) ? null : toPureDate(date.toLocalDate());
+    }
+
+    /**
+     * Read a timestamp column.
+     *
+     * <p>The column carries a wall clock the database keeps in the zone the connection names, and
+     * a Pure date is that moment in UTC, so the wall clock is read and shifted here rather than
+     * by the driver. Handing a driver a calendar and asking it to shift does not work for every
+     * driver: some ignore the calendar and answer as though the connection named UTC, leaving
+     * every timestamp short by the connection zone.
+     */
+    private PureDate readMoment(int columnIndex) throws SQLException
+    {
+        Calendar calendar = getCalendar();
+        if (this.readsLocalDateTime)
+        {
+            try
+            {
+                LocalDateTime wallClock = this.resultSet.getObject(columnIndex, LocalDateTime.class);
+                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDateTime = false;
+            }
+        }
+        Timestamp timestamp = this.resultSet.getTimestamp(columnIndex, calendar);
+        return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);
+    }
+
+    private static PureDate toPureDate(LocalDate day)
+    {
+        return PureDate.newPureDate(day.getYear(), day.getMonthValue(), day.getDayOfMonth());
+    }
+
+    private static PureDate toPureDate(ZonedDateTime moment)
+    {
+        LocalDateTime utc = moment.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        return PureDate.newPureDate(utc.getYear(), utc.getMonthValue(), utc.getDayOfMonth(),
+                utc.getHour(), utc.getMinute(), utc.getSecond(), String.format("%09d", utc.getNano()));
     }
 }

@@ -20,19 +20,26 @@ import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.function.BiFunction;
 
 public class ResultColumn
 {
-    private int columnIndex;
-    private String label;
-    private String dataType;
-    private int dbMetaDataType;
+    private final int columnIndex;
+    private final String label;
+    private final String dataType;
+    private final int dbMetaDataType;
 
     private BiFunction<ResultSet, Calendar, Object> valueExtractor;
     private BiFunction<ResultSet, Calendar, Object> transformedValueExtractor;
+    private boolean readsLocalDate = true;
+    private boolean readsLocalDateTime = true;
 
     ResultColumn(int columnIndex, String label, String dataType, int dbMetaDataType)
     {
@@ -71,24 +78,12 @@ public class ResultColumn
         {
             case Types.DATE:
             {
-                this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) ->
-                        {
-                            java.sql.Date date = resultSet.getDate(this.columnIndex);
-                            return date != null ? PureDate.fromSQLDate(date) : null;
-                        }
-                );
+                this.transformedValueExtractor = BiFunctionHelper.unchecked((resultSet, calendar) -> readDay(resultSet));
                 break;
             }
             case Types.TIMESTAMP:
             {
-                this.transformedValueExtractor = BiFunctionHelper.unchecked(
-                        (resultSet, calendar) ->
-                        {
-                            java.sql.Timestamp timestamp = resultSet.getTimestamp(this.columnIndex, calendar);
-                            return timestamp != null ? PureDate.fromSQLTimestamp(timestamp) : null;
-                        }
-                );
+                this.transformedValueExtractor = BiFunctionHelper.unchecked(this::readMoment);
                 break;
             }
             case Types.TINYINT:
@@ -246,5 +241,71 @@ public class ResultColumn
             return Tuples.pair(this.label, "StrictDate");
         }
         return Tuples.pair(this.label, "String"); // Default is String. But shouldn't go here
+    }
+
+    /**
+     * Read a date column.
+     *
+     * <p>The column carries a day and no zone, and {@link ResultSet#getObject(int, Class)} for a
+     * {@link LocalDate} hands that day over as it stands. Reading it as a {@link java.sql.Date}
+     * instead gives an instant, which yields a day only once a zone is chosen to read it in, and
+     * drivers do not agree on the zone they built that instant in. A driver need not answer the
+     * first call, and is asked once rather than once a row.
+     */
+    private PureDate readDay(ResultSet resultSet) throws SQLException
+    {
+        if (this.readsLocalDate)
+        {
+            try
+            {
+                LocalDate day = resultSet.getObject(this.columnIndex, LocalDate.class);
+                return (day == null) ? null : toPureDate(day);
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDate = false;
+            }
+        }
+        java.sql.Date date = resultSet.getDate(this.columnIndex);
+        return (date == null) ? null : toPureDate(date.toLocalDate());
+    }
+
+    /**
+     * Read a timestamp column.
+     *
+     * <p>The column carries a wall clock the database keeps in the zone the connection names, and
+     * a Pure date is that moment in UTC, so the wall clock is read and shifted here rather than
+     * by the driver. Handing a driver a calendar and asking it to shift does not work for every
+     * driver: some ignore the calendar and answer as though the connection named UTC, leaving
+     * every timestamp short by the connection zone.
+     */
+    private PureDate readMoment(ResultSet resultSet, Calendar calendar) throws SQLException
+    {
+        if (this.readsLocalDateTime)
+        {
+            try
+            {
+                LocalDateTime wallClock = resultSet.getObject(this.columnIndex, LocalDateTime.class);
+                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDateTime = false;
+            }
+        }
+        java.sql.Timestamp timestamp = resultSet.getTimestamp(this.columnIndex, calendar);
+        return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);
+    }
+
+    private static PureDate toPureDate(LocalDate day)
+    {
+        return PureDate.newPureDate(day.getYear(), day.getMonthValue(), day.getDayOfMonth());
+    }
+
+    private static PureDate toPureDate(ZonedDateTime moment)
+    {
+        LocalDateTime utc = moment.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        return PureDate.newPureDate(utc.getYear(), utc.getMonthValue(), utc.getDayOfMonth(),
+                utc.getHour(), utc.getMinute(), utc.getSecond(), String.format("%09d", utc.getNano()));
     }
 }
