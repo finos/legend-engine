@@ -88,6 +88,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
+          persist-credentials: false
 
       - name: Set up Maven Central
         uses: actions/setup-java@v5
@@ -137,12 +138,15 @@ jobs:
             echo "::error::A pom still contains \${revision}; flatten-maven-plugin did not run."
             exit 1
           fi
+          count="$(find ~/.m2/repository/org/finos/legend/engine -path "*/${RELEASE_VERSION}/*" -name '*.pom' | wc -l)"
+          echo "${count} poms resolved to ${RELEASE_VERSION}"
+          [ "${count}" -gt 0 ]
 
       - name: Upload build output
         uses: actions/upload-artifact@v7
         with:
           name: build-output
-          # Upload per-module target/ directories produced by the release-tag
+          # Upload per-module target/ directories produced by the release
           # build. Test jobs re-checkout the same commit from git.
           path: |
             ~/**/target/
@@ -399,9 +403,12 @@ jobs:
 
       - name: Note that a dry run stops after wave 1
         if: ${{ github.event.inputs.dryRun == 'true' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
           echo "Dry run: wave 1 validated and will be dropped. Wave 2 was not"
           echo "uploaded -- it can only validate once wave 1 is really published."
+          echo "Note: the build job's docker profile already pushed the ${RELEASE_VERSION}-tagged image; that push is not dry."
 
       # Kept even when the release fails: sizes, the bundle-to-deployment
       # mapping and the raw Portal responses are exactly what a post-mortem
