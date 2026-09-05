@@ -130,6 +130,30 @@ function <<test.Test>> meta::relational::tests::mapping::enumeration::testMappin
     assertEquals([], $newBob.type);
 }
 
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testNestedCaseFlattensToSingleCase():Boolean[1]
+{
+    let result = execute(|Employee.all(), employeeTestMappingWithNestedCase, enumTestRuntime(), meta::relational::extension::relationalExtensions());
+    assertSize($result.values, 3);
+
+    assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Alice')->toOne().role);
+    assertEquals(EmployeeRole.SENIOR, $result.values->filter(e | $e.name == 'Bob')->toOne().role);
+    assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Curtis')->toOne().role);
+
+    assertEquals('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::mapping::enumeration::testNestedIfFlattensToSingleCase():Boolean[1]
+{
+    let result = execute(|Employee.all(), employeeTestMappingWithNestedIf, enumTestRuntime(), meta::relational::extension::relationalExtensions());
+    assertSize($result.values, 3);
+
+    assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Alice')->toOne().role);
+    assertEquals(EmployeeRole.SENIOR, $result.values->filter(e | $e.name == 'Bob')->toOne().role);
+    assertEquals(EmployeeRole.JUNIOR, $result.values->filter(e | $e.name == 'Curtis')->toOne().role);
+
+    assertEquals('select "root".id as "pk_0", "root".id as "id", "root".name as "name", "root".doh as "dateOfHire", "root".type as "type", case when "root".type = \'FTE\' then \'S\' when "root".type = \'FTC\' then \'J\' when "root".type = \'FTO\' then \'J\' else \'J\' end as "role" from employeeTable as "root"', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::mapping::enumeration::testEnumInRelation(): Boolean[1]
 {
     let result = execute(|Employee.all()->project(~[name: x|$x.name, dateOfHire: x|$x.dateOfHire, type: x|$x.type, active: x|$x.active, firm: x|$x.firm, role: x|$x.role]), 
