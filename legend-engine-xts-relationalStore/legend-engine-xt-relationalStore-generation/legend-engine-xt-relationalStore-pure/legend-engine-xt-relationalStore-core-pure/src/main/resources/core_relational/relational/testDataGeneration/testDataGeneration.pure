@@ -666,7 +666,7 @@ function <<access.private>> meta::relational::testDataGeneration::convertValuesT
 {
    let stringToken = $values->map(any | $any->match([
       s:String[1] | '\'' + $s->replace('\'', '\'\'') + '\'';,
-      d:Date[1] |  '\'' + if($d->toString()->length() > 10, |format('%t{[' + 'GMT' + ']yyyy-MM-dd HH:mm:ss.S}', $d), |format('%t{[' + 'GMT' + ']yyyy-MM-dd}', $d)) + '\'',
+      d:Date[1] | format('\'%t{[GMT]yyyy-MM-dd?[ HH:mm:ss?[.S*]]}\'', $d),
       n:Number[1] | $n->toString(),
       f:Float[1] | $f->toString(),
       b:Boolean[1] | if($b, | '1', | '0'),

@@ -170,14 +170,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 {
    //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
    let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
-   if($date->hasSubsecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}\'', $date),
-      | if ($date->hasSecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}\'', $date),
-          | if ($date->hasMinute(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}\', \'YYYY-MM-DD HH24:MI\')', $date),
-            | if ($date->hasHour(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH}\', \'YYYY-MM-DD HH24\')', $date),
-              | if ($date->hasMonth() || $date->hasDay(),
-                | format('DATE\'%t{[' + $timeZone + ']yyyy-MM-dd}\'', $date),
-                | fail('Ensure the target system understands Year or Year-month semantic.'); '';
-      ))))
+   //The branches below differ in the SQL they wrap the date in, so only the two that share a wrapper
+   //merge: the optional section writes the sub-second digits where the date has them, and S* writes
+   //however many that is.
+   if($date->hasSecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss?[.S*]}\'', $date),
+      | if ($date->hasMinute(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}\', \'YYYY-MM-DD HH24:MI\')', $date),
+        | if ($date->hasHour(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH}\', \'YYYY-MM-DD HH24\')', $date),
+          | if ($date->hasMonth() || $date->hasDay(),
+            | format('DATE\'%t{[' + $timeZone + ']yyyy-MM-dd}\'', $date),
+            | fail('Ensure the target system understands Year or Year-month semantic.'); '';
+      )))
    );
 }
 
