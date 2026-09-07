@@ -4861,6 +4861,81 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// An unqualified correlated reference: 'Decimal' exists only on the enclosing relation, so it has
+// to resolve outward even though the sub-relation is the innermost scope.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExistsCorrelatedOnUnqualifiedOuterColumn():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE EXISTS (SELECT t2."Integer" FROM service."/service/service2" t2 WHERE t2."ID" = "Decimal")',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->exists(e | $e.ID == $x.Decimal)
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+// A bare name owned by the sub-relation must still bind to the sub-relation: the inner scope
+// shadows the enclosing one, so this must not be dragged outward by the correlation lookup.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExistsUnqualifiedInnerColumnIsNotCorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE EXISTS (SELECT t2."Integer" FROM service."/service/service2" t2 WHERE "ID" = 1)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->exists(e | $e.ID == 1)
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+// The same alias at two nesting levels: the outer derived table and the join's left side are both
+// 'root'. Nothing clears the inherited 'contexts', so the stale inner 'root' is still visible when
+// the outer 'root.flag' is resolved - and it does not own 'flag'. The relation has to consult its
+// own name before its children.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDerivedTableAliasReusedAcrossNestingLevels():Boolean[1]
+{
+  let context = processQuery(
+    'SELECT root."flag" FROM (SELECT CASE WHEN b."ID" IS NULL THEN 0 ELSE 1 END AS "flag" ' +
+    'FROM service."/service/service1" AS root ' +
+    'LEFT OUTER JOIN service."/service/service2" AS b ON root."Integer" = b."Integer") AS root',
+    relationSources(), false);
+
+  // Not merely "it transpiled": the outer 'root' must have resolved to the derived table's own
+  // projection. Asserting the column is present is what distinguishes this from a wrong-scope
+  // resolution that still produces a non-empty expression.
+  assert($context.expression->toOne()->resolveRelationColumns()->exists(c | $c.name == 'flag'));
+}
+
+// A correlated subquery that reuses the outer alias and then references an
+// OUTER-only column through it. The inner FROM shadows the outer for the whole subquery, so
+// 'Decimal' is genuinely out of scope. This used to be accepted by resolving outward past the
+// shadow; it is now rejected, which is what standard SQL requires.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCorrelatedReusedAliasDoesNotResolvePastShadow():Boolean[1]
+{
+  error(
+    'SELECT t."Boolean" FROM service."/service/service1" t ' +
+    'WHERE EXISTS (SELECT "ID" FROM service."/service/service2" t WHERE t."Decimal" = 1)',
+    'no column found named: \'Decimal\'. Available columns: [ID, Integer, String]'
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNotExistsCorrelated():Boolean[1]
 {
   test(
