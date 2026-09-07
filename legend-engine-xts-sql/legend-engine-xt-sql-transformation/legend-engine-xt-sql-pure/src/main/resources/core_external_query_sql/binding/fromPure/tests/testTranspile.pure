@@ -2057,9 +2057,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
           ->project(
             [
-              col(row:TDSRow[1] | []->cast(@Number), 'plus'),
-              col(row:TDSRow[1] | []->cast(@Number), 'minus'),
-              col(row:TDSRow[1] | []->cast(@Number), 'multiply'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'plus'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'minus'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'multiply'),
               col(row:TDSRow[1] | []->cast(@Float), 'divide'),
               col(row:TDSRow[1] | []->cast(@Integer), 'mod'),
               col(row:TDSRow[1] | []->cast(@Number), 'pow')
@@ -2069,12 +2069,82 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         {|FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->project(~[
-                plus : x|[]->cast(@Number),
-                minus : x|[]->cast(@Number),
-                multiply : x|[]->cast(@Number),
+                plus : x|[]->cast(@Integer),
+                minus : x|[]->cast(@Integer),
+                multiply : x|[]->cast(@Integer),
                 divide : x|[]->cast(@Float),
                 mod : x|[]->cast(@Integer),
                 pow : x|[]->cast(@Number)])}
+    ]
+  )
+}
+
+//we flatten chained ADD/SUBTRACT/MULTIPLY expressions of the same operator into a single call, this exercises that with 3+ operands and mixed nesting
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmeticComplex():Boolean[1]
+{
+  test(
+    'SELECT ' +
+      '1 + 2 + Integer + Float + nullable AS "chainedPlus", ' +
+      '100 - 10 - Integer - nullable AS "chainedMinus", ' +
+      '2 * 3 * Integer * nullable AS "chainedMultiply", ' +
+      '1 + (Integer - 2) AS "plusOfMinus", ' +
+      '(Integer + 1) - (Float - 2) AS "minusOfPlusAndMinus", ' +
+      '(Integer + 1) * (Integer - 2) * 3 AS "multiplyOfPlusAndMinus" ' +
+    'FROM (select case when true then 1 else null::integer end as nullable, Integer, Float from service."/service/service1")',
+
+    [
+      {|FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->project(~[
+          nullable: x | if (true, | 1, | []->cast(@Integer)),
+          Integer: x | $x.Integer,
+          Float: x | $x.Float
+        ])
+        ->project(~[
+              chainedPlus : x| if ($x.nullable->isEmpty(), | [], | 1 + 2 + $x.Integer + $x.Float + $x.nullable->toOne()),
+              chainedMinus : x|if ($x.nullable->isEmpty(), | [], | 100 - 10 - $x.Integer - $x.nullable->toOne()),
+              chainedMultiply : x| if ($x.nullable->isEmpty(), | [], | 2 * 3 * $x.Integer * $x.nullable->toOne()),
+              plusOfMinus : x|1 + ($x.Integer - 2),
+              minusOfPlusAndMinus : x|($x.Integer + 1) - ($x.Float - 2),
+              multiplyOfPlusAndMinus : x|($x.Integer + 1) * ($x.Integer - 2) * 3])
+       }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmeticComplexNullable():Boolean[1]
+{
+  test(
+    'SELECT ' +
+      '1 + 2 + NULL + Integer AS "chainedPlusWithNull", ' +
+      '100 - NULL - Integer AS "chainedMinusWithNull", ' +
+      '2 * NULL * Integer AS "chainedMultiplyWithNull", ' +
+      'Integer + Float + NULL AS "chainedPlusWithTrailingNull", ' +
+      '(Integer - NULL) - Float AS "chainedMinusWithNullInGroup" ' +
+    'FROM service."/service/service1"',
+
+    [
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+          ->project(
+            [
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedPlusWithNull'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedMinusWithNull'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedMultiplyWithNull'),
+              col(row:TDSRow[1] | []->cast(@Number), 'chainedPlusWithTrailingNull'),
+              col(row:TDSRow[1] | []->cast(@Number), 'chainedMinusWithNullInGroup')
+            ]
+          )
+        },
+        {|FlatInput.all()
+            ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+            ->project(~[
+                chainedPlusWithNull : x|[]->cast(@Integer),
+                chainedMinusWithNull : x|[]->cast(@Integer),
+                chainedMultiplyWithNull : x|[]->cast(@Integer),
+                chainedPlusWithTrailingNull : x|[]->cast(@Number),
+                chainedMinusWithNullInGroup : x|[]->cast(@Number)])}
     ]
   )
 }
@@ -3289,7 +3359,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             SIMPLE : x | 'a' + 'b' + 'c',
             NULL : x | []->cast(@String),
             NULL_BRACKETS : x | []->cast(@String),
-            NULLABLE : x | if(false || if(1 == 1, |[], |'b')->isEmpty(), |[]->cast(@String), |'a' + if(1 == 1, |[], |'b')->toOne() + 'c'),
+            NULLABLE : x | if(if(1 == 1, |[], |'b')->isEmpty(), |[], |'a' + if(1 == 1, |[], |'b')->toOne() + 'c'),
             SIMPLE_CONCAT : x | 'a' + 'b',
             NULL_CONCAT : x | 'a' + 'b',
             NULLABLE_CONCAT : x | 'a' + if (1 == 1, | [], | 'b')->toOne(),
@@ -3784,7 +3854,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~['__sql_window_ROW_PLUS_0':{p,w,r| $p->rowNumber($r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
               ->extend(~[
-                ABS_ROW: x | $x.'__sql_window_ABS_ROW_0'->toOne()->abs(),
+                ABS_ROW: x | $x.'__sql_window_ABS_ROW_0'->abs(),
                 ROW_PLUS: x | $x.'__sql_window_ROW_PLUS_0' + 1
               ])
               ->select(~[String, ABS_ROW, ROW_PLUS, RANK])

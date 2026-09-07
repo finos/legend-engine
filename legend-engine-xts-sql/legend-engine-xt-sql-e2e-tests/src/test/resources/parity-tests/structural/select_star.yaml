@@ -58,4 +58,4 @@ tests:
     feature: "SELECT table.* with extra expression"
     category: "select_star"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
