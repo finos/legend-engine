@@ -261,11 +261,25 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
       pair(| isFunctionWithDistinct($d, $state),  | convertFunctionWithDistinct($d, $state)),
       pair(| isEqualsFromFilter($d, $state),      | convertEqualFromFilter($d, $state)),
       pair(| $d->instanceOf(UnionOrJoin),         | convertDynaFunction($d.parameters->reverse()->orFilters($state.extensions)->toOne()->cast(@DynaFunction), $state)),
-      pair(| $d.name == 'extractFromSemiStructured', | convertExtractFromSemiStructured($d, $state))
+      pair(| $d.name == 'extractFromSemiStructured', | convertExtractFromSemiStructured($d, $state)),
+      pair(| $d.name->in(['case', 'if']),         | let params = $d->flattenCaseChain()->map(p|$p->convertElementToExpression($operandState));
+                                                     caseExpression()->eval($params);)
     ],
-    | 
+    |
       let params = $d.parameters->map(p|$p->convertElementToExpression($operandState));
       $state.dynaFunctionConverterMap->get($d.name)->toOne('Couldn\'t find DynaFunction to Postgres model translation for ' + $d.name + '().')->eval($params);
+  );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::flattenCaseChain(d:DynaFunction[1]):RelationalOperationElement[*]
+{
+  assert($d.name != 'if' || $d.parameters->size() == 3, | 'if() takes exactly 3 parameters (condition, then, else), was called with ' + $d.parameters->size()->toString() + ' instead');
+  let params = $d.parameters;
+  let elseVal = $params->last()->toOne();
+  let ownPairs = $params->init();
+  if($elseVal->instanceOf(DynaFunction) && $elseVal->cast(@DynaFunction).name->in(['case', 'if']),
+    | $ownPairs->concatenate($elseVal->cast(@DynaFunction)->flattenCaseChain());,
+    | $ownPairs->concatenate($elseVal);
   );
 }
 
