@@ -598,7 +598,7 @@ tests:
   function: greatest
   signature: "greatest(VARIADIC \"any\") → \"any\""
   expected_tds_status: PASS
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 - id: greatest__varchar__literals
   sql: SELECT GREATEST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
@@ -612,14 +612,14 @@ tests:
   function: greatest
   signature: "greatest(VARIADIC \"any\") → \"any\""
   expected_tds_status: PASS
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 - id: least__int__from_table
   sql: SELECT LEAST(int_val, small_val, 0) AS result FROM numbers WHERE id IN (1, 2, 8) ORDER BY 1
   function: least
   signature: "least(VARIADIC \"any\") → \"any\""
   expected_tds_status: PASS
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 - id: least__varchar__literals
   sql: SELECT LEAST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
@@ -633,7 +633,7 @@ tests:
   function: least
   signature: "least(VARIADIC \"any\") → \"any\""
   expected_tds_status: PASS
-  expected_rel_status: ERROR
+  expected_rel_status: PASS
 
 # ---------------------------------------------------------------------------
 # NULLIF

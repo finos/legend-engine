@@ -19,7 +19,7 @@ tests:
     feature: "expression alias"
     category: "aliases"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Table aliases
   - id: alias_table
@@ -42,7 +42,7 @@ tests:
     feature: "alias in ORDER BY"
     category: "aliases"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: alias_in_having
     sql: "SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 1 ORDER BY cnt DESC"

@@ -53,7 +53,7 @@ tests:
     feature: "Implicit type coercion"
     category: "type_casting"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CAST float to integer (truncation)
   - id: cast_float_to_int

@@ -28,23 +28,36 @@ import java.time.format.SignStyle;
 import java.time.temporal.ChronoField;
 import java.time.temporal.JulianFields;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PostgresDateParser
 {
+    /**
+     * Postgres {@code DateStyle} input field-order component. Governs how ambiguous numeric
+     * dates such as {@code 01/02/03} are interpreted. Mirrors the second field of Postgres'
+     * {@code DateStyle} GUC (e.g. {@code 'ISO, MDY'}). Postgres' cluster default is {@link #MDY}.
+     * See <a href="https://www.postgresql.org/docs/current/datetime-input-rules.html">Postgres
+     * date/time input rules</a>.
+     */
+    public enum DateStyle
+    {
+        MDY, DMY, YMD
+    }
+
+    //should be DateStyle.MDY to match postgres, but we currently do not support pass through from server so making null for now
+    public static final DateStyle DEFAULT_DATE_STYLE = null;
+
     private static final Pattern BC_AD_PATTERN = Pattern.compile("(?i)\\s+(BC|AD|B\\.C\\.|A\\.D\\.)\\s*$");
     private static final Pattern JULIAN_PATTERN = Pattern.compile("^J(\\d+)$");
     private static final Pattern YEAR_DOY_PATTERN = Pattern.compile("^(\\d{4})\\.(\\d{1,3})$");
     private static final Pattern COMPACT_DATE_PATTERN = Pattern.compile("^(\\d{8})$");
     private static final Pattern COMPACT_DATE_SHORT_PATTERN = Pattern.compile("^(\\d{6})$");
     private static final Pattern TZ_ABBREV_PATTERN = Pattern.compile("\\s+(?:UTC|GMT|EST|EDT|CST|CDT|MST|MDT|PST|PDT|CET|CEST|EET|EEST|IST|JST|KST|NZST|NZDT|ACST|AEST|AWST|HST|AKST|AKDT|AST|ADT|NST|NDT)\\s*$");
-    private static final Pattern DOT_DMY_PATTERN = Pattern.compile("^\\d{1,2}\\.\\d{1,2}\\.\\d{2,4}(\\s|$)");
-    private static final Pattern AMBIGUOUS_NUMERIC_SLASH_PATTERN = Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{2,4}(\\s|$)");
-    private static final Pattern AMBIGUOUS_NUMERIC_DASH_PATTERN = Pattern.compile("^\\d{1,2}-\\d{1,2}-\\d{4}(\\s|$)");
-    private static final Pattern SUB_MILLISECOND_PATTERN = Pattern.compile("\\.\\d{4,}");
     private static final Pattern FRACTIONAL_SECONDS_PATTERN = Pattern.compile("\\.(\\d+)");
 
     private static final String OPTIONAL_SECONDS = "[:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]]";
@@ -52,6 +65,12 @@ public class PostgresDateParser
     private static final List<DateTimeFormatter> TIMESTAMP_FORMATTERS = new ArrayList<>();
     private static final List<DateTimeFormatter> DATE_FORMATTERS = new ArrayList<>();
     private static final List<DateTimeFormatter> OFFSET_FORMATTERS = new ArrayList<>();
+
+    // Style-specific formatters tried before the shared lists so that ambiguous
+    // numeric inputs (e.g. 1/2/1999, 1-2-1999, 1.2.1999) are interpreted per
+    // the caller's Postgres DateStyle rather than by list order.
+    private static final Map<DateStyle, List<DateTimeFormatter>> STYLE_DATE_FORMATTERS = new EnumMap<>(DateStyle.class);
+    private static final Map<DateStyle, List<DateTimeFormatter>> STYLE_TIMESTAMP_FORMATTERS = new EnumMap<>(DateStyle.class);
 
     static
     {
@@ -86,9 +105,8 @@ public class PostgresDateParser
                 .appendLiteral(' ')
                 .appendPattern("h:mm" + OPTIONAL_SECONDS + " a")
                 .toFormatter(Locale.ENGLISH));
-        TIMESTAMP_FORMATTERS.add(new DateTimeFormatterBuilder()
-                .appendPattern("M/d/yyyy h:mm" + OPTIONAL_SECONDS + " a")
-                .toFormatter(Locale.ENGLISH));
+        // NOTE: "M/d/yyyy h:mm a" intentionally omitted here - ambiguous numeric date,
+        // handled exclusively via STYLE_TIMESTAMP_FORMATTERS.
         TIMESTAMP_FORMATTERS.add(new DateTimeFormatterBuilder()
                 .appendPattern("MMMM d, yyyy h:mm" + OPTIONAL_SECONDS + " a")
                 .toFormatter(Locale.ENGLISH));
@@ -105,11 +123,7 @@ public class PostgresDateParser
         addTimestampFormatter("EEE MMM d yyyy HH:mm" + OPTIONAL_SECONDS);
         addTimestampFormatter("EEE MMM d HH:mm" + OPTIONAL_SECONDS + " yyyy");
 
-        // SQL slash
-        addTimestampFormatter("M/d/yyyy HH:mm" + OPTIONAL_SECONDS);
-
-        // German dot
-        addTimestampFormatter("d.M.yyyy HH:mm" + OPTIONAL_SECONDS);
+        // SQL slash / German dot: ambiguous, handled exclusively via STYLE_TIMESTAMP_FORMATTERS
 
         // Mixed
         addTimestampFormatter("yyyy-MMM-d HH:mm" + OPTIONAL_SECONDS);
@@ -118,7 +132,8 @@ public class PostgresDateParser
         // Month dd yyyy (no comma)
         addTimestampFormatter("MMMM d yyyy HH:mm" + OPTIONAL_SECONDS);
 
-        // Two-digit year ISO-like
+        // Two-digit year ISO-like. NOTE: ambiguous "M-d" order, but no DMY/YMD two-digit-year
+        // counterpart exists yet - always interpreted as MDY regardless of requested DateStyle.
         TIMESTAMP_FORMATTERS.add(new DateTimeFormatterBuilder()
                 .appendValueReduced(ChronoField.YEAR, 2, 2, 1970)
                 .appendLiteral('-')
@@ -159,11 +174,7 @@ public class PostgresDateParser
         // Postgres-style
         addDateFormatter("EEE MMM d yyyy");
 
-        // SQL slash
-        addDateFormatter("M/d/yyyy");
-
-        // German dot
-        addDateFormatter("d.M.yyyy");
+        // SQL slash / German dot: ambiguous, handled exclusively via STYLE_DATE_FORMATTERS
 
         // Mixed with month abbreviation
         addDateFormatter("yyyy-MMM-d");
@@ -173,13 +184,12 @@ public class PostgresDateParser
         // yyyy/M/d
         addDateFormatter("yyyy/M/d");
 
-        // d/M/yyyy
-        addDateFormatter("d/M/yyyy");
+        // d/M/yyyy and M-d-yyyy: ambiguous, handled exclusively via STYLE_DATE_FORMATTERS
 
-        // M-d-yyyy
-        addDateFormatter("M-d-yyyy");
-
-        // Two-digit year
+        // Two-digit year. NOTE: "M-d" / "M/d/" are ambiguous numeric formats but have no
+        // DMY/YMD two-digit-year counterpart in STYLE_DATE_FORMATTERS yet - they are
+        // always interpreted as MDY regardless of the requested DateStyle. "d-MMM-" is
+        // unambiguous (month name) and safe unconditionally.
         DATE_FORMATTERS.add(new DateTimeFormatterBuilder()
                 .appendValueReduced(ChronoField.YEAR, 2, 2, 1970)
                 .appendLiteral('-')
@@ -193,6 +203,38 @@ public class PostgresDateParser
                 .appendPattern("d-MMM-")
                 .appendValueReduced(ChronoField.YEAR, 2, 2, 1970)
                 .toFormatter(Locale.ENGLISH));
+
+        // Style-specific priority formatters. Postgres routes ambiguous numeric
+        // inputs like 1/2/1999 through the DateStyle field-order component.
+        STYLE_DATE_FORMATTERS.put(DateStyle.MDY, buildDateFormatters("M/d/yyyy", "M-d-yyyy", "M.d.yyyy"));
+        STYLE_DATE_FORMATTERS.put(DateStyle.DMY, buildDateFormatters("d/M/yyyy", "d-M-yyyy", "d.M.yyyy"));
+        STYLE_DATE_FORMATTERS.put(DateStyle.YMD, buildDateFormatters("yyyy/M/d", "yyyy-M-d", "yyyy.M.d"));
+
+        STYLE_TIMESTAMP_FORMATTERS.put(DateStyle.MDY, buildTimestampFormatters("M/d/yyyy", "M-d-yyyy", "M.d.yyyy"));
+        STYLE_TIMESTAMP_FORMATTERS.put(DateStyle.DMY, buildTimestampFormatters("d/M/yyyy", "d-M-yyyy", "d.M.yyyy"));
+        STYLE_TIMESTAMP_FORMATTERS.put(DateStyle.YMD, buildTimestampFormatters("yyyy/M/d", "yyyy-M-d", "yyyy.M.d"));
+    }
+
+    private static List<DateTimeFormatter> buildDateFormatters(String... patterns)
+    {
+        List<DateTimeFormatter> out = new ArrayList<>(patterns.length);
+        for (String p : patterns)
+        {
+            out.add(new DateTimeFormatterBuilder().appendPattern(p).toFormatter(Locale.ENGLISH));
+        }
+        return out;
+    }
+
+    private static List<DateTimeFormatter> buildTimestampFormatters(String... datePatterns)
+    {
+        List<DateTimeFormatter> out = new ArrayList<>(datePatterns.length);
+        for (String p : datePatterns)
+        {
+            out.add(new DateTimeFormatterBuilder()
+                    .appendPattern(p + " HH:mm" + OPTIONAL_SECONDS)
+                    .toFormatter(Locale.ENGLISH));
+        }
+        return out;
     }
 
     private static void addTimestampFormatter(String pattern)
@@ -215,6 +257,11 @@ public class PostgresDateParser
 
     public static PureDate parse(String dateString)
     {
+        return parse(dateString, DEFAULT_DATE_STYLE);
+    }
+
+    public static PureDate parse(String dateString, DateStyle dateStyle)
+    {
         if (dateString == null || dateString.trim().isEmpty())
         {
             throw new IllegalArgumentException("Cannot parse empty date string");
@@ -229,23 +276,6 @@ public class PostgresDateParser
             return special;
         }
 
-        // Dot-separated D.M.YYYY is ambiguous without knowing Postgres DateStyle (MDY vs DMY)
-        if (DOT_DMY_PATTERN.matcher(trimmed).find())
-        {
-            throw new UnsupportedOperationException("Dot-separated date format (e.g. '8.1.1999') is ambiguous without Postgres DateStyle context and is not supported");
-        }
-
-        // Slash-separated M/D/YYYY is ambiguous without knowing Postgres DateStyle (MDY vs DMY)
-        if (AMBIGUOUS_NUMERIC_SLASH_PATTERN.matcher(trimmed).find())
-        {
-            throw new UnsupportedOperationException("Numeric slash-separated date format (e.g. '1/8/1999') is ambiguous without Postgres DateStyle context and is not supported");
-        }
-
-        // Dash-separated M-D-YYYY is ambiguous without knowing Postgres DateStyle (MDY vs DMY)
-        if (AMBIGUOUS_NUMERIC_DASH_PATTERN.matcher(trimmed).find())
-        {
-            throw new UnsupportedOperationException("Numeric dash-separated date format (e.g. '1-8-1999') is ambiguous without Postgres DateStyle context and is not supported");
-        }
 
 //        // Sub-millisecond precision (>3 fractional digits) is not supported ? downstream stores (e.g. H2) truncate to milliseconds
 //        if (SUB_MILLISECOND_PATTERN.matcher(trimmed).find())
@@ -307,6 +337,35 @@ public class PostgresDateParser
 
         // Strip timezone abbreviations (e.g., PST, UTC) ? but not AM/PM
         normalized = TZ_ABBREV_PATTERN.matcher(normalized).replaceFirst("");
+
+        if (dateStyle != null)
+        {
+            for (DateTimeFormatter fmt : STYLE_TIMESTAMP_FORMATTERS.get(dateStyle))
+            {
+                try
+                {
+                    LocalDateTime ldt = LocalDateTime.parse(normalized, fmt);
+                    return adjustEra(toPureDateTime(ldt, extractSubseconds(normalized)), isBc, ldt.getYear());
+                }
+                catch (DateTimeParseException ignored)
+                {
+                    // try next
+                }
+            }
+            for (DateTimeFormatter fmt : STYLE_DATE_FORMATTERS.get(dateStyle))
+            {
+                try
+                {
+                    LocalDate ld = LocalDate.parse(normalized, fmt);
+                    return adjustEra(toPureDate(ld), isBc, ld.getYear());
+                }
+                catch (DateTimeParseException ignored)
+                {
+                    // try next
+                }
+            }
+        }
+
 
         // Try offset (timezone-aware) formatters first
         for (DateTimeFormatter fmt : OFFSET_FORMATTERS)

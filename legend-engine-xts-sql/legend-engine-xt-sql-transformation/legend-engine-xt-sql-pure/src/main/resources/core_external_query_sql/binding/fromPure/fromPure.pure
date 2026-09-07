@@ -1246,7 +1246,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           let aggExpression = processExpression(^$functionCall(window = []), $expContext, $context)->evaluateAndDeactivate();
 
           let aggregation = lambda(
-                              functionType([var('p'), var('w'), var('r')], $aggExpression.genericType, ZeroOne),
+                              functionType([var('p'), var('w'), var('r')], $aggExpression.genericType, $aggExpression.multiplicity->orElse(ZeroOne)),
                               $aggExpression
                             );
 
@@ -1255,8 +1255,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           ));
 
           let relationColumns = resolveRelationColumns($input);
-          let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
 
+          let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
 
           sfe(extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_, buildRelationType($columns), [$input, iv($over), iv($aggregations)]);,
         |
@@ -2836,14 +2836,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       | nullOrSfe($func, iv($multiplicityForcedArgs)->concatenate($separator)));
 
   if ($requiresNullGuard,
-    | let nullGuardCondition = $args->filter(a | $a->isZeroOne())
-        ->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a))
-        ->fold({isEmptyArg, anyEmpty |
-          sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
-        }, iv(false));
-
-        createIfStatement($nullGuardCondition, createNormalizedCast(iv([]), String)->evaluateAndDeactivate(), $concatenatedValue);,
+    | createNullableGuard($args, $concatenatedValue, String),
     | $concatenatedValue);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullableGuard(args:ValueSpecification[*], expression:ValueSpecification[1], nullType: Type[1]):ValueSpecification[1]
+{
+  let nullables = $args->filter(a | $a->isZeroOne());
+
+  if ($nullables->isEmpty(),
+    | $expression,
+    | let empties = $nullables->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a));
+      let nullGuardCondition = $empties->tail()->fold({isEmptyArg, anyEmpty |
+              sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
+            }, $empties->at(0));
+
+      createIfStatement($nullGuardCondition, iv([], ^GenericType(rawType = $nullType))->evaluateAndDeactivate(), $expression);
+    );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBitwiseBinaryExpression(b:BitwiseBinaryExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -4227,24 +4236,69 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processNumericArithmeticExpression', $context.debug);
 
+  if ($a.type == ArithmeticType.ADD || $a.type == ArithmeticType.SUBTRACT || $a.type == ArithmeticType.MULTIPLY,
+    | processFlattenedNumericArithmeticExpression($a, $expContext, $context),
+    | processNonFlattenableNumericArithmeticExpression($a, $expContext, $context));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNonFlattenableNumericArithmeticExpression(a:ArithmeticExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
   let left = $a.left->processExpression($expContext, $context);
   let right = $a.right->processExpression($expContext, $context);
 
-  let leftType = $left.genericType.rawType;
-  let rightType = $right.genericType.rawType;
-  let type = if ($leftType->isNotEmpty() && $leftType == $rightType, | $leftType->toOne(), | Number);
-
   let expression = [
-    pair(ArithmeticType.ADD, | createPlus($type, false, $left->concatenate($right))),
-    pair(ArithmeticType.SUBTRACT, | createMinus($type, false, $left->concatenate($right))),
-    pair(ArithmeticType.MULTIPLY, | createTimes($type, false, $left->concatenate($right))),
     pair(ArithmeticType.DIVIDE, | nullOrSfe(divide_Number_1__Number_1__Float_1_, [$left, $right])),
     pair(ArithmeticType.MODULUS, | nullOrSfe(mod_Integer_1__Integer_1__Integer_1_, [$left, $right])),
     pair(ArithmeticType.POWER, | nullOrSfe(pow_Number_1__Number_1__Number_1_, [$left, $right]))
   ]->getValue($a.type)->eval();
 
   if ($left->isNull() || $right->isNull(), | iv([], $expression->evaluateAndDeactivate().genericType), | $expression);
+}
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFlattenedNumericArithmeticExpression(a:ArithmeticExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let values = flattenArithmeticExpression($a)->map(e | $e->processExpression($expContext, $context))->evaluateAndDeactivate();
+
+  createNullGuardedCollectionFunction($values, {args, type | [
+        pair(ArithmeticType.ADD, | createPlus($type, false, $args)),
+        pair(ArithmeticType.SUBTRACT, | createMinus($type, false, $args)),
+        pair(ArithmeticType.MULTIPLY, | createTimes($type, false, $args))
+      ]->getValue($a.type)->eval()});
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullGuardedCollectionFunction(values:ValueSpecification[*], expressionFunc:Function<{ValueSpecification[*], Type[1] -> ValueSpecification[1]}>[1]):ValueSpecification[1]
+{
+  let type = bestCommonType($values.genericType.rawType);
+  let anyNull = $values->exists(v | $v->isNull());
+
+  if ($anyNull,
+    | iv([], ^GenericType(rawType = $type)),
+    | let oneifiedValues = toOneifyCollectionArg($values);
+      let expression = $expressionFunc->eval($oneifiedValues, $type)->evaluateAndDeactivate();
+
+      createNullableGuard($values, $expression, $type);
+  );
+}
+
+//we flatten otherwise nested creates huge resultant pure due to null checking
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenArithmeticExpression(expr: ArithmeticExpression[1]): meta::external::query::sql::metamodel::Expression[*]
+{
+  //subtraction is not commutative/associative on its right side (a - (b - c) != (a - b) - c), so only the left spine is safe to flatten
+  $expr.left->flattenArithmeticExpressionValues($expr.type)->concatenate(
+    if ($expr.type == ArithmeticType.SUBTRACT, | $expr.right, | $expr.right->flattenArithmeticExpressionValues($expr.type))
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenArithmeticExpressionValues(expr: meta::external::query::sql::metamodel::Expression[1], type: ArithmeticType[1]): meta::external::query::sql::metamodel::Expression[*]
+{
+  $expr->match([
+    a: ArithmeticExpression[1] |
+      if ($a.type == $type,
+        | flattenArithmeticExpression($a);,
+        | $a;
+      );,
+    e: meta::external::query::sql::metamodel::Expression[1] | $e
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::createMinus(type:Type[0..1], null:Boolean[1], args:ValueSpecification[*]):ValueSpecification[1]

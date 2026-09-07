@@ -355,7 +355,7 @@ tests:
     feature: "window ORDER BY arithmetic across both join sides"
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g1c_win_order_extract_over_join
     sql: "SELECT p.name AS name, d.budget AS budget, ROW_NUMBER() OVER (PARTITION BY p.dept_id ORDER BY EXTRACT(YEAR FROM p.hire_date), p.name) AS rn FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1"
@@ -449,14 +449,14 @@ tests:
     feature: "GROUP BY key that reaches the select list only inside an expression"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_inside_expression_with_other_side_aggregate
     sql: "SELECT p.dept_id + 1 AS dept_plus_one, SUM(d.budget) AS total_budget FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY 1"
     feature: "GROUP BY key inside an expression, aggregate reading the other join side"
     category: "column_resolution_corpus"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: crcs_g2_group_key_over_left_join
     sql: "SELECT p.dept_id AS dept_id, COUNT(*) AS n FROM persons p LEFT OUTER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY 1"
