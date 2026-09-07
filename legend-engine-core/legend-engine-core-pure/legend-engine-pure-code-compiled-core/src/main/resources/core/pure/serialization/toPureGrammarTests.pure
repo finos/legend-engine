@@ -80,6 +80,35 @@ function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::tes
   );  
 }
 
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testRuntimeWithConnectionStores():Boolean[1]
+{
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = 'db', connection = ^meta::core::runtime::Connection()));
+
+  assertEquals('^meta::core::runtime::Runtime(connectionStores=^meta::core::runtime::ConnectionStore(connection=UNKNOWN:Connection, element=db))',
+               $runtime->printRuntime([]));
+}
+
+// An empty connectionStores used to print as the unparseable '^meta::core::runtime::Runtime(connectionStores=)'.
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testRuntimeWithNoConnectionStores():Boolean[1]
+{
+  assertEquals('^meta::core::runtime::Runtime()', ^meta::core::runtime::Runtime()->printRuntime([]));
+}
+
+// preprocessFunction carries the runtime's query rewrite hook; dropping it on a print/re-parse round trip
+// silently disables the rewrite rather than failing.
+function <<test.Test>> meta::pure::metamodel::serialization::grammar::tests::testRuntimePreprocessFunctionIsPrinted():Boolean[1]
+{
+  let runtime = ^meta::core::runtime::Runtime(preprocessFunction = meta::pure::metamodel::serialization::grammar::tests::testPreprocess_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_);
+
+  assertEquals('^meta::core::runtime::Runtime(preprocessFunction=meta::pure::metamodel::serialization::grammar::tests::testPreprocess_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_)',
+               $runtime->printRuntime([]));
+}
+
+function meta::pure::metamodel::serialization::grammar::tests::testPreprocess(f:FunctionDefinition<Any>[1], runtime:meta::core::runtime::Runtime[1]):FunctionDefinition<Any>[1]
+{
+  $f;
+}
+
 function meta::pure::metamodel::serialization::grammar::tests::functionTest(func:ConcreteFunctionDefinition<Any>[1], expected:String[1], fullPath:Boolean[1]):Boolean[1]
 {
   let config = ^Configuration(fullPath = $fullPath);
