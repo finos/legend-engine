@@ -320,6 +320,60 @@ Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeT
     }
 )
 
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithNestedCase
+(
+    EmployeeType: EnumerationMapping Foo
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    EmployeeRole: EnumerationMapping EmployeeRoleMapping
+    {
+        JUNIOR : 'J',
+        SENIOR : 'S'
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Foo : type,
+            role: EnumerationMapping EmployeeRoleMapping : case(equal(type, 'FTE'), 'S', case(equal(type, 'FTC'), 'J', case(equal(type, 'FTO'), 'J', 'J')))
+        )
+    }
+)
+
+Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithNestedIf
+(
+    EmployeeType: EnumerationMapping Foo
+    {
+        CONTRACT:  ['FTC', 'FTO'],
+        FULL_TIME: 'FTE'
+    }
+
+    EmployeeRole: EnumerationMapping EmployeeRoleMapping
+    {
+        JUNIOR : 'J',
+        SENIOR : 'S'
+    }
+
+    Employee: Relational
+    {
+        scope([myDB]default.employeeTable)
+        (
+            id: id,
+            name: name,
+            dateOfHire: doh,
+            type : EnumerationMapping Foo : type,
+            role: EnumerationMapping EmployeeRoleMapping : if(equal(type, 'FTE'), 'S', if(equal(type, 'FTC'), 'J', if(equal(type, 'FTO'), 'J', 'J')))
+        )
+    }
+)
+
 Mapping meta::relational::tests::mapping::enumeration::model::mapping::employeeTestMappingWithMultipleClassMappings
 (
     EmployeeType: EnumerationMapping Foo
