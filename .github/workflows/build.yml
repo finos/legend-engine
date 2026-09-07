@@ -106,8 +106,8 @@ jobs:
   build:
     name: Build
     # NOTE: Only run this when not in fork as those likely do not have access to larger runners and will fail on normal runner due to resource limitation
-    # Also, skip this build for release commits
-    if: always() && needs.build-pure.result != 'failure' && !contains(github.event.head_commit.message, '[maven-release-plugin]') && github.repository == 'finos/legend-engine'
+    # Also, skip this build for the post-release version-bump commit
+    if: always() && needs.build-pure.result != 'failure' && !startsWith(github.event.head_commit.message, 'Bump version to') && github.repository == 'finos/legend-engine'
     runs-on: ubuntu-latest
     needs:
       - build-pure
