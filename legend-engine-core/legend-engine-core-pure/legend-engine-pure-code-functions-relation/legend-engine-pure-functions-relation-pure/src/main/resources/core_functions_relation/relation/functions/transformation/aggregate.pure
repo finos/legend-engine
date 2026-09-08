@@ -60,16 +60,21 @@ native function <<PCT.function>>
 meta::pure::functions::relation::aggregate<T,K,V,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<R>[1];
 
 // See the note on the equivalent groupBy overloads.
+'''
+As `aggregate(Relation<T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<R>[1]`,
+but the aggregate is a single lambda over the whole relation rather than a map/reduce pair — the same
+distinction as on
+`groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1]`,
+and for the same reason: the lambda can still see every column.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Aggregates the entire given relation and adds a new column whose value is computed by applying the given function to the relation'
-}
 meta::pure::functions::relation::aggregate<T,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<R>[1];
 
+'''
+As `aggregate(Relation<T>[1], FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<R>[1]`,
+computing several such aggregates in one pass.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Aggregates the entire given relation and adds new columns whose values are computed by applying the given functions to the relation'
-}
 meta::pure::functions::relation::aggregate<T,R>(r:Relation<T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1]->Any[*]}, R>[1]):Relation<R>[1];
 
 

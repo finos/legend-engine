@@ -75,28 +75,40 @@ meta::pure::functions::relation::groupBy<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSp
 
 // A single lambda over the whole group, so an aggregate can name columns beyond the one it aggregates -- an
 // ordering, a tie-break -- which the map/reduce pair cannot once the map has narrowed each row to a value.
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`,
+but the aggregate is **a single lambda over the whole group**, which arrives as a `Relation`:
+
+```pure
+$rel->groupBy(~[grp], ~names : g | $g->joinStrings(~name, ',', ~id->ascending()))
+```
+
+The map/reduce pair narrows each row to one value before the reduction sees it, so it cannot express
+an aggregate that needs another column — an ordering, a tie-break. This form can, because the lambda
+still has the whole group to look at. `joinStrings` with a sort spec is the motivating case.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given columns and adds a new column whose value is computed by applying the given function to the relation of rows in each group'
-}
 meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1]`,
+grouping by a single column written without the brackets.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given column and adds a new column whose value is computed by applying the given function to the relation of rows in each group'
-}
 meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1]`,
+computing several such aggregates over the same grouping in one pass.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given columns and adds new columns whose values are computed by applying the given functions to the relation of rows in each group'
-}
 meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1]->Any[*]}, R>[1]):Relation<Z+R>[1];
 
+'''
+As `groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], FuncColSpec<{Relation<T>[1]->Any[0..1]}, R>[1]):Relation<Z+R>[1]`,
+grouping by a single column and computing several such aggregates.
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Groups the given relation with the given column and adds new columns whose values are computed by applying the given functions to the relation of rows in each group'
-}
 meta::pure::functions::relation::groupBy<T,Z,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:meta::pure::metamodel::relation::FuncColSpecArray<{Relation<T>[1]->Any[*]}, R>[1]):Relation<Z+R>[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
