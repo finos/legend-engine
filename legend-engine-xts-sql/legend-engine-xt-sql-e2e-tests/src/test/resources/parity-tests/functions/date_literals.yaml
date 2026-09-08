@@ -89,11 +89,11 @@ tests:
 
   # D.M.Y (German/European style with dots)
   - id: date_literal__dmy_dots
-    sql: "SELECT DATE '8.1.1999' AS result FROM dates LIMIT 1"
+    sql: "SELECT DATE '31.1.1999' AS result FROM dates LIMIT 1"
     function: date_literal
     signature: "DATE 'D.M.YYYY' (DMY)"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: BUG
+    expected_rel_status: BUG
 
   # ===== Mixed formats with month abbreviation =====
 

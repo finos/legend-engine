@@ -27,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.143.1-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -118,8 +118,11 @@
     </modules>
 
     <properties>
+        <!-- CI-Friendly Version -->
+        <revision>4.144.1-SNAPSHOT</revision>
+
         <!-- Legend -->
-        <legend.pure.version>5.97.1</legend.pure.version>
+        <legend.pure.version>5.98.0</legend.pure.version>
         <legend.shared.version>0.37.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
@@ -438,6 +441,31 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
            <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>

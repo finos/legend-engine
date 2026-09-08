@@ -655,11 +655,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | true);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1], functionProcessors:FunctionProcessor[*]):FunctionCall[*]
+{
+  extractAggregatesFromExpressionInternal($expression, $functionProcessors)
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpressionInternal(expression:meta::external::query::sql::metamodel::Expression[0..1], functionProcessors:FunctionProcessor[*]):FunctionCall[*]
 {
   walk($expression,
     t | $t,
-    f:FunctionCall[1] | if (isExpressionAggregate($f, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression()))
+    f:FunctionCall[1] | if (isExpressionAggregate($f, false, $functionProcessors), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpressionInternal($functionProcessors)))
   )->cast(@FunctionCall);
 }
 
@@ -675,7 +680,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processProjection', $context.debug);
 
-  let aggregates = $originalSelect.selectItems->filter(si | $si->isSelectItemAggregate())->cast(@SingleColumn);
+  let aggregates = $originalSelect.selectItems->filter(si | $si->isSelectItemAggregate($context.functionProcessors))->cast(@SingleColumn);
   //direct windows are select items whose top-level expression is a FunctionCall with a window (e.g. rank() OVER (...))
   let directWindows = $originalSelect.selectItems->filter(si | $si->isSelectItemWindow())->cast(@SingleColumn);
   //nested window items have a window function buried inside another expression (e.g. abs(row_number() OVER (...)), row_number() OVER (...) + 1)
@@ -717,7 +722,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //nested window items are excluded from standard since they are handled via the window + post-window extend path
   let standard = $originalSelect.selectItems->removeAll($aggregates)->removeAll($directWindows)->removeAll($nestedWindowItems);
 
-  let havingExtensions = extractAggregatesFromExpression($having)->map(e | ^SingleColumn(expression = $e));
+  let havingExtensions = extractAggregatesFromExpression($having, $context.functionProcessors)->map(e | ^SingleColumn(expression = $e));
   //Left unaliased on purpose: processExtend names these through
   //processSelectItems(.., useContextForNameResolve = false), and extensionColumnName below is the
   //same derivation, so the key that reads the column spells it exactly as the extend wrote it.
@@ -727,10 +732,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     e:meta::external::query::sql::metamodel::Expression[1] | $e
   ]))->map(e | ^SingleColumn(expression = $e));
 
-  let standardExtensions = $standard->filter(si | !$si->isNonAliasedSelectItemColumnReference() && !$si->isSelectItemAggregate())->cast(@SingleColumn);
+  let standardExtensions = $standard->filter(si | !$si->isNonAliasedSelectItemColumnReference() && !$si->isSelectItemAggregate($context.functionProcessors))->cast(@SingleColumn);
   let windowExtensions = extractWindowExtensionExpressions($windows, $context);
 
-  let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($originalSelect);
+  let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($originalSelect, $context.functionProcessors);
   let isWindow = $windows->isNotEmpty();
 
   //processOrderBy names a sort column by stringifying its expression, so an expression key needs a
@@ -955,7 +960,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processGroupBy', $context.debug);
   assert($windows->isEmpty(), | 'combining aggregations with window functions not currently supported');
 
-  let aggregates = $select.selectItems->filter(s | $s->isSelectItemAggregate() && !$s->isSelectItemWindow())->cast(@SingleColumn);
+  let aggregates = $select.selectItems->filter(s | $s->isSelectItemAggregate($context.functionProcessors) && !$s->isSelectItemWindow())->cast(@SingleColumn);
 
   let renamedItems = $select.selectItems->removeAll($aggregates)->removeAll($windows)->removeAll($extensions)->removeAll($havingExtensions)->filter(c | $c->instanceOf(SingleColumn))->cast(@SingleColumn);
 
@@ -996,7 +1001,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   //for any aggregate where there is multiple aggregations used with different arguments, we split the aggregates to individual columns and then extend
   let aggregateColumnExpresions = $allAggregateColumns->map(column |
-    let aggregateExpressions = extractAggregatesFromExpression($column.expression)->removeDuplicates();
+    let aggregateExpressions = extractAggregatesFromExpression($column.expression, $context.functionProcessors)->removeDuplicates();
     pair($column, list($aggregateExpressions));
   )->groupBy(x | $x.second.values->map(a | $a.arguments->first())->removeDuplicates()->size() > 1);
 
@@ -1039,8 +1044,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createAggregation(column:SingleColumn[1], name:String[1], aggregationFunctionCall:FunctionCall[1], context:SqlTransformContext[1]):Any[1]
 {
-  let processor = aggregateProcessor($aggregationFunctionCall.name);
-  let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall);
+  let processor = aggregateProcessor($aggregationFunctionCall.name, $context.functionProcessors);
+  let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall, $context);
 
   let mapExpression = processMapFunctionArgument($adjusted.map, $context)->evaluateAndDeactivate();
 
@@ -1180,7 +1185,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let sorts = $window.orderBy->map(si | createSortItemFunctionForColumn($si, materialisedKeyName($si.sortKey, $context), $context));
   let frame = createFrame($window.windowFrame);
 
-  let processor = functionProcessor($functionCall.name);
+  let processor = functionProcessor($functionCall.name, $context.functionProcessors);
 
   let expContext = expressionContext(
     var('r', PureOne, []), //TODO this is needed for referencing any columns within map or aggregation
@@ -1192,7 +1197,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 
   if ($processor.isAggregate,
-    | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []));
+    | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []), $context);
       let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
 
       let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
@@ -1241,7 +1246,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           let aggExpression = processExpression(^$functionCall(window = []), $expContext, $context)->evaluateAndDeactivate();
 
           let aggregation = lambda(
-                              functionType([var('p'), var('w'), var('r')], $aggExpression.genericType, ZeroOne),
+                              functionType([var('p'), var('w'), var('r')], $aggExpression.genericType, $aggExpression.multiplicity->orElse(ZeroOne)),
                               $aggExpression
                             );
 
@@ -1250,8 +1255,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
           ));
 
           let relationColumns = resolveRelationColumns($input);
-          let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
 
+          let columns = $relationColumns->concatenate(newRelationColumn($name, $aggregation->functionReturnType().rawType, $aggregation->functionReturnMultiplicity()));
 
           sfe(extend_Relation_1___Window_1__FuncColSpecArray_1__Relation_1_, buildRelationType($columns), [$input, iv($over), iv($aggregations)]);,
         |
@@ -1356,11 +1361,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 //We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(e:meta::external::query::sql::metamodel::Expression[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(e:meta::external::query::sql::metamodel::Expression[1], functionProcessors:FunctionProcessor[*]):Boolean[1]
 {
   unsupported($e->instanceOf(FunctionCall), | 'unsupported aggregation');
   let functionCall = $e->cast(@FunctionCall);
-  let processor = functionProcessor($functionCall.name);
+  let processor = functionProcessor($functionCall.name, $functionProcessors);
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name, []) + ' is not currently supported as aggregate function');
 }
 
@@ -1411,23 +1416,29 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::anyColumnAggregate(select: Select[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::anyColumnAggregate(select: Select[1], functionProcessors:FunctionProcessor[*]):Boolean[1]
 {
-  $select.selectItems->exists(si | $si->isSelectItemAggregate());
+  $select.selectItems->exists(si | $si->isSelectItemAggregate($functionProcessors));
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemAggregate(si: SelectItem[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemAggregate(si: SelectItem[1], functionProcessors:FunctionProcessor[*]):Boolean[1]
 {
-  $si->instanceOf(SingleColumn) && isExpressionAggregate($si->cast(@SingleColumn).expression, true)
+  $si->instanceOf(SingleColumn) && isExpressionAggregate($si->cast(@SingleColumn).expression, true, $functionProcessors)
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1], functionProcessors:FunctionProcessor[*]):Boolean[1]
+{
+  isExpressionAggregateInternal($e, $includeParameters, $functionProcessors);
+}
+
+//we pass through the function processors to avoid constant construction given number of times this function is called
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregateInternal(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1], functionProcessors:FunctionProcessor[*]):Boolean[1]
 {
   walk($e,
     t | $t->exists(v | $v),
     f:FunctionCall[1] |
-        let functionProcessor = functionProcessor($f.name);
-        $f.window->isEmpty() && ($functionProcessor.isAggregate || ($includeParameters && $f.arguments->exists(a | $a->isExpressionAggregate($includeParameters))));
+        let functionProcessor = functionProcessor($f.name, $functionProcessors);
+        $f.window->isEmpty() && ($functionProcessor.isAggregate || ($includeParameters && $f.arguments->exists(a | $a->isExpressionAggregateInternal($includeParameters, $functionProcessors))));
   )
 }
 
@@ -1443,9 +1454,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //recurses into FunctionCall arguments since the walk extras handler replaces the default FunctionCall traversal.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionContainingWindow(e:meta::external::query::sql::metamodel::Expression[0..1]):Boolean[1]
 {
+  isExpressionContainingWindowInternal($e);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionContainingWindowInternal(e:meta::external::query::sql::metamodel::Expression[0..1]):Boolean[1]
+{
   walk($e,
     t | $t->exists(v | $v),
-    f:FunctionCall[1] | if($f.window->isNotEmpty(), | true, | $f.arguments->exists(a | $a->isExpressionContainingWindow()))
+    f:FunctionCall[1] | if($f.window->isNotEmpty(), | true, | $f.arguments->exists(a | $a->isExpressionContainingWindowInternal()))
   );
 }
 
@@ -1463,9 +1479,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //other expression types are traversed via walk.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowFunctionsFromExpression(e:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
 {
+  extractWindowFunctionsFromExpressionInternal($e);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractWindowFunctionsFromExpressionInternal(e:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
+{
   walk($e,
     t | $t,
-    f:FunctionCall[1] | if($f.window->isNotEmpty(), | $f, | $f.arguments->map(a | $a->extractWindowFunctionsFromExpression()))
+    f:FunctionCall[1] | if($f.window->isNotEmpty(), | $f, | $f.arguments->map(a | $a->extractWindowFunctionsFromExpressionInternal()))
   )->cast(@FunctionCall);
 }
 
@@ -1891,13 +1912,92 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
+//The select item an ORDER BY ordinal points at. extractColumnNameFromExpression carries its own copy
+//of these asserts for the GROUP BY path, which must keep resolving pre-projection and so cannot share
+//this code.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ordinalSelectItem(ordinal:IntegerLiteral[1], selectItems:SelectItem[*]):SingleColumn[1]
+{
+  let index = $ordinal.value - 1; //0 index offset in sql is 1;
+  assert($index < $selectItems->size(), 'No select column at index ' + $ordinal.value->toString());
+  assert($selectItems->at($index)->instanceOf(SingleColumn), 'select * not currently supported for index order by');
+  $selectItems->at($index)->cast(@SingleColumn);
+}
+
+//The select item a statement-level sort key names, or nothing. A qualified key is matched on its
+//full name parts first, so 'ORDER BY d.name' over 'SELECT p.name, d.name AS dept_name' finds
+//d.name rather than the first item that happens to end in 'name'. Anything else - an aggregate, an
+//expression - is matched on its context-free rendering, which is how 'ORDER BY COUNT(*)' finds the
+//item the projection called 'cnt'.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedSortKeySelectItem(sortKey:meta::external::query::sql::metamodel::Expression[1], selectItems:SelectItem[*]):SingleColumn[0..1]
+{
+  let columns = $selectItems->filter(si | $si->instanceOf(SingleColumn))->cast(@SingleColumn);
+
+  //empty for anything but a qualified reference, which then matches no select item
+  let keyParts = if (!$sortKey->instanceOf(QualifiedNameReference), | [], | $sortKey->cast(@QualifiedNameReference).name.parts->joinStrings('.'));
+
+  let qualified = $columns->filter(si | $si.expression->instanceOf(QualifiedNameReference))
+                          ->filter(si | $si.expression->cast(@QualifiedNameReference).name.parts->joinStrings('.') == $keyParts)
+                          ->first();
+
+  let rendered = extractNameFromExpression($sortKey, []);
+
+  if ($qualified->isNotEmpty(),
+    | $qualified,
+    | $columns->filter(si | extractNameFromExpression($si.expression, []) == $rendered)->first());
+}
+
+//The statement-level sibling of extensionColumnName and materialisedKeyName. processOrderBy runs
+//after the projection, so its keys have to name columns of the relation the projection produced -
+//and there is no single derivation that always does.
+//
+//The projection uses two naming schemes. When it renames, an output column takes the select item's
+//AS alias ('SELECT p.name AS person_name' over a join yields person_name); when it does not -
+//allColumnsSimpleSelect, or an unaliased item on the GROUP BY path - the column keeps the physical
+//name processDuplicateRenames gave it ('name_p'). Resolving through the context always yields the
+//latter, which is why keys broke over a join; resolving through the select list always yields the
+//former, which breaks the queries the projection left alone.
+//
+//So both are derived and offered as candidates, and the relation itself decides. That is sound here
+//because a candidate is only ever accepted if the relation has a column of that name, and each
+//candidate is join-side precise: the select-list one via the name-parts match above, the context one
+//via the alias map. Only the last resort - the context-free rendering, which names a key
+//processProjection materialised into an extend - is a bare name, and it is reached only when neither
+//precise candidate exists.
+//
+//columns is the post-projection schema: processProjection's closing clone recomputed it, and neither
+//having nor sort alters it. When it is empty there is nothing to probe, so the pre-existing context
+//resolution stands - which is also what a key naming no column at all reports, keeping those errors
+//as informative as they were.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedSortKeyName(sortKey:meta::external::query::sql::metamodel::Expression[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):String[1]
+{
+  let contextName = extractColumnNameFromExpression($sortKey, $selectItems, $context);
+
+  let outputName = $sortKey->match([
+    i:IntegerLiteral[1] | ordinalSelectItem($i, $selectItems)->extractNameFromSingleColumn([]),
+    e:meta::external::query::sql::metamodel::Expression[1] | projectedSortKeySelectItem($e, $selectItems)->map(si | $si->extractNameFromSingleColumn([]))
+  ]);
+
+  //an ordinal names a select item, never a materialised key, so it has no extend to fall back on
+  let extendName = $sortKey->match([
+    i:IntegerLiteral[1] | [],
+    e:meta::external::query::sql::metamodel::Expression[1] | extractNameFromExpression($e, [])
+  ]);
+
+  let candidates = $outputName->concatenate($contextName)->concatenate($extendName)->removeDuplicates();
+
+  let available = $context.columns.name;
+  let resolved = $candidates->filter(c | $c->in($available))->first();
+
+  if ($resolved->isEmpty(), | $contextName, | $resolved->toOne());
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], _context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug(|'processOrderBy', $_context.debug);
 
   let context = ^$_context(debug = $_context.debug->indent());
 
-  let sortInformation = $sortItems->map(si| createSortItemFunction($si, $selectItems, $context));
+  let sortInformation = $sortItems->map(si| createProjectedSortItemFunction($si, $selectItems, $context));
 
   let newExp = ^TDSBuilder().sort($context.expression->toOne(), $sortInformation, $context.relation->isTrue());
 
@@ -1924,6 +2024,15 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     let column = extractColumnNameFromExpression($si.sortKey, $selectItems, $context);
 
     ^TDSBuilder().sortItem($si, $column, $context.relation->isTrue());
+}
+
+//Statement-level keys only. They apply to the projected relation, so their column comes from
+//projectedSortKeyName rather than from the context - see the comment there. The two functions above
+//keep resolving through the context: the 3-arg form is reached from ordered aggregation, which runs
+//before any projection, and createSortItemFunctionForColumn serves the window path.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createProjectedSortItemFunction(si:SortItem[1], selectItems:SelectItem[*], context: SqlTransformContext[1]):ValueSpecification[1]
+{
+    ^TDSBuilder().sortItem($si, projectedSortKeyName($si.sortKey, $selectItems, $context), $context.relation->isTrue());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processLimitOffset(limit: meta::external::query::sql::metamodel::Expression[0..1], offset: meta::external::query::sql::metamodel::Expression[0..1], _context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -2108,7 +2217,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
           ^$nc(aliases = $aliases);,
       s:SQLSource[0..1] |
-        let processor = tableFunctionProcessor($type);
+        let processor = tableFunctionProcessor($type, $context.tableFunctionProcessors);
 
         assert($processor->isNotEmpty(), 'No source or known table function found for type ' + $type);
 
@@ -2463,6 +2572,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function meta::external::query::sql::transformation::queryToPure::extractNameFromExpression(expression:meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[0..1]):String[1]
 {
+  extractNameFromExpressionInternal($expression, $context)
+}
+
+function meta::external::query::sql::transformation::queryToPure::extractNameFromExpressionInternal(expression:meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[0..1]):String[1]
+{
   $expression->match([
     a:ArithmeticExpression[1] |
       let type = [
@@ -2474,9 +2588,9 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
         pair(ArithmeticType.POWER, '^')
       ]->getValue($a.type);
 
-      $a.left->extractNameFromExpression($context) + ' ' + $type + ' ' + $a.right->extractNameFromExpression($context);,
-    a:ArraySliceExpression[1] | $a.value->extractNameFromExpression($context),
-    b:BetweenPredicate[1] | $b.value->extractNameFromExpression($context) + ' BETWEEN ' + $b.min->extractNameFromExpression($context) + ' AND ' + $b.max->extractNameFromExpression($context),
+      $a.left->extractNameFromExpressionInternal($context) + ' ' + $type + ' ' + $a.right->extractNameFromExpressionInternal($context);,
+    a:ArraySliceExpression[1] | $a.value->extractNameFromExpressionInternal($context),
+    b:BetweenPredicate[1] | $b.value->extractNameFromExpressionInternal($context) + ' BETWEEN ' + $b.min->extractNameFromExpressionInternal($context) + ' AND ' + $b.max->extractNameFromExpressionInternal($context),
     b:BitwiseBinaryExpression[1] |
       let operator = [
         pair(BitwiseBinaryOperator.AND, '&'),
@@ -2484,17 +2598,17 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
         pair(BitwiseBinaryOperator.XOR, '#')
       ]->getValue($b.operator);
 
-      $b.left->extractNameFromExpression($context) + ' ' + $operator + ' ' + $b.right->extractNameFromExpression($context);,
+      $b.left->extractNameFromExpressionInternal($context) + ' ' + $operator + ' ' + $b.right->extractNameFromExpressionInternal($context);,
     b:BitwiseShiftExpression[1] |
       let operator = [
         pair(BitwiseShiftDirection.LEFT, '<<'),
         pair(BitwiseShiftDirection.RIGHT, '>>')
       ]->getValue($b.direction);
 
-      $b.value->extractNameFromExpression($context) + ' ' + $operator + ' ' + $b.shift->extractNameFromExpression($context);,
-    c:Cast[1] | 'CAST(' + $c.expression->extractNameFromExpression($context) + ' AS ' + $c.type->extractNameFromExpression($context) + ')',
+      $b.value->extractNameFromExpressionInternal($context) + ' ' + $operator + ' ' + $b.shift->extractNameFromExpressionInternal($context);,
+    c:Cast[1] | 'CAST(' + $c.expression->extractNameFromExpressionInternal($context) + ' AS ' + $c.type->extractNameFromExpressionInternal($context) + ')',
     c:ComparisonExpression[1] |
-      $c.left->extractNameFromExpression($context) + ' ' + $c.operator->comparisonOperatorSymbol() + ' ' + $c.right->extractNameFromExpression($context),
+      $c.left->extractNameFromExpressionInternal($context) + ' ' + $c.operator->comparisonOperatorSymbol() + ' ' + $c.right->extractNameFromExpressionInternal($context),
     c:CurrentTime[1] |
       let param = if ($c.precision->isEmpty(), | '', | '(' + $c.precision->toOne()->toString() + ')');
       [
@@ -2505,45 +2619,45 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
     c:CurrentUser[1] | 'CURRENT_USER',
     c:CollectionColumnType[1] | $c.innerType.name + '[]',
     c:ColumnType[1] | $c.name + if ($c.parameters->isEmpty(), | '', | $c.parameters->map(p | $p->toString())->joinStrings('(', ', ', ')')),
-    e:Extract[1] | 'EXTRACT(\'' + extractFieldToValue($e.field) + '\' FROM ' + $e.expression->extractNameFromExpression($context) + ')',
-    f:FunctionCall[1] | $f.name->extractNameFromQualifiedName($context) + '(' + if ($f.distinct, | 'DISTINCT ', | '') +  $f.arguments->map(a | $a->extractNameFromExpression($context))->joinStrings(', ') + ')',
-    i:InListExpression[1] | $i.values->map(v | $v->extractNameFromExpression($context))->joinStrings('(', ', ', ')'),
-    i:InPredicate[1] | $i.value->extractNameFromExpression($context) + ' IN ' + $i.valueList->extractNameFromExpression($context),
+    e:Extract[1] | 'EXTRACT(\'' + extractFieldToValue($e.field) + '\' FROM ' + $e.expression->extractNameFromExpressionInternal($context) + ')',
+    f:FunctionCall[1] | $f.name->extractNameFromQualifiedName($context) + '(' + if ($f.distinct, | 'DISTINCT ', | '') +  $f.arguments->map(a | $a->extractNameFromExpressionInternal($context))->joinStrings(', ') + ')',
+    i:InListExpression[1] | $i.values->map(v | $v->extractNameFromExpressionInternal($context))->joinStrings('(', ', ', ')'),
+    i:InPredicate[1] | $i.value->extractNameFromExpressionInternal($context) + ' IN ' + $i.valueList->extractNameFromExpressionInternal($context),
     s:SubqueryExpression[1] | '(subquery)',
     e:ExistsPredicate[1] | 'EXISTS (subquery)',
-    i:IsNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NULL',
-    i:IsNotNullPredicate[1] | $i.value->extractNameFromExpression($context) + ' IS NOT NULL',
+    i:IsNullPredicate[1] | $i.value->extractNameFromExpressionInternal($context) + ' IS NULL',
+    i:IsNotNullPredicate[1] | $i.value->extractNameFromExpressionInternal($context) + ' IS NOT NULL',
     l:Literal[1] | $l->extractNameFromLiteral($context),
     l:LikePredicate[1] |
       let like = if ($l.ignoreCase, | ' ILIKE ', | ' LIKE ');
-      let escape = if ($l.escape->isEmpty(), | '', | ' ESCAPE ' + $l.escape->toOne()->extractNameFromExpression($context));
-      $l.value->extractNameFromExpression($context) + $like + $l.pattern->extractNameFromExpression($context) + $escape;,
+      let escape = if ($l.escape->isEmpty(), | '', | ' ESCAPE ' + $l.escape->toOne()->extractNameFromExpressionInternal($context));
+      $l.value->extractNameFromExpressionInternal($context) + $like + $l.pattern->extractNameFromExpressionInternal($context) + $escape;,
     l:LogicalBinaryExpression[1] |
       let type = [
         pair(LogicalBinaryType.AND, 'AND'),
         pair(LogicalBinaryType.OR, 'OR')
       ]->getValue($l.type);
 
-      $l.left->extractNameFromExpression($context) + ' ' + $type + ' ' + $l.right->extractNameFromExpression($context);,
-    n:NamedArgumentExpression[1] | $n.name + ' => ' + $n.expression->extractNameFromExpression($context),
-    n:NegativeExpression[1] | '-' + $n.value->extractNameFromExpression($context),
-    n:NotExpression[1] | 'NOT ' + $n.value->extractNameFromExpression($context),
+      $l.left->extractNameFromExpressionInternal($context) + ' ' + $type + ' ' + $l.right->extractNameFromExpressionInternal($context);,
+    n:NamedArgumentExpression[1] | $n.name + ' => ' + $n.expression->extractNameFromExpressionInternal($context),
+    n:NegativeExpression[1] | '-' + $n.value->extractNameFromExpressionInternal($context),
+    n:NotExpression[1] | 'NOT ' + $n.value->extractNameFromExpressionInternal($context),
     p:ParameterPlaceholderExpression[1] | '?',
     p:PositionalParameterExpression[1] | '$' + $p.index->toString(),
     q:QualifiedNameReference[1] | $q.name->extractNameFromQualifiedName($context),
-    q:QuantifiedComparisonExpression[1] | $q.value->extractNameFromExpression($context) + ' ' + $q.operator->comparisonOperatorSymbol() + ' ' + $q.quantifier.name + ' (subquery)',
-    s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractNameFromExpression($context),
+    q:QuantifiedComparisonExpression[1] | $q.value->extractNameFromExpressionInternal($context) + ' ' + $q.operator->comparisonOperatorSymbol() + ' ' + $q.quantifier.name + ' (subquery)',
+    s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->extractNameFromExpressionInternal($context),
     s:SearchedCaseExpression[1] |
-      let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
-      let default = if ($s.defaultValue->isEmpty(), | '', | ' ELSE ' + $s.defaultValue->toOne()->extractNameFromExpression($context));
+      let when = $s.whenClauses->map(w | $w->extractNameFromExpressionInternal($context))->joinStrings(' ');
+      let default = if ($s.defaultValue->isEmpty(), | '', | ' ELSE ' + $s.defaultValue->toOne()->extractNameFromExpressionInternal($context));
       'CASE ' + $when + $default + ' END';,
-    s:StringConcatenate[1] | $s.values->map(v | $v->extractNameFromExpression($context))->joinStrings(' || '),
+    s:StringConcatenate[1] | $s.values->map(v | $v->extractNameFromExpressionInternal($context))->joinStrings(' || '),
     s:SubscriptExpression[1] |
-      let value = $s.value->extractNameFromExpression($context);
-      let index = $s.index->extractNameFromExpression($context);
+      let value = $s.value->extractNameFromExpressionInternal($context);
+      let index = $s.index->extractNameFromExpressionInternal($context);
       $value + '[' + $index + ']';,
-    t:Trim[1] | 'TRIM(' + $t.mode->toString() + if ($t.characters->isEmpty(), | '', | ' ' + $t.characters->toOne()->extractNameFromExpression($context)) + ' FROM ' + $t.value->extractNameFromExpression($context) + ')',
-    w:WhenClause[1] | 'WHEN ' + $w.operand->extractNameFromExpression($context) + ' THEN ' + $w.result->extractNameFromExpression($context),
+    t:Trim[1] | 'TRIM(' + $t.mode->toString() + if ($t.characters->isEmpty(), | '', | ' ' + $t.characters->toOne()->extractNameFromExpressionInternal($context)) + ' FROM ' + $t.value->extractNameFromExpressionInternal($context) + ')',
+    w:WhenClause[1] | 'WHEN ' + $w.operand->extractNameFromExpressionInternal($context) + ' THEN ' + $w.result->extractNameFromExpressionInternal($context),
     e:meta::external::query::sql::metamodel::Expression[1] | ''
   ])
 }
@@ -2722,14 +2836,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       | nullOrSfe($func, iv($multiplicityForcedArgs)->concatenate($separator)));
 
   if ($requiresNullGuard,
-    | let nullGuardCondition = $args->filter(a | $a->isZeroOne())
-        ->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a))
-        ->fold({isEmptyArg, anyEmpty |
-          sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
-        }, iv(false));
-
-        createIfStatement($nullGuardCondition, createNormalizedCast(iv([]), String)->evaluateAndDeactivate(), $concatenatedValue);,
+    | createNullableGuard($args, $concatenatedValue, String),
     | $concatenatedValue);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullableGuard(args:ValueSpecification[*], expression:ValueSpecification[1], nullType: Type[1]):ValueSpecification[1]
+{
+  let nullables = $args->filter(a | $a->isZeroOne());
+
+  if ($nullables->isEmpty(),
+    | $expression,
+    | let empties = $nullables->map(a | sfe(isEmpty_Any_$0_1$__Boolean_1_, $a));
+      let nullGuardCondition = $empties->tail()->fold({isEmptyArg, anyEmpty |
+              sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$anyEmpty, $isEmptyArg]);
+            }, $empties->at(0));
+
+      createIfStatement($nullGuardCondition, iv([], ^GenericType(rawType = $nullType))->evaluateAndDeactivate(), $expression);
+    );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processBitwiseBinaryExpression(b:BitwiseBinaryExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3177,8 +3300,28 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processQualififedNameReference', $context.debug);
 
+  // A correlated owner is a NAMED enclosing relation that uniquely owns a bare
+  // column this relation does not own itself.
+  // When one is found, the column metadata comes from it, so the row variable must
+  // come from it too - reading the right column off the wrong row passes here and
+  // then fails downstream in compileViaGrammar with "The column 'x' can't be found
+  // in the relation (...)".
+  let correlated = $context.correlatedOwner($q.name.parts);
+  let ownerName  = if ($correlated->isEmpty(), | '', | $correlated->toOne().name->toOne());
+  let outerVar   = if ($correlated->isEmpty(), | [], | $expContext.varMap->get($ownerName));
 
-  createTdsColumn($q.name, $expContext.var($q.name), $expContext, $context);
+  // CorrelatedOwner only returns named owners in relation mode, so varMap is guaranteed to hold
+  // one - a miss means $context.contexts and $expContext.varMap have drifted apart.
+  assert($correlated->isEmpty() || $outerVar->isNotEmpty(),
+         | 'correlated reference \'' + $q.name.parts->joinStrings('.') +
+           '\' resolved to enclosing relation \'' + $ownerName +
+           '\' but no row variable is mapped for it');
+
+  let var = if ($correlated->isEmpty(),
+                | $expContext.var($q.name),
+                | $outerVar->toOne());
+
+  createTdsColumn($q.name, $var, $expContext, $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processCast(c:Cast[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -3624,7 +3767,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:QualifiedName[1], args:ValueSpecification[*], f:FunctionCall[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
-  let processor = functionProcessor($name);
+  let processor = functionProcessor($name, $context.functionProcessors);
   $processor.transform->eval($args->evaluateAndDeactivate(), $f, $expContext, $context);
 }
 
@@ -4006,7 +4149,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     e:ExistsPredicate[1] | Boolean,
     e:Extract[1] | Integer,
     f:FunctionCall[1] |
-      let processor = functionProcessor($f.name);
+      let processor = functionProcessor($f.name, $context.functionProcessors);
       if ($processor.returnType->isEmpty(), | Any, | $processor.returnType->toOne());,
     i:InListExpression[1] | Boolean,
     i:InPredicate[1] | Boolean,
@@ -4093,24 +4236,69 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processNumericArithmeticExpression', $context.debug);
 
+  if ($a.type == ArithmeticType.ADD || $a.type == ArithmeticType.SUBTRACT || $a.type == ArithmeticType.MULTIPLY,
+    | processFlattenedNumericArithmeticExpression($a, $expContext, $context),
+    | processNonFlattenableNumericArithmeticExpression($a, $expContext, $context));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNonFlattenableNumericArithmeticExpression(a:ArithmeticExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
   let left = $a.left->processExpression($expContext, $context);
   let right = $a.right->processExpression($expContext, $context);
 
-  let leftType = $left.genericType.rawType;
-  let rightType = $right.genericType.rawType;
-  let type = if ($leftType->isNotEmpty() && $leftType == $rightType, | $leftType->toOne(), | Number);
-
   let expression = [
-    pair(ArithmeticType.ADD, | createPlus($type, false, $left->concatenate($right))),
-    pair(ArithmeticType.SUBTRACT, | createMinus($type, false, $left->concatenate($right))),
-    pair(ArithmeticType.MULTIPLY, | createTimes($type, false, $left->concatenate($right))),
     pair(ArithmeticType.DIVIDE, | nullOrSfe(divide_Number_1__Number_1__Float_1_, [$left, $right])),
     pair(ArithmeticType.MODULUS, | nullOrSfe(mod_Integer_1__Integer_1__Integer_1_, [$left, $right])),
     pair(ArithmeticType.POWER, | nullOrSfe(pow_Number_1__Number_1__Number_1_, [$left, $right]))
   ]->getValue($a.type)->eval();
 
   if ($left->isNull() || $right->isNull(), | iv([], $expression->evaluateAndDeactivate().genericType), | $expression);
+}
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processFlattenedNumericArithmeticExpression(a:ArithmeticExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  let values = flattenArithmeticExpression($a)->map(e | $e->processExpression($expContext, $context))->evaluateAndDeactivate();
+
+  createNullGuardedCollectionFunction($values, {args, type | [
+        pair(ArithmeticType.ADD, | createPlus($type, false, $args)),
+        pair(ArithmeticType.SUBTRACT, | createMinus($type, false, $args)),
+        pair(ArithmeticType.MULTIPLY, | createTimes($type, false, $args))
+      ]->getValue($a.type)->eval()});
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createNullGuardedCollectionFunction(values:ValueSpecification[*], expressionFunc:Function<{ValueSpecification[*], Type[1] -> ValueSpecification[1]}>[1]):ValueSpecification[1]
+{
+  let type = bestCommonType($values.genericType.rawType);
+  let anyNull = $values->exists(v | $v->isNull());
+
+  if ($anyNull,
+    | iv([], ^GenericType(rawType = $type)),
+    | let oneifiedValues = toOneifyCollectionArg($values);
+      let expression = $expressionFunc->eval($oneifiedValues, $type)->evaluateAndDeactivate();
+
+      createNullableGuard($values, $expression, $type);
+  );
+}
+
+//we flatten otherwise nested creates huge resultant pure due to null checking
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenArithmeticExpression(expr: ArithmeticExpression[1]): meta::external::query::sql::metamodel::Expression[*]
+{
+  //subtraction is not commutative/associative on its right side (a - (b - c) != (a - b) - c), so only the left spine is safe to flatten
+  $expr.left->flattenArithmeticExpressionValues($expr.type)->concatenate(
+    if ($expr.type == ArithmeticType.SUBTRACT, | $expr.right, | $expr.right->flattenArithmeticExpressionValues($expr.type))
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::flattenArithmeticExpressionValues(expr: meta::external::query::sql::metamodel::Expression[1], type: ArithmeticType[1]): meta::external::query::sql::metamodel::Expression[*]
+{
+  $expr->match([
+    a: ArithmeticExpression[1] |
+      if ($a.type == $type,
+        | flattenArithmeticExpression($a);,
+        | $a;
+      );,
+    e: meta::external::query::sql::metamodel::Expression[1] | $e
+  ]);
 }
 
 function meta::external::query::sql::transformation::queryToPure::createMinus(type:Type[0..1], null:Boolean[1], args:ValueSpecification[*]):ValueSpecification[1]
@@ -4812,7 +5000,7 @@ function meta::external::query::sql::transformation::queryToPure::context(id:Int
   ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions,
                        singleExecutionContext = hasSingleExecutionContext($sources, $extensions),
                        scopeWithFrom = $scopeWithFrom, relation = $relation, compiler = $compiler, debug = $debug,
-                       scopeVariables = ^Map<String, ValueSpecification>());
+                       scopeVariables = ^Map<String, ValueSpecification>(), functionProcessors = functionProcessors(), tableFunctionProcessors = tableFunctionProcessors());
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::positionalName(i:Integer[1]):String[1]
@@ -4831,6 +5019,8 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 {
   id: Integer[1];
   contexts: SqlTransformContext[*];
+  functionProcessors: FunctionProcessor[1..*];
+  tableFunctionProcessors: FunctionProcessor[1..*];
   windows: NamedWindow[*];
   withQueries: WithQueryContext[*];
   withSupported: Boolean[1] = false; //currently only enable for dynamic source use case as plan generation is incorrect for normal sources
@@ -4916,22 +5106,50 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   }:String[1];
 
   context(name:String[0..1]){
-      let found = if ($name->isNotEmpty(),
-        | $this.contexts->filter(c | $c.name == $name),
-        | $this);
-
-      if ($found->isEmpty(), | $this, | $found->toOne());
-
+    let inner = $this.contexts->filter(c | $c.name == $name);
+    let found = if ($name->isEmpty() || $this.name == $name || $inner->isEmpty(),
+                    | $this,
+                    | $inner->toOne());
+    $found;
   }:SqlTransformContext[1];
+
+  // The enclosing relation that owns a BARE column this relation does not own itself.
+  //
+  // Relation mode only: the TDS path builds an empty varMap (rowExpressionContext's
+  // non-relation branch), so an owner found here could never be routed to a row
+  // variable. Named contexts only, for the same reason - varMap is keyed by name,
+  // and unnamed contexts exist (see the isNotEmpty filters in processSubRelation
+  // and processLateralJoin).
+  //
+  // The local-ownership check is what keeps every ordinary query on
+  // its existing path. Loosening it would silently reroute locally-owned columns
+  // to an outer row.
+  correlatedOwner(parts:String[*])
+  {
+    let single   = $parts->size() == 1 && $this.relation->isTrue();
+    let n        = if ($single, | $parts->toOne(), | '');
+    let localHit = $single && $this.columnByName($n, false)->isNotEmpty();
+    let owners   = if (!$single || $localHit,
+                       | [],
+                       | $this.contexts->filter(c |
+                             $c.name->isNotEmpty() && $c.columnByName($n, false)->isNotEmpty()));
+    if ($owners->size() == 1, | $owners->toOne(), | []);
+  }:SqlTransformContext[0..1];
+
   columnByNameParts(parts:String[*], failIfNotFound:Boolean[1])
   {
     let name = if ($parts->size() > 1, | $parts->last(), | $parts)->joinStrings('.');
     let contextName = $parts->init()->joinStrings('.');
 
     let foundContext = $this.contexts->filter(c | $c.name == $contextName);
-    let context = if ($contextName->isEmpty() || $foundContext->isEmpty(), | $this, | $foundContext->toOne());
+    let context = if ($contextName->isEmpty() || $this.name == $contextName || $foundContext->isEmpty(),
+                      | $this,
+                      | $foundContext->toOne());
 
-    $context.columnByName($name, $failIfNotFound);
+    let correlated = $this.correlatedOwner($parts);
+    if ($correlated->isNotEmpty(),
+      | $correlated->toOne().columnByName($name, $failIfNotFound),
+      | $context.columnByName($name, $failIfNotFound));
   }:meta::external::query::sql::transformation::queryToPure::QueryColumn[0..1];
   columnByName(name:String[1], failIfNotFound:Boolean[1]){
     let columns = $this.columns;

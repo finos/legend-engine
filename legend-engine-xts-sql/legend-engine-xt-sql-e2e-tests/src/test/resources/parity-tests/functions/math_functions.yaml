@@ -754,3 +754,186 @@ tests:
   signature: width_bucket(anycompatible, anycompatiblearray) → integer
   expected_tds_status: BUG
   expected_rel_status: BUG
+
+- id: addition__chained_three_operands
+  sql: SELECT int_val + int_val + int_val AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  function: addition
+  signature: integer + integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__chained_mixed_types
+  sql: SELECT int_val + float_val + numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  function: addition
+  signature: integer + double precision + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__chained_with_null
+  sql: SELECT int_val + float_val + numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  function: addition
+  signature: integer + double precision + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_three_operands
+  sql: SELECT int_val - small_val - small_val AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  function: subtraction
+  signature: integer - integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_mixed_types
+  sql: SELECT int_val - float_val - numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  function: subtraction
+  signature: integer - double precision - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_with_null
+  sql: SELECT int_val - float_val - numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  function: subtraction
+  signature: integer - double precision - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_three_operands
+  sql: SELECT int_val * small_val * small_val AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  function: multiplication
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_mixed_types
+  sql: SELECT int_val * float_val * numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  function: multiplication
+  signature: integer * double precision * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_with_null
+  sql: SELECT int_val * float_val * numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  function: multiplication
+  signature: integer * double precision * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_subtract
+  sql: SELECT (int_val + small_val) - (float_val - numeric_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  function: subtraction
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_multiply
+  sql: SELECT (int_val + small_val) * (small_val - 1) * 2 AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  function: multiplication
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_subtract_group_with_null
+  sql: SELECT (int_val - float_val) - numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  function: subtraction
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_add_with_null_in_middle
+  sql: SELECT int_val + numeric_val + small_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  function: addition
+  signature: numeric + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__int_plus_null_literal
+  sql: SELECT int_val + NULL AS result FROM numbers ORDER BY 1
+  function: addition
+  signature: integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__null_literal_plus_int
+  sql: SELECT NULL + int_val AS result FROM numbers ORDER BY 1
+  function: addition
+  signature: integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__typed_null_plus_numeric
+  sql: SELECT CAST(NULL AS numeric) + numeric_val AS result FROM numbers ORDER BY 1
+  function: addition
+  signature: numeric + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__int_minus_null_literal
+  sql: SELECT int_val - NULL AS result FROM numbers ORDER BY 1
+  function: subtraction
+  signature: integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__null_literal_minus_int
+  sql: SELECT NULL - int_val AS result FROM numbers ORDER BY 1
+  function: subtraction
+  signature: integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__typed_null_minus_numeric
+  sql: SELECT CAST(NULL AS numeric) - numeric_val AS result FROM numbers ORDER BY 1
+  function: subtraction
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__int_times_null_literal
+  sql: SELECT int_val * NULL AS result FROM numbers ORDER BY 1
+  function: multiplication
+  signature: integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__null_literal_times_int
+  sql: SELECT NULL * int_val AS result FROM numbers ORDER BY 1
+  function: multiplication
+  signature: integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__typed_null_times_numeric
+  sql: SELECT CAST(NULL AS numeric) * numeric_val AS result FROM numbers ORDER BY 1
+  function: multiplication
+  signature: numeric * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_add_with_null_literal
+  sql: SELECT int_val + NULL + small_val AS result FROM numbers ORDER BY 1
+  function: addition
+  signature: integer + integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_subtract_with_null_literal
+  sql: SELECT int_val - NULL - small_val AS result FROM numbers ORDER BY 1
+  function: subtraction
+  signature: integer - integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_multiply_with_null_literal
+  sql: SELECT int_val * NULL * small_val AS result FROM numbers ORDER BY 1
+  function: multiplication
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_subtract_with_null_literal
+  sql: SELECT (int_val + NULL) - (float_val - numeric_val) AS result FROM numbers ORDER BY 1
+  function: subtraction
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+

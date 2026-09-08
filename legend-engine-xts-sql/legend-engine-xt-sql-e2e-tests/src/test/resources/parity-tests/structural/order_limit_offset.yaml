@@ -65,7 +65,7 @@ tests:
     feature: "ORDER BY expression"
     category: "order_limit_offset"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LIMIT
   - id: limit_basic
@@ -213,7 +213,7 @@ tests:
     feature: "ORDER BY alias"
     category: "order_limit_offset"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # LIMIT with large OFFSET
   - id: limit_large_offset

@@ -20,7 +20,7 @@ tests:
     feature: "Running percentage within partition"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: comp_running_pct_cumulative
     sql: "SELECT name, salary, ROUND(SUM(salary) OVER (ORDER BY name) * 100.0 / SUM(salary) OVER (), 2) AS cum_pct FROM persons WHERE salary IS NOT NULL ORDER BY 1"
@@ -50,7 +50,7 @@ tests:
     feature: "Value vs partition average"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Multiple windows + CASE
   - id: comp_multi_window_case
@@ -66,4 +66,4 @@ tests:
     feature: "Window + arithmetic"
     category: "compositions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

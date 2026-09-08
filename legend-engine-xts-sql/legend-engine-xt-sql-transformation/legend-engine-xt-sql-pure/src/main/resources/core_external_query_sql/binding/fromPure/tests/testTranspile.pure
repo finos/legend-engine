@@ -2057,9 +2057,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
           ->project(
             [
-              col(row:TDSRow[1] | []->cast(@Number), 'plus'),
-              col(row:TDSRow[1] | []->cast(@Number), 'minus'),
-              col(row:TDSRow[1] | []->cast(@Number), 'multiply'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'plus'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'minus'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'multiply'),
               col(row:TDSRow[1] | []->cast(@Float), 'divide'),
               col(row:TDSRow[1] | []->cast(@Integer), 'mod'),
               col(row:TDSRow[1] | []->cast(@Number), 'pow')
@@ -2069,12 +2069,82 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         {|FlatInput.all()
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->project(~[
-                plus : x|[]->cast(@Number),
-                minus : x|[]->cast(@Number),
-                multiply : x|[]->cast(@Number),
+                plus : x|[]->cast(@Integer),
+                minus : x|[]->cast(@Integer),
+                multiply : x|[]->cast(@Integer),
                 divide : x|[]->cast(@Float),
                 mod : x|[]->cast(@Integer),
                 pow : x|[]->cast(@Number)])}
+    ]
+  )
+}
+
+//we flatten chained ADD/SUBTRACT/MULTIPLY expressions of the same operator into a single call, this exercises that with 3+ operands and mixed nesting
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmeticComplex():Boolean[1]
+{
+  test(
+    'SELECT ' +
+      '1 + 2 + Integer + Float + nullable AS "chainedPlus", ' +
+      '100 - 10 - Integer - nullable AS "chainedMinus", ' +
+      '2 * 3 * Integer * nullable AS "chainedMultiply", ' +
+      '1 + (Integer - 2) AS "plusOfMinus", ' +
+      '(Integer + 1) - (Float - 2) AS "minusOfPlusAndMinus", ' +
+      '(Integer + 1) * (Integer - 2) * 3 AS "multiplyOfPlusAndMinus" ' +
+    'FROM (select case when true then 1 else null::integer end as nullable, Integer, Float from service."/service/service1")',
+
+    [
+      {|FlatInput.all()
+        ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+        ->project(~[
+          nullable: x | if (true, | 1, | []->cast(@Integer)),
+          Integer: x | $x.Integer,
+          Float: x | $x.Float
+        ])
+        ->project(~[
+              chainedPlus : x| if ($x.nullable->isEmpty(), | [], | 1 + 2 + $x.Integer + $x.Float + $x.nullable->toOne()),
+              chainedMinus : x|if ($x.nullable->isEmpty(), | [], | 100 - 10 - $x.Integer - $x.nullable->toOne()),
+              chainedMultiply : x| if ($x.nullable->isEmpty(), | [], | 2 * 3 * $x.Integer * $x.nullable->toOne()),
+              plusOfMinus : x|1 + ($x.Integer - 2),
+              minusOfPlusAndMinus : x|($x.Integer + 1) - ($x.Float - 2),
+              multiplyOfPlusAndMinus : x|($x.Integer + 1) * ($x.Integer - 2) * 3])
+       }
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testArithmeticComplexNullable():Boolean[1]
+{
+  test(
+    'SELECT ' +
+      '1 + 2 + NULL + Integer AS "chainedPlusWithNull", ' +
+      '100 - NULL - Integer AS "chainedMinusWithNull", ' +
+      '2 * NULL * Integer AS "chainedMultiplyWithNull", ' +
+      'Integer + Float + NULL AS "chainedPlusWithTrailingNull", ' +
+      '(Integer - NULL) - Float AS "chainedMinusWithNullInGroup" ' +
+    'FROM service."/service/service1"',
+
+    [
+      {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+          ->project(
+            [
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedPlusWithNull'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedMinusWithNull'),
+              col(row:TDSRow[1] | []->cast(@Integer), 'chainedMultiplyWithNull'),
+              col(row:TDSRow[1] | []->cast(@Number), 'chainedPlusWithTrailingNull'),
+              col(row:TDSRow[1] | []->cast(@Number), 'chainedMinusWithNullInGroup')
+            ]
+          )
+        },
+        {|FlatInput.all()
+            ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
+            ->project(~[
+                chainedPlusWithNull : x|[]->cast(@Integer),
+                chainedMinusWithNull : x|[]->cast(@Integer),
+                chainedMultiplyWithNull : x|[]->cast(@Integer),
+                chainedPlusWithTrailingNull : x|[]->cast(@Number),
+                chainedMinusWithNullInGroup : x|[]->cast(@Number)])}
     ]
   )
 }
@@ -3289,7 +3359,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             SIMPLE : x | 'a' + 'b' + 'c',
             NULL : x | []->cast(@String),
             NULL_BRACKETS : x | []->cast(@String),
-            NULLABLE : x | if(false || if(1 == 1, |[], |'b')->isEmpty(), |[]->cast(@String), |'a' + if(1 == 1, |[], |'b')->toOne() + 'c'),
+            NULLABLE : x | if(if(1 == 1, |[], |'b')->isEmpty(), |[], |'a' + if(1 == 1, |[], |'b')->toOne() + 'c'),
             SIMPLE_CONCAT : x | 'a' + 'b',
             NULL_CONCAT : x | 'a' + 'b',
             NULLABLE_CONCAT : x | 'a' + if (1 == 1, | [], | 'b')->toOne(),
@@ -3784,7 +3854,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~['__sql_window_ROW_PLUS_0':{p,w,r| $p->rowNumber($r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[RANK:{p,w,r| $p->rank($w, $r)}])
               ->extend(~[
-                ABS_ROW: x | $x.'__sql_window_ABS_ROW_0'->toOne()->abs(),
+                ABS_ROW: x | $x.'__sql_window_ABS_ROW_0'->abs(),
                 ROW_PLUS: x | $x.'__sql_window_ROW_PLUS_0' + 1
               ])
               ->select(~[String, ABS_ROW, ROW_PLUS, RANK])
@@ -4861,6 +4931,81 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// An unqualified correlated reference: 'Decimal' exists only on the enclosing relation, so it has
+// to resolve outward even though the sub-relation is the innermost scope.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExistsCorrelatedOnUnqualifiedOuterColumn():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE EXISTS (SELECT t2."Integer" FROM service."/service/service2" t2 WHERE t2."ID" = "Decimal")',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->exists(e | $e.ID == $x.Decimal)
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+// A bare name owned by the sub-relation must still bind to the sub-relation: the inner scope
+// shadows the enclosing one, so this must not be dragged outward by the correlation lookup.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExistsUnqualifiedInnerColumnIsNotCorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE EXISTS (SELECT t2."Integer" FROM service."/service/service2" t2 WHERE "ID" = 1)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                ->exists(e | $e.ID == 1)
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+// The same alias at two nesting levels: the outer derived table and the join's left side are both
+// 'root'. Nothing clears the inherited 'contexts', so the stale inner 'root' is still visible when
+// the outer 'root.flag' is resolved - and it does not own 'flag'. The relation has to consult its
+// own name before its children.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDerivedTableAliasReusedAcrossNestingLevels():Boolean[1]
+{
+  let context = processQuery(
+    'SELECT root."flag" FROM (SELECT CASE WHEN b."ID" IS NULL THEN 0 ELSE 1 END AS "flag" ' +
+    'FROM service."/service/service1" AS root ' +
+    'LEFT OUTER JOIN service."/service/service2" AS b ON root."Integer" = b."Integer") AS root',
+    relationSources(), false);
+
+  // Not merely "it transpiled": the outer 'root' must have resolved to the derived table's own
+  // projection. Asserting the column is present is what distinguishes this from a wrong-scope
+  // resolution that still produces a non-empty expression.
+  assert($context.expression->toOne()->resolveRelationColumns()->exists(c | $c.name == 'flag'));
+}
+
+// A correlated subquery that reuses the outer alias and then references an
+// OUTER-only column through it. The inner FROM shadows the outer for the whole subquery, so
+// 'Decimal' is genuinely out of scope. This used to be accepted by resolving outward past the
+// shadow; it is now rejected, which is what standard SQL requires.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCorrelatedReusedAliasDoesNotResolvePastShadow():Boolean[1]
+{
+  error(
+    'SELECT t."Boolean" FROM service."/service/service1" t ' +
+    'WHERE EXISTS (SELECT "ID" FROM service."/service/service2" t WHERE t."Decimal" = 1)',
+    'no column found named: \'Decimal\'. Available columns: [ID, Integer, String]'
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNotExistsCorrelated():Boolean[1]
 {
   test(
@@ -5926,6 +6071,101 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT "String", row_number() OVER (PARTITION BY "Integer" ORDER BY coalesce("Float", 0)) AS "rn" ' +
     'FROM service."/service/service1"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Statement-level ORDER BY keys resolved against the projected relation.
+//
+// processOrderBy runs after the projection but used to resolve its keys through
+// the pre-projection context, so over a join it asked for the suffixed name
+// processDuplicateRenames had set - 'String_t1' for a column the projection
+// outputs as 'String'. projectedSortKeyName matches the key against the select
+// list instead and takes the matching item's output name.
+//
+// The join is load-bearing throughout: without it there are no suffixes and the
+// two spellings coincide.
+// ---------------------------------------------------------------------------
+
+// The ordinal path. Select item 1 is unaliased and its base name collides with
+// the other join side, which is what makes the suffix appear.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByOrdinalOverJoinWithCollidingBaseName():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String", "t2"."String" AS "other" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY 1',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// An explicit qualified key naming a column the projection renamed: the key must
+// follow the rename onto "s" rather than keep spelling the source column.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualifiedKeyRenamedByProjectionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "s", "t2"."ID" AS "i" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY "t1"."String"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// An aggregate key the projection aliased. The key is not a column at all, so it
+// can only resolve by matching the select item that computes it and taking its
+// alias - grouping has already discarded anything the aggregate was built from.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByAggregateKeyAliasedByProjectionOverJoin():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "s", count(*) AS "n" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY "t1"."String" ORDER BY count(*) DESC',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
+
+// Both sides project a column called String under different output names, and the
+// key names the second one. Matching on the rendered name alone would drop the
+// qualifier and pick "a", so the key is matched on its full name parts first.
+//
+// Compiles either way - both "a" and "b" exist - so this asserts nothing beyond
+// that. What discriminates is the parity case of the same shape, which compares
+// rows: sorting by the wrong side shows up there as FAIL, not ERROR.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByQualifiedKeyPicksTheNamedJoinSide():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "a", "t2"."String" AS "b" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY "t2"."String"',
     [
       // placeholder: never compared (assertLambda/assertJSON are false); present so
       // TestConfig.relation() selects relationSources(). See the block comment above.

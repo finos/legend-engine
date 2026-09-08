@@ -102,7 +102,7 @@ The project uses a **trunk-based development** model on GitHub:
 | `master` | Production-ready trunk. All releases cut from here. |
 | `feature/<short-description>` | Short-lived feature branches. Merge via PR to `master`. |
 | `fix/<issue-or-description>` | Bug-fix branches. |
-| `release-*` | Created automatically by `maven-release-plugin`. Do not push manually. |
+| `release-*` | Created by the `create-release-branch.yml` workflow. Do not push manually. |
 
 **Rules:**
 

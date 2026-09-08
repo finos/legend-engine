@@ -58,7 +58,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWit
    assertSize($result.values, 3);
    assertEquals(['John Hill', 'Oliver Hill', 'John Johnson'], zip($result.values.firstName, $result.values.lastName)->map(p| $p.first + ' ' + $p.second));
    assertEquals([0, 10, 20], zip($result.values.firstName, $result.values.lastName)->map(pair | if($pair.first == 'John' && $pair.second == 'Hill', |0, |if($pair.second == 'Hill', |10, |if($pair.first == 'John', |20, |30))) ));
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\' order by case when "root".LASTNAME = \'Hill\' and "root".FIRSTNAME = \'John\' then 0 else case when "root".LASTNAME = \'Hill\' then 10 else case when "root".FIRSTNAME = \'John\' then 20 else 30 end end end asc', $result->sqlRemoveFormatting());
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\' order by case when "root".LASTNAME = \'Hill\' and "root".FIRSTNAME = \'John\' then 0 when "root".LASTNAME = \'Hill\' then 10 when "root".FIRSTNAME = \'John\' then 20 else 30 end asc', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWIthIfElseColumn():Boolean[1]
@@ -128,7 +128,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda_Qu
                 '             as meta::relational::tests::model::simple::Person\n' +
                 '      resultSizeRange = *\n' +
                 '      resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("age", INT), ("lastName", VARCHAR(200))]\n' +
-                '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' order by case when "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' and "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' then 0 else case when "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' then 10 else 20 end end asc\n' +
+                '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' order by case when "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' and "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' then 0 when "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' then 10 else 20 end asc\n' +
                 '      connection = TestDatabaseConnection(type = "H2")\n' +
                 '    )\n' +
                 '  )\n' +

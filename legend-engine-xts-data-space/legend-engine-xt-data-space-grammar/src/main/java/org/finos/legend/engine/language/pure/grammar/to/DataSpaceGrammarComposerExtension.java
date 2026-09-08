@@ -101,7 +101,44 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                     (combinedInfo.emails != null ? (getTabString(2) + "emails:" + (combinedInfo.emails.isEmpty() ? " []" : "\n" + getTabString(2) + "[\n" + getTabString(3) + ListIterate.collect(combinedInfo.emails, email -> convertString(email, true)).makeString(",\n" + getTabString(3)) + "\n" + getTabString(2) + "]") + ";\n") : "") +
                     getTabString() + "}";
         }
+        else if (dataSpaceSupportInfo instanceof DataSpaceSupportFullInfo)
+        {
+            DataSpaceSupportFullInfo full = (DataSpaceSupportFullInfo) dataSpaceSupportInfo;
+            return "{\n" +
+                    (full.documentation != null ? (getTabString(2) + "documentation: " + renderDataSpaceLink(full.documentation) + ";\n") : "") +
+                    (full.website != null ? (getTabString(2) + "website: " + renderDataSpaceLink(full.website) + ";\n") : "") +
+                    (full.faqUrl != null ? (getTabString(2) + "faqUrl: " + renderDataSpaceLink(full.faqUrl) + ";\n") : "") +
+                    (full.supportUrl != null ? (getTabString(2) + "supportUrl: " + renderDataSpaceLink(full.supportUrl) + ";\n") : "") +
+                    (full.emails != null ? (getTabString(2) + "emails:" + (full.emails.isEmpty() ? " []" : "\n" + getTabString(2) + "[\n" + ListIterate.collect(full.emails, DataSpaceGrammarComposerExtension::renderDataSpaceEmail).makeString(",\n") + "\n" + getTabString(2) + "]") + ";\n") : "") +
+                    (full.expertise != null ? (getTabString(2) + "expertise:" + (full.expertise.isEmpty() ? " []" : "\n" + getTabString(2) + "[\n" + ListIterate.collect(full.expertise, DataSpaceGrammarComposerExtension::renderDataSpaceExpertise).makeString(",\n") + "\n" + getTabString(2) + "]") + ";\n") : "") +
+                    getTabString() + "}";
+        }
         return getTabString() + "/* Unsupported data space support info type */";
+    }
+
+    private static String renderDataSpaceLink(DataSpaceLink link)
+    {
+        return "{ " +
+                (link.label != null ? ("label: " + convertString(link.label, true) + "; ") : "") +
+                "url: " + convertString(link.url, true) + "; }";
+    }
+
+    private static String renderDataSpaceEmail(DataSpaceEmail email)
+    {
+        return getTabString(3) + "{\n" +
+                getTabString(4) + "title: " + convertString(email.title, true) + ";\n" +
+                getTabString(4) + "address: " + convertString(email.address, true) + ";\n" +
+                getTabString(3) + "}";
+    }
+
+    private static String renderDataSpaceExpertise(DataSpaceExpertise expertise)
+    {
+        return getTabString(3) + "{\n" +
+                (expertise.description != null ? (getTabString(4) + "description: " + convertString(expertise.description, true) + ";\n") : "") +
+                (expertise.expertIds != null && !expertise.expertIds.isEmpty()
+                        ? (getTabString(4) + "expertIds: [" + ListIterate.collect(expertise.expertIds, id -> convertString(id, true)).makeString(", ") + "];\n")
+                        : "") +
+                getTabString(3) + "}";
     }
 
     private static String renderDataSpaceExecutionContext(DataSpaceExecutionContext executionContext, PureGrammarComposerContext context)

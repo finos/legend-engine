@@ -21,7 +21,8 @@ import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DataSpaceSupportEmail.class, name = "email"),
-        @JsonSubTypes.Type(value = DataSpaceSupportCombinedInfo.class, name = "combined")
+        @JsonSubTypes.Type(value = DataSpaceSupportCombinedInfo.class, name = "combined"),
+        @JsonSubTypes.Type(value = DataSpaceSupportFullInfo.class, name = "full")
 })
 public abstract class DataSpaceSupportInfo
 {

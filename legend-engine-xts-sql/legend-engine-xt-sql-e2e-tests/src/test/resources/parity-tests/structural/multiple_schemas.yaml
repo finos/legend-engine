@@ -19,8 +19,8 @@ tests:
     sql: "SELECT p.name, d.name AS dept FROM public.persons p JOIN public.departments d ON p.dept_id = d.id ORDER BY 1"
     feature: "schema-qualified join"
     category: "multiple_schemas"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   # Schema-qualified in subquery
   - id: schema_qualified_subquery

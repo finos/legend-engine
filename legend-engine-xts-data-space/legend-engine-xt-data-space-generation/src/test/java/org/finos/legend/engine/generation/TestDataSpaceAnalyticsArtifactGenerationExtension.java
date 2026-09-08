@@ -973,4 +973,77 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
                     analyticsResult.content.contains("\"operationalMetadata\""));
         }
     }
+
+    @Test
+    public void testAnalyticsForDataSpaceWithFullSupportInfo() throws Exception
+    {
+        String pureModel =
+                "###Mapping\n" +
+                "Mapping model::MyMapping ()\n" +
+                "###Runtime\n" +
+                "Runtime model::MyRuntime\n" +
+                "{\n" +
+                "  mappings: [model::MyMapping];\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace model::MySpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'prod';\n" +
+                "      mapping: model::MyMapping;\n" +
+                "      defaultRuntime: model::MyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'prod';\n" +
+                "  supportInfo: {\n" +
+                "    documentation: { label: 'Docs'; url: 'https://docs.example.org'; };\n" +
+                "    website: { url: 'https://example.org'; };\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      { title: 'Data Steward'; address: 'steward@example.org'; }\n" +
+                "    ];\n" +
+                "    expertise:\n" +
+                "    [\n" +
+                "      { description: 'Fixed Income SMEs'; expertIds: ['jdoe', 'asmith']; }\n" +
+                "    ];\n" +
+                "  };\n" +
+                "}\n";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModel, false);
+        PureModel compiledModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity().getName());
+        DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = compiledModel.getPackageableElement("model::MySpace");
+
+        for (String pureClient : testVersions)
+        {
+            List<Artifact> outputs = extension.generate(packageableElement, compiledModel, pureModelContextData, pureClient);
+            Artifact analyticsResult = outputs.stream().filter(a -> "AnalyticsResult.json".equals(a.path)).findFirst()
+                    .orElseThrow(() -> new AssertionError("AnalyticsResult.json not found"));
+            DataSpaceAnalysisResult result = objectMapper.readValue(analyticsResult.content, DataSpaceAnalysisResult.class);
+
+            Assert.assertNotNull(result.supportInfo);
+            Assert.assertTrue("expected DataSpaceSupportFullInfo, got " + result.supportInfo.getClass().getName(),
+                    result.supportInfo instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo);
+
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo full =
+                    (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo) result.supportInfo;
+            Assert.assertNotNull(full.documentation);
+            Assert.assertEquals("Docs", full.documentation.label);
+            Assert.assertEquals("https://docs.example.org", full.documentation.url);
+            Assert.assertNotNull(full.website);
+            Assert.assertNull("website should not carry a label", full.website.label);
+            Assert.assertEquals("https://example.org", full.website.url);
+            Assert.assertEquals(1, full.emails.size());
+            Assert.assertEquals("Data Steward", full.emails.get(0).title);
+            Assert.assertEquals("steward@example.org", full.emails.get(0).address);
+            Assert.assertEquals(1, full.expertise.size());
+            Assert.assertEquals("Fixed Income SMEs", full.expertise.get(0).description);
+            Assert.assertEquals(java.util.Arrays.asList("jdoe", "asmith"), full.expertise.get(0).expertIds);
+            // Jackson discriminator must be present so downstream clients can distinguish the subtype
+            Assert.assertTrue("supportInfo JSON must include _type discriminator 'full'",
+                    analyticsResult.content.contains("\"_type\":\"full\""));
+        }
+    }
 }
