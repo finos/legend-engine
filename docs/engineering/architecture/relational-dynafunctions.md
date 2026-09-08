@@ -1522,19 +1522,51 @@ question — where do the rows come from — answered in two places. The join an
 language; the property mapping had no answer at all and returned the array as one value.
 
 The gate sits in `processRelationalPropertyMapping`'s `DataType` branch, and fires when the property
-is to-many and the operation is **not** one of the shapes that is already single-valued or already
-fanned out. Each exclusion earns its place:
+is to-many and the mapped expression **returns a collection**.
 
-| Excluded | Why |
-|---|---|
-| `RelationalOperationElementWithJoin` | the join already supplies row cardinality |
-| a bare `TableAliasColumn` | a plain to-many primitive mapped to a column; flattening a scalar column breaks it, and `testSimpleProjectWithJoinInMappingWithFunction` proves it by failing when the exclusion is removed |
-| an enum transformer | read from the **pre**-pushdown mapping: `buildPossibleEnumMappingPushDown` clears `transformer` and rewrites the operation to a `case`, so reading the post-pushdown list would be a no-op |
-| a union source | `processRelationalOperationElementOfPropertyMapping` returns a deliberately bogus column type for unions |
-| `state.disableAutoFlatten` | the existing suppression flag |
+The trigger is what the expression returns, not the shape it happens to have. An earlier version
+excluded shapes instead — not a join, not a bare column, not an enum transformer — and that leaks:
+`authorId: String[*]` mapped to `toString([db]@Book_Authorship | AuthorshipTable.author_child_id)`
+is a scalar reached *through* a join, but the join sits inside the `toString`, so a top-level shape
+test cannot see it. That produced a flatten H2 could not render, caught by
+`testGraphFetchMultiPrimitiveOnInlineChild` — an `AlloyOnly` test, so it runs in the server
+pure-client suite and not in any module suite.
 
-No dyna-name list and no array-valued classification: the shape exclusions carry it, so nothing has
-to be kept in sync as `array_*` grows.
+**Which dyna functions return a collection is declared on the registry entry**, not listed in the
+router:
+
+```
+Profile meta::relational::functions::sqlQueryToString::DynaFunctionReturn
+{
+  stereotypes: [collection];
+}
+
+Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
+{
+  <<DynaFunctionReturn.collection>> array_flatten,
+  <<DynaFunctionReturn.collection>> array_sort,
+  ...
+}
+```
+
+The registry already rejects an unregistered dyna name (`dbExtension.pure:181`); now the same entry
+also says what the function returns, so adding an array function and failing to classify it is a
+visible omission on the enum rather than a silent disagreement with a copy kept elsewhere. The
+scalar members of the family — `array_size`, `array_max`, `array_min`, `array_sum`,
+`array_to_string`, `array_first`, `array_last`, `array_position`, `array_contains` — simply carry no
+stereotype.
+
+Three cases sit outside the registry lookup:
+
+- `extractFromSemiStructured` is only *sometimes* a collection. Its declared type argument decides,
+  per call site, so a `[]` suffix is what says so and no static stereotype can.
+- `array_transform` and `array_filter` never arrive as dyna functions at all — the compiler routes
+  them to `MapRelationalLambda` / `FilterRelationalLambda` (`HelperRelationalBuilder:1088`).
+- `array_reduce` does arrive as `FoldRelationalLambda`, but folds to a scalar, so it is matched
+  ahead of the general lambda arm and returns false.
+
+Unions remain excluded outright: `processRelationalOperationElementOfPropertyMapping` resolves them
+to a deliberately bogus column type (comment at `:2192`), so the return type says nothing.
 
 **No left-join-back on primary keys is needed**, unlike `applyJoinWithExplodeInCondition`, whose
 lateral chain is hard-coded `INNER`. The flatten operator is outer-by-construction in every dialect

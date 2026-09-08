@@ -2477,19 +2477,22 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                                     let sel = $firstStep.select;
 
-                                                    // A to-many property mapped to an expression rather than to a join has no rows to range
-                                                    // over, so it would come back as a single value holding the whole array. Fan it out with a
-                                                    // lateral flatten instead, which is what a join-backed to-many gets from its join. The
-                                                    // exclusions each protect a shape that is legitimately single-valued or already fanned out:
-                                                    // a bare column (a plain to-many primitive), a join, an enum transformer (read before
-                                                    // buildPossibleEnumMappingPushDown clears it), and a union source, whose column type here is
-                                                    // deliberately bogus.
+                                                    // A to-many property bound to an array-valued expression has no rows to range over, so it
+                                                    // would come back as a single value holding the whole array. Fan it out with a lateral
+                                                    // flatten, which is what a join-backed to-many gets from its join.
+                                                    //
+                                                    // The trigger is what the expression returns, not the shape it happens to have. Excluding
+                                                    // shapes instead leaks: a to-many mapped to toString(<join> | col) is a scalar reached
+                                                    // through a join, and treating it as explodable produced a flatten H2 could not render
+                                                    // (testGraphFetchMultiPrimitiveOnInlineChild).
+                                                    //
+                                                    // Unions are still excluded outright: the operation resolved for them carries a
+                                                    // deliberately bogus column type, so its return type says nothing.
                                                     let isImplicitArrayExplosion = !$property.multiplicity->hasToOneUpperBound()
                                                                                     && $state.disableAutoFlatten != true
-                                                                                    && !$mappingImpl->instanceOf(RelationalOperationElementWithJoin)
-                                                                                    && !$mappingImpl->instanceOf(TableAliasColumn)
                                                                                     && $OrigrelationalPropertyMappings->at(0).transformer->isEmpty()
-                                                                                    && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion();
+                                                                                    && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion()
+                                                                                    && $mappingImpl->isArrayValuedRelationalOperation();
 
                                                     if($isImplicitArrayExplosion,
                                                        | buildArrayFlattenLateral($firstStep, $srcOperation, $propertyReturnType, $state, $joinType, $nodeId, $context, $extensions);,

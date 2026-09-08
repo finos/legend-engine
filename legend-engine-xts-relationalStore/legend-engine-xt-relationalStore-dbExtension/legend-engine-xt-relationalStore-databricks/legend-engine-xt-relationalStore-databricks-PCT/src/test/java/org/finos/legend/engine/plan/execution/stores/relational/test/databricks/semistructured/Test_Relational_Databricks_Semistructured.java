@@ -72,7 +72,15 @@ public class Test_Relational_Databricks_Semistructured
                 // VARIANT (not STRING) for the qualified-property join filter.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]");
+                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]")
+                // [unsupportedFeature] Collapsing a to-many with joinStrings needs a group-concat
+                // aggregator, and Databricks registers processJoinStringsOperationWithConcatCall -
+                // the string-concat form - so processJoinStringsOperation finds no groupByCat and
+                // refuses. Nothing to do with the array explode: the same call over any grouped
+                // column fails the same way. The other to-many tests in this model pass here.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
+                        "The database type 'Databricks' is not supported yet!");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));

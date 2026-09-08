@@ -982,6 +982,44 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   );
 }
 
+// True when the expression yields a collection, so binding it to a to-many property needs the array
+// fanned out to rows. Everything else - a column, a join, toString(...) over one, concat, case - is
+// a single value however many rows it spans, and flattening it produces SQL the dialects cannot
+// render.
+//
+// Which dyna functions return an array is declared on the registry entry itself, with
+// DynaFunctionReturn.collection, rather than listed here: a new array function is then classified
+// where it is registered, and cannot silently disagree with a copy kept in the router.
+//
+// extractFromSemiStructured is not classified that way because it is only sometimes a collection -
+// its declared type argument decides, and a '[]' suffix is what says so.
+//
+// array_transform and array_filter never reach here as dyna functions; they arrive as
+// Map/FilterRelationalLambda. array_reduce arrives as FoldRelationalLambda but folds to a scalar.
+function meta::relational::functions::pureToSqlQuery::isArrayValuedRelationalOperation(op:RelationalOperationElement[1]):Boolean[1]
+{
+  $op->match([
+    f:meta::relational::metamodel::FoldRelationalLambda[1]   | false,
+    l:meta::relational::metamodel::RelationalLambda[1]       | true,
+    d:DynaFunction[1] |
+      if($d.name == 'extractFromSemiStructured',
+         | $d.parameters->size() == 3
+             && $d.parameters->at(2)->instanceOf(Literal)
+             && $d.parameters->at(2)->cast(@Literal).value->instanceOf(String)
+             && $d.parameters->at(2)->cast(@Literal).value->cast(@String)->toUpper()->endsWith('[]'),
+         | $d.name->returnsCollection()),
+    a:Any[1] | false
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::returnsCollection(dynaFunctionName:String[1]):Boolean[1]
+{
+  let entry = meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->enumValues()
+                ->filter(e | $e.name == $dynaFunctionName);
+  $entry->isNotEmpty()
+    && $entry->toOne()->hasStereotype('collection', meta::relational::functions::sqlQueryToString::DynaFunctionReturn);
+}
+
 // Builds the lateral flatten that turns an array-valued expression into one row per element:
 // a SemiStructuredArrayFlatten wrapped in a TableAlias, reached through a lateral JoinTreeNode
 // whose condition is trivially true. Shared by the Binding-backed semi-structured path and by
