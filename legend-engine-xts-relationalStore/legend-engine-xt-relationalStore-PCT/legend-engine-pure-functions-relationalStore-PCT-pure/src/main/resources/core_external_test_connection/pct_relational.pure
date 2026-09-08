@@ -704,7 +704,9 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
             $tds->map(
               x | $cols->map(c|$c->eval($x)->match(
                                 [
-                                  x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                  // The optional sections write as much of the time as the date carries,
+                                  // so a date, a second, and a sub-second all go into the CSV
+                                  x : Date[1] | format('%t{yyyy-MM-dd?["T"HH:mm:ss?[.S*]]}', $x),
                                   s : Variant[1] | '"' + $s->toString()->replace('"', '""') + '"',
                                   z : Any[1] | $z->toString(),
                                   n : Any[0] | ''
