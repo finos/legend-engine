@@ -77,6 +77,7 @@ import org.finos.legend.pure.runtime.java.extension.external.relation.shared.Tes
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Frame;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Range;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.RangeInterval;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.NullOrder;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
@@ -581,11 +582,11 @@ public class RelationNativeImplementation
         return new TDSContainer(filtered, ps);
     }
 
-    public static <T> Relation<? extends T> sort(Relation<? extends T> rel, RichIterable<Pair<Enum, String>> collect, ExecutionSupport es)
+    public static <T> Relation<? extends T> sort(Relation<? extends T> rel, RichIterable<Pair<Enum, Pair<Enum, String>>> collect, ExecutionSupport es)
     {
         ProcessorSupport ps = ((CompiledExecutionSupport) es).getProcessorSupport();
         TestTDSCompiled tds1 = RelationNativeImplementation.getTDS(rel, es);
-        return new TDSContainer((TestTDSCompiled) tds1.sort(collect.collect(c -> new SortInfo(c.getTwo(), SortDirection.valueOf(c.getOne()._name()))).toList()).getOne(), ps);
+        return new TDSContainer((TestTDSCompiled) tds1.sort(collect.collect(c -> new SortInfo(c.getTwo().getTwo(), SortDirection.valueOf(c.getOne()._name()), c.getTwo().getOne() == null ? null : NullOrder.valueOf(c.getTwo().getOne()._name()))).toList()).getOne(), ps);
     }
 
     public abstract static class AggColSpecTrans

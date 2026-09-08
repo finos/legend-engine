@@ -223,7 +223,13 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_NullsLast_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
+  }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_NullsFirst_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'joinStrings' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",
@@ -618,5 +624,20 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: SqlServer"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortCanonicalNullOrdering_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,name\\n   1,Sachin\\n   2,George\\n   null,Pierre\\n#'\nactual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortMultipleColumnsMixedNullOrder_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   grp,id\\n   A,null\\n   A,2\\n   A,1\\n   B,null\\n   B,3\\n   null,null\\n   null,5\\n#'\nactual:   '#TDS\\n   grp,id\\n   null,5\\n   null,null\\n   A,2\\n   A,1\\n   A,null\\n   B,3\\n   B,null\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortNullsLastTwoArg_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,name\\n   1,Sachin\\n   2,George\\n   null,Pierre\\n#'\nactual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortNullsLast_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,name\\n   1,Sachin\\n   2,George\\n   3,David\\n   null,Neema\\n   null,Pierre\\n#'\nactual:   '#TDS\\n   id,name\\n   null,Neema\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n   3,David\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsLast_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,value,runningTotal\\n   1,10,10\\n   2,20,30\\n   3,30,60\\n   null,40,100\\n#'\nactual:   '#TDS\\n   id,value,runningTotal\\n   1,10,50\\n   2,20,70\\n   3,30,100\\n   null,40,40\\n#'"
   } ]
 }

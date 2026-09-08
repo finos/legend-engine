@@ -2363,13 +2363,38 @@ public class Handlers
         register("meta::pure::tds::restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrict", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
         register("meta::pure::tds::restrictDistinct_TabularDataSet_1__String_MANY__TabularDataSet_1_", "restrictDistinct", false, ps -> res("meta::pure::tds::TabularDataSet", "one"));
 
-        register("meta::pure::tds::asc_String_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"));
-        register("meta::pure::tds::desc_String_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"));
+        // TDS asc/desc take a String; predicate keeps them from matching non-String first args
+        // (defensive: name doesn't collide with Relation ascending/descending, but this keeps
+        // the pattern uniform with the SortInfo/SortInformation narrowing below).
+        register(h("meta::pure::tds::asc_String_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::tds::desc_String_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::tds::asc_String_1__NullOrder_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::tds::desc_String_1__NullOrder_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+
 
         register("meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_", "write", true, ps -> res("Integer", "one"));
 
-        register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
-        register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> true));
+        // ascending/descending on Relation only bind when arg is a ColSpec — defensive, since
+        // TDS uses asc/desc names, but keeps behaviour explicit.
+        register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::functions::relation::ascending_ColSpec_1__NullOrder_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::functions::relation::descending_ColSpec_1__NullOrder_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        // nullsFirst/nullsLast: the name is shared between Relation (arg: SortInfo) and TDS
+        // (arg: SortInformation). Without a rawType predicate the wrong handler can win and
+        // return SortInformation for a SortInfo input, which collapses the outer sort() collection
+        // to Any[*] and the router fails with "Can't find a match for sort(Relation<...>, Any[*])".
+        // The SortInfo<T> argument may itself be the not-yet-fully-resolved result of ascending()/descending(),
+        // whose genericType can carry no typeArguments at handler time; fall back to the whole genericType then
+        // (mirrors the over(SortInfo...) handlers) instead of NPEing on an absent type argument during preval.
+        register(m(
+                h("meta::pure::functions::relation::nullsFirst_SortInfo_1__SortInfo_1_", "nullsFirst", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::tds::nullsFirst_SortInformation_1__SortInformation_1_", "nullsFirst", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
+        ));
+        register(m(
+                h("meta::pure::functions::relation::nullsLast_SortInfo_1__SortInfo_1_", "nullsLast", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::tds::nullsLast_SortInformation_1__SortInformation_1_", "nullsLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
+        ));
 
         register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 

@@ -7,13 +7,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Toolchain: **JDK 11** (Maven enforcer: `[11.0.10,12)`), **Maven 3.6.2+**. Full clean build is expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
 
 ```bash
-mvn clean install -DskipTests -T 4                 # fast first build
-mvn clean install -T 4                             # full build with tests
-mvn clean install -DskipTests -pl <module-path> -am  # build one module + its deps
+mvn clean install -DskipTests -pl <module-path>    # directly touched module
 mvn checkstyle:check                               # Checkstyle (blocking in CI)
 ```
 
-Always pass `clean` — several Pure Maven plugins are buggy and fail with "duplicate artifact present" errors when building over a prior target directory.
+Always pass `clean` for lifecycle builds — several Pure Maven plugins are buggy and fail with
+stale/generated-repository errors (for example, `The code repository ... already exists`) when
+building over a prior target directory. Build only directly touched modules; do not use `-am` or
+rebuild dependents unless explicitly requested.
+
+For a changed Pure/module source, use:
+
+```bash
+mvn clean install -DskipTests -pl <module-path>
+```
+
+When no source files changed and only tests need to be rerun, bypass the Maven lifecycle and invoke
+Surefire directly. This reuses the existing `target/` outputs without repeating Pure PAR generation,
+Pure compilation, Java code generation, or test compilation:
+
+```bash
+mvn -pl <module-path> org.apache.maven.plugins:maven-surefire-plugin:2.22.2:test
+```
+
+The direct test-only command is valid only when the module was previously clean-installed and its
+compiled outputs are current. If sources/resources changed, clean-install first.
 
 ### Isolate your build from the shared `~/.m2` cache
 

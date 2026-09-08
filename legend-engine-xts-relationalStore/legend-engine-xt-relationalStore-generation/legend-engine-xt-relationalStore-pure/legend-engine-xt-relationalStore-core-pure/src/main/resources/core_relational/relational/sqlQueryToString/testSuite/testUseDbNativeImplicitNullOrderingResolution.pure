@@ -1,0 +1,65 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::store::relational::runtime::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::runtime::*;
+
+// Baseline: both surfaces empty, no platform property set -> off.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUseDbNativeImplicitNullOrderingResolutionOffByDefault():Boolean[1]
+{
+   assertEquals(false, useDbNativeImplicitNullOrdering([], []));
+}
+
+// Connection surface: GenerationFeaturesConfig.enabled turns it on.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUseDbNativeImplicitNullOrderingResolutionConnectionEnabled():Boolean[1]
+{
+   let conn = ^TestDatabaseConnection(
+      type = DatabaseType.H2,
+      queryGenerationConfigs = ^GenerationFeaturesConfig(enabled = useDbNativeImplicitNullOrderingGenerationFeatureName())
+   );
+   assertEquals(true, useDbNativeImplicitNullOrdering($conn, []));
+}
+
+// Connection surface: `disabled` alone is inert -- disabled cannot flip the feature on and
+// (per the OR-precedence contract) cannot override another surface that turns it on either.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUseDbNativeImplicitNullOrderingResolutionConnectionDisabledIsInert():Boolean[1]
+{
+   let conn = ^TestDatabaseConnection(
+      type = DatabaseType.H2,
+      queryGenerationConfigs = ^GenerationFeaturesConfig(disabled = useDbNativeImplicitNullOrderingGenerationFeatureName())
+   );
+   assertEquals(false, useDbNativeImplicitNullOrdering($conn, []));
+}
+
+// Query surface: FeatureFlagOption on the ExecutionContext turns it on.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUseDbNativeImplicitNullOrderingResolutionExeCtxFlag():Boolean[1]
+{
+   let ctx = ^ExecutionOptionContext(executionOptions = ^FeatureFlagOption(flags = meta::pure::executionPlan::features::Feature.USE_DB_NATIVE_IMPLICIT_NULL_ORDERING));
+   assertEquals(true, useDbNativeImplicitNullOrdering([], $ctx));
+}
+
+// OR precedence: connection surface off (disabled) + query surface on -> on. Disabled must not
+// override the query surface.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUseDbNativeImplicitNullOrderingResolutionOrPrecedence():Boolean[1]
+{
+   let conn = ^TestDatabaseConnection(
+      type = DatabaseType.H2,
+      queryGenerationConfigs = ^GenerationFeaturesConfig(disabled = useDbNativeImplicitNullOrderingGenerationFeatureName())
+   );
+   let ctx = ^ExecutionOptionContext(executionOptions = ^FeatureFlagOption(flags = meta::pure::executionPlan::features::Feature.USE_DB_NATIVE_IMPLICIT_NULL_ORDERING));
+   assertEquals(true, useDbNativeImplicitNullOrdering($conn, $ctx));
+}

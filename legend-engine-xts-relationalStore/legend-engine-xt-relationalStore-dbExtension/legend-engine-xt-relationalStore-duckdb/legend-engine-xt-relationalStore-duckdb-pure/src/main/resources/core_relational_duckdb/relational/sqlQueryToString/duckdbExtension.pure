@@ -26,6 +26,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
                               getDynaFunctionToSqlForDuckDB()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      nullOrderingSupport = nullsLastWithClauseSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords); },                                          // check case insensitive
       windowColumnProcessor = processWindowColumnForDuckDB_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -557,7 +558,7 @@ function meta::relational::functions::sqlQueryToString::duckDB::processWindowCol
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST') , | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$sgc.dbConfig.processSortItem($s.sortByElement->toOne()->processOperation($sgc), $s.sortDirection, $s.nullOrder))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrameForDuckDB($sgc),

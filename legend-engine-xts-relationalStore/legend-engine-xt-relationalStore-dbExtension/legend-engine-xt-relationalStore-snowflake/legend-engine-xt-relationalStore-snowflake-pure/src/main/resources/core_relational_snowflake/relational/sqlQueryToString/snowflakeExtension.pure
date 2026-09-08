@@ -42,6 +42,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
      getDynaFunctionToSqlForSnowflake()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      nullOrderingSupport = nullsHighWithClauseSupport(),
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
       extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
@@ -98,7 +99,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
         |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
         |'');
    let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
-        |'Order By '+ $w.window.sortBy->map(s|$s.sortByElement->toOne()->processOperation($sgc) + if($s.sortDirection->isNotEmpty(), | ' ' +$s.sortDirection->toOne().name + if($s.sortDirection == meta::relational::metamodel::SortDirection.ASC, | ' NULLS LAST', | ' NULLS FIRST'), | ''))->joinStrings(', '),
+        |'Order By '+ $w.window.sortBy->map(s|$sgc.dbConfig.processSortItem($s.sortByElement->toOne()->processOperation($sgc), $s.sortDirection, $s.nullOrder))->joinStrings(', '),
         |'');
    let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
         |$w.window.frame->toOne()->processWindowFrameForSnowflake($sgc),

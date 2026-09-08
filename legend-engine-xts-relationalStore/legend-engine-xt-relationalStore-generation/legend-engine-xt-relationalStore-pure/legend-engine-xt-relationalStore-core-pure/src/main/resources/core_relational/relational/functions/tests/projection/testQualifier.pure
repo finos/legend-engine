@@ -229,7 +229,7 @@ function <<test.Test>> meta::relational::tests::projection::qualifier::testFilte
                meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
 
-   assertEquals([^TDSNull(), 2, 'CUSIP2', 1, 'CUSIP3', 1], $result.values.rows.values);
+   assertEquals(['CUSIP2', 1, 'CUSIP3', 1, ^TDSNull(), 2], $result.values.rows.values);
 
    assertEquals('select "synonymtable_0".NAME as "cusip", count("root".NAME) as "count" from productSchema.productTable as "root" left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "root".ID and "synonymtable_0".TYPE = \'CUSIP\' and "synonymtable_0".ID <> 1) group by "cusip" order by "cusip" asc', $result->sqlRemoveFormatting());
 

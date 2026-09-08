@@ -103,76 +103,204 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
 }
 
-function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateFunctionForDatabricks(): Boolean[*]            
-{            
-   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);            
-   let extensions = meta::relational::extension::relationalExtensions();            
-            
-   // Test basic create function with schema and params            
-   let basicFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
-      name = 'my_func',            
-      schemaName = 'test_schema',            
-      typedParameters = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
-      typedReturn = [    
-         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
-         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
-         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
-         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
-      ],     
-      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name',            
-      secure = false,            
-      copyGrants = false            
-   );            
-   let basicResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($basicFunc, $dbConfig, $extensions);            
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(name STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT name AS param_name) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);      
-      
-   // Test without schema            
-   let noSchemaFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
-      name = 'my_func',            
-      typedParameters = [^meta::relational::metamodel::SQLParameter(name='batchId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))],    
-      typedReturn = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
-      generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId',            
-      secure = false,            
-      copyGrants = false            
-   );            
-   let noSchemaResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($noSchemaFunc, $dbConfig, $extensions);            
-   assertEquals('CREATE OR REPLACE FUNCTION `my_func`(batchId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT batchId AS param_batchId) \nSELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);      
-      
-   // Test with copyGrants = true (should still generate CREATE OR REPLACE)      
-   let copyGrantsFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
-      name = 'my_func',            
-      schemaName = 'test_schema',            
-      typedParameters = [^meta::relational::metamodel::SQLParameter(name='currentWatermark', type=^meta::relational::metamodel::datatype::Varchar(size=200))],    
-      typedReturn = [    
-         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
-         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
-         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
-         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
-      ],    
-      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\'',            
-      secure = false,            
-      copyGrants = true            
-   );            
-   let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($copyGrantsFunc, $dbConfig, $extensions);            
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(currentWatermark STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT currentWatermark AS param_currentWatermark) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\';', $copyGrantsResult);      
-      
-   // Test with multiple parameters            
-   let multiParamFunc = ^meta::relational::metamodel::CreateFunctionSQL(            
-      name = 'my_func_multi',            
-      schemaName = 'test_schema',            
-      typedParameters = [    
-         ^meta::relational::metamodel::SQLParameter(name='startId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
-         ^meta::relational::metamodel::SQLParameter(name='endId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
-      ],    
-      typedReturn = [    
-         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),    
-         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),    
-         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))    
-      ],    
-      generatedSQL = 'SELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId',            
-      secure = false,            
-      copyGrants = false            
-   );            
-   let multiParamResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($multiParamFunc, $dbConfig, $extensions);            
-   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func_multi`(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT startId AS param_startId, endId AS param_endId) \nSELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);      
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateFunctionForDatabricks(): Boolean[*]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks);
+   let extensions = meta::relational::extension::relationalExtensions();
+
+   // Test basic create function with schema and params
+   let basicFunc = ^meta::relational::metamodel::CreateFunctionSQL(
+      name = 'my_func',
+      schemaName = 'test_schema',
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],
+      typedReturn = [
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))
+      ],
+      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name',
+      secure = false,
+      copyGrants = false
+   );
+   let basicResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($basicFunc, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(name STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT name AS param_name) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = name;', $basicResult);
+
+   // Test without schema
+   let noSchemaFunc = ^meta::relational::metamodel::CreateFunctionSQL(
+      name = 'my_func',
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='batchId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))],
+      typedReturn = [^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200))],
+      generatedSQL = 'SELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId',
+      secure = false,
+      copyGrants = false
+   );
+   let noSchemaResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($noSchemaFunc, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE FUNCTION `my_func`(batchId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT batchId AS param_batchId) \nSELECT t.name AS name FROM test_schema.my_table AS t WHERE t.START_ID <= batchId;', $noSchemaResult);
+
+   // Test with copyGrants = true (should still generate CREATE OR REPLACE)
+   let copyGrantsFunc = ^meta::relational::metamodel::CreateFunctionSQL(
+      name = 'my_func',
+      schemaName = 'test_schema',
+      typedParameters = [^meta::relational::metamodel::SQLParameter(name='currentWatermark', type=^meta::relational::metamodel::datatype::Varchar(size=200))],
+      typedReturn = [
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+         ^meta::relational::metamodel::SQLParameter(name='DESCRIPTION', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))
+      ],
+      generatedSQL = 'SELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\'',
+      secure = false,
+      copyGrants = true
+   );
+   let copyGrantsResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($copyGrantsFunc, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func`(currentWatermark STRING) \nRETURNS TABLE(name STRING, DESCRIPTION STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT currentWatermark AS param_currentWatermark) \nSELECT t.name AS name, t.DESCRIPTION AS DESCRIPTION, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.name = \'ee\';', $copyGrantsResult);
+
+   // Test with multiple parameters
+   let multiParamFunc = ^meta::relational::metamodel::CreateFunctionSQL(
+      name = 'my_func_multi',
+      schemaName = 'test_schema',
+      typedParameters = [
+         ^meta::relational::metamodel::SQLParameter(name='startId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
+         ^meta::relational::metamodel::SQLParameter(name='endId', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))
+      ],
+      typedReturn = [
+         ^meta::relational::metamodel::SQLParameter(name='name', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+         ^meta::relational::metamodel::SQLParameter(name='START_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0)),
+         ^meta::relational::metamodel::SQLParameter(name='END_ID', type=^meta::relational::metamodel::datatype::Decimal(precision=10, scale=0))
+      ],
+      generatedSQL = 'SELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId',
+      secure = false,
+      copyGrants = false
+   );
+   let multiParamResult = meta::relational::functions::sqlQueryToString::databricks::createFunction($multiParamFunc, $dbConfig, $extensions);
+   assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`my_func_multi`(startId DECIMAL(10, 0), endId DECIMAL(10, 0)) \nRETURNS TABLE(name STRING, START_ID DECIMAL(10, 0), END_ID DECIMAL(10, 0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT startId AS param_startId, endId AS param_endId) \nSELECT t.name AS name, t.START_ID AS START_ID, t.END_ID AS END_ID FROM test_schema.my_table AS t WHERE t.START_ID <= startId AND t.END_ID >= endId;', $multiParamResult);
+}
+
+// Databricks uses nullsLowWithClauseSupport(): ASC nulls last, DESC nulls first natively.
+// Implicit sorts therefore emit an explicit `nulls last` / `nulls first` clause by default,
+// which prevents Spark's Photon engine from choosing certain sort operators. The
+// useDbNativeImplicitNullOrdering opt-in must cause implicit sorts to drop the clause and
+// fall back to bare `expr` / `expr desc`, while explicit NullOrder values remain honoured.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingOffKeepsNullsClause():Boolean[1]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.Databricks, [], [], false);
+   assertEquals('`key` nulls last', $dbConfig.processSortItem('`key`', [], []));
+   assertEquals('`key` desc nulls first', $dbConfig.processSortItem('`key`', meta::relational::metamodel::SortDirection.DESC, []));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingOnDropsNullsClause():Boolean[1]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.Databricks, [], [], true);
+   assertEquals('`key`', $dbConfig.processSortItem('`key`', [], []));
+   assertEquals('`key` desc', $dbConfig.processSortItem('`key`', meta::relational::metamodel::SortDirection.DESC, []));
+}
+
+// Explicit NullOrder must still emit the clause regardless of the opt-in -- the feature only
+// gates the implicit path.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingOnKeepsExplicitNullOrder():Boolean[1]
+{
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig(meta::relational::runtime::DatabaseType.Databricks, [], [], true);
+   assertEquals('`key` nulls first', $dbConfig.processSortItem('`key`', [], meta::relational::metamodel::NullOrder.FIRST));
+   assertEquals('`key` desc nulls last', $dbConfig.processSortItem('`key`', meta::relational::metamodel::SortDirection.DESC, meta::relational::metamodel::NullOrder.LAST));
+}
+
+// createDbConfig(dc:DatabaseConnection[1], exeCtx:ExecutionContext[0..1]) resolves the flag
+// from the connection surface -- confirms the ExtensionsCollection path used by plan-gen.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateDbConfigResolvesFromConnectionEnabled():Boolean[1]
+{
+   let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(
+      type = meta::relational::runtime::DatabaseType.Databricks,
+      queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(
+         enabled = meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName()
+      )
+   );
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($conn, []);
+   assertEquals('`key`', $dbConfig.processSortItem('`key`', [], []));
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateDbConfigDefaultsFromConnectionWithoutFeature():Boolean[1]
+{
+   let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = meta::relational::runtime::DatabaseType.Databricks);
+   let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($conn, []);
+   assertEquals('`key` nulls last', $dbConfig.processSortItem('`key`', [], []));
+}
+
+// End-to-end plan-gen SQL check: mirrors the Snowflake REMOVE_UNION_OR_JOINS pattern in
+// testSnowflakeUnionQueryGeneration.pure. A query with an implicit sort against a Databricks
+// runtime renders `... nulls last` by default; toggling the feature via the connection's
+// GenerationFeaturesConfig must drop the nulls clause without touching the rest of the SQL.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingEndToEndSQL():Boolean[1]
+{
+  let dbTestRuntime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = meta::relational::runtime::DatabaseType.Databricks)));
+  // Feature off (default): implicit ASC sort emits `nulls last`.
+  let baseline = meta::relational::functions::sqlstring::toSQLStringPretty(
+    |meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName),
+    meta::relational::tests::simpleRelationalMapping,
+    $dbTestRuntime,
+    meta::relational::extension::relationalExtensions()
+  );
+  assert($baseline->contains('nulls last'), | 'expected default SQL to contain `nulls last`, got:\n' + $baseline);
+  // Feature on via connection surface: implicit sort drops the nulls clause.
+  let enabled = meta::relational::functions::sqlstring::toSQLStringPretty(
+    |meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName),
+    meta::relational::tests::simpleRelationalMapping,
+    $dbTestRuntime->meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureEnabled(),
+    meta::relational::extension::relationalExtensions()
+  );
+  assert(!$enabled->contains('nulls'), | 'expected enabled SQL to drop `nulls` clause, got:\n' + $enabled);
+  // sanity: the same order-by column is still present, so we only removed the nulls clause.
+  assert($enabled->contains('order by'), | 'expected enabled SQL to still contain `order by`, got:\n' + $enabled);
+}
+
+// Explicit `disabled` on the connection surface is inert (matches the resolution contract):
+// SQL is byte-identical to the baseline. This is the guarantee test operators care about --
+// setting `disabled` alone must never change existing SQL.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingDisabledSurfaceIsInertSQL():Boolean[1]
+{
+  let dbTestRuntime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = meta::relational::runtime::DatabaseType.Databricks)));
+  let baseline = meta::relational::functions::sqlstring::toSQLStringPretty(
+    |meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName),
+    meta::relational::tests::simpleRelationalMapping,
+    $dbTestRuntime,
+    meta::relational::extension::relationalExtensions()
+  );
+  let disabled = meta::relational::functions::sqlstring::toSQLStringPretty(
+    |meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName),
+    meta::relational::tests::simpleRelationalMapping,
+    $dbTestRuntime->meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureDisabled(),
+    meta::relational::extension::relationalExtensions()
+  );
+  assertEquals($baseline, $disabled);
+}
+
+// Query-surface (withFeatureFlags) end-to-end: mirrors testLegacyFlagProjectionEmitsPlainEquals
+// in testLegacyNullUnsafeEquals.pure. Uses executionPlan()+planToString() rather than the
+// SQL-string helper, so it exercises the full plan-gen pipeline where the routed
+// ExecutionContext (carrying the FeatureFlagOption injected by withFeatureFlags) reaches
+// generateExecutionNodeForPostProcessedResult -> generateSQLExecutionNode -> toSqlString and
+// finally useDbNativeImplicitNullOrdering(connection, exeCtx). Guards the enum wiring in
+// meta::pure::executionPlan::features::Feature all the way through to the SQL string.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testUseDbNativeImplicitNullOrderingWithFeatureFlagsAtQuerySurface():Boolean[1]
+{
+  let dbTestRuntime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = meta::relational::runtime::DatabaseType.Databricks)));
+
+  // Baseline query (no withFeatureFlags): implicit sort renders `nulls last`.
+  let baselineFn = {|meta::relational::tests::model::simple::Person.all()->sortBy(p|$p.firstName)};
+  let baselinePlan = meta::pure::executionPlan::executionPlan($baselineFn, meta::relational::tests::simpleRelationalMapping, $dbTestRuntime, meta::relational::extension::relationalExtensions());
+  let baselinePlanString = $baselinePlan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+  assert($baselinePlanString->contains('nulls last'), | 'expected baseline plan to contain `nulls last`, got:\n' + $baselinePlanString);
+
+  // Same query with ->withFeatureFlags(Feature.USE_DB_NATIVE_IMPLICIT_NULL_ORDERING): the
+  // routing layer injects a FeatureFlagOption on the ExecutionContext; my plumbing threads
+  // that context down to toSqlString, which resolves the flag via contextHasFlag and drops
+  // the `nulls` clause on implicit sorts.
+  let flaggedFn = {|meta::relational::tests::model::simple::Person.all()
+                       ->sortBy(p|$p.firstName)
+                       ->meta::pure::executionPlan::featureFlag::withFeatureFlags(meta::pure::executionPlan::features::Feature.USE_DB_NATIVE_IMPLICIT_NULL_ORDERING)};
+  let flaggedPlan = meta::pure::executionPlan::executionPlan($flaggedFn, meta::relational::tests::simpleRelationalMapping, $dbTestRuntime, meta::relational::extension::relationalExtensions());
+  let flaggedPlanString = $flaggedPlan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions());
+  assert(!$flaggedPlanString->contains('nulls'), | 'expected flagged plan to drop the `nulls` clause, got:\n' + $flaggedPlanString);
+  // sanity: the ORDER BY is still emitted -- we only removed the nulls suffix.
+  assert($flaggedPlanString->contains('order by'), | 'expected flagged plan to still contain `order by`, got:\n' + $flaggedPlanString);
 }

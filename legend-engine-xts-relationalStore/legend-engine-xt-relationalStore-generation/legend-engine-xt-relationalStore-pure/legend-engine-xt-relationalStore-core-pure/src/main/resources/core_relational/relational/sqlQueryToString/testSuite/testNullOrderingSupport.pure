@@ -1,0 +1,93 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::*;
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsHighOrderingSupport():Boolean[1]
+{
+   let support = nullsHighWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], [], false));
+   assertEquals('key desc', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+   assertEquals('key nulls first', $support.processSortItem('key', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, false));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsLowOrderingSupport():Boolean[1]
+{
+   let support = nullsLowWithClauseSupport();
+   assertEquals('key nulls last', $support.processSortItem('key', 'source.key', [], [], false));
+   assertEquals('key desc nulls first', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUniformNullsLastOrderingSupport():Boolean[1]
+{
+   let support = nullsLastWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], [], false));
+   assertEquals('key desc nulls first', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testCaseNullOrderingSupportUsesUnderlyingExpression():Boolean[1]
+{
+   let support = nullsLowWithCaseSupport();
+   assertEquals('case when source.key is null then 0 else 1 end desc, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], false));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, false));
+}
+
+// With useDbNativeImplicitNullOrdering=true, implicit sorts must short-circuit to the bare
+// expression + direction regardless of the dialect's native ordering / CASE shim; explicit
+// NULLS orderings must still be honoured.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsHighOrderingSupportFlagOn():Boolean[1]
+{
+   let support = nullsHighWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], [], true));
+   assertEquals('key desc', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
+   assertEquals('key nulls first', $support.processSortItem('key', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, true));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsLowOrderingSupportFlagOn():Boolean[1]
+{
+   let support = nullsLowWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], [], true));
+   assertEquals('key desc', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
+   assertEquals('key nulls last', $support.processSortItem('key', 'source.key', [], meta::relational::metamodel::NullOrder.LAST, true));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testUniformNullsLastOrderingSupportFlagOn():Boolean[1]
+{
+   let support = nullsLastWithClauseSupport();
+   assertEquals('key', $support.processSortItem('key', 'source.key', [], [], true));
+   assertEquals('key desc', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
+   assertEquals('key desc nulls first', $support.processSortItem('key', 'source.key', meta::relational::metamodel::SortDirection.DESC, meta::relational::metamodel::NullOrder.FIRST, true));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testCaseNullOrderingSupportFlagOnSkipsCaseShim():Boolean[1]
+{
+   let support = nullsLowWithCaseSupport();
+   assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], true));
+   assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
+   // explicit NULLS still routes through the CASE processor
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, true));
+}
+
+// Used by SqlServer/Sybase ASE/SybaseIQ/Spanner: the CASE shim breaks under SELECT DISTINCT /
+// GROUP BY on those dialects, so it is disabled unconditionally -- unlike the flag above, an
+// explicit nullsFirst()/nullsLast() request is ALSO ignored, not just the implicit default.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNativeOnlySupportIgnoresExplicitNullOrder():Boolean[1]
+{
+   let support = nativeOnlySupport();
+   assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], false));
+   assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+   assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, false));
+   assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, meta::relational::metamodel::NullOrder.LAST, false));
+}

@@ -162,6 +162,7 @@ Class meta::pure::tds::SortInformation
 {
    column : String[1];
    direction : SortDirection[1];
+   nullOrder : meta::pure::functions::relation::NullOrder[0..1];
 }
 
 Class meta::pure::tds::ColumnSort<T>
@@ -704,6 +705,34 @@ function
    meta::pure::tds::asc(column:String[1]):SortInformation[1]
 {
    ^SortInformation(column=$column, direction=SortDirection.ASC)
+}
+
+function
+   {doc.doc = 'Helper function to create sort information with the specified column in ascending order and an explicit null ordering'}
+   meta::pure::tds::asc(column:String[1], nullOrder:meta::pure::functions::relation::NullOrder[1]):SortInformation[1]
+{
+   ^SortInformation(column=$column, direction=SortDirection.ASC, nullOrder=$nullOrder)
+}
+
+function
+   {doc.doc = 'Helper function to create sort information with the specified column in descending order and an explicit null ordering'}
+   meta::pure::tds::desc(column:String[1], nullOrder:meta::pure::functions::relation::NullOrder[1]):SortInformation[1]
+{
+   ^SortInformation(column=$column, direction=SortDirection.DESC, nullOrder=$nullOrder)
+}
+
+function
+   {doc.doc = 'Attach NULLS FIRST ordering to an existing SortInformation'}
+   meta::pure::tds::nullsFirst(sortInformation:SortInformation[1]):SortInformation[1]
+{
+   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.FIRST)
+}
+
+function
+   {doc.doc = 'Attach NULLS LAST ordering to an existing SortInformation'}
+   meta::pure::tds::nullsLast(sortInformation:SortInformation[1]):SortInformation[1]
+{
+   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.LAST)
 }
 
 
