@@ -29,6 +29,7 @@ other, but not both".
 **Examples**
 ```pure
 xor(true, false)   // true
+xor(false, true)   // true
 xor(true, true)    // false, unlike ||
 xor(false, false)  // false
 ```

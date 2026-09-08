@@ -21,7 +21,8 @@ The way to group events into fixed intervals — five-minute bars, hourly counts
 without computing boundaries by hand. The result is the **start** of the containing bucket, so all
 timestamps in the same interval collapse to the same value and can be grouped on directly.
 
-**Buckets are measured from the Unix epoch**, not from the earliest value in the data, so the same
+**Buckets are measured from `1970-01-01T00:00:00` UTC** (the Unix epoch), not from the earliest value
+in the data, so the same
 timestamp always lands in the same bucket regardless of what else is in the relation. That is what
 makes buckets comparable across queries, but it also means a bucket boundary need not align with a
 natural calendar start when `quantity` is greater than 1.
@@ -37,6 +38,9 @@ natural calendar start when `quantity` is greater than 1.
 ```pure
 $t->timeBucket(5, DurationUnit.MINUTES)
 $t->timeBucket(1, DurationUnit.MONTHS)    // the first instant of the month
+
+// counting from the epoch, an 18-second bucket need not start on a round part of the minute
+%2024-01-31T00:32:34.999+0000->timeBucket(18, DurationUnit.SECONDS)   // %2024-01-31T00:32:24+0000
 ```
 
 **See also** `timeBucket(StrictDate[1], Integer[1], DurationUnit[1]):StrictDate[1]`,

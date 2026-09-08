@@ -26,8 +26,8 @@ Class <<access.private>> meta::pure::functions::math::Accumulator
 The most frequently occurring value in a collection.
 
 Unlike the mean and the median, the mode is always a value that actually appears. **Where several
-values tie for most frequent, one of them is returned rather than all** — which one is decided by the
-sort the implementation performs first, so treat it as unspecified.
+values tie for most frequent, one of them is returned rather than all.** Which one is returned is
+unspecified.
 
 Absent values are ignored rather than counted as a value in their own right.
 

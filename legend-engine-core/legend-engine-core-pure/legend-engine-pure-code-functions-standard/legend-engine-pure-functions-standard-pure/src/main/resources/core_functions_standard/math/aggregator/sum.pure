@@ -15,11 +15,11 @@
 import meta::pure::test::pct::*;
 
 '''
-The total of a collection of numbers.
+The sum of a collection of numbers.
 
 **An empty collection gives 0, not empty**, which is why the result is `[1]` — `sum` is defined in
-terms of `plus`, whose identity is zero. That means a sum of no rows is indistinguishable from a sum
-of rows that happen to cancel; test the collection separately if the difference matters.
+terms of `plus`, whose identity is zero. That means a sum of no values is indistinguishable from a sum
+of values that happen to cancel; test the collection separately if the difference matters.
 
 The `Integer` and `Float` variants keep their type; this one accepts a mix and returns `Number`.
 

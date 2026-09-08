@@ -32,6 +32,7 @@ boolean column.
 ```pure
 or([false, true])    // true
 or([false, false])   // false
+or([])               // false
 ```
 
 **See also** `and(Boolean[*]):Boolean[1]`,
