@@ -54,7 +54,7 @@ public class H2Manager extends DatabaseManager
         {
             String dataDirectoryPath = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_DATA_DIRECTORY_PATH).replace("\\", "/");
             String autoServerMode = extraUserDataSourceProperties.getProperty(EmbeddedH2DataSourceSpecification.H2_AUTO_SERVER_MODE);
-            return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode;
+            return "jdbc:h2:file:" + dataDirectoryPath + "/" + databaseName + ";AUTO_SERVER=" + autoServerMode + ";DEFAULT_NULL_ORDERING=HIGH";
         }
         if (extraUserDataSourceProperties.contains(DATABASE_TO_UPPER))
         {
@@ -66,7 +66,7 @@ public class H2Manager extends DatabaseManager
         if (getMajorVersion() == 2)
         {
             defaultH2Properties = System.getProperty("legend.test.h2.properties",
-                    ";NON_KEYWORDS=ANY,ASYMMETRIC,AUTHORIZATION,CAST,CURRENT_PATH,CURRENT_ROLE,DAY,DEFAULT,ELSE,END,HOUR,KEY,MINUTE,MONTH,SECOND,SESSION_USER,SET,SOME,SYMMETRIC,SYSTEM_USER,TO,UESCAPE,USER,VALUE,WHEN,YEAR,OVER;MODE=LEGACY");
+                    ";NON_KEYWORDS=ANY,ASYMMETRIC,AUTHORIZATION,CAST,CURRENT_PATH,CURRENT_ROLE,DAY,DEFAULT,ELSE,END,HOUR,KEY,MINUTE,MONTH,SECOND,SESSION_USER,SET,SOME,SYMMETRIC,SYSTEM_USER,TO,UESCAPE,USER,VALUE,WHEN,YEAR,OVER;MODE=LEGACY;DEFAULT_NULL_ORDERING=HIGH");
         }
         else
         {

@@ -122,7 +122,7 @@
         <revision>4.144.1-SNAPSHOT</revision>
 
         <!-- Legend -->
-        <legend.pure.version>5.98.0</legend.pure.version>
+        <legend.pure.version>5.99.0</legend.pure.version>
         <legend.shared.version>0.37.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>

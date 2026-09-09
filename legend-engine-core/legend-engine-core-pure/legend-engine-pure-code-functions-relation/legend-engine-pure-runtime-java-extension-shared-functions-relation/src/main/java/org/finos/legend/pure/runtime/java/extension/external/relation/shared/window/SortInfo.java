@@ -18,11 +18,18 @@ public class SortInfo
 {
     public String columnName;
     public SortDirection direction;
+    public NullOrder nullOrder;
 
     public SortInfo(String name, SortDirection direction)
     {
+        this(name, direction, null);
+    }
+
+    public SortInfo(String name, SortDirection direction, NullOrder nullOrder)
+    {
         this.columnName = name;
         this.direction = direction;
+        this.nullOrder = nullOrder;
     }
 
     public String getColumnName()
@@ -33,5 +40,10 @@ public class SortInfo
     public SortDirection getDirection()
     {
         return direction;
+    }
+
+    public NullOrder getNullOrder()
+    {
+        return nullOrder;
     }
 }

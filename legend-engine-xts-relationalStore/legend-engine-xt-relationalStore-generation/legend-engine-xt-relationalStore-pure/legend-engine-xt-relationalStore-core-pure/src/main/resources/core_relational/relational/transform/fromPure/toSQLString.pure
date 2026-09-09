@@ -40,7 +40,7 @@ function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDef
 function meta::relational::functions::sqlstring::toSQLStringPretty(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):String[1]
 {
    let databaseConnection = $runtime.connectionStores.connection->toOne()->cast(@DatabaseConnection);
-   toSQL($f, $mapping, $runtime, $extensions).toSQLString($databaseConnection.type, $databaseConnection.timeZone, $databaseConnection.quoteIdentifiers, ^Format(newLine='\n', indent='\t'));
+   toSQL($f, $mapping, $runtime, $extensions).toSQLString($databaseConnection, ^Format(newLine='\n', indent='\t'));
 }
 
 function meta::relational::functions::sqlstring::toSQL(f:FunctionDefinition<{->Any[*]}>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:Extension[*]):SQLResult[1]
@@ -151,6 +151,16 @@ Class meta::relational::functions::sqlstring::SQLResult
    toSQLString(databaseType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1])
    {
       let sqlStrings = $this.sqlQueries->map(s | $s->sqlQueryToString($databaseType, $dbTimeZone, $quoteIdentifiers, $format, true, $this.extensions));
+      let sql = $sqlStrings->joinStrings('\n');
+
+      if ($this.shouldWarn, | $sql + '\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.' , | $sql);
+
+   }:String[1];
+
+   toSQLString(connection:DatabaseConnection[1], format:Format[1])
+   {
+      let useDbNative = useDbNativeImplicitNullOrdering($connection, []);
+      let sqlStrings = $this.sqlQueries->map(s | $s->sqlQueryToString($connection.type, $connection.timeZone, $connection.quoteIdentifiers, $format, $useDbNative, true, $this.extensions));
       let sql = $sqlStrings->joinStrings('\n');
 
       if ($this.shouldWarn, | $sql + '\nWarning: Results only shown for first relational query. Other SQL statements could not be computed because they require results from the execution of the previous expression.' , | $sql);

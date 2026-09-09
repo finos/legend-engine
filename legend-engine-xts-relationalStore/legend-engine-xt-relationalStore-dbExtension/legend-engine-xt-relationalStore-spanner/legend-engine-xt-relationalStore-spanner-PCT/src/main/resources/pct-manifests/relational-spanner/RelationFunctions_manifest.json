@@ -217,6 +217,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyFirst_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
@@ -972,5 +978,14 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyFirstTwoArg_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'\nactual:   '#TDS\\n   id,name\\n   1,Sachin\\n   2,George\\n   null,Pierre\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyFirst_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n   3,David\\n#'\nactual:   '#TDS\\n   id,name\\n   1,Sachin\\n   2,George\\n   3,David\\n   null,Pierre\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_EmptyFirst_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: '#TDS\\n   grp,names\\n   1,N,A,B\\n   2,C\\n#'\nactual:   '#TDS\\n   grp,names\\n   1,A,B,N\\n   2,C\\n#'"
   } ]
 }
