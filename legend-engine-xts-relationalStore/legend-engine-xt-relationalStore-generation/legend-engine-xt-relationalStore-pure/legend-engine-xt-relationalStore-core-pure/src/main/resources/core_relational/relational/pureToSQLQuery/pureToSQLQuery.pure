@@ -8571,7 +8571,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnum
                                  ]))
                                }, [])->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->fetchEnumFullPath());
    assert($enumTransformers->size() <= 1, | 'Found multiple enumeration mappings for projected TDS enum column.');
-   $enumTransformers;
+   if($enumTransformers->isEmpty(), | [], | $enumTransformers->toOne());
 }
 
 function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapper : Literal[1],
