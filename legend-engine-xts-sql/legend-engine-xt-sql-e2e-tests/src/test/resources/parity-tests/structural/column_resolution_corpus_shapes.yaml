@@ -661,17 +661,12 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  # FAIL rather than ERROR: the key resolves to its materialised helper column, and
-  # that column holds UPPER(p.name). See colres_e3_order_by_expression_over_join in
-  # column_resolution_across_renames.yaml for the root cause -- processExtend cannot
-  # resolve the qualifier `d` against projectedContext, so d.name falls back to the
-  # bare name and picks up p's column instead.
   - id: crcs_g4_order_by_expression_over_join
     sql: "SELECT p.name AS name, d.name AS dept_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY UPPER(d.name), p.name"
     feature: "statement ORDER BY an expression over a join"
     category: "column_resolution_corpus"
-    expected_tds_status: FAIL
-    expected_rel_status: FAIL
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: crcs_g4_order_by_aggregate_expression_over_join
     sql: "SELECT p.dept_id AS dept_id, COUNT(*) AS n FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id ORDER BY COUNT(*) DESC, p.dept_id"
