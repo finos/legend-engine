@@ -5125,6 +5125,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+//This test is really only here as we dont have a nicer way to test this at the moment until scalar comparisons are added
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEvalReturn():Boolean[1]
+{
+  noError('select Integer > (select 1 from service."/service/service1") from service."/service/service1"');
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonSomeIsAny():Boolean[1]
 {
   test(
