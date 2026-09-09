@@ -82,7 +82,7 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::tes
 
 // Used by SqlServer/Sybase ASE/SybaseIQ/Spanner: the CASE shim breaks under SELECT DISTINCT /
 // GROUP BY on those dialects, so it is disabled unconditionally -- unlike the flag above, an
-// explicit nullsFirst()/nullsLast() request is ALSO ignored, not just the implicit default.
+// explicit emptyFirst()/emptyLast() request is ALSO ignored, not just the implicit default.
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNativeOnlySupportIgnoresExplicitNullOrder():Boolean[1]
 {
    let support = nativeOnlySupport();

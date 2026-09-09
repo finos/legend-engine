@@ -5918,12 +5918,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict(['String', 'Integer'])
-            ->sort([asc('String')->nullsFirst()])
+            ->sort([asc('String')->emptyFirst()])
         },
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->sort([~String->ascending()->nullsFirst()])
+            ->sort([~String->ascending()->emptyFirst()])
         }
     ]
   )
@@ -5971,12 +5971,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict(['String', 'Integer'])
-            ->sort([asc('String')->nullsLast()])
+            ->sort([asc('String')->emptyLast()])
         },
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->sort([~String->ascending()->nullsLast()])
+            ->sort([~String->ascending()->emptyLast()])
         }
     ]
   )
@@ -6010,12 +6010,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict(['String', 'Integer'])
-            ->sort([desc('String')->nullsFirst()])
+            ->sort([desc('String')->emptyFirst()])
         },
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->sort([~String->descending()->nullsFirst()])
+            ->sort([~String->descending()->emptyFirst()])
         }
     ]
   )
@@ -6050,12 +6050,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->restrict(['String', 'Integer'])
-            ->sort([asc('String')->nullsFirst(), desc('Integer')->nullsLast()])
+            ->sort([asc('String')->emptyFirst(), desc('Integer')->emptyLast()])
         },
       {| FlatInput.all()
             ->project(~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
             ->select(~[String, Integer])
-            ->sort([~String->ascending()->nullsFirst(), ~Integer->descending()->nullsLast()])
+            ->sort([~String->ascending()->emptyFirst(), ~Integer->descending()->emptyLast()])
         }
     ]
   )

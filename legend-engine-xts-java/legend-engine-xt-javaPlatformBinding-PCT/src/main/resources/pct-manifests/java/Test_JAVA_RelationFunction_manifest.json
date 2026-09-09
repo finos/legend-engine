@@ -10,19 +10,19 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::sort::testSortNullsFirstTwoArg_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::sort::testSortEmptyFirstTwoArg_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::sort::testSortNullsLastTwoArg_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::sort::testSortEmptyLastTwoArg_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::sort::testSortNullsFirst_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::sort::testSortEmptyFirst_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::sort::testSortNullsLast_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::sort::testSortEmptyLast_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
@@ -546,11 +546,11 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsFirst_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyFirst_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderNullsLast_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
@@ -942,7 +942,7 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_NullsLast_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_EmptyLast_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
@@ -950,7 +950,7 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
-      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_NullsFirst_Function_1__Boolean_1_",
+      "test": "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_EmptyFirst_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {

@@ -5456,19 +5456,19 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     ]->getValue($si.ordering)->eval()->getValue($relation)->eval();
 
     // Null ordering is attached via a wrapper on both branches: TDS uses
-    // nullsFirst/nullsLast(SortInformation) (added alongside asc/desc), Relation uses
-    // nullsFirst/nullsLast(SortInfo). Emitting a wrapper keeps the composer's output
+    // emptyFirst/emptyLast(SortInformation) (added alongside asc/desc), Relation uses
+    // emptyFirst/emptyLast(SortInfo). Emitting a wrapper keeps the composer's output
     // in function-call form -- no raw enum InstanceValue in the lambda -- which round-trips
     // cleanly through printFunctionDefinition + assertLambdaJSONEquals.
     if ($si.nullOrdering == SortItemNullOrdering.UNDEFINED,
       | $sortInfo,
       | if ($relation,
           | if ($si.nullOrdering == SortItemNullOrdering.FIRST,
-              | sfe(nullsFirst_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo),
-              | sfe(nullsLast_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo)),
+              | sfe(emptyFirst_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo),
+              | sfe(emptyLast_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo)),
           | if ($si.nullOrdering == SortItemNullOrdering.FIRST,
-              | sfe(nullsFirst_SortInformation_1__SortInformation_1_, $sortInfo),
-              | sfe(nullsLast_SortInformation_1__SortInformation_1_, $sortInfo))));
+              | sfe(emptyFirst_SortInformation_1__SortInformation_1_, $sortInfo),
+              | sfe(emptyLast_SortInformation_1__SortInformation_1_, $sortInfo))));
   }:ValueSpecification[1];
 
 

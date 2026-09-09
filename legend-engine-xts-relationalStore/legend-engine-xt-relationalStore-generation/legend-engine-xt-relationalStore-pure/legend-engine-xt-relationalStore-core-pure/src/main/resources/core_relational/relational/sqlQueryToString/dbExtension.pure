@@ -389,7 +389,7 @@ function meta::relational::functions::sqlQueryToString::processSortItemWithNullO
 // output alias, which breaks under SELECT DISTINCT / GROUP BY on dialects whose grouping/distinct
 // validity checks require literal syntactic identity (SqlServer confirmed live; see
 // docs/agent/null-ordering-feature-flag-plan.md history). Disabled unconditionally -- including
-// explicit nullsFirst()/nullsLast() -- until there is a fix that survives those clause combinations.
+// explicit emptyFirst()/emptyLast() -- until there is a fix that survives those clause combinations.
 function meta::relational::functions::sqlQueryToString::processSortItemIgnoringNullOrder(expression:String[1], nullCheckExpression:String[1], direction:meta::relational::metamodel::SortDirection[0..1], nullOrder:meta::relational::metamodel::NullOrder[1]):String[1]
 {
    $expression + $direction->renderSortDirection();

@@ -538,8 +538,8 @@ meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1
 meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_
 meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_
 meta::pure::functions::relation::nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_
-meta::pure::functions::relation::nullsFirst_SortInfo_1__SortInfo_1_
-meta::pure::functions::relation::nullsLast_SortInfo_1__SortInfo_1_
+meta::pure::functions::relation::emptyFirst_SortInfo_1__SortInfo_1_
+meta::pure::functions::relation::emptyLast_SortInfo_1__SortInfo_1_
 meta::pure::functions::relation::ntile_Relation_1__T_1__Integer_1__Integer_1_
 meta::pure::functions::relation::over_ColSpecArray_1__SortInfo_MANY___Window_1_
 meta::pure::functions::relation::over_ColSpecArray_1___Window_1_
@@ -693,8 +693,8 @@ meta::pure::tds::groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY
 meta::pure::tds::groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_
 meta::pure::tds::limit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_
 meta::pure::tds::limit_TabularDataSet_1__Integer_1__TabularDataSet_1_
-meta::pure::tds::nullsFirst_SortInformation_1__SortInformation_1_
-meta::pure::tds::nullsLast_SortInformation_1__SortInformation_1_
+meta::pure::tds::emptyFirst_SortInformation_1__SortInformation_1_
+meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_
 meta::pure::tds::olapGroupBy_TabularDataSet_1__FunctionDefinition_1__String_1__TabularDataSet_1_
 meta::pure::tds::olapGroupBy_TabularDataSet_1__OlapOperation_1__String_1__TabularDataSet_1_
 meta::pure::tds::olapGroupBy_TabularDataSet_1__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_

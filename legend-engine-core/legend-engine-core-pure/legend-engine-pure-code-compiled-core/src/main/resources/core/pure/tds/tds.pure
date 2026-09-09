@@ -722,15 +722,15 @@ function
 }
 
 function
-   {doc.doc = 'Attach NULLS FIRST ordering to an existing SortInformation'}
-   meta::pure::tds::nullsFirst(sortInformation:SortInformation[1]):SortInformation[1]
+   {doc.doc = 'Place empty values first in an existing SortInformation (SQL NULLS FIRST)'}
+   meta::pure::tds::emptyFirst(sortInformation:SortInformation[1]):SortInformation[1]
 {
    ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.FIRST)
 }
 
 function
-   {doc.doc = 'Attach NULLS LAST ordering to an existing SortInformation'}
-   meta::pure::tds::nullsLast(sortInformation:SortInformation[1]):SortInformation[1]
+   {doc.doc = 'Place empty values last in an existing SortInformation (SQL NULLS LAST)'}
+   meta::pure::tds::emptyLast(sortInformation:SortInformation[1]):SortInformation[1]
 {
    ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.LAST)
 }

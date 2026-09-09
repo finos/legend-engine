@@ -90,7 +90,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSo
                 '#', $res3->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsLast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyLast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let res = $f->eval({|
               #TDS
@@ -100,7 +100,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNull
                 1, Sachin
                 null, Neema
                 3, David
-              #->sort([~id->ascending()->nullsLast(), ~name->ascending()]);
+              #->sort([~id->ascending()->emptyLast(), ~name->ascending()]);
             });
 
   assertEquals('#TDS\n'+
@@ -113,7 +113,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNull
                '#', $res->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsFirst<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyFirst<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let res = $f->eval({|
               #TDS
@@ -122,7 +122,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNull
                 null, Pierre
                 1, Sachin
                 3, David
-              #->sort([~id->ascending()->nullsFirst(), ~name->ascending()]);
+              #->sort([~id->ascending()->emptyFirst(), ~name->ascending()]);
             });
 
   assertEquals('#TDS\n'+
@@ -134,7 +134,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNull
                '#', $res->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsFirstTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyFirstTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let res = $f->eval({|
               #TDS
@@ -153,7 +153,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNull
                '#', $res->toString());
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortNullsLastTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyLastTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let res = $f->eval({|
               #TDS
@@ -207,7 +207,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortMult
                 B,   null
                 B,   3
                 null, null
-              #->sort([~grp->ascending()->nullsLast(), ~id->descending()->nullsFirst()]);
+              #->sort([~grp->ascending()->emptyLast(), ~id->descending()->emptyFirst()]);
             });
 
   assertEquals('#TDS\n'+

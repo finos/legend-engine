@@ -2380,7 +2380,7 @@ public class Handlers
         register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
         register(h("meta::pure::functions::relation::ascending_ColSpec_1__NullOrder_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
         register(h("meta::pure::functions::relation::descending_ColSpec_1__NullOrder_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
-        // nullsFirst/nullsLast: the name is shared between Relation (arg: SortInfo) and TDS
+        // emptyFirst/emptyLast: the name is shared between Relation (arg: SortInfo) and TDS
         // (arg: SortInformation). Without a rawType predicate the wrong handler can win and
         // return SortInformation for a SortInfo input, which collapses the outer sort() collection
         // to Any[*] and the router fails with "Can't find a match for sort(Relation<...>, Any[*])".
@@ -2388,12 +2388,12 @@ public class Handlers
         // whose genericType can carry no typeArguments at handler time; fall back to the whole genericType then
         // (mirrors the over(SortInfo...) handlers) instead of NPEing on an absent type argument during preval.
         register(m(
-                h("meta::pure::functions::relation::nullsFirst_SortInfo_1__SortInfo_1_", "nullsFirst", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
-                h("meta::pure::tds::nullsFirst_SortInformation_1__SortInformation_1_", "nullsFirst", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
+                h("meta::pure::functions::relation::emptyFirst_SortInfo_1__SortInfo_1_", "emptyFirst", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::tds::emptyFirst_SortInformation_1__SortInformation_1_", "emptyFirst", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
         ));
         register(m(
-                h("meta::pure::functions::relation::nullsLast_SortInfo_1__SortInfo_1_", "nullsLast", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
-                h("meta::pure::tds::nullsLast_SortInformation_1__SortInformation_1_", "nullsLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
+                h("meta::pure::functions::relation::emptyLast_SortInfo_1__SortInfo_1_", "emptyLast", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().isEmpty() ? ps.get(0)._genericType() : ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "SortInfo".equals(ps.get(0)._genericType()._rawType()._name())),
+                h("meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_", "emptyLast", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "SortInformation".equals(ps.get(0)._genericType()._rawType()._name()))
         ));
 
         register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", "join", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
