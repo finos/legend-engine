@@ -167,7 +167,7 @@
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",
-    "expectedError" : "The first parameter requires the (\"NUMERIC\""
+    "expectedError" : "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]"
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,val,newCol\\n   1,1.0,1.8\\n   1,2.0,1.8\\n   1,3.0,1.8\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4\\n   3,1.5,1.4\\n   3,2.0,1.4\\n#'\nactual:   '#TDS\\n   id,val,newCol\\n   1,1.0,1.8\\n   1,2.0,1.8\\n   1,3.0,1.8\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4000000000000001\\n   3,1.5,1.4000000000000001\\n   3,2.0,1.4000000000000001\\n#'"
