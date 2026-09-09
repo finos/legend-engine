@@ -5958,7 +5958,6 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                                                                         | let enumPropMappings = $processedValueArg.currentPropertyMapping;
                                                                            let columnName = if($valueArg->instanceOf(FunctionExpression) && $valueArg->cast(@FunctionExpression).func.functionName == 'getEnum', | $valueArg->cast(@FunctionExpression)->instanceValueAtParameter(1)->toString(), | 'value');
                                                                            assert($enumPropMappings->isNotEmpty(), | 'Could not resolve enumeration mapping for projected TDS enum column \'' + $columnName + '\' in IN predicate. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
-                                                                           assertEquals(1, $enumPropMappings->size(), | 'Expected exactly one property mapping for projected TDS enum column \'' + $columnName + '\'.');
                                                                            let transformer = $enumPropMappings->getEnumPropMappingTransformer();
                                                                            assert($transformer->isNotEmpty() && $transformer->toOne()->instanceOf(EnumerationMapping), | 'Missing an EnumerationMapping for projected TDS enum column \'' + $columnName + '\'.');
                                                                            let vals = $transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($literal.value);
@@ -5977,7 +5976,6 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                      |let columnName = if($valueArg->instanceOf(FunctionExpression) && $valueArg->cast(@FunctionExpression).func.functionName == 'getEnum', | $valueArg->cast(@FunctionExpression)->instanceValueAtParameter(1)->toString(), | 'value');
                       let enumPropMappings = $processedValueArg.currentPropertyMapping;
                       assert($enumPropMappings->isNotEmpty(), | 'Could not resolve enumeration mapping for projected TDS enum column \'' + $columnName + '\' in IN predicate. Ensure the column originates from an enum-mapped property and that projection metadata preserves the mapping.');
-                      assertEquals(1, $enumPropMappings->size(), | 'Expected exactly one property mapping for projected TDS enum column \'' + $columnName + '\'.');
                       let transformer = $enumPropMappings->getEnumPropMappingTransformer();
                       assert($transformer->isNotEmpty() && $transformer->toOne()->instanceOf(EnumerationMapping), | 'Missing an EnumerationMapping for projected TDS enum column \'' + $columnName + '\'.');
                       ^LiteralList(values=$literalList.values->map(v|$transformer->toOne()->cast(@EnumerationMapping<Any>)->toSourceValues($v.value))->map(v|^Literal(value=$v)));,
@@ -8501,7 +8499,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::generat
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::generateFreeMarkerForEnumParam(propertyMapping:OperationWithParentPropertyMapping[1], enumParam:RelationalOperationElement[1]):FreeMarkerOperationHolder[1]
 {
-  ^FreeMarkerOperationHolder(name = 'enumMap_' + fetchEnumFullPath($propertyMapping.currentPropertyMapping->at(0)->getEnumPropMappingTransformer()->cast(@EnumerationMapping<Any>)->toOne()), parameters = [$enumParam->cast(@Literal)])
+   ^FreeMarkerOperationHolder(name = 'enumMap_' + fetchEnumFullPath($propertyMapping.currentPropertyMapping->getEnumPropMappingTransformer()->cast(@EnumerationMapping<Any>)->toOne()), parameters = [$enumParam->cast(@Literal)])
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::hasOptionalVarPlaceHolderValue(e:RelationalOperationElement[1]):Boolean[1]
@@ -8565,7 +8563,13 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumPropMappingTransformer(enumPropMapping: PropertyMapping[*]): ValueTransformer<Any>[0..1]
 {
-  $enumPropMapping->toOne()->match([rpm:RelationalPropertyMapping[1]|$rpm->cast(@RelationalPropertyMapping).transformer, rfpm:RelationFunctionPropertyMapping[1]|$rfpm->cast(@RelationFunctionPropertyMapping).transformer]);
+   let enumTransformers = $enumPropMapping->map(pm|$pm->match([
+                                              rpm:RelationalPropertyMapping[1] | $rpm->cast(@RelationalPropertyMapping).transformer,
+                                              rfpm:RelationFunctionPropertyMapping[1] | $rfpm->cast(@RelationFunctionPropertyMapping).transformer,
+                                              p:PropertyMapping[1] | []
+                                           ]))->flatten()->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->fetchEnumFullPath());
+   assert($enumTransformers->size() <= 1, | 'Found multiple enumeration mappings for projected TDS enum column.');
+   $enumTransformers;
 }
 
 function meta::relational::functions::pureToSqlQuery::enumToStoreValue(enumWrapper : Literal[1],
