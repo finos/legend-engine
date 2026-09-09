@@ -8563,11 +8563,13 @@ function meta::relational::functions::pureToSqlQuery::processEqualsForEnum(first
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::getEnumPropMappingTransformer(enumPropMapping: PropertyMapping[*]): ValueTransformer<Any>[0..1]
 {
-   let enumTransformers = $enumPropMapping->map(pm|$pm->match([
-                                              rpm:RelationalPropertyMapping[1] | $rpm->cast(@RelationalPropertyMapping).transformer,
-                                              rfpm:RelationFunctionPropertyMapping[1] | $rfpm->cast(@RelationFunctionPropertyMapping).transformer,
-                                              p:PropertyMapping[1] | []
-                                           ]))->flatten()->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->fetchEnumFullPath());
+   let enumTransformers = $enumPropMapping->fold({pm, acc|
+                                 $acc->concatenate($pm->match([
+                                   rpm:RelationalPropertyMapping[1] | $rpm->cast(@RelationalPropertyMapping).transformer,
+                                   rfpm:RelationFunctionPropertyMapping[1] | $rfpm->cast(@RelationFunctionPropertyMapping).transformer,
+                                   p:PropertyMapping[1] | []
+                                 ]))
+                               }, [])->filter(t|$t->instanceOf(EnumerationMapping))->cast(@EnumerationMapping<Any>)->removeDuplicatesBy(t|$t->fetchEnumFullPath());
    assert($enumTransformers->size() <= 1, | 'Found multiple enumeration mappings for projected TDS enum column.');
    $enumTransformers;
 }
