@@ -1,0 +1,45 @@
+{
+  "services": [
+    {
+      "path": "model::ServiceA",
+      "type": "Service",
+      "hasTestSuites": true,
+      "hasLegacyTests": false,
+      "testSuiteCount": 2
+    },
+    {
+      "path": "model::ServiceB",
+      "type": "Service",
+      "hasTestSuites": false,
+      "hasLegacyTests": false,
+      "testSuiteCount": 0
+    }
+  ],
+  "mappings": [
+    {
+      "path": "model::MappingA",
+      "type": "Mapping",
+      "hasTestSuites": true,
+      "hasLegacyTests": false,
+      "testSuiteCount": 1
+    },
+    {
+      "path": "model::MappingB",
+      "type": "Mapping",
+      "hasTestSuites": false,
+      "hasLegacyTests": false,
+      "testSuiteCount": 0
+    }
+  ],
+  "serviceCoverage": {
+    "totalElements": 2,
+    "elementsWithTests": 1,
+    "coveragePercentage": 0.5
+  },
+  "mappingCoverage": {
+    "totalElements": 2,
+    "elementsWithTests": 1,
+    "coveragePercentage": 0.5
+  }
+}
+
