@@ -4959,7 +4959,7 @@ function meta::external::query::sql::transformation::queryToPure::rootContext(so
 
   assert(!$relation || ($relation && $sources->forAll(s | $s->instanceOf(DynamicSQLSource) || $s.func->isRelation())), 'cannot currently mix relation and non relation sources');
 
-  context(0, true, $sources, $extensions, true, $relation, $compiler, noDebug());
+  context(0, true, $sources, $extensions, true, $relation, $compiler, if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::external::query::sql::transformation::queryToPure::isRelation(f:FunctionDefinition<Any>[1]):Boolean[1]
