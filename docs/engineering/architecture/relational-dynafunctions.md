@@ -1504,12 +1504,92 @@ Empty inner arrays, explicit nulls and absent keys each contribute nothing, so n
 needed. Genuinely ragged data — a level that is an array in one row and a scalar in the next —
 fails at the extraction cast, consistently across dialects now that §11.13 has landed.
 
-**Binding a `[*]` path to a to-many property does not give a collection.** It returns the array's
-text as a single value, with no error at compile or run time. Relational multiplicity comes from
-row cardinality: `explodeSemiStructured` produces rows, so `teams: Team[*]` through a join behaves
-normally, while a `[*]` path produces one row with an array in one column and has nothing to range
-over. Tracked as [#5099](https://github.com/finos/legend-engine/issues/5099), with an assessment of
-what a compile-time rejection would take recorded on the issue.
+**Binding a `[*]` path to a to-many property gives a collection**, as of
+[#5099](https://github.com/finos/legend-engine/issues/5099). Relational multiplicity comes from row
+cardinality, so the router fans the array out to rows: a to-many `DataType` property whose operation
+is neither a join nor a bare column is wrapped in a `SemiStructuredArrayFlatten` reached through a
+lateral `JoinTreeNode`, which is what the Binding-backed path has always done for a to-many
+(`pureToSQLQuery_variant.pure`, gated on `hasToOneUpperBound`). Both now call one
+`buildArrayFlattenLateral`. See §11.16.
 
 H2 skips wildcard tests: a `[*]` path becomes an `array_transform`, and array lambdas reach H2
 through the `sqlDialectTranslation` path, which has no case for the lambda nodes.
+
+### 11.16 A to-many bound to an array is exploded implicitly
+
+`teams: Team[*]` through an exploding join and `names: String[*]` bound to a `[*]` path are the same
+question — where do the rows come from — answered in two places. The join answers it in the store
+language; the property mapping had no answer at all and returned the array as one value.
+
+The gate sits in `processRelationalPropertyMapping`'s `DataType` branch, and fires when the property
+is to-many and the mapped expression **returns a collection**.
+
+The trigger is what the expression returns, not the shape it happens to have. An earlier version
+excluded shapes instead — not a join, not a bare column, not an enum transformer — and that leaks:
+`authorId: String[*]` mapped to `toString([db]@Book_Authorship | AuthorshipTable.author_child_id)`
+is a scalar reached *through* a join, but the join sits inside the `toString`, so a top-level shape
+test cannot see it. That produced a flatten H2 could not render, caught by
+`testGraphFetchMultiPrimitiveOnInlineChild` — an `AlloyOnly` test, so it runs in the server
+pure-client suite and not in any module suite.
+
+**Which dyna functions return a collection is declared on the registry entry**, not listed in the
+router:
+
+```
+Profile meta::relational::functions::sqlQueryToString::DynaFunctionReturn
+{
+  stereotypes: [collection];
+}
+
+Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
+{
+  <<DynaFunctionReturn.collection>> array_flatten,
+  <<DynaFunctionReturn.collection>> array_sort,
+  ...
+}
+```
+
+The registry already rejects an unregistered dyna name (`dbExtension.pure:181`); now the same entry
+also says what the function returns, so adding an array function and failing to classify it is a
+visible omission on the enum rather than a silent disagreement with a copy kept elsewhere. The
+scalar members of the family — `array_size`, `array_max`, `array_min`, `array_sum`,
+`array_to_string`, `array_first`, `array_last`, `array_position`, `array_contains` — simply carry no
+stereotype.
+
+Three cases sit outside the registry lookup:
+
+- `extractFromSemiStructured` is only *sometimes* a collection. Its declared type argument decides,
+  per call site, so a `[]` suffix is what says so and no static stereotype can.
+- `array_transform` and `array_filter` never arrive as dyna functions at all — the compiler routes
+  them to `MapRelationalLambda` / `FilterRelationalLambda` (`HelperRelationalBuilder:1088`).
+- `array_reduce` does arrive as `FoldRelationalLambda`, but folds to a scalar, so it is matched
+  ahead of the general lambda arm and returns false.
+
+Unions remain excluded outright: `processRelationalOperationElementOfPropertyMapping` resolves them
+to a deliberately bogus column type (comment at `:2192`), so the return type says nothing.
+
+**No left-join-back on primary keys is needed**, unlike `applyJoinWithExplodeInCondition`, whose
+lateral chain is hard-coded `INNER`. The flatten operator is outer-by-construction in every dialect
+that has one — `outer => true` on Snowflake, `explode_outer` on Databricks, the `[NULL]` singleton on
+DuckDB — so a row with an empty or absent array survives with a null.
+
+**DuckDB needed one dialect fix.** `SemiStructuredArrayFlattenOutput` reads `VALUE` back through
+`castForDuckDBSemiStructuredData`, which assumes JSON — what Snowflake and Databricks hold in their
+arrays. DuckDB's lists reaching the flatten hold already-typed values instead: an array extraction
+casts to a typed list, and `array_transform` renders as `apply()`, whose body yields plain text. So
+`->>'$'` was applied to `Alpha` and raised `Malformed JSON`. Wrapping the list in `to_json` makes the
+element JSON either way and is a no-op on a list that is JSON already, which is why the Binding path
+is unaffected.
+
+H2 skips these tests. It reaches the flatten through `findTableForColumnInAlias`, which wants a
+single table alias column and cannot resolve one through a transform, and through the
+`sqlDialectTranslation` path, which has no case for the extraction node. Both callers are H2-only.
+
+**One pre-existing gap this work uncovered but did not cause.** `->size()` over a *primitive* to-many
+backed by a flatten emits `count(...)` without a `GROUP BY` and fails in the dialect. `->count()` is
+the working spelling. This is not specific to the implicit explosion: the Binding path has the same
+behaviour, verified by adding `otherNames->size()` to `semiStructuredArrayScalarOperations` with the
+implicit-explosion change reverted, where it fails identically. `addresses->size()` works only
+because a `Class[*]` qualifies for `isSemiStructuredArrayExpression` and takes the
+`disableAutoFlatten` route, which renders `array_size`; a `String[*]` does not qualify. Left alone
+here as out of scope, and no test was added for it.

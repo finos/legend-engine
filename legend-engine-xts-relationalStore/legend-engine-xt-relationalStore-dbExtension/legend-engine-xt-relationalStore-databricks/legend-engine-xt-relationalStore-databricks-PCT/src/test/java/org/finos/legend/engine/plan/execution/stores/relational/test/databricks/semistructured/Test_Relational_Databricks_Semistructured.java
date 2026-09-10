@@ -47,7 +47,18 @@ public class Test_Relational_Databricks_Semistructured
         // the inline comments below. If a run produces a different error message the
         // executor will re-throw wrapped in an AssertionError so we don't silently mask
         // regressions.
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty();
+        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
+                // [unsupportedFeature] Collapsing a to-many with joinStrings needs a group-concat
+                // aggregator, and Databricks registers processJoinStringsOperationWithConcatCall -
+                // the string-concat form - so processJoinStringsOperation finds no groupByCat and
+                // refuses. Nothing to do with the array explode: the same call over any grouped
+                // column fails the same way. The other to-many tests in this model pass here.
+                // Added by origin/master's "Fan a to-many bound to a semi-structured array out to
+                // rows" (#5105); this branch has no prior fix for it, unlike the other four
+                // entries master quarantined alongside it in the same commit (see note below).
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
+                        "The database type 'Databricks' is not supported yet!");
                 // testAggregationAggregateExplodedPropertyUsingGroupBy was quarantined here for an
                 // [AMBIGUOUS_REFERENCE] Spark error: GROUP BY rendered `Id` unqualified while both
                 // `blocks_1.Id` (exploded array alias) and `root.Id` (base row) were in scope. Fixed

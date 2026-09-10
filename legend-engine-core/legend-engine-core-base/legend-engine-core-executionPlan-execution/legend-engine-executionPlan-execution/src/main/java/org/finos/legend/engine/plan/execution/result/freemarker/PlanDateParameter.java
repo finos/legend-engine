@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.result.freemarker;
 
 import freemarker.template.TemplateDateModel;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -42,7 +43,7 @@ class PlanDateParameter implements freemarker.template.TemplateDateModel
         String validTargetTz = targetTz.replaceAll("^['\"]+|['\"]+$", "");
         LocalDateTime dateTimeAdjustedForTargetTz = getTargetZonedDateTime(date, validTargetTz);
         formattedDate = dateTimeAdjustedForTargetTz.format(dateTimeFormatter);
-        processedDate = Date.from(dateTimeAdjustedForTargetTz.atZone(ZoneId.of(validTargetTz)).toInstant());
+        processedDate = Date.from(dateTimeAdjustedForTargetTz.atZone(TimeZones.parse(validTargetTz)).toInstant());
     }
 
     private LocalDateTime getTargetZonedDateTime(LocalDateTime dateTime, String targetTz)
@@ -55,7 +56,7 @@ class PlanDateParameter implements freemarker.template.TemplateDateModel
         else
         {
             ZonedDateTime dateTimeGMT = ZonedDateTime.of(dateTime, gmtZoneId);
-            dateTimeInTargetZone = dateTimeGMT.withZoneSameInstant(ZoneId.of(targetTz)).toLocalDateTime();
+            dateTimeInTargetZone = dateTimeGMT.withZoneSameInstant(TimeZones.parse(targetTz)).toLocalDateTime();
         }
         return dateTimeInTargetZone;
     }

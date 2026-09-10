@@ -2477,6 +2477,26 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                                     let sel = $firstStep.select;
 
+                                                    // A to-many property bound to an array-valued expression has no rows to range over, so it
+                                                    // would come back as a single value holding the whole array. Fan it out with a lateral
+                                                    // flatten, which is what a join-backed to-many gets from its join.
+                                                    //
+                                                    // The trigger is what the expression returns, not the shape it happens to have. Excluding
+                                                    // shapes instead leaks: a to-many mapped to toString(<join> | col) is a scalar reached
+                                                    // through a join, and treating it as explodable produced a flatten H2 could not render
+                                                    // (testGraphFetchMultiPrimitiveOnInlineChild).
+                                                    //
+                                                    // Unions are still excluded outright: the operation resolved for them carries a
+                                                    // deliberately bogus column type, so its return type says nothing.
+                                                    let isImplicitArrayExplosion = !$property.multiplicity->hasToOneUpperBound()
+                                                                                    && $state.disableAutoFlatten != true
+                                                                                    && $OrigrelationalPropertyMappings->at(0).transformer->isEmpty()
+                                                                                    && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion()
+                                                                                    && $mappingImpl->isArrayValuedRelationalOperation();
+
+                                                    if($isImplicitArrayExplosion,
+                                                       | buildArrayFlattenLateral($firstStep, $srcOperation, $propertyReturnType, $state, $joinType, $nodeId, $context, $extensions);,
+                                                       |
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
                                                                                          a : Any[*]                                | ^$firstStep(positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($srcOperation.select.data->toOne(), $sel.data->toOne())->first()),
@@ -2493,6 +2513,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                                                                                 ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions))
                                                                              )
                                                         )
+                                                    );
                                                     );
                                                     ,
                                     c:Class<Any>[1] |let srcOperation = $oldSrcOperation;
