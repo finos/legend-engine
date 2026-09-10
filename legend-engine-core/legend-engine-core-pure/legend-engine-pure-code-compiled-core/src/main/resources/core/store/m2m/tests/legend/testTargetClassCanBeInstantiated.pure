@@ -96,3 +96,93 @@ meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiation
 
   assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"j": 1}}'->parseJSON(), $result->toOne()->parseJSON()));
 }
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Example to test that a target instantiated with the new operator can fill a complex property that the graph fetch tree walks'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiationForComplexProperty() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::NestedSource\n'+
+    '{\n'+
+    '  i: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::NestedTarget\n'+
+    '{\n'+
+    '  child: test::model::NestedChild[1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::NestedChild\n'+
+    '{\n'+
+    '  j: Integer[1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::instantiateChild(i: Integer[1]): test::model::NestedChild[1]\n'+
+    '{\n'+
+    '  ^test::model::NestedChild(j=$i);' +
+    '}\n'+
+    '\n'+
+    'function test::query::getNested(): String[1]\n'+
+    '{\n'+
+    '  test::model::NestedTarget.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::NestedTarget {\n'+
+    '        child {\n'+
+    '          j\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::NestedTarget {\n'+
+    '        child {\n'+
+    '          j\n'+
+    '        }\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::M2MNestedMap, test::runtime::nestedRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::M2MNestedMap\n'+
+    '(\n'+
+    '  *test::model::NestedTarget: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::NestedSource\n'+
+    '    child: test::model::instantiateChild($src.i)\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::nestedConnection\n'+
+    '{\n'+
+    '  class: test::model::NestedSource;\n'+
+    '  url: \'data:application/json,{"i":1}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::nestedRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::M2MNestedMap\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::nestedConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getNested__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"child":{"j": 1}}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
