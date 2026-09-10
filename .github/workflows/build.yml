@@ -373,6 +373,13 @@ jobs:
           {
             echo '## Pipeline benchmark'
             echo
+            if [ "${{ steps.benchmark.outputs.exitCode }}" = "0" ]; then
+              echo 'Within the expected band of the baseline.'
+            else
+              echo 'Deviated from the baseline. This does not fail the build - it is here for the'
+              echo 'reviewer to judge whether the change explains it.'
+            fi
+            echo
             echo '```'
             sed -n '/canary ratios/,$p' "$RUNNER_TEMP/perf-output.txt" || true
             echo '```'
@@ -390,7 +397,8 @@ jobs:
           if-no-files-found: warn
 
       - name: Comment on the pull request
-        # A pull request from a fork gets a read-only token, so the comment is best effort.
+        # A pull request from a fork gets a read-only token and cannot be commented on, so this is
+        # best effort; the job summary carries the same report either way.
         continue-on-error: true
         if: github.event_name == 'pull_request' && steps.benchmark.outputs.exitCode != '0'
         uses: actions/github-script@v8
@@ -401,18 +409,26 @@ jobs:
             const output = fs.readFileSync(process.env.RUNNER_TEMP + '/perf-output.txt', 'utf8');
             const details = output.slice(output.indexOf('canary ratios'));
             const branch = context.payload.pull_request.head.ref;
+            const differentMachine = output.includes('environments differ');
             const body = [
               marker,
               '### Pipeline benchmark deviated from the baseline',
+              '',
+              'This does not block the merge. It is here so a reviewer can judge whether the change',
+              'explains the movement, or whether it is worth a closer look.',
               '',
               '```',
               details.trim(),
               '```',
               '',
-              'If this is an expected cost, or the change made things faster, refresh the baseline:',
-              'run the **Performance Baseline** workflow with `rebase` enabled and `ref` set to',
-              '`' + branch + '`. It pushes the updated baseline as a commit on this branch, so the',
-              'new numbers are reviewed together with the change that caused them.'
+              differentMachine
+                ? 'This runner is not the machine the baseline was recorded on, so absolute timings are reported as notes only and even ratios drift somewhat. Ratios that moved a long way are still worth reading.'
+                : 'This runner matches the machine the baseline was recorded on, so both ratios and absolute timings are directly comparable.',
+              '',
+              'If the new numbers are the intended cost of this change - or it made things faster -',
+              'refresh the baseline: run the **Performance Baseline** workflow with `rebase` enabled',
+              'and `ref` set to `' + branch + '`. It pushes the updated baseline as a commit on this',
+              'branch, so the new numbers are reviewed together with the change that caused them.'
             ].join('\n');
             const existing = await github.rest.issues.listComments({
               issue_number: context.issue.number,
@@ -438,12 +454,6 @@ jobs:
                 body
               });
             }
-
-      - name: Fail on deviation
-        if: steps.benchmark.outputs.exitCode != '0'
-        run: |
-          echo "benchmark exited with ${{ steps.benchmark.outputs.exitCode }}"
-          exit 1
 
   pct-report:
     name: PCT Report

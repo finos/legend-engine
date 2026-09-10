@@ -179,8 +179,13 @@ fingerprint will not match and absolute timings stay advisory while canary ratio
 
 The **Pipeline Benchmark** job in `.github/workflows/build.yml` runs this suite on every pull
 request and compares it against the checked-in baseline. It reuses that workflow's build output
-rather than building again, so it costs about the time the suite itself takes. A deviation in
-either direction fails the job, and it leaves a comment on the pull request explaining what moved.
+rather than building again, so it costs about the time the suite itself takes.
+
+A deviation does not fail the build. The job reports it - in the job summary, and as a comment on
+the pull request - and leaves the judgement to the reviewer, who can see whether the change
+explains the movement. Blocking on it would be wrong for a measurement this environment-sensitive:
+runner hardware differs from whatever machine recorded the baseline, and even ratios drift somewhat
+between very different processors.
 
 To accept the new numbers, run the **Performance Baseline** workflow
 (`.github/workflows/performance.yml`) with `rebase` enabled and `ref` set to the pull request's
@@ -190,10 +195,14 @@ that caused it. The manual trigger also takes an `args` field for extra flags, f
 `--margin 0.3 --iters 8`.
 
 Two limitations worth knowing. A pull request from a fork gets a read-only token, so the comment is
-best effort and a rebase must be run from the fork or the baseline committed by hand. And CI runners
-vary, so their environment fingerprint usually will not match the committed baseline: canary ratios
-are still enforced, while absolute phase medians stay advisory until someone rebases on the runner
-class the workflow uses.
+best effort - the job summary always carries the same report - and a rebase must be run from the
+fork or the baseline committed by hand.
+
+And a baseline recorded on a developer machine will not match a runner's fingerprint, so absolute
+timings are reported as notes. Ratios survive the move far better but not perfectly: measured
+across an Apple M4 Max and a four-core cloud runner, five of six canaries landed inside a 30% band
+while the union ratio came in 31% low, purely from the hardware. Recording the baseline on the
+runner class the workflow uses removes that drift and makes absolute timings comparable again.
 
 ## Canary ratios
 
