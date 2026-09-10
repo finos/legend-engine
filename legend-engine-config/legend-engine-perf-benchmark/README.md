@@ -175,6 +175,26 @@ The baseline committed here was measured on a developer machine, so on a CI runn
 fingerprint will not match and absolute timings stay advisory while canary ratios are enforced. Run
 `--suite default --rebase` once on the runner class and commit that file to enforce both.
 
+## In CI
+
+The **Pipeline Benchmark** job in `.github/workflows/build.yml` runs this suite on every pull
+request and compares it against the checked-in baseline. It reuses that workflow's build output
+rather than building again, so it costs about the time the suite itself takes. A deviation in
+either direction fails the job, and it leaves a comment on the pull request explaining what moved.
+
+To accept the new numbers, run the **Performance Baseline** workflow
+(`.github/workflows/performance.yml`) with `rebase` enabled and `ref` set to the pull request's
+branch. The run records the results as the baseline and pushes them
+as a commit on that branch, so the change in cost is reviewed in the same pull request as the change
+that caused it. The manual trigger also takes an `args` field for extra flags, for example
+`--margin 0.3 --iters 8`.
+
+Two limitations worth knowing. A pull request from a fork gets a read-only token, so the comment is
+best effort and a rebase must be run from the fork or the baseline committed by hand. And CI runners
+vary, so their environment fingerprint usually will not match the committed baseline: canary ratios
+are still enforced, while absolute phase medians stay advisory until someone rebases on the runner
+class the workflow uses.
+
 ## Canary ratios
 
 Absolute times vary several-fold between machines, so thresholds on them are either noisy or
