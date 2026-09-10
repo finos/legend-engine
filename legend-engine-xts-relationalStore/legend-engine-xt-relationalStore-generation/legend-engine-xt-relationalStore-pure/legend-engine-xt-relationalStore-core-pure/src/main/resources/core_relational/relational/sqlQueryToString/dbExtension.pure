@@ -1251,6 +1251,16 @@ Class meta::relational::functions::sqlQueryToString::ToSql
 
 }
 
+// What a dyna function returns, where the router has to know. 'collection' marks the ones that
+// yield an array rather than a scalar, so binding one to a to-many property means the array has to
+// be fanned out to rows rather than handed back whole. Declared on the registry entry so there is
+// one place to state it - adding an array function and forgetting to classify it is then a visible
+// omission on the enum rather than a silent mismatch with a list kept somewhere else.
+Profile meta::relational::functions::sqlQueryToString::DynaFunctionReturn
+{
+  stereotypes: [collection];
+}
+
 Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
 {
   abs,
@@ -1262,23 +1272,23 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   anyOf,
   array_first,
   array_last,
-  array_init,
-  array_tail,
-  array_concatenate,
+  <<DynaFunctionReturn.collection>> array_init,
+  <<DynaFunctionReturn.collection>> array_tail,
+  <<DynaFunctionReturn.collection>> array_concatenate,
   array_max,
   array_min,
   array_sum,
-  array_sort,
-  array_reverse,
+  <<DynaFunctionReturn.collection>> array_sort,
+  <<DynaFunctionReturn.collection>> array_reverse,
   array_size,
-  array_append,
+  <<DynaFunctionReturn.collection>> array_append,
   array_position,
-  array_slice,
-  array_drop,
-  array_take,
+  <<DynaFunctionReturn.collection>> array_slice,
+  <<DynaFunctionReturn.collection>> array_drop,
+  <<DynaFunctionReturn.collection>> array_take,
   array_contains,
-  array_distinct,
-  array_flatten,
+  <<DynaFunctionReturn.collection>> array_distinct,
+  <<DynaFunctionReturn.collection>> array_flatten,
   array_to_string,
   ascii,
   asin,
