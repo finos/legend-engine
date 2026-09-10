@@ -168,10 +168,10 @@ jobs:
             echo "arg=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Collect Workflow Telemetry
-        uses: runforesight/workflow-telemetry-action@v1
-        with:
-          theme: dark
+#      - name: Collect Workflow Telemetry
+#        uses: runforesight/workflow-telemetry-action@v1
+#        with:
+#          theme: dark
 
       - name: Set profiles that required github secrets
         id: requiredSecrets
@@ -324,6 +324,136 @@ jobs:
         with:
           name: test-results-${{ matrix.name }}
           path: ${{ github.workspace }}/surefire-reports-aggregate/*.xml
+
+  benchmark:
+    name: Pipeline Benchmark
+    runs-on: ubuntu-latest
+    if: "!cancelled() && needs.build.result == 'success'"
+    needs:
+      - build
+    permissions:
+      contents: read
+      pull-requests: write
+    env:
+      MODULE: legend-engine-config/legend-engine-perf-benchmark
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Before Test
+        uses: ./.github/workflows/actions/before-test
+
+      - name: Restore legend-pure snapshot
+        if: inputs.pure_ref != ''
+        uses: actions/download-artifact@v8
+        with:
+          name: pure-m2-snapshot
+          path: ~/.m2/repository/org/finos/legend/pure/
+
+      - name: Resolve benchmark classpath
+        run: mvn -B -q -pl $MODULE dependency:build-classpath -Dmdep.outputFile=$RUNNER_TEMP/perf-cp.txt ${{ needs.build.outputs.pureVersionArg }}
+
+      - name: Run benchmark suite
+        id: benchmark
+        working-directory: ${{ env.MODULE }}
+        run: |
+          set +e
+          java -Xmx6g -Xss8m \
+            -cp "target/classes:$(cat $RUNNER_TEMP/perf-cp.txt)" \
+            org.finos.legend.engine.perf.PipelineBench \
+            --suite default --iters 5 --warmup 2 \
+            --out "$RUNNER_TEMP/perf-results.json" \
+            | tee "$RUNNER_TEMP/perf-output.txt"
+          echo "exitCode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo '## Pipeline benchmark'
+            echo
+            if [ "${{ steps.benchmark.outputs.exitCode }}" = "0" ]; then
+              echo 'Within the expected band of the baseline.'
+            else
+              echo 'Deviated from the baseline. This does not fail the build - it is here for the'
+              echo 'reviewer to judge whether the change explains it.'
+            fi
+            echo
+            echo '```'
+            sed -n '/canary ratios/,$p' "$RUNNER_TEMP/perf-output.txt" || true
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf-results
+          path: |
+            ${{ runner.temp }}/perf-results.json
+            ${{ runner.temp }}/perf-output.txt
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Comment on the pull request
+        # A pull request from a fork gets a read-only token and cannot be commented on, so this is
+        # best effort; the job summary carries the same report either way.
+        continue-on-error: true
+        if: github.event_name == 'pull_request' && steps.benchmark.outputs.exitCode != '0'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- performance-ci -->';
+            const output = fs.readFileSync(process.env.RUNNER_TEMP + '/perf-output.txt', 'utf8');
+            const details = output.slice(output.indexOf('canary ratios'));
+            const branch = context.payload.pull_request.head.ref;
+            const differentMachine = output.includes('environments differ');
+            const body = [
+              marker,
+              '### Pipeline benchmark deviated from the baseline',
+              '',
+              'This does not block the merge. It is here so a reviewer can judge whether the change',
+              'explains the movement, or whether it is worth a closer look.',
+              '',
+              '```',
+              details.trim(),
+              '```',
+              '',
+              differentMachine
+                ? 'This runner is not the machine the baseline was recorded on, so absolute timings are reported as notes only and even ratios drift somewhat. Ratios that moved a long way are still worth reading.'
+                : 'This runner matches the machine the baseline was recorded on, so both ratios and absolute timings are directly comparable.',
+              '',
+              'If the new numbers are the intended cost of this change - or it made things faster -',
+              'refresh the baseline: run the **Performance Baseline** workflow with `rebase` enabled',
+              'and `ref` set to `' + branch + '`. It pushes the updated baseline as a commit on this',
+              'branch, so the new numbers are reviewed together with the change that caused them.'
+            ].join('\n');
+            const existing = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const previous = existing.data.find(comment => comment.body.startsWith(marker));
+            if (previous)
+            {
+              await github.rest.issues.updateComment({
+                comment_id: previous.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body
+              });
+            }
+            else
+            {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body
+              });
+            }
 
   pct-report:
     name: PCT Report

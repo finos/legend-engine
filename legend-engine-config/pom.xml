@@ -33,5 +33,6 @@
         <module>legend-engine-server</module>
         <module>legend-engine-repl</module>
         <module>legend-engine-emit-tests</module>
+        <module>legend-engine-perf-benchmark</module>
     </modules>
 </project>
