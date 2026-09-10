@@ -1,0 +1,520 @@
+{
+  "schemaVersion" : 1,
+  "suite" : "default",
+  "generatedAt" : "2026-09-10T00:30:32.661875Z",
+  "environment" : {
+    "os" : "Mac OS X",
+    "osVersion" : "26.6.2",
+    "arch" : "aarch64",
+    "cpu" : "Apple M4 Max",
+    "availableProcessors" : 16,
+    "maxHeapMb" : 8192,
+    "javaVersion" : "17.0.19",
+    "javaVendor" : "Eclipse Adoptium",
+    "jvmName" : "OpenJDK 64-Bit Server VM",
+    "jvmArgs" : "[-Xmx8g, -Xss8m]",
+    "engineVersion" : "unknown",
+    "gitCommit" : "a314b6f1e784e351a5a2636888d49425e317867f",
+    "ci" : false
+  },
+  "workloads" : [ {
+    "workload" : "simple@scale100/H2",
+    "config" : {
+      "scale" : 100,
+      "query" : "simple",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 434,
+      "compile" : 1215,
+      "lambda" : 1,
+      "extensions" : 253,
+      "planPure" : 1067,
+      "javaBind" : 292,
+      "serialize" : 141,
+      "deserialize" : 31
+    },
+    "warmMedianMs" : {
+      "parse" : 12,
+      "compile" : 14,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 13,
+      "javaBind" : 4,
+      "serialize" : 1,
+      "deserialize" : 5
+    },
+    "planJsonChars" : 2305
+  }, {
+    "workload" : "simple@scale1000/H2",
+    "config" : {
+      "scale" : 1000,
+      "query" : "simple",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 158,
+      "compile" : 95,
+      "lambda" : 1,
+      "extensions" : 0,
+      "planPure" : 12,
+      "javaBind" : 4,
+      "serialize" : 1,
+      "deserialize" : 3
+    },
+    "warmMedianMs" : {
+      "parse" : 124,
+      "compile" : 77,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 10,
+      "javaBind" : 3,
+      "serialize" : 1,
+      "deserialize" : 2
+    },
+    "planJsonChars" : 2305
+  }, {
+    "workload" : "join8@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "join8",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 7,
+      "compile" : 20,
+      "lambda" : 4,
+      "extensions" : 0,
+      "planPure" : 98,
+      "javaBind" : 4,
+      "serialize" : 1,
+      "deserialize" : 2
+    },
+    "warmMedianMs" : {
+      "parse" : 7,
+      "compile" : 9,
+      "lambda" : 3,
+      "extensions" : 0,
+      "planPure" : 30,
+      "javaBind" : 3,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 3581
+  }, {
+    "workload" : "join16@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "join16",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 15,
+      "compile" : 320,
+      "lambda" : 322,
+      "extensions" : 0,
+      "planPure" : 65,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 12,
+      "compile" : 298,
+      "lambda" : 311,
+      "extensions" : 0,
+      "planPure" : 44,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 5172
+  }, {
+    "workload" : "join2@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "join2",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 4,
+      "compile" : 4,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 8,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 4,
+      "compile" : 4,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 7,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 2429
+  }, {
+    "workload" : "join10@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "join10",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 7,
+      "compile" : 8,
+      "lambda" : 4,
+      "extensions" : 0,
+      "planPure" : 22,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 7,
+      "compile" : 9,
+      "lambda" : 4,
+      "extensions" : 0,
+      "planPure" : 21,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 3972
+  }, {
+    "workload" : "join2@scale10+union10/H2",
+    "config" : {
+      "scale" : 10,
+      "query" : "join2",
+      "dbType" : "H2",
+      "unionSets" : 10,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 12,
+      "compile" : 7,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 121,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 2,
+      "compile" : 4,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 42,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 7466
+  }, {
+    "workload" : "join2@scale10+union40/H2",
+    "config" : {
+      "scale" : 10,
+      "query" : "join2",
+      "dbType" : "H2",
+      "unionSets" : 40,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 4,
+      "compile" : 5,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 992,
+      "javaBind" : 2,
+      "serialize" : 1,
+      "deserialize" : 2
+    },
+    "warmMedianMs" : {
+      "parse" : 4,
+      "compile" : 4,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 966,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 71876
+  }, {
+    "workload" : "simple@scale50+relfunc/H2",
+    "config" : {
+      "scale" : 50,
+      "query" : "simple",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : true,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 41,
+      "compile" : 156,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 41,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 12,
+      "compile" : 40,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 8,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 2476
+  }, {
+    "workload" : "simple@scale200+relfunc/H2",
+    "config" : {
+      "scale" : 200,
+      "query" : "simple",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : true,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 39,
+      "compile" : 159,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 10,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "warmMedianMs" : {
+      "parse" : 38,
+      "compile" : 151,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 7,
+      "javaBind" : 2,
+      "serialize" : 0,
+      "deserialize" : 1
+    },
+    "planJsonChars" : 2476
+  }, {
+    "workload" : "graph1@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "graph1",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 7,
+      "compile" : 18,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 150,
+      "javaBind" : 148,
+      "serialize" : 133,
+      "deserialize" : 12
+    },
+    "warmMedianMs" : {
+      "parse" : 3,
+      "compile" : 3,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 14,
+      "javaBind" : 23,
+      "serialize" : 4,
+      "deserialize" : 2
+    },
+    "planJsonChars" : 90101
+  }, {
+    "workload" : "graph4@scale30/H2",
+    "config" : {
+      "scale" : 30,
+      "query" : "graph4",
+      "dbType" : "H2",
+      "unionSets" : 0,
+      "includes" : 0,
+      "semiDepth" : 0,
+      "milestoned" : false,
+      "relationFunction" : false,
+      "modelToModel" : false,
+      "nextMultiplicity" : "0..1",
+      "execute" : false
+    },
+    "iterations" : 5,
+    "warmup" : 2,
+    "coldMs" : {
+      "parse" : 3,
+      "compile" : 3,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 33,
+      "javaBind" : 47,
+      "serialize" : 9,
+      "deserialize" : 4
+    },
+    "warmMedianMs" : {
+      "parse" : 3,
+      "compile" : 3,
+      "lambda" : 0,
+      "extensions" : 0,
+      "planPure" : 31,
+      "javaBind" : 38,
+      "serialize" : 7,
+      "deserialize" : 3
+    },
+    "planJsonChars" : 228539
+  } ],
+  "canaries" : [ {
+    "name" : "compileCliffJoinDepth",
+    "phase" : "compile",
+    "numerator" : "join16@scale30/H2",
+    "denominator" : "join8@scale30/H2",
+    "guards" : "exponential lambda compilation on optional navigation chains",
+    "value" : 33.11
+  }, {
+    "name" : "compileVsModelSize",
+    "phase" : "compile",
+    "numerator" : "simple@scale1000/H2",
+    "denominator" : "simple@scale100/H2",
+    "guards" : "quadratic terms in mapping validation and table resolution",
+    "value" : 5.5
+  }, {
+    "name" : "planPureUnionSets",
+    "phase" : "planPure",
+    "numerator" : "join2@scale10+union40/H2",
+    "denominator" : "join2@scale10+union10/H2",
+    "guards" : "quadratic pure-to-SQL in union set implementations",
+    "value" : 23.0
+  }, {
+    "name" : "planPureJoinDepth",
+    "phase" : "planPure",
+    "numerator" : "join10@scale30/H2",
+    "denominator" : "join2@scale30/H2",
+    "guards" : "pure-to-SQL superlinearity in navigation depth",
+    "value" : 3.0
+  }, {
+    "name" : "compileRelationMappings",
+    "phase" : "compile",
+    "numerator" : "simple@scale200+relfunc/H2",
+    "denominator" : "simple@scale50+relfunc/H2",
+    "guards" : "per-column lambda compilation in Relation mappings",
+    "value" : 3.78
+  }, {
+    "name" : "javaBindGraphDepth",
+    "phase" : "javaBind",
+    "numerator" : "graph4@scale30/H2",
+    "denominator" : "graph1@scale30/H2",
+    "guards" : "platform binder growth in graph-fetch tree size",
+    "value" : 1.65
+  } ]
+}
