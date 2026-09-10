@@ -90,7 +90,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    );
    let createTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $table);
    let result = $createTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-   assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $result->toOne());
+   assertEquals('Create Table hr.allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $result->toOne());
 
    // Test create table with default schema
    let defaultTable = ^meta::relational::metamodel::relation::Table(
@@ -100,7 +100,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    );
    let defaultCreateTableSQL = ^meta::relational::metamodel::CreateTableSQL(table = $defaultTable);
    let defaultResult = $defaultCreateTableSQL->meta::relational::functions::sqlQueryToString::ddlSqlQueryToString($dbConfig);
-   assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float FLOAT,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
+   assertEquals('Create Table allTypesTable(col_boolean BOOLEAN,col_integer DECIMAL(19,0),col_float DOUBLE,col_varchar VARCHAR(256),col_char CHAR(10),col_decimal DECIMAL(18, 6),col_timestamp TIMESTAMP,col_date DATE,col_bigint BIGINT,col_smallint SMALLINT,col_tinyint TINYINT,col_double DOUBLE,col_numeric DECIMAL(12, 4),col_binary BINARY,col_variant VARIANT) TBLPROPERTIES ( \'delta.minReaderVersion\' = \'2\', \'delta.minWriterVersion\' = \'5\', \'delta.columnMapping.mode\' = \'name\' );', $defaultResult->toOne());
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testCreateFunctionForDatabricks(): Boolean[*]
