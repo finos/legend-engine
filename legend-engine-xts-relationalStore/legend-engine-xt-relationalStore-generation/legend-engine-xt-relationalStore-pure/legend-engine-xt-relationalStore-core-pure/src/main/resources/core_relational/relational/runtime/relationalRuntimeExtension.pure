@@ -28,6 +28,17 @@ Class meta::external::store::relational::runtime::GenerationFeaturesConfig exten
 function meta::external::store::relational::runtime::knownGenerationFeatures(): String[*]
 {
   [
-    meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()
+    meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName(),
+    meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName()
   ]
+}
+
+// Feature is off by default: implicit sorts render a canonical NULLS clause (or CASE shim) whenever
+// the dialect's native ordering diverges from ASC=nulls-last / DESC=nulls-first. When any surface
+// enables the feature, implicit sorts fall back to the database's native null ordering with no
+// NULLS clause emitted. Precedence across the three surfaces (platform / connection / query) is OR:
+// only `enabled` is meaningful here -- `disabled` cannot override another surface turning it on.
+function meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName(): String[1]
+{
+  'USE_DB_NATIVE_IMPLICIT_NULL_ORDERING'
 }

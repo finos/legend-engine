@@ -66,3 +66,13 @@ function meta::relational::postProcessor::removeUnionOrJoins::testRuntimeWithRem
 {
   ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(disabled = meta::relational::postProcessor::removeUnionOrJoins::removeUnionOrJoinsGenerationFeatureName()))))))
 }
+
+function meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureEnabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(enabled = meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName()))))))
+}
+
+function meta::external::store::relational::runtime::testRuntimeWithUseDbNativeImplicitNullOrderingFeatureDisabled(runtime: Runtime[1]): Runtime[1]
+{
+  ^$runtime(connectionStores = $runtime.connectionStores->map(cs | ^$cs(connection = $cs.connection->cast(@meta::external::store::relational::runtime::DatabaseConnection)->map(x | ^$x(queryGenerationConfigs = ^meta::external::store::relational::runtime::GenerationFeaturesConfig(disabled = meta::external::store::relational::runtime::useDbNativeImplicitNullOrderingGenerationFeatureName()))))))
+}

@@ -571,12 +571,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
     //  debug(|'processed where: '+$withWhere.expression->evaluateAndDeactivate()->map(x|$x->meta::pure::metamodel::serialization::grammar::printValueSpecification(^GContext(space='')))->joinStrings(''), $context.debug->indent());
 
-      let rewrittenOrderBy = $querySpec.orderBy->rewriteNullOrdering();
-
-      let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $rewrittenOrderBy.sortKey, $withWhere);
+      let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $withWhere);
 
       let query = $querySpec.limit->processLimitOffset($querySpec.offset,
-        $rewrittenOrderBy->processOrderBy($projection.second.selectItems,
+        $querySpec.orderBy->processOrderBy($projection.second.selectItems,
           $querySpec.having->processHaving($projection.second,
             $projection.first
           )
@@ -1891,27 +1889,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]->getValue($joinType, | unsupported('unsupported join type ' + $joinType.name);  meta::pure::functions::relation::JoinKind.INNER;)->eval();
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::rewriteNullOrdering(sortItems: SortItem[*]):SortItem[*]
-{
-  $sortItems->map(si |
-    if ($si.nullOrdering == SortItemNullOrdering.UNDEFINED,
-      | $si,
-      | let nullCase = ^SearchedCaseExpression(
-            whenClauses = [^WhenClause(operand = ^IsNullPredicate(value = $si.sortKey), result = ^IntegerLiteral(value = 0))],
-            defaultValue = ^IntegerLiteral(value = 1));
-
-        let caseDirection = if ($si.nullOrdering == SortItemNullOrdering.FIRST,
-                              | SortItemOrdering.ASCENDING,
-                              | SortItemOrdering.DESCENDING);
-
-        [
-          ^SortItem(sortKey = $nullCase, ordering = $caseDirection, nullOrdering = SortItemNullOrdering.UNDEFINED),
-          ^SortItem(sortKey = $si.sortKey, ordering = $si.ordering, nullOrdering = SortItemNullOrdering.UNDEFINED)
-        ];
-    )
-  );
-}
-
 //The select item an ORDER BY ordinal points at. extractColumnNameFromExpression carries its own copy
 //of these asserts for the GROUP BY path, which must keep resolving pre-projection and so cannot share
 //this code.
@@ -2014,8 +1991,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 //need this because a materialised key does not resolve through the context - see materialisedKeyName.
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createSortItemFunctionForColumn(si:SortItem[1], column:String[1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
-    assert($si.nullOrdering == SortItemNullOrdering.UNDEFINED, 'null ordering type not yet supported');
-
     ^TDSBuilder().sortItem($si, $column, $context.relation->isTrue());
 }
 
@@ -3566,8 +3541,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let subQueryCtx = processQuery($query, $context);
 
   let lambda = $subQueryCtx.lambda(true);
+  let type = $lambda->functionReturnType();
 
-  sfe(eval_Function_1__V_m_, iv($lambda));
+  sfe(eval_Function_1__V_m_, $type, $type, $lambda->functionReturnMultiplicity(), iv($lambda));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processArraySliceExpression(a:ArraySliceExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
@@ -4984,7 +4960,7 @@ function meta::external::query::sql::transformation::queryToPure::rootContext(so
 
   assert(!$relation || ($relation && $sources->forAll(s | $s->instanceOf(DynamicSQLSource) || $s.func->isRelation())), 'cannot currently mix relation and non relation sources');
 
-  context(0, true, $sources, $extensions, true, $relation, $compiler, noDebug());
+  context(0, true, $sources, $extensions, true, $relation, $compiler, if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug()));
 }
 
 function meta::external::query::sql::transformation::queryToPure::isRelation(f:FunctionDefinition<Any>[1]):Boolean[1]
@@ -5464,13 +5440,12 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
     column:String[1],
     relation:Boolean[1])
   {
-    assert($si.nullOrdering == SortItemNullOrdering.UNDEFINED, 'null ordering type not yet supported');
 
     let col = if ($relation,
                 | iv(^meta::pure::metamodel::relation::ColSpec<Any>(name = $column)),
                 | iv($column));
 
-    [
+    let sortInfo = [
       pair(SortItemOrdering.ASCENDING, | [
         pair(false, | sfe(asc_String_1__SortInformation_1_, $col)),
         pair(true, | sfe(ascending_ColSpec_1__SortInfo_1_, $col))
@@ -5481,7 +5456,20 @@ Class meta::external::query::sql::transformation::queryToPure::TDSBuilder
       ])
     ]->getValue($si.ordering)->eval()->getValue($relation)->eval();
 
-
+    // Null ordering is attached via a wrapper on both branches: TDS uses
+    // emptyFirst/emptyLast(SortInformation) (added alongside asc/desc), Relation uses
+    // emptyFirst/emptyLast(SortInfo). Emitting a wrapper keeps the composer's output
+    // in function-call form -- no raw enum InstanceValue in the lambda -- which round-trips
+    // cleanly through printFunctionDefinition + assertLambdaJSONEquals.
+    if ($si.nullOrdering == SortItemNullOrdering.UNDEFINED,
+      | $sortInfo,
+      | if ($relation,
+          | if ($si.nullOrdering == SortItemNullOrdering.FIRST,
+              | sfe(emptyFirst_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo),
+              | sfe(emptyLast_SortInfo_1__SortInfo_1_, $sortInfo->evaluateAndDeactivate().genericType, $sortInfo)),
+          | if ($si.nullOrdering == SortItemNullOrdering.FIRST,
+              | sfe(emptyFirst_SortInformation_1__SortInformation_1_, $sortInfo),
+              | sfe(emptyLast_SortInformation_1__SortInformation_1_, $sortInfo))));
   }:ValueSpecification[1];
 
 

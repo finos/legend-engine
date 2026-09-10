@@ -218,4 +218,3 @@ function <<test.Test>> meta::relational::tests::tds::sort::testTableToTDSWithQuo
 
    assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
 }
-

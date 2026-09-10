@@ -90,6 +90,138 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSo
                 '#', $res3->toString());
 }
 
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyLast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+                null, Neema
+                3, David
+              #->sort([~id->ascending()->emptyLast(), ~name->ascending()]);
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   3,David\n'+
+               '   null,Neema\n'+
+               '   null,Pierre\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyFirst<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+                3, David
+              #->sort([~id->ascending()->emptyFirst(), ~name->ascending()]);
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   null,Pierre\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   3,David\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyFirstTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+              #->sort(~id->ascending(meta::pure::functions::relation::NullOrder.FIRST));
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   null,Pierre\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmptyLastTwoArg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+              #->sort(~id->ascending(meta::pure::functions::relation::NullOrder.LAST));
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   null,Pierre\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortCanonicalNullOrdering<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  // unspecified => canonical (nulls sort high): NULLS LAST on ascending
+  let res = $f->eval({|
+              #TDS
+                id, name
+                2, George
+                null, Pierre
+                1, Sachin
+              #->sort(~id->ascending());
+            });
+
+  assertEquals('#TDS\n'+
+               '   id,name\n'+
+               '   1,Sachin\n'+
+               '   2,George\n'+
+               '   null,Pierre\n'+
+               '#', $res->toString());
+}
+
+function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortMultipleColumnsMixedNullOrder<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  // Two sort keys with opposite null orderings:
+  //   grp asc NULLS LAST   -> nulls in grp go to the bottom of the result
+  //   id  desc NULLS FIRST -> within each grp partition, null id comes first, then descending non-null ids
+  let res = $f->eval({|
+              #TDS
+                grp, id
+                A,   2
+                A,   null
+                A,   1
+                null, 5
+                B,   null
+                B,   3
+                null, null
+              #->sort([~grp->ascending()->emptyLast(), ~id->descending()->emptyFirst()]);
+            });
+
+  assertEquals('#TDS\n'+
+               '   grp,id\n'+
+               '   A,null\n'+
+               '   A,2\n'+
+               '   A,1\n'+
+               '   B,null\n'+
+               '   B,3\n'+
+               '   null,null\n'+
+               '   null,5\n'+
+               '#', $res->toString());
+}
+
 function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let expr = {| 

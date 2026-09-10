@@ -1,0 +1,59 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::core::runtime::*;
+
+// A runtime with no preprocessFunction is rebuilt as a base ^Runtime, as it always has been. Pins that the
+// preprocessFunction carve-out below does not change the behaviour of any other runtime.
+function <<test.Test>> meta::core::runtime::tests::testMergeSingleRuntimeWithoutPreprocessFunctionIsRebuilt():Boolean[1]
+{
+   let connectionStore = ^ConnectionStore(element = 'db', connection = ^Connection());
+
+   let merged = mergeRuntimes([^EngineRuntime(connectionStores = $connectionStore)]);
+
+   assertEquals($connectionStore, $merged.connectionStores->toOne());
+   assertEmpty($merged.preprocessFunction);
+   assert(!$merged->instanceOf(EngineRuntime), 'expected a base Runtime, not the original subtype');
+}
+
+// Rebuilding as a base ^Runtime would drop both the subtype and the hook, so a runtime carrying a
+// preprocessFunction is returned untouched when it is the only one being merged.
+function <<test.Test>> meta::core::runtime::tests::testMergeSingleRuntimeWithPreprocessFunctionIsPreserved():Boolean[1]
+{
+   let connectionStore = ^ConnectionStore(element = 'db', connection = ^Connection());
+   let runtime = ^EngineRuntime(connectionStores = $connectionStore, preprocessFunction = meta::core::runtime::tests::testPreprocess_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_);
+
+   let merged = mergeRuntimes([$runtime]);
+
+   assert($merged->instanceOf(EngineRuntime), 'subtype must survive the merge');
+   assertEquals(meta::core::runtime::tests::testPreprocess_FunctionDefinition_1__Runtime_1__FunctionDefinition_1_, $merged.preprocessFunction->toOne());
+   assertEquals($connectionStore, $merged.connectionStores->toOne());
+}
+
+function <<test.Test>> meta::core::runtime::tests::testMergeCombinesConnectionStores():Boolean[1]
+{
+   let connectionStore1 = ^ConnectionStore(element = 'db1', connection = ^Connection());
+   let connectionStore2 = ^ConnectionStore(element = 'db2', connection = ^Connection());
+
+   let merged = mergeRuntimes([^Runtime(connectionStores = $connectionStore1), ^Runtime(connectionStores = $connectionStore2)]);
+
+   assertEquals(2, $merged.connectionStores->size());
+   assertEquals($connectionStore1, $merged.connectionStores->at(0));
+   assertEquals($connectionStore2, $merged.connectionStores->at(1));
+}
+
+function meta::core::runtime::tests::testPreprocess(f:FunctionDefinition<Any>[1], runtime:Runtime[1]):FunctionDefinition<Any>[1]
+{
+   $f;
+}
