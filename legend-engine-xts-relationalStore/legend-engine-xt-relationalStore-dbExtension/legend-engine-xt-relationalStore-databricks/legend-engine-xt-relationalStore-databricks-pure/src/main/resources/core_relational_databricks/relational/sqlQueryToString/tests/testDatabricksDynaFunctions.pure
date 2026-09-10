@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
    let result = toSQLString(|Person.all()->project([p | $p.firstName->indexOf('Jo')], ['index']),
                                                 simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Databricks, meta::relational::extension::relationalExtensions());
-   assertEquals('select locate(\'Jo\', `root`.FIRSTNAME) as `index` from personTable as `root`', $result);
+   assertEquals('select (locate(\'Jo\', `root`.FIRSTNAME) - 1) as `index` from personTable as `root`', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringConcatDatabricks():Boolean[1]
