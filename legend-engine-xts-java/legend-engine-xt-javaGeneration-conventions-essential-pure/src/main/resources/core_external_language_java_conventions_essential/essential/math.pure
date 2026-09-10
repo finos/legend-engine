@@ -52,7 +52,8 @@ function meta::external::language::java::generation::essential::math::registerMa
          fc1(round_Number_1__Integer_1_,                               {ctx,num        | $library->j_invoke('round', $num, javaLong())}),
          fc2(round_Decimal_1__Integer_1__Decimal_1_,                   {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaBigDecimal())}),
          fc2(round_Float_1__Integer_1__Float_1_,                       {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaDouble())}),
-                          
+         fc2(round_Number_1__Integer_1__Number_1_,                     {ctx,num,scale  | $library->j_invoke('round', [$num, $scale], javaNumber())}),
+
          fc1(acos_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('acos', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(asin_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('asin', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),
          fc1(atan_Number_1__Float_1_,                                  {ctx,num        | javaMath()->j_invoke('atan', $num->j_box()->j_invoke('doubleValue', []), javaDouble())}),

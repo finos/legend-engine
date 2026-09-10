@@ -1109,6 +1109,7 @@ function meta::external::store::deephaven::pureToDeephaven::supportedRoutingFunc
     pair(supportedIfEqual(meta::pure::functions::math::round_Number_1__Integer_1_),     processRound_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::round_Float_1__Integer_1__Float_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
+    pair(supportedIfEqual(meta::pure::functions::math::round_Number_1__Integer_1__Number_1_),     processRoundWithScale_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::acos_Number_1__Float_1_),     processAcos_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::asin_Number_1__Float_1_),     processAsin_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),
     pair(supportedIfEqual(meta::pure::functions::math::atan_Number_1__Float_1_),     processAtan_FunctionExpression_1__DeephavenOperationElement_1__State_1__DeephavenOperationElement_1_),

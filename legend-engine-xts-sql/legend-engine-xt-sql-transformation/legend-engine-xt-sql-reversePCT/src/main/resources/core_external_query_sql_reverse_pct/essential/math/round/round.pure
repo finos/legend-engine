@@ -147,6 +147,35 @@ function meta::external::query::sql::reversePCT::tests::essential::math::round::
                             'select round(-17.36, 1)'
                         )
                       ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::math::tests::round::testNumberRoundWithScale_Function_1__Boolean_1_',
+                      [
+                        rev('|meta::pure::functions::math::round(17, 2)',
+                            'select round(17, 2)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-17, 3)',
+                            'select round(-17, 3)'
+                        ),
+                        rev('|meta::pure::functions::math::round(0, 4)',
+                            'select round(0, 4)'
+                        ),
+                        rev('|meta::pure::functions::math::round(17.36, 1)',
+                            'select round(17.36, 1)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-17.36, 1)',
+                            'select round(-17.36, 1)'
+                        ),
+                        rev('|meta::pure::functions::math::round(17.3, 0)',
+                            'select round(17.3, 0)'
+                        ),
+                        rev('|meta::pure::functions::math::round(3.14159D, 2)',
+                            'select round((3.14159)::numeric, 2)'
+                        ),
+                        rev('|meta::pure::functions::math::round(-3.14159D, 3)',
+                            'select round((-3.14159)::numeric, 3)'
+                        )
+                      ]
                  )
                ]
   )
@@ -168,4 +197,5 @@ function meta::external::query::sql::reversePCT::tests::essential::math::round::
    meta::pure::functions::math::tests::round::testNegativeFloatWithZeroDecimalRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::round::testDecimalRound(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::round::testFloatRoundWithScale(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::round::testNumberRoundWithScale(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

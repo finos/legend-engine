@@ -2969,7 +2969,8 @@ public class Handlers
         register(m(
                     m(
                             h("meta::pure::functions::math::round_Float_1__Integer_1__Float_1_", "round", true, ps -> res("Float", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Float")),
-                            h("meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_", "round", true, ps -> res("Decimal", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal"))
+                            h("meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_", "round", true, ps -> res("Decimal", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Decimal")),
+                            h("meta::pure::functions::math::round_Number_1__Integer_1__Number_1_", "round", true, ps -> res("Number", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "Number"))
                     ),
                     m(
                             h("meta::pure::functions::math::round_Number_1__Integer_1_", "round", true, ps -> res("Integer", "one"), ps -> true)
