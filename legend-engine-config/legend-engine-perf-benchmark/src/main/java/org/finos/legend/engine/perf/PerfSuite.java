@@ -36,10 +36,12 @@ import java.util.Map;
  * are held to. Pass --allow-improvement to only enforce the slower side.
  *
  * Two kinds of check run, because they tolerate machine differences differently:
- *   - canary ratios between two workloads measured in the same JVM, which cancel machine speed and
- *     are therefore compared everywhere. These catch a phase turning quadratic or exponential.
- *   - absolute phase medians, compared only when the environment fingerprint matches the baseline,
- *     since a different machine moves them several-fold on its own.
+ *   - canary ratios between two workloads measured in the same JVM, which cancel machine speed
+ *     and catch a phase turning quadratic or exponential.
+ *   - absolute phase medians, which a different machine moves several-fold on its own.
+ * Both are compared only against an entry recorded on this same environment. A run on a machine the
+ * baseline does not know reports its numbers and checks nothing, so record one there with --rebase,
+ * or feed that run's results file back with --record.
  */
 public class PerfSuite
 {
@@ -60,6 +62,12 @@ public class PerfSuite
         double canaryMargin = Double.parseDouble(options.getOrDefault("canary-margin", "0.3"));
         long minDelta = Long.parseLong(options.getOrDefault("min-delta-ms", "25"));
         boolean allowImprovement = options.containsKey("allow-improvement");
+
+        String record = options.get("record");
+        if (record != null)
+        {
+            return record(new File(record), new File(baselinePath), baselinePath);
+        }
 
         List<BenchConfig> workloads = workloads(suiteName, iterations, warmup);
         System.out.println("suite '" + suiteName + "': " + workloads.size() + " workloads, "
@@ -123,6 +131,21 @@ public class PerfSuite
             return 0;
         }
         return compare(recorded, results, margin, canaryMargin, minDelta, allowImprovement) ? 0 : 1;
+    }
+
+    /**
+     * Records a results file measured elsewhere - a CI run's uploaded artifact, most often - into
+     * the baseline without re-running the suite here. A hosted runner cannot commit its own
+     * baseline back, and hand-editing the file drifts from what the writer produces.
+     */
+    private static int record(File results, File baselineFile, String baselinePath) throws Exception
+    {
+        Map<String, Object> measured = MAPPER.readValue(results, Map.class);
+        Map<String, Object> updated = recordInBaseline(baselineFile.exists() ? readBaseline(baselineFile) : null, measured);
+        MAPPER.writerWithDefaultPrettyPrinter().writeValue(baselineFile, updated);
+        System.out.println("baseline recorded for " + Environment.fingerprint(PipelineBench.asMap(measured.get("environment"))));
+        System.out.println("environments now in " + baselinePath + ": " + environments(updated).keySet());
+        return 0;
     }
 
     /**

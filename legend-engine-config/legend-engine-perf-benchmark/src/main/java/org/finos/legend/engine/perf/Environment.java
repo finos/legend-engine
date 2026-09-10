@@ -22,9 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Describes the machine and JVM a run was measured on. Absolute durations are only comparable
- * between runs whose fingerprint matches; ratios between workloads are comparable anywhere, which
- * is why the comparison treats the two differently.
+ * Describes the machine and JVM a run was measured on. The fingerprint is what a baseline entry is
+ * keyed by: absolute durations plainly do not survive a change of machine, and ratios travel better
+ * but not far enough to trust, so a run is only ever compared against an entry recorded here.
  */
 public class Environment
 {

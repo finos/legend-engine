@@ -107,6 +107,8 @@ java ... org.finos.legend.engine.perf.PipelineBench --suite default --out perf-r
 ```
 
 Flags: `--baseline <path>` (default `perf-baseline.json`), `--out <path>`, `--rebase`,
+`--record <results.json>` (write a results file measured elsewhere into the baseline without
+re-running the suite),
 `--margin 0.5` (allowed deviation for absolute phase medians), `--canary-margin 0.3` (allowed
 deviation for ratios), `--min-delta-ms 25` (absolute deltas smaller than this are treated as noise),
 `--allow-improvement` (only enforce the slower side), `--iters`, `--warmup`.
@@ -209,13 +211,27 @@ that caused it. The manual trigger also takes an `args` field for extra flags, f
 `--margin 0.3 --iters 8`.
 
 Two limitations worth knowing. A pull request from a fork gets a read-only token, so the comment is
-best effort - the job summary always carries the same report - and a rebase must be run from the
-fork or the baseline committed by hand.
+best effort - the job summary always carries the same report - and the Performance Baseline workflow
+cannot push a rebase to the fork's branch.
 
 And a runner will not match a baseline recorded on a developer machine, so until someone records an
-entry from the runner itself, the job reports its numbers and checks nothing. Running the
-Performance Baseline workflow once against the default branch adds that entry, after which every
-pull request is compared against numbers measured on the same hardware.
+entry from the runner itself, the job reports its numbers and checks nothing. There are two ways to
+add that entry. Run the Performance Baseline workflow once against the default branch, or download
+the `perf-results` artifact from any Pipeline Benchmark run and feed it in:
+
+```bash
+gh run download <run-id> -n perf-results -D /tmp/perf
+java ... org.finos.legend.engine.perf.PipelineBench --record /tmp/perf/perf-results.json
+```
+
+The second path is the one that works for a fork, and it is how the hosted-runner entry in the
+committed baseline was recorded. Either way, every pull request after it is compared against numbers
+measured on the same hardware.
+
+Hosted runners are not a single machine. `ubuntu-latest` is backed by more than one processor model,
+and the fingerprint includes the CPU, so a run landing on a different SKU misses the entry and falls
+back to checking nothing. That is the intended failure mode - a silent no-op is better than a false
+regression - but it means the baseline needs an entry per SKU that shows up, added the same way.
 
 ## Canary ratios
 
