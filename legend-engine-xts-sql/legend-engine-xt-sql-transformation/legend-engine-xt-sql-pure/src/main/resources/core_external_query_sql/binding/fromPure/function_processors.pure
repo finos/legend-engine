@@ -397,17 +397,9 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         if ($expCtx.relation->isTrue(),
           |
-            unsupported($filteredArgs->size() < 4, | 'maximum 3 non null arguments supported for coalesce ' + $filteredArgs->size()->toString() + ' supplied');
-
             let newArgs = if ($filteredArgs->isEmpty(), | $empty, | $filteredArgs);
 
-            let func = [
-              pair(1, coalesce_T_$0_1$__T_$0_1$__T_$0_1$_),
-              pair(2, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_),
-              pair(3, coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_)
-            ]->getValue($newArgs->size());
-
-            sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $newArgs->concatenate($empty));,
+            nestedCoalesce($newArgs, $empty, ^GenericType(rawType = $type));,
           |
             sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
         );
@@ -609,6 +601,38 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   ];
 }
 
+
+//Pure's coalesce overloads in ascending arity: position i holds the one taking i+1 values before
+//its trailing default, so the list length is the widest flat call available.
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::coalesceOverloads():Function<Any>[*]
+{
+  [
+    coalesce_T_$0_1$__T_$0_1$__T_$0_1$_,
+    coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
+    coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_
+  ]
+}
+
+//SQL COALESCE is variadic but Pure's tops out at the widest overload above, so a wider argument
+//list is folded into nested calls - coalesce(a,b,c, coalesce(d,e,f, coalesce(g, []))). That is
+//exact rather than an approximation: coalesce yields its first non-empty argument, so how the
+//arguments are grouped cannot change the result.
+//
+//At or below the ceiling the recursion terminates on the first pass and emits the same single call
+//as before, so existing queries are unaffected.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::nestedCoalesce(values:ValueSpecification[*], empty:ValueSpecification[1], type:GenericType[1]):ValueSpecification[1]
+{
+  let overloads = coalesceOverloads();
+  let maxValues = $overloads->size();
+
+  let head = $values->take($maxValues);
+  let tail = $values->drop($maxValues);
+
+  let ifEmpty = if ($tail->isEmpty(), | $empty, | nestedCoalesce($tail, $empty, $type));
+
+  sfe($overloads->at($head->size() - 1), $type, $type, $head->concatenate($ifEmpty));
+}
 
 function meta::external::query::sql::transformation::queryToPure::tableFunctionProcessor(name:String[1], processors:FunctionProcessor[*]):FunctionProcessor[1]
 {
