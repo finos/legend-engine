@@ -148,32 +148,46 @@ computed canary ratios:
 
 ## What the comparison enforces
 
-Absolute durations move several-fold between machines, so the two kinds of check are treated
-differently:
+The baseline holds **one entry per environment**, keyed by a fingerprint of the operating system,
+architecture, CPU, processor count, heap size and Java major version. A run is compared against the
+entry for the machine it is running on:
 
-- **Deviation is judged in both directions.** A slower result is a regression. A faster one fails
-  too, and says so separately: until the gain is recorded, the baseline still permits the old cost,
-  so a later change could give the improvement back and the check would call it fine. Failing forces
-  the new level into the baseline, where it protects the fix. Rerun with `--rebase` and commit the
-  baseline in the same pull request as the change that earned it. `--allow-improvement` turns this
-  side off.
-- **Canary ratios are always enforced.** A ratio between two workloads measured in the same JVM
-  cancels machine speed, so it is comparable between a laptop and a CI runner. These catch the
-  regressions that matter - a phase silently changing complexity class.
-- **Absolute phase medians are enforced only when the environment fingerprint matches** the
-  baseline (same OS, architecture, CPU, processor count, heap and Java major version). On a
-  different machine they are reported as advisory notes instead of failures. Deltas below
-  `--min-delta-ms` are ignored either way, because millisecond phases are dominated by JIT noise.
-  This is also why the improvement side does not fire on a faster machine: everything looks faster
-  there, which says nothing about the code.
+- **An entry for this machine exists.** Both ratios and absolute phase medians are compared against
+  it, in both directions, since they describe the same hardware. Deltas below `--min-delta-ms` are
+  ignored, because millisecond phases are dominated by JIT noise.
+- **No entry for this machine.** Nothing is checked. The run prints its own canary ratios and says
+  which environments the baseline does know about, so the next step is obvious: record one here with
+  `--rebase`.
 
-Baselines belong in a checked-in file updated by pull request, so an intentional performance change
-is reviewed alongside the code that causes it - in either direction. `--rebase` is how that file is
-regenerated.
+Nothing is compared across machines, because nothing survives the trip intact. Absolute timings
+plainly do not. Ratios travel better but not far enough to trust: the same commit measured on an
+Apple M4 Max and in a Linux container on the same host put the compile-cliff canary at 30.0 and
+36.7, a 22% gap from environment alone. A single shared baseline would have spent that budget on
+hardware instead of on code.
 
-The baseline committed here was measured on a developer machine, so on a CI runner the environment
-fingerprint will not match and absolute timings stay advisory while canary ratios are enforced. Run
-`--suite default --rebase` once on the runner class and commit that file to enforce both.
+Recording is additive. `--rebase` writes the entry for the machine it runs on and leaves every other
+entry untouched, so a laptop baseline and a CI baseline live in the same committed file without
+overwriting each other.
+
+Deviation is judged in both directions. A slower result is a regression. A faster one is reported
+separately, because until the gain is recorded the baseline still permits the old cost, and a later
+change could give it back unnoticed. Rerun with `--rebase` and commit the baseline in the same pull
+request as the change that earned it. `--allow-improvement` turns that side off.
+
+## Measuring a second environment with Docker
+
+`scripts/run-in-container.sh` runs the suite inside a Linux container, so another environment can be
+added without another machine. It mounts the repository and the Maven repository at the paths they
+have on the host, so the classpath resolved outside works unchanged inside.
+
+```bash
+scripts/run-in-container.sh --rebase            # record this container as an environment
+scripts/run-in-container.sh                     # compare against that entry later
+```
+
+`PERF_IMAGE` and `PERF_HEAP` override the image and heap. A chained local Maven repository is
+supported through `MAVEN_REPO_LOCAL` and `MAVEN_REPO_LOCAL_TAIL`. Note that the heap is part of the
+fingerprint, so changing `PERF_HEAP` describes a different environment and needs its own entry.
 
 ## In CI
 
@@ -198,11 +212,10 @@ Two limitations worth knowing. A pull request from a fork gets a read-only token
 best effort - the job summary always carries the same report - and a rebase must be run from the
 fork or the baseline committed by hand.
 
-And a baseline recorded on a developer machine will not match a runner's fingerprint, so absolute
-timings are reported as notes. Ratios survive the move far better but not perfectly: measured
-across an Apple M4 Max and a four-core cloud runner, five of six canaries landed inside a 30% band
-while the union ratio came in 31% low, purely from the hardware. Recording the baseline on the
-runner class the workflow uses removes that drift and makes absolute timings comparable again.
+And a runner will not match a baseline recorded on a developer machine, so until someone records an
+entry from the runner itself, the job reports its numbers and checks nothing. Running the
+Performance Baseline workflow once against the default branch adds that entry, after which every
+pull request is compared against numbers measured on the same hardware.
 
 ## Canary ratios
 

@@ -82,10 +82,29 @@ public class Environment
         }
         if (os.startsWith("Linux"))
         {
+            // x86 exposes "model name"; arm64 does not, so fall back to lscpu and then to the
+            // implementer/part identifiers, which at least separate one arm machine from another.
             String model = command("sh", "-c", "grep -m1 'model name' /proc/cpuinfo | cut -d: -f2");
-            return model.isEmpty() ? "unknown" : model.trim();
+            if (isKnown(model))
+            {
+                return model;
+            }
+            model = command("sh", "-c", "lscpu 2>/dev/null | grep -m1 'Model name' | cut -d: -f2");
+            if (isKnown(model))
+            {
+                return model;
+            }
+            model = command("sh", "-c", "grep -m1 'CPU implementer' /proc/cpuinfo | cut -d: -f2");
+            String part = command("sh", "-c", "grep -m1 'CPU part' /proc/cpuinfo | cut -d: -f2");
+            return isKnown(model) ? "arm implementer " + model + " part " + part : "unknown";
         }
         return "unknown";
+    }
+
+    private static boolean isKnown(String value)
+    {
+        // Virtualised hosts often answer with a placeholder rather than leaving the field empty.
+        return value != null && value.length() > 1 && !"unknown".equals(value);
     }
 
     private static String command(String... command)

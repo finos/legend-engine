@@ -45,6 +45,7 @@ public class PerfSuite
 {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final String DEFAULT_BASELINE = "perf-baseline.json";
+    private static final int SCHEMA_VERSION = 1;
 
     public static int run(String[] args) throws Exception
     {
@@ -80,35 +81,98 @@ public class PerfSuite
         results.put("workloads", workloadResults);
         results.put("canaries", canaries(workloadResults));
 
-        String target = out != null ? out : (rebase ? baselinePath : null);
-        if (target != null)
+        if (out != null)
         {
-            MAPPER.writerWithDefaultPrettyPrinter().writeValue(new File(target), results);
-            System.out.println("results written to " + target);
-        }
-
-        if (rebase)
-        {
-            if (out != null && !out.equals(baselinePath))
-            {
-                MAPPER.writerWithDefaultPrettyPrinter().writeValue(new File(baselinePath), results);
-                System.out.println("baseline rebased: " + baselinePath);
-            }
-            else
-            {
-                System.out.println("baseline rebased: " + baselinePath);
-            }
-            return 0;
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(new File(out), results);
+            System.out.println("results written to " + out);
         }
 
         File baselineFile = new File(baselinePath);
-        if (!baselineFile.exists())
+        Map<String, Object> baseline = baselineFile.exists() ? readBaseline(baselineFile) : null;
+
+        if (rebase)
         {
-            System.out.println("no baseline at " + baselinePath + " - run once with --rebase to create one");
+            Map<String, Object> updated = recordInBaseline(baseline, results);
+            MAPPER.writerWithDefaultPrettyPrinter().writeValue(baselineFile, updated);
+            System.out.println("baseline recorded for " + Environment.fingerprint(PipelineBench.asMap(results.get("environment"))));
+            System.out.println("environments now in " + baselinePath + ": " + environments(updated).keySet());
             return 0;
         }
-        Map<String, Object> baseline = MAPPER.readValue(baselineFile, Map.class);
-        return compare(baseline, results, margin, canaryMargin, minDelta, allowImprovement) ? 0 : 1;
+
+        if (baseline == null)
+        {
+            System.out.println("no baseline at " + baselinePath + " - run once with --rebase to create one");
+            printCanaries(results);
+            return 0;
+        }
+
+        String fingerprint = Environment.fingerprint(PipelineBench.asMap(results.get("environment")));
+        Map<String, Object> recorded = PipelineBench.asMap(environments(baseline).get(fingerprint));
+        if (recorded.isEmpty())
+        {
+            System.out.println();
+            System.out.println("no baseline recorded for this machine");
+            System.out.println("  this machine: " + fingerprint);
+            for (String known : environments(baseline).keySet())
+            {
+                System.out.println("  baseline has: " + known);
+            }
+            System.out.println("  numbers from another machine are not comparable, so nothing is being checked.");
+            System.out.println("  run this suite with --rebase here to record one.");
+            printCanaries(results);
+            return 0;
+        }
+        return compare(recorded, results, margin, canaryMargin, minDelta, allowImprovement) ? 0 : 1;
+    }
+
+    /**
+     * A baseline holds one entry per machine, keyed by environment fingerprint, because neither
+     * absolute timings nor ratios carry reliably across different hardware. Recording on one machine
+     * leaves every other machine's entry untouched.
+     */
+    static Map<String, Object> readBaseline(File file) throws Exception
+    {
+        return MAPPER.readValue(file, Map.class);
+    }
+
+    static Map<String, Object> recordInBaseline(Map<String, Object> baseline, Map<String, Object> results)
+    {
+        Map<String, Object> updated = new LinkedHashMap<>();
+        updated.put("schemaVersion", SCHEMA_VERSION);
+        updated.put("suite", results.get("suite"));
+        Map<String, Object> byEnvironment = new LinkedHashMap<>();
+        if (baseline != null)
+        {
+            byEnvironment.putAll(environments(baseline));
+        }
+        byEnvironment.put(Environment.fingerprint(PipelineBench.asMap(results.get("environment"))), entry(results));
+        updated.put("environments", byEnvironment);
+        return updated;
+    }
+
+    private static Map<String, Object> entry(Map<String, Object> results)
+    {
+        Map<String, Object> entry = new LinkedHashMap<>();
+        entry.put("generatedAt", results.get("generatedAt"));
+        entry.put("environment", results.get("environment"));
+        entry.put("workloads", results.get("workloads"));
+        entry.put("canaries", results.get("canaries"));
+        return entry;
+    }
+
+    static Map<String, Object> environments(Map<String, Object> baseline)
+    {
+        return PipelineBench.asMap(baseline.get("environments"));
+    }
+
+    private static void printCanaries(Map<String, Object> results)
+    {
+        System.out.println();
+        System.out.println("canary ratios measured on this run");
+        for (Map.Entry<String, Double> entry : canaryValues(results).entrySet())
+        {
+            System.out.println(String.format("  %-28s %8.2f", entry.getKey(), entry.getValue()));
+        }
     }
 
     static List<BenchConfig> workloads(String suiteName, int iterations, int warmup)
@@ -221,17 +285,13 @@ public class PerfSuite
         List<String> improvements = new ArrayList<>();
         List<String> notes = new ArrayList<>();
 
-        String baselineFingerprint = Environment.fingerprint(PipelineBench.asMap(baseline.get("environment")));
-        String currentFingerprint = Environment.fingerprint(PipelineBench.asMap(current.get("environment")));
-        boolean sameMachine = baselineFingerprint.equals(currentFingerprint);
+        // The caller looked the entry up by fingerprint, so both sides describe the same machine.
+        boolean sameMachine = true;
 
         System.out.println();
-        System.out.println("baseline generated " + baseline.get("generatedAt") + " on " + baselineFingerprint);
-        System.out.println("current  generated " + current.get("generatedAt") + " on " + currentFingerprint);
-        if (!sameMachine)
-        {
-            System.out.println("environments differ - absolute timings are advisory only, canary ratios still enforced");
-        }
+        System.out.println("machine   " + Environment.fingerprint(PipelineBench.asMap(current.get("environment"))));
+        System.out.println("baseline  recorded " + baseline.get("generatedAt"));
+        System.out.println("current   measured " + current.get("generatedAt"));
         System.out.println();
 
         Map<String, Double> baselineCanaries = canaryValues(baseline);
