@@ -1,0 +1,270 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// One service per connection, each asking the same question of the same row.
+// A TIMESTAMP column holds a wall clock the database keeps in the zone the
+// connection names, and a Pure DateTime is a moment, so the answer moves with
+// the zone. The three services naming +10:00 three different ways have to give
+// the same answer as each other.
+
+###Service
+// No time zone named. A connection carrying none settles on GMT upstream, so
+// the wall clock is read as though the database kept it in GMT and the moment
+// is the wall clock itself. This is the baseline the others move away from.
+Service demo::service::ShiftGmtService
+{
+  pattern: '/api/shifts/gmt';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftGmtRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T13:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A region name. Pacific/Guam is +10:00 the year round, and java.util reads a
+// region name correctly on its own.
+Service demo::service::ShiftRegionService
+{
+  pattern: '/api/shifts/region';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftRegionRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T03:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The same zone written as a bare offset, which the grammar takes unquoted.
+// java.util takes an offset only with a GMT prefix and answers every other name
+// it does not know with GMT, so this used to be no shift at all. It has to read
+// the row as the same moment Pacific/Guam does.
+Service demo::service::ShiftOffsetService
+{
+  pattern: '/api/shifts/offset';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftOffsetRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T03:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The same offset again, written with a UTC prefix. Before Java 21,
+// TimeZone.getTimeZone(ZoneId) passes this form to a lookup that knows region
+// names and GMT prefixed offsets only, and so reads it as GMT.
+Service demo::service::ShiftUtcPrefixedOffsetService
+{
+  pattern: '/api/shifts/utcprefixedoffset';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftUtcPrefixedOffsetRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T03:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// An offset that is not a whole number of hours, so an hours-only reading of
+// the shift would not show up as wrong here.
+Service demo::service::ShiftHalfHourOffsetService
+{
+  pattern: '/api/shifts/halfhouroffset';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftHalfHourOffsetRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T07:40:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A region that keeps daylight saving time. 2012-05-20 is inside it, so the
+// offset is -04:00 rather than the -05:00 the zone keeps in winter.
+Service demo::service::ShiftDaylightSavingService
+{
+  pattern: '/api/shifts/daylightsaving';
+  documentation: 'Shifts read through a connection naming its time zone one way.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::Shift.all()->project([x|$x.id, x|$x.startedAt], ['Id', 'Started At']);
+    mapping: demo::ShiftMapping;
+    runtime: demo::runtime::ShiftDaylightSavingRuntime;
+  }
+  testSuites:
+  [
+    shiftSuite:
+    {
+      tests:
+      [
+        startedAt:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStoredWallClockAsThatMoment:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Started At":"2012-05-20T17:10:52.501000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

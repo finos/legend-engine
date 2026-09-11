@@ -1,0 +1,40 @@
+name: relational-connection-time-zone
+title: "Time Zone Named on a Relational Connection"
+description: |
+  One table holding one wall clock, and a Service per way of naming the time
+  zone the database keeps it in: no zone at all, a region (`Pacific/Guam`), a
+  bare offset (`+1000`), a UTC prefixed offset (`UTC+1000`), an offset that is
+  not a whole hour (`UTC+0530`), and a region inside daylight saving time
+  (`America/New_York`). Each service test asserts the moment the stored wall
+  clock stands for in that zone, so the suite pins both that the zone is
+  applied and that the several spellings of one zone agree.
+
+  The test data sits on each connection rather than in the test, since a test
+  carrying its own `connections:` block has the connection rebuilt without its
+  time zone.
+
+modelSources:
+  model:
+    root: relational-connection-time-zone
+    files:
+      - model/model.pure
+      - connection/connections.pure
+      - service/services.pure
+
+features:
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - execution:connection-time-zone
+  - execution:service
+  - execution:service-test
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - time-zone
+  - service-test
+  - date-time
