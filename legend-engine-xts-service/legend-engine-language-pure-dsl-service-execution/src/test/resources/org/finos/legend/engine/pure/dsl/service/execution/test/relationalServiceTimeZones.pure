@@ -1,0 +1,139 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// One store, one mapping, one query, and a Runtime per way of naming a time
+// zone. The table holds a wall clock the database keeps in the zone the
+// connection names, and a Pure DateTime is a moment, so each Runtime reads the
+// same stored row as a different instant.
+
+###Pure
+Class test::Shift
+{
+  id: Integer[1];
+  startedAt: DateTime[0..1];
+}
+
+function test::fetchShift(): String[1]
+{
+  test::Shift.all()->graphFetch(#{test::Shift{id, startedAt}}#)->serialize(#{test::Shift{id, startedAt}}#)
+}
+
+###Relational
+Database test::DB
+(
+  Table shiftTable
+  (
+    ID INTEGER PRIMARY KEY,
+    STARTED_AT TIMESTAMP
+  )
+)
+
+###Mapping
+Mapping test::Map
+(
+  *test::Shift: Relational
+  {
+    ~primaryKey
+    (
+      [test::DB]shiftTable.ID
+    )
+    ~mainTable [test::DB]shiftTable
+    id: [test::DB]shiftTable.ID,
+    startedAt: [test::DB]shiftTable.STARTED_AT
+  }
+)
+
+###Runtime
+Runtime test::Runtime
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_default:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime test::RuntimeRegion
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_region:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          timezone: 'Pacific/Guam';
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+Runtime test::RuntimeDaylightSaving
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_daylight:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          timezone: 'America/New_York';
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
