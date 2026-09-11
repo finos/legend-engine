@@ -17,45 +17,76 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
 // Nulls in the joined column are skipped rather than rendered, matching LISTAGG/STRING_AGG.
+'''
+Concatenates a column's values across the rows of a relation.
+
+The relational string aggregate — `LISTAGG` / `STRING_AGG` — reached through `groupBy` or
+`aggregate`, where the lambda receives the group as a relation:
+
+```pure
+$rel->groupBy(~grp, ~names : g | $g->joinStrings(~name, ','))
+```
+
+**The order of the values is not defined.** Rows arrive in whatever order the store produces them, so
+a test over this form has to sort the result before comparing. Use
+`joinStrings(Relation<T>[1], ColSpec<(?:String)⊆T>[1], String[1], SortInfo<X⊆T>[*]):String[1]` when
+the order matters; it emits `WITHIN GROUP (ORDER BY ...)`.
+
+**Absent values are skipped rather than rendered**, matching `LISTAGG` and `STRING_AGG` — a null row
+contributes neither text nor a separator.
+
+**Parameters**
+- `rel` — the group of rows, supplied by `groupBy` or `aggregate`.
+- `col` — the string column to concatenate.
+- `separator` — placed between consecutive values.
+
+**Returns** the joined string.
+
+**Examples**
+```pure
+$rel->groupBy(~grp, ~names : g | $g->joinStrings(~name, ','))
+```
+
+**See also** `joinStrings(Relation<T>[1], ColSpec<(?:String)⊆T>[1], String[1], SortInfo<X⊆T>[*]):String[1]`,
+`joinStrings(Relation<T>[1], Function<{T[1]->String[1]}>[1], String[1]):String[1]`
+'''
 function <<PCT.function>>
-{
-    doc.doc='Concatenates the values of the given column across the rows of the given relation, separated by ' +
-            'the given separator. The order of the values is not constrained -- use the overload taking a ' +
-            'sort spec when it matters.'
-}
 meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1]):String[1]
 {
     $rel->meta::pure::functions::relation::reduce(x|eval($col, $x), y|$y->meta::pure::functions::string::joinStrings($separator));
 }
 
+'''
+As `joinStrings(Relation<T>[1], ColSpec<(?:String)⊆T>[1], String[1]):String[1]`, but the values are
+taken in the order the sort spec gives, which is emitted as `WITHIN GROUP (ORDER BY ...)`.
+
+This is the form to reach for whenever the output is compared or displayed:
+`$g->joinStrings(~name, ',', ~id->ascending())` over a group holding `C,A,B` at ids `3,1,2` gives
+`A,B,C`. **The sort column need not be the column being joined** — ordering by an id while
+concatenating names is the common case.
+'''
 function <<PCT.function>>
-{
-    doc.doc='Concatenates the values of the given column across the rows of the given relation, separated by ' +
-            'the given separator, taking the rows in the order given by the sort spec. Generates SQL ' +
-            'LISTAGG/STRING_AGG with a WITHIN GROUP (ORDER BY ...) clause.'
-}
 meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], col:ColSpec<(?:String)⊆T>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
 {
     $rel->meta::pure::functions::relation::reduce(x|eval($col, $x), y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);
 }
 
+'''
+As `joinStrings(Relation<T>[1], ColSpec<(?:String)⊆T>[1], String[1]):String[1]`, but each row is
+turned into a string by a function rather than read from a single column — so the joined text can
+combine columns or be computed, `{r| $r.first + ' ' + $r.last}`. The order is likewise undefined.
+'''
 function <<PCT.function>>
-{
-    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
-            'separator. The order of the values is not constrained -- use the overload taking a sort spec ' +
-            'when it matters.'
-}
 meta::pure::functions::relation::joinStrings<T>(rel:Relation<T>[1], f:Function<{T[1]->String[1]}>[1], separator:String[1]):String[1]
 {
     $rel->meta::pure::functions::relation::reduce($f, y|$y->meta::pure::functions::string::joinStrings($separator));
 }
 
+'''
+As `joinStrings(Relation<T>[1], Function<{T[1]->String[1]}>[1], String[1]):String[1]`, taking the rows
+in the order the sort spec gives, emitted as `WITHIN GROUP (ORDER BY ...)`.
+'''
 function <<PCT.function>>
-{
-    doc.doc='Concatenates a value derived from each row of the given relation, separated by the given ' +
-            'separator, taking the rows in the order given by the sort spec. Generates SQL ' +
-            'LISTAGG/STRING_AGG with a WITHIN GROUP (ORDER BY ...) clause.'
-}
 meta::pure::functions::relation::joinStrings<T,X>(rel:Relation<T>[1], f:Function<{T[1]->String[1]}>[1], separator:String[1], sortInfo:SortInfo<X⊆T>[*]):String[1]
 {
     $rel->meta::pure::functions::relation::reduce($f, y|$y->meta::pure::functions::string::joinStrings($separator), $sortInfo);

@@ -16,7 +16,52 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::tests::project::*;
 
+'''
+Builds a relation out of a collection of objects, one row each.
+
+The bridge from Pure's object graph into the relational world: given class instances and a set of
+named functions, it produces a relation whose columns are those functions evaluated per object.
+Traversals are written inline, so a column may reach through associations —
+`~city : p | $p.address.city`.
+
+**Parameters**
+- `cl` — the objects, one row each.
+- `x` — the columns, as named functions over an object.
+
+**Returns** a relation of those columns.
+
+**Examples**
+```pure
+$people->project(~[name : p | $p.firstName, city : p | $p.address.city])
+```
+
+**See also** `project(Relation<T>[1], FuncColSpecArray<{T[1]->Any[*]}, Z>[1]):Relation<Z>[1]`,
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::project<C,T>(cl:C[*], x:FuncColSpecArray<{C[1]->Any[*]},T>[1]):Relation<T>[1];
+
+'''
+Rebuilds a relation from named functions over its rows, keeping only the columns given.
+
+As `project(C[*], FuncColSpecArray<{C[1]->Any[*]}, T>[1]):Relation<T>[1]` but starting from a
+relation. **Columns not named are dropped**, which is the difference from
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]` — use this to select
+and compute in one step, as the quant functions do to round an aggregate before returning it.
+
+**Parameters**
+- `r` — the relation.
+- `fs` — the columns, as named functions over a row.
+
+**Returns** a relation of just those columns.
+
+**Examples**
+```pure
+$rel->project(~[symbol : x | $x.symbol, vwap : x | $x.vwap->round(2)])
+```
+
+**See also** `select(Relation<T>[1], ColSpecArray<Z⊆T>[1]):Relation<Z>[1]`,
+`extend(Relation<T>[1], FuncColSpec<{T[1]->Any[0..1]}, Z>[1]):Relation<T+Z>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::project<T,Z>(r:Relation<T>[1], fs:FuncColSpecArray<{T[1]->Any[*]},Z>[1]):Relation<Z>[1];
 
 Class meta::pure::functions::relation::tests::project::Address

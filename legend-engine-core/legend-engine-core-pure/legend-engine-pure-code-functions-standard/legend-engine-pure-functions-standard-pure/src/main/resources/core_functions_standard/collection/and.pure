@@ -14,6 +14,31 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Whether every value in a collection is true.
+
+The collection form of `&&`. **An empty collection gives `true`**, which is the identity for
+conjunction and the usual convention, but it does mean "all of nothing" passes — test for emptiness
+separately when that matters.
+
+This is an aggregate: it is what a relational `groupBy` or a window aggregation calls to fold a
+boolean column.
+
+**Parameters**
+- `vals` — the values.
+
+**Returns** `true` when every value is `true`, and for an empty collection.
+
+**Examples**
+```pure
+and([true, true])          // true
+and([true, false])         // false
+and([true, true, false])   // false
+```
+
+**See also** `or(Boolean[*]):Boolean[1]`,
+`meta::pure::functions::boolean::xor(Boolean[1], Boolean[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::pure::functions::collection::and(vals:Boolean[*]):Boolean[1]
 {
    $vals->fold({i,a|$i && $a}, true)

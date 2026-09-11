@@ -12,7 +12,7 @@ It is critical that utmost care is taken when deciding on:
     - All PCT tests for the PCT function belong in the same file
 - package names are all lower-case
 - function names are camelCase, with the first letter lower-case
-- function signatures **must have docstring (doc.doc)**
+- function signatures **must be documented** with a `'''...'''` documentation literal — see [Writing PCT function documentation](pct-documentation.md) for the template and rules. The older `doc.doc` tagged value form has been converted across every PCT declaration in the engine repositories; a declaration may not carry both, so adding a literal to a signature that still has one means deleting the tagged value in the same edit. `grep -rn "doc\.doc" --include='*.pure' <module>/src/main/resources` should come back empty for a converted repository.
 
 ### Practices
 #### PCT Tests
@@ -34,6 +34,7 @@ meta::pure::functions::date::tests::testTimeBucketSeconds_Function_1__Boolean_1_
 - [ ] Test organization - tests should be granular such that a failure can be easily isolated. E.g. testing Float inputs should be declared in a separate
 test from one that tests for Integer inputs. That way, the test failure clearly isolates what may be wrong.
 - [ ] Did you account for edge cases? e.g. if testing Number inputs, did you try very large/small numbers?
+- [ ] Is the test really about one function? A test that only fails when two functions are combined belongs in a `composition.pure` file instead — see [Composition Tests](composition-tests.md). Those tests still carry a `'''...'''` literal, but note that they are neither counted nor published, so record anything cross-cutting on that page as well.
 
 #### Error Messages
 PCT measure the level of cross-target support for a given Platform Function. When contributing to PCT on Legend, keep this preference order in mind:

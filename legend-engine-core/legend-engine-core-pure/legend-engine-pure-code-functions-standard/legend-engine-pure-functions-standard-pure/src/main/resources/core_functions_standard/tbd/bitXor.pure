@@ -14,11 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Bitwise exclusive OR of two integers.
+
+Each bit of the result is 1 where that bit differs between the arguments. Applying the same operand
+twice restores the original value, which is what makes it useful for toggling flags.
+
+**Parameters**
+- `arg1` — the first operand.
+- `arg2` — the second operand.
+
+**Returns** the bitwise XOR.
+
+**Examples**
+```pure
+bitXor(5, 6)     // 3, binary 101 XOR 110
+bitXor(25, 11)   // 18
+```
+
+**See also** `bitAnd(Integer[1], Integer[1]):Integer[1]`,
+`bitOr(Integer[1], Integer[1]):Integer[1]`,
+`bitXor(Integer[1], Integer[1]):Integer[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='bitwise XOR operator returns an Number representing the bitwise XOR of the Number input params'
-    }
 meta::pure::functions::math::bitXor(arg1:Integer[1], arg2:Integer[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitXor::testBitXor_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

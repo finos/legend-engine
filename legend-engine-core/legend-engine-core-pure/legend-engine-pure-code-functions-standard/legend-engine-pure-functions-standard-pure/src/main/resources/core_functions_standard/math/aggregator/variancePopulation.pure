@@ -14,6 +14,27 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The population variance of a collection.
+
+`variance(Number[*], Boolean[1]):Number[1]` with the bias correction off — the sum of squared
+deviations divided by `n`. Use this when the values are the whole population rather than a sample
+drawn from one.
+
+**Parameters**
+- `numbers` — the values.
+
+**Returns** the population variance.
+
+**Examples**
+```pure
+variancePopulation([1, 2])   // 0.25
+```
+
+**See also** `varianceSample(Number[*]):Number[1]`,
+`stdDevPopulation(Number[1..*]):Number[1]`,
+`variance(Number[*], Boolean[1]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::variancePopulation(numbers:Number[*]):Number[1]
 {
    variance($numbers, false);

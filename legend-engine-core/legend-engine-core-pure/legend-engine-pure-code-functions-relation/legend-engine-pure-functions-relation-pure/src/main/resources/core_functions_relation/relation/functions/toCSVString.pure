@@ -15,6 +15,30 @@
 import meta::pure::test::pct::*;
 import meta::pure::functions::string::*;
 
+'''
+Quotes a string for the `#TDS` CSV format, if it needs it.
+
+**Quoting is conditional**: a string containing a comma, a single quote, a newline or a carriage
+return is wrapped in single quotes with any embedded quote backslash-escaped; anything else is
+returned untouched. That keeps rendered relations readable, at the cost of the output not being
+uniformly quoted.
+
+Note the escape is `\\'`, not the doubled `''` some CSV dialects use — a reader written for RFC 4180
+will not parse this.
+
+**Parameters**
+- `string` — the value to render.
+
+**Returns** the value, quoted and escaped only if it needs to be.
+
+**Examples**
+```pure
+'plain'->toCSVString()      // 'plain', unquoted
+'a,b'->toCSVString()        // wrapped in single quotes, because of the comma
+```
+
+**See also** `toString(Relation<T>[1]):String[1]`
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toCSVString(string: String[1]):String[1]
 {
    if($string->contains(',') || $string->contains('\'') || $string->contains('\n') || $string->contains('\r'),

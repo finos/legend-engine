@@ -15,10 +15,32 @@
 import meta::pure::test::pct::*;
 import meta::pure::tds::extensions::*;
 
-function 
-<<PCT.function, functionType.ReducerFunction>>
+'''
+The weighted average of a series, each value counting in proportion to its weight.
+
+The sum of value times weight, divided by the sum of the weights. Use it where the values are not
+equally representative — averaging prices by traded volume, or rates by notional.
+
+The two collections are positional and are paired by index. **It fails rather than returning empty**
+in three cases: either collection empty, the two differing in length, or the weights summing to zero.
+
+**Parameters**
+- `numbers` — the values to average.
+- `weights` — the weight of each value, paired by position.
+
+**Returns** the weighted average.
+
+**Examples**
+```pure
+wavg([10, 20], [1, 3])   // 17.5, the second value counting three times
+```
+
+**See also** `average(Number[*]):Float[1]`,
+`sum(Number[*]):Number[1]`
+'''
+function
+    <<PCT.function, functionType.ReducerFunction>>
     {
-        doc.doc='Performs weighted average on a given data field with its respective weight field',
         PCT.grammarDoc='wavg is used by wavg(Number[*], Number[*])'
     }
 meta::pure::functions::math::wavg(numbers:Number[*], weights:Number[*]):Float[1]

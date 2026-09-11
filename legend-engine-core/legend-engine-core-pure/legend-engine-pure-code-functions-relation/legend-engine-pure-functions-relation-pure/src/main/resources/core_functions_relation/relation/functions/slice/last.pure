@@ -15,6 +15,40 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The last row of the current window.
+
+Returns a whole row, so read a column off it: `$p->last($w, $r).id`.
+
+**With no explicit frame this is the current row, not the last row of the partition.** An unframed
+window runs from the start of the partition to the current row, so its last row is the one being
+evaluated — every row sees itself. That is rarely what someone reaching for "last" wants: to get the
+partition's final row, give the window a frame that reaches the end, or order the window the other
+way and use `first(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`.
+
+Returns empty when the window has no rows.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `f` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+
+**Returns** the last row of the window, or empty when it has none.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~newCol:{p,w,r| $p->last($w, $r).id})
+
+// id  grp  newCol
+//  8    1     8      the window ends at the current row,
+//  6    1     6      so each row gets its own id back
+//  2    1     2
+```
+
+**See also** `first(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`,
+`nth(Relation<T>[1], _Window<T>[1], T[1], Integer[1]):T[0..1]`,
+`over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::last<T>(w:Relation<T>[1], f:_Window<T>[1], row:T[1]):T[0..1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

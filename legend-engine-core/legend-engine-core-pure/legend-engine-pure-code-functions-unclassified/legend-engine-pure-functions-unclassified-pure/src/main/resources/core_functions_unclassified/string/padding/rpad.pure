@@ -14,12 +14,43 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Pads the end of a string with the specified character until it reaches the desired length.'}
+'''
+Pads the end of a string with a fill character until it reaches a given length.
+
+**It truncates as well as pads**, so the result is always exactly `length` characters when `char` is
+non-empty: a string longer than `length` is cut down to its first `length` characters rather than
+returned unchanged. Two cases break that rule — an empty `char` has nothing to pad with and returns
+`str` untouched, and a multi-character `char` is cycled and clipped, so `'pp'->rpad(5, 'xo')` gives
+`'ppxox'`.
+
+**Parameters**
+- `str` — the string to pad.
+- `length` — the length to pad or truncate to.
+- `char` — the fill to append.
+
+**Returns** the padded or truncated string.
+
+**Examples**
+```pure
+'abcd'->rpad(10, '_')   // 'abcd______'
+'abcd'->rpad(3, '_')    // 'abc', longer input is truncated
+''->rpad(3, '?')        // '???'
+'abcd'->rpad(10, '')    // 'abcd', nothing to pad with
+'pp'->rpad(5, 'xo')     // 'ppxox', a multi-character fill is cycled
+```
+
+**See also** `rpad(String[1], Integer[1]):String[1]`,
+`lpad(String[1], Integer[1], String[1]):String[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::rpad(str:String[1], length:Integer[1], char:String[1]):String[1]
 {
   pad($str, $length, $char, false)
 }
 
+'''
+As `rpad(String[1], Integer[1], String[1]):String[1]`, padding with a space.
+'''
 function <<PCT.function>>
   meta::pure::functions::string::rpad(str:String[1], length:Integer[1]):String[1]
 {

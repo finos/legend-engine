@@ -17,6 +17,40 @@ import meta::pure::precisePrimitives::*;
 import meta::pure::test::pct::*;
 import meta::pure::functions::flow::*;
 
+'''
+Annualized ten-day rolling volatility of the closing price, per symbol.
+
+Computes `meta::external::scenario::quant::return::logReturn::logReturn` first, then takes the
+**population** standard deviation of those returns over the current row and the nine before it, and
+scales by `sqrt(252)` for the conventional 252 trading days in a year. Ordered by `time` within each
+`symbol`; rows for different symbols never mix. The result is rounded to ten decimal places.
+
+As with the moving average, **the window does not have to be full** — the figure is defined from the
+first row onwards and only becomes a genuine ten-day measure from the tenth. The first row is `0.0`,
+being the deviation of the single zero return that `logReturn` produces for a bar with no
+predecessor.
+
+**Parameters**
+- `rel` — a relation of OHLCV bars: `time`, `symbol`, `open`, `high`, `low`, `close`, `volume`.
+
+**Returns** `symbol`, `time`, `close`, the underlying `logReturn`, and `rollingVolatility`.
+
+**Examples**
+```pure
+// AAPL closing at 151.20, 150.50, 150.90, 151.10 and 151.80 on consecutive days
+$bars->annualizedRolling10DaysVolatility()
+
+// symbol  time        close   logReturn      rollingVolatility
+// AAPL    2026-01-01  151.20   0.0           0.0
+// AAPL    2026-01-02  150.50  -0.0046403795  0.0368318704
+// AAPL    2026-01-03  150.90   0.0026542816  0.0478553192
+// AAPL    2026-01-04  151.10   0.0013245035  0.0436355655
+// AAPL    2026-01-05  151.80   0.0046219957  0.0494706979
+```
+
+**See also** `meta::external::scenario::quant::return::logReturn::logReturn`,
+`meta::external::scenario::quant::maxDrawDown::maxDrawDown`
+'''
 function <<PCT.function>> meta::external::scenario::quant::volatility::close::annualizedRolling10DaysVolatility(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], close:Numeric(19,2)[1], logReturn:Float[1], rollingVolatility:Number[1])>[1]
 {
     // meta::external::scenario::quant::return::logReturn::logReturn($rel)->extend(

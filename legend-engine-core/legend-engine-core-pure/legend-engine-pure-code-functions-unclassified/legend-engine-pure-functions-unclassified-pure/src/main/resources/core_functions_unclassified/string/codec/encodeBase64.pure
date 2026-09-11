@@ -14,7 +14,26 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Encodes a string into its Base64 representation.'} 
+'''
+Encodes a string as Base64.
+
+Emits padded Base64, so the output length is always a multiple of four and may end in `=`. There is
+nothing Base64-specific about the input: encoding an already-encoded string encodes it a second time
+rather than returning it unchanged.
+
+**Parameters**
+- `string` — the string to encode.
+
+**Returns** the Base64 representation.
+
+**Examples**
+```pure
+'Hello, World!'->encodeBase64()   // 'SGVsbG8sIFdvcmxkIQ=='
+```
+
+**See also** `decodeBase64(String[1]):String[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::encodeBase64(string:String[1]):String[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testEncodeBase64<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

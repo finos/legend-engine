@@ -15,12 +15,39 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Puts empty values at the start of an existing sort key — SQL's `NULLS FIRST`.
+
+Applied to a sort key rather than to a column, so it reads as a modifier on one:
+`~id->ascending()->emptyFirst()`. It changes only where empty values land; the direction the key
+already carries is untouched.
+
+Without an explicit empty order the platform's canonical order applies, in which an empty value sorts
+as the largest: `NULLS LAST` under `ascending`, `NULLS FIRST` under `descending`. `emptyFirst` on an
+ascending key is therefore the case that differs from the default, and `emptyLast` on a descending
+one.
+
+Each key in a multi-column sort carries its own empty order:
+`sort([~grp->ascending()->emptyLast(), ~id->descending()->emptyFirst()])`.
+
+**Parameters**
+- `sortInfo` — the sort key to modify.
+
+**Returns** the same key, ordering empty values first.
+
+**Examples**
+```pure
+// rows with no id come first, then 1, 2, 3
+$rel->sort([~id->ascending()->emptyFirst(), ~name->ascending()])
+```
+
+**See also** `emptyLast(SortInfo<T>[1]):SortInfo<T>[1]`,
+`ascending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`sort(Relation<T>[1], SortInfo<X⊆T>[*]):Relation<T>[1]`
+'''
 function
    <<PCT.function,
      functionType.NormalizeRequiredFunction>>
-   {
-      doc.doc = 'Places empty values first in the sort defined by the given sort spec (SQL \'NULLS FIRST\'). Without an explicit empty order the platform\'s canonical order applies: empty values sort as the largest value, i.e. NULLS LAST on ascending, NULLS FIRST on descending.'
-   }
    meta::pure::functions::relation::emptyFirst<T>(sortInfo:SortInfo<T>[1]):SortInfo<T>[1]
 {
    // Explicit construction (not a ^$sortInfo(..) copy) so the router's NormalizeRequiredFunction

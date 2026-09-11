@@ -15,6 +15,26 @@
 
 import meta::pure::test::pct::*;
 
+'''
+Which day of the week a date falls on.
+
+Returns a `DayOfWeek` enumeration value rather than a number, so comparisons read as
+`== DayOfWeek.Saturday` and cannot be confused by the differing conventions databases use for
+numbering days.
+
+**Parameters**
+- `d` — the date.
+
+**Returns** the day of the week.
+
+**Examples**
+```pure
+%1985-01-12->dayOfWeek()   // DayOfWeek.Saturday
+%2025-09-22->dayOfWeek()   // DayOfWeek.Monday
+```
+
+**See also** `meta::pure::functions::date::timeBucket(StrictDate[1], Integer[1], DurationUnit[1]):StrictDate[1]`
+'''
 function <<PCT.function>> meta::pure::functions::date::dayOfWeek(d:Date[1]):DayOfWeek[1]
 {
     $d->dayOfWeekNumber()->dayOfWeek()

@@ -15,12 +15,40 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+A descending sort key on a column.
+
+As `ascending(ColSpec<T>[1]):SortInfo<T>[1]`, ordering from high to low. Produces the `SortInfo` that
+`sort(Relation<T>[1], SortInfo<X⊆T>[*]):Relation<T>[1]` and the ordering part of `over` consume — it
+does not sort anything on its own.
+
+**Parameters**
+- `column` — the column to order by.
+
+**Returns** a descending sort key for that column.
+
+**Examples**
+```pure
+$rel->sort(~val->descending())
+$rel->sort([~grp->ascending(), ~val->descending()])
+```
+
+**See also** `ascending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`sort(Relation<T>[1], SortInfo<X⊆T>[*]):Relation<T>[1]`
+'''
 function <<PCT.function,
            functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1]):SortInfo<T>[1]
 {
    ^SortInfo<T>(column=$column, direction=SortType.DESC)
 }
 
+'''
+As `descending(ColSpec<T>[1]):SortInfo<T>[1]`, with the placement of empty values given explicitly
+rather than left at the platform's canonical order.
+
+`emptyFirst(SortInfo<T>[1]):SortInfo<T>[1]` and `emptyLast(SortInfo<T>[1]):SortInfo<T>[1]` express
+the same thing as a modifier on the key, and read better in a sort list.
+'''
 function <<PCT.function,
            functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::descending<T>(column:ColSpec<T>[1], nullOrder:NullOrder[1]):SortInfo<T>[1]
 {

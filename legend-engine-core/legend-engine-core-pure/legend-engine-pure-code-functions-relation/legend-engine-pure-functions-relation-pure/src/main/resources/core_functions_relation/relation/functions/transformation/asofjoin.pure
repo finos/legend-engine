@@ -15,8 +15,66 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Joins each left row to the **closest** right row satisfying a condition, rather than to all of them.
+
+The point-in-time join: pairing a trade with the quote in force when it happened, a reading with the
+most recent calibration. An ordinary `join` on `>` would match every earlier right row; this matches
+only the nearest one, so the result has exactly one row per left row.
+
+Which row is "closest" follows the direction of the `match` condition — write `>` to take the latest
+right row before the left one, `<` to take the earliest one after.
+
+**Unmatched left rows are kept, with the right columns empty**, so this behaves like a left join: a
+left row with nothing before it survives with nulls rather than disappearing. As with `join`, the two
+sides' column names must be distinct.
+
+**Parameters**
+- `rel1` — the left relation, one result row per row of it.
+- `rel2` — the right relation, searched for the closest match.
+- `match` — the condition selecting candidate rows and fixing the direction.
+
+**Returns** the joined relation, with the columns of both sides.
+
+**Examples**
+```pure
+// the latest quote strictly before each trade
+$trades->asOfJoin($quotes, {t, q | $t.time->toOne() > $q.time2->toOne()})
+
+// time      value  time2       value2
+// 06:30:00   5000  null        null      nothing precedes it
+// 06:31:00   4000  06:30:10    2000      the closest earlier row, not all of them
+// 06:32:00   3000  06:31:20    3000
+```
+
+**See also** `asOfJoin(Relation<T>[1], Relation<V>[1], Function<{T[1], V[1]->Boolean[1]}>[1], Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]`,
+`join(Relation<T>[1], Relation<V>[1], JoinKind[1], Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::asOfJoin<T,V>(rel1:Relation<T>[1], rel2:Relation<V>[1], match:Function<{T[1],V[1]->Boolean[1]}>[1]):Relation<T+V>[1];
 
+'''
+As `asOfJoin(Relation<T>[1], Relation<V>[1], Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]`,
+with a second condition that must also hold.
+
+The closest match is then sought only among right rows satisfying `join` — normally an equality that
+keeps the search within one instrument, account or key, so that a trade is matched against quotes for
+its own symbol rather than the market as a whole.
+
+**Parameters**
+- `rel1` — the left relation.
+- `rel2` — the right relation.
+- `match` — the condition selecting candidate rows and fixing the direction.
+- `join` — an additional condition every candidate must satisfy.
+
+**Returns** the joined relation, with the columns of both sides.
+
+**Examples**
+```pure
+$tds1->asOfJoin($tds2,
+                {x, y | $x.time->toOne() > $y.time2->toOne()},
+                {x, y | $x.key->toOne() == $y.key2->toOne()})
+```
+'''
 native function <<PCT.function>> meta::pure::functions::relation::asOfJoin<T,V>(rel1:Relation<T>[1], rel2:Relation<V>[1], match:Function<{T[1],V[1]->Boolean[1]}>[1], join:Function<{T[1],V[1]->Boolean[1]}>[1]):Relation<T+V>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

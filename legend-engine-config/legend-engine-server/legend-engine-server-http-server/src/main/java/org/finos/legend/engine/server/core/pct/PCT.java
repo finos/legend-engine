@@ -58,6 +58,25 @@ public class PCT
     }
 
     @GET
+    @Path("functions")
+    @ApiOperation(value = "PCT function reference")
+    @Produces(MediaType.TEXT_HTML)
+    public Response functionsPCT()
+    {
+        return Response.status(200).type(MediaType.TEXT_HTML).entity(new StreamingOutput()
+        {
+            @Override
+            public void write(OutputStream outputStream) throws IOException
+            {
+                try (InputStream is = Objects.requireNonNull(ClassLoader.getSystemClassLoader().getResourceAsStream("pct/PCT_Report_Functions.html")))
+                {
+                    IOUtils.copy(is, outputStream);
+                }
+            }
+        }).build();
+    }
+
+    @GET
     @Path("git-info.json")
     @ApiOperation(value = "Git info for PCT report")
     @Produces(MediaType.APPLICATION_JSON)

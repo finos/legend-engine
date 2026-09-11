@@ -16,11 +16,46 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
+'''
+Renders a relation in the `#TDS` literal format.
+
+The format `#TDS ... #` accepts as input, so the output can be pasted back into Pure — which is why
+almost every PCT test in this repository asserts against a `toString` result rather than inspecting
+rows. Values are escaped as `toCSVString(String[1]):String[1]` describes, and an absent value prints
+as `null`.
+
+**Row order is whatever the relation happens to have**, so sort before rendering when comparing
+against a fixed expectation.
+
+**Parameters**
+- `rel` — the relation to render.
+
+**Returns** the relation as `#TDS` text.
+
+**Examples**
+```pure
+$rel->sort(~val->ascending())->toString()
+
+// #TDS
+//    val,str
+//    1,a
+//    3,ewe
+// #
+```
+
+**See also** `toString(Relation<T>[1], Boolean[1]):String[1]`,
+`toCSVString(String[1]):String[1]`
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1]):String[1]
 {
   $rel->toString(false);
 }
 
+'''
+As `toString(Relation<T>[1]):String[1]`, optionally annotating each column in the header with its
+type and multiplicity — `val:Integer[1]` rather than `val`. Pass `true` when the point of printing is
+to check the relation's shape rather than its contents.
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::toString<T>(rel:Relation<T>[1], typesAndMuls : Boolean[1]):String[1]
 {
     let cols = $rel->columns();

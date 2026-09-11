@@ -17,11 +17,41 @@ import meta::pure::metamodel::variant::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::test::pct::*;
 
+'''
+Asserts two relations match, comparing numbers within a tolerance.
+
+For tests whose expected values are computed rather than exact — anything involving division, roots
+or accumulated floating point, where a bit-for-bit comparison would fail differently on each target
+database. Column count, column names and row count must all agree exactly; only numeric values are
+allowed to differ, and only by at most `delta`.
+
+Prefer this to comparing `toString` output whenever the result contains a computed number.
+
+**Parameters**
+- `one` — the expected relation.
+- `two` — the actual relation.
+- `delta` — the tolerance allowed on numeric values.
+
+**Returns** `true` when the relations match; fails otherwise.
+
+**Examples**
+```pure
+assertTdsEquivalent(#TDS symbol,vwap AAPL,192.71 #, $res, 0.00001)
+```
+
+**See also** `assertTdsEquivalent(Relation<Any>[1], Relation<Any>[1], Number[1], Number[1]):Boolean[1]`,
+`toString(Relation<T>[1]):String[1]`
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::assertTdsEquivalent(one:Relation<Any>[1], two:Relation<Any>[1], delta:Number[1]):Boolean[1]
 {
    meta::pure::functions::relation::assertTdsEquivalent($one, $two, $delta, 0);
 }
 
+'''
+As `assertTdsEquivalent(Relation<Any>[1], Relation<Any>[1], Number[1]):Boolean[1]`, with a separate
+tolerance for date and time values, in seconds. The three-argument form passes 0, requiring
+timestamps to match exactly.
+'''
 function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::assertTdsEquivalent(one:Relation<Any>[1], two:Relation<Any>[1], delta:Number[1], timeDeltaInSeconds:Number[1]):Boolean[1]
 {
    let oneCol = $one->meta::pure::functions::relation::columns();

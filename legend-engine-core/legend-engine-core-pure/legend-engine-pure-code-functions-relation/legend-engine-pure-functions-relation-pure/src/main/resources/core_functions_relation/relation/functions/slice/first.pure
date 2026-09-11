@@ -15,6 +15,40 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The first row of the current window.
+
+Returns a whole row, so read a column off it: `$p->first($w, $r).name`. Every row in a partition sees
+the same first row, which makes this the way to compare each row against the leader of its group —
+the earliest date, the highest score — without a self join.
+
+**The window's frame decides what "first" means.** With no frame the window runs from the start of
+the partition to the current row, so the first row is the partition's; with a trailing frame such as
+`rows(-4, 0)` it is the first row of that five-row window and therefore moves with the current row.
+
+Returns empty when the window has no rows.
+
+**Parameters**
+- `w` — the partition, supplied by `extend`.
+- `f` — the window, supplied by `extend`.
+- `r` — the current row, supplied by `extend`.
+
+**Returns** the first row of the window, or empty when it has none.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~top:{p,w,r| $p->first($w, $r).name})
+
+// id  grp  name  top
+//  8    1    H    H     first by id descending within grp 1
+//  6    1    F    H
+//  2    1    B    H
+```
+
+**See also** `last(Relation<T>[1], _Window<T>[1], T[1]):T[0..1]`,
+`nth(Relation<T>[1], _Window<T>[1], T[1], Integer[1]):T[0..1]`,
+`lag(Relation<T>[1], T[1]):T[0..1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::first<T>(w:Relation<T>[1], f:_Window<T>[1], r:T[1]):T[0..1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::first::testOLAPWithPartitionAndOrderFirstWindow<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

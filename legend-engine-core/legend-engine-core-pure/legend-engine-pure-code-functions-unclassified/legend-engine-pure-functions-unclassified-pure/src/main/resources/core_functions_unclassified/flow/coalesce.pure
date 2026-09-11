@@ -15,31 +15,79 @@
 import meta::pure::functions::flow::*;
 import meta::pure::test::pct::*;
 
+'''
+The first argument that is not empty.
+
+The way to supply a fallback for a value that may be absent, without writing an `if` on `isEmpty`.
+Arguments are tried left to right and the first present one wins; only emptiness is considered, so a
+value that is present but zero, `false` or `''` is still returned.
+
+**The last argument decides the result's multiplicity.** Where it is `[1]`, as here, a result is
+guaranteed and the call satisfies a `[1]` use site with no `toOne` — which is the reason to prefer
+this overload. Where it is `[0..1]`, as in `coalesce(T[0..1], T[0..1]):T[0..1]`, everything may be
+absent and the result may be empty.
+
+Overloads take up to four arguments. All share these semantics; they differ only in how many values
+they try and in the multiplicity of the last.
+
+**Parameters**
+- `value` — the value to use when present.
+- `ifEmpty` — the fallback, which must be present.
+
+**Returns** `value` when present, otherwise `ifEmpty`.
+
+**Examples**
+```pure
+coalesce('hello', 'world')   // 'hello'
+coalesce([], 'world')        // 'world'
+```
+
+**See also** `coalesce(T[0..1], T[0..1]):T[0..1]`,
+`coalesce(T[0..1], T[0..1], T[1]):T[1]`
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value: T[0..1], ifEmpty: T[1]): T[1]
 {
     if($value->isEmpty(), |$ifEmpty, |$value->toOne());
 }
 
+'''
+As `coalesce(T[0..1], T[1]):T[1]`, trying two values before the fallback.
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value1: T[0..1], value2: T[0..1], ifEmpty: T[1]): T[1]
 {
     coalesce($value1, coalesce($value2, $ifEmpty));
 }
 
+'''
+As `coalesce(T[0..1], T[1]):T[1]`, trying three values before the fallback.
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value1: T[0..1], value2: T[0..1], value3: T[0..1], ifEmpty: T[1]): T[1]
 {
     coalesce($value1, coalesce($value2, $value3, $ifEmpty));
 }
 
+'''
+As `coalesce(T[0..1], T[1]):T[1]`, but the fallback may itself be absent, so **the result may be
+empty** — `coalesce([], [])` gives empty rather than failing.
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value: T[0..1], ifEmpty: T[0..1]): T[0..1]
 {
     if($value->isEmpty(), |$ifEmpty, |$value);
 }
 
+'''
+As `coalesce(T[0..1], T[0..1]):T[0..1]`, trying two values before the fallback. The result may be
+empty.
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value1: T[0..1], value2: T[0..1], ifEmpty: T[0..1]): T[0..1]
 {
     coalesce($value1, coalesce($value2, $ifEmpty));
 }
 
+'''
+As `coalesce(T[0..1], T[0..1]):T[0..1]`, trying three values before the fallback. The result may be
+empty.
+'''
 function <<PCT.function>> meta::pure::functions::flow::coalesce<T>(value1: T[0..1], value2: T[0..1], value3: T[0..1], ifEmpty: T[0..1]): T[0..1]
 {
     coalesce($value1, coalesce($value2, $value3, $ifEmpty));

@@ -16,11 +16,34 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 
+'''
+Converts a Pure value into its variant representation.
+
+Collections, `List` and `Map` are converted structurally and nest to any depth: a collection or a
+`List` becomes a JSON array, a `Map` becomes a JSON object, and a value that is already a variant is
+carried through unchanged. **An empty collection becomes a variant holding JSON `null`, not an empty
+result** — the return multiplicity is `[1]`.
+
+**Parameters**
+- `value` — the value to convert.
+
+**Returns** the variant representation of the value.
+
+**Examples**
+```pure
+toVariant(1)->toJson()                                    // '1'
+toVariant([1, 2, 3])->toJson()                            // '[1,2,3]'
+toVariant([])->toJson()                                   // 'null'
+toVariant(newMap(pair('hello', 1)))->toJson()             // '{"hello":1}'
+toVariant(list(list(list(1))))->toJson()                  // '[[[1]]]'
+```
+
+**See also** `to(Variant[0..1], T[0..1]):T[0..1]`,
+`fromJson(String[1]):Variant[1]`,
+`toJson(Variant[1]):String[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='Converts the given value to its variant representation.'
-    }
 meta::pure::functions::variant::convert::toVariant(value: Any[*]): Variant[1];
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toVariant::testEmpty<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

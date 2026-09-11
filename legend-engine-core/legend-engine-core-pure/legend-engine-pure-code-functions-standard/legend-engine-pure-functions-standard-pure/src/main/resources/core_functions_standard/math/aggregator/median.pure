@@ -14,6 +14,30 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The middle value of a collection, once sorted.
+
+**With an even number of values the two middle ones are averaged**, so the median need not be a value
+that appears in the collection — the median of `[1, 2, 3, 4]` is 2.5. The result is always `Float`
+for that reason, even for `Integer` input.
+
+Less sensitive to outliers than `mean(Number[*]):Float[1]`, which is usually why it is chosen.
+
+**Parameters**
+- `numbers` — the values.
+
+**Returns** the median, as a `Float`.
+
+**Examples**
+```pure
+median([1, 2, 3])      // 2.0, the middle value
+median([1, 2, 3, 4])   // 2.5, the average of the two middle values
+```
+
+**See also** `mean(Number[*]):Float[1]`,
+`percentile(Number[*], Float[1]):Number[0..1]`,
+`mode(Float[*]):Float[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::median(numbers:Number[*]):Float[1]
 {
     let sortedNumbers = $numbers->toOneMany()->sort();
@@ -23,6 +47,9 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
     );
 }
 
+'''
+As `median(Number[*]):Float[1]`, for `Integer` values. The result is still a `Float`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::median(numbers:Integer[*]):Float[1]
 {
     let sortedNumbers = $numbers->toOneMany()->sort();
@@ -32,6 +59,9 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
     );
 }
 
+'''
+As `median(Number[*]):Float[1]`, for `Float` values.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::median(numbers:Float[*]):Float[1]
 {
     let sortedNumbers = $numbers->toOneMany()->sort();

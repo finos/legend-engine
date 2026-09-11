@@ -25,11 +25,28 @@ Enum meta::pure::functions::date::DateTimeFormat
    ISO8601_NanoSecondPrecision
 }
 
+'''
+Renders a date as text in a named format.
+
+The format is an enumeration rather than a pattern string, so the set of shapes is fixed and checked
+at compile time instead of being a string that might be malformed. **Only
+`StrictDateFormat.ISO8601` is supported today**, and any other value fails at runtime.
+
+**Parameters**
+- `date` — the date to render.
+- `dateFormat` — the format to use.
+
+**Returns** the formatted date.
+
+**Examples**
+```pure
+%2025-04-09->formatDate(StrictDateFormat.ISO8601)   // '2025-04-09'
+```
+
+**See also** `formatDate(DateTime[1], DateTimeFormat[1]):String[1]`
+'''
 function
-   <<PCT.function>>
-   {
-      doc.doc = 'Formats a StrictDate to a string using the specified StrictDateFormat'
-   }
+    <<PCT.function>>
 meta::pure::functions::date::formatDate(date:StrictDate[1], dateFormat:StrictDateFormat[1]):String[1]
 {
    if($dateFormat == StrictDateFormat.ISO8601,
@@ -37,11 +54,14 @@ meta::pure::functions::date::formatDate(date:StrictDate[1], dateFormat:StrictDat
       | assert(false, |'Unsupported StrictDateFormat: ' + $dateFormat->toString()); '';);
 }
 
+'''
+As `formatDate(StrictDate[1], StrictDateFormat[1]):String[1]`, for a timestamp.
+
+**Only `DateTimeFormat.ISO8601_NanoSecondPrecision` is supported today**, which renders the full
+sub-second precision; any other value fails at runtime.
+'''
 function
-   <<PCT.function>>
-   {
-      doc.doc = 'Formats a DateTime to a string using the specified DateTimeFormat'
-   }
+    <<PCT.function>>
 meta::pure::functions::date::formatDate(dateTime:DateTime[1], dateTimeFormat:DateTimeFormat[1]):String[1]
 {
    if($dateTimeFormat == DateTimeFormat.ISO8601_NanoSecondPrecision,

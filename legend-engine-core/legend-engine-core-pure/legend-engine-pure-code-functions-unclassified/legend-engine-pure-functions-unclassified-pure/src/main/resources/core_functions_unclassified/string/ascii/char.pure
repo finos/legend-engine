@@ -14,7 +14,30 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Returns the character corresponding to the specified ASCII integer value.'}
+'''
+The one-character string for an ASCII code.
+
+The inverse of `ascii(String[1]):Integer[1]`. Control codes come back as themselves rather than as an
+escape or a placeholder: 10 is a real newline and 0 is a real NUL character, not an empty string.
+
+**Parameters**
+- `source` — the ASCII code to decode.
+
+**Returns** the corresponding one-character string.
+
+**Examples**
+```pure
+65->char()    // 'A'
+122->char()   // 'z'
+48->char()    // '0'
+32->char()    // ' '
+10->char()    // a newline
+0->char()     // a NUL character, not ''
+```
+
+**See also** `ascii(String[1]):Integer[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::char(source:Integer[1]):String[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::char::testCharUpper<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
