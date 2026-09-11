@@ -45,7 +45,6 @@ import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.internal.matchers.ThrowableMessageMatcher;
 
@@ -1331,17 +1330,7 @@ public class TestServiceRunner
      * daylight saving time and is +10:00 the year round, so a bare offset and a UTC prefixed
      * offset name that same zone and have to read the row as the same moment.
      *
-     * <p>They do not. This path reads the column through the Java the relational class
-     * instantiation node generates, and that Java resolves the zone with
-     * {@code TimeZone.getTimeZone(databaseTimeZone)} -- see {@code doSetup} in
-     * relationalClassResult.pure. That call takes an offset only with a GMT prefix and answers
-     * every other name it does not know with GMT, so +1000, UTC+1000 and UTC+0530 all read as GMT
-     * and the moment is not shifted at all. The same names are read correctly on the TDS path,
-     * which goes through TimeZones; relational-connection-time-zone.emit.yaml covers that.
-     *
-     * <p>Drop the stereotype once the generated reader resolves the name the same way.
      */
-    @Ignore("Generated graph fetch reader resolves the connection time zone with TimeZone.getTimeZone")
     @Test
     public void testConnectionTimeZoneTakesAnOffsetAsWellAsARegion()
     {

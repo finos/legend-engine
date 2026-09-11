@@ -215,6 +215,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
       ->imports(javaClass('java.sql.ResultSetMetaData'))
       ->imports(javaClass('java.sql.Types'))
       ->imports(javaClass('java.sql.JDBCType'))
+      ->imports(javaPackage('java.time'))
       ->imports(javaClass('org.eclipse.collections.impl.tuple.Tuples'))
       ->imports(javaClass('org.eclipse.collections.api.tuple.Pair'))
       ->imports($conventions->className(IExecutionNodeContext))
@@ -229,18 +230,27 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'BOOL_TYPES', 'Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL)'),
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRICT_DATE_TYPES', 'Arrays.asList(Types.DATE, Types.NULL)'),
          javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.NULL)'),
+         javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'ZONED_DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP_WITH_TIMEZONE, Types.NULL)'),
          javaField(['private'], javaResultSet(), 'resultSet'),
          javaField(['private'], javaString(), 'databaseTimeZone'),
          javaField(['private'], javaString(), 'databaseConnection'),
          javaField(['private'], javaList(javaClass('java.lang.Integer')), 'columnTypes'),
          javaField(['private'], javaList(javaList(javaClass('java.lang.Integer'))), 'propertyIndices'),
          javaField(['private'], javaList(javaList(javaSupplier(javaObject()))), 'propertyGetters'),
+         javaField(['private'], javaClass('java.time.ZoneId'), 'zoneId'),
          javaField(['private'], javaClass('java.util.Calendar'), 'calendar'),
+         javaField(['private'], javaBoolean(), 'readsLocalDate', 'true'),
+         javaField(['private'], javaBoolean(), 'readsLocalDateTime', 'true'),
+         javaField(['private'], javaBoolean(), 'readsOffsetDateTime', 'true'),
          javaField(['private'], javaReflectMethod(), 'parentPropertyAdder'),
          javaField(['private'], javaReflectMethod(), 'parentEdgePointPropertyAdder')
       ])
       ->addMethods([
          getAlloyNativeValueFromResultSetMethod(),
+         readStrictDateMethod(),
+         readDateTimeMethod(),
+         readZonedDateTimeMethod(),
+         calendarMethod(),
          encodeHexMethod()
       ]);
 }
@@ -259,7 +269,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    let resultSetField       = $jThis->j_field('resultSet');
    let dbTimeZoneField      = $jThis->j_field('databaseTimeZone');
    let dbConnectionField    = $jThis->j_field('databaseConnection');
-   let calendarField        = $jThis->j_field('calendar');
+   let zoneIdField          = $jThis->j_field('zoneId');
    let columnTypesField     = $jThis->j_field('columnTypes');
    let propertyIndicesField = $jThis->j_field('propertyIndices');
    let propertyGettersField = $jThis->j_field('propertyGetters');
@@ -349,7 +359,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                   $resultSetField->j_assign($rsetParam),
                   $dbTimeZoneField->j_assign($tzParam),
                   $dbConnectionField->j_assign($cParam),
-                  $calendarField->j_assign(j_new(javaClass('java.util.GregorianCalendar'), [javaClass('java.util.TimeZone')->j_invoke('getTimeZone', [$dbTimeZoneField], javaClass('java.util.TimeZone'))])),
+                  $zoneIdField->j_assign($conventions->className(PureDate)->j_invoke('resolveTimeZone', [$dbTimeZoneField], javaClass('java.time.ZoneId'))),
                   $resultSetMetDataVar->j_declare($resultSetField->j_invoke('getMetaData', [], javaClass('java.sql.ResultSetMetaData'))),
                   $columnCountVar->j_declare($resultSetMetDataVar->j_invoke('getColumnCount', [], javaInt())),
                   $columnTypesField->j_assign(j_new(javaArrayList(javaClass('java.lang.Integer')), [])),
@@ -539,7 +549,6 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    let resultSetField       = $jThis->j_field('resultSet');
    let dbTimeZoneField      = $jThis->j_field('databaseTimeZone');
    let dbConnectionField    = $jThis->j_field('databaseConnection');
-   let calendarField        = $jThis->j_field('calendar');
    let columnTypesField     = $jThis->j_field('columnTypes');
    let propertyIndicesField = $jThis->j_field('propertyIndices');
    let propertyGettersField = $jThis->j_field('propertyGetters');
@@ -918,7 +927,6 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
 {
    let conventions = $context.conventions;
    let jThis = j_this($specificsClass);
-   let calendarField = $jThis->j_field('calendar');
    let columnTypesField = $jThis->j_field('columnTypes');
    let propertyIndicesField = $jThis->j_field('propertyIndices');
    let propertyGettersField = $jThis->j_field('propertyGetters');
