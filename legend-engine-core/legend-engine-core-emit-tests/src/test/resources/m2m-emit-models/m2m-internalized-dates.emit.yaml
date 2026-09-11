@@ -1,0 +1,31 @@
+name: m2m-internalized-dates
+title: "Dates Internalized from External Format into an M2M Source"
+description: |
+  An M2M mapping whose source class carries a StrictDate and a DateTime, given as
+  JSON test data, so that the test covers a date surviving the internalizing of
+  that data.
+
+  The mapping copies the dates rather than transforming them, so what the test
+  asserts is what internalizing produced. One property is left out of the data, to
+  cover an absent date as well as a present one.
+
+modelSources:
+  model:
+    root: m2m-internalized-dates
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/shiftMapping.pure
+
+features:
+  - execution:test-data
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - external-format
+  - date-time
+  - mapping-test

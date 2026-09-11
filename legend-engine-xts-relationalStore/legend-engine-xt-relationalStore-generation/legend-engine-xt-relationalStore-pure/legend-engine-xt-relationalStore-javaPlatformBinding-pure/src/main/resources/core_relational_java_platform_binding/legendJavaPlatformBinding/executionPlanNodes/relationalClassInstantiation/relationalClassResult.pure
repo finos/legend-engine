@@ -234,6 +234,7 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
               ->imports(javaClass('java.sql.ResultSetMetaData'))
               ->imports(javaClass('java.sql.Types'))
               ->imports(javaClass('java.sql.JDBCType'))
+              ->imports(javaPackage('java.time'))
               ->imports($conventions->className(PureDate));
 
    $helperClass
@@ -245,10 +246,16 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'BOOL_TYPES', 'Arrays.asList(Types.BIT, Types.BOOLEAN, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'STRICT_DATE_TYPES', 'Arrays.asList(Types.DATE, Types.NULL)'),
       javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP, Types.NULL)'),
+      javaField(['private', 'static', 'final'], javaList(javaClass('java.lang.Integer')), 'ZONED_DATE_TIME_TYPES', 'Arrays.asList(Types.TIMESTAMP_WITH_TIMEZONE, Types.NULL)'),
       javaField(['private'], javaList(javaClass('java.lang.Integer')), 'columnTypes'),
       javaField(['private'], javaList(javaList(javaClass('java.lang.Integer'))), 'propertyIndices'),
       javaField(['private'], javaList(javaList(javaParameterizedType(javaClass('java.util.function.Supplier'), [javaObject()]))), 'propertyGetters'),
-      javaField(['private'], javaClass('java.util.Calendar'), 'calendar')
+      javaField(['private'], javaString(), 'databaseTimeZone'),
+      javaField(['private'], javaClass('java.time.ZoneId'), 'zoneId'),
+      javaField(['private'], javaClass('java.util.Calendar'), 'calendar'),
+      javaField(['private'], javaBoolean(), 'readsLocalDate', 'true'),
+      javaField(['private'], javaBoolean(), 'readsLocalDateTime', 'true'),
+      javaField(['private'], javaBoolean(), 'readsOffsetDateTime', 'true')
    ])
    ->addMethods([
       getResultSetPropertyGetterForStringPropertyMethod(),
@@ -262,6 +269,10 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
    ])
    ->addMethods([
       getAlloyNativeValueFromResultSetMethod(),
+      readStrictDateMethod(),
+      readDateTimeMethod(),
+      readZonedDateTimeMethod(),
+      calendarMethod(),
       encodeHexMethod()
    ])
    ->addMethod(
@@ -310,7 +321,8 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
          ['private'], javaVoid(), 'doSetup', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaString(), 'databaseTimeZone'), javaParam(javaString(), 'databaseConnection')],
          'try\n'+
          '{\n'+
-         '    this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));\n'+
+         '    this.databaseTimeZone = databaseTimeZone;\n'+
+         '    this.zoneId = PureDate.resolveTimeZone(databaseTimeZone);\n'+
          '    ' + $conventions->baseImplementationName($sets, $resultClass, $path)->typeToString() + '.' + $conventions->fieldName(databaseConnectionPropertyName()) + ' = databaseConnection;\n'+
          '    ResultSetMetaData resultSetMetaData = resultSet.getMetaData();\n'+
          '    int columnCount = resultSetMetaData.getColumnCount();\n'+
@@ -406,6 +418,10 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                       '                    res = ' + $javaEnumeration->typeToString() + '.getEnumFromPureName(transformedR);\n'+
                       '                }\n'+
                       '                return res;\n'+
+                      '            }\n'+
+                      '            catch (RuntimeException e)\n'+
+                      '            {\n'+
+                      '                throw e;\n'+
                       '            }\n'+
                       '            catch (Exception e)\n'+
                       '            {\n'+
@@ -526,6 +542,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        {\n'+
       '            return resultSet.getString(columnIndex);\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -556,6 +576,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -583,6 +607,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -601,6 +629,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '                res = Double.valueOf(r);\n'+
       '            }\n'+
       '            return res;\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -623,6 +655,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        {\n'+
       '            return resultSet.getBigDecimal(columnIndex);\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -642,6 +678,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -660,6 +700,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '                res = java.math.BigDecimal.valueOf(r);\n'+
       '            }\n'+
       '            return res;\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -688,6 +732,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -706,6 +754,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '                res = Boolean.valueOf(r);\n'+
       '            }\n'+
       '            return res;\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -726,6 +778,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -745,13 +801,11 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    return () -> {\n'+
       '        try\n'+
       '        {\n'+
-      '            PureDate res = null;\n'+
-      '            java.sql.Date r = resultSet.getDate(columnIndex);\n'+
-      '            if (r != null)\n'+
-      '            {\n'+
-      '                res = PureDate.fromSQLDate(r);\n'+
-      '            }\n'+
-      '            return res;\n'+
+      '            return this.readStrictDate(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -779,6 +833,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -798,13 +856,28 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    return () -> {\n'+
       '        try\n'+
       '        {\n'+
-      '            PureDate res = null;\n'+
-      '            java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
-      '            if (r != null)\n'+
-      '            {\n'+
-      '                res = PureDate.fromSQLTimestamp(r);\n'+
-      '            }\n'+
-      '            return res;\n'+
+      '            return this.readDateTime(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (ZONED_DATE_TIME_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            return this.readZonedDateTime(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -832,6 +905,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -851,13 +928,11 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    return () -> {\n'+
       '        try\n'+
       '        {\n'+
-      '            PureDate res = null;\n'+
-      '            java.sql.Date r = resultSet.getDate(columnIndex);\n'+
-      '            if (r != null)\n'+
-      '            {\n'+
-      '                res = PureDate.fromSQLDate(r);\n'+
-      '            }\n'+
-      '            return res;\n'+
+      '            return this.readStrictDate(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -870,13 +945,28 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    return () -> {\n'+
       '        try\n'+
       '        {\n'+
-      '            PureDate res = null;\n'+
-      '            java.sql.Timestamp r = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
-      '            if (r != null)\n'+
-      '            {\n'+
-      '                res = PureDate.fromSQLTimestamp(r);\n'+
-      '            }\n'+
-      '            return res;\n'+
+      '            return this.readDateTime(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
+      '        catch (Exception e)\n'+
+      '        {\n'+
+      '            throw new RuntimeException(e);\n'+
+      '        }\n'+
+      '    };\n'+
+      '}\n'+
+      'if (ZONED_DATE_TIME_TYPES.contains(columnType))\n' +
+      '{\n'+
+      '    return () -> {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            return this.readZonedDateTime(resultSet, columnIndex);\n'+
+      '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
       '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
@@ -911,6 +1001,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '            }\n'+
       '            return res;\n'+
       '        }\n'+
+      '        catch (RuntimeException e)\n'+
+      '        {\n'+
+      '            throw e;\n'+
+      '        }\n'+
       '        catch (Exception e)\n'+
       '        {\n'+
       '            throw new RuntimeException(e);\n'+
@@ -918,6 +1012,116 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    };\n'+
       '}\n'+
       'throw new RuntimeException("Error reading in property \'" + propertyName + "\' of type Date from SQL column of type \'" + JDBCType.valueOf(columnType) + "\'.");\n'
+   );
+}
+
+function meta::relational::executionPlan::platformBinding::legendJava::classResult::readStrictDateMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaObject(), 'readStrictDate', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex')],
+      'try\n'+
+      '{\n'+
+      '    if (this.readsLocalDate)\n'+
+      '    {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            LocalDate date = resultSet.getObject(columnIndex, LocalDate.class);\n'+
+      '            return (date == null) ? null : PureDate.fromLocalDate(date);\n'+
+      '        }\n'+
+      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        {\n'+
+      '            this.readsLocalDate = false;\n'+
+      '        }\n'+
+      '    }\n'+
+      '    java.sql.Date date = resultSet.getDate(columnIndex);\n'+
+      '    return (date == null) ? null : PureDate.fromSQLDate(date);\n'+
+      '}\n'+
+      'catch (RuntimeException e)\n'+
+      '{\n'+
+      '    throw e;\n'+
+      '}\n'+
+      'catch (Exception e)\n'+
+      '{\n'+
+      '    throw new RuntimeException(e);\n'+
+      '}\n'
+   );
+}
+
+function meta::relational::executionPlan::platformBinding::legendJava::classResult::readDateTimeMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaObject(), 'readDateTime', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex')],
+      'try\n'+
+      '{\n'+
+      '    if (this.readsLocalDateTime)\n'+
+      '    {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            LocalDateTime dateTime = resultSet.getObject(columnIndex, LocalDateTime.class);\n'+
+      '            return (dateTime == null) ? null : PureDate.fromLocalDateTime(dateTime, this.zoneId);\n'+
+      '        }\n'+
+      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        {\n'+
+      '            this.readsLocalDateTime = false;\n'+
+      '        }\n'+
+      '    }\n'+
+      '    java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar());\n'+
+      '    return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);\n'+
+      '}\n'+
+      'catch (RuntimeException e)\n'+
+      '{\n'+
+      '    throw e;\n'+
+      '}\n'+
+      'catch (Exception e)\n'+
+      '{\n'+
+      '    throw new RuntimeException(e);\n'+
+      '}\n'
+   );
+}
+
+function meta::relational::executionPlan::platformBinding::legendJava::classResult::readZonedDateTimeMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaObject(), 'readZonedDateTime', [javaParam(javaType('java.sql.ResultSet'), 'resultSet'), javaParam(javaInt(), 'columnIndex')],
+      'try\n'+
+      '{\n'+
+      '    if (this.readsOffsetDateTime)\n'+
+      '    {\n'+
+      '        try\n'+
+      '        {\n'+
+      '            OffsetDateTime dateTime = resultSet.getObject(columnIndex, OffsetDateTime.class);\n'+
+      '            return (dateTime == null) ? null : PureDate.fromOffsetDateTime(dateTime);\n'+
+      '        }\n'+
+      '        catch (java.sql.SQLException | UnsupportedOperationException | AbstractMethodError unsupported)\n'+
+      '        {\n'+
+      '            this.readsOffsetDateTime = false;\n'+
+      '        }\n'+
+      '    }\n'+
+      '    java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar());\n'+
+      '    return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);\n'+
+      '}\n'+
+      'catch (RuntimeException e)\n'+
+      '{\n'+
+      '    throw e;\n'+
+      '}\n'+
+      'catch (Exception e)\n'+
+      '{\n'+
+      '    throw new RuntimeException(e);\n'+
+      '}\n'
+   );
+}
+
+function meta::relational::executionPlan::platformBinding::legendJava::classResult::calendarMethod():meta::external::language::java::metamodel::Method[1]
+{
+   javaMethod(
+      ['private'], javaClass('java.util.Calendar'), 'calendar', [],
+      '// Only a reading that fell back to the dated java.sql APIs needs one of these, and most\n'+
+      '// drivers never make us fall back, so it is built when one is first asked for.\n'+
+      'if (this.calendar == null)\n'+
+      '{\n'+
+      '    this.calendar = PureDate.newCalendar(this.databaseTimeZone);\n'+
+      '}\n'+
+      'return this.calendar;\n'
    );
 }
 
@@ -932,20 +1136,17 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    {\n'+
       '        case Types.DATE:\n'+
       '        {\n'+
-      '            java.sql.Date date = resultSet.getDate(columnIndex);\n'+
-      '            if (date != null)\n'+
-      '            {\n'+
-      '                result = PureDate.fromSQLDate(date);\n'+
-      '            }\n'+
+      '            result = this.readStrictDate(resultSet, columnIndex);\n'+
       '            break;\n'+
       '        }\n'+
       '        case Types.TIMESTAMP:\n'+
       '        {\n'+
-      '            java.sql.Timestamp timestamp = resultSet.getTimestamp(columnIndex, this.calendar);\n'+
-      '            if (timestamp != null)\n'+
-      '            {\n'+
-      '                result = PureDate.fromSQLTimestamp(timestamp);\n'+
-      '            }\n'+
+      '            result = this.readDateTime(resultSet, columnIndex);\n'+
+      '            break;\n'+
+      '        }\n'+
+      '        case Types.TIMESTAMP_WITH_TIMEZONE:\n'+
+      '        {\n'+
+      '            result = this.readZonedDateTime(resultSet, columnIndex);\n'+
       '            break;\n'+
       '        }\n'+
       '        case Types.TINYINT:\n'+
@@ -1021,6 +1222,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '    }\n'+
       '    return result;'+
       '}\n'+
+      'catch (RuntimeException e)\n'+
+      '{\n'+
+      '    throw e;\n'+
+      '}\n'+
       'catch (Exception e)\n'+
       '{\n'+
       '    throw new RuntimeException(e);\n'+
@@ -1087,6 +1292,10 @@ function meta::relational::executionPlan::platformBinding::legendJava::classResu
       '        referenceBuilder.append(":");\n'+
       '        referenceBuilder.append(pkMapString);\n\n'+
       '        this.' + $referenceIdentifier + ' = "ASOR:" + org.apache.commons.codec.binary.Base64.encodeBase64URLSafeString(referenceBuilder.toString().getBytes());\n'+
+      '    }\n'+
+      '    catch (RuntimeException e)\n'+
+      '    {\n'+
+      '       throw e;\n'+
       '    }\n'+
       '    catch (Exception e)\n'+
       '    {\n'+
