@@ -1,0 +1,30 @@
+{
+  "services": [
+    {
+      "path": "meta::pure::testedService",
+      "type": "Service",
+      "hasTestSuites": true,
+      "hasLegacyTests": false,
+      "testSuiteCount": 1
+    },
+    {
+      "path": "meta::pure::untestedService",
+      "type": "Service",
+      "hasTestSuites": false,
+      "hasLegacyTests": false,
+      "testSuiteCount": 0
+    }
+  ],
+  "mappings": [],
+  "serviceCoverage": {
+    "totalElements": 2,
+    "elementsWithTests": 1,
+    "coveragePercentage": 0.5
+  },
+  "mappingCoverage": {
+    "totalElements": 0,
+    "elementsWithTests": 0,
+    "coveragePercentage": 0.0
+  }
+}
+

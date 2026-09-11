@@ -122,6 +122,42 @@
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xt-analytics-test-coverage-pure</artifactId>
     </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-language-pure-dsl-service</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-protocol-pure</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-shared-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-identity-core</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-xt-identity-pac4j</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.opentracing</groupId>
+        <artifactId>opentracing-api</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.opentracing</groupId>
+        <artifactId>opentracing-util</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+    </dependency>
 
 
     <dependency>
