@@ -1,0 +1,34 @@
+tests:
+  # =============================================================================
+  # WITHIN GROUP (ORDER BY ...) ordered-set aggregates
+  # https://www.postgresql.org/docs/16/functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE
+  # =============================================================================
+
+  - id: within_group_percentile_cont
+    sql: "SELECT dept_id, PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY salary) AS median_salary FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "WITHIN GROUP percentile_cont"
+    category: "within_group"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: within_group_percentile_disc
+    sql: "SELECT dept_id, PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY salary) AS median_salary FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "WITHIN GROUP percentile_disc"
+    category: "within_group"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: within_group_mode
+    sql: "SELECT dept_id, MODE() WITHIN GROUP (ORDER BY age) AS common_age FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "WITHIN GROUP mode"
+    category: "within_group"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: within_group_rank_hypothetical
+    sql: "SELECT RANK(50000) WITHIN GROUP (ORDER BY salary) AS rank_at_50k FROM persons"
+    feature: "WITHIN GROUP hypothetical-set rank"
+    category: "within_group"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

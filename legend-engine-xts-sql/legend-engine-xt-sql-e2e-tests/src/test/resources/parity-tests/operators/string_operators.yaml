@@ -1,0 +1,310 @@
+tests:
+# =============================================================================
+# String Operators
+# https://www.postgresql.org/docs/16/functions-string.html
+# =============================================================================
+
+- id: concat_op__txt_txt__from_table
+  sql: SELECT val || '-' || nullable_val AS result FROM strings ORDER BY 1
+  operator: "||"
+  signature: "||(text, text) → text"
+  expected_tds_status: FAIL
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__int_bool
+  sql: SELECT 'abc' || 1 || true || false AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__int
+  sql: SELECT name || '-' || age AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__decimal
+  sql: SELECT 'salary=' || salary AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__date
+  sql: SELECT 'hired:' || hire_date AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__boolean
+  sql: SELECT 'active=' || active AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__null_handling
+  sql: SELECT 'val=' || NULL || '-' || 42 AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: FAIL
+  expected_rel_status: PASS
+
+- id: concat_op__mixed_types__all_types
+  sql: SELECT name || '|' || age || '|' || salary || '|' || hire_date || '|' || active AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "text || text → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# || anynonarray overloads (concatenating text with a non-array, non-text value
+# directly, without going through a chained text||text||text expression)
+# ---------------------------------------------------------------------------
+
+- id: concat_op__text_anynonarray
+  sql: SELECT 'age=' || age AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(text, anynonarray) → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: concat_op__anynonarray_text
+  sql: SELECT age || '=age' AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(anynonarray, text) → text"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# name-typed regex/pattern operators (catalog column names are type `name`;
+# cast a literal to exercise the name overload directly)
+# ---------------------------------------------------------------------------
+
+- id: regex_match__name__basic
+  sql: SELECT CAST(val AS name) ~ '^hello$' AS result FROM strings WHERE id = 1
+  operator: "~"
+  signature: "~(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_not_match__name__basic
+  sql: SELECT CAST(val AS name) !~ '^hello$' AS result FROM strings WHERE id = 1
+  operator: "!~"
+  signature: "!~(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_match_ci__name__basic
+  sql: SELECT CAST(val AS name) ~* '^HELLO$' AS result FROM strings WHERE id = 1
+  operator: "~*"
+  signature: "~*(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_not_match_ci__name__basic
+  sql: SELECT CAST(val AS name) !~* '^HELLO$' AS result FROM strings WHERE id = 1
+  operator: "!~*"
+  signature: "!~*(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: like__name__basic
+  sql: SELECT CAST(val AS name) ~~ 'hel%' AS result FROM strings WHERE id = 1
+  operator: "~~"
+  signature: "~~(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: not_like__name__basic
+  sql: SELECT CAST(val AS name) !~~ 'zzz%' AS result FROM strings WHERE id = 1
+  operator: "!~~"
+  signature: "!~~(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: ilike__name__basic
+  sql: SELECT CAST(val AS name) ~~* 'HEL%' AS result FROM strings WHERE id = 1
+  operator: "~~*"
+  signature: "~~*(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: not_ilike__name__basic
+  sql: SELECT CAST(val AS name) !~~* 'ZZZ%' AS result FROM strings WHERE id = 1
+  operator: "!~~*"
+  signature: "!~~*(name, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# bpchar (blank-padded CHAR(n)) regex/pattern operators
+# ---------------------------------------------------------------------------
+
+- id: regex_match__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) ~ '^hello' AS result FROM strings WHERE id = 1
+  operator: "~"
+  signature: "~(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_not_match__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) !~ '^hello' AS result FROM strings WHERE id = 1
+  operator: "!~"
+  signature: "!~(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_match_ci__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) ~* '^HELLO' AS result FROM strings WHERE id = 1
+  operator: "~*"
+  signature: "~*(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: regex_not_match_ci__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) !~* '^HELLO' AS result FROM strings WHERE id = 1
+  operator: "!~*"
+  signature: "!~*(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: like__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) ~~ 'hel%' AS result FROM strings WHERE id = 1
+  operator: "~~"
+  signature: "~~(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: not_like__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) !~~ 'zzz%' AS result FROM strings WHERE id = 1
+  operator: "!~~"
+  signature: "!~~(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: ilike__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) ~~* 'HEL%' AS result FROM strings WHERE id = 1
+  operator: "~~*"
+  signature: "~~*(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: not_ilike__bpchar__basic
+  sql: SELECT CAST(val AS CHAR(20)) !~~* 'ZZZ%' AS result FROM strings WHERE id = 1
+  operator: "!~~*"
+  signature: "!~~*(bpchar, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bpchar_lt
+  sql: SELECT CAST(val AS CHAR(20)) ~<~ CAST('zzz' AS CHAR(20)) AS result FROM strings WHERE id = 1
+  operator: "~<~"
+  signature: "~<~(bpchar, bpchar) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bpchar_lte
+  sql: SELECT CAST(val AS CHAR(20)) ~<=~ CAST('zzz' AS CHAR(20)) AS result FROM strings WHERE id = 1
+  operator: "~<=~"
+  signature: "~<=~(bpchar, bpchar) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bpchar_gt
+  sql: SELECT CAST(val AS CHAR(20)) ~>~ CAST('aaa' AS CHAR(20)) AS result FROM strings WHERE id = 1
+  operator: "~>~"
+  signature: "~>~(bpchar, bpchar) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bpchar_gte
+  sql: SELECT CAST(val AS CHAR(20)) ~>=~ CAST('aaa' AS CHAR(20)) AS result FROM strings WHERE id = 1
+  operator: "~>=~"
+  signature: "~>=~(bpchar, bpchar) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: text_lt_lexcompare
+  sql: SELECT val ~<~ 'zzz' AS result FROM strings WHERE id = 1
+  operator: "~<~"
+  signature: "~<~(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: text_lte_lexcompare
+  sql: SELECT val ~<=~ 'zzz' AS result FROM strings WHERE id = 1
+  operator: "~<=~"
+  signature: "~<=~(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: text_gt_lexcompare
+  sql: SELECT val ~>~ 'aaa' AS result FROM strings WHERE id = 1
+  operator: "~>~"
+  signature: "~>~(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: text_gte_lexcompare
+  sql: SELECT val ~>=~ 'aaa' AS result FROM strings WHERE id = 1
+  operator: "~>=~"
+  signature: "~>=~(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# @@ (full text search match, text operand auto-cast to tsvector/tsquery) and
+# ^@ (starts-with)
+# ---------------------------------------------------------------------------
+
+- id: text_starts_with_op
+  sql: SELECT val ^@ 'hel' AS result FROM strings WHERE id = 1
+  operator: "^@"
+  signature: "^@(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: text_fts_match_op
+  sql: SELECT val @@ 'hello' AS result FROM strings WHERE id = 1
+  operator: "@@"
+  signature: "@@(text, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# ~~ / ~~* / !~~ / !~~* via literal operator syntax (as opposed to the LIKE/
+# ILIKE keyword forms already covered in pattern_matching_operators.yaml)
+# ---------------------------------------------------------------------------
+
+- id: like_op__text_text
+  sql: SELECT val ~~ 'hel%' AS result FROM strings WHERE id = 1
+  operator: "~~"
+  signature: "~~(text, text) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: not_like_op__text_text
+  sql: SELECT val !~~ 'zzz%' AS result FROM strings WHERE id = 1
+  operator: "!~~"
+  signature: "!~~(text, text) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: ilike_op__text_text
+  sql: SELECT val ~~* 'HEL%' AS result FROM strings WHERE id = 1
+  operator: "~~*"
+  signature: "~~*(text, text) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: not_ilike_op__text_text
+  sql: SELECT val !~~* 'ZZZ%' AS result FROM strings WHERE id = 1
+  operator: "!~~*"
+  signature: "!~~*(text, text) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+

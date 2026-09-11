@@ -110,7 +110,9 @@ public class HtmlReportGenerator
     {
         generate(outputDir, "summary.md", "summary.html", "Legend SQL — Coverage Summary");
         generate(outputDir, "function-coverage.md", "function-coverage.html", "SQL Function Coverage");
+        generate(outputDir, "operator-coverage.md", "operator-coverage.html", "SQL Operator Coverage");
         generate(outputDir, "structural-parity.md", "structural-parity.html", "SQL Structural Parity");
+        generate(outputDir, "format-token-coverage.md", "format-token-coverage.html", "SQL Format Token Coverage");
         generate(outputDir, "failure-details.md", "failure-details.html", "SQL Failure Details");
     }
 

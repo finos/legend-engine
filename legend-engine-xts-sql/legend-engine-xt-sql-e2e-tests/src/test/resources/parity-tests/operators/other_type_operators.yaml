@@ -1,0 +1,435 @@
+tests:
+# =============================================================================
+# Comparison operators over Postgres pseudo/internal scalar types
+# (bytea, oid, uuid, tid, xid, xid8, pg_lsn, record). These have no
+# corresponding columns in the shared parity-test schema, so operands are
+# built from literals/casts. Most are expected to fail or error against the
+# Legend engine, which has no native representation for several of these
+# types — the point of these tests is to close operator-coverage.md
+# UNTESTED gaps, not to assert full support.
+# https://www.postgresql.org/docs/16/functions-comparison.html
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# bytea
+# ---------------------------------------------------------------------------
+
+- id: bytea_eq
+  sql: SELECT CAST('\x0102' AS bytea) = CAST('\x0102' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_neq
+  sql: SELECT CAST('\x0102' AS bytea) <> CAST('\x03' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_lt
+  sql: SELECT CAST('\x01' AS bytea) < CAST('\x02' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_lte
+  sql: SELECT CAST('\x01' AS bytea) <= CAST('\x02' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_gt
+  sql: SELECT CAST('\x02' AS bytea) > CAST('\x01' AS bytea) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_gte
+  sql: SELECT CAST('\x02' AS bytea) >= CAST('\x01' AS bytea) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_concat
+  sql: SELECT CAST('\x01' AS bytea) || CAST('\x02' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(bytea, bytea) → bytea"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_like
+  sql: SELECT CAST('abc' AS bytea) ~~ CAST('a%' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "~~"
+  signature: "~~(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bytea_not_like
+  sql: SELECT CAST('abc' AS bytea) !~~ CAST('z%' AS bytea) AS result FROM persons WHERE id = 1
+  operator: "!~~"
+  signature: "!~~(bytea, bytea) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# aclitem (access-control-list entry; internal system type)
+# ---------------------------------------------------------------------------
+
+- id: aclitem_eq
+  sql: SELECT 'foo=r/bar'::aclitem = 'foo=r/bar'::aclitem AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(aclitem, aclitem) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# ---------------------------------------------------------------------------
+# cid (command identifier within a transaction; internal system type)
+# ---------------------------------------------------------------------------
+
+- id: cid_eq
+  sql: SELECT CAST(1 AS cid) = CAST(1 AS cid) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(cid, cid) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# ---------------------------------------------------------------------------
+# oid
+# ---------------------------------------------------------------------------
+
+- id: oid_eq
+  sql: SELECT CAST(1 AS oid) = CAST(1 AS oid) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: oid_neq
+  sql: SELECT CAST(1 AS oid) <> CAST(2 AS oid) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: oid_lt
+  sql: SELECT CAST(1 AS oid) < CAST(2 AS oid) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: oid_lte
+  sql: SELECT CAST(1 AS oid) <= CAST(2 AS oid) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: oid_gt
+  sql: SELECT CAST(2 AS oid) > CAST(1 AS oid) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: oid_gte
+  sql: SELECT CAST(2 AS oid) >= CAST(1 AS oid) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(oid, oid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# uuid
+# ---------------------------------------------------------------------------
+
+- id: uuid_eq
+  sql: SELECT CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) = CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: uuid_neq
+  sql: SELECT CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) <> CAST('00000000-0000-0000-0000-000000000000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: uuid_lt
+  sql: SELECT CAST('00000000-0000-0000-0000-000000000000' AS uuid) < CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: uuid_lte
+  sql: SELECT CAST('00000000-0000-0000-0000-000000000000' AS uuid) <= CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: uuid_gt
+  sql: SELECT CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) > CAST('00000000-0000-0000-0000-000000000000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: uuid_gte
+  sql: SELECT CAST('123e4567-e89b-12d3-a456-426614174000' AS uuid) >= CAST('00000000-0000-0000-0000-000000000000' AS uuid) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(uuid, uuid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# tid (tuple identifier)
+# ---------------------------------------------------------------------------
+
+- id: tid_eq
+  sql: SELECT CAST('(0,1)' AS tid) = CAST('(0,1)' AS tid) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: tid_neq
+  sql: SELECT CAST('(0,1)' AS tid) <> CAST('(0,2)' AS tid) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: tid_lt
+  sql: SELECT CAST('(0,1)' AS tid) < CAST('(0,2)' AS tid) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: tid_lte
+  sql: SELECT CAST('(0,1)' AS tid) <= CAST('(0,2)' AS tid) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: tid_gt
+  sql: SELECT CAST('(0,2)' AS tid) > CAST('(0,1)' AS tid) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: tid_gte
+  sql: SELECT CAST('(0,2)' AS tid) >= CAST('(0,1)' AS tid) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(tid, tid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# xid / xid8 (transaction id types)
+# ---------------------------------------------------------------------------
+
+- id: xid_eq
+  sql: SELECT CAST('1' AS xid) = CAST('1' AS xid) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(xid, xid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid_neq
+  sql: SELECT CAST('1' AS xid) <> CAST('2' AS xid) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(xid, xid) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_eq
+  sql: SELECT CAST('1' AS xid8) = CAST('1' AS xid8) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_neq
+  sql: SELECT CAST('1' AS xid8) <> CAST('2' AS xid8) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_lt
+  sql: SELECT CAST('1' AS xid8) < CAST('2' AS xid8) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_lte
+  sql: SELECT CAST('1' AS xid8) <= CAST('2' AS xid8) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_gt
+  sql: SELECT CAST('2' AS xid8) > CAST('1' AS xid8) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: xid8_gte
+  sql: SELECT CAST('2' AS xid8) >= CAST('1' AS xid8) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(xid8, xid8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# pg_lsn
+# ---------------------------------------------------------------------------
+
+- id: pg_lsn_eq
+  sql: SELECT CAST('0/1' AS pg_lsn) = CAST('0/1' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: pg_lsn_neq
+  sql: SELECT CAST('0/1' AS pg_lsn) <> CAST('0/2' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: pg_lsn_lt
+  sql: SELECT CAST('0/1' AS pg_lsn) < CAST('0/2' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: pg_lsn_lte
+  sql: SELECT CAST('0/1' AS pg_lsn) <= CAST('0/2' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: pg_lsn_gt
+  sql: SELECT CAST('0/2' AS pg_lsn) > CAST('0/1' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: pg_lsn_gte
+  sql: SELECT CAST('0/2' AS pg_lsn) >= CAST('0/1' AS pg_lsn) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(pg_lsn, pg_lsn) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# record (row-value comparisons)
+# ---------------------------------------------------------------------------
+
+- id: record_eq
+  sql: SELECT ROW(1, 'a') = ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_neq
+  sql: SELECT ROW(1, 'a') <> ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_lt
+  sql: SELECT ROW(1, 'a') < ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_lte
+  sql: SELECT ROW(1, 'a') <= ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_gt
+  sql: SELECT ROW(2, 'b') > ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_gte
+  sql: SELECT ROW(2, 'b') >= ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(record, record) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: record_distinct_lt
+  sql: SELECT ROW(1, 'a') *< ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "*<"
+  signature: "*<(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: record_distinct_lte
+  sql: SELECT ROW(1, 'a') *<= ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "*<="
+  signature: "*<=(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: record_distinct_neq
+  sql: SELECT ROW(1, 'a') *<> ROW(2, 'b') AS result FROM persons WHERE id = 1
+  operator: "*<>"
+  signature: "*<>(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: record_distinct_eq
+  sql: SELECT ROW(1, 'a') *= ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: "*="
+  signature: "*=(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: record_distinct_gt
+  sql: SELECT ROW(2, 'b') *> ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: "*>"
+  signature: "*>(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: record_distinct_gte
+  sql: SELECT ROW(2, 'b') *>= ROW(1, 'a') AS result FROM persons WHERE id = 1
+  operator: "*>="
+  signature: "*>=(record, record) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+
+
