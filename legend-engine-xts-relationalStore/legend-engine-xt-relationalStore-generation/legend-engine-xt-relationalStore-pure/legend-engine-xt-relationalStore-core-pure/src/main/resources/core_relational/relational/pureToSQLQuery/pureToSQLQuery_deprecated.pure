@@ -644,7 +644,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          let propertyMapping = $expression->match([
                                   f:FunctionExpression[1] |
                                     if(['getNumber', 'getInteger', 'getDecimal', 'getString', 'getFloat', 'getDate', 'getDateTime', 'getStrictDate', 'getBoolean', 'getEnum']->contains($f.func.functionName->toOne()),
-                                      | let name = $f->instanceValueAtParameter(1)->cast(@String);
+                                      | let name = $f->resolveTdsGetterColumnName($vars, $updatedState);
                                         let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
                                         if($matchedPath->isEmpty(), | [], | $matchedPath->toOne().second.propertyMapping->cast(@RelationalPropertyMapping));,
                                       | []
