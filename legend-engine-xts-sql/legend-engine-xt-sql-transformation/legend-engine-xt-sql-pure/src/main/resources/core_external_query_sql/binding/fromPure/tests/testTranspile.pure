@@ -3708,6 +3708,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT ' +
     'coalesce(NULL, Integer, 1) AS "COALESCE", ' +
+    'coalesce(Integer, 1, 2, 3) AS "COALESCE4", ' +
+    'coalesce(Integer, 1, 2, 3, 4, 5, 6) AS "COALESCE7", ' +
     'greatest(NULL, Integer, 1) AS "GREATEST", ' +
     'least(NULL, Integer, 1) AS "LEAST" ' +
     'FROM service."/service/service1"',
@@ -3720,6 +3722,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
               ->project([
                   col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1]), 'COALESCE'),
+                  col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1, 2, 3]), 'COALESCE4'),
+                  col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1, 2, 3, 4, 5, 6]), 'COALESCE7'),
                   col(row:TDSRow[1] | greatest([$row.getInteger('Integer'), 1]), 'GREATEST'),
                   col(row:TDSRow[1] | least([$row.getInteger('Integer'), 1]), 'LEAST')
                 ])
@@ -3729,6 +3733,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project(~[Boolean : x|$x.booleanIn, Integer : x|$x.integerIn, Float : x|$x.floatIn, Decimal : x|$x.decimalIn, StrictDate : x|$x.strictDateIn, DateTime : x|$x.dateTimeIn, String : x|$x.stringIn])
             ->project(~[
                 COALESCE : x|meta::pure::functions::flow::coalesce($x.Integer, 1, []),
+                COALESCE4 : x|meta::pure::functions::flow::coalesce($x.Integer, 1, 2, meta::pure::functions::flow::coalesce(3, [])),
+                COALESCE7 : x|meta::pure::functions::flow::coalesce($x.Integer, 1, 2, meta::pure::functions::flow::coalesce(3, 4, 5, meta::pure::functions::flow::coalesce(6, []))),
                 GREATEST : x|[$x.Integer,1]->greatest(),
                 LEAST : x|[$x.Integer,1]->least()])
       }

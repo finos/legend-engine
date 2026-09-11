@@ -875,3 +875,20 @@ tests:
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
+# ---------------------------------------------------------------------------
+# COALESCE with more than 3 non-null-literal arguments.
+# ---------------------------------------------------------------------------
+- id: coalesce__beyond_ceiling__arities
+  sql: SELECT COALESCE(int_val, small_val, int_val, small_val, -99) AS c5, COALESCE(int_val, small_val, int_val, small_val, int_val, 999) AS c6, COALESCE(int_val, small_val, int_val, small_val, int_val, 7, 999) AS c7_midwin, COALESCE(int_val, small_val, int_val, small_val, int_val, small_val, int_val, small_val, int_val, 12345) AS c10 FROM numbers WHERE id = 5
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: coalesce__beyond_ceiling__first_argument_wins
+  sql: SELECT COALESCE(int_val, small_val, int_val, 0) AS result FROM numbers WHERE id = 1
+  function: coalesce
+  signature: "coalesce(VARIADIC \"any\") → \"any\""
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
