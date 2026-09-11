@@ -36,9 +36,11 @@ public class SummaryReport
     public void generate(String outputDir) throws IOException
     {
         File funcJson = new File(outputDir, "function-coverage.json");
+        File opJson = new File(outputDir, "operator-coverage.json");
         File structJson = new File(outputDir, "structural-parity.json");
+        File formatTokenJson = new File(outputDir, "format-token-coverage.json");
 
-        if (!funcJson.exists() && !structJson.exists())
+        if (!funcJson.exists() && !opJson.exists() && !structJson.exists() && !formatTokenJson.exists())
         {
             LOGGER.warn("No coverage JSON files found in {}, skipping summary report", outputDir);
             return;
@@ -51,6 +53,12 @@ public class SummaryReport
         int combinedRelPass = 0;
         int combinedTdsTotal = 0;
         int combinedRelTotal = 0;
+        // Tracked separately from combinedTdsTotal/combinedRelTotal because format-token
+        // coverage only has a single shared denominator (totalTokens) rather than
+        // independent per-axis denominators, so it must only contribute once to the
+        // overall/combined pool instead of once per axis.
+        int combinedOverallPass = 0;
+        int combinedOverallTotal = 0;
 
         // === Function Coverage ===
         if (funcJson.exists())
@@ -64,7 +72,7 @@ public class SummaryReport
             int totalTests = summary.has("total_tests") ? summary.get("total_tests").asInt() : 0;
             double tdsSupportedPct = uniqueFunctionNames > 0 ? (100.0 * tdsSupported / uniqueFunctionNames) : 0;
             double relSupportedPct = uniqueFunctionNames > 0 ? (100.0 * relSupported / uniqueFunctionNames) : 0;
-            
+
             JsonNode tds = summary.get("tds");
             JsonNode rel = summary.get("relation");
 
@@ -97,7 +105,7 @@ public class SummaryReport
             md.append("|--------|-----|----------|\n");
             md.append(String.format("| Total signatures | %d | %d |\n", total, total));
             md.append(String.format("| Unique function names | %d | %d |\n", uniqueFunctionNames, uniqueFunctionNames));
-            md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n", 
+            md.append(String.format("| **Supported functions (PASS/PARTIAL)** | **%d (%.1f%%)** | **%d (%.1f%%)** |\n",
                     tdsSupported, tdsSupportedPct, relSupported, relSupportedPct));
             md.append(String.format("| Total tests | %d | %d |\n", totalTests, totalTests));
             md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
@@ -119,6 +127,64 @@ public class SummaryReport
             combinedRelPass += relPass;
             combinedTdsTotal += tdsExpected;
             combinedRelTotal += relExpected;
+            combinedOverallPass += tdsPass + relPass;
+            combinedOverallTotal += tdsExpected + relExpected;
+        }
+
+        // === Operator Coverage ===
+        if (opJson.exists())
+        {
+            JsonNode root = MAPPER.readTree(opJson);
+            JsonNode summary = root.get("summary");
+            int total = summary.get("total").asInt();
+            JsonNode tds = summary.get("tds");
+            JsonNode rel = summary.get("relation");
+
+            int tdsPass = tds.get("pass").asInt();
+            int tdsPartial = tds.get("partial").asInt();
+            int tdsFail = tds.get("fail").asInt();
+            int tdsError = tds.get("error").asInt();
+            int tdsUntested = tds.get("untested").asInt();
+            int tdsUnsupported = tds.has("unsupported") ? tds.get("unsupported").asInt() : 0;
+            int tdsExpected = tdsPass + tdsPartial + tdsFail + tdsError + tdsUntested;
+
+            int relPass = rel.get("pass").asInt();
+            int relPartial = rel.get("partial").asInt();
+            int relFail = rel.get("fail").asInt();
+            int relError = rel.get("error").asInt();
+            int relUntested = rel.get("untested").asInt();
+            int relUnsupported = rel.has("unsupported") ? rel.get("unsupported").asInt() : 0;
+            int relExpected = relPass + relPartial + relFail + relError + relUntested;
+
+            double tdsPct = tdsExpected > 0 ? (100.0 * tdsPass / tdsExpected) : 0;
+            double relPct = relExpected > 0 ? (100.0 * relPass / relExpected) : 0;
+
+            md.append("## Operator Coverage\n\n");
+            md.append("Coverage of Postgres built-in operators in Legend SQL.\n");
+            md.append("See [full details](operator-coverage.md) for per-operator results.\n\n");
+
+            md.append("| Metric | TDS | Relation |\n");
+            md.append("|--------|-----|----------|\n");
+            md.append(String.format("| Total operators | %d | %d |\n", total, total));
+            md.append(String.format("| ⚪ UNSUPPORTED | %d | %d |\n", tdsUnsupported, relUnsupported));
+            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
+            md.append(String.format("| ⚠️ PARTIAL | %d | %d |\n", tdsPartial, relPartial));
+            md.append(String.format("| ❌ FAIL | %d | %d |\n", tdsFail, relFail));
+            md.append(String.format("| 💥 ERROR | %d | %d |\n", tdsError, relError));
+            md.append(String.format("| ❓ UNTESTED | %d | %d |\n", tdsUntested, relUntested));
+            md.append(String.format("| **Full pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
+
+            // List FAIL test links
+            appendFailLinks(md, root, "operator");
+
+            md.append("\n---\n\n");
+
+            combinedTdsPass += tdsPass;
+            combinedRelPass += relPass;
+            combinedTdsTotal += tdsExpected;
+            combinedRelTotal += relExpected;
+            combinedOverallPass += tdsPass + relPass;
+            combinedOverallTotal += tdsExpected + relExpected;
         }
 
         // === Structural Parity ===
@@ -179,13 +245,47 @@ public class SummaryReport
             combinedRelPass += relPass;
             combinedTdsTotal += tdsExpected;
             combinedRelTotal += relExpected;
+            combinedOverallPass += tdsPass + relPass;
+            combinedOverallTotal += tdsExpected + relExpected;
+        }
+
+        // === Format Token Coverage ===
+        if (formatTokenJson.exists())
+        {
+            JsonNode root = MAPPER.readTree(formatTokenJson);
+            JsonNode summary = root.get("summary");
+            int totalTokens = summary.get("total_tokens").asInt();
+            int tdsPass = summary.get("tds_pass").asInt();
+            int relPass = summary.get("relation_pass").asInt();
+            double tdsPct = totalTokens > 0 ? (100.0 * tdsPass / totalTokens) : 0;
+            double relPct = totalTokens > 0 ? (100.0 * relPass / totalTokens) : 0;
+
+            md.append("## Format Token Coverage\n\n");
+            md.append("Coverage of `to_char` template patterns and `EXTRACT`/`date_part` field keywords.\n");
+            md.append("See [full details](format-token-coverage.md) for per-token results.\n\n");
+
+            md.append("| Metric | TDS | Relation |\n");
+            md.append("|--------|-----|----------|\n");
+            md.append(String.format("| Total tokens | %d | %d |\n", totalTokens, totalTokens));
+            md.append(String.format("| ✅ PASS | %d | %d |\n", tdsPass, relPass));
+            md.append(String.format("| **Pass rate** | **%.1f%%** | **%.1f%%** |\n", tdsPct, relPct));
+            md.append("\n---\n\n");
+
+            combinedTdsPass += tdsPass;
+            combinedRelPass += relPass;
+            combinedTdsTotal += totalTokens;
+            combinedRelTotal += totalTokens;
+            combinedOverallPass += tdsPass + relPass;
+            combinedOverallTotal += totalTokens;
         }
 
         // === Overall ===
         double overallTdsPct = combinedTdsTotal > 0 ? (100.0 * combinedTdsPass / combinedTdsTotal) : 0;
         double overallRelPct = combinedRelTotal > 0 ? (100.0 * combinedRelPass / combinedRelTotal) : 0;
-        double overallPct = (combinedTdsTotal + combinedRelTotal) > 0
-                ? (100.0 * (combinedTdsPass + combinedRelPass) / (combinedTdsTotal + combinedRelTotal)) : 0;
+        double overallPct = combinedOverallTotal > 0
+                ? (100.0 * combinedOverallPass / combinedOverallTotal) : 0;
+
+        appendDocsCoverageSection(md, funcJson, opJson);
 
         md.append("## Overall\n\n");
         md.append("Combined pass rate across function coverage and structural parity.\n\n");
@@ -194,7 +294,7 @@ public class SummaryReport
         md.append(String.format("| TDS | %d | %d | **%.1f%%** |\n", combinedTdsPass, combinedTdsTotal, overallTdsPct));
         md.append(String.format("| Relation | %d | %d | **%.1f%%** |\n", combinedRelPass, combinedRelTotal, overallRelPct));
         md.append(String.format("| **Combined** | **%d** | **%d** | **%.1f%%** |\n",
-                combinedTdsPass + combinedRelPass, combinedTdsTotal + combinedRelTotal, overallPct));
+                combinedOverallPass, combinedOverallTotal, overallPct));
         md.append("\n");
 
         String filePath = outputDir + "/summary.md";
@@ -203,6 +303,74 @@ public class SummaryReport
             fw.write(md.toString());
         }
         LOGGER.info("Generated summary report: {}", filePath);
+    }
+
+    /**
+     * Appends a "Coverage vs. Postgres docs" section: per doc section (9.1-9.27), the
+     * fraction of catalogued functions/operators with *any* test at all, independent of
+     * PASS/FAIL — makes visible where there is a testing gap vs. a behavioral gap
+     * (gap-analysis section 3.4.3).
+     */
+    private void appendDocsCoverageSection(StringBuilder md, File funcJson, File opJson) throws IOException
+    {
+        java.util.Map<String, int[]> perCategory = new java.util.LinkedHashMap<>(); // [testedCount, total]
+
+        for (File jsonFile : new File[] {funcJson, opJson})
+        {
+            if (!jsonFile.exists())
+            {
+                continue;
+            }
+            JsonNode root = MAPPER.readTree(jsonFile);
+            JsonNode categories = root.get("categories");
+            if (categories == null || !categories.isArray())
+            {
+                continue;
+            }
+            for (JsonNode cat : categories)
+            {
+                String name = cat.has("name") ? cat.get("name").asText() : "Unknown";
+                JsonNode items = cat.get("functions");
+                if (items == null)
+                {
+                    items = cat.get("operators");
+                }
+                if (items == null)
+                {
+                    continue;
+                }
+                int[] counts = perCategory.computeIfAbsent(name, k -> new int[2]);
+                for (JsonNode item : items)
+                {
+                    counts[1]++;
+                    String tdsStatus = item.path("tds").path("status").asText("UNTESTED");
+                    String relStatus = item.path("relation").path("status").asText("UNTESTED");
+                    if (!"UNTESTED".equals(tdsStatus) || !"UNTESTED".equals(relStatus))
+                    {
+                        counts[0]++;
+                    }
+                }
+            }
+        }
+
+        if (perCategory.isEmpty())
+        {
+            return;
+        }
+
+        md.append("## Coverage vs. Postgres Docs\n\n");
+        md.append("Fraction of cataloged functions/operators with *any* test at all — independent of\n");
+        md.append("pass/fail — showing where there is a testing gap vs. a behavioral gap.\n\n");
+        md.append("| Doc Section | Tested | Total | Tested % |\n");
+        md.append("|---|---|---|---|\n");
+        for (java.util.Map.Entry<String, int[]> entry : perCategory.entrySet())
+        {
+            int[] c = entry.getValue();
+            double pct = c[1] > 0 ? (100.0 * c[0] / c[1]) : 0;
+            md.append(String.format("| %s | %d | %d | %.1f%% |\n",
+                    DocLinks.linkedHeading(entry.getKey()), c[0], c[1], pct));
+        }
+        md.append("\n---\n\n");
     }
 
     /**
@@ -219,8 +387,12 @@ public class SummaryReport
         java.util.Set<String> seen = new java.util.LinkedHashSet<>();
         for (JsonNode cat : categories)
         {
-            // Try both "functions" (for function coverage) and "features" (for structural parity)
+            // Try "functions" (function coverage), "operators" (operator coverage), or "features" (structural parity)
             JsonNode items = cat.get("functions");
+            if (items == null)
+            {
+                items = cat.get("operators");
+            }
             if (items == null)
             {
                 items = cat.get("features");
@@ -229,7 +401,7 @@ public class SummaryReport
             {
                 continue;
             }
-            
+
             for (JsonNode item : items)
             {
                 JsonNode details = item.get("testDetails");

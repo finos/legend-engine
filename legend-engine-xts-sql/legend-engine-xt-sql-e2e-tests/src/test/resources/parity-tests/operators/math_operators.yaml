@@ -1,0 +1,492 @@
+tests:
+# =============================================================================
+# Mathematical Operators
+# https://www.postgresql.org/docs/16/functions-math.html
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Basic single-use arithmetic operators (+, -, *, /, %)
+# ---------------------------------------------------------------------------
+- id: op_add__int__basic
+  sql: SELECT id, int_val + 10 AS result FROM numbers WHERE id = 1
+  operator: "+"
+  signature: "+(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sub__int__basic
+  sql: SELECT id, int_val - 10 AS result FROM numbers WHERE id = 1
+  operator: "-"
+  signature: "-(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_mul__int__basic
+  sql: SELECT id, int_val * 2 AS result FROM numbers WHERE id = 1
+  operator: "*"
+  signature: "*(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_div__int__basic
+  sql: SELECT id, int_val / 2 AS result FROM numbers WHERE id = 1
+  operator: "/"
+  signature: "/(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_div__int__truncates_toward_zero
+  sql: SELECT id, int_val / 5 AS result FROM numbers WHERE id = 9
+  operator: "/"
+  signature: "/(int4, int4) → int4"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: op_div__negative__truncates_toward_zero
+  sql: SELECT id, int_val / 3 AS result FROM numbers WHERE id = 2
+  operator: "/"
+  signature: "/(int4, int4) → int4"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: op_div__dp__basic
+  sql: SELECT id, float_val / 2 AS result FROM numbers WHERE id = 1
+  operator: "/"
+  signature: "/(float8, float8) → float8"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_div__numeric__basic
+  sql: SELECT id, numeric_val / 2 AS result FROM numbers WHERE id = 1
+  operator: "/"
+  signature: "/(numeric, numeric) → numeric"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_div__by_zero__error
+  sql: SELECT id, int_val / 0 AS result FROM numbers WHERE id = 1
+  operator: "/"
+  signature: "/(int4, int4) → int4"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: op_div__null
+  sql: SELECT id, int_val / 2 AS result FROM numbers WHERE id = 5
+  operator: "/"
+  signature: "/(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_mod__int__basic
+  sql: SELECT id, int_val % 5 AS result FROM numbers WHERE id = 1
+  operator: "%"
+  signature: "%(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_mod__negative__basic
+  sql: SELECT id, int_val % 3 AS result FROM numbers WHERE id = 2
+  operator: "%"
+  signature: "%(int4, int4) → int4"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: op_mod__numeric__basic
+  sql: SELECT id, numeric_val % 3 AS result FROM numbers WHERE id = 1
+  operator: "%"
+  signature: "%(numeric, numeric) → numeric"
+  expected_tds_status: FAIL
+  expected_rel_status: ERROR
+
+- id: op_mod__by_zero__error
+  sql: SELECT id, int_val % 0 AS result FROM numbers WHERE id = 1
+  operator: "%"
+  signature: "%(int4, int4) → int4"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: op_mod__null
+  sql: SELECT id, int_val % 5 AS result FROM numbers WHERE id = 5
+  operator: "%"
+  signature: "%(int4, int4) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Exponentiation and root operators (^, |/, ||/, @)
+# Postgres-specific prefix/infix symbols, not part of the SQL standard and not
+# present in SqlBaseLexer.g4/SqlBaseParser.g4, so expected to fail parsing the
+# same way SIMILAR TO does in pattern_matching_operators.yaml. Not yet
+# confirmed against a live run (Docker unavailable in this environment) — flip
+# to PASS if a future run shows the grammar accepts them.
+# ---------------------------------------------------------------------------
+- id: op_exp__int__basic
+  sql: SELECT id, small_val ^ 2 AS result FROM numbers WHERE id = 1
+  operator: "^"
+  signature: "^(numeric, numeric) → numeric"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_exp__dp__basic
+  sql: SELECT id, float_val ^ 2 AS result FROM numbers WHERE id = 1
+  operator: "^"
+  signature: "^(float8, float8) → float8"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_exp__negative_exponent
+  sql: SELECT id, float_val ^ -1 AS result FROM numbers WHERE id = 1
+  operator: "^"
+  signature: "^(float8, float8) → float8"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sqrt__dp__basic
+  sql: SELECT id, |/ float_val AS result FROM numbers WHERE id = 1
+  operator: "|/"
+  signature: "|/(-, numeric) → numeric"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_cbrt__dp__basic
+  sql: SELECT id, ||/ float_val AS result FROM numbers WHERE id = 1
+  operator: "||/"
+  signature: "||/(-, numeric) → numeric"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_abs__int__prefix
+  sql: SELECT id, @ int_val AS result FROM numbers WHERE id = 2
+  operator: "@"
+  signature: "@(-, numeric) → numeric"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# Bitwise integer operators (&, |, #, ~, <<, >>)
+# https://www.postgresql.org/docs/16/functions-bitstring.html
+# Status not yet confirmed against a live run (Docker unavailable in this
+# environment); marked PASS as these are common SQL-dialect bitwise
+# operators, but flip to ERROR/BUG if a live run disagrees.
+# ---------------------------------------------------------------------------
+- id: op_bitand__int__basic
+  sql: SELECT id, int_val & small_val AS result FROM numbers WHERE id = 1
+  operator: "&"
+  signature: "&(int4, int4) → int4"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_bitor__int__basic
+  sql: SELECT id, int_val | small_val AS result FROM numbers WHERE id = 1
+  operator: "|"
+  signature: "|(int4, int4) → int4"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_bitxor__int__basic
+  sql: SELECT id, int_val # small_val AS result FROM numbers WHERE id = 1
+  operator: "#"
+  signature: "#(int4, int4) → int4"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: op_bitnot__int__basic
+  sql: SELECT id, ~int_val AS result FROM numbers WHERE id = 1
+  operator: "~"
+  signature: "~(-, numeric) → numeric"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_bitshl__int__basic
+  sql: SELECT id, int_val << 2 AS result FROM numbers WHERE id = 1
+  operator: "<<"
+  signature: "<<(int4, int4) → int4"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_bitshr__int__basic
+  sql: SELECT id, int_val >> 2 AS result FROM numbers WHERE id = 1
+  operator: ">>"
+  signature: ">>(int4, int4) → int4"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_bitand__bigint__basic
+  sql: SELECT id, big_val & 255 AS result FROM numbers WHERE id = 1
+  operator: "&"
+  signature: "&(int8, int8) → int8"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: addition__chained_three_operands
+  sql: SELECT int_val + int_val + int_val AS result FROM numbers WHERE int_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  operator: "+"
+  signature: integer + integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__chained_mixed_types
+  sql: SELECT int_val + float_val + numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  operator: "+"
+  signature: integer + double precision + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__chained_with_null
+  sql: SELECT int_val + float_val + numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  operator: "+"
+  signature: integer + double precision + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_three_operands
+  sql: SELECT int_val - small_val - small_val AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL ORDER BY 1
+  operator: "-"
+  signature: integer - integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_mixed_types
+  sql: SELECT int_val - float_val - numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  operator: "-"
+  signature: integer - double precision - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__chained_with_null
+  sql: SELECT int_val - float_val - numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  operator: "-"
+  signature: integer - double precision - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_three_operands
+  sql: SELECT int_val * small_val * small_val AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  operator: "*"
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_mixed_types
+  sql: SELECT int_val * float_val * numeric_val AS result FROM numbers WHERE int_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL ORDER BY 1
+  operator: "*"
+  signature: integer * double precision * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__chained_with_null
+  sql: SELECT int_val * float_val * numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  operator: "*"
+  signature: integer * double precision * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_subtract
+  sql: SELECT (int_val + small_val) - (float_val - numeric_val) AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND float_val IS NOT NULL AND numeric_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  operator: "-"
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_multiply
+  sql: SELECT (int_val + small_val) * (small_val - 1) * 2 AS result FROM numbers WHERE int_val IS NOT NULL AND small_val IS NOT NULL AND int_val <> 2147483647 ORDER BY 1
+  operator: "*"
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_subtract_group_with_null
+  sql: SELECT (int_val - float_val) - numeric_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  operator: "-"
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_add_with_null_in_middle
+  sql: SELECT int_val + numeric_val + small_val AS result FROM numbers WHERE id = 5 ORDER BY 1
+  operator: "+"
+  signature: numeric + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__int_plus_null_literal
+  sql: SELECT int_val + NULL AS result FROM numbers ORDER BY 1
+  operator: "+"
+  signature: integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__null_literal_plus_int
+  sql: SELECT NULL + int_val AS result FROM numbers ORDER BY 1
+  operator: "+"
+  signature: integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: addition__typed_null_plus_numeric
+  sql: SELECT CAST(NULL AS numeric) + numeric_val AS result FROM numbers ORDER BY 1
+  operator: "+"
+  signature: numeric + numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__int_minus_null_literal
+  sql: SELECT int_val - NULL AS result FROM numbers ORDER BY 1
+  operator: "-"
+  signature: integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__null_literal_minus_int
+  sql: SELECT NULL - int_val AS result FROM numbers ORDER BY 1
+  operator: "-"
+  signature: integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: subtraction__typed_null_minus_numeric
+  sql: SELECT CAST(NULL AS numeric) - numeric_val AS result FROM numbers ORDER BY 1
+  operator: "-"
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__int_times_null_literal
+  sql: SELECT int_val * NULL AS result FROM numbers ORDER BY 1
+  operator: "*"
+  signature: integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__null_literal_times_int
+  sql: SELECT NULL * int_val AS result FROM numbers ORDER BY 1
+  operator: "*"
+  signature: integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: multiplication__typed_null_times_numeric
+  sql: SELECT CAST(NULL AS numeric) * numeric_val AS result FROM numbers ORDER BY 1
+  operator: "*"
+  signature: numeric * numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_add_with_null_literal
+  sql: SELECT int_val + NULL + small_val AS result FROM numbers ORDER BY 1
+  operator: "+"
+  signature: integer + integer + integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_subtract_with_null_literal
+  sql: SELECT int_val - NULL - small_val AS result FROM numbers ORDER BY 1
+  operator: "-"
+  signature: integer - integer - integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__chained_multiply_with_null_literal
+  sql: SELECT int_val * NULL * small_val AS result FROM numbers ORDER BY 1
+  operator: "*"
+  signature: integer * integer * integer → integer
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: arithmetic__nested_mixed_add_subtract_with_null_literal
+  sql: SELECT (int_val + NULL) - (float_val - numeric_val) AS result FROM numbers ORDER BY 1
+  operator: "-"
+  signature: numeric - numeric → numeric
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# Unary prefix +/- (identity / negation)
+# ---------------------------------------------------------------------------
+
+- id: op_unary_plus__int__basic
+  sql: SELECT id, +int_val AS result FROM numbers WHERE id = 1
+  operator: "+"
+  signature: "+(-, numeric) → numeric"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_unary_minus__int__basic
+  sql: SELECT id, -int_val AS result FROM numbers WHERE id = 1
+  operator: "-"
+  signature: "-(-, numeric) → numeric"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+# ---------------------------------------------------------------------------
+# datetime <-> numeric cross-type arithmetic (date +/- integer days,
+# interval * / numeric scaling)
+# ---------------------------------------------------------------------------
+
+- id: op_add__date_plus_int_days
+  sql: SELECT d + 5 AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(datetime, numeric) → datetime"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: op_add__int_plus_date_days
+  sql: SELECT 5 + d AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(numeric, datetime) → datetime"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__date_minus_int_days
+  sql: SELECT d - 5 AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(datetime, numeric) → datetime"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: op_mul__interval_times_numeric
+  sql: SELECT INTERVAL '1 day' * 2 AS result FROM dates WHERE id = 1
+  operator: "*"
+  signature: "*(datetime, numeric) → datetime"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_mul__numeric_times_interval
+  sql: SELECT 2 * INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "*"
+  signature: "*(numeric, datetime) → datetime"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_div__interval_by_numeric
+  sql: SELECT INTERVAL '1 day' / 2 AS result FROM dates WHERE id = 1
+  operator: "/"
+  signature: "/(datetime, numeric) → datetime"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# pg_lsn <-> numeric arithmetic (log sequence number pseudo-type)
+# ---------------------------------------------------------------------------
+
+- id: op_add__pg_lsn_plus_numeric
+  sql: SELECT CAST('0/1' AS pg_lsn) + 16 AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(pg_lsn, numeric) → pg_lsn"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__numeric_plus_pg_lsn
+  sql: SELECT 16 + CAST('0/1' AS pg_lsn) AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(numeric, pg_lsn) → pg_lsn"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__pg_lsn_minus_numeric
+  sql: SELECT CAST('0/10' AS pg_lsn) - 16 AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(pg_lsn, numeric) → pg_lsn"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
