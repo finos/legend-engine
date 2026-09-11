@@ -1,0 +1,25 @@
+{
+  "port": 9100,
+  "repoRoots": [
+    "."
+  ],
+  "classpathRepositoryNames": [],
+  "pureOptions": {
+    "ExecPlan": true,
+    "PlanLocal": true,
+    "FullInteractiveExec": true,
+    "ExecDebug": false,
+    "ForceInterpreted": false,
+    "ShowLocalPlan": false
+  },
+  "backendServer": {
+    "startEmbedded": true,
+    "host": "127.0.0.1",
+    "port": "9095",
+    "clientVersion": "vX_X_X",
+    "serverVersion": "v1",
+    "serializationKind": "json",
+    "h2Port": "9092"
+  },
+  "additionalSystemProperties": {}
+}

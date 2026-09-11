@@ -96,7 +96,7 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
 
 function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:Function<{->X[o]}>[1], dbc:meta::external::store::relational::runtime::DatabaseConnection[1], extensions:Extension[*]):X[o]
 {
-    let debug = noDebug();
+    let debug = if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug());
 
     let repocessed = $f->meta::relational::tests::pct::process::reprocess($dbc, $debug);
     let newFunction = $repocessed.first;
@@ -704,7 +704,9 @@ function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], stat
             $tds->map(
               x | $cols->map(c|$c->eval($x)->match(
                                 [
-                                  x : Date[1] | format('%t{yyyy-MM-dd"T"HH:mm:ss.SSSSSSSSS}', $x),
+                                  // The optional sections write as much of the time as the date carries,
+                                  // so a date, a second, and a sub-second all go into the CSV
+                                  x : Date[1] | format('%t{yyyy-MM-dd?["T"HH:mm:ss?[.S*]]}', $x),
                                   s : Variant[1] | '"' + $s->toString()->replace('"', '""') + '"',
                                   z : Any[1] | $z->toString(),
                                   n : Any[0] | ''

@@ -16,8 +16,6 @@ package org.finos.legend.engine.external.format.arrow;
 
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfig;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfigBuilder;
@@ -30,6 +28,7 @@ import org.apache.arrow.vector.ipc.ArrowStreamWriter;
 import org.apache.arrow.vector.types.TimeUnit;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatWriter;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,9 +45,7 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
     {
 
         this.allocator = new RootAllocator();
-        Calendar calendar = resultSet.getRelationalDatabaseTimeZone() == null ?
-                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
-                new GregorianCalendar(TimeZone.getTimeZone(resultSet.getRelationalDatabaseTimeZone()));
+        Calendar calendar = TimeZones.newCalendar((resultSet.getRelationalDatabaseTimeZone() == null) ? "GMT" : resultSet.getRelationalDatabaseTimeZone());
         // Newer JDBC drivers (Snowflake 4.x, H2 2.x, ...) report TIMESTAMP_TZ / TIMESTAMP_LTZ columns as
         // java.sql.Types.TIMESTAMP_WITH_TIMEZONE (2014), which the default arrow-jdbc type converter
         // does not handle (see JdbcToArrowUtils.getArrowTypeFromJdbcType). Map it to the same

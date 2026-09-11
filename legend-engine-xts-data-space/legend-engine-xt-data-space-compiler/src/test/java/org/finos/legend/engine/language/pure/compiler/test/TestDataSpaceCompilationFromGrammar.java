@@ -2162,4 +2162,109 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  };\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDataSpaceFullSupportInfo()
+    {
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: {\n" +
+                "    documentation: { label: 'Docs'; url: 'https://docs.example.org'; };\n" +
+                "    website: { url: 'https://example.org'; };\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      {\n" +
+                "        title: 'Data Steward';\n" +
+                "        address: 'steward@example.org';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "    expertise:\n" +
+                "    [\n" +
+                "      {\n" +
+                "        description: 'Fixed Income SMEs';\n" +
+                "        expertIds: ['jdoe', 'asmith'];\n" +
+                "      }\n" +
+                "    ];\n" +
+                "  };\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataSpaceExistingSupportInfoStillCompiles()
+    {
+        // Backward-compat guard: legacy Email and Combined variants must still parse & compile
+        test("###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "}\n\n" +
+                "###DataSpace\n" +
+                "DataSpace model::legacyEmail\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Email {\n" +
+                "    documentationUrl: 'https://docs.example.org';\n" +
+                "    address: 'support@example.org';\n" +
+                "  };\n" +
+                "}\n\n" +
+                "DataSpace model::legacyCombined\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: Combined {\n" +
+                "    documentationUrl: 'https://docs.example.org';\n" +
+                "    website: 'https://example.org';\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      'support@example.org'\n" +
+                "    ];\n" +
+                "  };\n" +
+                "}\n");
+    }
 }

@@ -988,14 +988,10 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::con
 {
   //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
   let timeZone = if($dbTimeZone->isEmpty(), |'GMT', |$dbTimeZone->toOne());
-  if($date->hasSecond(),
-  | if ($date->hasSubsecond(),
-      | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}', $date),
-      | format('%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}', $date)
-    ),
-  | if ($date->hasMonth() || $date->hasDay(),
-      | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date),
-      | fail('Ensure the target system understands Year or Year-month semantic.'); '';
-    )
+  //The optional sections write the time only where the date carries one, and S* writes however many
+  //sub-second digits it has, so one format string covers day, second, and sub-second precision.
+  if($date->hasMonth() || $date->hasDay(),
+    | format('%t{[' + $timeZone + ']yyyy-MM-dd?[ HH:mm:ss?[.S*]]}', $date),
+    | fail('Ensure the target system understands Year or Year-month semantic.'); '';
   );
 }

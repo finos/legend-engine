@@ -72,7 +72,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
       | ^TransformedQuery(hasChanged = false, query = $query),
       | 
         let debugPrefix = '[RuleBasedTransformation] Iteration (' + $currentIteration->toString() + '/' + $maxIterations->toString() + ')';
-        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.SSS})', now()) + range(40)->map(x | '-')->joinStrings() + '\n'));
+        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.S3})', now()) + range(40)->map(x | '-')->joinStrings() + '\n'));
         print(if(!$debug.debug, |'', | $debug.space + 'Rules: ' + $rules.name->joinStrings('[', ', ', ']') + '\n'));
         print(if(!$debug.debug, |'', | $debug.space + 'Starting Query: ' + $query->printDebugQuery($config, $extensions) + '\n'));
 
@@ -94,7 +94,7 @@ function <<access.private>> meta::external::store::relational::sqlPlanning::rule
               print(if(!$debug.debug, |'', | $debug.space + 'Updated Query: ' + $transformed.query->printDebugQuery($config, $extensions) + '\n'));,
             | print(if(!$debug.debug, |'', | $debug.space + 'Iteration Result: Query Unchanged\n'));
         );
-        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.SSS})', now()) + range(40)->map(x | '-')->joinStrings() + '\n\n'));
+        print(if(!$debug.debug, |'', | $debug.space + range(40)->map(x | '-')->joinStrings() + $debugPrefix + format(' (%t{yyyy-MM-dd HH:mm::ss.S3})', now()) + range(40)->map(x | '-')->joinStrings() + '\n\n'));
 
         if ($transformed.hasChanged,
             | $transformed.query->executeRuleBasedTransformersOnQueryTillFixedPointOrMaxIterations($config, $rules, $currentIteration + 1, $maxIterations, $debug, $extensions),

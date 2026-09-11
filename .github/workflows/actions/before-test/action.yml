@@ -80,7 +80,7 @@ runs:
         name: m2-repo
         path: ~/.m2/repository/org/finos/legend/engine
 
-    - name: Collect Workflow Telemetry
-      uses: runforesight/workflow-telemetry-action@v1
-      with:
-        theme: dark
+#    - name: Collect Workflow Telemetry
+#      uses: runforesight/workflow-telemetry-action@v1
+#      with:
+#        theme: dark

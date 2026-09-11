@@ -49,10 +49,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupCount()
    assertEquals([String, Integer], $result.values.columns.type);
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 2], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 5], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 3], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 1], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 1], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 2], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 5], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 3], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -67,10 +67,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 2], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 5], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 3], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 1], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 1], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 2], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 5], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 3], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", count(*) as "cnt" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -125,10 +125,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum()
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -143,10 +143,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupConstan
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 2, 2], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 5, 5], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 3, 3], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 1, 1], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 1, 1], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 2, 2], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 5, 5], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 3, 3], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum(1) as "sum", count(*) as "count" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -160,10 +160,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -177,10 +177,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -195,10 +195,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAggFu
    let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
    assertEquals('select top 100 "producttable_0".NAME as "prodName", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -211,10 +211,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAvera
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 172.5], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 35.2], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 22.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 172.5], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 35.2], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 22.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", avg(1.0 * "root".quantity) as "avg" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -228,10 +228,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByTwo()
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 2, 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 5, 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 3, 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 1, 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 1, 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 2, 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 5, 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 3, 66.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", count(*) as "count", sum("root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -244,10 +244,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMax()
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 320.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 45.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 32.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 320.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 45.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 32.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", max("root".quantity) as "max" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -259,10 +259,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMin()
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 25.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 22.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 11.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 25.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 22.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 11.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -277,10 +277,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAnd()
                          simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', true], $tds.rows->at(0).values);
-   assertEquals(['Firm C', true], $tds.rows->at(1).values);
-   assertEquals(['Firm A', false], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), false], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), false], $tds.rows->at(0).values);
+   assertEquals(['Firm X', true], $tds.rows->at(1).values);
+   assertEquals(['Firm C', true], $tds.rows->at(2).values);
+   assertEquals(['Firm A', false], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", bool_and("root".quantity > 20) as "and" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -296,10 +296,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByOr():
                          simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', true], $tds.rows->at(0).values);
-   assertEquals(['Firm C', false], $tds.rows->at(1).values);
-   assertEquals(['Firm A', false], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), false], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), false], $tds.rows->at(0).values);
+   assertEquals(['Firm X', true], $tds.rows->at(1).values);
+   assertEquals(['Firm C', false], $tds.rows->at(2).values);
+   assertEquals(['Firm A', false], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", bool_or("root".quantity > 50) as "or" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -311,10 +311,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 1035.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 528.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 198.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 15.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 15.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 1035.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 528.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 198.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity * 3) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -326,10 +326,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 103025.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 6618.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 1674.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 25.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 25.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 103025.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 6618.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 1674.0], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", sum("root".quantity * "root".quantity) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -341,10 +341,10 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithIfInMap
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 176.0], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 66.0], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), 5.0], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), 5.0], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 345.0], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 176.0], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 66.0], $tds.rows->at(3).values);
    assertEqualsH2Compatible(
     'select "producttable_0".NAME as "prodName", sum(case when "root".quantity > 2.0 then "root".quantity else ((1.0 * "root".quantity) / 2) end) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
     'select "producttable_0".NAME as "prodName", sum(case when "root".quantity > cast(2.0 as float) then "root".quantity else (1.0 * "root".quantity) / 2 end) as "sum" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', 
@@ -415,10 +415,10 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
-   assertEquals(['Firm X', 'Firm X'], $tds.rows->at(0).values);
-   assertEquals(['Firm C', 'Firm C'], $tds.rows->at(1).values);
-   assertEquals(['Firm A', 'Firm A'], $tds.rows->at(2).values);
-   assertEquals([^TDSNull(), ^TDSNull()], $tds.rows->at(3).values);
+   assertEquals([^TDSNull(), ^TDSNull()], $tds.rows->at(0).values);
+   assertEquals(['Firm X', 'Firm X'], $tds.rows->at(1).values);
+   assertEquals(['Firm C', 'Firm C'], $tds.rows->at(2).values);
+   assertEquals(['Firm A', 'Firm A'], $tds.rows->at(3).values);
    assertEquals('select "producttable_0".NAME as "prodName", case when count(distinct("producttable_0".NAME)) = 1 then max("producttable_0".NAME) else null end as "unique" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
@@ -483,7 +483,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::groupBy::te
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', [agg('p1', x|$x.getFloat('quantity')+2, y|$y->percentile(0.9)->toOne()), agg('p2', x|$x.getFloat('quantity')+2, y|$y->percentile(0.5, false, false)->toOne()), agg('p3', x|$x.getFloat('quantity')+2, y|$y->percentile(0.75, true, true)->toOne())])
                          ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   assertEquals(['Firm X|292.5|322.0|248.25', 'Firm C|46.6|40.0|46.0', 'Firm A|32.2|25.0|29.5', 'TDSNull|7.0|7.0|7.0'], $result.values.rows->map(r|$r.values->makeString('|')));
+   assertEquals(['TDSNull|7.0|7.0|7.0', 'Firm X|292.5|322.0|248.25', 'Firm C|46.6|40.0|46.0', 'Firm A|32.2|25.0|29.5'], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(cast(0.9 as float)) within group (order by "root".quantity + 2 asc) as "p1", percentile_disc(cast(0.5 as float)) within group (order by "root".quantity + 2 desc) as "p2", percentile_cont(cast(0.75 as float)) within group (order by "root".quantity + 2 asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
 

@@ -7,13 +7,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Toolchain: **JDK 11** (Maven enforcer: `[11.0.10,12)`), **Maven 3.6.2+**. Full clean build is expensive (15–25 min); prefer `-T 4` and `-DskipTests` during iteration.
 
 ```bash
-mvn clean install -DskipTests -T 4                 # fast first build
-mvn clean install -T 4                             # full build with tests
-mvn clean install -DskipTests -pl <module-path> -am  # build one module + its deps
+mvn clean install -DskipTests -pl <module-path>    # directly touched module
 mvn checkstyle:check                               # Checkstyle (blocking in CI)
 ```
 
-Always pass `clean` — several Pure Maven plugins are buggy and fail with "duplicate artifact present" errors when building over a prior target directory.
+Always pass `clean` for lifecycle builds — several Pure Maven plugins are buggy and fail with
+stale/generated-repository errors (for example, `The code repository ... already exists`) when
+building over a prior target directory. Build only directly touched modules; do not use `-am` or
+rebuild dependents unless explicitly requested.
+
+For a changed Pure/module source, use:
+
+```bash
+mvn clean install -DskipTests -pl <module-path>
+```
+
+When no source files changed and only tests need to be rerun, bypass the Maven lifecycle and invoke
+Surefire directly. This reuses the existing `target/` outputs without repeating Pure PAR generation,
+Pure compilation, Java code generation, or test compilation:
+
+```bash
+mvn -pl <module-path> org.apache.maven.plugins:maven-surefire-plugin:2.22.2:test
+```
+
+The direct test-only command is valid only when the module was previously clean-installed and its
+compiled outputs are current. If sources/resources changed, clean-install first.
 
 ### Isolate your build from the shared `~/.m2` cache
 
@@ -23,24 +41,41 @@ installed last wins, and the other silently runs against the wrong jars. This is
 dangerous for Pure modules, whose `.pure` sources are compiled to bytecode inside the installed
 jar — a stale jar produces failures with no connection to anything you changed.
 
-**Before starting work on a branch, stamp the reactor with a unique version:**
+**Stamp the build with `-Drevision`.** The reactor uses Maven CI-friendly versions — a single
+`<revision>` property in the root `pom.xml`, which every module inherits — so overriding it on the
+command line gives the whole build its own coordinates without editing a single file:
 
 ```bash
-mvn versions:set -DnewVersion=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT \
-    -DprocessAllModules=true -DgenerateBackupPoms=false
+mvn clean install -DskipTests -Drevision=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT
+mvn clean test -pl <module>  -Drevision=$(git rev-parse --abbrev-ref HEAD)-SNAPSHOT
 ```
 
-Every install then lands under its own coordinates and cannot collide with another session.
-To undo before opening a PR (the version bump must **not** be committed):
+Installs land under those coordinates and cannot collide with another checkout. Pass the same
+`-Drevision` on **every** command in the session, tests included — one that omits it silently builds
+and resolves the shared `4.x.y-SNAPSHOT` coordinates again. Never commit a changed `<revision>`.
+
+**When you must not write to `~/.m2` at all** — someone else's build is running concurrently, or the
+shared repository already holds jars from another branch you do not want to read — add a chained
+local repository as well. Maven 3.9+ writes to the **head** and reads through to a read-only
+**tail**:
 
 ```bash
-mvn versions:set -DnewVersion=<original-version> -DprocessAllModules=true -DgenerateBackupPoms=false
-# or, if backup poms were kept:  mvn versions:revert
+HEAD=/tmp/m2-$(git rev-parse --abbrev-ref HEAD)
+mvn clean install -DskipTests -pl <changed-modules> \
+    -Dmaven.repo.local=$HEAD -Dmaven.repo.local.tail=$HOME/.m2/repository
 ```
 
-Symptoms of a collision, when you have skipped this: tests failing in modules you never touched,
-a test count that changes between identical runs, or a failure that disappears after rebuilding
-an unrelated module. Suspect the cache before you suspect your change.
+Nothing is written to `~/.m2`, and anything you did not build resolves from it as usual, so there is
+nothing to re-download and `-o` still works. Naming only the changed modules is enough when the
+tail's engine jars match your branch; when they may not, add `-am` so every engine-internal artifact
+is built from source and only third-party dependencies come from the tail. Delete `$HEAD` when done.
+
+Do **not** isolate with `versions:set` — it rewrites every `pom.xml` in the reactor, which buries the
+real diff and can be committed by accident. `-Drevision` achieves the same thing with no edits.
+
+Symptoms of a collision, when you have skipped isolation altogether: tests failing in modules you
+never touched, a test count that changes between identical runs, or a failure that disappears after
+rebuilding an unrelated module. Suspect the cache before you suspect your change.
 
 Run the server (main: `org.finos.legend.engine.server.Server`):
 ```

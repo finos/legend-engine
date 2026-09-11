@@ -1009,4 +1009,49 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "  };\n" +
                 "}\n");
     }
+
+    @Test
+    public void testDataSpaceWithFullSupportInfo()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  supportInfo: {\n" +
+                "    documentation: { label: 'Docs'; url: 'https://docs.example.org'; };\n" +
+                "    website: { url: 'https://example.org'; };\n" +
+                "    faqUrl: { label: 'FAQ'; url: 'https://example.org/faq'; };\n" +
+                "    supportUrl: { url: 'https://example.org/support'; };\n" +
+                "    emails:\n" +
+                "    [\n" +
+                "      {\n" +
+                "        title: 'Data Steward';\n" +
+                "        address: 'steward@example.org';\n" +
+                "      },\n" +
+                "      {\n" +
+                "        title: 'On-call';\n" +
+                "        address: 'oncall@example.org';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "    expertise:\n" +
+                "    [\n" +
+                "      {\n" +
+                "        description: 'Fixed Income SMEs';\n" +
+                "        expertIds: ['jdoe', 'asmith'];\n" +
+                "      },\n" +
+                "      {\n" +
+                "        description: 'Risk Analytics';\n" +
+                "      }\n" +
+                "    ];\n" +
+                "  };\n" +
+                "}\n");
+    }
 }

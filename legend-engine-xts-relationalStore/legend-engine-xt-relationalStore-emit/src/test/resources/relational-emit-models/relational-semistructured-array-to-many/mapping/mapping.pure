@@ -1,0 +1,67 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping arr::M
+(
+  *arr::Row: Relational
+  {
+    ~primaryKey ( [arr::store::DB]T.ID )
+    ~mainTable [arr::store::DB]T
+    id: [arr::store::DB]T.ID,
+
+    // A [*] path reaching a to-many. Relational multiplicity comes from row cardinality, so the
+    // array is fanned out to rows rather than handed back as one value holding its text.
+    divisionNames: extractFromSemiStructured([arr::store::DB]T.DOC, 'divisions[*].name', 'VARCHAR[]'),
+    headcounts: extractFromSemiStructured([arr::store::DB]T.DOC, 'divisions[*].headcount', 'INTEGER[]'),
+
+    // No wildcard: the path names the array directly. The two spellings reach the flatten as
+    // different nodes, so both are worth covering.
+    tags: extractFromSemiStructured([arr::store::DB]T.DOC, 'tags', 'VARCHAR[]')
+  }
+
+  testSuites:
+  [
+    divisionNamesSuite:
+    {
+      function: |arr::Row.all()->project(~[id: r | $r.id, v: r | $r.divisionNames]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "Alpha"\n}, {\n  "id" : 1,\n  "v" : "Beta"\n}, {\n  "id" : 2,\n  "v" : "Gamma"\n}, {\n  "id" : 3,\n  "v" : null\n} ]'; }#; }# ]; } ];
+    },
+    headcountsSuite:
+    {
+      function: |arr::Row.all()->project(~[id: r | $r.id, v: r | $r.headcounts]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 9\n}, {\n  "id" : 1,\n  "v" : 100\n}, {\n  "id" : 2,\n  "v" : 50\n}, {\n  "id" : 3,\n  "v" : null\n} ]'; }#; }# ]; } ];
+    },
+    tagsSuite:
+    {
+      function: |arr::Row.all()->project(~[id: r | $r.id, v: r | $r.tags]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "red"\n}, {\n  "id" : 1,\n  "v" : "blue"\n}, {\n  "id" : 2,\n  "v" : null\n}, {\n  "id" : 3,\n  "v" : null\n} ]'; }#; }# ]; } ];
+    },
+    aggregatedSuite:
+    {
+      function: |arr::Row.all()->project(~[id: r | $r.id, v: r | $r.divisionNames->joinStrings('|')]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : "Alpha|Beta"\n}, {\n  "id" : 2,\n  "v" : "Gamma"\n}, {\n  "id" : 3,\n  "v" : null\n} ]'; }#; }# ]; } ];
+    },
+    filteredSuite:
+    {
+      function: |arr::Row.all()->filter(r | $r.divisionNames->contains('Alpha'))->project(~[id: r | $r.id]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1\n} ]'; }#; }# ]; } ];
+    },
+    countedSuite:
+    {
+      function: |arr::Row.all()->project(~[id: r | $r.id, v: r | $r.divisionNames->count()]);
+      tests: [ t: { data: [ arr::store::DB: Reference #{ arr::data::D }# ]; asserts: [ a: EqualToJson #{ expected: ExternalFormat #{ contentType: 'application/json'; data: '[ {\n  "id" : 1,\n  "v" : 2\n}, {\n  "id" : 2,\n  "v" : 1\n}, {\n  "id" : 3,\n  "v" : 0\n} ]'; }#; }# ]; } ];
+    }
+  ]
+)

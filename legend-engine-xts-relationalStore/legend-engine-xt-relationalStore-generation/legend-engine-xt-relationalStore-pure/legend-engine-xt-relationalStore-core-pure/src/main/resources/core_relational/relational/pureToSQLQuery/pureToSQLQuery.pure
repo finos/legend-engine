@@ -2478,6 +2478,26 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     let firstStep = processRelationalOperationElementOfPropertyMapping($relationalPropertyMappings, $property, $propName, $srcOperation, $propertyOwnerClass, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
                                                     let sel = $firstStep.select;
 
+                                                    // A to-many property bound to an array-valued expression has no rows to range over, so it
+                                                    // would come back as a single value holding the whole array. Fan it out with a lateral
+                                                    // flatten, which is what a join-backed to-many gets from its join.
+                                                    //
+                                                    // The trigger is what the expression returns, not the shape it happens to have. Excluding
+                                                    // shapes instead leaks: a to-many mapped to toString(<join> | col) is a scalar reached
+                                                    // through a join, and treating it as explodable produced a flatten H2 could not render
+                                                    // (testGraphFetchMultiPrimitiveOnInlineChild).
+                                                    //
+                                                    // Unions are still excluded outright: the operation resolved for them carries a
+                                                    // deliberately bogus column type, so its return type says nothing.
+                                                    let isImplicitArrayExplosion = !$property.multiplicity->hasToOneUpperBound()
+                                                                                    && $state.disableAutoFlatten != true
+                                                                                    && $OrigrelationalPropertyMappings->at(0).transformer->isEmpty()
+                                                                                    && !$newCurrentTreeNode.alias.relationalElement->toOne()->isUnionOrNestedUnion()
+                                                                                    && $mappingImpl->isArrayValuedRelationalOperation();
+
+                                                    if($isImplicitArrayExplosion,
+                                                       | buildArrayFlattenLateral($firstStep, $srcOperation, $propertyReturnType, $state, $joinType, $nodeId, $context, $extensions);,
+                                                       |
                                                     let secondStep = $mappingImpl->match([
                                                                                          r : RelationalOperationElementWithJoin[1] | $firstStep;,
                                                                                          a : Any[*]                                | ^$firstStep(positionBeforeLastApplyJoinTreeNode = if($srcOperation.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$srcOperation.positionBeforeLastApplyJoinTreeNode->toOne()->findNode($srcOperation.select.data->toOne(), $sel.data->toOne())->first()),
@@ -2494,6 +2514,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                                                                                 ->removeDuplicatesBy(f|$f.second->buildUniqueName(true, $extensions))
                                                                              )
                                                         )
+                                                    );
                                                     );
                                                     ,
                                     c:Class<Any>[1] |let srcOperation = $oldSrcOperation;
@@ -3772,7 +3793,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinAggColSp
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC)));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
    let frame = $window.frame;
    let newColumnName = $f.parametersValues->last()->cast(@InstanceValue).values->at(0)->extractName();
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3783,7 +3804,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinAggColSp
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC)));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
    let frame = $window.frame;
    let aggColSpec = $f.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>);
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3798,7 +3819,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinFuncColS
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC)));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
    let frame = $window.frame;
    let newColumnName = $f.parametersValues->last()->cast(@InstanceValue).values->at(0)->extractName();
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3809,7 +3830,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinFuncColS
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC)));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
    let frame = $window.frame;
    let funcColSpec = $f.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>);
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3892,8 +3913,9 @@ function meta::relational::functions::pureToSqlQuery::processRelationWindowColum
    assert(!$mainSelect.columns->map(col | $col->extractColumnName())->contains($newColumnName), | 'Attempting to reuse the same column name: '+ $newColumnName);
 
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
-   let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement, 
-                                                    sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC)));
+   let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement,
+                                                    sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC),
+                                                    nullOrder = $si.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
    let newFrame = if($frame->isEmpty(), | [], | $frame->toOne()->processWindowFrame());
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,
@@ -4739,12 +4761,13 @@ function meta::relational::functions::pureToSqlQuery::processRelationReduce(f:Fu
    // filters window columns out of what the aggregate sees -- match it so the ordering cannot drift.
    let sortAliases = $state.aliases->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn));
 
-   // Alternating column/direction parameters because DynaFunction.parameters is a RelationalOperationElement
-   // list and SortByInfo is not one.
+   // column/direction/nullOrder triples because DynaFunction.parameters is a RelationalOperationElement
+   // list and SortByInfo is not one. nullOrder is 'FIRST', 'LAST' or 'NONE'.
    let result = if ($sorts->isEmpty(),
                     | $agg,
                     | let sortParams = $sorts->map(s | findAliasOrFail($s.column.name, $sortAliases).relationalElement
-                                                         ->concatenate(^Literal(value = if($s.direction == meta::pure::functions::relation::SortType.ASC, |'ASC', |'DESC'))));
+                                                         ->concatenate(^Literal(value = if($s.direction == meta::pure::functions::relation::SortType.ASC, |'ASC', |'DESC')))
+                                                         ->concatenate(^Literal(value = if($s.nullOrder->isEmpty(), |'NONE', |$s.nullOrder->toOne().name->toOne()))));
                       newDynaFunction('withinGroup', $agg->concatenate($sortParams));
                 );
 

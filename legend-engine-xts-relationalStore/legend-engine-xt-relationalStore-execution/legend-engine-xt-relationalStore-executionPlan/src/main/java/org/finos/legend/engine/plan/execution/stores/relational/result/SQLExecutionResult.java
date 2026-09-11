@@ -28,15 +28,14 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
 public class SQLExecutionResult extends SQLResult
 {
@@ -71,7 +70,7 @@ public class SQLExecutionResult extends SQLResult
         super("success", connection, SQLExecutionNode.connection, activities, databaseType, temporaryTables, requestContext);
         this.SQLExecutionNode = SQLExecutionNode;
         this.databaseTimeZone = databaseTimeZone;
-        this.calendar = new GregorianCalendar(TimeZone.getTimeZone(databaseTimeZone));
+        this.calendar = TimeZones.newCalendar(databaseTimeZone);
         this.topSpan = topSpan;
         try
         {

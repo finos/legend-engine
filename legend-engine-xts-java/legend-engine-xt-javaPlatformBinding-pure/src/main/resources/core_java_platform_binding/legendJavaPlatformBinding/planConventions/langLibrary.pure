@@ -22,6 +22,7 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::library::lang::*;
 import meta::pure::executionPlan::platformBinding::legendJava::shared::*;
+import meta::pure::executionPlan::platformBinding::legendJava::shared::constraints::*;
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::lang::registerLangLibrary(conventions: Conventions[1]): Conventions[1]
 {
@@ -180,7 +181,14 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
                                 let e = $k.expression->generateJava($conventions, $debug);
                                 pair($s,$e););
          
-   let typeInfo = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
+   let typeInfoWithoutConstraints = meta::pure::executionPlan::platformBinding::typeInfo::newTypeInfoSet()->enrichTypeInfos($cls, []);
+   let typeInfo = $typeInfoWithoutConstraints->
+                           meta::pure::executionPlan::platformBinding::typeInfo::forClass($cls).supertypes
+                           ->concatenate($cls)
+                           ->fold(
+                              {class, infos | $infos->meta::pure::executionPlan::platformBinding::typeInfo::addConstraints($class)},
+                              $typeInfoWithoutConstraints
+                           );
     
    let props = $typeInfo->meta::pure::executionPlan::platformBinding::typeInfo::allProperties($cls);
 
@@ -199,6 +207,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
             let nestedDeps = generateInterfacesAndEnums($conventions, $typeInfo, $debug);
 
             let interface = $clsTypeInfo->toOne()->generateInterfaceForClass($conventions,$debug);
+            let generationContext = ^GenerationContext(typeInfos=$typeInfo, conventions=$conventions);
+            let constraintContext = ^ConstraintCheckingGenerationContext(enableConstraints=true, topLevelOnly=false);
             let implementationWithProps = $props->fold({p,c| let var = $conventions->fieldName($p);
                                            let javaType = $conventions->pureTypeToJavaType($p);
                                            let f = javaField(['private'], $javaType, $var);
@@ -222,7 +232,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::lang::
 
             let implementationProject = mergeProjects([
                                                        newProject()->addClass($implementationWithProps),
-                                                       $implementationWithProps->createQualifiedPropertiesForClass($cls.qualifiedProperties, $conventions, $debug)
+                                                       $implementationWithProps->createQualifiedPropertiesForClass($cls.qualifiedProperties, $conventions, $debug),
+                                                       $implementationWithProps->createConstraintCheckingForClass($cls, [], $generationContext, $constraintContext, $debug)
                                                     ]);
 
             let implementation = $implementationProject->getClass($implementationWithProps)->toOne();

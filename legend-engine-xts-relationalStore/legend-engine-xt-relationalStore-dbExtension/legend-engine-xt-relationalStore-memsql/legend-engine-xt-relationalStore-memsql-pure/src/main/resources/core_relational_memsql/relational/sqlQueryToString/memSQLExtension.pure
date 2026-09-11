@@ -25,6 +25,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
      getDynaFunctionToSqlForMemSQL()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      // SingleStore/MemSQL treats NULL as the lowest value and supports native
+      // NULLS FIRST / NULLS LAST clauses, including in window and ordered-aggregate
+      // ORDER BY expressions.
+      nullOrderingSupport = nullsLowWithClauseSupport(),
       // MySQL has no boolean type - TRUE/FALSE are just 1/0 - so a boolean is never a value here,
       // only a predicate. Booleans are wrapped as comparisons and projected through a case.
       isBooleanLiteralSupported = false,

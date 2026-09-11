@@ -1,0 +1,153 @@
+# Copyright 2026 Goldman Sachs
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Performance Baseline
+
+# Records a new performance baseline for a branch, and pushes it there as a commit.
+#
+# Pull requests are measured by the Pipeline Benchmark job in Build CI, which reuses that
+# workflow's build output. This workflow is the manual counterpart: when a pull request fails the
+# benchmark because its cost legitimately changed - or because it made things faster - run this
+# against the branch with rebase enabled, and the updated baseline lands as a commit on the branch,
+# reviewed alongside the change that caused it.
+#
+# It builds the benchmark module itself, since a manual run has no Build CI artifacts to reuse.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch to run on. Leave empty for the default branch."
+        required: false
+        default: ""
+        type: string
+      rebase:
+        description: "Record this run as the new baseline and push it as a commit on the branch"
+        required: false
+        default: false
+        type: boolean
+      args:
+        description: "Extra flags for the benchmark, e.g. '--margin 0.3 --iters 8'"
+        required: false
+        default: ""
+        type: string
+
+concurrency:
+  group: ci-perf-baseline-${{ inputs.ref }}
+  cancel-in-progress: true
+
+env:
+  MODULE: legend-engine-config/legend-engine-perf-benchmark
+  MAVEN_OPTS: "-Xmx8g"
+
+jobs:
+  baseline:
+    name: Record baseline
+    # Forks generally lack the resources for an engine build, and pushing a baseline to one would
+    # need write access this token does not have.
+    if: github.repository == 'finos/legend-engine'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: true
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v5
+        env:
+          cache-name: cache-mvn-deps
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-perf-${{ env.cache-name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-perf-${{ env.cache-name }}-
+
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'zulu'
+
+      - name: Purge stale legend-engine artifacts from local Maven repo
+        run: rm -rf ~/.m2/repository/org/finos/legend/engine
+
+      - name: Build benchmark and its dependencies
+        run: mvn -B -e -DskipTests install -pl $MODULE -am
+
+      - name: Resolve benchmark classpath
+        run: mvn -B -q -pl $MODULE dependency:build-classpath -Dmdep.outputFile=$RUNNER_TEMP/perf-cp.txt
+
+      - name: Run benchmark suite
+        id: benchmark
+        working-directory: ${{ env.MODULE }}
+        run: |
+          set +e
+          java -Xmx6g -Xss8m \
+            -cp "target/classes:$(cat $RUNNER_TEMP/perf-cp.txt)" \
+            org.finos.legend.engine.perf.PipelineBench \
+            --suite default --iters 5 --warmup 2 \
+            --out "$RUNNER_TEMP/perf-results.json" \
+            ${{ inputs.rebase && '--rebase' || '' }} \
+            ${{ inputs.args }} \
+            | tee "$RUNNER_TEMP/perf-output.txt"
+          echo "exitCode=${PIPESTATUS[0]}" >> $GITHUB_OUTPUT
+
+      - name: Publish summary
+        if: always()
+        run: |
+          {
+            echo '## Pipeline benchmark'
+            echo
+            echo '```'
+            sed -n '/canary ratios/,$p' "$RUNNER_TEMP/perf-output.txt" || true
+            echo '```'
+          } >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: perf-results
+          path: |
+            ${{ runner.temp }}/perf-results.json
+            ${{ runner.temp }}/perf-output.txt
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Commit rebased baseline
+        if: inputs.rebase
+        run: |
+          if git diff --quiet -- "$MODULE/perf-baseline.json"; then
+            echo "baseline unchanged - nothing to commit"
+            exit 0
+          fi
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git config user.name "${GITHUB_ACTOR}"
+          git add "$MODULE/perf-baseline.json"
+          git commit -m "Rebase performance baseline" \
+                     -m "Recorded by the Performance Baseline workflow, run ${{ github.run_id }}."
+          git push
+          echo "baseline committed and pushed"
+
+      - name: Fail on deviation
+        # A rebase run records whatever it measured, so only a comparison run can fail here.
+        if: ${{ !inputs.rebase && steps.benchmark.outputs.exitCode != '0' }}
+        run: |
+          echo "benchmark exited with ${{ steps.benchmark.outputs.exitCode }}"
+          exit 1

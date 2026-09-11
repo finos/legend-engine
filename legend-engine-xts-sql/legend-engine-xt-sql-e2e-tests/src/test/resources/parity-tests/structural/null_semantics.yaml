@@ -129,4 +129,4 @@ tests:
     feature: "GREATEST with NULL"
     category: "null_semantics"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

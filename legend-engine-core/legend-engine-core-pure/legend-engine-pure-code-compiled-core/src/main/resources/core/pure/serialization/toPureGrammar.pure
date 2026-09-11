@@ -143,6 +143,23 @@ function meta::pure::metamodel::serialization::grammar::printSortInfo(s:SortInfo
   '~' + $s.column.name->printColName() + '->meta::pure::functions::relation::'+if($s.direction == SortType.ASC,|'ascending',|'descending')+'()';
 }
 
+// Prints a Runtime as a grammar literal. An empty connectionStores previously printed as the unparseable
+// 'connectionStores=' and dropped preprocessFunction on a print/re-parse round trip; both are emitted here when
+// present. Extensions preserving a Runtime subtype register an extraInstanceValueHandler and may delegate here
+// for the shapes they do not render themselves.
+function meta::pure::metamodel::serialization::grammar::printRuntime(r:Runtime[1], configuration:Configuration[0..1]):String[1]
+{
+  if($r.connectionStores->isEmpty(),
+     | let preprocessFunction = if($r.preprocessFunction->isEmpty(),
+                                   |[],
+                                   |'preprocessFunction='+$r.preprocessFunction->toOne()->match([e:PackageableElement[1]|$e->elementToPath(), a:Any[1]|$a->toRepresentation()]));
+       '^meta::core::runtime::Runtime('+$preprocessFunction->joinStrings('')+')';,
+     | '^meta::core::runtime::Runtime('+
+       'connectionStores='+$r.connectionStores->map(s|'^meta::core::runtime::ConnectionStore(connection='+$s.connection->printConnection($configuration)+', element='+$s.element->match([x:String[1]|$x,x:Store[1]|$x->elementToPath()])+')')->makeString(',')+
+       ')'
+  );
+}
+
 function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:InstanceValue[1], configuration:Configuration[0..1], context:GContext[1]):String[1]
 {
    if ($i.multiplicity == PureOne && $i.values->isEmpty(),
@@ -163,9 +180,7 @@ function meta::pure::metamodel::serialization::grammar::printInstanceValue(i:Ins
                                     z:KeyExpression[*] | $z->map(f|$f.key.values->toOne()->toString())->joinStrings(','),
                                     v:VariableExpression[1] | $v->printValueSpecification($configuration, $context),
                                     p:Pair<Any, Any>[1] | 'pair(' + $p.first->toRepresentation() + ', ' + $p.second->toRepresentation() + ')',
-                                    r:Runtime[1]|'^meta::core::runtime::Runtime('+
-                                                  'connectionStores='+$r.connectionStores->map(s|'^meta::core::runtime::ConnectionStore(connection='+$s.connection->printConnection($configuration)+', element='+$s.element->match([x:String[1]|$x,x:Store[1]|$x->elementToPath()])+')')->makeString(',')+
-                                                  ')',
+                                    r:Runtime[1]|$r->printRuntime($configuration),
                                     s:RelationElementAccessor<Any>[1]|'RelationElementAccessor('+$s->genericType().rawType.name->toOne()+')',
                                     s:BasicColumnSpecification<Any>[1]|'^BasicColumnSpecification<%s>(name = \'%s\', func = %s)'->format([$s->genericType().typeArguments->toOne()->genericTypeClass()->elementToPath(), $s.name, $s.func->cast(@FunctionDefinition<Any>)->printFunctionDefinition(^GContext(space=''))]),
                                     s:meta::pure::functions::collection::AggregateValue<Any, Any, Any>[1]| '^meta::pure::functions::collection::AggregateValue<%s,%s,%s>(mapFn = %s, aggregateFn = %s)'->format([

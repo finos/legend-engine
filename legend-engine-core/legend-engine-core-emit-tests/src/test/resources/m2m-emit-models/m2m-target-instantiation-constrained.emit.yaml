@@ -1,0 +1,37 @@
+name: m2m-target-instantiation-constrained
+title: "Constraint on an M2M Target Class Built with the `new` Operator"
+description: |
+  The companion to `m2m-target-instantiation`: the sub-class reached only through the
+  `new` operator (`^Population(...)`) also carries a class constraint, so the constructed
+  instance has to be constraint-checked and not merely survive the graph-fetch node's
+  cast. Feeding it a value that violates `positivePopulation` raises
+  "Constraint :[positivePopulation] violated in the Class Population" -- which is what
+  distinguishes a real fix from an `instanceof`-guarded cast, since guarding the cast
+  would make the sibling fixture pass while silently never evaluating this constraint.
+  Only the satisfying input is asserted here: EMIT's JUnit builder has no negative-test
+  support, and `graphFetchChecked` (which would turn the violation into an assertable
+  defect list) hits an unrelated serializer-codegen bug on this model shape.
+
+modelSources:
+  model:
+    root: m2m-target-instantiation-constrained
+    files:
+      - model.pure
+      - mapping.pure
+
+features:
+  - execution:test-data
+  - grammar:constraint
+  - grammar:function
+  - mapping:m2m-target-instantiation
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator
+  - graph-fetch
+  - constraints
+  - mapping-test

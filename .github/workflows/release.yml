@@ -88,11 +88,7 @@ jobs:
         uses: actions/checkout@v6
         with:
           token: ${{ secrets.FINOS_GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
-          git config --global user.name "FINOS Administrator"
+          persist-credentials: false
 
       - name: Set up Maven Central
         uses: actions/setup-java@v5
@@ -110,15 +106,6 @@ jobs:
         with:
           theme: dark
 
-      - name: Compute next development version
-        run: |
-          releaseVersion=${{ github.event.inputs.releaseVersion }}
-          n=${releaseVersion//[!0-9]/ }
-          a=(${n//\./ })
-          nextPatch=$((${a[2]} + 1))
-          developmentVersion="${a[0]}.${a[1]}.${nextPatch}-SNAPSHOT"
-          echo "DEVELOPMENT_VERSION=${developmentVersion}" >> $GITHUB_ENV
-
       - name: Cache Maven dependencies
         uses: actions/cache@v5
         env:
@@ -133,31 +120,34 @@ jobs:
       - name: Download deps and plugins
         run: mvn de.qaware.maven:go-offline-maven-plugin:resolve-dependencies
 
-      - name: Prepare release
-        run: mvn -B -e release:prepare -Darguments='-B -e' -DpreparationGoals=clean -DreleaseVersion=${{ github.event.inputs.releaseVersion }} -DdevelopmentVersion=${{ env.DEVELOPMENT_VERSION }} -P release
-
-      - name: Checkout Release Tag
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
-          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
-          fetch-depth: 1
-          persist-credentials: true
-
       - name: Purge stale legend-engine artifacts from local Maven repo
         run: rm -rf ~/.m2/repository/org/finos/legend/engine
 
-      - name: Build Release Tag
-        run: mvn -B -e -T3 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true install -P release,docker,pct-cloud-test
+      - name: Build release
         env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
           MAVEN_OPTS: -Xmx36g
+        run: mvn -B -e -T3 -DskipTests -Dorg.slf4j.simpleLogger.showThreadName=true -Drevision="${RELEASE_VERSION}" install -P release,docker,pct-cloud-test
+
+      - name: Verify the release artifacts carry the release version
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          set -euo pipefail
+          if find ~/.m2/repository/org/finos/legend/engine -path "*/${RELEASE_VERSION}/*" -name '*.pom' | xargs grep -l '\${revision}'; then
+            echo "::error::A pom still contains \${revision}; flatten-maven-plugin did not run."
+            exit 1
+          fi
+          count="$(find ~/.m2/repository/org/finos/legend/engine -path "*/${RELEASE_VERSION}/*" -name '*.pom' | wc -l)"
+          echo "${count} poms resolved to ${RELEASE_VERSION}"
+          [ "${count}" -gt 0 ]
 
       - name: Upload build output
         uses: actions/upload-artifact@v7
         with:
           name: build-output
-          # Upload per-module target/ directories produced by the release-tag
-          # build. Test jobs re-checkout the release tag from git.
+          # Upload per-module target/ directories produced by the release
+          # build. Test jobs re-checkout the same commit from git.
           path: |
             ~/**/target/
             !~/**/target/*.jar
@@ -200,10 +190,10 @@ jobs:
       - build
 
     steps:
-      - name: Checkout Release Tag
+      - name: Checkout release commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -220,8 +210,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate -Drevision="${RELEASE_VERSION}"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
@@ -240,10 +231,10 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.testMatrix)}}
 
     steps:
-      - name: Checkout Release Tag
+      - name: Checkout release commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
 
@@ -263,8 +254,9 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
-          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} -P release,docker,pct-cloud-test -T2 -DargLine="-Xmx6g" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate -Drevision="${RELEASE_VERSION}"
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
@@ -285,12 +277,27 @@ jobs:
       - test-modules
     steps:
 
-      - name: Checkout Release Tag
+      - name: Checkout release commit
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+          ref: ${{ github.sha }}
+          token: ${{ secrets.FINOS_GITHUB_TOKEN }}
           fetch-depth: 1
-          persist-credentials: false
+          persist-credentials: true
+
+      - name: Configure git
+        run: |
+          git config --global user.email "37706051+finos-admin@users.noreply.github.com"
+          git config --global user.name "FINOS Administrator"
+
+      - name: Create and push git tag
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          TAG: ${{ github.event.repository.name }}-${{ github.event.inputs.releaseVersion }}
+        run: |
+          set -euo pipefail
+          git tag "${TAG}"
+          git push origin "refs/tags/${TAG}"
 
       - name: Download m2 repository for publishing
         uses: actions/download-artifact@v8
@@ -379,11 +386,29 @@ jobs:
           done < wave2-ids.txt
           .github/scripts/await-wave.sh wave2-ids.txt PUBLISHED
 
+      - name: Compute and set next SNAPSHOT
+        if: ${{ github.event.inputs.dryRun != 'true' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
+        run: |
+          set -euo pipefail
+          IFS=. read -r major minor patch <<< "${RELEASE_VERSION}"
+          nextSnapshot="${major}.${minor}.$((patch + 1))-SNAPSHOT"
+          git fetch origin "${GITHUB_REF_NAME}"
+          git checkout -B "${GITHUB_REF_NAME}" "origin/${GITHUB_REF_NAME}"
+          sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
+          git add pom.xml
+          git commit -m "Bump version to ${nextSnapshot}"
+          git push origin "${GITHUB_REF_NAME}"
+
       - name: Note that a dry run stops after wave 1
         if: ${{ github.event.inputs.dryRun == 'true' }}
+        env:
+          RELEASE_VERSION: ${{ github.event.inputs.releaseVersion }}
         run: |
           echo "Dry run: wave 1 validated and will be dropped. Wave 2 was not"
           echo "uploaded -- it can only validate once wave 1 is really published."
+          echo "Note: the build job's docker profile already pushed the ${RELEASE_VERSION}-tagged image; that push is not dry."
 
       # Kept even when the release fails: sizes, the bundle-to-deployment
       # mapping and the raw Portal responses are exactly what a post-mortem
