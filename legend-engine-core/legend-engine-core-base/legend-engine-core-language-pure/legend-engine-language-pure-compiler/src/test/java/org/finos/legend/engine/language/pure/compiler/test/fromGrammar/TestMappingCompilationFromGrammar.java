@@ -702,7 +702,78 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "    employees[model_Person_1]: $src.em\n" +
                 "  }\n" +
                 ")\n" +
-                "\n", "COMPILATION error at [46:5-38]: Can't find class mapping 'model_Person_1'");
+                "\n", "COMPILATION error at [46:5-38]: Can't find class mapping for property 'employees' of type 'model::Person' in mapping 'model::mapping1' or any included mapping");
+    }
+
+    // Resolve class-typed property mappings by class when the id is a synthetic default, and accept empty transforms on optional class properties.
+
+    private static final String OPTIONAL_CLASS_PROPERTY_SHARED_MODEL =
+            "Class test::Target { name: String[1]; }\n" +
+            "Class test::TargetSrc { name: String[1]; }\n" +
+            "Class test::Parent {\n" +
+            "  label: String[1];\n" +
+            "  opt: test::Target[0..1];\n" +
+            "}\n" +
+            "Class test::Parent2 {\n" +
+            "  label: String[1];\n" +
+            "  required: test::Target[1];\n" +
+            "}\n" +
+            "Class test::ParentSrc {\n" +
+            "  label: String[1];\n" +
+            "}\n";
+
+    @Test
+    public void testEmptyTransformOnOptionalClassPropertyWithIncludedIdMapping()
+    {
+        // Parent `include`s a child that maps Target under `[T]`; parent leaves optional property as `[]`.
+        // Must compile — empty transform on an optional property needs no target mapping.
+        test(OPTIONAL_CLASS_PROPERTY_SHARED_MODEL +
+                "###Mapping\n" +
+                "Mapping test::child (\n" +
+                "  test::Target[T]: Pure {\n" +
+                "    ~src test::TargetSrc\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n" +
+                "Mapping test::parent (\n" +
+                "  include test::child\n" +
+                "  *test::Parent: Pure {\n" +
+                "    ~src test::ParentSrc\n" +
+                "    label: $src.label,\n" +
+                "    opt: []\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testEmptyTransformOnOptionalClassPropertyUnmappedClass()
+    {
+        // No child mapping. Optional property left as `[]` on an unmapped class — must compile.
+        test(OPTIONAL_CLASS_PROPERTY_SHARED_MODEL +
+                "###Mapping\n" +
+                "Mapping test::parent (\n" +
+                "  *test::Parent: Pure {\n" +
+                "    ~src test::ParentSrc\n" +
+                "    label: $src.label,\n" +
+                "    opt: []\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testEmptyTransformOnMandatoryClassPropertyStillFails()
+    {
+        // Guard: empty transform on a *mandatory* [1] class-typed property with no mapping must still fail.
+        test(OPTIONAL_CLASS_PROPERTY_SHARED_MODEL +
+                "###Mapping\n" +
+                "Mapping test::parent2 (\n" +
+                "  *test::Parent2: Pure {\n" +
+                "    ~src test::ParentSrc\n" +
+                "    label: $src.label,\n" +
+                "    required: []\n" +
+                "  }\n" +
+                ")\n",
+                "COMPILATION error at [19:5-16]: Can't find class mapping for property 'required' of type 'test::Target' in mapping 'test::parent2' or any included mapping");
     }
 
     @Test
@@ -898,7 +969,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    dog: $src.name\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [20:5-18]: Can't find class mapping 'ui_Dog'");
+                "COMPILATION error at [20:5-18]: Can't find class mapping for property 'dog' of type 'ui::Dog' in mapping 'ui::a' or any included mapping");
     }
 
     @Test
@@ -931,7 +1002,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                         "    breed: 'dogBreed'\n" +
                         "  }\n" +
                         ")\n",
-                "COMPILATION error at [19:5-28]: Can't find class mapping 'imMissing'"
+                "COMPILATION error at [19:5-28]: Can't find class mapping for property 'dog' of type 'ui::Dog' in mapping 'ui::a' or any included mapping"
         );
     }
 

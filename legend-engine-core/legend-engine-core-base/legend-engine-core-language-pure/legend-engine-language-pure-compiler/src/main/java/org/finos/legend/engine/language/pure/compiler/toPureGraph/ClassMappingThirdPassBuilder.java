@@ -97,22 +97,43 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
             if (property._genericType()._rawType()._classifierGenericType()._rawType()._name().equals("Class"))
             {
                 SetImplementation setImplementation;
+                // `optionalProp: []` on a [0..1] class-typed property is a no-op — no target mapping needed.
+                boolean unmappedOptionalPassThrough = isEmptyTransformOnOptionalClassProperty(last, property);
                 if (p._targetSetImplementationId() != null && !p._targetSetImplementationId().equals(""))
                 {
                     setImplementation = Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_(this.parentMapping, Lists.fixedSize.with(p._targetSetImplementationId()), this.context.pureModel.getExecutionSupport()).getFirst();
-                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && HelperModelBuilder.getTypeFullPath(property._genericType()._rawType(), "_", this.context.pureModel.getExecutionSupport()).equals(p._targetSetImplementationId()) && checkTransformTypeMatchesPropertyType(property, last, context);
+                    boolean idIsSyntheticDefault = HelperModelBuilder.getTypeFullPath(property._genericType()._rawType(), "_", this.context.pureModel.getExecutionSupport()).equals(p._targetSetImplementationId());
+                    // id is a compiler-generated placeholder — resolve class mapping by class, same as the no-id branch below.
+                    // Stamp the resolved SetImplementation's real id back onto the property mapping so downstream
+                    // consumers (router, JSON serializer, plan generator) navigate to the exact target we found
+                    // instead of re-resolving by class and picking a different SetImplementation.
+                    if (setImplementation == null && idIsSyntheticDefault)
+                    {
+                        setImplementation = Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_(this.parentMapping, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
+                        if (setImplementation != null)
+                        {
+                            p._targetSetImplementationId(setImplementation._id());
+                        }
+                    }
+                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && idIsSyntheticDefault && checkTransformTypeMatchesPropertyType(property, last, context);
                     if (allowComplexPropertyMappingPassThrough)
                     {
                         // We need to have this as we have been adding defaultId to property mappings when users don't provide something explicitly. This is valid now but having it raises wrong warning
                         p._targetSetImplementationId("");
                     }
-                    Assert.assertTrue((setImplementation != null) || (allowComplexPropertyMappingPassThrough), () -> "Can't find class mapping '" + p._targetSetImplementationId() + "'", pSourceInformation, EngineErrorType.COMPILATION);
+                    if (setImplementation == null && !allowComplexPropertyMappingPassThrough && unmappedOptionalPassThrough && idIsSyntheticDefault)
+                    {
+                        p._targetSetImplementationId("");
+                    }
+                    Assert.assertTrue((setImplementation != null) || allowComplexPropertyMappingPassThrough || unmappedOptionalPassThrough,
+                            () -> "Can't find class mapping for property '" + property._name() + "' of type '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "' in mapping '" + HelperModelBuilder.getElementFullPath(this.parentMapping, this.context.pureModel.getExecutionSupport()) + "' or any included mapping",
+                            pSourceInformation, EngineErrorType.COMPILATION);
                 }
                 else
                 {
                     setImplementation = Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_(this.parentMapping, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
                     boolean allowComplexPropertyMappingPassThrough = setImplementation == null && checkTransformTypeMatchesPropertyType(property, last, context);
-                    Assert.assertTrue((setImplementation != null) || (allowComplexPropertyMappingPassThrough), () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
+                    Assert.assertTrue((setImplementation != null) || allowComplexPropertyMappingPassThrough || unmappedOptionalPassThrough, () -> "Can't find class mapping for '" + HelperModelBuilder.getElementFullPath((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()) + "'", pSourceInformation, EngineErrorType.COMPILATION);
                 }
 
                 List<? extends InstanceSetImplementation> setImpls = setImplementation != null ? core_pure_router_operations_router_operations.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), this.parentMapping, this.context.pureModel.getExecutionSupport()).toList() : Collections.emptyList();
@@ -260,7 +281,6 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
     }
 
 
-
     private static void checkPureMappingCompatibility(CompileContext context, Type actualReturnType, Type signatureType, String errorStub, SourceInformation errorSourceInformation)
     {
         //In a pure mapping. The src implementation  can be anywhere in the class hierarchy of the return type
@@ -274,5 +294,16 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
     {
         RichIterable<? extends Type> classesTaxonomy = Root_meta_pure_functions_meta_getAllTypeGeneralisations_Type_1__Type_MANY_(expression._genericType()._rawType(), context.getExecutionSupport());
         return classesTaxonomy.contains(property._genericType()._rawType());
+    }
+
+    // True when the transform is empty (`[]`, upper mult 0) and the property is optional (lower mult 0).
+    // Such a mapping needs no target class mapping — the field is deterministically empty.
+    private static boolean isEmptyTransformOnOptionalClassProperty(
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification last,
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property)
+    {
+        Long transformUpper = last._multiplicity() == null ? null : last._multiplicity()._upperBound() == null ? null : last._multiplicity()._upperBound()._value();
+        Long propertyLower = property._multiplicity() == null ? null : property._multiplicity()._lowerBound() == null ? null : property._multiplicity()._lowerBound()._value();
+        return transformUpper != null && transformUpper == 0L && propertyLower != null && propertyLower == 0L;
     }
 }
