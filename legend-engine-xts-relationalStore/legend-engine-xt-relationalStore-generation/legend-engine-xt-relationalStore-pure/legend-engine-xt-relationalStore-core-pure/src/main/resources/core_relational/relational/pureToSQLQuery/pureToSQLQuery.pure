@@ -1245,8 +1245,8 @@ function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionEx
    let newSelect = $state.inFilter->if(| ^$select(filteringOperation=$res)  ,| ^$select(columns=$res));
 
    let currentPropMapping = if ($fe.func.functionName->toOne() == 'getEnum',
-                                    | let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
-                                      let name = $fe.parametersValues->at(1)->cast(@InstanceValue).values->toOne()->cast(@String);
+                                                      | let paths = $operation.select->cast(@TdsSelectSqlQuery).paths;
+                                                         let name = $fe->resolveTdsGetterColumnName($vars, $state);
                                       let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
                                                          assert($matchedPath->isNotEmpty(), | 'Could not resolve projected TDS column \'' + $name + '\' for getEnum().');
                                                          let pm = $matchedPath->toOne().second.propertyMapping;
@@ -6721,16 +6721,39 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let paths = $mainQuery.select->cast(@TdsSelectSqlQuery).paths;
   let colSpecCursor = ^$mainQuery(select = ^$select(columns = [], filteringOperation = []), parent = $mainQuery);
   let colSpecState = $state->withRelationVarScope($f->cast(@FunctionDefinition<Any>).classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType), $colSpecCursor);
-   let routedElement = processValueSpecificationReturnPropertyMapping($expressionToRoute, $currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
-   let newElement = $routedElement.element->match([
-                                                                        s:SelectWithCursor[1] | $s.select.columns->toOne(),
-                                                                        r:RelationalOperationElement[1] | $r
-                                                                     ]);
+   let newElement = $expressionToRoute->match([
+                                                                     f:FunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                                                     i:InstanceValue[1] | let transformedValues = $i.values->map(v | $v->match([
+                                                                                                                                                                                       s:String[1] | ^Literal(value=$s),
+                                                                                                                                                                                       n:Number[1] | ^Literal(value=$n),
+                                                                                                                                                                                       d:Date[1] | ^Literal(value=$d),
+                                                                                                                                                                                       b:Boolean[1] | ^Literal(value=$b),
+                                                                                                                                                                                       e:Enum[1] | ^Literal(value=$e),
+                                                                                                                                                                                       e:Enumeration<Any>[1] | ^Literal(value=$e),
+                                                                                                                                                                                       f:SimpleFunctionExpression[1] | $f->processFunctionExpression($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->cast(@OperationWithParentPropertyMapping).element->cast(@SelectWithCursor).select.columns->toOne(),
+                                                                                                                                                                                       i:InstanceValue[1] | $i->processInstanceValue($currentPropertyMapping, $colSpecCursor, $vars, $colSpecState, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->at(0),
+                                                                                                                                                                                       v:PlanVarPlaceHolder[1] | ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.genericType.rawType->toOne(), multiplicity = $v.multiplicity))
+                                                                                                                                                                                    ]));
+                                                                                                    if($transformedValues->isNotEmpty(),
+                                                                                                       | $transformedValues->toOne(),
+                                                                                                       | ^Literal(value = ^SQLNull())
+                                                                                                    );
+                                                                  ]);
+   let propertyMapping = $expressionToRoute->match([
+                                                fe:FunctionExpression[1] |
+                                                   if(['getNumber', 'getInteger', 'getDecimal', 'getString', 'getFloat', 'getDate', 'getDateTime', 'getStrictDate', 'getBoolean', 'getEnum']->contains($fe.func.functionName->toOne()),
+                                                      | let getterName = $fe->resolveTdsGetterColumnName($vars, $state);
+                                                         let matchedPath = $paths->filter(p|$p.first->toLower() == $getterName->toLower());
+                                                         if($matchedPath->isEmpty(), | [], | $matchedPath->toOne().second.propertyMapping);,
+                                                      | []
+                                                   );,
+                                                a:Any[1] | []
+                                             ]);
 
   let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
                                                                   relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping(),
-                                                                  propertyMapping = if($routedElement.currentPropertyMapping->isEmpty(), | [], | $routedElement.currentPropertyMapping->at(0))));
+                                                                                                   propertyMapping = if($propertyMapping->isEmpty(), | [], | $propertyMapping->toOne())));
   pair($alias,$path);
 }
 
@@ -7417,10 +7440,7 @@ function meta::relational::functions::pureToSqlQuery::switchAliasForColumns(newA
 
 function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(f:FunctionExpression[1], tdsAliases:RelationalOperationElement[*],returnColumnName:Boolean[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):RelationalOperationElement[*]
 {
-    let propertyName =  $f.parametersValues->at(1)->match([ iv:InstanceValue[1]|$iv.values,
-                                                            ve:VariableExpression[1]|let res = $ve->resolve($vars, $state.inScopeVars);
-                                                                                     $res->cast(@InstanceValue).values;
-                                                          ])->toOne()->toString()->addQuotesIfNecessary();
+   let propertyName =  $f->resolveTdsGetterColumnName($vars, $state)->addQuotesIfNecessary();
 
     let foundColumn = findAliasOrFail($propertyName, $tdsAliases);
 
@@ -7442,6 +7462,24 @@ function meta::relational::functions::pureToSqlQuery::findColumnInTdsFromGetter(
                          )
                    );
        });
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveTdsGetterColumnName(f:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):String[1]
+{
+   $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->toOne()->match([
+      v:PlanVarPlaceHolder[1] | resolveTdsGetterColumnNameFromPlanVarPlaceHolder($v, $state),
+      s:String[1] | $s,
+      iv:InstanceValue[1] | $iv.values->toOne()->cast(@String)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveTdsGetterColumnNameFromPlanVarPlaceHolder(v:PlanVarPlaceHolder[1], state:State[1]):String[1]
+{
+   $state.inScopeVars->get($v.name)->toOne().values->toOne()->match([
+      s:String[1] | $s,
+      iv:InstanceValue[1] | $iv.values->toOne()->cast(@String),
+      p:PlanVarPlaceHolder[1] | resolveTdsGetterColumnNameFromPlanVarPlaceHolder($p, $state)
+   ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::processPath(pa:Path<Nil,Any|*>[1], pathName:String[1], counter:String[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
