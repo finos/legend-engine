@@ -1,4 +1,5 @@
 // Copyright 2021 Databricks
+// ©2026 JP Morgan Chase & Co. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,6 +29,13 @@ public class DatabricksDataSourceSpecification extends DataSourceSpecification
     public static String DATABRICKS_PORT = "legend_databricks_port";
     public static String DATABRICKS_PROTOCOL = "legend_databricks_protocol";
     public static String DATABRICKS_HTTP_PATH = "legend_databricks_http_path";
+
+    // Unlike the four above, these are not carried on the datasource specification: a proxy is a
+    // property of where the engine runs, not of the warehouse being addressed. They reach the URL
+    // through the extraUserProperties constructor argument, which the base class merges into
+    // extraDatasourceProperties.
+    public static String DATABRICKS_PROXY_HOST = "legend_databricks_proxy_host";
+    public static String DATABRICKS_PROXY_PORT = "legend_databricks_proxy_port";
 
     public DatabricksDataSourceSpecification(
             DatabricksDataSourceSpecificationKey key,

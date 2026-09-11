@@ -1,4 +1,5 @@
 // Copyright 2021 Databricks
+// ©2026 JP Morgan Chase & Co. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -61,6 +62,7 @@ public class ApiTokenAuthenticationStrategy extends AuthenticationStrategy
     {
         ApiTokenCredential apiTokenCredential = this.resolveCredential(properties, this.apiToken);
         Properties connectionProperties = new Properties();
+        connectionProperties.putAll(properties);
         connectionProperties.put("PWD", apiTokenCredential.getApiToken());
         return Tuples.pair(url, connectionProperties);
     }

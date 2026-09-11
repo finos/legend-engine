@@ -1,4 +1,5 @@
 // Copyright 2021 Databricks
+// ©2026 JP Morgan Chase & Co. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -58,13 +59,46 @@ public class DatabricksManager extends DatabaseManager
                 throw new EngineException("Unsupported protocol [" + protocol + "]");
         }
 
-        return String.format("jdbc:databricks://%s:%s/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=%s;ssl=%s;EnableArrow=1;EnableTelemetry=0;httpPath=%s",
+        String url = String.format("jdbc:databricks://%s:%s/default;ansi_mode=true;EnableComplexDatatypeSupport=1;transportMode=%s;ssl=%s;EnableArrow=1;EnableTelemetry=0;httpPath=%s",
                 hostname,
                 dbport,
                 transportMode,
                 useSSL,
                 httpPath
         );
+
+        return url + buildProxySuffix(extraUserDataSourceProperties);
+    }
+
+    private static String buildProxySuffix(Properties extraUserDataSourceProperties)
+    {
+        String proxyHost = trimToNull(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROXY_HOST));
+        String proxyPort = trimToNull(extraUserDataSourceProperties.getProperty(DatabricksDataSourceSpecification.DATABRICKS_PROXY_PORT));
+
+        if (proxyHost == null && proxyPort == null)
+        {
+            return "";
+        }
+        // A half-configured proxy silently falls back to a direct connection, which in a network that
+        // requires the proxy fails later and far from the cause. Reject it here instead.
+        if (proxyHost == null || proxyPort == null)
+        {
+            throw new EngineException("Databricks proxy configuration is incomplete: both "
+                    + DatabricksDataSourceSpecification.DATABRICKS_PROXY_HOST + " and "
+                    + DatabricksDataSourceSpecification.DATABRICKS_PROXY_PORT + " must be set");
+        }
+
+        return String.format(";UseProxy=1;ProxyHost=%s;ProxyPort=%s", proxyHost, proxyPort);
+    }
+
+    private static String trimToNull(String value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 
     @Override
