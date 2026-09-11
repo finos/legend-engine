@@ -152,6 +152,29 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndP
       $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndProjectAgainWithIfAndTypedGetters():Boolean[1]
+{
+   let result = execute(
+      |Person.all()
+         ->project([
+            col(p|$p.firstName, 'first_name'),
+            col(p|if($p.age > 30, | [], | $p.age), 'age_maybe'),
+            col(p|%2016-08-10, 'business_date')
+         ])
+         ->project([
+            col(r:TDSRow[1]|$r.getString('first_name'), 'first_name'),
+            col(r:TDSRow[1]|if($r.isNotNull('age_maybe'), | $r.getInteger('age_maybe'), | 0), 'age_defaulted'),
+            col(r:TDSRow[1]|$r.getDate('business_date'), 'business_date'),
+            col(r:TDSRow[1]|if($r.isNotNull('age_maybe'), | $r.getInteger('age_maybe') * 2, | 0), 'double_age_defaulted')
+         ]),
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertSize($result.values.columns, 4);
+   assertEquals('Peter|23|2016-08-10|46,John|22|2016-08-10|44,John|12|2016-08-10|24,Anthony|22|2016-08-10|44,Fabrice|0|2016-08-10|0,Oliver|0|2016-08-10|0,David|0|2016-08-10|0',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnDynaFunctionColumn():Boolean[1]
 {
    let result = execute(
