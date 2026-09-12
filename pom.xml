@@ -164,6 +164,7 @@
         <snowflake.version>4.3.2</snowflake.version>
         <duckdb.version>1.3.0.0</duckdb.version>
         <clickhouse.version>0.9.6</clickhouse.version>
+        <db2jcc.version>11.5.9.0</db2jcc.version>
 
         <!-- Dependency versions -->
         <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
@@ -1620,6 +1621,27 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-clickhouse-PCT</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-db2-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-db2-connection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-db2-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-db2-PCT</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -4264,6 +4286,12 @@
                 <groupId>com.clickhouse</groupId>
                 <artifactId>clickhouse-jdbc</artifactId>
                 <version>${clickhouse.version}</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.ibm.db2</groupId>
+                <artifactId>jcc</artifactId>
+                <version>${db2jcc.version}</version>
                 <scope>runtime</scope>
             </dependency>
             <!-- Database -->
