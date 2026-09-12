@@ -25,10 +25,14 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.finos.legend.engine.postgres.e2e.coverage.FailureDetailReport;
+import org.finos.legend.engine.postgres.e2e.coverage.FormatTokenCoverageReport;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCatalogExtractor;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCoverageMapper;
 import org.finos.legend.engine.postgres.e2e.coverage.FunctionCoverageReport;
 import org.finos.legend.engine.postgres.e2e.coverage.HtmlReportGenerator;
+import org.finos.legend.engine.postgres.e2e.coverage.OperatorCatalogExtractor;
+import org.finos.legend.engine.postgres.e2e.coverage.OperatorCoverageMapper;
+import org.finos.legend.engine.postgres.e2e.coverage.OperatorCoverageReport;
 import org.finos.legend.engine.postgres.e2e.coverage.StructuralParityReport;
 import org.finos.legend.engine.postgres.e2e.coverage.SummaryReport;
 import org.finos.legend.engine.postgres.protocol.sql.SQLManager;
@@ -100,6 +104,7 @@ public class TestPostgresParity
     private static ParityReport report;
     private static YamlStatusUpdater statusUpdater;
     private static Map<String, List<FunctionCatalogExtractor.PgFunction>> functionCatalog;
+    private static Map<String, List<OperatorCatalogExtractor.PgOperator>> operatorCatalog;
     private static Set<String> knownTables;
     private static ResourceTestRule resourceTestRule;
     private static Connection legendConnection;
@@ -110,7 +115,6 @@ public class TestPostgresParity
             "parity-tests/functions/math_functions.yaml",
             "parity-tests/functions/string_functions.yaml",
             "parity-tests/functions/binary_functions.yaml",
-            "parity-tests/functions/comparison_functions.yaml",
             "parity-tests/functions/pgcrypto_functions.yaml",
             "parity-tests/functions/pattern_matching.yaml",
             "parity-tests/functions/formatting_functions.yaml",
@@ -125,6 +129,23 @@ public class TestPostgresParity
             "parity-tests/functions/system_functions.yaml",
             "parity-tests/functions/sequence_functions.yaml",
             "parity-tests/functions/set_returning_functions.yaml",
+            "parity-tests/operators/math_operators.yaml",
+            "parity-tests/operators/string_operators.yaml",
+            "parity-tests/operators/comparison_operators.yaml",
+            "parity-tests/operators/logical_operators.yaml",
+            "parity-tests/operators/pattern_matching_operators.yaml",
+            "parity-tests/operators/json_operators.yaml",
+            "parity-tests/operators/datetime_operators.yaml",
+            "parity-tests/operators/other_type_operators.yaml",
+            "parity-tests/operators/bitstring_operators.yaml",
+            "parity-tests/operators/array_operators.yaml",
+            "parity-tests/operators/range_operators.yaml",
+            "parity-tests/operators/network_operators.yaml",
+            "parity-tests/operators/fts_operators.yaml",
+            "parity-tests/operators/geometric_operators.yaml",
+            "parity-tests/predicates/comparison_predicates.yaml",
+            "parity-tests/format_tokens/to_char_tokens.yaml",
+            "parity-tests/format_tokens/extract_fields.yaml",
             "parity-tests/structural/joins.yaml",
             "parity-tests/structural/unions.yaml",
             "parity-tests/structural/subqueries.yaml",
@@ -146,6 +167,13 @@ public class TestPostgresParity
             "parity-tests/structural/interval_arithmetic.yaml",
             "parity-tests/structural/column_resolution_across_renames.yaml",
             "parity-tests/structural/column_resolution_corpus_shapes.yaml",
+            "parity-tests/structural/grouping_sets.yaml",
+            "parity-tests/structural/filter_clause.yaml",
+            "parity-tests/structural/within_group.yaml",
+            "parity-tests/structural/tablesample.yaml",
+            "parity-tests/structural/fetch_with_ties.yaml",
+            "parity-tests/structural/recursive_ctes.yaml",
+            "parity-tests/structural/values_clause.yaml",
             "parity-tests/window_frames/frame_types.yaml",
             "parity-tests/window_frames/partition_ordering.yaml",
             "parity-tests/window_frames/frame_exclusion.yaml",
@@ -257,6 +285,16 @@ public class TestPostgresParity
         {
             LOGGER.warn("Failed to extract function catalog: {}", e.getMessage());
             functionCatalog = new LinkedHashMap<>();
+        }
+        try
+        {
+            OperatorCatalogExtractor opExtractor = new OperatorCatalogExtractor(pgDataSource);
+            operatorCatalog = opExtractor.extractCatalog();
+        }
+        catch (Exception e)
+        {
+            LOGGER.warn("Failed to extract operator catalog: {}", e.getMessage());
+            operatorCatalog = new LinkedHashMap<>();
         }
     }
 
@@ -743,8 +781,22 @@ public class TestPostgresParity
             {
                 LOGGER.warn("No function catalog available, skipping function coverage report");
             }
+            if (operatorCatalog != null && !operatorCatalog.isEmpty())
+            {
+                OperatorCoverageMapper opMapper = new OperatorCoverageMapper();
+                opMapper.mapCoverage(operatorCatalog, new File("target/parity-report.json"), allTestCases);
+                OperatorCoverageReport opCoverageReport = new OperatorCoverageReport();
+                opCoverageReport.generate(operatorCatalog, "target", new File("target/parity-report.json"));
+            }
+            else
+            {
+                LOGGER.warn("No operator catalog available, skipping operator coverage report");
+            }
             StructuralParityReport structuralReport = new StructuralParityReport();
             structuralReport.generate(allTestCases, new File("target/parity-report.json"), "target");
+
+            FormatTokenCoverageReport formatTokenReport = new FormatTokenCoverageReport();
+            formatTokenReport.generate(allTestCases, new File("target/parity-report.json"), "target");
 
             // Failure detail report (full result set comparisons)
             FailureDetailReport failureDetailReport = new FailureDetailReport();

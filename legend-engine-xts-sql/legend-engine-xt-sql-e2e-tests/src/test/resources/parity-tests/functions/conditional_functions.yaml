@@ -12,3 +12,116 @@ tests:
     signature: 'num_nulls(VARIADIC "any") → integer'
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  - id: greatest__int__from_table
+    sql: SELECT GREATEST(int_val, small_val, 0) AS result FROM numbers WHERE id IN (1, 2, 8) ORDER BY 1
+    function: greatest
+    signature: "greatest(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: greatest__varchar__literals
+    sql: SELECT GREATEST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
+    function: greatest
+    signature: "greatest(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: greatest__int__with_null
+    sql: SELECT GREATEST(int_val, NULL, 0) AS result FROM numbers WHERE id = 1
+    function: greatest
+    signature: "greatest(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: least__int__from_table
+    sql: SELECT LEAST(int_val, small_val, 0) AS result FROM numbers WHERE id IN (1, 2, 8) ORDER BY 1
+    function: least
+    signature: "least(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: least__varchar__literals
+    sql: SELECT LEAST('apple', 'banana', 'cherry') AS result FROM persons WHERE id = 1
+    function: least
+    signature: "least(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: least__int__with_null
+    sql: SELECT LEAST(int_val, NULL, 0) AS result FROM numbers WHERE id = 1
+    function: least
+    signature: "least(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # ---------------------------------------------------------------------------
+  # NULLIF
+  # ---------------------------------------------------------------------------
+
+  - id: nullif__int__equal
+    sql: SELECT NULLIF(int_val, 42) AS result FROM numbers WHERE id = 1
+    function: nullif
+    signature: "nullif(integer, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: nullif__int__not_equal
+    sql: SELECT NULLIF(int_val, 999) AS result FROM numbers WHERE id = 1
+    function: nullif
+    signature: "nullif(integer, integer) → integer"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: nullif__varchar__equal
+    sql: SELECT NULLIF(name, 'Alice') AS result FROM persons WHERE id = 1
+    function: nullif
+    signature: "nullif(varchar, varchar) → varchar"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: nullif__varchar__not_equal
+    sql: SELECT NULLIF(name, 'Nobody') AS result FROM persons WHERE id = 1
+    function: nullif
+    signature: "nullif(varchar, varchar) → varchar"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  # ---------------------------------------------------------------------------
+  # Comparison with filter (WHERE clause usage)
+  # ---------------------------------------------------------------------------
+
+  - id: coalesce__int__first_non_null
+    sql: SELECT COALESCE(int_val, 0) AS result FROM numbers WHERE id = 5
+    function: coalesce
+    signature: "coalesce(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: coalesce__int__already_non_null
+    sql: SELECT COALESCE(int_val, 0) AS result FROM numbers WHERE id = 1
+    function: coalesce
+    signature: "coalesce(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: coalesce__varchar__first_non_null
+    sql: SELECT COALESCE(nullable_val, 'default') AS result FROM strings WHERE id = 3
+    function: coalesce
+    signature: "coalesce(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: coalesce__multi__chain
+    sql: SELECT COALESCE(NULL, NULL, int_val, 0) AS result FROM numbers WHERE id = 1
+    function: coalesce
+    signature: "coalesce(VARIADIC \"any\") → \"any\""
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: coalesce__all_null
+    sql: SELECT COALESCE(NULL, NULL, NULL) AS result FROM persons WHERE id = 1
+    function: coalesce
+    signature: "coalesce(VARIADIC \"any\") → \"any\""
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

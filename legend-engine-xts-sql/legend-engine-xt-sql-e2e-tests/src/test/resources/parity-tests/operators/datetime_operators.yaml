@@ -1,0 +1,206 @@
+tests:
+# =============================================================================
+# Date/Time cross-type arithmetic operators (pg_operator rows classified under
+# "Other Operators" by OperatorCatalogExtractor because they mix distinct
+# concrete datetime types rather than a single numeric/comparison pair).
+# https://www.postgresql.org/docs/16/functions-datetime.html
+#
+# These signatures are already exercised behaviourally in
+# structural/interval_arithmetic.yaml; the entries below add the
+# operator/signature linkage so the same class of expression is also
+# reflected in operator-coverage.md rather than only in the structural report.
+# =============================================================================
+
+- id: op_add__date_plus_interval
+  sql: SELECT d + INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(date, interval) → timestamp"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_add__date_plus_time
+  sql: SELECT d + TIME '10:30:00' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(date, time) → timestamp"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__date_plus_timetz
+  sql: SELECT d + CAST('10:30:00+00' AS timetz) AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(date, timetz) → timestamptz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_date
+  sql: SELECT INTERVAL '1 day' + d AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, date) → timestamp"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_interval
+  sql: SELECT INTERVAL '1 day' + INTERVAL '2 hours' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, interval) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_time
+  sql: SELECT INTERVAL '1 hour' + TIME '10:30:00' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, time) → time"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_timestamp
+  sql: SELECT INTERVAL '1 day' + ts AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, timestamp) → timestamp"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_timestamptz
+  sql: SELECT INTERVAL '1 day' + tsz AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, timestamptz) → timestamptz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__interval_plus_timetz
+  sql: SELECT INTERVAL '1 hour' + CAST('10:30:00+00' AS timetz) AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(interval, timetz) → timetz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__time_plus_date
+  sql: SELECT TIME '10:30:00' + d AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(time, date) → timestamp"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__time_plus_interval
+  sql: SELECT TIME '10:30:00' + INTERVAL '1 hour' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(time, interval) → time"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__timestamp_plus_interval
+  sql: SELECT ts + INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(timestamp, interval) → timestamp"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_add__timestamptz_plus_interval
+  sql: SELECT tsz + INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(timestamptz, interval) → timestamptz"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_add__timetz_plus_date
+  sql: SELECT CAST('10:30:00+00' AS timetz) + d AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(timetz, date) → timestamptz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_add__timetz_plus_interval
+  sql: SELECT CAST('10:30:00+00' AS timetz) + INTERVAL '1 hour' AS result FROM dates WHERE id = 1
+  operator: "+"
+  signature: "+(timetz, interval) → timetz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# Subtraction overloads
+# ---------------------------------------------------------------------------
+
+- id: op_unary_minus__interval
+  sql: SELECT -INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(-, interval) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__date_minus_date
+  sql: SELECT d - DATE '2000-01-01' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(date, date) → int4"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sub__date_minus_interval
+  sql: SELECT d - INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(date, interval) → timestamp"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sub__interval_minus_interval
+  sql: SELECT INTERVAL '1 day' - INTERVAL '2 hours' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(interval, interval) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__pg_lsn_minus_pg_lsn
+  sql: SELECT CAST('0/10' AS pg_lsn) - CAST('0/1' AS pg_lsn) AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(pg_lsn, pg_lsn) → numeric"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__time_minus_interval
+  sql: SELECT TIME '10:30:00' - INTERVAL '1 hour' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(time, interval) → time"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__time_minus_time
+  sql: SELECT TIME '10:30:00' - TIME '08:00:00' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(time, time) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__timestamp_minus_interval
+  sql: SELECT ts - INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(timestamp, interval) → timestamp"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sub__timestamp_minus_timestamp
+  sql: SELECT ts - TIMESTAMP '2000-01-01 00:00:00' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(timestamp, timestamp) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__timestamptz_minus_interval
+  sql: SELECT tsz - INTERVAL '1 day' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(timestamptz, interval) → timestamptz"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: op_sub__timestamptz_minus_timestamptz
+  sql: SELECT tsz - CAST('2000-01-01 00:00:00' AS timestamptz) AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(timestamptz, timestamptz) → interval"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: op_sub__timetz_minus_interval
+  sql: SELECT CAST('10:30:00+00' AS timetz) - INTERVAL '1 hour' AS result FROM dates WHERE id = 1
+  operator: "-"
+  signature: "-(timetz, interval) → timetz"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+

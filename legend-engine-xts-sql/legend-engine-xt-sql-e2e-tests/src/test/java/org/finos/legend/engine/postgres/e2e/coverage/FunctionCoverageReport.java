@@ -303,7 +303,7 @@ public class FunctionCoverageReport
     private void generateMarkdown(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog, String path, File parityReportFile) throws IOException
     {
         // Load error details from parity report
-        Map<String, FailureInfo> failureMap = loadFailures(parityReportFile);
+        Map<String, CoverageReportSupport.FailureInfo> failureMap = CoverageReportSupport.loadFailures(parityReportFile);
 
         // Reclassify FUNCTION_NOT_SUPPORTED and UNSUPPORTED_SYNTAX as NOT_APPLICABLE (unsupported, not error)
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
@@ -464,22 +464,7 @@ public class FunctionCoverageReport
             }
         }
 
-        if (!errorCategoryCounts.isEmpty())
-        {
-            md.append("## Error Categories\n\n");
-            md.append("| Category | Description | TDS | Relation |\n");
-            md.append("|----------|-------------|-----|----------|\n");
-            for (Map.Entry<String, int[]> entry : errorCategoryCounts.entrySet())
-            {
-                String catAnchor = entry.getKey().toLowerCase().replace("_", "-");
-                md.append(String.format("| [%s](#%s) | %s | %d | %d |\n",
-                        entry.getKey(),
-                        catAnchor,
-                        ErrorCategorizer.description(entry.getKey()),
-                        entry.getValue()[0], entry.getValue()[1]));
-            }
-            md.append("\n---\n\n");
-        }
+        CoverageReportSupport.appendErrorCategoriesSection(md, errorCategoryCounts);
 
         // === 3. Category Summary ===
         md.append("## Category Summary\n\n");
@@ -496,15 +481,18 @@ public class FunctionCoverageReport
             int[] ct_ = countStatuses(entry.getValue(), true);
             int[] cr_ = countStatuses(entry.getValue(), false);
             String catAnchor = entry.getKey().toLowerCase().replace(" ", "-");
-            md.append(String.format("| [%s](#%s) | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
-                    entry.getKey(), catAnchor, ct,
+            String docUrl = DocLinks.urlFor(entry.getKey());
+            String label = docUrl != null ? String.format("[%s](%s) / [details](#%s)", entry.getKey(), docUrl, catAnchor)
+                    : String.format("[%s](#%s)", entry.getKey(), catAnchor);
+            md.append(String.format("| %s | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d | %d |\n",
+                    label, ct,
                     ct_[0], ct_[1], ct_[2], ct_[3], ct_[4],
                     cr_[0], cr_[1], cr_[2], cr_[3], cr_[4]));
         }
         md.append("\n---\n\n");
 
         // === 4. Per-category function results ===
-        List<ErrorDetailEntry> allErrors = new ArrayList<>();
+        List<CoverageReportSupport.ErrorDetailEntry> allErrors = new ArrayList<>();
 
         for (Map.Entry<String, List<FunctionCatalogExtractor.PgFunction>> entry : catalog.entrySet())
         {
@@ -515,6 +503,12 @@ public class FunctionCoverageReport
             String catHeadingAnchor = entry.getKey().toLowerCase().replace(" ", "-");
             md.append("<a id=\"").append(catHeadingAnchor).append("\"></a>\n\n");
             md.append("## ").append(entry.getKey()).append("\n\n");
+            String docUrl = DocLinks.urlFor(entry.getKey());
+            if (docUrl != null)
+            {
+                md.append("Reference: [PostgreSQL ").append(DocLinks.PG_DOCS_VERSION)
+                        .append(" docs](").append(docUrl).append(")\n\n");
+            }
             md.append("| | Function | Signature | TDS | Relation | Error Category | Notes |\n");
             md.append("|--|----------|-----------|-----|----------|----------------|-------|\n");
 
@@ -591,105 +585,6 @@ public class FunctionCoverageReport
             md.append("---\n\n");
         }
 
-        // === 6. Error Details — organized by category, grouped by test ID ===
-        if (!allErrors.isEmpty())
-        {
-            md.append("## Error Details\n\n");
-
-            // Group by category, then by test ID
-            Map<String, Map<String, List<ErrorDetailEntry>>> byCategoryThenTest = new LinkedHashMap<>();
-            for (ErrorDetailEntry e : allErrors)
-            {
-                byCategoryThenTest
-                        .computeIfAbsent(e.category, k -> new LinkedHashMap<>())
-                        .computeIfAbsent(e.testId, k -> new ArrayList<>())
-                        .add(e);
-            }
-
-            for (Map.Entry<String, Map<String, List<ErrorDetailEntry>>> catEntry : byCategoryThenTest.entrySet())
-            {
-                String category = catEntry.getKey();
-                String catAnchor = category.toLowerCase().replace("_", "-");
-                md.append("<a id=\"").append(catAnchor).append("\"></a>\n\n");
-                md.append("### ").append(category);
-                md.append(" (").append(catEntry.getValue().size()).append(" tests)\n\n");
-
-                boolean firstTest = true;
-                for (Map.Entry<String, List<ErrorDetailEntry>> testEntry : catEntry.getValue().entrySet())
-                {
-                    String testId = testEntry.getKey();
-                    List<ErrorDetailEntry> entries = testEntry.getValue();
-
-                    if (!firstTest)
-                    {
-                        md.append("\n<br>\n\n");
-                    }
-                    firstTest = false;
-
-                    // Create anchors for all paths
-                    StringBuilder anchors = new StringBuilder();
-                    for (ErrorDetailEntry e : entries)
-                    {
-                        String anchor = "fail-" + e.testId + "-" + e.path;
-                        anchors.append(String.format("<a id=\"%s\"></a>", anchor));
-                    }
-
-                    md.append("#### ").append(anchors).append("`").append(testId).append("`\n\n");
-
-                    // Check if TDS and Relation have same error and category — if so, merge
-                    if (entries.size() == 2)
-                    {
-                        ErrorDetailEntry e1 = entries.get(0);
-                        ErrorDetailEntry e2 = entries.get(1);
-                        boolean sameError = (e1.error == null ? "" : e1.error).equals(e2.error == null ? "" : e2.error);
-                        boolean sameCategory = e1.category.equals(e2.category);
-
-                        if (sameError && sameCategory)
-                        {
-                            md.append("\uD83D\uDD34 **Failed in both TDS and Relation**\n\n");
-                            md.append("**Input SQL:**\n```sql\n").append(e1.sql != null ? e1.sql : "").append("\n```\n\n");
-                            String legendSql1 = e1.rewrittenSql != null && !e1.rewrittenSql.isEmpty() ? e1.rewrittenSql : "";
-                            String legendSql2 = e2.rewrittenSql != null && !e2.rewrittenSql.isEmpty() ? e2.rewrittenSql : "";
-                            if (!legendSql1.isEmpty() || !legendSql2.isEmpty())
-                            {
-                                if (legendSql1.equals(legendSql2) || legendSql2.isEmpty())
-                                {
-                                    md.append("**Legend SQL:**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                                }
-                                else if (legendSql1.isEmpty())
-                                {
-                                    md.append("**Legend SQL:**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                                }
-                                else
-                                {
-                                    md.append("**Legend SQL (TDS):**\n```sql\n").append(legendSql1).append("\n```\n\n");
-                                    md.append("**Legend SQL (Relation):**\n```sql\n").append(legendSql2).append("\n```\n\n");
-                                }
-                            }
-                            md.append("**Error:**\n> ").append(e1.error != null ? e1.error.replace("\n", "\n> ") : "").append("\n\n");
-                            continue;
-                        }
-                    }
-
-                    // List each path separately
-                    for (ErrorDetailEntry e : entries)
-                    {
-                        String pathEmoji = "TDS".equals(e.path) ? "\uD83D\uDCD8" : "\uD83D\uDCD7";
-                        md.append(String.format("%s **%s Path**\n\n", pathEmoji, e.path));
-                        md.append("**Input SQL:**\n```sql\n").append(e.sql != null ? e.sql : "").append("\n```\n\n");
-                        if (e.rewrittenSql != null && !e.rewrittenSql.isEmpty())
-                        {
-                            md.append("**Legend SQL:**\n```sql\n").append(e.rewrittenSql).append("\n```\n\n");
-                        }
-                        md.append("**Error:**\n> ").append(e.error != null ? e.error.replace("\n", "\n> ") : "").append("\n\n");
-                    }
-                }
-                md.append("\n");
-            }
-
-            md.append("---\n\n");
-        }
-
         // === 7. Unsupported Functions ===
         Map<String, Boolean> functionHasSupport = new LinkedHashMap<>();
         for (List<FunctionCatalogExtractor.PgFunction> fns : catalog.values())
@@ -748,6 +643,9 @@ public class FunctionCoverageReport
                 md.append("\n");
             }
         }
+
+        // === 8. Error Details — always last, so errors surface at the bottom of the report ===
+        CoverageReportSupport.appendErrorDetailsSection(md, allErrors);
 
         try (FileWriter fw = new FileWriter(path))
         {
@@ -817,7 +715,7 @@ public class FunctionCoverageReport
         }
     }
 
-    private static String getErrorCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, FailureInfo> failureMap)
+    private static String getErrorCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap)
     {
         if ("PASS".equals(fn.tdsStatus) && "PASS".equals(fn.relStatus))
         {
@@ -833,7 +731,7 @@ public class FunctionCoverageReport
         {
             for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
             {
-                FailureInfo fi = failureMap.get(te.testId + "|TDS");
+                CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
                 if (fi != null)
                 {
                     categories.add(fi.category);
@@ -861,7 +759,7 @@ public class FunctionCoverageReport
         return "";
     }
 
-    private static String getErrorLink(FunctionCatalogExtractor.PgFunction fn, Map<String, FailureInfo> failureMap)
+    private static String getErrorLink(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap)
     {
         String cat = getErrorCategory(fn, failureMap);
         if (cat.isEmpty())
@@ -874,7 +772,7 @@ public class FunctionCoverageReport
         {
             for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
             {
-                FailureInfo fi = failureMap.get(te.testId + "|TDS");
+                CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
                 if (fi != null)
                 {
                     categories.add(fi.category);
@@ -913,7 +811,7 @@ public class FunctionCoverageReport
         return sb.toString();
     }
 
-    private static String findFirstAnchorForCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, FailureInfo> failureMap, String category)
+    private static String findFirstAnchorForCategory(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, String category)
     {
         if (fn.coverage == null)
         {
@@ -921,7 +819,7 @@ public class FunctionCoverageReport
         }
         for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
         {
-            FailureInfo fi = failureMap.get(te.testId + "|TDS");
+            CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
             if (fi != null && category.equals(fi.category))
             {
                 return "fail-" + te.testId + "-TDS";
@@ -935,28 +833,16 @@ public class FunctionCoverageReport
         return null;
     }
 
-    private static void collectErrors(FunctionCatalogExtractor.PgFunction fn, Map<String, FailureInfo> failureMap, List<ErrorDetailEntry> allErrors)
+    private static void collectErrors(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, List<CoverageReportSupport.ErrorDetailEntry> allErrors)
     {
         if (fn.coverage == null)
         {
             return;
         }
-        for (FunctionCoverageMapper.TestResultEntry te : fn.coverage.testDetails)
-        {
-            FailureInfo tdsFailure = failureMap.get(te.testId + "|TDS");
-            if (tdsFailure != null)
-            {
-                allErrors.add(new ErrorDetailEntry(te.testId, "TDS", tdsFailure.sql, tdsFailure.rewrittenSql, tdsFailure.error, tdsFailure.category));
-            }
-            FailureInfo relFailure = failureMap.get(te.testId + "|Relation");
-            if (relFailure != null)
-            {
-                allErrors.add(new ErrorDetailEntry(te.testId, "Relation", relFailure.sql, relFailure.rewrittenSql, relFailure.error, relFailure.category));
-            }
-        }
+        CoverageReportSupport.collectErrors(fn.coverage.testDetails, failureMap, allErrors);
     }
 
-    private static void categorizeFunction(FunctionCatalogExtractor.PgFunction fn, Map<String, FailureInfo> failureMap, Map<String, int[]> counts)
+    private static void categorizeFunction(FunctionCatalogExtractor.PgFunction fn, Map<String, CoverageReportSupport.FailureInfo> failureMap, Map<String, int[]> counts)
     {
         String tdsCategory = null;
         String relCategory = null;
@@ -967,7 +853,7 @@ public class FunctionCoverageReport
             {
                 if (tdsCategory == null)
                 {
-                    FailureInfo fi = failureMap.get(te.testId + "|TDS");
+                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|TDS");
                     if (fi != null)
                     {
                         tdsCategory = fi.category;
@@ -975,7 +861,7 @@ public class FunctionCoverageReport
                 }
                 if (relCategory == null)
                 {
-                    FailureInfo fi = failureMap.get(te.testId + "|Relation");
+                    CoverageReportSupport.FailureInfo fi = failureMap.get(te.testId + "|Relation");
                     if (fi != null)
                     {
                         relCategory = fi.category;
@@ -994,80 +880,6 @@ public class FunctionCoverageReport
         }
     }
 
-    private static Map<String, FailureInfo> loadFailures(File parityReportFile)
-    {
-        Map<String, FailureInfo> map = new LinkedHashMap<>();
-        if (parityReportFile == null || !parityReportFile.exists())
-        {
-            return map;
-        }
-        try
-        {
-            JsonNode report = MAPPER.readTree(parityReportFile);
-            JsonNode failures = report.get("failures");
-            if (failures != null)
-            {
-                for (JsonNode f : failures)
-                {
-                    String id = f.has("id") ? f.get("id").asText() : "";
-                    String pathVal = f.has("path") ? f.get("path").asText() : "";
-                    String state = f.has("state") ? f.get("state").asText() : "";
-                    String error = f.has("error") ? f.get("error").asText() : "";
-                    String sql = f.has("sql") ? f.get("sql").asText() : "";
-                    String rewrittenSql = f.has("rewrittenSql") ? f.get("rewrittenSql").asText() : "";
-                    String category = ErrorCategorizer.categorize(state, error);
-                    map.put(id + "|" + pathVal, new FailureInfo(id, pathVal, state, sql, rewrittenSql, error, category));
-                }
-            }
-        }
-        catch (IOException e)
-        {
-            // Silently skip if can't read
-        }
-        return map;
-    }
-
-    private static class FailureInfo
-    {
-        final String id;
-        final String path;
-        final String state;
-        final String sql;
-        final String rewrittenSql;
-        final String error;
-        final String category;
-
-        FailureInfo(String id, String path, String state, String sql, String rewrittenSql, String error, String category)
-        {
-            this.id = id;
-            this.path = path;
-            this.state = state;
-            this.sql = sql;
-            this.rewrittenSql = rewrittenSql;
-            this.error = error;
-            this.category = category;
-        }
-    }
-
-    private static class ErrorDetailEntry
-    {
-        final String testId;
-        final String path;
-        final String sql;
-        final String rewrittenSql;
-        final String error;
-        final String category;
-
-        ErrorDetailEntry(String testId, String path, String sql, String rewrittenSql, String error, String category)
-        {
-            this.testId = testId;
-            this.path = path;
-            this.sql = sql;
-            this.rewrittenSql = rewrittenSql;
-            this.error = error;
-            this.category = category;
-        }
-    }
 
     public void printConsoleSummary(Map<String, List<FunctionCatalogExtractor.PgFunction>> catalog)
     {

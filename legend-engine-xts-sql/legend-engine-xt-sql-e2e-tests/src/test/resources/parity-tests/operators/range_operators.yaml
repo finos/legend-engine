@@ -1,0 +1,398 @@
+tests:
+# =============================================================================
+# Range / Multirange Operators
+# https://www.postgresql.org/docs/16/rangetypes.html
+# No range-typed columns exist in the shared schema; int4range/int4multirange
+# literals are used to exercise every anyrange/anymultirange combination
+# listed for this category in operator-coverage.md.
+# =============================================================================
+
+# && (overlap)
+- id: range_overlap__range_range
+  sql: SELECT int4range(1,10) && int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_overlap__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) && int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_overlap__multirange_range
+  sql: SELECT int4multirange(int4range(1,10)) && int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_overlap__range_multirange
+  sql: SELECT int4range(1,10) && int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# &< (does not extend to the right of)
+- id: range_not_extend_right__range_range
+  sql: SELECT int4range(1,10) &< int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "&<"
+  signature: "&<(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_right__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) &< int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "&<"
+  signature: "&<(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_right__multirange_range
+  sql: SELECT int4multirange(int4range(1,10)) &< int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "&<"
+  signature: "&<(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_right__range_multirange
+  sql: SELECT int4range(1,10) &< int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "&<"
+  signature: "&<(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# &> (does not extend to the left of)
+- id: range_not_extend_left__range_range
+  sql: SELECT int4range(5,15) &> int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "&>"
+  signature: "&>(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_left__multirange_multirange
+  sql: SELECT int4multirange(int4range(5,15)) &> int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "&>"
+  signature: "&>(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_left__multirange_range
+  sql: SELECT int4multirange(int4range(5,15)) &> int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "&>"
+  signature: "&>(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_not_extend_left__range_multirange
+  sql: SELECT int4range(5,15) &> int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "&>"
+  signature: "&>(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# * (intersection)
+- id: range_intersect__range_range
+  sql: SELECT int4range(1,10) * int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "*"
+  signature: "*(anyrange, anyrange) → anyrange"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_intersect__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) * int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "*"
+  signature: "*(anymultirange, anymultirange) → anymultirange"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# + (union)
+- id: range_union__range_range
+  sql: SELECT int4range(1,10) + int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "+"
+  signature: "+(anyrange, anyrange) → anyrange"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_union__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) + int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "+"
+  signature: "+(anymultirange, anymultirange) → anymultirange"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# - (difference)
+- id: range_diff__range_range
+  sql: SELECT int4range(1,15) - int4range(5,10) AS result FROM persons WHERE id = 1
+  operator: "-"
+  signature: "-(anyrange, anyrange) → anyrange"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: range_diff__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,15)) - int4multirange(int4range(5,10)) AS result FROM persons WHERE id = 1
+  operator: "-"
+  signature: "-(anymultirange, anymultirange) → anymultirange"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# -|- (is adjacent to)
+- id: range_adjacent__range_range
+  sql: SELECT int4range(1,10) -|- int4range(10,20) AS result FROM persons WHERE id = 1
+  operator: "-|-"
+  signature: "-|-(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_adjacent__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) -|- int4multirange(int4range(10,20)) AS result FROM persons WHERE id = 1
+  operator: "-|-"
+  signature: "-|-(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_adjacent__multirange_range
+  sql: SELECT int4multirange(int4range(1,10)) -|- int4range(10,20) AS result FROM persons WHERE id = 1
+  operator: "-|-"
+  signature: "-|-(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_adjacent__range_multirange
+  sql: SELECT int4range(1,10) -|- int4multirange(int4range(10,20)) AS result FROM persons WHERE id = 1
+  operator: "-|-"
+  signature: "-|-(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# < / <= / > / >= / = / <>
+- id: range_lt
+  sql: SELECT int4range(1,10) < int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_lt
+  sql: SELECT int4multirange(int4range(1,10)) < int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_lte
+  sql: SELECT int4range(1,10) <= int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_lte
+  sql: SELECT int4multirange(int4range(1,10)) <= int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_gt
+  sql: SELECT int4range(5,15) > int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_gt
+  sql: SELECT int4multirange(int4range(5,15)) > int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_gte
+  sql: SELECT int4range(1,10) >= int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_gte
+  sql: SELECT int4multirange(int4range(1,10)) >= int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_eq
+  sql: SELECT int4range(1,10) = int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_eq
+  sql: SELECT int4multirange(int4range(1,10)) = int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_neq
+  sql: SELECT int4range(1,10) <> int4range(5,15) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: multirange_neq
+  sql: SELECT int4multirange(int4range(1,10)) <> int4multirange(int4range(5,15)) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# << (strictly left of) / >> (strictly right of)
+- id: range_strictly_left__range_range
+  sql: SELECT int4range(1,5) << int4range(10,15) AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_left__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,5)) << int4multirange(int4range(10,15)) AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_left__multirange_range
+  sql: SELECT int4multirange(int4range(1,5)) << int4range(10,15) AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_left__range_multirange
+  sql: SELECT int4range(1,5) << int4multirange(int4range(10,15)) AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_right__range_range
+  sql: SELECT int4range(10,15) >> int4range(1,5) AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_right__multirange_multirange
+  sql: SELECT int4multirange(int4range(10,15)) >> int4multirange(int4range(1,5)) AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_right__multirange_range
+  sql: SELECT int4multirange(int4range(10,15)) >> int4range(1,5) AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_strictly_right__range_multirange
+  sql: SELECT int4range(10,15) >> int4multirange(int4range(1,5)) AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# <@ (element/range is contained by)
+- id: range_contained_by__element_range
+  sql: SELECT 5 <@ int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anyelement, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contained_by__element_multirange
+  sql: SELECT 5 <@ int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anyelement, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contained_by__range_range
+  sql: SELECT int4range(3,7) <@ int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contained_by__range_multirange
+  sql: SELECT int4range(3,7) <@ int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contained_by__multirange_range
+  sql: SELECT int4multirange(int4range(3,7)) <@ int4range(1,10) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contained_by__multirange_multirange
+  sql: SELECT int4multirange(int4range(3,7)) <@ int4multirange(int4range(1,10)) AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# @> (range/element is contained)
+- id: range_contains__range_element
+  sql: SELECT int4range(1,10) @> 5 AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anyrange, anyelement) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contains__multirange_element
+  sql: SELECT int4multirange(int4range(1,10)) @> 5 AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anymultirange, anyelement) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contains__range_range
+  sql: SELECT int4range(1,10) @> int4range(3,7) AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anyrange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contains__range_multirange
+  sql: SELECT int4range(1,10) @> int4multirange(int4range(3,7)) AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anyrange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contains__multirange_range
+  sql: SELECT int4multirange(int4range(1,10)) @> int4range(3,7) AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anymultirange, anyrange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: range_contains__multirange_multirange
+  sql: SELECT int4multirange(int4range(1,10)) @> int4multirange(int4range(3,7)) AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anymultirange, anymultirange) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
