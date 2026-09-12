@@ -95,7 +95,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::exists::testExists_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:5585 column:53), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::collection::tests::find::testFindInstance_Function_1__Boolean_1_",
@@ -175,7 +175,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:115 column:52), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
@@ -407,7 +407,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipBothListsEmpty_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:614 column:107), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipBothListsSameLength_Function_1__Boolean_1_",
@@ -415,7 +415,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipFirstListEmpty_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:614 column:107), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipFirstListLonger_Function_1__Boolean_1_",
@@ -427,7 +427,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipSecondListEmpty_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:614 column:107), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+      "expectedError": "\"The system is trying to get an element at offset 0 where the collection is of size 0\""
     },
     {
       "test": "meta::pure::functions::collection::tests::zip::testZipSecondListLonger_Function_1__Boolean_1_",
@@ -651,7 +651,7 @@
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:3349 column:73), \"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
+      "expectedError": "\"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchWithFunctionsManyMatch_Function_1__Boolean_1_",
@@ -659,11 +659,11 @@
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchWithFunctions_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:3349 column:73), \"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
+      "expectedError": "\"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:836 column:197), \"type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType\""
+      "expectedError": "\"type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType\""
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchZeroWithMany_Function_1__Boolean_1_",
@@ -675,7 +675,7 @@
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:836 column:197), \"type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType\""
+      "expectedError": "\"type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType\""
     },
     {
       "test": "meta::pure::functions::math::tests::abs::testDecimalAbs_Function_1__Boolean_1_",
@@ -791,11 +791,11 @@
     },
     {
       "test": "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core/pure/corefunctions/metaExtension.pure line:252 column:35), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core/pure/corefunctions/metaExtension.pure line:252 column:35), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::string::tests::format::testFormatRepr_Function_1__Boolean_1_",
@@ -879,11 +879,11 @@
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:8824 column:10), \"Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder\""
+      "expectedError": "\"Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:836 column:197), \"type not supported: meta::pure::functions::string::tests::toString::ErrorType\""
+      "expectedError": "\"type not supported: meta::pure::functions::string::tests::toString::ErrorType\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testDateTimeToString_Function_1__Boolean_1_",
@@ -899,7 +899,7 @@
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:8824 column:10), \"Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder\""
+      "expectedError": "\"Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testFloatToStringWithExcessTrailingZeros_Function_1__Boolean_1_",
@@ -915,15 +915,15 @@
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core/pure/corefunctions/metaExtension.pure line:252 column:35), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:4163 column:37), \"Cannot cast a collection of size 2 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 2 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core/pure/corefunctions/metaExtension.pure line:252 column:35), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_",
