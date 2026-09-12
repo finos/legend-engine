@@ -18,7 +18,8 @@ To support the use of tables whose names contain special chars, we quote identif
 See https://cloud.google.com/bigquery/docs/reference/standard-sql/lexical
 
 ## Client Library
-Legend supports BigQuery as a relational store via the BigQuery Simba JDBC Driver. See https://cloud.google.com/bigquery/docs/reference/odbc-jdbc-drivers 
+Legend supports BigQuery as a relational store via Google's BigQuery JDBC driver
+(`com.google.cloud:google-cloud-bigquery-jdbc`). See https://cloud.google.com/bigquery/docs/reference/odbc-jdbc-drivers 
 
 ## Database Authentication
 Legend supports the following authentication modes :
@@ -33,6 +34,15 @@ See the following docs for details :
 * https://cloud.google.com/bigquery/docs/authentication
 * https://cloud.google.com/docs/authentication/production 
 
+__Service Account Key__
+
+Legend connects with a GCP service account key held in a vault, supplying the account email and
+private key to the driver directly. Unlike Application Default Credentials this needs nothing present
+in the ambient environment, so it works wherever Legend runs.
+
+See the following docs for details :
+* https://cloud.google.com/iam/docs/service-account-creds
+
 __Workload Identity Federation__
 
 Legend supports Workload Identity Federation using AWS as identity provider to connect to BigQuery. This means that BigQuery JDBC driver will require any valid Service Account Access Token obtained using configured authentication flow during runtime to connect to BigQuery.
@@ -40,13 +50,16 @@ Legend supports Workload Identity Federation using AWS as identity provider to c
 See the following docs for details :
 * https://cloud.google.com/iam/docs/workload-identity-federation
 
-## Simba BiqQuery Driver 
+## BigQuery JDBC Driver
 
-Legend uses the Simba BigQuery JDBC Driver. However, this driver is not open source software.
+Legend depends on Google's BigQuery JDBC driver, which is Apache-2.0 licensed and published to Maven
+Central, so no driver has to be supplied on the CLASSPATH.
 
-Use of the Simba driver is subject to commercial license agreements between GCP, Simba and the customer using the JDBC driver.
-
-For this reason, Legend does not have a compile time dependency of the Simba driver. Legend users will have to make the Simba JDBC driver available in the CLASSPATH.
+This replaces the Simba BigQuery JDBC driver, which Legend previously named but could not depend on:
+it is not open source, and its use is subject to commercial license agreements between GCP, Simba and
+the customer. Deployments still wanting Simba can set `BigQueryDriver.DRIVER_CLASSNAME` back to
+`com.simba.googlebigquery.jdbc.Driver` and put that jar on the CLASSPATH; the connection properties
+Legend emits are the same for both.
 
 See the following docs for details :
 * https://cloud.google.com/bigquery/docs/reference/odbc-jdbc-drivers 

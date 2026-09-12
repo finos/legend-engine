@@ -67,6 +67,17 @@ userNamePasswordAuthPasswordVaultRef:   USERNAME_PASSWORD_AUTH_PASSWORD_VAULT_RE
 gcpApplicationDefaultCredentialsAuth : GCP_APPLICATION_DEFAULT_CREDENTIALS_AUTH
 ;
 
+gcpServiceAccountKeyAuth:        GCP_SERVICE_ACCOUNT_KEY_AUTH
+                                    BRACE_OPEN
+                                        (
+                                            serviceAccountKeyVaultReferenceRef
+                                        )*
+                                    BRACE_CLOSE
+;
+
+serviceAccountKeyVaultReferenceRef:     SERVICE_ACCOUNT_KEY_VAULT_REFERENCE COLON STRING SEMI_COLON
+;
+
 gcpWorkloadIdentityFederationAuth: GCP_WORKLOAD_IDENTITY_FEDERATION_AUTH
                                     BRACE_OPEN
                                         (
