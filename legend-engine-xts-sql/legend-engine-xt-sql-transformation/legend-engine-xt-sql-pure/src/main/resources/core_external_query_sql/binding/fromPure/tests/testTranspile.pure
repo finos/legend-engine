@@ -5735,12 +5735,40 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 // casing-correction pass emits it whenever stored column casing differs from
 // the view SQL's.
 //
-// These assert compile-and-schema only, via c(<expected>, false, false).
-// test() calls context.lambda(), which compiles the generated relation lambda,
-// so a stale column reference fails here as it does in production. The expected
-// lambda is a never-compared placeholder present so TestConfig.relation()
-// selects relationSources(). To upgrade one to a full output assertion, run it,
-// take the actual lambda and set both flags true.
+// Most of these now assert the generated lambda and its JSON, via the one-argument
+// c(<expected>). test() calls context.lambda(), which compiles the generated
+// relation lambda, so a stale column reference fails here as it does in production.
+//
+// The rest still use c(<expected>, false, false) and assert compile-and-schema only,
+// their expected lambda a never-compared placeholder present so TestConfig.relation()
+// selects relationSources(). That is not laziness - their lambda cannot be written in
+// source at all, for two reasons that bite together:
+//
+//   * A typed lambda parameter in a column specification compiles to a NULL body.
+//     This holds for every colspec form - funcColSpec over a class, aggColSpec (which
+//     fails harder, with an internal ClassInstance/RelationType cast error) and
+//     funcColSpec2 for window functions - so the printed lambda, which annotates every
+//     parameter, cannot be pasted back as source.
+//   * Strip those annotations and a column read off a JOIN infers [0..1] rather than
+//     [1], so anything needing [1] no longer resolves: toUpper(_:String[0..1]),
+//     coalesce(_:Float4[0..1], ...). Single-table cases are unaffected, which is why
+//     'upper(String)' asserts fine elsewhere in this file but not over a join.
+//
+// coalesce is doubly stuck: it prints as the three-argument coalesce($x.c, 0, []),
+// which does not resolve as source however the parameter is typed.
+//
+// So the remaining placeholders are the window cases and anything applying a function
+// to a join column. If a later legend-pure makes the printed form round-trip, they can
+// be converted the way the others were: set the flags true, run, and paste the actual
+// lambda from the assertion failure.
+//
+// Two ways round it where a placeholder is not good enough. Pick a key whose translation
+// tolerates [0..1] - a CASE key becomes isEmpty()->if(...) and asserts fine, which is why
+// testOrderByCaseKeyOverJoinResolvesQualifier sits alongside its unassertable upper()
+// sibling. Or assert the output schema directly, with processQuery plus
+// resolveRelationColumns, as testGroupByExpressionKeyOverJoin does - that catches a
+// wrong-shaped result, though not a wrongly computed one, because the closing restrict
+// drops any order-by helper before the caller sees it.
 // ---------------------------------------------------------------------------
 
 // GROUP BY key resolved against the pre-rename relation: processGroupBy took its
@@ -5754,11 +5782,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'GROUP BY "t1"."String"',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->rename(~String_t1, ~String)
+          ->groupBy(~[String], ~[maxInt : x | $x.Integer_t2 : y | $y->max()])})
     ]
   )
 }
@@ -5774,11 +5813,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'GROUP BY "t1"."String", "t2"."ID"',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->rename(~String_t1, ~String)
+          ->rename(~ID_t2, ~ID)
+          ->groupBy(~[String, ID], ~[total : x | $x.Integer_t1 : y | $y->sum()])})
     ]
   )
 }
@@ -5827,11 +5878,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT "String", "Integer" FROM service."/service/service1" ' +
     'ORDER BY CASE WHEN "String" IS NULL THEN 1 ELSE 0 END DESC, "String"',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->select(~[String, Integer])
+          ->extend(~['CASE WHEN String IS NULL THEN 1 ELSE 0 END' : x | $x.String->isEmpty()->if(|1, |0)])
+          ->sort([~'CASE WHEN String IS NULL THEN 1 ELSE 0 END'->descending(), ~String->ascending()])
+          ->select(~[String, Integer])})
     ]
   )
 }
@@ -5905,11 +5957,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test(
     'SELECT DISTINCT "String" FROM service."/service/service1" ORDER BY "String"',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->select(~[String])
+          ->distinct()
+          ->sort(~String->ascending())})
     ]
   )
 }
@@ -6071,19 +6123,18 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 // window keys, resolved by processGroupBy instead of processOlapGroupBy.
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByExpressionKeyOverJoin():Boolean[1]
 {
-  test(
+  let context = processQuery(
     'SELECT upper("t1"."String") AS "u", count(*) AS "n" ' +
     'FROM service."/service/service1" "t1" ' +
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'GROUP BY upper("t1"."String")',
-    [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
-    ]
-  )
+    relationSources(), false);
+
+  // The output schema, not just "it transpiled". A groupBy can lose a key column from its declared
+  // output type while still grouping by it, leaving the caller reading a result set of the wrong
+  // shape - an error nothing else here would catch. The lambda itself cannot be asserted: see the
+  // block comment above.
+  assertEquals(['u', 'n'], $context.expression->toOne()->resolveRelationColumns().name);
 }
 
 // Control: the same expression key with no join. It passed before the change and
@@ -6126,11 +6177,22 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'ORDER BY 1',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->project(~[String : x | $x.String_t1, other : x | $x.String_t2])
+          ->sort(~String->ascending())})
     ]
   )
 }
@@ -6145,11 +6207,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'ORDER BY "t1"."String"',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->select(~[String_t1, ID_t2])
+          ->rename(~String_t1, ~s)
+          ->rename(~ID_t2, ~i)
+          ->sort(~s->ascending())})
     ]
   )
 }
@@ -6165,11 +6240,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'GROUP BY "t1"."String" ORDER BY count(*) DESC',
     [
-      // placeholder: never compared (assertLambda/assertJSON are false); present so
-      // TestConfig.relation() selects relationSources(). See the block comment above.
-      c({| FlatInput.all()->project(
-            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
-        }, false, false)
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->extend(~[s : x | $x.String_t1])
+          ->groupBy(~[String_t1, s], ~[n : x | $x : y | $y->count()])
+          ->sort(~n->descending())
+          ->select(~[s, n])})
     ]
   )
 }
@@ -6189,11 +6277,94 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
     'ORDER BY "t2"."String"',
     [
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->project(~[a : x | $x.String_t1, b : x | $x.String_t2])
+          ->sort(~b->ascending())})
+    ]
+  )
+}
+
+// ---------------------------------------------------------------------------
+// An ORDER BY expression key whose column reference names the second join side.
+//
+// processProjection materialises such a key into an extend over projectedContext,
+// which carries contexts = [] because a projected relation has no per-join-side
+// scopes left. The qualifier found no scope in columnByNameParts and the lookup
+// degraded to a bare-name one, so the extend was built from whichever column
+// answered to the bare name - here nothing did, and it failed outright with
+// "no column found named: 'String'". projectedKeyExpression rewrites the key to
+// name output columns first, so no qualifier has to survive the projection.
+//
+// The other face of the same degrade - the bare name matching the WRONG side, and
+// the query silently returning rows ordered by it - is covered by the parity suite,
+// which compares rows against Postgres: colres_e3_order_by_expression_over_join and
+// crcs_g4_order_by_expression_over_join are both that shape.
+// ---------------------------------------------------------------------------
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByExpressionKeyOverJoinResolvesQualifier():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "name", "t2"."String" AS "dept_name" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY upper("t2"."String"), "t1"."String"',
+    [
       // placeholder: never compared (assertLambda/assertJSON are false); present so
       // TestConfig.relation() selects relationSources(). See the block comment above.
       c({| FlatInput.all()->project(
             ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
         }, false, false)
+    ]
+  )
+}
+
+// The same defect with a key whose lambda can actually be written down, so it asserts rather than
+// merely compiling. A CASE key becomes isEmpty()->if(...), and isEmpty() accepts [0..1] - which is
+// what the upper() sibling above cannot do, since toUpper() needs [1] and a join column infers
+// [0..1] once the parameter annotation is dropped.
+//
+// Both take the same path: a non-QualifiedNameReference key is materialised by orderByExtensions
+// and its inner reference rewritten by projectedKeyExpression. What this one adds is the proof that
+// the rewrite picked t2 - the extend reads $x.dept_name, and would have read $x.name had the
+// qualifier been dropped the way it was before.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByCaseKeyOverJoinResolvesQualifier():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "name", "t2"."String" AS "dept_name" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'ORDER BY CASE WHEN "t2"."String" IS NULL THEN 0 ELSE 1 END, "t1"."String"',
+    [
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t1)
+          ->rename(~Integer, ~Integer_t1)
+          ->rename(~Float, ~Float_t1)
+          ->rename(~Decimal, ~Decimal_t1)
+          ->rename(~StrictDate, ~StrictDate_t1)
+          ->rename(~DateTime, ~DateTime_t1)
+          ->rename(~String, ~String_t1)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+            ->rename(~ID, ~ID_t2)
+            ->rename(~Integer, ~Integer_t2)
+            ->rename(~String, ~String_t2), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+          ->project(~[name : x | $x.String_t1, dept_name : x | $x.String_t2])
+          ->extend(~['CASE WHEN dept_name IS NULL THEN 0 ELSE 1 END' : x | $x.dept_name->isEmpty()->if(|0, |1)])
+          ->sort([~'CASE WHEN dept_name IS NULL THEN 0 ELSE 1 END'->ascending(), ~name->ascending()])
+          ->select(~[name, dept_name])})
     ]
   )
 }

@@ -743,13 +743,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //while an ORDER BY key does not: routing them together would extend a computed select item twice.
   //Aggregates and windows are excluded (their grouping runs after the projection and would discard the
   //helper column), DISTINCT because an extra column changes which rows are distinct.
+  //
+  //The key is rewritten to name output columns before it becomes an extend - see
+  //projectedKeyExpression. processOrderBy applies the same rewrite when it derives the name to sort
+  //by, so the two agree; both read the same select list, because orderByExtensions is empty whenever
+  //$extendRequired is true and only then does processProjection hand on a re-aliased one.
   let orderByExtensions = if ($isAggregate || $isWindow || $originalSelect.distinct,
     | [],
     | $orderBy->map(o | $o->match([
         i:IntegerLiteral[1] | [],
         q:QualifiedNameReference[1] | [],
         e:meta::external::query::sql::metamodel::Expression[1] | $e
-      ]))->map(e | ^SingleColumn(expression = $e)));
+      ]))->map(e | ^SingleColumn(expression = projectedKeyExpression($e, $originalSelect.selectItems))));
 
   let columns = $context.columns.name;
 
@@ -835,8 +840,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //will sort; processQuerySpec's closing restrict drops the helper again before it reaches the caller.
   //
   //processExtend names the column with an empty context while processOrderBy resolves through the
-  //post-projection one. Those agree for a key built from output columns, which is what this targets. A
-  //key still written against pre-projection source columns is not covered and fails as before.
+  //post-projection one. Those agree for a key built from output columns, which is what this targets.
+  //A key written against pre-projection source columns is brought into that form first, by
+  //projectedKeyExpression - it has to be, because $projected carries no child contexts for a
+  //qualifier to resolve against and the lookup would otherwise silently drop the qualifier.
   let projected = projectedContext($context, $distinctExp);
 
   //Skip a key whose column already exists: 'SELECT upper(s) FROM t ORDER BY upper(s)' is already named
@@ -1923,6 +1930,29 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | $columns->filter(si | extractNameFromExpression($si.expression, []) == $rendered)->first());
 }
 
+//An ORDER BY key rewritten to name the projection's output columns instead of its source columns.
+//
+//processProjection materialises an expression key into an extend over projectedContext, which has
+//contexts = [] because the projected relation no longer has per-join-side scopes. A qualified
+//reference inside the key therefore finds no scope in columnByNameParts, and the lookup silently
+//degrades to a bare-name one: 'UPPER(d.name)' over 'SELECT p.name AS name, d.name AS dept_name'
+//looks up 'name', finds p's column, and sorts by the wrong side without erroring. Where the bare
+//name matches nothing the same degrade surfaces as 'no column found named'.
+//
+//Rewriting each reference to the output name of the select item it denotes means the extend never
+//has to resolve a qualifier against a context that cannot represent one. A reference matching no
+//select item is left alone, and fails exactly as it did before.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::projectedKeyExpression(e:meta::external::query::sql::metamodel::Expression[1], selectItems:SelectItem[*]):meta::external::query::sql::metamodel::Expression[1]
+{
+  $e->walk([
+    q:QualifiedNameReference[1] |
+      let found = projectedSortKeySelectItem($q, $selectItems);
+      if ($found->isEmpty(),
+        | $q,
+        | ^QualifiedNameReference(name = ^QualifiedName(parts = $found->toOne()->extractNameFromSingleColumn([]))));
+  ])->toOne();
+}
+
 //The statement-level sibling of extensionColumnName and materialisedKeyName. processOrderBy runs
 //after the projection, so its keys have to name columns of the relation the projection produced -
 //and there is no single derivation that always does.
@@ -1954,10 +1984,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     e:meta::external::query::sql::metamodel::Expression[1] | projectedSortKeySelectItem($e, $selectItems)->map(si | $si->extractNameFromSingleColumn([]))
   ]);
 
-  //an ordinal names a select item, never a materialised key, so it has no extend to fall back on
+  //an ordinal names a select item, never a materialised key, so it has no extend to fall back on.
+  //processProjection rewrites a key's references to output names before extending, so the same
+  //rewrite has to be applied here or the name would not match the column it created.
   let extendName = $sortKey->match([
     i:IntegerLiteral[1] | [],
-    e:meta::external::query::sql::metamodel::Expression[1] | extractNameFromExpression($e, [])
+    e:meta::external::query::sql::metamodel::Expression[1] | extractNameFromExpression(projectedKeyExpression($e, $selectItems), [])
   ]);
 
   let candidates = $outputName->concatenate($contextName)->concatenate($extendName)->removeDuplicates();
