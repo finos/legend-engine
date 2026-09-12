@@ -6,6 +6,10 @@
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"1032-01-01 00:32:34.000000000\""
     },
     {
+      "test": "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"1972-08-23 14:01:01.000000000\""
+    },
+    {
       "test": "meta::pure::functions::boolean::tests::operation::xor::testXor_BinaryExpressions_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: STRING, BOOL\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
     },
@@ -59,11 +63,11 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:9976 column:43), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_",
-      "expectedError": "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:9976 column:43), \"Cannot cast a collection of size 0 to multiplicity [1]\""
+      "expectedError": "\"Cannot cast a collection of size 0 to multiplicity [1]\""
     },
     {
       "test": "meta::pure::functions::collection::tests::or::testOr_Function_1__Boolean_1_",
