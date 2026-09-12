@@ -20,13 +20,6 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: PASS
 
-  - id: lag__anycompatible_int_anycompatible__from_table
-    sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
-    function: lag
-    signature: "lag(anycompatible, integer, anycompatible) → anycompatible"
-    expected_tds_status: ERROR
-    expected_rel_status: PASS
-
   - id: lag__anyelement__from_table
     sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
     function: lag
@@ -35,9 +28,16 @@ tests:
     expected_rel_status: PASS
 
   - id: lag__anyelement_int__from_table
-    sql: "SELECT name, LAG(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    sql: "SELECT name, LAG(name, 2) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
     function: lag
     signature: "lag(anyelement, integer) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: lag__anycompatible_int_anycompatible__from_table
+    sql: "SELECT name, LAG(name, 2, 'n/a') OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lag
+    signature: "lag(anycompatible, integer, anycompatible) → anycompatible"
     expected_tds_status: ERROR
     expected_rel_status: PASS
 
@@ -48,13 +48,6 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  - id: lead__anycompatible_int_anycompatible__from_table
-    sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
-    function: lead
-    signature: "lead(anycompatible, integer, anycompatible) → anycompatible"
-    expected_tds_status: ERROR
-    expected_rel_status: PASS
-
   - id: lead__anyelement__from_table
     sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
     function: lead
@@ -63,9 +56,16 @@ tests:
     expected_rel_status: PASS
 
   - id: lead__anyelement_int__from_table
-    sql: "SELECT name, LEAD(name) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    sql: "SELECT name, LEAD(name, 2) OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
     function: lead
     signature: "lead(anyelement, integer) → anyelement"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: lead__anycompatible_int_anycompatible__from_table
+    sql: "SELECT name, LEAD(name, 2, 'n/a') OVER (ORDER BY name) AS result FROM persons WHERE name IS NOT NULL ORDER BY name"
+    function: lead
+    signature: "lead(anycompatible, integer, anycompatible) → anycompatible"
     expected_tds_status: ERROR
     expected_rel_status: PASS
 
