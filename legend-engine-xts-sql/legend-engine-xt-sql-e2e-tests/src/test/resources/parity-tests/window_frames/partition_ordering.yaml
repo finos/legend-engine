@@ -100,7 +100,7 @@ tests:
     feature: "LAG with offset"
     category: "window_partitioning"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # FIRST_VALUE / LAST_VALUE
   - id: window_first_last_value
