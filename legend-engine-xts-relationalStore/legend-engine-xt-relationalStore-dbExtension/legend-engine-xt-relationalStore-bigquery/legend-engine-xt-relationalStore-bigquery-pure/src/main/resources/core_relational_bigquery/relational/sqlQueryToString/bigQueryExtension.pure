@@ -130,6 +130,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    );
 }
 
+// BigQuery matches with RE2, which takes the same inline flag syntax as the other engines.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::regexpInlineFlagsForBigQuery(regexpParametersAsString: String[1]):String[1]
+{
+   let flags = $regexpParametersAsString->removeQuotesIfExist()->split(',')
+                  ->map(p | newMap([
+                        pair('CASE_SENSITIVE', ''),
+                        pair('CASE_INSENSITIVE', 'i'),
+                        pair('MULTILINE', 'm'),
+                        pair('NON_NEWLINE_SENSITIVE', 's')
+                     ])->get($p))
+                  ->filter(f | $f != '')->joinStrings('');
+   if($flags == '', | '', | '(?' + $flags + ')');
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
    let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\\\'');
@@ -151,6 +165,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
+    // concat keeps the pattern an expression, so an anchored match still works when it is a column
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='regexp_contains(%s, concat(\'^(?:\', %s, \')$\'))')),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3] |
+                                                                     'regexp_contains(' + $p->at(0) + ', concat(\'' + $p->at(2)->regexpInlineFlagsForBigQuery() + '\', ' + $p->at(1) + '))';})),
+    // the part index reaches the dialect already 1-based, matching SAFE_ORDINAL; an empty separator
+    // splits into one element per character, where splitPart wants the whole string back
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='%s', transform={p:String[3] |
+                                                                     'case when ' + $p->at(1) + ' = \'\' then ' + $p->at(0) +
+                                                                     ' else split(' + $p->at(0) + ', ' + $p->at(1) + ')[SAFE_ORDINAL(' + $p->at(2) + ')] end';})),
     dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
     dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ %s)')),
     dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
