@@ -417,6 +417,10 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+    d.departmentId)"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLagWithOffset_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::last::testOLAPWithPartitionAndOrderLastWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
@@ -434,6 +438,9 @@
     "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindow_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::lead::testOLAPWithPartitionAndOrderWindowWithOffset_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::lessThanAll::testLessThanAll_EmptyRelation_Function_1__Boolean_1_",
