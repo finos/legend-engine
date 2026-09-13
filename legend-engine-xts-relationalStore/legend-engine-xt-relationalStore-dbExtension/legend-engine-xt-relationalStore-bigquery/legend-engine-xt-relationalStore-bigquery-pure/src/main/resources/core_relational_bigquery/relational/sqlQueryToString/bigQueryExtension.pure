@@ -34,6 +34,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dataTypeToSqlText = dataTypeToSqlTextBigQuery_DataType_1__String_1_,
       ddlCommandsTranslator = getDDLCommandsTranslatorForBigQuery(),
+      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
 }
@@ -70,7 +71,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    'Create Table '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' + $dbConfig.dataTypeToSqlText($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false || $c.nullable == true, | '', | ' NOT NULL'))
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' + columnTypeForBigQuery($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false || $c.nullable == true, | '', | ' NOT NULL'))
          ->joinStrings(',')
       + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ') NOT ENFORCED')
       +');';
@@ -78,16 +79,55 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function {doc.doc='Given the platform (ie DB agnostic) data types, convert to BigQuery specific type'} meta::relational::functions::sqlQueryToString::bigQuery::dataTypeToSqlTextBigQuery(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
-    // BigQuery has no VARCHAR/CHAR, and FLOAT/DOUBLE are spelled FLOAT64
+    // BigQuery has no VARCHAR/CHAR, no BIT, and FLOAT/DOUBLE are spelled FLOAT64
     $type->match([
         v : meta::relational::metamodel::datatype::Varchar[1] | 'STRING',
         c : meta::relational::metamodel::datatype::Char[1] | 'STRING',
         f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT64',
         d : meta::relational::metamodel::datatype::Double[1] | 'FLOAT64',
+        b : meta::relational::metamodel::datatype::Bit[1] | 'BOOL',
+        b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOL',
         s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',
         j : meta::relational::metamodel::datatype::Json[1] | 'JSON',
         a : meta::relational::metamodel::datatype::DataType[1] | $a->meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault()
     ]);
+}
+
+// NUMERIC accepts only scale 0..9 with at most 29 integer digits; anything wider has to be BIGNUMERIC,
+// which reaches scale 38 and 38 integer digits.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::decimalFamilyForBigQuery(precision:Integer[0..1], scale:Integer[0..1]):String[1]
+{
+   if($precision->isEmpty() || $scale->isEmpty(),
+    | 'NUMERIC',
+    | if(($scale->toOne() <= 9) && (($precision->toOne() - $scale->toOne()) <= 29),
+       | 'NUMERIC',
+       | 'BIGNUMERIC');
+   );
+}
+
+// Only a column declaration may carry precision and scale; CAST rejects a parameterised type outright,
+// so dataTypeToSqlTextBigQuery deliberately renders the bare family name instead.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::columnTypeForBigQuery(type:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $type->match([
+      d : meta::relational::metamodel::datatype::Decimal[1] | decimalColumnTypeForBigQuery($d.precision, $d.scale),
+      n : meta::relational::metamodel::datatype::Numeric[1] | decimalColumnTypeForBigQuery($n.precision, $n.scale),
+      a : meta::relational::metamodel::datatype::DataType[1] | $a->dataTypeToSqlTextBigQuery()
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::decimalColumnTypeForBigQuery(precision:Integer[0..1], scale:Integer[0..1]):String[1]
+{
+   if($precision->isEmpty() || $scale->isEmpty(),
+    | decimalFamilyForBigQuery($precision, $scale),
+    | let p = $precision->toOne();
+      let s = $scale->toOne();
+      if(($s <= 9) && (($p - $s) <= 29),
+       | format('NUMERIC(%d, %d)', [$p, $s]),
+       | if(($s <= 38) && (($p - $s) <= 38),
+          | format('BIGNUMERIC(%d, %d)', [$p, $s]),
+          | 'BIGNUMERIC'));
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
@@ -96,6 +136,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
    newMap([
       pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
+      // the shared default quotes booleans, which BigQuery reads as STRING and refuses to coerce to BOOL
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
@@ -109,6 +151,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ %s)')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(%s << %s)')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(%s >> %s)')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='(%s ^ %s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')),            
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
@@ -119,6 +167,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='extract(dayofweek from %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='extract(dayofyear from %s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='safe_convert_bytes_to_string(from_base64(%s))')),
+    // cast(.. as JSON) is rejected; parse_json is the only accepted spelling
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='to_json(%s)')),
+    // generate_array includes the stop value, range() excludes it, so the bound is pulled in one step
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+                                                                     let step = if($p->size() > 2, | $p->at(2), | '1');
+                                                                     'generate_array(' + $p->at(0) + ', ' + $p->at(1) + ' - sign(' + $step + '), ' + $step + ')';})),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='to_base64(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, month))')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, quarter))')),

@@ -2,64 +2,8 @@
   "adapter": "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_",
   "exclusions": [
     {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::and::testBasicAnd_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator AND\n  Argument types: STRING, STRING\n  Signature: BOOL AND ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::and::testBinaryTruthTable_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator AND\n  Argument types: STRING, STRING\n  Signature: BOOL AND ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator AND\n  Argument types: STRING, BOOL\n  Signature: BOOL AND ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryExpressions_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator AND\n  Argument types: BOOL, STRING\n  Signature: BOOL AND ([BOOL, ...])\n    Argument 2: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::and::testTernaryTruthTable_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator AND\n  Argument types: STRING, STRING\n  Signature: BOOL AND ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::not::testBasicNot_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::not::testNotFalse_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
       "test": "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
       "expectedError": "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::not::testNotTrue_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::not::testOperatorScope_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::or::testBasicOr_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: STRING, STRING\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::or::testBinaryTruthTable_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: STRING, STRING\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: STRING, BOOL\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryExpressions_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: BOOL, STRING\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 2: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::conjunctions::or::testTernaryTruthTable_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator OR\n  Argument types: STRING, STRING\n  Signature: BOOL OR ([BOOL, ...])\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
     },
     {
       "test": "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
@@ -100,22 +44,6 @@
     {
       "test": "meta::pure::functions::boolean::tests::equality::equal::testEqualVarIdentity_Function_1__Boolean_1_",
       "expectedError": "Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::inequalities::greaterThan::testGreaterThan_Boolean_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::inequalities::greaterThanEqual::testGreaterThanEqual_Boolean_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::inequalities::lessThan::testLessThan_Boolean_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::inequalities::lessThanEqual::testLessThanEqual_Boolean_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator NOT\n  Argument types: STRING\n  Signature: NOT (BOOL)\n    Argument 1: Unable to coerce type STRING to expected type BOOL"
     },
     {
       "test": "meta::pure::functions::collection::tests::filter::testFilterInstance_Function_1__Boolean_1_",
@@ -171,35 +99,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
-      "expectedError": "Execution error message mismatch.\nThe actual message was \"[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet\"\nwhere the expected message was:\"range step must not be 0\""
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testRangeWithStartStopEqual_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testRangeWithStep_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testRangeWithVariables_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testRange_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testReverseRangeWithPositiveStep_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testReverseRangeWithStep_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::collection::tests::range::testReverseRange_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'range' (state: [Select, false]) is not supported yet"
+      "expectedError": "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"range step must not be 0\""
     },
     {
       "test": "meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_",
