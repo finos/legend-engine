@@ -417,7 +417,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLag_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
-    d.departmentId)"
   }, {
     "test" : "meta::pure::functions::relation::tests::lag::testOLAPWithPartitionAndOrderWindowUsingLagWithOffset_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
