@@ -108,7 +108,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='position(%s, %s)')), 
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaroWinklerSimilarity(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='concatWithSeparator(%s, %s)')),
-    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->concatenate('1')->concatenate($p)->joinStrings(', ')})),
+    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->concatenate($p->at(0))->joinStrings(', ')})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
