@@ -43,7 +43,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator IN for argument types literal INT64 and {INT64, STRING, DATE}"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator IN for argument types literal INT64 and {INT64, BOOL, STRING, DATE}"
     },
     {
       "test": "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
@@ -616,10 +616,6 @@
     {
       "test": "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
       "expectedError": "Ensure the target system understands Year or Year-month semantic."
-    },
-    {
-      "test": "meta::pure::functions::lang::tests::if::testSimpleIf_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for operator CASE; all WHEN argument types must be BOOL but found: STRING; actual argument types (WHEN THEN) ELSE: (STRING STRING) STRING"
     },
     {
       "test": "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
