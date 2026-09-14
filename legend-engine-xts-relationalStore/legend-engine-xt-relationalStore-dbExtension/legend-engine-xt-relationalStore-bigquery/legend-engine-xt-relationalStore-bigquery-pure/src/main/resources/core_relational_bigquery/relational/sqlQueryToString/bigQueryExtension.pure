@@ -34,6 +34,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dataTypeToSqlText = dataTypeToSqlTextBigQuery_DataType_1__String_1_,
       ddlCommandsTranslator = getDDLCommandsTranslatorForBigQuery(),
+      lambdaParameterProcessor = buildLambdaParameterForBigQuery_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
+      lambdaProcessor = buildLambdaForBigQuery_RelationalLambda_1__SqlGenerationContext_1__String_1_,
       withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
@@ -245,6 +247,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='safe_convert_bytes_to_string(from_base64(%s))')),
     // cast(.. as JSON) is rejected; parse_json is the only accepted spelling
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    // the shared default casts the JSON value itself, which BigQuery refuses; go through json_value
+    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | castFromJsonForBigQuery($p->at(0), $p->at(1))})),
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='to_json(%s)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
@@ -324,6 +328,70 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::jsonElementOrderingForBigQuery():String[1]
 {
   '(case when json_type(t.v) = \'number\' then cast(json_value(t.v) as numeric) end), json_value(t.v)';
+}
+
+// BigQuery has no higher-order array function, so filter and map lower to a scalar subquery over
+// UNNEST. The offset column and the order by inside the aggregate are what preserve element order,
+// since scan order is not guaranteed. fold has no equivalent and fails with a specific message.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildLambdaForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $lambda->match([
+    map: MapRelationalLambda[1]       | buildMapLambdaForBigQuery($map, $sgc),
+    filter: FilterRelationalLambda[1] | buildFilterLambdaForBigQuery($filter, $sgc),
+    fold: FoldRelationalLambda[1]     | fail('[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery'); '';
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildMapLambdaForBigQuery(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  '(select to_json(ifnull(array_agg(to_json(%s) order by legend_ord), ARRAY<JSON>[])) from %s)'->format([
+      $lambda.body->processOperation($sgc),
+      $lambda->flattenedSourceForBigQuery($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildFilterLambdaForBigQuery(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  '(select to_json(ifnull(array_agg(%s order by legend_ord), ARRAY<JSON>[])) from %s where %s)'->format([
+      $lambda.parameters->at(0).name,
+      $lambda->flattenedSourceForBigQuery($sgc),
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+// UNNEST names the element column directly, so it is aliased to the lambda parameter and the
+// unqualified references the parameter processor emits resolve against it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::flattenedSourceForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'unnest(json_query_array(%s)) as %s with offset legend_ord'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc)->asJsonArrayForBigQuery(),
+      $lambda.parameters->at(0).name
+   ]);
+}
+
+// json_query_array rejects anything that is not an array, where Snowflake's FLATTEN and DuckDB's
+// unnest normalise first. A single element reaches here when the value has already been narrowed,
+// so treat it as a one-element array rather than failing.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::asJsonArrayForBigQuery(expr:String[1]):String[1]
+{
+  'case when json_type(%s) = \'array\' then %s else json_array(%s) end'->format([$expr, $expr, $expr]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildLambdaParameterForBigQuery(param: RelationalLambdaParameter[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  castFromJsonForBigQuery($param.name, $sgc.dbConfig.dataTypeToSqlText($param.type));
+}
+
+// json_value extracts a scalar as unquoted text, where casting the JSON value itself keeps the
+// quotes around a JSON string. A JSON-typed parameter passes through untouched.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::castFromJsonForBigQuery(expr:String[1], dbType:String[1]):String[1]
+{
+  let unquoted = 'json_value(%s)'->format($expr);
+  if ($dbType->startsWith('JSON'),
+    | $expr,
+    | if ($dbType == 'STRING',
+        | '(%s)'->format($unquoted),
+        | 'cast(%s as %s)'->format([$unquoted, $dbType])));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processPivotForBigQuery(s:SelectSQLQuery[1], p:Pivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
