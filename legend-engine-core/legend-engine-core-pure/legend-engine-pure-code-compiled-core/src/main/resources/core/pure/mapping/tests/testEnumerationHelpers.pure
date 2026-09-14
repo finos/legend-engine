@@ -1,0 +1,165 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+import meta::pure::mapping::tests::enumerationHelpers::*;
+
+Enum meta::pure::mapping::tests::enumerationHelpers::Colour { RED, GREEN, BLUE, YELLOW }
+Enum meta::pure::mapping::tests::enumerationHelpers::Shape  { SQUARE, CIRCLE }
+
+###Mapping
+Mapping meta::pure::mapping::tests::enumerationHelpers::BaseMapping
+(
+   meta::pure::mapping::tests::enumerationHelpers::Shape: EnumerationMapping ShapeMap
+   {
+      SQUARE: ['sq', 'square'],
+      CIRCLE: ['ci', 'circle']
+   }
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::ChildMapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::BaseMapping
+
+   meta::pure::mapping::tests::enumerationHelpers::Colour: EnumerationMapping ColourMap
+   {
+      RED:   ['r', 'red'],
+      GREEN: ['g', 'green']
+   }
+)
+
+// Six-level include chain (Level0 → Level1 → Level2 → Level3 → Level4 → Level5).
+// The leaf, Level5, carries the ColourMap; the helpers must reach it via
+// five hops through .includes. The pre-refactor hand-unrolled walk in
+// enumerationHelpers.pure only visited depths 0/1/2/3/4 (four .included
+// steps) and would silently return an empty result here.
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level5Mapping
+(
+   meta::pure::mapping::tests::enumerationHelpers::Colour: EnumerationMapping ColourMap
+   {
+      RED:   ['r', 'red'],
+      GREEN: ['g', 'green']
+   }
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level4Mapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::Level5Mapping
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level3Mapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::Level4Mapping
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level2Mapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::Level3Mapping
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level1Mapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::Level2Mapping
+)
+
+Mapping meta::pure::mapping::tests::enumerationHelpers::Level0Mapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::Level1Mapping
+)
+
+// Fixture for mapToEnumValue / mapToEnumValueOptional tests. Source values
+// include the target enum's own member names so both the EnumerationMapping-hit
+// path and the extractEnumValue fallback path can be exercised on the same
+// mapping.
+Mapping meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping
+(
+   include meta::pure::mapping::tests::enumerationHelpers::BaseMapping
+
+   meta::pure::mapping::tests::enumerationHelpers::Colour: EnumerationMapping ColourFromNameMap
+   {
+      RED:   ['RED', 'crimson'],
+      GREEN: ['GREEN', 'emerald']
+   }
+)
+
+###Pure
+import meta::pure::mapping::*;
+import meta::pure::mapping::tests::enumerationHelpers::*;
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetSourceEnumValues_directMapping(): Boolean[1]
+{
+   assertSameElements([Shape.SQUARE, Shape.CIRCLE], getSourceEnumValues(meta::pure::mapping::tests::enumerationHelpers::BaseMapping, Shape));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetSourceEnumValues_includedMapping(): Boolean[1]
+{
+   assertSameElements([Shape.SQUARE, Shape.CIRCLE], getSourceEnumValues(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Shape));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetSourceEnumValuesByName(): Boolean[1]
+{
+   assertSameElements([Colour.RED, Colour.GREEN], getSourceEnumValuesByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Colour, 'ColourMap'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetEnumerationMappingValueByName_directMapping(): Boolean[1]
+{
+   assertEquals(Colour.RED,   getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Colour, 'ColourMap', 'r'));
+   assertEquals(Colour.GREEN, getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Colour, 'ColourMap', 'green'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetEnumerationMappingValueByName_includedMapping(): Boolean[1]
+{
+   assertEquals(Shape.SQUARE, getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Shape, 'ShapeMap', 'sq'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetEnumerationMappingValueByName_unknownSourceIsEmpty(): Boolean[1]
+{
+   assertEmpty(getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Colour, 'ColourMap', 'not-a-code'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetEnumerationMappingValueByName_unknownNameIsEmpty(): Boolean[1]
+{
+   assertEmpty(getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::ChildMapping, Colour, 'NoSuchMap', 'r'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testGetEnumerationMappingValueByName_deepIncludeChain(): Boolean[1]
+{
+   assertEquals(Colour.RED, getEnumerationMappingValueByName(meta::pure::mapping::tests::enumerationHelpers::Level0Mapping, Colour, 'ColourMap', 'r'));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testMapToEnumValue_hitViaEnumerationMapping(): Boolean[1]
+{
+   assertEquals(Colour.RED,   mapToEnumValue(Colour.RED,   Colour, meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping));
+   assertEquals(Colour.GREEN, mapToEnumValue(Colour.GREEN, Colour, meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testMapToEnumValue_fallbackWhenSourceNotInMapping(): Boolean[1]
+{
+   assertEquals(Colour.BLUE, mapToEnumValue(Colour.BLUE, Colour, meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testMapToEnumValue_fallbackWhenNoMappingForEnum(): Boolean[1]
+{
+   assertEquals(Colour.RED, mapToEnumValue(Colour.RED, Colour, meta::pure::mapping::tests::enumerationHelpers::BaseMapping));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testMapToEnumValueOptional_emptySource(): Boolean[1]
+{
+   assertEmpty(mapToEnumValueOptional([]->cast(@meta::pure::mapping::tests::enumerationHelpers::Colour), Colour, meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping));
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::mapping::tests::enumerationHelpers::testMapToEnumValueOptional_nonEmptySource(): Boolean[1]
+{
+   assertEquals(Colour.RED, mapToEnumValueOptional(Colour.RED, Colour, meta::pure::mapping::tests::enumerationHelpers::MapToEnumTestMapping)->toOne());
+}

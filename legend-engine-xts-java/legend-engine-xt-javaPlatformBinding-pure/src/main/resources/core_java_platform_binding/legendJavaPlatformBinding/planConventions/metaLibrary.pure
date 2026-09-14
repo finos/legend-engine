@@ -32,14 +32,25 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::meta::
          fc(enumValues_Enumeration_1__T_MANY_,                         enumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
          // ----------------- Move to Essential when possible ------------------------
 
+         fc(meta::pure::mapping::getSourceEnumValues_Mapping_1__Enumeration_1__Enum_MANY_,
+            getSourceEnumValues_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(meta::pure::mapping::getSourceEnumValuesByName_Mapping_1__Enumeration_1__String_1__Enum_MANY_,
+            getSourceEnumValuesByName_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(meta::pure::mapping::getEnumerationMappingValueByName_Mapping_1__Enumeration_1__String_1__Any_1__Enum_$0_1$_,
+            getEnumerationMappingValueByName_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(meta::pure::mapping::mapToEnumValue_Enum_1__Enumeration_1__Mapping_1__Enum_1_,
+            mapToEnumValue_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+         fc(meta::pure::mapping::mapToEnumValueOptional_Enum_$0_1$__Enumeration_1__Mapping_1__Enum_$0_1$_,
+            mapToEnumValueOptional_FunctionExpression_1__Conventions_1__DebugContext_1__Code_1_),
+
          fc1(typeName_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
                                                                                       | $obj->j_invoke(typeNameMethod(), [], javaString()),
-                                                                                      | j_string($ctx.params->at(0).genericType.rawType.name->toOne()))}),         
+                                                                                      | j_string($ctx.params->at(0).genericType.rawType.name->toOne()))}),
          fc1(typePath_Any_1__String_1_,                                { ctx,obj | if($ctx.params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::Class),
                                                                                       | $obj->j_invoke(typePathMethod(), [], javaString()),
                                                                                       | j_string($ctx.params->at(0).genericType.rawType->toOne()->elementToPath()))})
       ]);
-   
+
     $conventions->registerClassCoder(
          ClassPurpose.ENUMERATION,
          generateEnumeration_Type_1__Conventions_1__DebugContext_1__Class_1_
@@ -160,4 +171,166 @@ function <<access.private>>meta::pure::executionPlan::platformBinding::legendJav
                                             );
                                        );
   );
+}
+
+// ============================================================================================================
+// Enumeration-mapping helpers -- inline coders for meta::pure::mapping::getSourceEnumValues /
+// getSourceEnumValuesByName / getEnumerationMappingValueByName.
+//
+// These functions take a Mapping[1] argument that the default processInstanceValue path cannot
+// materialise ("Unhandled value type: meta::pure::mapping::Mapping"). Instead of asking Java-gen
+// to serialise the Mapping, we resolve everything at code-gen time: the Mapping and the target
+// Enumeration are compile-time knowns (a mapping literal reference and an Enumeration<T>
+// generic argument), so the include-DAG walk and the enum-name lookups can all happen in Pure
+// during code generation. What is emitted at each callsite is a plain literal expression
+// (Arrays.asList(...) or a chained conditional lookup) that never mentions a Mapping.
+//
+// Constraints on callers:
+//  * The Mapping arg must be a literal reference to a Mapping element (an InstanceValue whose
+//    values[0] is the Mapping). Passing a computed Mapping expression is unsupported.
+//  * For getSourceEnumValuesByName / getEnumerationMappingValueByName, the enumerationMappingName
+//    arg must be a String literal.
+//  * getEnumerationMappingValueByName additionally supports either a String literal or a
+//    runtime String/primitive expression as the source value.
+// ============================================================================================================
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::collectEnumerationMappingsTransitively(mapping: meta::pure::mapping::Mapping[1]): meta::pure::mapping::EnumerationMapping<Any>[*]
+{
+   $mapping.enumerationMappings
+      ->concatenate($mapping.includes.included->map(m | $m->collectEnumerationMappingsTransitively()));
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::extractLiteralMapping(iv: ValueSpecification[1]): meta::pure::mapping::Mapping[1]
+{
+   assert($iv->instanceOf(InstanceValue), | 'getSourceEnumValues/getSourceEnumValuesByName/getEnumerationMappingValueByName require a literal Mapping reference as the first argument');
+   $iv->cast(@InstanceValue).values->toOne()->cast(@meta::pure::mapping::Mapping);
+}
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::extractLiteralString(iv: ValueSpecification[1], argDescription: String[1]): String[1]
+{
+   assert($iv->instanceOf(InstanceValue), | $argDescription + ' must be a String literal');
+   $iv->cast(@InstanceValue).values->toOne()->cast(@String);
+}
+
+// Builds Arrays.asList(EnumType.getEnumFromPureName("A"), EnumType.getEnumFromPureName("B"), ...)
+// for the given enum-name list. Returns an empty Arrays.asList() when the list is empty.
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::emitEnumListLiteral(enumNames: String[*], enumType: meta::pure::metamodel::type::Type[1], conventions: Conventions[1], debug: DebugContext[1]): Code[1]
+{
+   let javaEnumType = $conventions->className($enumType);
+   let items = $enumNames->distinct()->map(n | $javaEnumType->j_invoke('getEnumFromPureName', j_string($n), $javaEnumType));
+   javaArrays()->j_invoke('asList', $items, javaList($javaEnumType))
+      ->dependsOn(enumTypeDependency($enumType, $conventions, $debug));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::getSourceEnumValues(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params      = $fe.parametersValues->evaluateAndDeactivate();
+   let mapping     = extractLiteralMapping($params->at(0));
+   let enumType    = $params->at(1).genericType.typeArguments->at(0).rawType->toOne();
+   let allEnumMaps = collectEnumerationMappingsTransitively($mapping);
+   let matching    = $allEnumMaps->filter(em | $em.enumeration->toOne() == $enumType);
+   let enumNames   = $matching->map(em | $em.enumValueMappings.enum)->cast(@Enum)->map(e | $e.name->toOne());
+   emitEnumListLiteral($enumNames, $enumType, $conventions, $debug);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::getSourceEnumValuesByName(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params      = $fe.parametersValues->evaluateAndDeactivate();
+   let mapping     = extractLiteralMapping($params->at(0));
+   let enumType    = $params->at(1).genericType.typeArguments->at(0).rawType->toOne();
+   let emName      = extractLiteralString($params->at(2), 'enumerationMappingName');
+   let allEnumMaps = collectEnumerationMappingsTransitively($mapping);
+   let matching    = $allEnumMaps->filter(em | ($em.enumeration->toOne() == $enumType) && ($em.name == $emName));
+   let enumNames   = $matching->map(em | $em.enumValueMappings.enum)->cast(@Enum)->map(e | $e.name->toOne());
+   emitEnumListLiteral($enumNames, $enumType, $conventions, $debug);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::getEnumerationMappingValueByName(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params        = $fe.parametersValues->evaluateAndDeactivate();
+   let mapping       = extractLiteralMapping($params->at(0));
+   let enumType      = $params->at(1).genericType.typeArguments->at(0).rawType->toOne();
+   let emName        = extractLiteralString($params->at(2), 'enumerationMappingName');
+   let javaEnumType  = $conventions->className($enumType);
+   let sourceCode    = $params->at(3)->generateJava($conventions, $debug->indent());
+
+   let allEnumMaps = collectEnumerationMappingsTransitively($mapping);
+   let matching    = $allEnumMaps->filter(em | ($em.enumeration->toOne() == $enumType) && ($em.name == $emName));
+   let pairs = $matching->map(em | $em.enumValueMappings)
+                        ->map(evm | $evm.sourceValues->filter(sv | $sv->instanceOf(String))
+                                                     ->map(sv | pair($sv->cast(@String), $evm.enum->cast(@Enum).name->toOne())));
+
+   let elseBranch = j_null($javaEnumType);
+   let chained = $pairs->fold(
+      {p, acc |
+         let hit = $javaEnumType->j_invoke('getEnumFromPureName', j_string($p.second), $javaEnumType);
+         j_conditional($sourceCode->j_invoke('equals', j_string($p.first), javaBoolean()), $hit, $acc, $javaEnumType);
+      },
+      $elseBranch
+   );
+   $chained->dependsOn(enumTypeDependency($enumType, $conventions, $debug));
+}
+
+// ============================================================================================================
+// mapToEnumValue / mapToEnumValueOptional -- inline coders.
+//
+// Surface functions (meta::pure::mapping::enumerationHelpers.pure):
+//   mapToEnumValue(sourceEnum: Enum[1], targetEnum: Enumeration<T>[1], mapping: Mapping[1]): T[1]
+//   mapToEnumValueOptional(sourceEnum: Enum[0..1], ...): T[0..1]
+//
+// Semantics: at code-gen time, walk the Mapping include-DAG for the first
+// EnumerationMapping whose .enumeration matches the target Enumeration. Emit
+// a chained conditional over each String source-value in that EnumerationMapping,
+// falling back to targetEnum.getEnumFromPureName(sourceEnum.getName()) when
+// no branch matches (and unconditionally when no EnumerationMapping exists for
+// the target enum -- the extractEnumValue path).
+//
+// The Optional variant additionally guards the whole expression on
+// sourceEnumCode != null, returning null when the source is empty.
+// ============================================================================================================
+
+function <<access.private>> meta::pure::executionPlan::platformBinding::legendJava::library::meta::mapToEnumValueBody(sourceEnumCode: Code[1], targetEnumType: meta::pure::metamodel::type::Type[1], mapping: meta::pure::mapping::Mapping[1], conventions: Conventions[1], debug: DebugContext[1]): Code[1]
+{
+   let javaEnumType = $conventions->className($targetEnumType);
+   let sourceNameCode = $sourceEnumCode->j_invoke('getName', [], javaString());
+   let fallback = $javaEnumType->j_invoke('getEnumFromPureName', $sourceNameCode, $javaEnumType);
+
+   let firstMapping = collectEnumerationMappingsTransitively($mapping)
+      ->filter(em | $em.enumeration->toOne() == $targetEnumType)
+      ->first();
+
+   let result = if($firstMapping->isEmpty(),
+      | $fallback,
+      | let pairs = $firstMapping->toOne().enumValueMappings
+                       ->map(evm | $evm.sourceValues->filter(sv | $sv->instanceOf(String))
+                                                    ->map(sv | pair($sv->cast(@String), $evm.enum->cast(@Enum).name->toOne())));
+        $pairs->fold(
+           {p, acc |
+              let hit = $javaEnumType->j_invoke('getEnumFromPureName', j_string($p.second), $javaEnumType);
+              j_conditional($sourceNameCode->j_invoke('equals', j_string($p.first), javaBoolean()), $hit, $acc, $javaEnumType);
+           },
+           $fallback
+        );
+   );
+   $result->dependsOn(enumTypeDependency($targetEnumType, $conventions, $debug));
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::mapToEnumValue(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params         = $fe.parametersValues->evaluateAndDeactivate();
+   let sourceEnumCode = $params->at(0)->generateJava($conventions, $debug->indent());
+   let targetEnumType = $params->at(1).genericType.typeArguments->at(0).rawType->toOne();
+   let mapping        = extractLiteralMapping($params->at(2));
+   mapToEnumValueBody($sourceEnumCode, $targetEnumType, $mapping, $conventions, $debug);
+}
+
+function meta::pure::executionPlan::platformBinding::legendJava::library::meta::mapToEnumValueOptional(fe:FunctionExpression[1], conventions:Conventions[1], debug:DebugContext[1]): Code[1]
+{
+   let params         = $fe.parametersValues->evaluateAndDeactivate();
+   let sourceEnumCode = $params->at(0)->generateJava($conventions, $debug->indent());
+   let targetEnumType = $params->at(1).genericType.typeArguments->at(0).rawType->toOne();
+   let mapping        = extractLiteralMapping($params->at(2));
+   let javaEnumType   = $conventions->className($targetEnumType);
+   let nonNull        = mapToEnumValueBody($sourceEnumCode, $targetEnumType, $mapping, $conventions, $debug);
+   j_conditional($sourceEnumCode->j_eq(j_null()), j_null($javaEnumType), $nonNull, $javaEnumType);
 }
