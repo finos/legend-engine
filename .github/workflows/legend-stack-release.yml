@@ -76,9 +76,14 @@ jobs:
           theme: dark
 
       - name: Build and deploy release
+        # No -T: central-publishing-maven-plugin (extensions=true, from the
+        # org.finos:finos parent) defers every module's artifacts and uploads
+        # one bundle for the whole reactor at the end. Under Maven's parallel
+        # builder that aggregation deadlocks -- every thread ends up stuck on
+        # "Waiting for other projects build to finish..." indefinitely.
         env:
           RELEASE_VERSION: ${{ github.event.client_payload.releaseVersion }}
-        run: mvn -B -e -T 2 -DargLine="-Xmx20g" -Drevision="${RELEASE_VERSION}" deploy -P release,docker
+        run: mvn -B -e -DargLine="-Xmx20g" -Drevision="${RELEASE_VERSION}" deploy -P release,docker
 
       - name: Create and push git tag
         env:
@@ -95,10 +100,38 @@ jobs:
           set -euo pipefail
           IFS=. read -r major minor patch <<< "${RELEASE_VERSION}"
           nextSnapshot="${major}.${minor}.$((patch + 1))-SNAPSHOT"
+          bump() {
+            sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
+            if git diff --quiet -- pom.xml; then
+              echo "::error::sed left pom.xml unchanged; set <revision> to ${nextSnapshot} by hand on ${GITHUB_REF_NAME}."
+              exit 1
+            fi
+            git add pom.xml
+            git commit -m "Bump version to ${nextSnapshot}"
+          }
+          # Committed onto the commit that was built, deployed and tagged --
+          # HEAD, which is the "Legend Stack Versions upgrade" commit when one
+          # was made -- never onto whatever the remote tip has become, so the
+          # push is a plain fast-forward that git rejects if the branch moved
+          # while this release ran. A release here takes hours, so a rejected
+          # push is not treated as a failure outright: if the branch tip still
+          # carries the <revision> this release started from, nobody changed it
+          # deliberately and the bump is re-applied on the tip. If it carries
+          # anything else, somebody did, and their value is kept.
+          git checkout -B "${GITHUB_REF_NAME}" HEAD
+          expected="$(sed -n 's|.*<revision>\(.*\)</revision>.*|\1|p' pom.xml)"
+          bump
+          if git push origin "${GITHUB_REF_NAME}"; then
+            exit 0
+          fi
+          echo "::warning::${GITHUB_REF_NAME} moved while this release ran; checking whether <revision> was changed deliberately."
           git fetch origin "${GITHUB_REF_NAME}"
           git checkout -B "${GITHUB_REF_NAME}" "origin/${GITHUB_REF_NAME}"
-          sed -i "s|<revision>.*</revision>|<revision>${nextSnapshot}</revision>|" pom.xml
-          git add pom.xml
-          git commit -m "Bump version to ${nextSnapshot}"
+          current="$(sed -n 's|.*<revision>\(.*\)</revision>.*|\1|p' pom.xml)"
+          if [ "${current}" != "${expected}" ]; then
+            echo "::error::<revision> on ${GITHUB_REF_NAME} is now ${current}, not ${expected}: somebody changed it while this release ran. ${RELEASE_VERSION} is published and tagged; set <revision> to ${nextSnapshot} by hand only if that is still the right next version."
+            exit 1
+          fi
+          bump
           git push origin "${GITHUB_REF_NAME}"
 
