@@ -15,12 +15,14 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestPoolName extends TestConnectionManagement
@@ -56,5 +58,42 @@ public class TestPoolName extends TestConnectionManagement
 
         String pool2 = connectionStateManager.poolNameFor(user2, ds1.getConnectionKey());
         assertTrue(pool2.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool2_AnonymousCredential"));
+    }
+
+    @Test
+    public void testPoolNameCanIncludeCredentialIdWhenConfigured()
+    {
+        Identity user = new Identity("pool3", new Credential()
+        {
+            @Override
+            public String id()
+            {
+                return "abc123";
+            }
+        });
+        DataSourceSpecification ds1 = buildLocalDataSourceSpecification(Collections.singletonList("DROP TABLE IF EXISTS T1;"));
+
+        String defaultPoolName = connectionStateManager.poolNameFor(user, ds1.getConnectionKey());
+        assertTrue(defaultPoolName.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool3_.*"));
+        assertTrue(!defaultPoolName.contains("abc123"));
+
+        String original = System.getProperty(ConnectionStateManager.INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY);
+        try
+        {
+            System.setProperty(ConnectionStateManager.INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY, "true");
+            String poolNameWithCredentialId = connectionStateManager.poolNameFor(user, ds1.getConnectionKey());
+            assertTrue(poolNameWithCredentialId.matches("DBPool_LocalH2_port:\\d{5}_sqlCS:3263863932_type:TestDB_pool3_.*_abc123"));
+        }
+        finally
+        {
+            if (original == null)
+            {
+                System.clearProperty(ConnectionStateManager.INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY);
+            }
+            else
+            {
+                System.setProperty(ConnectionStateManager.INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY, original);
+            }
+        }
     }
 }
