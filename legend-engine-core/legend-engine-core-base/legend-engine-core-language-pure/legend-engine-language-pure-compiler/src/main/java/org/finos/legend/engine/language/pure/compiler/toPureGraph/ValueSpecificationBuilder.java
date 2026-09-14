@@ -764,6 +764,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         config._typeKeyName(serializationConfig.typeKeyName);
         config._includeEnumType(serializationConfig.includeEnumType);
         config._dateTimeFormat(serializationConfig.dateTimeFormat);
+        LegacyDateFormatDetector.checkDateTimeFormat(serializationConfig.dateTimeFormat, serializationConfig.sourceInformation, this.context.pureModel);
         config._removePropertiesWithNullValues(serializationConfig.removePropertiesWithNullValues);
         config._removePropertiesWithEmptySets(serializationConfig.removePropertiesWithEmptySets);
         config._fullyQualifiedTypePath(serializationConfig.fullyQualifiedTypePath);
@@ -989,6 +990,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
         SimpleFunctionExpression result = func.getOne();
         result.setSourceInformation(SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation));
         MilestoningDatePropagationHelper.updateMilestoningContextFromValidSources(result, processingContext);
+        LegacyDateFormatDetector.check(result, this.context.pureModel);
 
         return result;
     }
