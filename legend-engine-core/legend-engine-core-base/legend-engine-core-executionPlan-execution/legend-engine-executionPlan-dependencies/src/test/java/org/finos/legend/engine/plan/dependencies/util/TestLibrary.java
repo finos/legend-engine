@@ -136,4 +136,17 @@ public class TestLibrary
         Assert.assertEquals(expected, Library.indexOf("a", "b"));
         Assert.assertEquals(expected, Library.indexOf(Arrays.asList("a", "b"), "c"));
     }
+
+    @Test
+    public void testFormatDate()
+    {
+        PureDate date = PureDate.parsePureDate("2014-03-10T13:07:44.07");
+        Assert.assertEquals("on 2014-03-10 13:07", Library.format("on %t{yyyy-MM-dd?[\" \"HH:mm]}", Arrays.asList(date)));
+
+        // a date pattern ends at the first brace outside quotes, and a backslash inside quotes makes text of the
+        // character after it, which is the only way to write a quote there, including as a sub-second fill
+        Assert.assertEquals("on 2014} at x", Library.format("on %t{yyyy\"}\"} at %s", Arrays.asList(date, "x")));
+        Assert.assertEquals("on 2014a\"b at x", Library.format("on %t{yyyy\"a\\\"b\"} at %s", Arrays.asList(date, "x")));
+        Assert.assertEquals("on 07\"\" at x", Library.format("on %t{S(4,4,\"\\\"\")} at %s", Arrays.asList(date, "x")));
+    }
 }

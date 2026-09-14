@@ -1274,18 +1274,20 @@ public class Library
         for (int i = start + 1; i < length; i++)
         {
             char next = formatString.charAt(i);
-            if (inQuotes)
+            if (escaped)
+            {
+                // the character a backslash escapes is text, whatever it is, and escapes nothing itself
+                escaped = false;
+            }
+            else if (inQuotes)
             {
                 if (next == '\"')
                 {
-                    if (!escaped)
-                    {
-                        inQuotes = false;
-                    }
+                    inQuotes = false;
                 }
                 else if (next == '\\')
                 {
-                    escaped = !escaped;
+                    escaped = true;
                 }
             }
             else if (next == '\"')

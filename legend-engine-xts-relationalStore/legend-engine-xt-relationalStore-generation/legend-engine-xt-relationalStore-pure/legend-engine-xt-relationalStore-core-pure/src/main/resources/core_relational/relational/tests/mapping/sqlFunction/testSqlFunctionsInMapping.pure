@@ -410,6 +410,14 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
     //assertEquals('select cast("root".string1 as float) as "string2Date" from testDataTable as "root" where cast("root".string1 as float) = 123.456',$result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testConvertTimeZoneWithOptionalSectionInH2():Boolean[1]
+{
+    assertError(|toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd?[ HH:mm:ss]')], ['tzQuery']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions()),
+                'Optional sections and sub-second widths in a date format cannot be translated to SQL: yyyy-MM-dd?[ HH:mm:ss]');
+}
+
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testToSQLStringToStringInDB2():Boolean[1]
 {
     let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.int1String], ['toString']),

@@ -182,6 +182,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
   let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);
   assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
+  assert(!$unWrappedfmt->usesOptionalSectionOrSubSecondWidth(), 'Optional sections and sub-second widths in a date format cannot be translated to SQL: ' + $unWrappedfmt);
   let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
   let datefmt = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
   format('TO_CHAR(legend_h2_extension_convertTimeZone(%s,%s),%s)',[$params->at(0),$params->at(1),$datefmt]);
