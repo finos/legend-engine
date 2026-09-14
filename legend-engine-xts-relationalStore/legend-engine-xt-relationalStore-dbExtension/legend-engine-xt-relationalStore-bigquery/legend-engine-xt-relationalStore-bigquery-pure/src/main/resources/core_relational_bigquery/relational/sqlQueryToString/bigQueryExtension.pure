@@ -142,6 +142,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    'datetime_diff(' + $params->at(1) + ', ' + $params->at(0) + ', ' + $unit->mapToDBUnitType() + ')';
 }
 
+// Buckets are measured from the epoch, which is what timeBucket anchors to for every unit except
+// WEEKS. Pure's week buckets do not sit on a fixed origin at all -- a 1-week bucket of 2024-01-31
+// starts on 2024-01-29 but a 2-week bucket starts there too, and a 3-week bucket on 2024-01-15 --
+// so WEEKS fails here rather than answering from an origin that only looks right sometimes.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::timeBucketForBigQuery(params:String[3]):String[1]
+{
+   let unit = $params->at(2)->removeQuotesIfExist();
+   assert($unit != DurationUnit.WEEKS->toString(),
+          '[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket');
+   'datetime_bucket(' + $params->at(0) + ', interval ' + $params->at(1) + ' ' + $unit->mapToDBUnitType() + ', datetime \'1970-01-01\')';
+}
+
 // BigQuery matches with RE2, which takes the same inline flag syntax as the other engines.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::regexpInlineFlagsForBigQuery(regexpParametersAsString: String[1]):String[1]
 {
@@ -229,9 +241,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='timestamp_trunc(timestamp %s, second)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='timestamp_trunctimestamp %s, hour)')), 
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='timestamp_trunc(timestamp %s, minute)')),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='generate_uuid()')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='edit_distance(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
@@ -250,6 +264,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='CURRENT_DATE()')),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->timeBucketForBigQuery()})),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     // isoweek, not week: BigQuery's week counts from Sunday and numbers the days before the year's
