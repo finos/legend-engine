@@ -4685,6 +4685,70 @@ function meta::relational::functions::pureToSqlQuery::processSubstring(f:Functio
      | processDynaFunction('substring', $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions));
 }
 
+// SQL position functions are one-based and return 0 when absent, where Pure is zero-based and
+// returns -1; subtracting one carries both conventions across at once.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::zeroBasedIdxOf(params:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  [newDynaFunction('indexOf', $params), ^Literal(value = 1)];
+}
+
+// No dialect takes a start offset on its position function, so the search runs over the suffix and
+// the offset is added back. A miss must still be -1, not fromIndex - 1, hence the guard.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::zeroBasedIdxOfFromIndex(params:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  let fromIndex = $params->at(2);
+  let suffix = newDynaFunction('substring', [$params->at(0), newDynaFunction('plus', [$fromIndex, ^Literal(value = 1)])]);
+  let found = newDynaFunction('indexOf', [$suffix, $params->at(1)]);
+  [newDynaFunction('equal', [$found, ^Literal(value = 0)]),
+   ^Literal(value = -1),
+   newDynaFunction('plus', [newDynaFunction('minus', [$found, ^Literal(value = 1)]), $fromIndex])];
+}
+
+// SQL has no backwards search, so both strings are reversed and the result mirrored back.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::lastIdxOfArgs(str:RelationalOperationElement[1], toFind:RelationalOperationElement[1]):RelationalOperationElement[*]
+{
+  let found = newDynaFunction('indexOf', [newDynaFunction('reverseString', $str), newDynaFunction('reverseString', $toFind)]);
+  [newDynaFunction('equal', [$found, ^Literal(value = 0)]),
+   ^Literal(value = -1),
+   newDynaFunction('minus', [newDynaFunction('minus', [newDynaFunction('length', $str), newDynaFunction('length', $toFind)]),
+                             newDynaFunction('minus', [$found, ^Literal(value = 1)])])];
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::zeroBasedLastIdxOf(params:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  lastIdxOfArgs($params->at(0), $params->at(1));
+}
+
+// fromIndex bounds where a match may begin, so the prefix must retain the candidate match itself:
+// fromIndex + length(toFind) characters, not fromIndex.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::zeroBasedLastIdxOfFromIndex(params:RelationalOperationElement[*]):RelationalOperationElement[*]
+{
+  let toFind = $params->at(1);
+  let prefix = newDynaFunction('substring', [$params->at(0), ^Literal(value = 1),
+                                             newDynaFunction('plus', [$params->at(2), newDynaFunction('length', $toFind)])]);
+  lastIdxOfArgs($prefix, $toFind);
+}
+
+function meta::relational::functions::pureToSqlQuery::processIdxOf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('minus', zeroBasedIdxOf_RelationalOperationElement_MANY__RelationalOperationElement_MANY_, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processIdxOfFromIndex(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('if', zeroBasedIdxOfFromIndex_RelationalOperationElement_MANY__RelationalOperationElement_MANY_, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processLastIdxOf(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('if', zeroBasedLastIdxOf_RelationalOperationElement_MANY__RelationalOperationElement_MANY_, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::processLastIdxOfFromIndex(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  processDynaFunction('if', zeroBasedLastIdxOfFromIndex_RelationalOperationElement_MANY__RelationalOperationElement_MANY_, $f, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+}
+
 function <<access.private>> meta::relational::functions::pureToSqlQuery::substrIntLiteral(op:RelationalOperationElement[1]):Integer[0..1]
 {
   $op->unwrapAlias()->toOne()->match([
@@ -10677,6 +10741,10 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::right_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substr_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstr_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::substr_String_1__Integer_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processSubstr_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::idxOf_String_1__String_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processIdxOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::idxOf_String_1__String_1__Integer_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processIdxOfFromIndex_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processLastIdxOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1__Integer_1_,second=meta::relational::functions::pureToSqlQuery::processLastIdxOfFromIndex_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lpad_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::lpad_String_1__Integer_1__String_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::string::rpad_String_1__Integer_1__String_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

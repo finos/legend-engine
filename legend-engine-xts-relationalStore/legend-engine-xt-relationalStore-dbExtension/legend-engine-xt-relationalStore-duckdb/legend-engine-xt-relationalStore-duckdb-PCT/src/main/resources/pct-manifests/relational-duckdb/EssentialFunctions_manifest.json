@@ -364,12 +364,6 @@
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 4\nactual:   5"
-  }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_",
     "expectedError" : "Match failure: null"
   }, {
@@ -399,12 +393,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.000D\nactual:   0.0D"
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy do'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 'he quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy dog'"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
     "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"

@@ -589,12 +589,6 @@
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 4\nactual:   5\""
-  }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
   }, {
@@ -606,6 +600,12 @@
   }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::lastIdxOf::testLastIdxOfEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: 0\nactual:   -1"
+  }, {
+    "test" : "meta::pure::functions::string::tests::lastIdxOf::testLastIdxOfFromIndex_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: 1\nactual:   0"
   }, {
     "test" : "meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\""
@@ -642,12 +642,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::split::testSplit_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'split' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy do'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'the quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy do'\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
     "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"

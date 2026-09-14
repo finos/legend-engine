@@ -691,11 +691,11 @@
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::format_String_1__Any_MANY__String_1_\""
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_"
+    "test" : "meta::pure::functions::string::tests::idxOf::testIdxOfFromIndex_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::idxOf_String_1__String_1__Integer_1__Integer_1_\""
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_"
+    "test" : "meta::pure::functions::string::tests::idxOf::testIdxOfSimple_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::idxOf_String_1__String_1__Integer_1_\""
   }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_"
@@ -708,6 +708,15 @@
   }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_"
+  }, {
+    "test" : "meta::pure::functions::string::tests::lastIdxOf::testLastIdxOfEmptyString_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::lastIdxOf::testLastIdxOfFromIndex_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1__Integer_1_\""
+  }, {
+    "test" : "meta::pure::functions::string::tests::lastIdxOf::testLastIdxOfSimple_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1_\""
   }, {
     "test" : "meta::pure::functions::string::tests::left::testLeftEmptyString_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::left_String_1__Integer_1__String_1_\""
@@ -810,12 +819,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::substr::testSubstrStart_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::substr_String_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::substring_String_1__Integer_1__Integer_1__String_1_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::substring_String_1__Integer_1__String_1_\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testBooleanToString_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::toString_Any_1__String_1_\""
