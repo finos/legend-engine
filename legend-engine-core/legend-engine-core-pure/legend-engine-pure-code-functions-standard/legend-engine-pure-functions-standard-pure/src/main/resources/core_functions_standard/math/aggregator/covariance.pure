@@ -14,6 +14,40 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The covariance of two collections, sample or population depending on the flag.
+
+How two series move together: positive when they rise and fall in step, negative when one rises as
+the other falls, near zero when unrelated. Unlike `corr`, it is not normalised, so its magnitude
+depends on the units of both inputs and is not comparable across pairs.
+
+`isBiasCorrected` selects the divisor — `true` divides by `count - 1` for a **sample** covariance,
+`false` by `count` for a **population** one. Prefer the named
+`covarSample(Number[*], Number[*]):Number[0..1]` and
+`covarPopulation(Number[*], Number[*]):Number[0..1]` in ordinary code.
+
+The two collections are positional and are paired by index. **Returns empty rather than failing when
+there is nothing to divide by** — a `count` of 0, or of 1 with the bias correction on.
+
+**Parameters**
+- `numbersA` — the first series.
+- `numbersB` — the second series, paired by position.
+- `count` — the number of pairs.
+- `isBiasCorrected` — `true` for the sample covariance, `false` for the population one.
+
+**Returns** the covariance, or empty when it is undefined.
+
+**Examples**
+```pure
+covariance([1, 2], [10, 20], 2, true)    // 5.0,  the sample form
+covariance([1, 2], [10, 20], 2, false)   // 2.5,  the population form
+covariance([1], [10], 1, true)           // empty, count 1 with the correction on
+```
+
+**See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
+`covarPopulation(Number[*], Number[*]):Number[0..1]`,
+`corr(Number[*], Number[*]):Number[0..1]`
+'''
 function <<PCT.function>> meta::pure::functions::math::covariance(numbersA:Number[*], numbersB:Number[*], count:Integer[1], isBiasCorrected: Boolean[1]):Number[0..1]
 {
   if($count == 0 || ($isBiasCorrected && ($count <= 1)), |[], | ($numbersA->zip($numbersB)->map(p | $p.first * $p.second)->sum() - sum($numbersA)*sum($numbersB)/$count)/($count- if ($isBiasCorrected, |1, |0)))

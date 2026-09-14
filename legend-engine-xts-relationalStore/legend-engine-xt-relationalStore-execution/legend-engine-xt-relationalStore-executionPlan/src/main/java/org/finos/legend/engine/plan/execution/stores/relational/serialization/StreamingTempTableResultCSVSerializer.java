@@ -37,7 +37,6 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -78,7 +77,7 @@ public class StreamingTempTableResultCSVSerializer extends CsvSerializer
              CSVPrinter csvPrinter = new CSVPrinter(out, this.csvFormat);)
         {
             String connectionTimeZone = this.tempTableStreamingResult.getRelationalDatabaseTimeZone();
-            timeZone = connectionTimeZone == null ? TimeZone.getTimeZone("GMT").toString() : connectionTimeZone;
+            timeZone = (connectionTimeZone == null) ? "GMT" : connectionTimeZone;
 
             final List<TempTableColumnMetaData> columns = this.tempTableStreamingResult.tempTableColumnMetaData;
             columnLabels = columns.stream().map(col -> col.column.label).collect(Collectors.toList());

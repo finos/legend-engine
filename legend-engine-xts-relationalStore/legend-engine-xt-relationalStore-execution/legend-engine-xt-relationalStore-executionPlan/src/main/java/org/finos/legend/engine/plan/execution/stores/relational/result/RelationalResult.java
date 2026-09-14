@@ -18,42 +18,21 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
-
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.JDBCType;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.TimeZone;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodePartialClassResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
-import org.finos.legend.engine.plan.execution.result.*;
+import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
+import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.plan.execution.result.ResultVisitor;
+import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.result.builder.Builder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassBuilder;
 import org.finos.legend.engine.plan.execution.result.builder._class.ClassMappingInfo;
@@ -91,7 +70,32 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 import org.slf4j.Logger;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.JDBCType;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 public class RelationalResult extends StreamingResult implements IRelationalResult, StoreExecutable
 {
@@ -122,6 +126,8 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public Builder builder;
     private Calendar calendar;
+    private boolean readsLocalDate = true;
+    private boolean readsLocalDateTime = true;
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan)
     {
@@ -547,31 +553,15 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
 
     public Object getTransformedValue(int columnIndex) throws SQLException
     {
-        Object result = null;
-        switch (resultSetMetaData.getColumnType(columnIndex))
+        switch (this.resultSetMetaData.getColumnType(columnIndex))
         {
             case Types.DATE:
             {
-                java.sql.Date date = this.resultSet.getDate(columnIndex);
-                if (date != null)
-                {
-                    result = PureDate.fromSQLDate(date);
-                }
-                break;
+                return readDay(columnIndex);
             }
             case Types.TIMESTAMP:
             {
-                java.sql.Timestamp timestamp = this.resultSet.getTimestamp(
-                        columnIndex,
-                        getRelationalDatabaseTimeZone() == null ?
-                                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
-                                new GregorianCalendar(TimeZone.getTimeZone(getRelationalDatabaseTimeZone()))
-                );
-                if (timestamp != null)
-                {
-                    result = PureDate.fromSQLTimestamp(timestamp);
-                }
-                break;
+                return readMoment(columnIndex);
             }
             case Types.TINYINT:
             case Types.SMALLINT:
@@ -579,28 +569,19 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             case Types.BIGINT:
             {
                 long num = this.resultSet.getLong(columnIndex);
-                if (!this.resultSet.wasNull())
-                {
-                    result = Long.valueOf(num);
-                }
-                break;
+                return this.resultSet.wasNull() ? null : num;
             }
             case Types.REAL:
             case Types.FLOAT:
             case Types.DOUBLE:
             {
                 double num = this.resultSet.getDouble(columnIndex);
-                if (!this.resultSet.wasNull())
-                {
-                    result = Double.valueOf(num);
-                }
-                break;
+                return this.resultSet.wasNull() ? null : num;
             }
             case Types.DECIMAL:
             case Types.NUMERIC:
             {
-                result = this.resultSet.getBigDecimal(columnIndex);
-                break;
+                return this.resultSet.getBigDecimal(columnIndex);
             }
             case Types.CHAR:
             case Types.VARCHAR:
@@ -610,18 +591,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             case Types.LONGNVARCHAR:
             case Types.OTHER:
             {
-                result = this.resultSet.getString(columnIndex);
-                break;
+                return this.resultSet.getString(columnIndex);
             }
             case Types.BIT:
             case Types.BOOLEAN:
             {
                 boolean bool = this.resultSet.getBoolean(columnIndex);
-                if (!this.resultSet.wasNull())
-                {
-                    result = Boolean.valueOf(bool);
-                }
-                break;  // TODO: check this
+                return this.resultSet.wasNull() ? null : bool;
             }
             case Types.BINARY:
             case Types.VARBINARY:
@@ -629,23 +605,17 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             case Types.BLOB:
             {
                 byte[] bytes = this.resultSet.getBytes(columnIndex);
-                if (bytes != null)
-                {
-                    result = BinaryUtils.encodeHex(bytes);
-                }
-                break;
+                return (bytes == null) ? null : BinaryUtils.encodeHex(bytes);
             }
             case Types.NULL:
             {
-                // do nothing: value is already assigned to null
-                break;
+                return null;
             }
             default:
             {
-                result = this.resultSet.getObject(columnIndex);
+                return this.resultSet.getObject(columnIndex);
             }
         }
-        return result;
     }
 
     @Override
@@ -736,19 +706,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     private Calendar getCalendar()
     {
         String timeZoneId = getRelationalDatabaseTimeZone();
-        TimeZone timeZone = (timeZoneId != null) ? TimeZone.getTimeZone(timeZoneId) : TimeZone.getTimeZone("GMT");
-        if (calendar == null)
+        if (this.calendar == null)
         {
             //TODO, throw exception, TZ should always be specified
             //Till then, default to PURE default which is "GMT"
-            calendar = new GregorianCalendar(timeZone);
+            this.calendar = TimeZones.newCalendar((timeZoneId == null) ? "GMT" : timeZoneId);
         }
-        else
-        {
-            calendar.clear();
-            calendar.setTimeZone(timeZone);
-        }
-        return calendar;
+        return this.calendar;
     }
 
     @Override
@@ -773,14 +737,13 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     {
         try
         {
-            List<Column> columns = new ArrayList<>(this.resultSetMetaData.getColumnCount());
-            Function<String, String> unquote = s -> s.startsWith("\"") && s.endsWith("\"") ? s.substring(1, s.length() - 1) : s;
+            MutableList<Column> columns = Lists.mutable.ofInitialCapacity(this.resultSetMetaData.getColumnCount());
             for (int i = 1; i <= this.resultSetMetaData.getColumnCount(); i++)
             {
                 String columnType = JDBCType.valueOf(this.resultSetMetaData.getColumnType(i)).getName();
                 String updatedColumnType = columnType.equals("TIMESTAMP_WITH_TIMEZONE") ? "TIMESTAMP WITH TIME ZONE" :
                         columnType.equals("TIME_WITH_TIMEZONE") ? "TIME WITH TIME ZONE" : columnType;
-                columns.add(new Column(unquote.valueOf(this.resultSetMetaData.getColumnLabel(i)), updatedColumnType));
+                columns.add(new Column(unquote(this.resultSetMetaData.getColumnLabel(i)), updatedColumnType));
             }
             return columns;
         }
@@ -789,5 +752,77 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             this.close();
             throw new RuntimeException(e);
         }
+    }
+
+    private static String unquote(String s)
+    {
+        return (s.startsWith("\"") && s.endsWith("\"")) ? s.substring(1, s.length() - 1) : s;
+    }
+
+    /**
+     * Read a date column.
+     *
+     * <p>The column carries a day and no zone, and {@link ResultSet#getObject(int, Class)} for a
+     * {@link LocalDate} hands that day over as it stands. Reading it as a {@link java.sql.Date}
+     * instead gives an instant, which yields a day only once a zone is chosen to read it in, and
+     * drivers do not agree on the zone they built that instant in. A driver need not answer the
+     * first call, and is asked once rather than once a row.
+     */
+    private PureDate readDay(int columnIndex) throws SQLException
+    {
+        if (this.readsLocalDate)
+        {
+            try
+            {
+                LocalDate day = this.resultSet.getObject(columnIndex, LocalDate.class);
+                return (day == null) ? null : toPureDate(day);
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDate = false;
+            }
+        }
+        java.sql.Date date = this.resultSet.getDate(columnIndex);
+        return (date == null) ? null : toPureDate(date.toLocalDate());
+    }
+
+    /**
+     * Read a timestamp column.
+     *
+     * <p>The column carries a wall clock the database keeps in the zone the connection names, and
+     * a Pure date is that moment in UTC, so the wall clock is read and shifted here rather than
+     * by the driver. Handing a driver a calendar and asking it to shift does not work for every
+     * driver: some ignore the calendar and answer as though the connection named UTC, leaving
+     * every timestamp short by the connection zone.
+     */
+    private PureDate readMoment(int columnIndex) throws SQLException
+    {
+        Calendar calendar = getCalendar();
+        if (this.readsLocalDateTime)
+        {
+            try
+            {
+                LocalDateTime wallClock = this.resultSet.getObject(columnIndex, LocalDateTime.class);
+                return (wallClock == null) ? null : toPureDate(wallClock.atZone(calendar.getTimeZone().toZoneId()));
+            }
+            catch (SQLException | UnsupportedOperationException | AbstractMethodError unsupported)
+            {
+                this.readsLocalDateTime = false;
+            }
+        }
+        Timestamp timestamp = this.resultSet.getTimestamp(columnIndex, calendar);
+        return (timestamp == null) ? null : PureDate.fromSQLTimestamp(timestamp);
+    }
+
+    private static PureDate toPureDate(LocalDate day)
+    {
+        return PureDate.newPureDate(day.getYear(), day.getMonthValue(), day.getDayOfMonth());
+    }
+
+    private static PureDate toPureDate(ZonedDateTime moment)
+    {
+        LocalDateTime utc = moment.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        return PureDate.newPureDate(utc.getYear(), utc.getMonthValue(), utc.getDayOfMonth(),
+                utc.getHour(), utc.getMinute(), utc.getSecond(), String.format("%09d", utc.getNano()));
     }
 }

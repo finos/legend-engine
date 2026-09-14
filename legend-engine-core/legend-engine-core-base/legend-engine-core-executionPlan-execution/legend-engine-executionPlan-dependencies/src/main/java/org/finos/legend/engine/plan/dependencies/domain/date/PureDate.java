@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.dependencies.domain.date;
 import org.eclipse.collections.impl.block.factory.Comparators;
 import org.eclipse.collections.impl.utility.StringIterate;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDateToJava;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -1519,25 +1520,273 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
         {
             return fromSQLTimestamp((java.sql.Timestamp) date);
         }
-        GregorianCalendar calendar = new GregorianCalendar(GMT_TIME_ZONE);
-        calendar.setTime(date);
-        return fromCalendar(calendar, Calendar.MILLISECOND, new PureDate());
+        return fromInstant(date.toInstant(), 3);
     }
 
+    /**
+     * Resolve the name of a time zone to the zone it stands for.
+     *
+     * <p>Delegates to {@link TimeZones}, which is where every time zone name in Legend is resolved.
+     * It sits here because the Java a relational node generates is compiled against a curated
+     * classpath -- see {@code GeneratePureConfig.MAIN_DEPENDENCIES} -- which carries this class and
+     * not that one, and a second resolver reading names its own way is the thing {@link TimeZones}
+     * exists to prevent.
+     *
+     * @param timeZone time zone name
+     * @return zone the name stands for
+     */
+    public static ZoneId resolveTimeZone(String timeZone)
+    {
+        return TimeZones.parse(timeZone);
+    }
+
+    /**
+     * Create a calendar in the zone a time zone name stands for.
+     *
+     * <p>Here for the same reason as {@link #resolveTimeZone(String)}: a reading that has to fall
+     * back to the dated java.sql APIs needs one of these, and cannot reach {@link TimeZones}.
+     *
+     * @param timeZone time zone name
+     * @return calendar in the zone the name stands for
+     */
+    public static Calendar newCalendar(String timeZone)
+    {
+        return TimeZones.newCalendar(timeZone);
+    }
+
+    /**
+     * Convert a {@link java.time.Year} to a Pure date of year granularity.
+     *
+     * @param year year
+     * @return Pure date
+     */
+    public static PureDate fromYear(Year year)
+    {
+        return newPureDate(year.getValue());
+    }
+
+    /**
+     * Convert a {@link YearMonth} to a Pure date of month granularity.
+     *
+     * @param yearMonth year and month
+     * @return Pure date
+     */
+    public static PureDate fromYearMonth(YearMonth yearMonth)
+    {
+        return newPureDate(yearMonth.getYear(), yearMonth.getMonthValue());
+    }
+
+    /**
+     * Convert a {@link LocalDate} to a Pure date of day granularity.
+     *
+     * <p>A local date names a day and carries no zone, as a Pure date of day granularity does, so
+     * this is a copy of the year, month, and day and no zone is chosen anywhere. Prefer asking a
+     * driver for one of these, through {@link java.sql.ResultSet#getObject(int, Class)}, over
+     * taking a {@link java.sql.Date}: that carries an instant, and an instant gives a day back
+     * only once a zone is picked to read it in.
+     *
+     * @param date local date
+     * @return Pure date
+     */
+    public static PureDate fromLocalDate(LocalDate date)
+    {
+        return newPureDate(date.getYear(), date.getMonthValue(), date.getDayOfMonth());
+    }
+
+    /**
+     * Convert a {@link LocalDateTime} to a Pure date, keeping all nine subsecond digits. Pure dates
+     * carry no time zone and are always understood as UTC, and a {@link LocalDateTime} carries no
+     * zone either, so its fields are taken as they stand.
+     *
+     * @param dateTime local date and time
+     * @return Pure date
+     */
+    public static PureDate fromLocalDateTime(LocalDateTime dateTime)
+    {
+        return fromLocalDateTime(dateTime, 9);
+    }
+
+    /**
+     * Convert a {@link LocalDateTime} to a Pure date, keeping the given number of subsecond digits.
+     * Digits beyond that number are dropped, not rounded. A precision of 0 gives a date of second
+     * granularity. Pure dates carry no time zone and are always understood as UTC, and a
+     * {@link LocalDateTime} carries no zone either, so its fields are taken as they stand.
+     *
+     * @param dateTime           local date and time
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromLocalDateTime(LocalDateTime dateTime, int subsecondPrecision)
+    {
+        return (subsecondPrecision == 0) ?
+               newPureDate(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond()) :
+               newPureDate(dateTime.getYear(), dateTime.getMonthValue(), dateTime.getDayOfMonth(), dateTime.getHour(), dateTime.getMinute(), dateTime.getSecond(), subsecond(dateTime.getNano(), subsecondPrecision));
+    }
+
+    /**
+     * Convert a {@link LocalDateTime} kept in a given zone to a Pure date, keeping all nine
+     * subsecond digits.
+     *
+     * <p>A {@link LocalDateTime} carries no zone, so it stands for an instant only once the zone
+     * keeping it is named -- which is what a relational connection's time zone says. The instant
+     * is then read in UTC, as every Pure date is.
+     *
+     * @param dateTime local date and time
+     * @param zone     zone keeping that date and time
+     * @return Pure date
+     */
+    public static PureDate fromLocalDateTime(LocalDateTime dateTime, ZoneId zone)
+    {
+        return fromLocalDateTime(dateTime, zone, 9);
+    }
+
+    /**
+     * Convert a {@link LocalDateTime} kept in a given zone to a Pure date, keeping the given number
+     * of subsecond digits. Digits beyond that number are dropped, not rounded. A precision of 0
+     * gives a date of second granularity.
+     *
+     * @param dateTime           local date and time
+     * @param zone               zone keeping that date and time
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromLocalDateTime(LocalDateTime dateTime, ZoneId zone, int subsecondPrecision)
+    {
+        return fromZonedDateTime(dateTime.atZone(zone), subsecondPrecision);
+    }
+
+    /**
+     * Convert an {@link OffsetDateTime} to a Pure date, keeping all nine subsecond digits. Since
+     * Pure dates are always understood as UTC, the instant is shifted to UTC first: the offset is
+     * applied, not discarded.
+     *
+     * @param dateTime date and time with a UTC offset
+     * @return Pure date
+     */
+    public static PureDate fromOffsetDateTime(OffsetDateTime dateTime)
+    {
+        return fromOffsetDateTime(dateTime, 9);
+    }
+
+    /**
+     * Convert an {@link OffsetDateTime} to a Pure date, keeping the given number of subsecond
+     * digits. Digits beyond that number are dropped, not rounded. A precision of 0 gives a date of
+     * second granularity. Since Pure dates are always understood as UTC, the instant is shifted to
+     * UTC first: the offset is applied, not discarded.
+     *
+     * @param dateTime           date and time with a UTC offset
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromOffsetDateTime(OffsetDateTime dateTime, int subsecondPrecision)
+    {
+        return fromInstant(dateTime.toInstant(), subsecondPrecision);
+    }
+
+    /**
+     * Convert a {@link ZonedDateTime} to a Pure date, keeping all nine subsecond digits. Since Pure
+     * dates are always understood as UTC, the instant is shifted to UTC first, using the offset the
+     * zone was in at that instant.
+     *
+     * @param dateTime date and time in a time zone
+     * @return Pure date
+     */
+    public static PureDate fromZonedDateTime(ZonedDateTime dateTime)
+    {
+        return fromZonedDateTime(dateTime, 9);
+    }
+
+    /**
+     * Convert a {@link ZonedDateTime} to a Pure date, keeping the given number of subsecond digits.
+     * Digits beyond that number are dropped, not rounded. A precision of 0 gives a date of second
+     * granularity. Since Pure dates are always understood as UTC, the instant is shifted to UTC
+     * first, using the offset the zone was in at that instant.
+     *
+     * @param dateTime           date and time in a time zone
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromZonedDateTime(ZonedDateTime dateTime, int subsecondPrecision)
+    {
+        return fromInstant(dateTime.toInstant(), subsecondPrecision);
+    }
+
+    /**
+     * Convert an {@link Instant} to a Pure date in UTC, keeping all nine subsecond digits.
+     *
+     * @param instant instant
+     * @return Pure date
+     */
+    public static PureDate fromInstant(Instant instant)
+    {
+        return fromInstant(instant, 9);
+    }
+
+    /**
+     * Convert an {@link Instant} to a Pure date in UTC, keeping the given number of subsecond
+     * digits. Digits beyond that number are dropped, not rounded. A precision of 0 gives a date of
+     * second granularity.
+     *
+     * @param instant            instant
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromInstant(Instant instant, int subsecondPrecision)
+    {
+        return fromLocalDateTime(LocalDateTime.ofInstant(instant, ZoneOffset.UTC), subsecondPrecision);
+    }
+
+    /**
+     * Convert a SQL date to the Pure date standing for the same day.
+     *
+     * <p>A SQL date names a day and carries no zone, as a Pure date of day granularity does, so
+     * this is a copy of the year, month, and day. Prefer asking a driver for a {@link LocalDate}
+     * where it will give one: a {@link java.sql.Date} carries an instant, and drivers do not agree
+     * on the zone they built that instant in.
+     *
+     * @param date SQL date
+     * @return Pure date
+     */
     public static PureDate fromSQLDate(java.sql.Date date)
     {
-        GregorianCalendar calendar = new GregorianCalendar(GMT_TIME_ZONE);
-        calendar.setTime(date);
-        return fromCalendar(calendar, Calendar.DAY_OF_MONTH, new PureDate());
+        return fromLocalDate(date.toLocalDate());
     }
 
+    /**
+     * Convert a SQL timestamp to the Pure date standing for the same instant, keeping all nine
+     * subsecond digits.
+     *
+     * @param timestamp SQL timestamp
+     * @return Pure date
+     */
     public static PureDate fromSQLTimestamp(java.sql.Timestamp timestamp)
     {
-        GregorianCalendar calendar = new GregorianCalendar(GMT_TIME_ZONE);
-        calendar.setTime(timestamp);
-        PureDate pureDate = fromCalendar(calendar, Calendar.SECOND, new PureDate());
-        ((PureDate) pureDate).subsecond = String.format("%09d", timestamp.getNanos());
-        return pureDate;
+        return fromSQLTimestamp(timestamp, 9);
+    }
+
+    /**
+     * Convert a SQL timestamp to the Pure date standing for the same instant, keeping the given
+     * number of subsecond digits. Digits beyond that number are dropped, not rounded.
+     *
+     * @param timestamp          SQL timestamp
+     * @param subsecondPrecision number of subsecond digits to keep (0-9)
+     * @return Pure date
+     */
+    public static PureDate fromSQLTimestamp(java.sql.Timestamp timestamp, int subsecondPrecision)
+    {
+        return fromInstant(timestamp.toInstant(), subsecondPrecision);
+    }
+
+    /**
+     * Take the given number of subsecond digits from a nanosecond-of-second, dropping the rest.
+     */
+    private static String subsecond(int nano, int subsecondPrecision)
+    {
+        if ((subsecondPrecision < 0) || (subsecondPrecision > 9))
+        {
+            throw new IllegalArgumentException("Subsecond precision must be between 0 and 9, got: " + subsecondPrecision);
+        }
+        return String.format("%09d", nano).substring(0, subsecondPrecision);
     }
 
     public static PureDate newPureDate(int year)

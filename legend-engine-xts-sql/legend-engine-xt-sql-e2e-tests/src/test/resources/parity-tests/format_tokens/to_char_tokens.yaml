@@ -1,0 +1,357 @@
+tests:
+# =============================================================================
+# to_char template pattern tokens
+# https://www.postgresql.org/docs/16/functions-formatting.html#FUNCTIONS-FORMATTING-DATETIME-TABLE
+# One row per documented token (Table 9.25), applied to a representative
+# timestamp literal so the parity report can show a PASS/FAIL/UNTESTED matrix
+# keyed by (function, format_token) rather than by test id alone.
+# =============================================================================
+
+- id: to_char_token__HH
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'HH') AS result"
+  format_token: "to_char:HH"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__HH12
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'HH12') AS result"
+  format_token: "to_char:HH12"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__HH24
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'HH24') AS result"
+  format_token: "to_char:HH24"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__MI
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'MI') AS result"
+  format_token: "to_char:MI"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__SS
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'SS') AS result"
+  format_token: "to_char:SS"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__MS
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22.123', 'MS') AS result"
+  format_token: "to_char:MS"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__US
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22.123456', 'US') AS result"
+  format_token: "to_char:US"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__FF1
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22.123456', 'FF1') AS result"
+  format_token: "to_char:FF1"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: to_char_token__FF6
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22.123456', 'FF6') AS result"
+  format_token: "to_char:FF6"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: to_char_token__SSSS
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'SSSS') AS result"
+  format_token: "to_char:SSSS"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__AM
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'AM') AS result"
+  format_token: "to_char:AM"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__PM
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'PM') AS result"
+  format_token: "to_char:PM"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Y_YYY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Y,YYY') AS result"
+  format_token: "to_char:Y,YYY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__YYYY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'YYYY') AS result"
+  format_token: "to_char:YYYY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__YYY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'YYY') AS result"
+  format_token: "to_char:YYY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__YY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'YY') AS result"
+  format_token: "to_char:YY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Y
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Y') AS result"
+  format_token: "to_char:Y"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__IYYY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'IYYY') AS result"
+  format_token: "to_char:IYYY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__IY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'IY') AS result"
+  format_token: "to_char:IY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__I
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'I') AS result"
+  format_token: "to_char:I"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__BC
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'BC') AS result"
+  format_token: "to_char:BC"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__AD
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'AD') AS result"
+  format_token: "to_char:AD"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__MONTH
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'MONTH') AS result"
+  format_token: "to_char:MONTH"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Month
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Month') AS result"
+  format_token: "to_char:Month"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__month
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'month') AS result"
+  format_token: "to_char:month"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__MON
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'MON') AS result"
+  format_token: "to_char:MON"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Mon
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Mon') AS result"
+  format_token: "to_char:Mon"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__mon
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'mon') AS result"
+  format_token: "to_char:mon"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__MM
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'MM') AS result"
+  format_token: "to_char:MM"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__DAY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DAY') AS result"
+  format_token: "to_char:DAY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Day
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Day') AS result"
+  format_token: "to_char:Day"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__day
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'day') AS result"
+  format_token: "to_char:day"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__DY
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DY') AS result"
+  format_token: "to_char:DY"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Dy
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Dy') AS result"
+  format_token: "to_char:Dy"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__dy
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'dy') AS result"
+  format_token: "to_char:dy"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__DDD
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DDD') AS result"
+  format_token: "to_char:DDD"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__IDDD
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'IDDD') AS result"
+  format_token: "to_char:IDDD"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__DD
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DD') AS result"
+  format_token: "to_char:DD"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__D
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'D') AS result"
+  format_token: "to_char:D"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__ID
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'ID') AS result"
+  format_token: "to_char:ID"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__W
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'W') AS result"
+  format_token: "to_char:W"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__WW
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'WW') AS result"
+  format_token: "to_char:WW"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__IW
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'IW') AS result"
+  format_token: "to_char:IW"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__CC
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'CC') AS result"
+  format_token: "to_char:CC"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__J
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'J') AS result"
+  format_token: "to_char:J"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__Q
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'Q') AS result"
+  format_token: "to_char:Q"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__RM
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'RM') AS result"
+  format_token: "to_char:RM"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__rm
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'rm') AS result"
+  format_token: "to_char:rm"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__TZ
+  sql: "SELECT to_char(TIMESTAMPTZ '2024-06-15 13:45:22+02', 'TZ') AS result"
+  format_token: "to_char:TZ"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__tz
+  sql: "SELECT to_char(TIMESTAMPTZ '2024-06-15 13:45:22+02', 'tz') AS result"
+  format_token: "to_char:tz"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__TZH
+  sql: "SELECT to_char(TIMESTAMPTZ '2024-06-15 13:45:22+02', 'TZH') AS result"
+  format_token: "to_char:TZH"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: to_char_token__TZM
+  sql: "SELECT to_char(TIMESTAMPTZ '2024-06-15 13:45:22+02', 'TZM') AS result"
+  format_token: "to_char:TZM"
+  expected_tds_status: FAIL
+  expected_rel_status: FAIL
+
+- id: to_char_token__OF
+  sql: "SELECT to_char(TIMESTAMPTZ '2024-06-15 13:45:22+02', 'OF') AS result"
+  format_token: "to_char:OF"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__FM_modifier
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'FMMonth DD, YYYY') AS result"
+  format_token: "to_char:FM"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__TH_modifier
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DDTH') AS result"
+  format_token: "to_char:TH"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__th_modifier
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DDth') AS result"
+  format_token: "to_char:th"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__FX_modifier
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'FXMonth DD, YYYY') AS result"
+  format_token: "to_char:FX"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: to_char_token__SP_modifier
+  sql: "SELECT to_char(TIMESTAMP '2024-06-15 13:45:22', 'DDSP') AS result"
+  format_token: "to_char:SP"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+

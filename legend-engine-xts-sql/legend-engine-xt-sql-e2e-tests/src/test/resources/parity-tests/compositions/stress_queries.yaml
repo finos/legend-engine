@@ -37,7 +37,7 @@ tests:
     feature: "Multi-aggregate + COALESCE + JOINs"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Percentile simulation via ROW_NUMBER
   - id: stress_percentile_sim

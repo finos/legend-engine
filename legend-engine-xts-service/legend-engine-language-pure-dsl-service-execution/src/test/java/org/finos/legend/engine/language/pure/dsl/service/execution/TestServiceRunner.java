@@ -145,7 +145,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalDateTimeWithTimeZone()
     {
-        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ_DateTime_$0_1$__Any_MANY_", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
+        this.testOptionalParameter("test::fetchOptionalEmploymentDateTimeWithTZ_DateTime_$0_1$__Any_MANY_", "optionalDateTimeWithTZ", "2012-05-20T03:10:52.501", "{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T03:10:52.501000000\"}", "{\"firstName\":\"Bob\",\"lastName\":\"Stevens\",\"employmentDateTime\":null}");
     }
 
     @Test
@@ -188,7 +188,7 @@ public class TestServiceRunner
     @Test
     public void testSimpleServiceForOptionalDateTimeWithTZ_Many()
     {
-        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany_DateTime_MANY__Any_MANY_", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T13:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T18:47:52.000000000\"}]", "[]");
+        this.testOptionalParameter("test::fetchOptionalDateTimeWithTZMany_DateTime_MANY__Any_MANY_", "optionalDateTime", Arrays.asList("2005-03-15T08:47:52", "2012-05-20T03:10:52.501"), "[{\"firstName\":\"Peter\",\"lastName\":\"Smith\",\"employmentDateTime\":\"2012-05-20T03:10:52.501000000\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\",\"employmentDateTime\":\"2005-03-15T08:47:52.000000000\"}]", "[]");
     }
 
     @Test
@@ -1237,6 +1237,11 @@ public class TestServiceRunner
 
     public static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName)
     {
+        return buildPlanForFetchFunction(modelCodeResource, fetchFunctionName, "test::Runtime");
+    }
+
+    public static SingleExecutionPlan buildPlanForFetchFunction(String modelCodeResource, String fetchFunctionName, String runtimeName)
+    {
         try
         {
             InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
@@ -1249,7 +1254,7 @@ public class TestServiceRunner
             return PlanGenerator.generateExecutionPlan(
                     HelperValueSpecificationBuilder.buildLambda(fetchFunction.body, fetchFunction.parameters, new CompileContext.Builder(pureModel).build()),
                     pureModel.getMapping("test::Map"),
-                    pureModel.getRuntime("test::Runtime"),
+                    pureModel.getRuntime(runtimeName),
                     null,
                     pureModel,
                     "vX_X_X",
@@ -1304,6 +1309,58 @@ public class TestServiceRunner
         catch (Exception e)
         {
             Assert.assertEquals("Error instantiating property 'name' on Target class 'test::targetPerson [test_targetPerson]' on Mapping 'test::Map'.\n" + "Cannot cast a collection of size 0 to multiplicity [1]", e.getMessage());
+        }
+    }
+
+    /**
+     * A connection's time zone names the zone the database keeps its wall clocks in, and a Pure
+     * DateTime is a moment, so reading a TIMESTAMP column shifts it out of that zone. The stored
+     * wall clock is the same row in every case; only the Runtime differs.
+     */
+    @Test
+    public void testConnectionTimeZoneShiftsATimestampOutOfTheZoneItNames()
+    {
+        Assert.assertEquals("no time zone named, so GMT", shiftStartedAt("2012-05-20T13:10:52.501000000"), runShiftService("test::Runtime"));
+        Assert.assertEquals("Pacific/Guam", shiftStartedAt("2012-05-20T03:10:52.501000000"), runShiftService("test::RuntimeRegion"));
+        Assert.assertEquals("America/New_York, inside daylight saving time", shiftStartedAt("2012-05-20T17:10:52.501000000"), runShiftService("test::RuntimeDaylightSaving"));
+    }
+
+    /**
+     * The same zone named three ways, and a fourth zone named as an offset. Pacific/Guam keeps no
+     * daylight saving time and is +10:00 the year round, so a bare offset and a UTC prefixed
+     * offset name that same zone and have to read the row as the same moment.
+     *
+     */
+    @Test
+    public void testConnectionTimeZoneTakesAnOffsetAsWellAsARegion()
+    {
+        Assert.assertEquals("UTC+0530", shiftStartedAt("2012-05-20T07:40:52.501000000"), runShiftService("test::RuntimeHalfHourOffset"));
+        String region = runShiftService("test::RuntimeRegion");
+        Assert.assertEquals("a bare offset", region, runShiftService("test::RuntimeOffset"));
+        Assert.assertEquals("a UTC prefixed offset", region, runShiftService("test::RuntimeUtcPrefixedOffset"));
+    }
+
+    private static String runShiftService(String runtime)
+    {
+        return new TimeZoneServiceRunner(runtime).run(ServiceRunnerInput.newInstance().withSerializationFormat(SerializationFormat.PURE));
+    }
+
+    private static String shiftStartedAt(String moment)
+    {
+        return "{\"id\":1,\"startedAt\":\"" + moment + "\"}";
+    }
+
+    private static class TimeZoneServiceRunner extends AbstractServicePlanExecutor
+    {
+        TimeZoneServiceRunner(String runtime)
+        {
+            super("test::Service", buildPlanForFetchFunction("/org/finos/legend/engine/pure/dsl/service/execution/test/relationalServiceTimeZones.pure", "test::fetchShift__String_1_", runtime), true);
+        }
+
+        @Override
+        public List<ServiceVariable> getServiceVariables()
+        {
+            return Collections.emptyList();
         }
     }
 }

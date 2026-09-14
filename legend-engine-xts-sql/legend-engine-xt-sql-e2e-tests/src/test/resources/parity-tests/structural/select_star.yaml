@@ -26,15 +26,15 @@ tests:
     sql: "SELECT p.*, d.name AS dept_name FROM persons p JOIN departments d ON p.dept_id = d.id ORDER BY p.id"
     feature: "SELECT table.* with join"
     category: "select_star"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_tds_status: PASS
+    expected_rel_status: PASS
 
   - id: star_multiple_tables
     sql: "SELECT p.*, d.* FROM persons p JOIN departments d ON p.dept_id = d.id WHERE p.id <= 3 ORDER BY p.id"
     feature: "SELECT multiple table.*"
     category: "select_star"
     expected_tds_status: FAIL
-    expected_rel_status: ERROR
+    expected_rel_status: FAIL
 
   # SELECT * from subquery
   - id: star_from_subquery
@@ -58,4 +58,4 @@ tests:
     feature: "SELECT table.* with extra expression"
     category: "select_star"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

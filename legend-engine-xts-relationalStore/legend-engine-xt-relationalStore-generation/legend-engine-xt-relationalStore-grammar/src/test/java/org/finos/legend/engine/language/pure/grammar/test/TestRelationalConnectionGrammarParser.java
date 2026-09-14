@@ -19,6 +19,10 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ConnectionParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.RelationalDatabaseConnectionParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -88,6 +92,27 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
         // With zone id
         test(getTemplateConnectionWithTz("'EST'"), null);
         test(getTemplateConnectionWithTz("'US/Arizona'"), null);
+    }
+
+    /**
+     * The quotes around a zone id are grammar syntax, so they must not survive into the protocol: the value is
+     * handed to Java as a zone id, and "'US/Arizona'" is not one. An offset carries no quotes to begin with.
+     */
+    @Test
+    public void testTimezoneValueIsUnquoted()
+    {
+        Assert.assertEquals("US/Arizona", parseTimeZone("'US/Arizona'"));
+        Assert.assertEquals("UTC", parseTimeZone("'UTC'"));
+        Assert.assertEquals("EST", parseTimeZone("'EST'"));
+        Assert.assertEquals("+0700", parseTimeZone("+0700"));
+        Assert.assertEquals("-0500", parseTimeZone("-0500"));
+    }
+
+    private String parseTimeZone(String offsetOrCode)
+    {
+        PureModelContextData data = test(getTemplateConnectionWithTz(offsetOrCode));
+        PackageableConnection connection = data.getElementsOfType(PackageableConnection.class).get(0);
+        return ((RelationalDatabaseConnection) connection.connectionValue).timeZone;
     }
 
     @Test

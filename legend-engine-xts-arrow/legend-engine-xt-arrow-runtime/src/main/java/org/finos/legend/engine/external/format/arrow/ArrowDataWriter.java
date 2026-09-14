@@ -16,21 +16,24 @@ package org.finos.legend.engine.external.format.arrow;
 
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
 
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfig;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfigBuilder;
+import org.apache.arrow.adapter.jdbc.JdbcToArrowUtils;
 import org.apache.arrow.adapter.jdbc.LegendArrowVectorIterator;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
 import org.apache.arrow.vector.ipc.ArrowStreamWriter;
+import org.apache.arrow.vector.types.TimeUnit;
+import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatWriter;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
+import java.sql.Types;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 
 public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseable
@@ -42,10 +45,23 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
     {
 
         this.allocator = new RootAllocator();
-        Calendar calendar = resultSet.getRelationalDatabaseTimeZone() == null ?
-                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
-                new GregorianCalendar(TimeZone.getTimeZone(resultSet.getRelationalDatabaseTimeZone()));
-        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, calendar).setReuseVectorSchemaRoot(true).build();
+        Calendar calendar = TimeZones.newCalendar((resultSet.getRelationalDatabaseTimeZone() == null) ? "GMT" : resultSet.getRelationalDatabaseTimeZone());
+        // Newer JDBC drivers (Snowflake 4.x, H2 2.x, ...) report TIMESTAMP_TZ / TIMESTAMP_LTZ columns as
+        // java.sql.Types.TIMESTAMP_WITH_TIMEZONE (2014), which the default arrow-jdbc type converter
+        // does not handle (see JdbcToArrowUtils.getArrowTypeFromJdbcType). Map it to the same
+        // ArrowType.Timestamp the converter uses for plain Types.TIMESTAMP so downstream schema and
+        // consumer wiring are unchanged.
+        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, calendar)
+                .setReuseVectorSchemaRoot(true)
+                .setJdbcToArrowTypeConverter((fieldInfo) ->
+                {
+                    if (fieldInfo.getJdbcType() == Types.TIMESTAMP_WITH_TIMEZONE)
+                    {
+                        return new ArrowType.Timestamp(TimeUnit.MILLISECOND, calendar.getTimeZone().getID());
+                    }
+                    return JdbcToArrowUtils.getArrowTypeFromJdbcType(fieldInfo, calendar);
+                })
+                .build();
         this.iterator = LegendArrowVectorIterator.create(resultSet.getResultSet(), config);
 
     }

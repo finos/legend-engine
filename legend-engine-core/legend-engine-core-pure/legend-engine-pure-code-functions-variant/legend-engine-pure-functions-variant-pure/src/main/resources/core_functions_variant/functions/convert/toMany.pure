@@ -18,24 +18,55 @@ import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 
 
-native function
-    <<PCT.function>>
-    {
-        doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
-                 'This will fail if array values cannot be coerced.'
-    }
-meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[*];
+'''
+Reads a variant holding a JSON array back out as a collection of the given type.
 
+Each element is coerced individually, on the same rules as `to(Variant[0..1], T[0..1]):T[0..1]`, so
+the whole call fails if any element cannot be coerced. **The variant must hold an array**: a variant
+holding an object, a string or a number fails rather than yielding a single-element collection.
+Reading with `@Variant` leaves the elements as variants, which is the way to walk a heterogeneous
+array.
+
+**Parameters**
+- `variant` — the variant to read, holding a JSON array.
+- `type` — the element type, given as a type literal such as `@Integer`.
+
+**Returns** the array's elements, as values of the given type.
+
+**Examples**
+```pure
+fromJson('[1, 2, 3]')->toMany(@Integer)         // 1, 2, 3
+fromJson('[1, 2, 3]')->toMany(@Variant)         // three variants, each readable with to()
+fromJson('"not an array"')->toMany(@Variant)    // fails: Expect variant that contains an 'ARRAY', but got 'STRING'
+```
+
+**See also** `toMany(Variant[0..1], T[0..1], String[1], Pair<String, Class<Any>>[*]):T[*]`,
+`to(Variant[0..1], T[0..1]):T[0..1]`,
+`toVariant(Any[*]):Variant[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='Converts the $variant to the given $type if the variant represent an array, failing if is not an array.\n' +
-                 'This will fail if array values cannot be coerced.'
-    }
 meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1]): T[*];
 //{
 //    toMany($variant, $type, '_type', [])
 //}
+
+'''
+As `toMany(Variant[0..1], T[0..1]):T[*]`, but resolves each element's subtype using `typeKeyName` and
+`typeLookup` rather than the defaults that variant applies, which are the key `_type` and an empty
+lookup.
+
+**Parameters**
+- `variant` — the variant to read, holding a JSON array.
+- `type` — the element type, given as a type literal such as `@Integer`.
+- `typeKeyName` — the payload key naming an element's concrete subtype.
+- `typeLookup` — the subtype names to resolve against, paired with their classes.
+
+**Returns** the array's elements, as values of the given type.
+'''
+native function
+    <<PCT.function>>
+meta::pure::functions::variant::convert::toMany<T>(variant: Variant[0..1], type: T[0..1], typeKeyName: String[1], typeLookup: Pair<String,Class<Any>>[*]): T[*];
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::toMany::testToManyVariant<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {

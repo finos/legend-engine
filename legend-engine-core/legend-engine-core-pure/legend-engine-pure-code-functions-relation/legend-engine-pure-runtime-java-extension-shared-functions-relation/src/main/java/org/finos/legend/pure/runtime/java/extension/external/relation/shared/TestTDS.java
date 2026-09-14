@@ -67,6 +67,7 @@ import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortDirection;
+import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.NullOrder;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.SortInfo;
 import org.finos.legend.pure.runtime.java.extension.external.relation.shared.window.Window;
 import org.finos.legend.pure.runtime.java.extension.external.variant.VariantInstanceImpl;
@@ -696,6 +697,15 @@ public abstract class TestTDS
         if (sortInfo.direction == SortDirection.DESC)
         {
             list.reverseThis();
+        }
+        if (sortInfo.nullOrder != null)
+        {
+            MutableList<Pair<Integer, Comparable<Object>>> nulls = list.select(p -> p.getTwo() == null);
+            if (nulls.notEmpty() && nulls.size() != list.size())
+            {
+                MutableList<Pair<Integer, Comparable<Object>>> nonNulls = list.reject(p -> p.getTwo() == null);
+                list = sortInfo.nullOrder == NullOrder.FIRST ? nulls.withAll(nonNulls) : nonNulls.withAll(nulls);
+            }
         }
         this.reorder(copy, list.collect(Pair::getOne), start, end);
     }

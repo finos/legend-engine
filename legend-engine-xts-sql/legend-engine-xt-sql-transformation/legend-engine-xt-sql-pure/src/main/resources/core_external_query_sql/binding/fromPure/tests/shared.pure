@@ -58,6 +58,20 @@ Database meta::external::query::sql::transformation::queryToPure::tests::dummyDa
   )
 )
 
+//a second store, so that a source set spanning both produces two distinct runtimes. runtimeEquality
+//compares connectionStores only, so two runtimes differ only when the store or the connection differs -
+//giving them different mappings is not enough.
+###Relational
+Database meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase2
+(
+  Table flat2
+  (
+    id Integer PRIMARY KEY,
+    integer Integer,
+    string VARCHAR(200)
+  )
+)
+
 ###Mapping
 import meta::external::query::sql::transformation::queryToPure::tests::*;
 
@@ -97,6 +111,19 @@ Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMap
    }
 )
 
+Mapping meta::external::query::sql::transformation::queryToPure::tests::dummyMapping2
+(
+   FlatInput : Relational
+   {
+      scope([dummyDatabase2]default.flat2)
+      (
+        idIn: id,
+        integerIn: integer,
+        stringIn: string
+      )
+   }
+)
+
 ###Pure
 import meta::relational::functions::database::*;
 import meta::json::*;
@@ -131,6 +158,25 @@ function meta::external::query::sql::transformation::queryToPure::tests::dummyRu
   ^EngineRuntime(
     mappings = dummyMapping,
     connectionStores = dummyConnection()
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dummyConnection2(): ConnectionStore[1]
+{
+  ^ConnectionStore(
+    element = meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase2,connection=
+  ^RelationalDatabaseConnection(
+    type = DatabaseType.H2,
+    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
+    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+  ))
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::dummyRuntime2(): Runtime[1]
+{
+  ^EngineRuntime(
+    mappings = dummyMapping2,
+    connectionStores = dummyConnection2()
   );
 }
 
@@ -300,6 +346,20 @@ function meta::external::query::sql::transformation::queryToPure::tests::Service
           'ID', 'Integer', 'String'
         ]
       ));
+}
+
+//same shape as Service2 but bound to the second mapping and runtime, so pairing it with Service1
+//gives a source set with two of each - the only way to reach the from() wrapping branch
+function meta::external::query::sql::transformation::queryToPure::tests::Service2XStore(): Service[1]
+{
+  createService('/service/service2', | FlatInput.all()->project(
+        [
+          x | $x.idIn, x | $x.integerIn, x | $x.stringIn
+        ],
+        [
+          'ID', 'Integer', 'String'
+        ]
+      ), dummyMapping2, dummyRuntime2());
 }
 
 function meta::external::query::sql::transformation::queryToPure::tests::Service2Relation(): Service[1]

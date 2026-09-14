@@ -159,5 +159,10 @@ function meta::core::runtime::mergeRuntimes(runtimes:Any[1..*]):Runtime[1]
 {
   $runtimes->forAll(r | $r->instanceOf(meta::pure::runtime::PackageableRuntime) || $r->instanceOf(Runtime));
   let updatedRuntimes = $runtimes->filter(r | $r->instanceOf(Runtime))->concatenate($runtimes->filter(r | $r->instanceOf(meta::pure::runtime::PackageableRuntime))->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue)->cast(@Runtime);
-  ^Runtime(connectionStores = $updatedRuntimes.connectionStores);
+  // Rebuilding as a base ^Runtime drops preprocessFunction and any subtype. Return a single runtime carrying that hook untouched instead; every other case keeps the
+  // original merge behavior unchanged.
+  if($updatedRuntimes->size() == 1 && $updatedRuntimes->toOne().preprocessFunction->isNotEmpty(),
+     | $updatedRuntimes->toOne(),
+     | ^Runtime(connectionStores = $updatedRuntimes.connectionStores)
+  );
 }

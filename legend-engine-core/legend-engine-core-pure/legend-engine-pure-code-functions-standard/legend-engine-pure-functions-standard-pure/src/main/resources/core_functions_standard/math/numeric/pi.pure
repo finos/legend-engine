@@ -14,6 +14,20 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The constant π.
+
+**Returns** π as a `Float`.
+
+**Examples**
+```pure
+pi()                    // 3.141592653589793
+180->toRadians()        // pi()
+```
+
+**See also** `toRadians(Number[1]):Float[1]`,
+`toDegrees(Number[1]):Float[1]`
+'''
 function <<PCT.function>> meta::pure::functions::math::pi():Float[1]
 {
     3.141592653589793;

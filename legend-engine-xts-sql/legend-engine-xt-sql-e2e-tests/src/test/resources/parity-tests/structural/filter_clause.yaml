@@ -1,0 +1,27 @@
+tests:
+  # =============================================================================
+  # FILTER (WHERE ...) clause on aggregates
+  # https://www.postgresql.org/docs/16/sql-expressions.html#SYNTAX-AGGREGATES
+  # =============================================================================
+
+  - id: filter_clause_count
+    sql: "SELECT dept_id, COUNT(*) FILTER (WHERE active) AS active_cnt, COUNT(*) AS total_cnt FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "FILTER (WHERE ...) on COUNT"
+    category: "filter_clause"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: filter_clause_sum
+    sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS active_salary FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "FILTER (WHERE ...) on SUM"
+    category: "filter_clause"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+
+  - id: filter_clause_multiple_aggs
+    sql: "SELECT dept_id, COUNT(*) FILTER (WHERE age > 30) AS older, COUNT(*) FILTER (WHERE age <= 30) AS younger FROM persons GROUP BY dept_id ORDER BY 1"
+    feature: "FILTER (WHERE ...) multiple aggregates"
+    category: "filter_clause"
+    expected_tds_status: FAIL
+    expected_rel_status: FAIL
+

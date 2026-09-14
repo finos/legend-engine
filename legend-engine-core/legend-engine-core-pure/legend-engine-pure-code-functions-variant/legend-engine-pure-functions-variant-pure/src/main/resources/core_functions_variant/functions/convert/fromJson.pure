@@ -16,11 +16,33 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
 
+'''
+Parses JSON text into a variant.
+
+The whole JSON grammar is accepted, so the result may be an object, an array, a string, a number, a
+boolean, or JSON `null` — a variant holding `null` is a value, not an empty result. Use
+`to(Variant[0..1], T[0..1]):T[0..1]` to read a scalar back out, `toMany(Variant[0..1], T[0..1]):T[*]`
+for an array, and `meta::pure::functions::variant::navigation::get(Variant[0..1], String[1]):Variant[0..1]`
+to navigate into it.
+
+**Parameters**
+- `json` — the JSON text to parse.
+
+**Returns** the variant representation of the parsed JSON.
+
+**Examples**
+```pure
+fromJson('[ 1, 2 , 3 ]')->toJson()               // '[1,2,3]'
+fromJson('{ "Hello" : "World" }')->toJson()      // '{"Hello":"World"}'
+fromJson('null')->toJson()                       // 'null'
+fromJson('"1"')->to(@Integer)                    // 1
+```
+
+**See also** `toJson(Variant[1]):String[1]`,
+`toVariant(Any[*]):Variant[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='Parses the given json string and return its variant representation.'
-    }
 meta::pure::functions::variant::convert::fromJson(json: String[1]): Variant[1];
 
 function <<PCT.test, PCTCoreQualifier.variant>> meta::pure::functions::variant::convert::tests::fromJson::testJsonNull<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

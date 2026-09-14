@@ -16,16 +16,41 @@ import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::math::mathUtility::*;
 import meta::pure::test::pct::*;
 
-function 
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Finds the row(s) containing the minimum value for a column and returns the value of another column in that row.'
-    } 
+'''
+The value from one collection that sits where another collection is smallest.
+
+An argmin, and the mirror of `maxBy(T[*], Number[*]):T[0..1]`: `col_containing_minimum` decides which
+position wins, and the value at that position of `col_to_return` is what comes back.
+
+The two collections are positional and must line up. **Returns empty when they are empty**, which is
+why the result is `[0..1]`.
+
+**Parameters**
+- `col_to_return` — the values to choose from.
+- `col_containing_minimum` — the values to compare.
+
+**Returns** the value at the position of the minimum, or empty.
+
+**Examples**
+```pure
+$rel->groupBy(~grp, ~cheapest : x | $x.name : y | $y->minBy($x.price))
+```
+
+**See also** `minBy(T[*], Number[*], Integer[1]):T[*]`,
+`maxBy(T[*], Number[*]):T[0..1]`,
+`min(Number[*]):Number[0..1]`
+'''
+function
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::minBy<T>(col_to_return:T[*], col_containing_minimum:Number[*]):T[0..1]
 {
   minBy($col_to_return, $col_containing_minimum, 1)->head();
 }
 
+'''
+As `minBy(T[*], Number[*]):T[0..1]`, returning the values at the `n` smallest positions rather than
+just the smallest — a bottom-`n` rather than a bottom-one.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::minBy<T>(col_to_return:T[*], col_containing_minimum:Number[*], n:Integer[1]): T[*]
 {
   $col_to_return->zip($col_containing_minimum)->sort({x, y | $x.second->compare($y.second)})->slice(0, $n).first;

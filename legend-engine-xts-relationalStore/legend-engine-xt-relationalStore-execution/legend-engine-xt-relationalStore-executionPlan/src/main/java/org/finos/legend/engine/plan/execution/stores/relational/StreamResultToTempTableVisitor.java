@@ -42,12 +42,17 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -87,67 +92,26 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     {
         if (ingestionMethod == IngestionMethod.CLIENT_FILE)
         {
-            CSVFormat csvFormat = dbCommands.getCsvFormatForTempFile();
             try (TemporaryFile tempFile = new TemporaryFile(config.tempPath))
             {
-                CsvSerializer csvSerializer;
-                boolean withHeader = dbCommands.supportsHeaderOnCsvFile();
-                if (result instanceof RelationalResult)
+                SerializerAndColumns sc = buildSerializerAndColumns(dbCommands);
+                tempFile.writeFile(sc.serializer);
+                try (Statement statement = connection.createStatement())
                 {
-                    csvSerializer = new RelationalResultToCSVSerializer((RelationalResult) result, withHeader, csvFormat);
-                    tempFile.writeFile(csvSerializer);
-                    try (Statement statement = connection.createStatement())
-                    {
-                        statement.execute(dbCommands.dropTempTable(tableName));
-
-                        RelationalResult relationalResult = (RelationalResult) result;
-
-                        if (result.getResultBuilder() instanceof TDSBuilder)
-                        {
-                            dbCommands.createAndLoadTempTable(tableName, relationalResult.getTdsColumns().stream().map(c -> new Column(c.name, c.relationalType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
-                        }
-                        else
-                        {
-                            dbCommands.createAndLoadTempTable(tableName, relationalResult.getSQLResultColumns().stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
-                        }
-                    }
+                    statement.execute(dbCommands.dropTempTable(tableName));
+                    dbCommands.createAndLoadTempTable(tableName, sc.columns, tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
                 }
-                else if (result instanceof RealizedRelationalResult)
-                {
-                    csvSerializer = new RealizedRelationalResultCSVSerializer((RealizedRelationalResult) result, this.databaseTimeZone, withHeader, false, csvFormat);
-                    tempFile.writeFile(csvSerializer);
-                    try (Statement statement = connection.createStatement())
-                    {
-                        statement.execute(dbCommands.dropTempTable(tableName));
-                        RealizedRelationalResult realizedRelationalResult = (RealizedRelationalResult) result;
-                        dbCommands.createAndLoadTempTable(tableName, realizedRelationalResult.columns.stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
-                    }
-                }
-                else if (result instanceof StreamingObjectResult)
-                {
-                    csvSerializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader, csvFormat);
-                    tempFile.writeFile(csvSerializer);
-                    try (Statement statement = connection.createStatement())
-                    {
-                        statement.execute(dbCommands.dropTempTable(tableName));
-                        dbCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
-                    }
-                }
-                else if (result instanceof TempTableStreamingResult)
-                {
-                    csvSerializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader, csvFormat);
-                    tempFile.writeFile(csvSerializer);
-                    try (Statement statement = connection.createStatement())
-                    {
-                        statement.execute(dbCommands.dropTempTable(tableName));
-                        dbCommands.createAndLoadTempTable(tableName, csvSerializer.getHeaderColumnsAndTypes().stream().map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList()), tempFile.getTemporaryPathForFile()).forEach(x -> checkedExecute(statement, x));
-                    }
-                }
-                else
-                {
-                    throw new RuntimeException("Result not supported yet: " + result.getClass().getName());
-                }
-
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+        else if (ingestionMethod == IngestionMethod.CLIENT_STREAM)
+        {
+            try
+            {
+                streamResultToTableViaStream(dbCommands);
             }
             catch (Exception e)
             {
@@ -159,6 +123,100 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
             streamResultToNewTarget(((RelationalResult) result).resultSet, connection, tableName, 100);
         }
         return true;
+    }
+
+    /**
+     * Streaming ingest path (no local CSV file).
+     */
+    void streamResultToTableViaStream(RelationalDatabaseCommands dbCommands) throws Exception
+    {
+        SerializerAndColumns sc = buildSerializerAndColumns(dbCommands);
+        final CsvSerializer csvSerializer = sc.serializer;
+        final List<Column> columns = sc.columns;
+
+        int pipeBufferBytes = 8 * 1024 * 1024;
+        PipedOutputStream pipedOut = new PipedOutputStream();
+        PipedInputStream pipedIn = new PipedInputStream(pipedOut, pipeBufferBytes);
+        AtomicReference<Throwable> producerError = new AtomicReference<>();
+
+        Thread producer = new Thread(() ->
+        {
+            try (OutputStream out = pipedOut)
+            {
+                csvSerializer.stream(out);
+            }
+            catch (Throwable t)
+            {
+                producerError.set(t);
+            }
+        }, "legend-stream-ingest-csv-producer");
+        producer.setDaemon(true);
+        producer.start();
+
+        try (InputStream in = pipedIn)
+        {
+            dbCommands.ingestFromStream(this.connection, this.tableName, columns, in);
+        }
+        finally
+        {
+            producer.join();
+        }
+
+        Throwable producerFailure = producerError.get();
+        if (producerFailure != null)
+        {
+            throw new RuntimeException("Streaming ingest failed in CSV producer", producerFailure);
+        }
+    }
+
+    SerializerAndColumns buildSerializerAndColumns(RelationalDatabaseCommands dbCommands)
+    {
+        CSVFormat csvFormat = dbCommands.getCsvFormatForTempFile();
+        boolean withHeader = dbCommands.supportsHeaderOnCsvFile();
+
+        if (result instanceof RelationalResult)
+        {
+            RelationalResult rr = (RelationalResult) result;
+            CsvSerializer serializer = new RelationalResultToCSVSerializer(rr, withHeader, csvFormat);
+            List<Column> columns = (rr.getResultBuilder() instanceof TDSBuilder)
+                    ? rr.getTdsColumns().stream().map(c -> new Column(c.name, c.relationalType)).collect(Collectors.toList())
+                    : rr.getSQLResultColumns().stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList());
+            return new SerializerAndColumns(serializer, columns);
+        }
+        if (result instanceof RealizedRelationalResult)
+        {
+            RealizedRelationalResult rrr = (RealizedRelationalResult) result;
+            CsvSerializer serializer = new RealizedRelationalResultCSVSerializer(rrr, this.databaseTimeZone, withHeader, false, csvFormat);
+            List<Column> columns = rrr.columns.stream().map(c -> new Column(c.label, c.dataType)).collect(Collectors.toList());
+            return new SerializerAndColumns(serializer, columns);
+        }
+        if (result instanceof StreamingObjectResult)
+        {
+            CsvSerializer serializer = new StreamingObjectResultCSVSerializer((StreamingObjectResult) result, withHeader, csvFormat);
+            List<Column> columns = serializer.getHeaderColumnsAndTypes().stream()
+                    .map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList());
+            return new SerializerAndColumns(serializer, columns);
+        }
+        if (result instanceof TempTableStreamingResult)
+        {
+            CsvSerializer serializer = new StreamingTempTableResultCSVSerializer((TempTableStreamingResult) result, withHeader, csvFormat);
+            List<Column> columns = serializer.getHeaderColumnsAndTypes().stream()
+                    .map(c -> new Column(c.getOne(), RelationalExecutor.getRelationalTypeFromDataType(c.getTwo()))).collect(Collectors.toList());
+            return new SerializerAndColumns(serializer, columns);
+        }
+        throw new RuntimeException("Result not supported yet: " + result.getClass().getName());
+    }
+
+    static final class SerializerAndColumns
+    {
+        final CsvSerializer serializer;
+        final List<Column> columns;
+
+        SerializerAndColumns(CsvSerializer serializer, List<Column> columns)
+        {
+            this.serializer = serializer;
+            this.columns = columns;
+        }
     }
 
     public static boolean checkedExecute(Statement statement, String sql)

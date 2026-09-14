@@ -1,0 +1,140 @@
+tests:
+# =============================================================================
+# Bit String Operators
+# https://www.postgresql.org/docs/16/functions-bitstring.html
+# No bit/varbit columns exist in the shared parity schema; literals are used.
+# =============================================================================
+
+- id: bit_and
+  sql: SELECT CAST(B'1010' AS bit(4)) & CAST(B'0110' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "&"
+  signature: "&(bit, bit) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_or
+  sql: SELECT CAST(B'1010' AS bit(4)) | CAST(B'0110' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "|"
+  signature: "|(bit, bit) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_xor
+  sql: SELECT CAST(B'1010' AS bit(4)) # CAST(B'0110' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "#"
+  signature: "#(bit, bit) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_not
+  sql: SELECT ~ CAST(B'1010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "~"
+  signature: "~(-, bit) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_shift_left
+  sql: SELECT CAST(B'1010' AS bit(4)) << 1 AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(bit, int4) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_shift_right
+  sql: SELECT CAST(B'1010' AS bit(4)) >> 1 AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(bit, int4) → bit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_concat
+  sql: SELECT CAST(B'1010' AS varbit) || CAST(B'0110' AS varbit) AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(varbit, varbit) → varbit"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_eq
+  sql: SELECT CAST(B'1010' AS bit(4)) = CAST(B'1010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_neq
+  sql: SELECT CAST(B'1010' AS bit(4)) <> CAST(B'0110' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_lt
+  sql: SELECT CAST(B'0010' AS bit(4)) < CAST(B'1010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_lte
+  sql: SELECT CAST(B'0010' AS bit(4)) <= CAST(B'1010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_gt
+  sql: SELECT CAST(B'1010' AS bit(4)) > CAST(B'0010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bit_gte
+  sql: SELECT CAST(B'1010' AS bit(4)) >= CAST(B'0010' AS bit(4)) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(bit, bit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_eq
+  sql: SELECT CAST(B'1010' AS varbit) = CAST(B'1010' AS varbit) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_neq
+  sql: SELECT CAST(B'1010' AS varbit) <> CAST(B'0110' AS varbit) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_lt
+  sql: SELECT CAST(B'0010' AS varbit) < CAST(B'1010' AS varbit) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_lte
+  sql: SELECT CAST(B'0010' AS varbit) <= CAST(B'1010' AS varbit) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_gt
+  sql: SELECT CAST(B'1010' AS varbit) > CAST(B'0010' AS varbit) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: varbit_gte
+  sql: SELECT CAST(B'1010' AS varbit) >= CAST(B'0010' AS varbit) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(varbit, varbit) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+

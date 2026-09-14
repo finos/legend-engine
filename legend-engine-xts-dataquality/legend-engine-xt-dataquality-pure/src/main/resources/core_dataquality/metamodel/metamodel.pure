@@ -99,6 +99,7 @@ Class meta::external::dataquality::DataQualityRelationComparison extends Package
   columnsToCompare: String[*];
   strategy: ReconStrategy[1];
   expectedMatch: Float[0..1];
+  persistenceStrategy: DataQualityPersistenceStrategy[0..1];
 }
 
 Class meta::external::dataquality::ReconStrategy

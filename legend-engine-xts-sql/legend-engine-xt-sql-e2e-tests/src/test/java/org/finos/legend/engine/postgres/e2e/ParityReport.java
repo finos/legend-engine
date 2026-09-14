@@ -170,7 +170,12 @@ public class ParityReport
         }
         report.put("failures", failures);
 
-        // All results (for function coverage mapping)
+        // All results (for function coverage mapping + post-hoc inspection of what was actually
+        // executed). We include sql and rewrittenSql on every row — including PASS — so that
+        // e.g. `jq -r '.results[] | select(.id | test("generate_series")) | .rewrittenSql'` can
+        // show whether a "passing" test actually exercises the code path its id implies.
+        // generatedSql / generatedLambda are only fetched on FAIL (see fetchGeneratedSql /
+        // fetchGeneratedLambda) so they'll usually be absent on PASS rows.
         List<Map<String, String>> allResults = new ArrayList<>();
         for (TestResult r : results)
         {
@@ -178,6 +183,22 @@ public class ParityReport
             entry.put("id", r.id);
             entry.put("path", r.path);
             entry.put("state", r.state);
+            if (r.sql != null)
+            {
+                entry.put("sql", r.sql);
+            }
+            if (r.rewrittenSql != null)
+            {
+                entry.put("rewrittenSql", r.rewrittenSql);
+            }
+            if (r.generatedSql != null)
+            {
+                entry.put("generatedSql", r.generatedSql);
+            }
+            if (r.generatedLambda != null)
+            {
+                entry.put("generatedLambda", r.generatedLambda);
+            }
             allResults.add(entry);
         }
         report.put("results", allResults);

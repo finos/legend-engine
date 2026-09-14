@@ -23,7 +23,8 @@ Enum  meta::pure::executionPlan::features::Feature
     PUSH_DOWN_ENUM_TRANSFORM,
     VARIANT_TYPE_AS_INPUT,
     LEGACY_SQL_NULL_UNSAFE_EQUALS,
-    CORRECT_SQL_SUBSTRING_INDEXING
+    CORRECT_SQL_SUBSTRING_INDEXING,
+    USE_DB_NATIVE_IMPLICIT_NULL_ORDERING
 }
 
 function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]

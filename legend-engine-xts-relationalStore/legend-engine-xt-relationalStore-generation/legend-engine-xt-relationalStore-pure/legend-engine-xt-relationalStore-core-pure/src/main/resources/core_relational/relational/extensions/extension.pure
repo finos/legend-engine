@@ -48,6 +48,8 @@ Class meta::relational::extension::RelationalExtension extends ModuleExtension
 
    milestoning_applyFilterHandlers : Function<{Function<{TableAlias[1]->meta::relational::metamodel::operation::Operation[0..1]}>[1], Function<{meta::relational::metamodel::relation::Table[1]->meta::relational::metamodel::relation::Table[1]}>[1], Boolean[1], Extension[*] -> Function<{Nil[1]->RelationalOperationElement[1]}>[*]}>[0..1];
 
+   milestoning_getInfinityDate : Function<{meta::pure::milestoning::TemporalStrategy[1], meta::relational::metamodel::relation::Table[1], meta::core::runtime::Runtime[0..1] -> Date[0..1]}>[0..1];
+
    relational_execution_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], meta::pure::runtime::ExecutionContext[1] -> PostProcessorResult[1]}>[*];
    relational_plan_postProcessors : Function<{PostProcessorResult[1], Runtime[1], RoutedValueSpecification[0..1], Mapping[0..1], Database[0..1], meta::pure::runtime::ExecutionContext[1] -> PostProcessorResult[1]}>[*];
    relational_plan_updateConnection : Function<{Nil[1]->Connection[1]}>[*];

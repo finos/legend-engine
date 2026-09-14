@@ -41,6 +41,16 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_SUPPORT_FAQ_URL
                                     | DATA_SPACE_SUPPORT_SUPPORT_URL
 
+                                    | DATA_SPACE_SUPPORT_DOCUMENTATION
+                                    | DATA_SPACE_SUPPORT_LINK_LABEL
+                                    | DATA_SPACE_SUPPORT_LINK_URL
+                                    | DATA_SPACE_SUPPORT_EXPERTISE
+                                    | DATA_SPACE_SUPPORT_EXPERT_IDS
+
+                                    | DATA_SPACE_OPERATIONAL_METADATA
+                                    | DATA_SPACE_OM_COVERAGE_REGIONS
+                                    | DATA_SPACE_OM_UPDATE_FREQUENCY
+
                                     // deprecated
                                     | DATA_SPACE_GROUP_ID
                                     | DATA_SPACE_ARTIFACT_ID
@@ -64,6 +74,7 @@ dataSpaceElement:                   documentation? DATA_SPACE stereotypes? tagge
                                                 | elements
                                                 | executables
                                                 | supportInfo
+                                                | operationalMetadata
 
                                                 // deprecated
                                                 | groupId
@@ -167,6 +178,7 @@ supportInfo:                        DATA_SPACE_SUPPORT_INFO COLON
                                         (
                                             supportEmail
                                             | supportCombinedInfo
+                                            | supportFullInfo
                                         )
                                     SEMI_COLON
 ;
@@ -201,6 +213,81 @@ combinedInfoWebsite:                DATA_SPACE_SUPPORT_WEBSITE COLON STRING SEMI
 combinedInfoFaqUrl:                 DATA_SPACE_SUPPORT_FAQ_URL COLON STRING SEMI_COLON
 ;
 combinedInfoSupportUrl:             DATA_SPACE_SUPPORT_SUPPORT_URL COLON STRING SEMI_COLON
+;
+
+// ---- Full (keyword-less) support info: supportInfo: { ... }; ----
+supportFullInfo:                    BRACE_OPEN
+                                        (
+                                            fullInfoDocumentation
+                                            | fullInfoWebsite
+                                            | fullInfoFaqUrl
+                                            | fullInfoSupportUrl
+                                            | fullInfoEmails
+                                            | fullInfoExpertise
+                                        )*
+                                    BRACE_CLOSE
+;
+fullInfoDocumentation:              DATA_SPACE_SUPPORT_DOCUMENTATION COLON linkValue SEMI_COLON
+;
+fullInfoWebsite:                    DATA_SPACE_SUPPORT_WEBSITE COLON linkValue SEMI_COLON
+;
+fullInfoFaqUrl:                     DATA_SPACE_SUPPORT_FAQ_URL COLON linkValue SEMI_COLON
+;
+fullInfoSupportUrl:                 DATA_SPACE_SUPPORT_SUPPORT_URL COLON linkValue SEMI_COLON
+;
+linkValue:                          BRACE_OPEN
+                                        (
+                                            linkLabel
+                                            | linkUrl
+                                        )*
+                                    BRACE_CLOSE
+;
+linkLabel:                          DATA_SPACE_SUPPORT_LINK_LABEL COLON STRING SEMI_COLON
+;
+linkUrl:                            DATA_SPACE_SUPPORT_LINK_URL COLON STRING SEMI_COLON
+;
+fullInfoEmails:                     DATA_SPACE_SUPPORT_EMAILS COLON BRACKET_OPEN ( emailValue (COMMA emailValue)* )? BRACKET_CLOSE SEMI_COLON
+;
+emailValue:                         BRACE_OPEN
+                                        (
+                                            emailTitle
+                                            | emailAddress
+                                        )*
+                                    BRACE_CLOSE
+;
+emailTitle:                         DATA_SPACE__TITLE COLON STRING SEMI_COLON
+;
+emailAddress:                       DATA_SPACE_SUPPORT_EMAIL_ADDRESS COLON STRING SEMI_COLON
+;
+fullInfoExpertise:                  DATA_SPACE_SUPPORT_EXPERTISE COLON BRACKET_OPEN ( expertiseValue (COMMA expertiseValue)* )? BRACKET_CLOSE SEMI_COLON
+;
+expertiseValue:                     BRACE_OPEN
+                                        (
+                                            expertiseDescription
+                                            | expertiseExpertIds
+                                        )*
+                                    BRACE_CLOSE
+;
+expertiseDescription:               DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
+;
+expertiseExpertIds:                 DATA_SPACE_SUPPORT_EXPERT_IDS COLON BRACKET_OPEN ( STRING (COMMA STRING)* )? BRACKET_CLOSE SEMI_COLON
+;
+
+
+// -------------------------------------- OPERATIONAL METADATA --------------------------------------
+
+operationalMetadata:                DATA_SPACE_OPERATIONAL_METADATA COLON
+                                        BRACE_OPEN
+                                            (
+                                                omCoverageRegions
+                                                | omUpdateFrequency
+                                            )*
+                                        BRACE_CLOSE
+                                    SEMI_COLON
+;
+omCoverageRegions:                  DATA_SPACE_OM_COVERAGE_REGIONS COLON BRACKET_OPEN ( identifier (COMMA identifier)* )? BRACKET_CLOSE SEMI_COLON
+;
+omUpdateFrequency:                  DATA_SPACE_OM_UPDATE_FREQUENCY COLON identifier SEMI_COLON
 ;
 
 

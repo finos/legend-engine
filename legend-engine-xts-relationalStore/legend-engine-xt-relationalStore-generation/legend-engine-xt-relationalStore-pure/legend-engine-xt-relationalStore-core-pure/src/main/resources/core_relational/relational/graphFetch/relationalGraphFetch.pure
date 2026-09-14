@@ -698,7 +698,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::buildSQ
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::buildSQLExecutionNode(query: SelectSQLQuery[1], dbConnection: meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):SQLExecutionNode[1]
 {
-   let sql = $query->sqlQueryToString($dbConnection.type, $dbConnection.timeZone, $dbConnection.quoteIdentifiers, $extensions);
+   let sql = $query->sqlQueryToString($dbConnection.type, $dbConnection.timeZone, $dbConnection.quoteIdentifiers, meta::relational::functions::sqlQueryToString::useDbNativeImplicitNullOrdering($dbConnection, []), $extensions);
 
    ^SQLExecutionNode
     (

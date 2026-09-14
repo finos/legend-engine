@@ -1,4 +1,5 @@
 tests:
+
 - id: abs__big__from_table
   sql: SELECT ABS(int_val) AS result FROM numbers ORDER BY 1
   function: abs

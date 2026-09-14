@@ -38,6 +38,7 @@ public class GeneratePCTFiles
     public static void main(String[] args) throws Exception
     {
         Shared.writeStringToTarget("./target/pct", "PCT_Report_Compatibility.html", IOUtils.resourceToString("pct/PCT_Report_Compatibility.html", StandardCharsets.UTF_8, GeneratePCTFiles.class.getClassLoader()));
+        Shared.writeStringToTarget("./target/pct", "PCT_Report_Functions.html", IOUtils.resourceToString("pct/PCT_Report_Functions.html", StandardCharsets.UTF_8, GeneratePCTFiles.class.getClassLoader()));
         Shared.writeStringToTarget("./target/pct", "pct-docs.json", getDocumentationAsJson());
         Shared.writeStringToTarget("./target/pct", "git-info.json", DeploymentStateAndVersions.sdlcJSON);
     }

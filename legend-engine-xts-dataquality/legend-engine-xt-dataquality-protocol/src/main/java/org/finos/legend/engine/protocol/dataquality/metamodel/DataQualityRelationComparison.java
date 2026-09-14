@@ -36,5 +36,6 @@ public class DataQualityRelationComparison extends ModelGenerationSpecification
     public List<String> columnsToCompare = Collections.emptyList();
     public ReconStrategy strategy;
     public Double expectedMatch;
+    public DataQualityPersistenceStrategy persistenceStrategy;
     public List<DataQualityRelationComparisonTestSuite> testSuites;
 }

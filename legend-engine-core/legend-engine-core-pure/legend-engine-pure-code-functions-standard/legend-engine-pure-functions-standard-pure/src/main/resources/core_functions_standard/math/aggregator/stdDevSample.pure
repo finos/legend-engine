@@ -14,19 +14,41 @@
 
 import meta::pure::test::pct::*;
 
-function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the sample standard deviation (square root of sample variance) of non-NULL values.'
-    }
-meta::pure::functions::math::stdDevSample(numbers:Number[*]):Number[1]
-{
-    meta::pure::functions::math::stdDev($numbers->toOneMany(), true);
-}
+'''
+The sample standard deviation of a collection.
 
+`stdDev(Number[1..*], Boolean[1]):Number[1]` with the bias correction on — the square root of the
+sample variance, dividing by `n - 1`. Use it when the values are a sample and you are estimating the
+spread of the population they came from.
+
+**Parameters**
+- `numbers` — the values, at least one.
+
+**Returns** the sample standard deviation.
+
+**Examples**
+```pure
+stdDevSample([1, 2, 3])          // 1.0
+stdDevSample([2, 4, 6])          // 2.0
+stdDevSample([3.14, 6.28, 9.42]) // 3.14
+```
+
+**See also** `stdDevPopulation(Number[1..*]):Number[1]`,
+`varianceSample(Number[*]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::stdDevSample(numbers:Number[1..*]):Number[1]
 {
     meta::pure::functions::math::stdDev($numbers, true);
+}
+
+'''
+As `stdDevSample(Number[1..*]):Number[1]`, accepting a collection that may be empty.
+'''
+function
+  <<PCT.function, functionType.ReducerFunction>>
+meta::pure::functions::math::stdDevSample(numbers:Number[*]):Number[1]
+{
+    meta::pure::functions::math::stdDev($numbers->toOneMany(), true);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::stdDev::testIntStdDev<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

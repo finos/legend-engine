@@ -23,6 +23,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
      getDynaFunctionToSqlForOracle()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
 
    ^DbExtension(
+      nullOrderingSupport = nullsHighWithClauseSupport(),
       isBooleanLiteralSupported = false,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
@@ -170,14 +171,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 {
    //Default to UTC, if timezone is not specified. GMT is the same as UTC, UTC is not actually a timezone
    let timeZone = if( $dbTimeZone->isEmpty(), | 'GMT', |  $dbTimeZone->toOne());
-   if($date->hasSubsecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss.SSSSSS}\'', $date),
-      | if ($date->hasSecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss}\'', $date),
-          | if ($date->hasMinute(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}\', \'YYYY-MM-DD HH24:MI\')', $date),
-            | if ($date->hasHour(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH}\', \'YYYY-MM-DD HH24\')', $date),
-              | if ($date->hasMonth() || $date->hasDay(),
-                | format('DATE\'%t{[' + $timeZone + ']yyyy-MM-dd}\'', $date),
-                | fail('Ensure the target system understands Year or Year-month semantic.'); '';
-      ))))
+   //The branches below differ in the SQL they wrap the date in, so only the two that share a wrapper
+   //merge: the optional section writes the sub-second digits where the date has them, and S* writes
+   //however many that is.
+   if($date->hasSecond(), | format('TIMESTAMP\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm:ss?[.S*]}\'', $date),
+      | if ($date->hasMinute(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH:mm}\', \'YYYY-MM-DD HH24:MI\')', $date),
+        | if ($date->hasHour(), | format('TO_TIMESTAMP(\'%t{[' + $timeZone + ']yyyy-MM-dd HH}\', \'YYYY-MM-DD HH24\')', $date),
+          | if ($date->hasMonth() || $date->hasDay(),
+            | format('DATE\'%t{[' + $timeZone + ']yyyy-MM-dd}\'', $date),
+            | fail('Ensure the target system understands Year or Year-month semantic.'); '';
+      )))
    );
 }
 
@@ -256,7 +259,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as number)')),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='to_char(%s)')),
-    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->toTimestampOracle()})),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', contextAwareTransform={p:String[2],s:SqlGenerationContext[1] | $p->toTimestampOracle($s)})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)')),
     dynaFnToSql('formatDate',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformFormatDateOracle()}))
@@ -513,8 +516,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    ]->filter(p | $p.first.values->contains($day)).second->toOne();
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::toTimestampOracle(params: String[2]): String[0..1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::toTimestampOracle(params: String[2], context: SqlGenerationContext[1]): String[1]
 {
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
    let maybeDate = $params->at(0)->replace('\'','')->parseDate();
-   convertDateToSqlStringOracle($maybeDate, $params->at(1));
+   convertDateToSqlStringOracle($maybeDate, $context.dbConfig.dbTimeZone);
 }

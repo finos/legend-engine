@@ -52,6 +52,8 @@ Class meta::relational::milestoning::TemporalMilestoningContext
 {
    processingDate: RelationalOperationElement[0..1];
    businessDate: RelationalOperationElement[0..1];
+   runtime: meta::core::runtime::Runtime[0..1];
+   extensions: meta::pure::extension::Extension[*];
 
    toTemporalMilestoningThisContext()
    {
@@ -86,16 +88,21 @@ Class meta::relational::milestoning::TemporalMilestoningContext
    currentProcessingStateIsMilestonedClassProperty(){$this.currentProcessingState != [] && ($this.currentProcessingState == MilestoningProcessingState.MILESTONED_CLASS_PROPERTY || $this.currentProcessingState == MilestoningProcessingState.MILESTONED_CLASS_PROPERTY_NO_ARG || $this.isAllVersionsInRange())}:Boolean[1];
 
    columns(r:Relation[1]) {
-      $this.currentMilestoningStrategy->expandToSingleTemporalStrategies()->map(temporalStrategy | $temporalStrategy->getTemporalDateAlias($this, $r))->reverse();
+      $this.currentMilestoningStrategy->expandToSingleTemporalStrategies()->map(temporalStrategy | $temporalStrategy->getTemporalDateAlias($this, $r, $this.runtime, $this.extensions))->reverse();
    }: Alias[*];
 }
 
 function meta::relational::milestoning::getTemporalDateAlias(temporalStrategy:SingleDateTemporalStrategy[1], milestoningContext:TemporalMilestoningContext[1], r:Relation[1]):Alias[0..1]
 {
+   getTemporalDateAlias($temporalStrategy, $milestoningContext, $r, [], []);
+}
+
+function meta::relational::milestoning::getTemporalDateAlias(temporalStrategy:SingleDateTemporalStrategy[1], milestoningContext:TemporalMilestoningContext[1], r:Relation[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Alias[0..1]
+{
    let temporalDate = $temporalStrategy->temporalDate($milestoningContext);
    let temporalDateRelationalElement = if ($milestoningContext.isAllVersions() || $milestoningContext.isAllVersionsInRange() || $milestoningContext.isAllForEachDate(),
                                            | $temporalDate,
-                                           | if($temporalDate->toOne()->isLatestDate() && $temporalStrategy->relationalElementCanSupportStrategy($r) && $temporalStrategy->getInfinityDate($r)->isNotEmpty(),| ^Literal(value=$temporalStrategy->getInfinityDate($r)->toString())
+                                           | if($temporalDate->toOne()->isLatestDate() && $temporalStrategy->relationalElementCanSupportStrategy($r) && $temporalStrategy->getInfinityDate($r, $runtime, $extensions)->isNotEmpty(),| ^Literal(value=$temporalStrategy->getInfinityDate($r, $runtime, $extensions)->toString())
                                                                                                                                                                                                             ,| if($temporalDate->toOne()->isLatestDate() ,| [] 
                                                                                                                                                                                                                                                          ,| $temporalDate->match([l:Literal[1]| $l.value->match([d:Date[1]|^Literal(value=$d->toString()), v:VarPlaceHolder[1]|$l]), 
                                                                                                                                                                                                                                                                                   d:DynaFunction[1] | $d])));
@@ -221,7 +228,7 @@ function meta::relational::milestoning::getAllMilestonedTableFilter( t:TemporalS
                           | $t->expandToSingleTemporalStrategies()->map(s| if ($s->relationalElementCanSupportStrategy($ta.relationalElement),
                                                                                | if ($milestoningContext.isAllVersionsInRange(),
                                                                                      | getTemporalMilestoneTableRangeFilter($ta.relationalElement->cast(@Table), $ta, $s, $milestoningContext->temporalRangeDates()),
-                                                                                     | getTemporalTableFilter($ta.relationalElement->cast(@Table), $s, $ta, $s->temporalDate($milestoningContext)->at(0))),
+                                                                                     | getTemporalTableFilter($ta.relationalElement->cast(@Table), $s, $ta, $s->temporalDate($milestoningContext)->at(0), $milestoningContext.runtime, $milestoningContext.extensions)),
                                                                                | []))->andFilters($extensions)->cast(@Operation);,
                           | []);
    };
@@ -252,8 +259,8 @@ function meta::relational::milestoning::getEqualityMilestonedFilteringSelect(t:T
                                                             let propagatedTemporalRlnOpElement = ^Alias( name=$s->temporalPropagatedColumnAliasProperties(), relationalElement=$rightVal);
                                                             pair(^$right(columns=$propagatedTemporalRlnOpElement), $rightVal);
                                                       )->toOne()->cast(@Pair<SelectSQLQuery, RelationalOperationElement>);
-                           let milestonedFilteringOp = $tableAlias.relationalElement->match([t: Table[1] | getTemporalTableFilter($t, $s, $tableAlias, $selectDateFilterPair.second),
-                                                                                             u: Union[1] | getTemporalUnionFilter($u, $s, $tableAlias, $selectDateFilterPair.second)]);
+                           let milestonedFilteringOp = $tableAlias.relationalElement->match([t: Table[1] | getTemporalTableFilter($t, $s, $tableAlias, $selectDateFilterPair.second, $milestoningContext.runtime, $milestoningContext.extensions),
+                                                                                             u: Union[1] | getTemporalUnionFilter($u, $s, $tableAlias, $selectDateFilterPair.second, $milestoningContext.runtime, $milestoningContext.extensions)]);
                            let newFilteringOp = $sourceSelect.filteringOperation->concatenate($milestonedFilteringOp)->andFilters($extensions);
                            let newSelect = $selectDateFilterPair.first;
                            ^$newSelect(filteringOperation=$newFilteringOp);),
@@ -288,16 +295,21 @@ function meta::relational::milestoning::getMilestonedFilteringOperation(t:Tempor
                                                               $tableAlias.relationalElement->match([t: Table[1] | getTemporalMilestoneTableRangeFilter($t, $tableAlias, $s, $temporalRangeDates),
                                                                                                     u: Union[1] | []]);,
                                                             | let temporalDate = $s->temporalDate($milestoningContext)->at(0);
-                                                              $tableAlias.relationalElement->match([t: Table[1] | getTemporalTableFilter($t, $s, $tableAlias, $temporalDate),
-                                                                                                    u: Union[1] | getTemporalUnionFilter($u, $s, $tableAlias, $temporalDate)]);),
+                                                              $tableAlias.relationalElement->match([t: Table[1] | getTemporalTableFilter($t, $s, $tableAlias, $temporalDate, $milestoningContext.runtime, $milestoningContext.extensions),
+                                                                                                    u: Union[1] | getTemporalUnionFilter($u, $s, $tableAlias, $temporalDate, $milestoningContext.runtime, $milestoningContext.extensions)]);),
                                                       |[]));
 }
 
 function meta::relational::milestoning::getTemporalTableFilter(table:Table[1], milestoningStrategy:TemporalStrategy[1], tableAlias:TableAlias[1], temporalDate: RelationalOperationElement[1]):Operation[1]
 {
+  getTemporalTableFilter($table, $milestoningStrategy, $tableAlias, $temporalDate, [], []);
+}
+
+function meta::relational::milestoning::getTemporalTableFilter(table:Table[1], milestoningStrategy:TemporalStrategy[1], tableAlias:TableAlias[1], temporalDate: RelationalOperationElement[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
+{
   if($table->hasSupportedSnapshotMilestoning($milestoningStrategy),
     | $table->getSnapshotMilestoneTableFilter($tableAlias, $milestoningStrategy, $temporalDate),
-    | $table->getTemporalMilestoneTableFilter($tableAlias, $milestoningStrategy, $temporalDate)
+    | $table->getTemporalMilestoneTableFilter($tableAlias, $milestoningStrategy, $temporalDate, $runtime, $extensions)
   );
 }
 
@@ -310,9 +322,14 @@ function meta::relational::milestoning::getSnapshotMilestoneTableFilter(table:Ta
 
 function meta::relational::milestoning::getTemporalMilestoneTableFilter(table:Table[1], tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1]):Operation[1]
 {
+   getTemporalMilestoneTableFilter($table, $tableAlias, $milestoningStrategy, $temporalDate, [], []);
+}
+
+function meta::relational::milestoning::getTemporalMilestoneTableFilter(table:Table[1], tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
+{
    let milestoneColumns = $tableAlias->getTemporalMilestoneColumns($milestoningStrategy);
    let inclusive = $milestoningStrategy->getInclusive($table);
-   getTemporalMilestoneFilter($table, $milestoningStrategy, $milestoneColumns->at(0), $milestoneColumns->at(1), $temporalDate, $inclusive);
+   getTemporalMilestoneFilter($table, $milestoningStrategy, $milestoneColumns->at(0), $milestoneColumns->at(1), $temporalDate, $inclusive, $runtime, $extensions);
 }
 
 function meta::relational::milestoning::getTemporalMilestoneTableRangeFilter(table:Table[1], tableAlias:TableAlias[1], milestoningStrategy:TemporalStrategy[1], dateRange: RelationalOperationElement[*]):Operation[1]
@@ -336,6 +353,11 @@ function meta::relational::milestoning::getTemporalMilestoneColumns(tableAlias:T
 
 function meta::relational::milestoning::getTemporalUnionFilter(union:Union[1], milestoningStrategy:TemporalStrategy[1], tableAlias:TableAlias[1], temporalDate: RelationalOperationElement[1]):Operation[1]
 {
+   getTemporalUnionFilter($union, $milestoningStrategy, $tableAlias, $temporalDate, [], []);
+}
+
+function meta::relational::milestoning::getTemporalUnionFilter(union:Union[1], milestoningStrategy:TemporalStrategy[1], tableAlias:TableAlias[1], temporalDate: RelationalOperationElement[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
+{
    let colAliases=$union.queries.columns->filter(c| $c->cast(@Alias).relationalElement->instanceOf(TableAliasColumn))->cast(@Alias);
    let tables = $colAliases.relationalElement->cast(@TableAliasColumn).alias.relationalElement->cast(@Table);
 
@@ -343,21 +365,31 @@ function meta::relational::milestoning::getTemporalUnionFilter(union:Union[1], m
    let toUnionAlias = { c:Alias[1] | let tac=$c.relationalElement->cast(@TableAliasColumn); let col=$tac.column; ^$tac(alias=$tableAlias, column=^$col(name=$c.name));};
    let transformCols = { c: Alias[*], storeMilestonedCols: Column[*] | $c->filter(c|$isColMilestoned->eval($c,$storeMilestonedCols))->map(c|$toUnionAlias->eval($c))};
 
-   getMilestoneUnionFilter($tables, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias);
+   getMilestoneUnionFilter($tables, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias, $runtime, $extensions);
 }
 
 function meta::relational::milestoning::getMilestoneUnionFilter(tables:Table[*], union:Union[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], colAliases:Alias[*], transformCols:LambdaFunction<{Alias[*], Column[*]->TableAliasColumn[*]}>[1], isColMilestoned:LambdaFunction<{Alias[1], Column[*]->Boolean[1]}>[1], toUnionAlias:LambdaFunction<{Alias[1]->TableAliasColumn[1]}>[1]):Operation[1]
 {
+   getMilestoneUnionFilter($tables, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias, [], []);
+}
+
+function meta::relational::milestoning::getMilestoneUnionFilter(tables:Table[*], union:Union[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], colAliases:Alias[*], transformCols:LambdaFunction<{Alias[*], Column[*]->TableAliasColumn[*]}>[1], isColMilestoned:LambdaFunction<{Alias[1], Column[*]->Boolean[1]}>[1], toUnionAlias:LambdaFunction<{Alias[1]->TableAliasColumn[1]}>[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
+{
    let tablesWithTemporalMilestoning = $tables->filter(t | $t->hasSupportedTemporalMilestoning($milestoningStrategy));
    let tablesWithSnapshotMilestoning = $tables->filter(t | $t->hasSupportedSnapshotMilestoning($milestoningStrategy));
 
-   let temporalMilestoningFilter = if($tablesWithTemporalMilestoning->isEmpty(),| [],| getTemporalMilestoneUnionFilter($tablesWithTemporalMilestoning, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias));
+   let temporalMilestoningFilter = if($tablesWithTemporalMilestoning->isEmpty(),| [],| getTemporalMilestoneUnionFilter($tablesWithTemporalMilestoning, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias, $runtime, $extensions));
    let snapshotMilestoningFilter = if($tablesWithSnapshotMilestoning->isEmpty(),| [],| getSnapshotMilestoneUnionFilter($tablesWithSnapshotMilestoning, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias));
 
    $temporalMilestoningFilter->concatenate($snapshotMilestoningFilter)->match([o1 : Operation[1] | $o1, o2 : Operation[2] | newAndOrDynaFunctionRelaxedBrackets('and',[$o2->at(0),$o2->at(1)])]);
 }
 
 function meta::relational::milestoning::getTemporalMilestoneUnionFilter(tables:Table[*], union:Union[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], colAliases:Alias[*], transformCols:LambdaFunction<{Alias[*], Column[*]->TableAliasColumn[*]}>[1], isColMilestoned:LambdaFunction<{Alias[1], Column[*]->Boolean[1]}>[1], toUnionAlias:LambdaFunction<{Alias[1]->TableAliasColumn[1]}>[1]):Operation[1]
+{
+   getTemporalMilestoneUnionFilter($tables, $union, $milestoningStrategy, $temporalDate, $colAliases, $transformCols, $isColMilestoned, $toUnionAlias, [], []);
+}
+
+function meta::relational::milestoning::getTemporalMilestoneUnionFilter(tables:Table[*], union:Union[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], colAliases:Alias[*], transformCols:LambdaFunction<{Alias[*], Column[*]->TableAliasColumn[*]}>[1], isColMilestoned:LambdaFunction<{Alias[1], Column[*]->Boolean[1]}>[1], toUnionAlias:LambdaFunction<{Alias[1]->TableAliasColumn[1]}>[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
 {
    let lowerUpperColumns = $milestoningStrategy->getLowerUpperMilestonedColumns($tables);
    let fromTableAliasColumns=$transformCols->eval($colAliases,$lowerUpperColumns.first);
@@ -367,7 +399,7 @@ function meta::relational::milestoning::getTemporalMilestoneUnionFilter(tables:T
    let inclusive = $milestoningStrategy->getInclusive($tables);
    let includeNonMilestonedSubTypes = ^DynaFunction(name = 'isNull', parameters=$fromTableAliasColumns->concatenate($thruTableAliasColumns)->getCoalesceForUnion());
 
-   newAndOrDynaFunctionRelaxedBrackets('or', [getTemporalMilestoneFilter($union, $milestoningStrategy, $from, $thru, $temporalDate, $inclusive), $includeNonMilestonedSubTypes]);
+   newAndOrDynaFunctionRelaxedBrackets('or', [getTemporalMilestoneFilter($union, $milestoningStrategy, $from, $thru, $temporalDate, $inclusive, $runtime, $extensions), $includeNonMilestonedSubTypes]);
 }
 
 function meta::relational::milestoning::getSnapshotMilestoneUnionFilter(tables:Table[*], union:Union[1], milestoningStrategy:TemporalStrategy[1], temporalDate: RelationalOperationElement[1], colAliases:Alias[*], transformCols:LambdaFunction<{Alias[*], Column[*]->TableAliasColumn[*]}>[1], isColMilestoned:LambdaFunction<{Alias[1], Column[*]->Boolean[1]}>[1], toUnionAlias:LambdaFunction<{Alias[1]->TableAliasColumn[1]}>[1]):Operation[1]
@@ -402,7 +434,12 @@ function meta::relational::milestoning::getSnapshotMilestoneFilter(snapshotDate:
 
 function meta::relational::milestoning::getTemporalMilestoneFilter(r:Relation[1], m:TemporalStrategy[1], from: RelationalOperationElement[1], thru: RelationalOperationElement[1],  date: RelationalOperationElement[1], inclusive : Boolean[1]):Operation[1]
 {
-   if($date->isLatestDate(),| let tableLatestDate = $m->getInfinityDate($r);
+   getTemporalMilestoneFilter($r, $m, $from, $thru, $date, $inclusive, [], []);
+}
+
+function meta::relational::milestoning::getTemporalMilestoneFilter(r:Relation[1], m:TemporalStrategy[1], from: RelationalOperationElement[1], thru: RelationalOperationElement[1],  date: RelationalOperationElement[1], inclusive : Boolean[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Operation[1]
+{
+   if($date->isLatestDate(),| let tableLatestDate = $m->getInfinityDate($r, $runtime, $extensions);
                               ^DynaFunction(name = 'equal', parameters=[$thru, ^Literal(value=$tableLatestDate)]);
                            ,| let businessFrom = if($inclusive,| ^DynaFunction(name = 'lessThan', parameters=[$from, $date]),| ^DynaFunction(name = 'lessThanEqual', parameters=[$from, $date]));
                               let businessThru = if($inclusive,| ^DynaFunction(name = 'greaterThanEqual', parameters=[$thru, $date]),| ^DynaFunction(name = 'greaterThan', parameters=[$thru, $date]));
@@ -514,29 +551,70 @@ function meta::relational::milestoning::getQueryTableAliases(el: Any[*] ):TableA
 }
 
 function meta::relational::milestoning::getQueryRelationAliases(el: Any[*] ):TableAlias[*]{
-   $el->getQueryTableRelationalOperationElements()->cast(@TableAlias)
+   $el->getQueryTableRelationalOperationElements()->cast(@TableAlias);
 }
 
 function meta::relational::milestoning::getQueryTableRelationalOperationElements(el: Any[*] ):RelationalOperationElement[*]{
-   $el->match([
-     u : Union[1] | $u.queries->getQueryTableRelationalOperationElements(),
-     c : CommonTableExpression[1] | $c.sqlQuery->getQueryTableRelationalOperationElements(),
-     s : SelectSQLQuery[1] | let tablesInCtes = $s.commonTableExpressions->fold({c, res |
-                                                        $res->concatenate($c->getQueryTableRelationalOperationElements());
-                                                       }, []);
-                                                       $tablesInCtes->concatenate(getQueryRelationAliases($s.data))->concatenate(getQueryRelationAliases($s.filteringOperation));,
-     s : ViewSelectSQLQuery[1]|getQueryRelationAliases($s.selectSQLQuery),
-     a : RootJoinTreeNode[1]|getQueryRelationAliases($a.alias)->concatenate(getQueryRelationAliases($a->children())),
-     b : JoinTreeNode[1]|getQueryRelationAliases($b.alias)->concatenate(getQueryRelationAliases($b.join.target))->concatenate(getQueryRelationAliases($b->children())),
-     t : TableAlias[1]| if ($t.relationalElement->instanceOf(NamedRelation) && !$t.relationalElement->instanceOf(ViewSelectSQLQuery),| $t,| getQueryRelationAliases($t.relationalElement)),
-     a:  Alias[1] | getQueryRelationAliases($a.relationalElement),
-     op: UnaryOperation[1] | getQueryRelationAliases($op.nested),
-     op: BinaryOperation[1] | getQueryRelationAliases($op.left)->concatenate(getQueryRelationAliases($op.right)),
-     va : VariableArityOperation[1] | getQueryRelationAliases($va.args),
-     d : DynaFunction[1] | getQueryRelationAliases($d.parameters),
-     a : Any[1] | [],
-     e : Any[*]| $e->map(el | $el->getQueryRelationAliases())
-   ])
+   getQueryTableRelationalOperationElementsMemo($el, []).found;
+}
+
+// Memoized variant of the getQueryTableRelationalOperationElements/getQueryRelationAliases pair above.
+// A SelectSQLQuery's .data and .filteringOperation subtrees routinely share the same underlying
+// TableAlias instances (e.g. a milestoning filter operation embeds ^TableAliasColumn(alias=$tableAlias, ...)
+// referencing the very TableAlias already reachable via .data), and this walk previously had no way to
+// recognize that overlap -- re-expanding a shared TableAlias's full subtree from scratch every time it was
+// reached via a different path. For a deeply/self-referentially nested query (many milestoned joins), that
+// makes the walk exponential in nesting depth instead of linear in the number of distinct aliases. Threading
+// a "visited" TableAlias[*] through the recursion (via this state class, since Pair<U,V>'s type parameters
+// can't themselves carry a [*] multiplicity) and short-circuiting on a repeat visit (`==` is identity
+// comparison for TableAlias, so this check is cheap) fixes that: each distinct TableAlias's subtree is
+// expanded once, and its result is reused (implicitly, via omission) for every subsequent path that reaches it.
+Class <<access.private>> meta::relational::milestoning::AliasWalkState
+{
+   visited: TableAlias[*];
+   found: RelationalOperationElement[*];
+}
+
+function <<access.private>> meta::relational::milestoning::getQueryTableRelationalOperationElementsMemo(el: Any[*], visited: TableAlias[*]): AliasWalkState[1]
+{
+   $el->fold({e:Any[1], acc: AliasWalkState[1] |
+     let currentVisited = $acc.visited;
+     let r = $e->match([
+       u : Union[1] | getQueryTableRelationalOperationElementsMemo($u.queries, $currentVisited),
+       c : CommonTableExpression[1] | getQueryTableRelationalOperationElementsMemo($c.sqlQuery, $currentVisited),
+       s : SelectSQLQuery[1] | let ctesResult = $s.commonTableExpressions->fold({c2, acc2: AliasWalkState[1] |
+                                    let r2 = getQueryTableRelationalOperationElementsMemo($c2, $acc2.visited);
+                                    ^AliasWalkState(visited=$r2.visited, found=$acc2.found->concatenate($r2.found));
+                                 }, ^AliasWalkState(visited=$currentVisited, found=[]));
+                                 let dataResult = getQueryTableRelationalOperationElementsMemo($s.data, $ctesResult.visited);
+                                 let filterResult = getQueryTableRelationalOperationElementsMemo($s.filteringOperation, $dataResult.visited);
+                                 ^AliasWalkState(visited=$filterResult.visited, found=$ctesResult.found->concatenate($dataResult.found)->concatenate($filterResult.found));,
+       s : ViewSelectSQLQuery[1]| getQueryTableRelationalOperationElementsMemo($s.selectSQLQuery, $currentVisited),
+       a : RootJoinTreeNode[1]| let r1 = getQueryTableRelationalOperationElementsMemo($a.alias, $currentVisited);
+                                 let r2 = getQueryTableRelationalOperationElementsMemo($a->children(), $r1.visited);
+                                 ^AliasWalkState(visited=$r2.visited, found=$r1.found->concatenate($r2.found));,
+       b : JoinTreeNode[1]| let r1 = getQueryTableRelationalOperationElementsMemo($b.alias, $currentVisited);
+                             let r2 = getQueryTableRelationalOperationElementsMemo($b.join.target, $r1.visited);
+                             let r3 = getQueryTableRelationalOperationElementsMemo($b->children(), $r2.visited);
+                             ^AliasWalkState(visited=$r3.visited, found=$r1.found->concatenate($r2.found)->concatenate($r3.found));,
+       t : TableAlias[1]| if ($currentVisited->exists(v | $v == $t),
+                              | ^AliasWalkState(visited=$currentVisited, found=[]),
+                              | if ($t.relationalElement->instanceOf(NamedRelation) && !$t.relationalElement->instanceOf(ViewSelectSQLQuery),
+                                    | ^AliasWalkState(visited=$currentVisited->concatenate($t), found=$t->cast(@RelationalOperationElement)),
+                                    | getQueryTableRelationalOperationElementsMemo($t.relationalElement, $currentVisited->concatenate($t))
+                                  );
+                            );,
+       al:  Alias[1] | getQueryTableRelationalOperationElementsMemo($al.relationalElement, $currentVisited),
+       op: UnaryOperation[1] | getQueryTableRelationalOperationElementsMemo($op.nested, $currentVisited),
+       op2: BinaryOperation[1] | let r1 = getQueryTableRelationalOperationElementsMemo($op2.left, $currentVisited);
+                                  let r2 = getQueryTableRelationalOperationElementsMemo($op2.right, $r1.visited);
+                                  ^AliasWalkState(visited=$r2.visited, found=$r1.found->concatenate($r2.found));,
+       va : VariableArityOperation[1] | getQueryTableRelationalOperationElementsMemo($va.args, $currentVisited),
+       d : DynaFunction[1] | getQueryTableRelationalOperationElementsMemo($d.parameters, $currentVisited),
+       any1 : Any[1] | ^AliasWalkState(visited=$currentVisited, found=[])
+     ]);
+     ^AliasWalkState(visited=$r.visited, found=$acc.found->concatenate($r.found));
+   }, ^AliasWalkState(visited=$visited, found=[]));
 }
 
 function meta::relational::milestoning::getAppliedJoinMilestoningFilters(milestoningContext: TemporalMilestoningContext[0..1], joinTreeNode:JoinTreeNode[1], appliedJoinTreeNode:JoinTreeNode[1], state:State[1]) : Pair<JoinTreeNode, Operation>[*]{
@@ -618,6 +696,27 @@ function <<access.private>> meta::relational::milestoning::getInfinityDate(t:Tem
    $t->tableMilestoning($table).infinityDate;
 }
 
+function <<access.private>> meta::relational::milestoning::getInfinityDate(t:TemporalStrategy[1], r:Relation[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Date[1]
+{
+     $r->match([table:Table[1] | let infinityDate = $t->getInfinityDate($table, $runtime, $extensions);
+                                 assertNotEmpty($infinityDate,| '%latest usage for temporal parameter: '+$t->temporalColumnAliasProperties().first+' Table: '+$table.schema.name+'.'+$table.name+' requires it to specify a milestoning \'INFINITY_DATE\'');
+                                 $infinityDate->toOne();,
+                     u:Union[1]| let tables = $u.queries.data.alias.relationalElement->cast(@Table);
+                                 let infinityDates = $tables->map(table|$t->getInfinityDate($table, $runtime, $extensions))->distinct();
+                                 assert($infinityDates->size() == 1,| '%latest usage for Union requires all Unioned tables to specify a milestoning \'INFINITY_DATE\' which must be the same across all tables');
+                                 $infinityDates->at(0);]);
+}
+
+function <<access.private>> meta::relational::milestoning::getInfinityDate(t:TemporalStrategy[1], table:Table[1], runtime:meta::core::runtime::Runtime[0..1], extensions:Extension[*]):Date[0..1]
+{
+   let override = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).milestoning_getInfinityDate)
+                             ->filter(f|$f->isNotEmpty())
+                             ->map(f|$f->toOne()->eval($t, $table, $runtime))
+                             ->filter(d|$d->isNotEmpty())
+                             ->first();
+   if($override->isNotEmpty(), | $override->toOne(), | $t->tableMilestoning($table).infinityDate);
+}
+
 function <<access.private>> meta::relational::milestoning::isLatestDate(r:RelationalOperationElement[1]):Boolean[1]
 {
    $r->instanceOf(Literal) && $r->cast(@Literal).value->instanceOf(Date) && $r->cast(@Literal).value->cast(@Date)->isLatestDate()
@@ -647,7 +746,8 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
    $singleTemporalStrategyAndParam->map(dp | let d = $dp.second;
                                             $d->byPassRouterInfo()->match([ v: VariableExpression[1] | let resolvedVar = $inScopeVars->get($v.name).values->at(0);
                                                                                             let dateRoe = $resolvedVar->match([d:Date[1]|^Literal(value=$d),
-                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.genericType.rawType->toOne()));]);
+                                                                                                                               p:PlanVarPlaceHolder[1]|^Literal(value=^VarPlaceHolder(name=$p.name,type = $p.genericType.rawType->toOne())),
+                                                                                                                               a:Any[*]|resolveMilestoningDateParams($temporalStrategy, ^InstanceValue(genericType=^GenericType(rawType=Date), multiplicity=PureOne, values=$a)->cast(@ValueSpecification), $currentMilestoningContext, $state, $vars, $context, $extensions).date->first();]);
                                                                                             ^DateWrapper(date=$dateRoe);,
                                                                  i: InstanceValue[1] | $i.values->at(0)->match([
                                                                                           d: Date[1]               | ^DateWrapper(date=^Literal(value=$d));,
@@ -658,14 +758,20 @@ function <<access.private>> meta::relational::milestoning::resolveMilestoningDat
                                                                                             let isThisMilestonedGeneratedDateProperty = $f->isThisMilestonedGeneratedDateProperty();
                                                                                             if($isThisMilestonedGeneratedDateProperty && $currentMilestoningContext->isNotEmpty(),| let tp = TemporalMilestoningContext.properties->filter(p|$p.name->toOne() == $f.func.name)->toOne();
                                                                                                                                                                                     $tp->eval($currentMilestoningContext)->map(d|^DateWrapper(date=$d->cast(@RelationalOperationElement)));
-                                                                                                                                                                                 ,|if($f->isNonThisRootVariableExpression(),| 
+                                                                                                                                                                                 ,|if($f->isNonThisRootVariableExpression() || ($f->referencesVariableExpression() && !$f->referencesThis()),| 
                                                                                                                                                                                           if($state.functionExpressionStack->last()->evaluateAndDeactivate().func->in([
                                                                                                                                                                                               getAll_Class_1__Date_1__Date_1__T_MANY_, 
                                                                                                                                                                                               getAll_Class_1__Date_1__T_MANY_, 
                                                                                                                                                                                               getAllVersionsInRange_Class_1__Date_1__Date_1__T_MANY_
                                                                                                                                                                                               ]), 
                                                                                                                                                                                              | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()), 
-                                                                                                                                                                                             | ^DateWrapper() //change this so we look at the state + add test for range
+                                                                                                                                                                                             | if($f->hasAnyPlanVarPlaceholder($inScopeVars),
+                                                                                                                                                                                                  | ^DateWrapper(date = processFunctionExpression($f, [], ^SelectWithCursor(select=^SelectSQLQuery()), $vars, ^$state(functionExpressionStack+=$f), JoinType.LEFT_OUTER, '', ^List<ColumnGroup>(values = []), $context, $extensions).element->cast(@SelectWithCursor).select.columns->first()),
+                                                                                                                                                                                                  | if($f->allVarsResolveToDate($inScopeVars),
+                                                                                                                                                                                                       | $f->reactivate($inScopeVars)->map(d|^DateWrapper(date=^Literal(value=$d->cast(@Date)))),
+                                                                                                                                                                                                       | ^DateWrapper()
+                                                                                                                                                                                                    )
+                                                                                                                                                                                               )
                                                                                                                                                                                           )
                                                                                                                                                                                                                            ,| if($f->referencesVariableExpression()
                                                                                                                                                                                                                                  ,|  let new = newThisMilestonedPropertyExpression($singleTemporalStrategy);
@@ -723,6 +829,43 @@ function <<access.private>> meta::relational::milestoning::isNonThisRootVariable
    $v->byPassRouterInfo()->match([f:FunctionExpression[1] | if($f.parametersValues->isNotEmpty(),|$f.parametersValues->at(0)->isNonThisRootVariableExpression(),|false),
                                   v:VariableExpression[1] | $v.name != 'this',
                                   v:ValueSpecification[1] | false])
+}
+
+function <<access.private>> meta::relational::milestoning::getRootVariableName(v:ValueSpecification[1]):String[0..1]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | if($f.parametersValues->isNotEmpty(),|$f.parametersValues->at(0)->getRootVariableName(),|[]),
+                                  v:VariableExpression[1] | $v.name,
+                                  v:ValueSpecification[1] | []])
+}
+
+function <<access.private>> meta::relational::milestoning::collectVariableExpressions(v:ValueSpecification[1]):VariableExpression[*]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->map(p|$p->collectVariableExpressions()),
+                                  v:VariableExpression[1] | $v,
+                                  e:ExtendedRoutedValueSpecification[1] | $e->byPassRouterInfo()->collectVariableExpressions(),
+                                  v:ValueSpecification[1] | []])
+}
+
+function <<access.private>> meta::relational::milestoning::referencesThis(v:ValueSpecification[1]):Boolean[1]
+{
+   $v->byPassRouterInfo()->match([f:FunctionExpression[1] | $f.parametersValues->fold({x, y| $x->referencesThis() || $y }, false),
+                                  v:VariableExpression[1] | $v.name == 'this',
+                                  e:ExtendedRoutedValueSpecification[1] | $e->byPassRouterInfo()->referencesThis(),
+                                  v:ValueSpecification[1] | false])
+}
+
+function <<access.private>> meta::relational::milestoning::hasAnyPlanVarPlaceholder(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   let vars = $f->collectVariableExpressions();
+   $vars->exists(v| let resolved = $inScopeVars->get($v.name);
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(PlanVarPlaceHolder););
+}
+
+function <<access.private>> meta::relational::milestoning::allVarsResolveToDate(f:FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1]):Boolean[1]
+{
+   let vars = $f->collectVariableExpressions();
+   $vars->forAll(v| let resolved = $inScopeVars->get($v.name);
+                    !$resolved->isEmpty() && $resolved.values->at(0)->instanceOf(Date););
 }
 
 function meta::relational::milestoning::relationalElementIsMilestoned(relationalOperationElement : RelationalOperationElement[1]):Boolean[1]

@@ -16,6 +16,8 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import org.apache.commons.csv.CSVFormat;
 
+import java.io.InputStream;
+import java.sql.Connection;
 import java.util.List;
 
 public abstract class RelationalDatabaseCommands
@@ -66,6 +68,15 @@ public abstract class RelationalDatabaseCommands
     public String getSemiStructuredInsertStatement(String tableName, String columnName)
     {
         throw new RuntimeException("Insert into semi structured column in temp table not implemented for " + this.getClass().getSimpleName());
+    }
+
+    /*
+     * Streaming ingest into a session-scoped temp table without materialising a CSV on the local filesystem
+     * Called only when {@link #getDefaultIngestionMethod()} is @link IngestionMethod#CLIENT_STREAM}.
+    */
+    public void ingestFromStream(Connection connection, String tableName, List<Column> columns, InputStream csvInputStream) throws Exception
+    {
+        throw new UnsupportedOperationException("Streaming ingest (CLIENT_STREAM) not implemented for " + this.getClass().getSimpleName());
     }
 
 //    public void buildTempTableFromResult(RelationalExecutionConfiguration config, Connection connection, StreamingResult result, String tableName)

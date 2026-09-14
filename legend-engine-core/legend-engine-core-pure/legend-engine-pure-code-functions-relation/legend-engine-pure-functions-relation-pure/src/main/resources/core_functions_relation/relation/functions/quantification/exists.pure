@@ -15,10 +15,44 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Whether any row of a relation satisfies a predicate.
+
+The predicate may close over a row of an **enclosing** relation, which is what makes this the way to
+ask a question of one relation while iterating another:
+
+```pure
+$departments->filter(d | $employees->exists(e | $e.department == $d.departmentId))
+```
+
+On relational stores that compiles to an `EXISTS` subquery, correlated when the predicate reaches
+outward as above and uncorrelated when it does not. It stops at the first matching row rather than
+counting them, so it is the cheaper question to ask when you only want to know whether a match
+exists.
+
+**An empty relation gives `false`**, so `!$rel->exists(...)` over one keeps every row of the outer
+relation. Unlike `in(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`, negating it is supported everywhere.
+
+**Parameters**
+- `rel` — the relation to search.
+- `f` — the predicate, applied to each of its rows.
+
+**Returns** `true` if at least one row satisfies `f`.
+
+**Examples**
+```pure
+#TDS val 1 3 4 #->exists(x | $x.val > 3)     // true
+#TDS val 1 3 4 #->exists(x | $x.val > 100)   // false
+
+// correlated: departments that have at least one employee
+$departments->filter(d | $employees->exists(e | $e.department == $d.departmentId))
+```
+
+**See also** `in(U[0..1], Relation<Z=(?:U)>[1]):Boolean[1]`,
+`filter(Relation<T>[1], Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]`,
+`size(Relation<T>[1]):Integer[1]`
+'''
 function <<PCT.function>>
-{
-    doc.doc='Returns true if at least one row of the given relation satisfies the given predicate. On relational stores this generates an EXISTS subquery, correlated when the predicate closes over a row of an enclosing relation.'
-}
 meta::pure::functions::relation::exists<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Boolean[1]
 {
    $rel->meta::pure::functions::relation::filter($f)->meta::pure::functions::relation::size() > 0

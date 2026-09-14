@@ -35,10 +35,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
     getDynaFunctionToSqlForClickHouse()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
   ^DbExtension(
+      nullOrderingSupport = nullsLastWithClauseSupport(),
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
-      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      windowColumnProcessor = processWindowColumnForClickHouse_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForClickHouse_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
@@ -107,7 +108,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='position(%s, %s)')), 
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaroWinklerSimilarity(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='concatWithSeparator(%s, %s)')),
-    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->concatenate('1')->concatenate($p)->joinStrings(', ')})),
+    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
+    dynaFnToSql('lead',                   $allStates,            ^ToSql(format='leadInFrame(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
@@ -184,6 +186,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processSelectSQLQueryForClickHouse(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryForClickHouse($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+}
+
+// ClickHouse's navigation window functions are only spelled lagInFrame / leadInFrame — the ANSI
+// lag / lead do not exist (verified against ClickHouse 25.x: UNKNOWN_AGGREGATE_FUNCTION). Both
+// operate strictly within the current window frame, and ClickHouse's default frame
+// (RANGE UNBOUNDED PRECEDING AND CURRENT ROW) does not match ANSI LAG / LEAD semantics.
+// When the caller supplies no frame for a lag / lead invocation, inject a full-partition
+// ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING frame so the *InFrame functions
+// behave partition-wide; then delegate to the default processor. A caller-supplied frame is
+// honoured verbatim.
+function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::processWindowColumnForClickHouse(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let needsSyntheticFrame = $w.window.frame->isEmpty() && $w.func.name->in(['lag', 'lead']);
+   let effectiveWindow = if($needsSyntheticFrame,
+        | let window = $w.window;
+          ^$w(window = ^$window(frame = ^meta::relational::metamodel::Frame(
+                                             frameType  = meta::relational::metamodel::FrameType.ROWS,
+                                             offsetFrom = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.PRECEDING),
+                                             offsetTo   = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING))));,
+        | $w);
+   $effectiveWindow->processWindowColumn($sgc);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(data:RelationalTreeNode[0..1]):Boolean[1]

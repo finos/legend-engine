@@ -14,11 +14,34 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The population covariance of two series.
+
+`covariance(Number[*], Number[*], Integer[1], Boolean[1]):Number[0..1]` with the bias correction off,
+dividing by the number of pairs. Use it when the pairs are the whole population rather than a sample.
+
+Unnormalised, so its magnitude depends on the units of both series; use
+`corr(Number[*], Number[*]):Number[0..1]` to compare relationships across different pairs. Returns
+empty when there are no pairs.
+
+**Parameters**
+- `numbersA` — the first series.
+- `numbersB` — the second series, paired by position.
+
+**Returns** the population covariance, or empty.
+
+**Examples**
+```pure
+covarPopulation([1, 2], [10, 20])   // 2.5
+covarPopulation([1, 2], [30, 10])   // -5.0
+covarPopulation([1], [])            // empty, no pairs
+```
+
+**See also** `covarSample(Number[*], Number[*]):Number[0..1]`,
+`corr(Number[*], Number[*]):Number[0..1]`
+'''
 function
-<<PCT.function, functionType.ReducerFunction>>
-    {
-        doc.doc='Returns the population covariance for non-null pairs in a group.'
-    }
+  <<PCT.function, functionType.ReducerFunction>>
 meta::pure::functions::math::covarPopulation(numbersA:Number[*], numbersB:Number[*]):Number[0..1]
 {
   covariance($numbersA, $numbersB, min($numbersA->size(),$numbersB->size()), false);

@@ -14,7 +14,28 @@
 
 import meta::pure::test::pct::*;
 
-function <<PCT.function>> {doc.doc = 'Repeats the given string a specified number of times and returns the resulting concatenated string.'}
+'''
+Concatenates a string with itself a given number of times.
+
+**Empty in, empty out**: an absent `str` gives an absent result rather than `''`, which is what makes
+the return `[0..1]`. An empty string is present, so it repeats to `''`.
+
+**Parameters**
+- `str` — the string to repeat.
+- `times` — how many copies to concatenate.
+
+**Returns** the concatenation, or empty when `str` is empty.
+
+**Examples**
+```pure
+'ab'->repeatString(2)   // 'abab'
+''->repeatString(2)     // ''
+[]->repeatString(2)     // empty
+```
+
+**See also** `rpad(String[1], Integer[1], String[1]):String[1]`
+'''
+function <<PCT.function>>
   meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
 {
   if ($str->isNotEmpty(),

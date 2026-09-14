@@ -1,0 +1,34 @@
+tests:
+  # =============================================================================
+  # GROUPING SETS / ROLLUP / CUBE
+  # https://www.postgresql.org/docs/16/queries-table-expressions.html#QUERIES-GROUPING-SETS
+  # =============================================================================
+
+  - id: grouping_sets_basic
+    sql: "SELECT dept_id, active, COUNT(*) AS cnt FROM persons GROUP BY GROUPING SETS ((dept_id), (active), ()) ORDER BY 1, 2"
+    feature: "GROUPING SETS"
+    category: "grouping_sets"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: rollup_basic
+    sql: "SELECT dept_id, active, COUNT(*) AS cnt FROM persons GROUP BY ROLLUP (dept_id, active) ORDER BY 1, 2"
+    feature: "ROLLUP"
+    category: "grouping_sets"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: cube_basic
+    sql: "SELECT dept_id, active, COUNT(*) AS cnt FROM persons GROUP BY CUBE (dept_id, active) ORDER BY 1, 2"
+    feature: "CUBE"
+    category: "grouping_sets"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: grouping_sets_with_grouping_func
+    sql: "SELECT dept_id, active, GROUPING(dept_id) AS g, COUNT(*) AS cnt FROM persons GROUP BY GROUPING SETS ((dept_id), (active)) ORDER BY 1, 2"
+    feature: "GROUPING function"
+    category: "grouping_sets"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

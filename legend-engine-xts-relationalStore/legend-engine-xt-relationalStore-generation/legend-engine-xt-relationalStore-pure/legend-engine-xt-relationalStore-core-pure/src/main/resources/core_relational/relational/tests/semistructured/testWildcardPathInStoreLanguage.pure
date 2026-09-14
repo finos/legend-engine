@@ -26,8 +26,8 @@ function meta::relational::tests::semistructured::wildcard::wildcardExecute(conn
         'FIRM_SCHEMA\n' +
         'FIRM_TABLE\n' +
         'ID,FIRM_DETAILS\n' +
-        '1,"{""divisions"": [{""name"": ""Alpha"", ""headcount"": 9, ""teams"": [{""label"": ""Core""}, {""label"": ""Edge""}]}, {""name"": ""Beta"", ""headcount"": 100, ""teams"": [{""label"": ""Ops""}]}]}"\n' +
-        '2,"{""divisions"": [{""name"": ""Gamma"", ""headcount"": 50, ""teams"": []}]}"\n' +
+        '1,"{""tags"": [""red"", ""blue""], ""divisions"": [{""name"": ""Alpha"", ""headcount"": 9, ""teams"": [{""label"": ""Core""}, {""label"": ""Edge""}]}, {""name"": ""Beta"", ""headcount"": 100, ""teams"": [{""label"": ""Ops""}]}]}"\n' +
+        '2,"{""tags"": [], ""divisions"": [{""name"": ""Gamma"", ""headcount"": 50, ""teams"": []}]}"\n' +
         '3,"{""divisions"": []}"\n'
         ;
 
@@ -44,5 +44,96 @@ function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::t
     '1,Alpha|Beta,Core|Edge|Ops,3,100\n' +
     '2,Gamma,null,0,50\n' +
     '3,null,null,0,null\n'
+  );
+}
+
+// A [*] path bound to a to-many property fans out to one row per element, the way a to-many
+// reached through an exploding join does. Firm 3 has no divisions, so it survives with a null
+// rather than being dropped - the outer-flatten semantics every dialect supplies. Issue #5099.
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyProperty(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::divisionNameRows__TabularDataSet_1_',
+    'Id,Name\n' +
+    '1,Alpha\n' +
+    '1,Beta\n' +
+    '2,Gamma\n' +
+    '3,null\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testWildcardBoundToToManyIntegerProperty(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::headcountRows__TabularDataSet_1_',
+    'Id,Headcount\n' +
+    '1,9\n' +
+    '1,100\n' +
+    '2,50\n' +
+    '3,null\n'
+  );
+}
+
+// No wildcard: the array is named directly by the path, so the flatten receives a different node
+// than the transform a [*] desugars to. Firm 2's tag list is empty and firm 3 has no tags key.
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testArrayPathBoundToToManyProperty(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::tagRows__TabularDataSet_1_',
+    'Id,Tag\n' +
+    '1,red\n' +
+    '1,blue\n' +
+    '2,null\n' +
+    '3,null\n'
+  );
+}
+
+// The fanned-out rows are collapsed again by an aggregate, which is what a join-backed to-many
+// does. count() must skip the null the empty case produces rather than counting the row.
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::divisionNameRowsJoined__TabularDataSet_1_',
+    'Id,Names\n' +
+    '1,Alpha|Beta\n' +
+    '2,Gamma\n' +
+    '3,null\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testToManyPropertyCounted(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::divisionNameRowCount__TabularDataSet_1_',
+    'Id,Count\n' +
+    '1,2\n' +
+    '2,1\n' +
+    '3,0\n'
+  );
+}
+
+// Two wildcards, so the mapped expression is an array_flatten over an array_transform rather than a
+// bare transform - a different node reaching the flatten than the single-level tests cover.
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testTwoLevelWildcardBoundToToManyProperty(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::teamLabelRows__TabularDataSet_1_',
+    'Id,Label\n' +
+    '1,Core\n' +
+    '1,Edge\n' +
+    '1,Ops\n' +
+    '2,null\n' +
+    '3,null\n'
+  );
+}
+
+// Filtering on the fanned-out property, which routes the flatten output into filteringOperation
+// rather than into the columns. Only firm 1 has a division called Alpha.
+function <<paramTest.Test>> meta::relational::tests::semistructured::wildcard::testFilterOnToManyProperty(conn: Connection[1]):Boolean[1]
+{
+  wildcardExecute($conn,
+    'wildcard::firmsWithAlphaDivision__TabularDataSet_1_',
+    'Id\n' +
+    '1\n'
   );
 }

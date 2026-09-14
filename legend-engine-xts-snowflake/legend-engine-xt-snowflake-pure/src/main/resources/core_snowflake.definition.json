@@ -10,6 +10,7 @@
     "platform_store_relational",
     "core_functions_json",
     "core_functions_standard",
+    "core_functions_unclassified",
     "core_relational",
     "core_analytics_lineage",
     "core_function_activator",

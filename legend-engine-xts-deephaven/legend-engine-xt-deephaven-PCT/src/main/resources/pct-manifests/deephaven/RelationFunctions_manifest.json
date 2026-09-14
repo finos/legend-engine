@@ -1,6 +1,18 @@
 {
   "adapter" : "meta::external::store::deephaven::tests::pct::testAdapterForDeephavenExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortCanonicalNullOrdering_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyLastTwoArg_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyLast_Function_1__Boolean_1_",
+    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Neema\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n   3,David\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::sort::testSortMultipleColumnsMixedNullOrder_Function_1__Boolean_1_",
+    "expectedError" : "actual:"
+  }, {
     "test" : "meta::pure::functions::relation::tests::aggregate::testSimpleAggregate_AggColSpecArray_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__AggColSpecArray_1__Relation_1_"
   }, {
@@ -178,6 +190,18 @@
     "test" : "meta::pure::functions::relation::tests::composition::testVariant_if_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+  },{
     "test" : "meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
@@ -388,6 +412,12 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyFirst_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -476,6 +506,9 @@
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_CorrelatedSubQuery_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testConcatenateFilterInSubQuery_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_DerivedRelation_Function_1__Boolean_1_",
@@ -661,7 +694,13 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Ascending_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
   }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_EmptyLast_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
+  }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Ascending_Function_1__Boolean_1_",
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_EmptyFirst_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Descending_Function_1__Boolean_1_",

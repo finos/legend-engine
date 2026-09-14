@@ -59,7 +59,7 @@
     "expectedError" : "range step must not be 0"
   }, {
     "test" : "meta::pure::functions::lang::tests::compare::testBooleanCompare_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'."
+    "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
   }, {
     "test" : "meta::pure::functions::lang::tests::compare::testCompareDecimalAndLongTypes_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'."

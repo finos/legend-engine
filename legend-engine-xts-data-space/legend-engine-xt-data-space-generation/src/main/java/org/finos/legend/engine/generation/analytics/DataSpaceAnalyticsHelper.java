@@ -198,14 +198,14 @@ public class DataSpaceAnalyticsHelper
                                 serviceExecutableInfo.id = executable._id();
                                 serviceExecutableInfo.executionContextKey = executable._executionContextKey();
                                 serviceExecutableInfo.query = ((PureSingleExecution) serviceProtocol.execution).func.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withRenderStyle(RenderStyle.PRETTY).build());
-                                serviceExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
+                                serviceExecutableInfo.mapping = execution._mapping() == null ? null : HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport());
                                 if (serviceProtocol.execution instanceof PureSingleExecution && ((PureSingleExecution) serviceProtocol.execution).runtime instanceof RuntimePointer)
                                 {
                                     serviceExecutableInfo.runtime = pureModel.getRuntimePath(execution._runtime());
                                 }
                                 if (buildResult)
                                 {
-                                    serviceExecutableInfo.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
+                                    serviceExecutableInfo.datasets = execution._mapping() == null ? java.util.Collections.emptyList() : LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, pureModel.getRuntimePath(execution._runtime()), execution._runtime(), HelperModelBuilder.getElementFullPath(execution._mapping(), pureModel.getExecutionSupport()), execution._mapping(), pureModelContextData, pureModel)).toList();
                                 }
                                 executableAnalysisResult.info = serviceExecutableInfo;
                                 lambdaFunc = execution._func();
@@ -446,7 +446,14 @@ public class DataSpaceAnalyticsHelper
         {
             result.supportInfo.sourceInformation = null;
         }
+        // operational metadata
+        result.operationalMetadata = dataSpaceProtocol.operationalMetadata;
+        if (result.operationalMetadata != null)
+        {
+            result.operationalMetadata.sourceInformation = null;
+        }
 
+        DataSpaceAnalyticsExtensionLoader.extensions().forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));
         return result;
     }
 
@@ -472,6 +479,23 @@ public class DataSpaceAnalyticsHelper
         result.path = dataSpaceProtocol.getPath();
         result.title = dataSpaceProtocol.title;
         result.description = dataSpaceProtocol.description;
+
+        // Resolve DataSpaceInfo profile annotations into structured info result
+        org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceInfoAnalysisResult pureInfo = analysisResult._info();
+        if (pureInfo != null)
+        {
+            DataSpaceInfoAnalysisResult dataSpaceInfo = new DataSpaceInfoAnalysisResult();
+            dataSpaceInfo.isVerified = pureInfo._isVerified();
+            dataSpaceInfo.isInDevelopment = pureInfo._isInDevelopment();
+            dataSpaceInfo.isExternal = pureInfo._isExternal();
+            dataSpaceInfo.topics = pureInfo._topics() == null || pureInfo._topics().toList().isEmpty() ? null : new ArrayList<>(pureInfo._topics().toList());
+            dataSpaceInfo.relatedDataSpaces = pureInfo._relatedDataSpaces() == null || pureInfo._relatedDataSpaces().toList().isEmpty() ? null : new ArrayList<>(pureInfo._relatedDataSpaces().toList());
+            dataSpaceInfo.deprecationNotice = pureInfo._deprecationNotice();
+            dataSpaceInfo.vendorLicenseStatus = pureInfo._vendorLicenseStatus();
+            dataSpaceInfo.vendorRelationshipOwner = pureInfo._vendorRelationshipOwner();
+            dataSpaceInfo.vendorProviderName = pureInfo._vendorProviderName();
+            result.info = dataSpaceInfo;
+        }
 
         result.taggedValues = ListIterate.collect(dataSpace._taggedValues().toList(), taggedValue ->
         {
@@ -615,6 +639,7 @@ public class DataSpaceAnalyticsHelper
         });
 
         // executables
+        List<DataSpaceAnalyticsExtension> analyticsExtensions = DataSpaceAnalyticsExtensionLoader.extensions();
         result.executables = buildDataSpaceExecutableAnalysisResult(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, entitlementServiceExtensions, generatorExtensions, true);
 
         // support
@@ -623,7 +648,14 @@ public class DataSpaceAnalyticsHelper
         {
             result.supportInfo.sourceInformation = null;
         }
+        // operational metadata
+        result.operationalMetadata = dataSpaceProtocol.operationalMetadata;
+        if (result.operationalMetadata != null)
+        {
+            result.operationalMetadata.sourceInformation = null;
+        }
 
+        analyticsExtensions.forEach(ext -> ext.enrich(result, dataSpace, dataSpaceProtocol, pureModel));
         return result;
     }
 

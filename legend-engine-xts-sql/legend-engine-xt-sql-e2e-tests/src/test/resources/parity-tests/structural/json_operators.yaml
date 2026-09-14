@@ -300,3 +300,38 @@ tests:
     category: "json_operators"
     expected_tds_status: ERROR
     expected_rel_status: ERROR
+
+  - id: json_column_nested_extract_in_where_is_null
+    sql: "SELECT id FROM json_data WHERE json_val -> 'a' -> 'b' IS NULL ORDER BY 1"
+    feature: "JSON column nested extract IS NULL in WHERE"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: json_column_nested_extract_in_where_is_not_null
+    sql: "SELECT id FROM json_data WHERE json_val -> 'a' -> 'b' IS NOT NULL ORDER BY 1"
+    feature: "JSON column nested extract IS NOT NULL in WHERE"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: json_column_nested_extract_in_where_not_is_null
+    sql: "SELECT id FROM json_data WHERE NOT json_val -> 'a' -> 'b' IS NULL ORDER BY 1"
+    feature: "JSON column nested extract NOT ... IS NULL in WHERE"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: json_column_extract_text_in_where_equals
+    sql: "SELECT id FROM json_data WHERE json_val ->> 'b' = 'hello' ORDER BY 1"
+    feature: "JSON column extract as text compared in WHERE"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: json_column_nested_extract_in_select_and_where
+    sql: "SELECT id, json_val -> 'a' -> 'b' AS nested FROM json_data WHERE json_val -> 'a' -> 'b' IS NOT NULL ORDER BY 1"
+    feature: "JSON column nested extract in SELECT and WHERE"
+    category: "json_operators"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

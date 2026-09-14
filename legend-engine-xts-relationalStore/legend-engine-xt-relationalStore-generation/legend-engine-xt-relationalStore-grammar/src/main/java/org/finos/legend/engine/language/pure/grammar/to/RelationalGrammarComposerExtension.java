@@ -16,9 +16,9 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.LazyIterate;
@@ -27,11 +27,15 @@ import org.finos.legend.engine.language.pure.grammar.from.RelationalGrammarParse
 import org.finos.legend.engine.language.pure.grammar.to.data.RelationalEmbeddedDataComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.DatabaseMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.RelationalMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.SchemaMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.SchemaPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapper.TableMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -56,17 +60,22 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
+    private static final Pattern TIME_ZONE_OFFSET = Pattern.compile("[+-][0-9]{4}");
+
     @Override
     public MutableList<String> group()
     {
-        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+        return Lists.mutable.with("Store", "Relational", "-Core");
     }
 
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
@@ -254,7 +263,7 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
                 return Tuples.pair(RelationalGrammarParserExtension.RELATIONAL_DATABASE_CONNECTION_TYPE, context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
                         (relationalDatabaseConnection.element != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "store: " + relationalDatabaseConnection.element + ";\n") : "") +
                         context.getIndentationString() + getTabString(baseIndentation + 1) + "type: " + relationalDatabaseConnection.type.name() + ";\n" +
-                        (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + relationalDatabaseConnection.timeZone + ";\n") : "") +
+                        (relationalDatabaseConnection.timeZone != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "timezone: " + renderTimeZone(relationalDatabaseConnection.timeZone) + ";\n") : "") +
                         (relationalDatabaseConnection.quoteIdentifiers != null ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "quoteIdentifiers: " + relationalDatabaseConnection.quoteIdentifiers + ";\n") : "") +
                         // HACKY: this is a hack to make local mode works, we will need to rethink about this
                         (relationalDatabaseConnection.localMode != null && relationalDatabaseConnection.localMode ? (context.getIndentationString() + getTabString(baseIndentation + 1) + "mode: local;\n") : "") +
@@ -271,6 +280,15 @@ public class RelationalGrammarComposerExtension implements IRelationalGrammarCom
             }
             return null;
         });
+    }
+
+    /**
+     * Mirrors the parser: a bare offset from UTC goes back out as written, and anything else is a zone id, which
+     * the grammar takes only in quotes.
+     */
+    private static String renderTimeZone(String timeZone)
+    {
+        return TIME_ZONE_OFFSET.matcher(timeZone).matches() ? timeZone : convertString(timeZone, true);
     }
 
     private static String renderDatabase(Database database, PureGrammarComposerContext PUREcontext)

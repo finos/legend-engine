@@ -69,11 +69,11 @@ function <<access.private>> meta::external::language::java::transform::statement
             let lastValueSpecification = $vses->last()->toOne();
 
             if($last->isAssignment(),
-               | $toLast->add($last)->add($last->variableAssigned()->j_return()),
+               | $toLast->add($last)->add($last->variableAssigned()->prepareMethodReturnExpression($lastValueSpecification, $returnType)->j_return()),
                |
             if($last->isDeclaration(),
-               | $toLast->add($last)->add($last->variableDeclared()->j_return()),
-               | $toLast->add($last->j_return())
+               | $toLast->add($last)->add($last->variableDeclared()->prepareMethodReturnExpression($lastValueSpecification, $returnType)->j_return()),
+               | $toLast->add($last->prepareMethodReturnExpression($lastValueSpecification, $returnType)->j_return())
             ));
          }
       ])

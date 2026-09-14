@@ -108,4 +108,4 @@ tests:
     feature: "CASE with arithmetic"
     category: "case_expressions"
     expected_tds_status: PASS
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

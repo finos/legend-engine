@@ -26,7 +26,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error:\nCan not convert parameter 'CAST('2014-02-01' AS DATE)' of type [DATE] into expected type [BOOLEAN]"
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
@@ -143,10 +143,10 @@
     "expectedError" : "No SQL translation exists for the PURE function 'zip_T_MANY__U_MANY__Pair_MANY_'."
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Numeric value '12345678912' is out of range"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Numeric value '12345678912' is out of range"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Numeric value '12345678912' is out of range"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Numeric value '12345678912' is out of range"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000\""
@@ -155,13 +155,13 @@
     "expectedError" : "\"\nexpected: %-21457-01-08T20:48:00+0000\nactual:   %21458-01-18T17:39:38+0000\""
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Numeric value '9600000000' is out of range"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Numeric value '9600000000' is out of range"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2012-03"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Numeric value '12345678912' is out of range"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Numeric value '12345678912' is out of range"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
@@ -356,22 +356,22 @@
     "expectedError" : "\"\nexpected: 4\nactual:   5\""
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Can't parse '2014-02-27T00:00:00.000000' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Can't parse '2014-02-27T00:00:00.000000' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231-0500' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231-0500' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231Z' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231Z' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Can't parse '2014-02-27T10:01:35.231' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 123.12300D\nactual:   123.123D\""
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_",
-    "expectedError" : "net.snowflake.client.jdbc.SnowflakeSQLException: Numeric value '3.14159d' is not recognized"
+    "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Numeric value '3.14159d' is not recognized"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.0D\nactual:   0D\""

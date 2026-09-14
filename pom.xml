@@ -1,5 +1,6 @@
 <!--
  Copyright 2020 Goldman Sachs
+ ©2026 JP Morgan Chase & Co. All rights reserved.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -26,7 +27,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.141.1-SNAPSHOT</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -117,8 +118,11 @@
     </modules>
 
     <properties>
+        <!-- CI-Friendly Version -->
+        <revision>4.145.1-SNAPSHOT</revision>
+
         <!-- Legend -->
-        <legend.pure.version>5.96.0</legend.pure.version>
+        <legend.pure.version>5.99.0</legend.pure.version>
         <legend.shared.version>0.37.0</legend.shared.version>
         <legend.web-application.version>13.2.0</legend.web-application.version>
         <legend.pylegend.version>0.21.0</legend.pylegend.version>
@@ -146,8 +150,8 @@
         <maven.compiler.release>8</maven.compiler.release>
         <maven.enforcer.requireJavaVersion>[11.0.10,12),[17,18)</maven.enforcer.requireJavaVersion>
         <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
-        <project.build.outputTimestamp>1787242144</project.build.outputTimestamp>
-        <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT</surefire.vm.params>
+        <project.build.outputTimestamp>1788377991</project.build.outputTimestamp>
+        <surefire.vm.params>-XX:-MaxFDLimit -XX:SoftRefLRUPolicyMSPerMB=1 -Duser.timezone=GMT --add-opens=java.base/java.nio=ALL-UNNAMED</surefire.vm.params>
         <surefire.reports.directory />
         <publish.server.id>central</publish.server.id>
         <!-- Databases -->
@@ -157,7 +161,7 @@
         <mariadb.version>3.0.6</mariadb.version>
         <postgres.version>42.7.4</postgres.version>
         <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
-        <snowflake.version>3.13.5</snowflake.version>
+        <snowflake.version>4.3.2</snowflake.version>
         <duckdb.version>1.3.0.0</duckdb.version>
         <clickhouse.version>0.9.6</clickhouse.version>
 
@@ -179,11 +183,13 @@
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
         <dropwizard.version>1.3.29</dropwizard.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
+        <error-prone-annotations.version>2.48.0</error-prone-annotations.version>
         <flatbuffers-java.version>24.3.25</flatbuffers-java.version>
         <freemarker.version>2.3.34</freemarker.version>
         <github.classgraph.version>4.8.25</github.classgraph.version>
         <google.api.grpc.version>2.21.0</google.api.grpc.version>
         <grpc.version>1.65.1</grpc.version>
+        <gson.version>2.14.0</gson.version>
         <guava.version>33.4.6-jre</guava.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
         <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
@@ -437,6 +443,31 @@
         </pluginManagement>
 
         <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
            <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
@@ -636,6 +667,8 @@
                                         <exclude>com.databricks:databricks-jdbc</exclude>
                                         <exclude>org.mongodb:bson-record-codec</exclude>
                                         <exclude>com.oracle.database.jdbc:ojdbc11</exclude>
+
+                                        <exclude>org.eclipse.lsp4j:*</exclude>
                                     </excludes>
                                 </enforceBytecodeVersion>
                             </rules>
@@ -834,21 +867,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-repl-data-cube</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-repl-interface</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-repl-light</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-repl-local</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1050,31 +1068,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-connection-factory</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-connection-compiler</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-connection-grammar</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-connection-protocol</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-connection-pure-metamodel</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-graphQL-http-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1132,11 +1125,6 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-executionPlan-http-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-connection</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1454,11 +1442,6 @@
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-SDT-pure</artifactId>
                 <type>test-jar</type>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-test-http-server</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2848,11 +2831,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-pure-ide-light-metadata-pure</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-javaGeneration-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -3471,7 +3449,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-ide-light</artifactId>
+                <artifactId>legend-pure-lsp-server</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <!-- PURE -->
@@ -4140,6 +4118,18 @@
                 <groupId>org.freemarker</groupId>
                 <artifactId>freemarker</artifactId>
                 <version>${freemarker.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Needed to resolve dependency convergence issue -->
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_annotations</artifactId>
+                <version>${error-prone-annotations.version}</version>
+            </dependency>
+            <dependency>
+                <!-- Needed to resolve dependency convergence issue -->
+                <groupId>com.google.code.gson</groupId>
+                <artifactId>gson</artifactId>
+                <version>${gson.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>

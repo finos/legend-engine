@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 import org.h2.tools.SimpleResultSet;
 import org.h2.util.DateTimeUtils;
 import org.h2.value.Value;
@@ -405,7 +406,7 @@ public class LegendH2Extensions
         String targetTimezone =  string2.getString();
         LocalDateTime localDateTime = LocalDateTime.parse(((ValueTimestamp) string1).getISOString());
         ZonedDateTime  utcTime = localDateTime.atZone(ZoneId.of("UTC"));
-        ZonedDateTime targetTime = utcTime.withZoneSameInstant(ZoneId.of(targetTimezone));
+        ZonedDateTime targetTime = utcTime.withZoneSameInstant(TimeZones.parse(targetTimezone));
         LocalTime time = targetTime.toLocalTime();
        return DateTimeUtils.parseTimestamp(targetTime.toLocalDateTime().toString(),null,false);
 

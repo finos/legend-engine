@@ -1,0 +1,260 @@
+tests:
+# =============================================================================
+# Network Address Operators
+# https://www.postgresql.org/docs/16/functions-net.html
+# No inet/macaddr/macaddr8 columns exist in the shared schema; literals/casts
+# are used.
+# =============================================================================
+
+- id: inet_and
+  sql: SELECT CAST('192.168.1.5' AS inet) & CAST('0.0.0.255' AS inet) AS result FROM persons WHERE id = 1
+  operator: "&"
+  signature: "&(inet, inet) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_and
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) & CAST('ff:ff:ff:00:00:00' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "&"
+  signature: "&(macaddr, macaddr) → macaddr"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_and
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) & CAST('ff:ff:ff:00:00:00:00:00' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "&"
+  signature: "&(macaddr8, macaddr8) → macaddr8"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_or
+  sql: SELECT CAST('192.168.1.5' AS inet) | CAST('0.0.0.255' AS inet) AS result FROM persons WHERE id = 1
+  operator: "|"
+  signature: "|(inet, inet) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_or
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) | CAST('00:00:00:ff:ff:ff' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "|"
+  signature: "|(macaddr, macaddr) → macaddr"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_or
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) | CAST('00:00:00:ff:ff:ff:ff:ff' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "|"
+  signature: "|(macaddr8, macaddr8) → macaddr8"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_not
+  sql: SELECT ~ CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: "~"
+  signature: "~(-, inet) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_not
+  sql: SELECT ~ CAST('08:00:2b:01:02:03' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "~"
+  signature: "~(-, macaddr) → macaddr"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_not
+  sql: SELECT ~ CAST('08:00:2b:01:02:03:04:05' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "~"
+  signature: "~(-, macaddr8) → macaddr8"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_overlap
+  sql: SELECT CAST('192.168.1.0/24' AS inet) && CAST('192.168.1.128/25' AS inet) AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_plus_bigint
+  sql: SELECT CAST('192.168.1.5' AS inet) + CAST(10 AS bigint) AS result FROM persons WHERE id = 1
+  operator: "+"
+  signature: "+(inet, int8) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: bigint_plus_inet
+  sql: SELECT CAST(10 AS bigint) + CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: "+"
+  signature: "+(int8, inet) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_minus_inet
+  sql: SELECT CAST('192.168.1.15' AS inet) - CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: "-"
+  signature: "-(inet, inet) → int8"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_minus_bigint
+  sql: SELECT CAST('192.168.1.15' AS inet) - CAST(10 AS bigint) AS result FROM persons WHERE id = 1
+  operator: "-"
+  signature: "-(inet, int8) → inet"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_eq
+  sql: SELECT CAST('192.168.1.5' AS inet) = CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_eq
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) = CAST('08:00:2b:01:02:03' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_eq
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) = CAST('08:00:2b:01:02:03:04:05' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_neq
+  sql: SELECT CAST('192.168.1.5' AS inet) <> CAST('192.168.1.6' AS inet) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_neq
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) <> CAST('08:00:2b:01:02:04' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_neq
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) <> CAST('08:00:2b:01:02:03:04:06' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_lt
+  sql: SELECT CAST('192.168.1.5' AS inet) < CAST('192.168.1.6' AS inet) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_lt
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) < CAST('08:00:2b:01:02:04' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_lt
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) < CAST('08:00:2b:01:02:03:04:06' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_lte
+  sql: SELECT CAST('192.168.1.5' AS inet) <= CAST('192.168.1.6' AS inet) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_lte
+  sql: SELECT CAST('08:00:2b:01:02:03' AS macaddr) <= CAST('08:00:2b:01:02:04' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_lte
+  sql: SELECT CAST('08:00:2b:01:02:03:04:05' AS macaddr8) <= CAST('08:00:2b:01:02:03:04:06' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_gt
+  sql: SELECT CAST('192.168.1.6' AS inet) > CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_gt
+  sql: SELECT CAST('08:00:2b:01:02:04' AS macaddr) > CAST('08:00:2b:01:02:03' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_gt
+  sql: SELECT CAST('08:00:2b:01:02:03:04:06' AS macaddr8) > CAST('08:00:2b:01:02:03:04:05' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_gte
+  sql: SELECT CAST('192.168.1.6' AS inet) >= CAST('192.168.1.5' AS inet) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr_gte
+  sql: SELECT CAST('08:00:2b:01:02:04' AS macaddr) >= CAST('08:00:2b:01:02:03' AS macaddr) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(macaddr, macaddr) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: macaddr8_gte
+  sql: SELECT CAST('08:00:2b:01:02:03:04:06' AS macaddr8) >= CAST('08:00:2b:01:02:03:04:05' AS macaddr8) AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(macaddr8, macaddr8) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_subnet_or_eq
+  sql: SELECT CAST('192.168.1.0/24' AS inet) << CAST('192.168.0.0/16' AS inet) AS result FROM persons WHERE id = 1
+  operator: "<<"
+  signature: "<<(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_subnet_or_eq2
+  sql: SELECT CAST('192.168.1.0/24' AS inet) <<= CAST('192.168.1.0/24' AS inet) AS result FROM persons WHERE id = 1
+  operator: "<<="
+  signature: "<<=(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_supernet
+  sql: SELECT CAST('192.168.0.0/16' AS inet) >> CAST('192.168.1.0/24' AS inet) AS result FROM persons WHERE id = 1
+  operator: ">>"
+  signature: ">>(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: inet_supernet_or_eq
+  sql: SELECT CAST('192.168.1.0/24' AS inet) >>= CAST('192.168.1.0/24' AS inet) AS result FROM persons WHERE id = 1
+  operator: ">>="
+  signature: ">>=(inet, inet) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+

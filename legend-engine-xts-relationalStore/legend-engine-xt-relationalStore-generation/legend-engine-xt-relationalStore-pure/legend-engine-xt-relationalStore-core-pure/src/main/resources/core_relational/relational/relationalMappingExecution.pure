@@ -56,8 +56,8 @@ function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(
 
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1], wrapInInstantiationNode: Boolean[1], extensions:Extension[*]):ExecutionNode[1]
 {
-   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $extensions);
-   
+   let sqlNode = generateSQLExecutionNode($postProcessorResult.query, $runtime->toOne()->connectionByElement($store)->cast(@meta::external::store::relational::runtime::DatabaseConnection), addEnumMapSupportFunctions($sq, $m), $exeCtx, $extensions);
+
    print(if($debug.debug, |'Generated SQL Node with query: ' + $sqlNode.sqlQuery + '\n', |''));
    
    let relationalNode =  if($wrapInInstantiationNode, | generateInstantiationExecutionNode($sq, $ext, $postProcessorResult.query, $sqlNode, $m,$exeCtx), | $sqlNode);
@@ -220,6 +220,17 @@ function meta::relational::mapping::uniqueRelationName(n:NamedRelation[1]):Strin
 function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], extensions:Extension[*]):SQLExecutionNode[1]
 {
    let sql = toSqlString($query, $connection, false, $extensions);
+   $query->buildSQLExecutionNodeFromSql($connection, $enumMapSupportFunctions, $sql, $extensions);
+}
+
+function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):SQLExecutionNode[1]
+{
+   let sql = toSqlString($query, $connection, false, $exeCtx, $extensions);
+   $query->buildSQLExecutionNodeFromSql($connection, $enumMapSupportFunctions, $sql, $extensions);
+}
+
+function <<access.private>> meta::relational::mapping::buildSQLExecutionNodeFromSql(query:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], enumMapSupportFunctions:String[*], sql:String[1], extensions:Extension[*]):SQLExecutionNode[1]
+{
    let relations = $query->meta::relational::milestoning::getQueryRelationAliases()->map(a|$a.relationalElement)->cast(@NamedRelation)->removeDuplicatesBy(t| $t->uniqueRelationName());
 
    ^SQLExecutionNode
@@ -400,7 +411,7 @@ function meta::relational::mapping::execution(store: Database[1], f:ValueSpecifi
 
    let sqlQueryToStringStart = now();
    let sql = if($relationalExecutionContext.insertDriverTablePkInTempTable->isEmpty(),
-                | toSqlString($postProcessorResult.query, $connection, true, $extensions),
+                | toSqlString($postProcessorResult.query, $connection, true, $exeCtx, $extensions),
                 | meta::relational::functions::toDDL::buildInsertSQLQueryResultIntoTable
                                                     (
                                                        $relationalExecutionContext.insertDriverTablePkInTempTable->toOne(),
@@ -433,16 +444,32 @@ function meta::relational::mapping::useDialectTranslation(r:RelationalOperationE
 
 function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
 {
+  let useDbNative = meta::relational::functions::sqlQueryToString::useDbNativeImplicitNullOrdering($connection, []);
   if(useDialectTranslation($s, $connection.type),
     | let query = $s->convertSqlQuery($extensions);
       let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
       // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
       $optimizedQuery->toSqlDialect($connection, false, $extensions);,
     | if($pretty,
-        | sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions),
-        | sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $extensions)
+        | meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions),
+        | meta::relational::functions::sqlQueryToString::sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions)
       )
-  )
+  );
+}
+
+function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::external::store::relational::runtime::DatabaseConnection[1], pretty:Boolean[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):String[1]
+{
+  let useDbNative = meta::relational::functions::sqlQueryToString::useDbNativeImplicitNullOrdering($connection, $exeCtx);
+  if(useDialectTranslation($s, $connection.type),
+    | let query = $s->convertSqlQuery($extensions);
+      let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
+      // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
+      $optimizedQuery->toSqlDialect($connection, false, $extensions);,
+    | if($pretty,
+        | meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions),
+        | meta::relational::functions::sqlQueryToString::sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions)
+      )
+  );
 }
 
 function meta::relational::mapping::sqlCommentPureExecution(): String[1]

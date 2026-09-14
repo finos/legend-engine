@@ -187,8 +187,8 @@ The `legend-engine-config/legend-engine-server` module produces a Docker image v
 
 All three profiles bind to `install`: `docker-snapshot` pushes the `snapshot` tag,
 `docker` pushes `${project.version}`, and `docker-local` builds to the local Docker daemon
-instead of pushing. The versioned push therefore happens both in `release.yml`'s
-"Build Release Tag" step and in the `release:perform` workflows.
+instead of pushing. The versioned push therefore happens in `release.yml`'s
+"Build release" step and in `legend-stack-release.yml`'s deploy step.
 
 There is no `-jar`-able artifact for this module — the image is the distribution.
 
@@ -237,16 +237,25 @@ resolved 875 dependencies in the image; with jib's exploded layout it resolves 1
 
 ## 7. Release Process
 
-Releases are managed by the `maven-release-plugin` via `.github/workflows/release.yml`
-(triggered manually or on tag push).
+Releases run through `.github/workflows/release.yml` (manual dispatch). The project
+uses Maven CI-friendly versions: every pom's version is `${revision}`, defined once in
+the root pom's `<revision>` property, and `flatten-maven-plugin` writes the resolved
+version into the published poms.
 
 Key steps:
 
-1. `mvn release:prepare` — bumps version, creates tag, commits `[maven-release-plugin]` commit.
-2. `mvn release:perform` — builds from tag, deploys to Maven Central (via OSSRH / Sonatype).
-3. Docker image is tagged and pushed with the release version.
+1. `validate` checks the version format and that neither the tag nor the Central
+   coordinates exist yet.
+2. `build` runs `mvn install -Drevision=<version>` on the dispatched commit and uploads
+   the artifacts; the Docker image is tagged and pushed with the release version here.
+3. `test` and `test-modules` run the suite against those artifacts on the same commit.
+4. `release` pushes the tag `legend-engine-<version>` onto that commit, publishes the
+   artifacts to Maven Central in two waves, and then commits
+   `Bump version to <next>-SNAPSHOT` to the branch.
 
-**Version format:** `MAJOR.MINOR.PATCH-SNAPSHOT` → `MAJOR.MINOR.PATCH` on release.
+There are no release commits and nothing is rebuilt from the tag.
+
+**Version format:** `MAJOR.MINOR.PATCH-SNAPSHOT` in `<revision>` → `MAJOR.MINOR.PATCH` on release.
 Current series: `4.x.x`.
 
 Legend stack release coordination (across `legend-pure`, `legend-engine`, `legend-sdlc`,

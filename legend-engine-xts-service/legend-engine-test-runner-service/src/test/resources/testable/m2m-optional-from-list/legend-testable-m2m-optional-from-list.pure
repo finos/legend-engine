@@ -30,10 +30,15 @@ Class testM2MOptionalFromList::model::TargetEvent
   firstCode: String[0..1];
 }
 
+function testM2MOptionalFromList::model::emptyOptionalCode(): String[0..1]
+{
+  []
+}
+
 function testM2MOptionalFromList::model::firstCodeOrEmpty(src: testM2MOptionalFromList::model::SourceEvent[1]): String[0..1]
 {
   if($src.attributes->isEmpty(),
-    |[],
+    |testM2MOptionalFromList::model::emptyOptionalCode(),
     |'FOUND'
   )
 }

@@ -175,6 +175,7 @@ relationComparisonDefinition:   DATAQUALITYRELATIONCOMPARISON qualifiedName
                                         | columnsToCompare
                                         | reconStrategy
                                         | reconExpectedMatch
+                                        | persistenceStrategy
                                         | dqTestSuites
                                     )*
                                 BRACE_CLOSE

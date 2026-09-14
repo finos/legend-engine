@@ -14,76 +14,124 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The earlier of two dates.
+
+The mirror of `max(Date[1], Date[1]):Date[1]`, with the same shapes and the same comparison rule:
+dates of differing precision compare by the start of the interval each covers.
+
+**Parameters**
+- `left` — the first date.
+- `right` — the second date.
+
+**Returns** whichever is earlier.
+
+**Examples**
+```pure
+min(%2025-01-01, %2025-06-30)   // %2025-01-01
+```
+
+**See also** `min(Date[*]):Date[0..1]`,
+`max(Date[1], Date[1]):Date[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:Date[1], right:Date[1]):Date[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+As `min(Date[1], Date[1]):Date[1]`, for `StrictDate` arguments, returning a `StrictDate`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+As `min(Date[1], Date[1]):Date[1]`, for `DateTime` arguments, returning a `DateTime`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::min(left:DateTime[1], right:DateTime[1]):DateTime[1]
 {
     if($right < $left, | $right, | $left)
 }
 
+'''
+The smallest date in a collection.
+
+The collection form of `min(Date[1], Date[1]):Date[1]`, and the aggregate a relational `groupBy`
+or window aggregation calls. **An empty collection gives empty**, which is why this returns `[0..1]`;
+the `[1..*]` variant below returns `[1]` and needs no `toOne`.
+
+`Date`, `StrictDate` and `DateTime` variants keep the element type.
+
+**Parameters**
+- `dates` — the dates to reduce.
+
+**Returns** the smallest date, or empty when there are none.
+
+**Examples**
+```pure
+min([%2025-02-10T20:10:20, %2025-02-10])   // %2025-02-10
+min([]->cast(@Date))                       // empty
+```
+
+**See also** `min(Date[1..*]):Date[1]`,
+`min(Date[1], Date[1]):Date[1]`,
+`max(Date[*]):Date[0..1]`
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest Date value from the list'
-  }
 meta::pure::functions::date::min(dates:Date[*]):Date[0..1]
 {
     $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `min(Date[*]):Date[0..1]`, for a collection known to hold at least one date, so the result is
+`[1]`.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest Date value from the list'
-  }
 meta::pure::functions::date::min(dates:Date[1..*]):Date[1]
 {
     $dates->fold({n, m | min($n, $m)}, $dates->at(0))
 }
 
+'''
+As `min(Date[*]):Date[0..1]`, for `StrictDate` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest StrictDate value from the list'
-  }
 meta::pure::functions::date::min(dates:StrictDate[*]):StrictDate[0..1]
 {
     $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `min(Date[1..*]):Date[1]`, for `StrictDate` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest Date value from the list'
-  }
 meta::pure::functions::date::min(dates:StrictDate[1..*]):StrictDate[1]
 {
     $dates->fold({n, m | min($n, $m)}, $dates->at(0))
 }
 
+'''
+As `min(Date[*]):Date[0..1]`, for `DateTime` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest DateTime value from the list'
-  }
 meta::pure::functions::date::min(dates:DateTime[*]):DateTime[0..1]
 {
     $dates->fold({n, m | min($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `min(Date[1..*]):Date[1]`, for `DateTime` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest Date value from the list'
-  }
 meta::pure::functions::date::min(dates:DateTime[1..*]):DateTime[1]
 {
     $dates->fold({n, m | min($n, $m)}, $dates->at(0))

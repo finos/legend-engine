@@ -1,0 +1,29 @@
+name: relational-semistructured-array-to-many
+title: "Relational Store — A Semi-Structured Array as a To-Many Property"
+description: |
+  Binding an array-valued path to a to-many property yields a real collection: the array is
+  fanned out to one row per element, so the property behaves like a to-many reached through an
+  exploding join. A row whose array is empty or absent survives with a null rather than being
+  dropped. Aggregates such as joinStrings and count collapse the fanned-out rows again.
+modelSources:
+  model:
+    root: relational-semistructured-array-to-many
+    files:
+      - store/db.pure
+      - mapping/mapping.pure
+      - data/testData.pure
+features:
+  - execution:data-element
+  - execution:test-data
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - store:relational-semistructured
+  - store:relational-semistructured-array-to-many-property
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - semi-structured
+  - json
+  - collection

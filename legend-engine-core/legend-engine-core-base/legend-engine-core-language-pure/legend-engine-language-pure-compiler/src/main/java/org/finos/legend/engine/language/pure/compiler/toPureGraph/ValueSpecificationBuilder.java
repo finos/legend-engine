@@ -933,18 +933,32 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<Valu
     {
         processingContext.push("Applying " + appliedFunction.function);
         MilestoningDatePropagationHelper.isValidSource(appliedFunction, processingContext);
-        if (appliedFunction.function.equals("letFunction"))
+        boolean isLetFunction = appliedFunction.function.equals("letFunction");
+        ValueSpecification letVariableExpression = null;
+        if (isLetFunction)
         {
-            MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> vs = ListIterate.collect(appliedFunction.parameters, expression -> expression.accept(this));
+            // Register a placeholder (unresolved: genericType with no rawType, same shape a
+            // generic type parameter would have) *before* matching/building runs, because
+            // FunctionExpressionBuilder.test()'s letFunction-special-case looks up this
+            // variable by name while matching is in progress. A null rawType makes that
+            // check bypass safely (comp() short-circuits on `vv._genericType()._rawType() == null`),
+            // so the value parameter only needs to be compiled once, inside buildFunctionExpression
+            // below - its real resolved type is filled in afterwards.
             String letName = ((CString) appliedFunction.parameters.get(0)).value;
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation), this.context.pureModel.getClass(M3Paths.VariableExpression))._name(letName);
-            ve._genericType(vs.get(1)._genericType());
-            ve._multiplicity(vs.get(1)._multiplicity());
-            processingContext.addInferredVariables(letName, ve);
+            letVariableExpression = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", SourceInformationHelper.toM3SourceInformation(appliedFunction.sourceInformation), this.context.pureModel.getClass(M3Paths.VariableExpression))
+                    ._name(letName)
+                    ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.context.pureModel.getClass(M3Paths.GenericType)));
+            processingContext.addInferredVariables(letName, letVariableExpression);
         }
 
         String functionName = this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function);
         org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(functionName, appliedFunction.fControl, appliedFunction.parameters, appliedFunction.sourceInformation, this);
+
+        if (isLetFunction && func != null && func.getOne() != null)
+        {
+            letVariableExpression._genericType(func.getOne()._genericType());
+            letVariableExpression._multiplicity(func.getOne()._multiplicity());
+        }
 
         processingContext.pop();
 

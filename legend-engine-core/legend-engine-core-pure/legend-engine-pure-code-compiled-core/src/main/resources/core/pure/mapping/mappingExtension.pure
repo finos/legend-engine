@@ -243,17 +243,50 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                        )))
                           );
 
-       // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
-       if ($classMapping->isEmpty(),
-          |let mappings = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
-           if ($mappings->isEmpty(),
-               |^M2MEmbeddedSetImplementation(id='embdedded_todo', root=true, class=$p->functionReturnType().rawType->toOne()->cast(@Class<Any>), parent = $mapping, property=$p->cast(@Property<Nil,Any|*>), targetSetImplementationId='todo', sourceSetImplementationId='todo'),
-               |$mappings
-           );,
-          |$classMapping
-       );
-   );
+     // Fallback when direct class-mapping lookup fails: resolve sub-type target set-impls
+     // from the source operation, dedupe, and union > 1 result into a synthesized
+     // OperationSetImplementation. This is the multi-subtype graphFetch routing path.
+
+        if ($classMapping->isEmpty(),
+                | let subtypeMappings = $sourceMappings->resolveOperation($mapping)
+                     ->cast(@PropertyMappingsImplementation)
+                     ->map(s | $s->_propertyMappingsByPropertyName($p.name->toOne())).targetSetImplementationId
+                     ->removeDuplicates()
+                     ->map(id | $mapping->classMappingById($id));
+                  if ($subtypeMappings->size() > 1,
+                     | let containers = $subtypeMappings->map(cm | ^SetImplementationContainer(id = $cm.id, setImplementation = $cm));
+                       ^OperationSetImplementation(
+                          id = 'synthesized_' + $c->cast(@Class<Any>).name->toOne() + '_union',
+                          root = true,
+                          class = $c->cast(@Class<Any>),
+                          parent = $mapping,
+                          parameters = $containers,
+                          operation = meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_
+                       );,
+                     | if ($subtypeMappings->size() == 1,
+                          | $subtypeMappings,
+                          | let mappings = $state.routingStrategy
+                               ->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy)
+                               .classMappingsForClass($p->functionReturnType().rawType->toOne()->cast(@Class<Any>));
+                            if ($mappings->isEmpty(),
+                               | ^M2MEmbeddedSetImplementation(
+                                    id = 'embdedded_todo',
+                                    root = true,
+                                    class = $p->functionReturnType().rawType->toOne()->cast(@Class<Any>),
+                                    parent = $mapping,
+                                    property = $p->cast(@Property<Nil, Any|*>),
+                                    targetSetImplementationId = 'todo',
+                                    sourceSetImplementationId = 'todo'
+                                 ),
+                               | $mappings
+                            );
+                       );
+                  );,
+                | $classMapping
+        );
+    );
 }
+
 
 function meta::pure::router::routing::allSuperSetImplementationIds(idToClassMapping:Map<String, List<SetImplementation>>[1], id:String[1]):String[*]
 {

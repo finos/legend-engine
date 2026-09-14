@@ -40,6 +40,7 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_NON_PROXY_HOSTS = "nonProxyHosts";
     public static final String SNOWFLAKE_USE_PROXY = "useProxy";
     public static final String SNOWFLAKE_ROLE = "role";
+    public static final String SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST = "allowUnderscoresInHost";
     public static final String SNOWFLAKE_ENABLE_QUERY_TAGS = "enableQueryTags";
 
     public static final String SNOWFLAKE_TEMP_TABLE_DB = "LEGEND_TEMP_DB";
@@ -68,6 +69,11 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         this.extraDatasourceProperties.put("warehouse", warehouseName);
         this.extraDatasourceProperties.put("db", databaseName);
         this.extraDatasourceProperties.put("ocspFailOpen", true);
+        // Snowflake JDBC 3.13.25 flipped the default of allowUnderscoresInHost to false, which rewrites '_' to '-'
+        // in the host and breaks PrivateLink accounts whose name contains underscores. The driver reads the value
+        // with a cast to String, so a Boolean here would make the whole connect string unparseable.
+        // https://docs.snowflake.com/en/release-notes/clients-drivers/jdbc-2022#version-31325-november-16-2022
+        this.extraDatasourceProperties.putIfAbsent(SNOWFLAKE_ALLOW_UNDERSCORES_IN_HOST, "true");
 
         if (key.getAccountType() != null)
         {

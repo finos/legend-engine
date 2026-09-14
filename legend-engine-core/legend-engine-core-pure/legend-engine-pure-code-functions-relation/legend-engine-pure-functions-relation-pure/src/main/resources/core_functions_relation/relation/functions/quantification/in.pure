@@ -16,15 +16,48 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
-// An empty value is never in the relation, matching meta::pure::functions::collection::in(Any[0..1], Any[*]).
-//
-// Boolean[1] is two-valued, so a null on either side answers false here where SQL's `in` would answer
-// UNKNOWN. The relational stores drop nulls from the searched column inside the subquery, which makes SQL
-// two-valued at the source rather than compensating for it afterwards.
+'''
+Whether a value appears in a relation's column.
+
+**The relation must have exactly one column**, of the value's type — narrow it with `select` first:
+`$d.departmentId->in($employees->select(~department))`. On relational stores this compiles to an
+`IN (subquery)` predicate.
+
+**Do not negate it against a relation.** `!$value->in($rel)` is rejected on every relational store
+rather than being answered differently from the in-memory engines, because SQL's `NOT IN` returns
+`UNKNOWN` — and so drops rows — as soon as the searched column holds a null. Write the question with
+`exists` instead, which makes the treatment of an absent value explicit:
+
+```pure
+// instead of  !$d.departmentId->in($employees->select(~department))
+$d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)
+```
+
+The result is `Boolean[1]` and therefore **two-valued**: a null on either side answers `false`, never
+`UNKNOWN`. An absent `value` is never in the relation, matching
+`meta::pure::functions::collection::in(Any[0..1], Any[*]):Boolean[1]`; a null *in the column* simply
+fails to match, and the relational stores drop those nulls inside the subquery so SQL agrees at the
+source rather than being corrected afterwards. An empty relation matches nothing.
+
+**Parameters**
+- `value` — the value to look for; empty is never found.
+- `rel` — a single-column relation to look in.
+
+**Returns** `true` if `value` appears in the column.
+
+**Examples**
+```pure
+$departments->filter(d | $d.departmentId->in($employees->select(~department)))
+
+// a null in the searched column costs nothing: rows that do match still match
+// a null value matches nothing, so that row is filtered out
+```
+
+**See also** `exists(Relation<T>[1], Function<{T[1]->Boolean[1]}>[1]):Boolean[1]`,
+`select(Relation<T>[1], ColSpec<Z⊆T>[1]):Relation<Z>[1]`,
+`meta::pure::functions::collection::in(Any[0..1], Any[*]):Boolean[1]`
+'''
 function <<PCT.function, functionType.NormalizeRequiredFunction>>
-{
-    doc.doc='Returns true if the given value appears in the single column of the given relation. On relational stores this generates an IN (subquery) predicate.'
-}
 meta::pure::functions::relation::in<U,Z>(value:U[0..1], rel:Relation<Z=(?:U)>[1]):Boolean[1]
 {
    let col = $rel->genericType().typeArguments->at(0).rawType->toOne()->cast(@RelationType<Any>).columns->toOne()->cast(@Column<Nil,U|0..1>);

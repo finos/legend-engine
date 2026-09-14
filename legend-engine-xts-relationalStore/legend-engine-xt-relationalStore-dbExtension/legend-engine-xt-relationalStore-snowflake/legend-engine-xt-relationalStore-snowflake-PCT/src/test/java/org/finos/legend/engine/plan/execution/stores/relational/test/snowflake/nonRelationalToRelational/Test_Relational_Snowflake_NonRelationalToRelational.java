@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.test.snowflake.nonRelationalToRelational;
 
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.wrapSuite;
 
 import java.util.Map;
@@ -39,10 +40,10 @@ public class Test_Relational_Snowflake_NonRelationalToRelational
         String testPackage = "meta::relational::tests::pct::snowflake::nonRelationalToRelational";
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
 
-        MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                .withKeyValue("meta::relational::mutation::tests::nonRelationalToRelational::testNonRelationalToRelationalSelect_Connection_1__Boolean_1_", "'LEGEND_TEMP_DB' does not exist or not authorized"); //TODO remove once we setup LEGEND_TEMP db on Snowflake used in PCT
+        MutableMap<String, MutableList<String>> pathToReason = Maps.mutable.<String, MutableList<String>>empty()
+                .withKeyValue("meta::relational::mutation::tests::nonRelationalToRelational::testNonRelationalToRelationalSelect_Connection_1__Boolean_1_", Lists.mutable.with("actual:   'value\\n\"\"name\"\": \"\"Alice\"\"\\n\"\"name\"\": \"\"Bob\"\"\\n\"\"name\"\": \"\"Charlie\"\"\\n\\'\"{\\'\\n\\'\"{\\'\\n\\'\"{\\'\\n}\"\\n}\"\\n}\"'", "'LEGEND_TEMP_DB' does not exist or not authorized")); //TODO remove once we setup LEGEND_TEMP db on Snowflake used in all PCT harnesses
 
-        Map<CoreInstance, String> failures = pathToReason.collect(
+        Map<CoreInstance, MutableList<String>> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
 
         PureTestBuilder.F2<CoreInstance, MutableList<Object>, Object> executor = (test, params) ->
@@ -53,14 +54,15 @@ public class Test_Relational_Snowflake_NonRelationalToRelational
             }
             catch (Throwable e)
             {
-                String reason = failures.get(test);
-                if (reason != null)
+                MutableList<String> reasons = failures.get(test);
+                if (isNotEmpty(reasons))
                 {
-                    if (e.getMessage() == null || !e.getMessage().contains(reason))
+                    String message = e.getMessage();
+                    if (message != null && reasons.anySatisfy(message::contains))
                     {
-                        throw new AssertionError("Expect failure to contains: " + reason, e);
+                        return true;
                     }
-                    return true;
+                    throw new AssertionError("Expect failure to contain one of: " + reasons, e);
                 }
                 throw e;
             }

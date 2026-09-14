@@ -38,7 +38,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceLink;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExpertise;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDeliveryFrequency;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.m3.extension.StereotypePtr;
@@ -156,7 +163,50 @@ public class DataSpaceParseTreeWalker
         DataSpaceParserGrammar.SupportInfoContext supportInfoContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.supportInfo(), "supportInfo", dataSpace.sourceInformation);
         dataSpace.supportInfo = supportInfoContext != null ? this.visitDataSpaceSupportInfo(supportInfoContext) : null;
 
+        // Operational metadata (optional)
+        DataSpaceParserGrammar.OperationalMetadataContext operationalMetadataContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.operationalMetadata(), "operationalMetadata", dataSpace.sourceInformation);
+        dataSpace.operationalMetadata = operationalMetadataContext != null ? this.visitDataSpaceOperationalMetadata(operationalMetadataContext) : null;
+
         return dataSpace;
+    }
+
+    private DataSpaceOperationalMetadata visitDataSpaceOperationalMetadata(DataSpaceParserGrammar.OperationalMetadataContext ctx)
+    {
+        DataSpaceOperationalMetadata operationalMetadata = new DataSpaceOperationalMetadata();
+        operationalMetadata.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.OmCoverageRegionsContext coverageRegionsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.omCoverageRegions(), "coverageRegions", operationalMetadata.sourceInformation);
+        if (coverageRegionsContext != null)
+        {
+            operationalMetadata.coverageRegions = ListIterate.collect(coverageRegionsContext.identifier(), identifierContext ->
+            {
+                String value = PureGrammarParserUtility.fromIdentifier(identifierContext);
+                try
+                {
+                    return DataSpaceRegion.valueOf(value);
+                }
+                catch (IllegalArgumentException e)
+                {
+                    throw new EngineException("Unknown coverage region '" + value + "'. Valid values: " + java.util.Arrays.toString(DataSpaceRegion.values()), this.walkerSourceInformation.getSourceInformation(identifierContext), EngineErrorType.PARSER);
+                }
+            });
+        }
+
+        DataSpaceParserGrammar.OmUpdateFrequencyContext updateFrequencyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.omUpdateFrequency(), "updateFrequency", operationalMetadata.sourceInformation);
+        if (updateFrequencyContext != null)
+        {
+            String value = PureGrammarParserUtility.fromIdentifier(updateFrequencyContext.identifier());
+            try
+            {
+                operationalMetadata.updateFrequency = DataSpaceDeliveryFrequency.valueOf(value);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw new EngineException("Unknown update frequency '" + value + "'. Valid values: " + java.util.Arrays.toString(DataSpaceDeliveryFrequency.values()), this.walkerSourceInformation.getSourceInformation(updateFrequencyContext.identifier()), EngineErrorType.PARSER);
+            }
+        }
+
+        return operationalMetadata;
     }
 
     private DataSpaceExecutionContext visitDataSpaceExecutionContext(DataSpaceParserGrammar.ExecutionContextContext ctx)
@@ -452,7 +502,79 @@ public class DataSpaceParseTreeWalker
 
             return supportInfo;
         }
+        else if (ctx.supportFullInfo() != null)
+        {
+            return this.visitDataSpaceSupportFullInfo(ctx.supportFullInfo());
+        }
         throw new UnsupportedOperationException("Can't parse unsupported support info");
+    }
+
+    private DataSpaceSupportFullInfo visitDataSpaceSupportFullInfo(DataSpaceParserGrammar.SupportFullInfoContext ctx)
+    {
+        DataSpaceSupportFullInfo full = new DataSpaceSupportFullInfo();
+        full.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.FullInfoDocumentationContext docCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoDocumentation(), "documentation", full.sourceInformation);
+        full.documentation = docCtx != null ? this.visitDataSpaceLink(docCtx.linkValue()) : null;
+
+        DataSpaceParserGrammar.FullInfoWebsiteContext websiteCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoWebsite(), "website", full.sourceInformation);
+        full.website = websiteCtx != null ? this.visitDataSpaceLink(websiteCtx.linkValue()) : null;
+
+        DataSpaceParserGrammar.FullInfoFaqUrlContext faqCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoFaqUrl(), "faqUrl", full.sourceInformation);
+        full.faqUrl = faqCtx != null ? this.visitDataSpaceLink(faqCtx.linkValue()) : null;
+
+        DataSpaceParserGrammar.FullInfoSupportUrlContext supportCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoSupportUrl(), "supportUrl", full.sourceInformation);
+        full.supportUrl = supportCtx != null ? this.visitDataSpaceLink(supportCtx.linkValue()) : null;
+
+        DataSpaceParserGrammar.FullInfoEmailsContext emailsCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoEmails(), "emails", full.sourceInformation);
+        full.emails = emailsCtx != null ? ListIterate.collect(emailsCtx.emailValue(), this::visitDataSpaceEmail) : null;
+
+        DataSpaceParserGrammar.FullInfoExpertiseContext expertiseCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.fullInfoExpertise(), "expertise", full.sourceInformation);
+        full.expertise = expertiseCtx != null ? ListIterate.collect(expertiseCtx.expertiseValue(), this::visitDataSpaceExpertise) : null;
+
+        return full;
+    }
+
+    private DataSpaceLink visitDataSpaceLink(DataSpaceParserGrammar.LinkValueContext ctx)
+    {
+        DataSpaceLink link = new DataSpaceLink();
+        link.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.LinkLabelContext labelCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.linkLabel(), "label", link.sourceInformation);
+        link.label = labelCtx != null ? PureGrammarParserUtility.fromGrammarString(labelCtx.STRING().getText(), true) : null;
+
+        DataSpaceParserGrammar.LinkUrlContext urlCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.linkUrl(), "url", link.sourceInformation);
+        link.url = PureGrammarParserUtility.fromGrammarString(urlCtx.STRING().getText(), true);
+
+        return link;
+    }
+
+    private DataSpaceEmail visitDataSpaceEmail(DataSpaceParserGrammar.EmailValueContext ctx)
+    {
+        DataSpaceEmail email = new DataSpaceEmail();
+        email.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.EmailTitleContext titleCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.emailTitle(), "title", email.sourceInformation);
+        email.title = PureGrammarParserUtility.fromGrammarString(titleCtx.STRING().getText(), true);
+
+        DataSpaceParserGrammar.EmailAddressContext addressCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.emailAddress(), "address", email.sourceInformation);
+        email.address = PureGrammarParserUtility.fromGrammarString(addressCtx.STRING().getText(), true);
+
+        return email;
+    }
+
+    private DataSpaceExpertise visitDataSpaceExpertise(DataSpaceParserGrammar.ExpertiseValueContext ctx)
+    {
+        DataSpaceExpertise expertise = new DataSpaceExpertise();
+        expertise.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        DataSpaceParserGrammar.ExpertiseDescriptionContext descCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.expertiseDescription(), "description", expertise.sourceInformation);
+        expertise.description = descCtx != null ? PureGrammarParserUtility.fromGrammarString(descCtx.STRING().getText(), true) : null;
+
+        DataSpaceParserGrammar.ExpertiseExpertIdsContext idsCtx = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.expertiseExpertIds(), "expertIds", expertise.sourceInformation);
+        expertise.expertIds = idsCtx != null ? ListIterate.collect(idsCtx.STRING(), val -> PureGrammarParserUtility.fromGrammarString(val.getText(), true)) : null;
+
+        return expertise;
     }
 
     private List<TaggedValue> visitTaggedValues(DataSpaceParserGrammar.TaggedValuesContext ctx)

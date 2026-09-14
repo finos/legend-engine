@@ -1,0 +1,310 @@
+tests:
+# =============================================================================
+# JSON/JSONB Operators
+# https://www.postgresql.org/docs/16/functions-json.html
+# =============================================================================
+
+- id: json_arrow_get_field
+  sql: SELECT json_val -> 'a' AS result FROM json_data WHERE id = 1
+  operator: "->"
+  signature: "->(json, text) → json"
+  expected_tds_status: ERROR
+  expected_rel_status: FAIL
+
+- id: jsonb_arrow_get_field
+  sql: SELECT jsonb_val -> 'b' AS result FROM json_data WHERE id = 1
+  operator: "->"
+  signature: "->(jsonb, text) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: FAIL
+
+# -> operator (get JSON array element by index)
+
+- id: json_arrow_get_index
+  sql: SELECT json_arr -> 0 AS result FROM json_data WHERE id = 1
+  operator: "->"
+  signature: "->(json, int4) → json"
+  expected_tds_status: ERROR
+  expected_rel_status: FAIL
+
+- id: jsonb_arrow_get_index
+  sql: SELECT jsonb_arr -> 1 AS result FROM json_data WHERE id = 1
+  operator: "->"
+  signature: "->(jsonb, int4) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: FAIL
+
+# ->> operator (get JSON object field as text)
+
+- id: json_arrow_text_get_field
+  sql: SELECT json_val ->> 'b' AS result FROM json_data WHERE id = 1
+  operator: "->>"
+  signature: "->>(json, text) → text"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+- id: jsonb_arrow_text_get_field
+  sql: SELECT jsonb_val ->> 'b' AS result FROM json_data WHERE id = 1
+  operator: "->>"
+  signature: "->>(jsonb, text) → text"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+# ->> operator (get JSON array element as text)
+
+- id: json_arrow_text_get_index
+  sql: SELECT json_arr ->> 0 AS result FROM json_data WHERE id = 1
+  operator: "->>"
+  signature: "->>(json, int4) → text"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+- id: jsonb_arrow_text_get_index
+  sql: SELECT jsonb_arr ->> 1 AS result FROM json_data WHERE id = 1
+  operator: "->>"
+  signature: "->>(jsonb, int4) → text"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+# #> operator (get JSON object at specified path)
+
+- id: json_hash_arrow_path
+  sql: SELECT json_val #> '{a,b,c}' AS result FROM json_data WHERE id = 2
+  operator: "#>"
+  signature: "#>(json, anyarray) → json"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: jsonb_hash_arrow_path
+  sql: SELECT jsonb_val #> '{a,b,c}' AS result FROM json_data WHERE id = 2
+  operator: "#>"
+  signature: "#>(jsonb, anyarray) → jsonb"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# #>> operator (get JSON object at specified path as text)
+
+- id: json_hash_arrow_text_path
+  sql: SELECT json_val #>> '{a,b,c}' AS result FROM json_data WHERE id = 2
+  operator: "#>>"
+  signature: "#>>(json, anyarray) → text"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: jsonb_hash_arrow_text_path
+  sql: SELECT jsonb_val #>> '{a,b,c}' AS result FROM json_data WHERE id = 2
+  operator: "#>>"
+  signature: "#>>(jsonb, anyarray) → text"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# @> operator (does left JSON contain right?)
+
+- id: jsonb_contains
+  sql: SELECT jsonb_val @> '{"a":1}' AS result FROM json_data WHERE id = 1
+  operator: "@>"
+  signature: "@>(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# <@ operator (is left JSON contained in right?)
+
+- id: jsonb_contained_by_column
+  sql: SELECT '{"a":1}' <@ jsonb_val AS result FROM json_data WHERE id = 1
+  operator: "<@"
+  signature: "<@(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ? operator (does key exist?)
+
+- id: jsonb_exists_key
+  sql: SELECT jsonb_val ? 'a' AS result FROM json_data WHERE id = 1
+  operator: "?"
+  signature: "?(jsonb, text) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ?| operator (do any keys exist?)
+
+- id: jsonb_exists_any
+  sql: SELECT jsonb_val ?| array['a','z'] AS result FROM json_data WHERE id = 1
+  operator: "?|"
+  signature: "?|(jsonb, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ?& operator (do all keys exist?)
+
+- id: jsonb_exists_all
+  sql: SELECT jsonb_val ?& array['a','b'] AS result FROM json_data WHERE id = 1
+  operator: "?&"
+  signature: "?&(jsonb, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# || operator (concatenate jsonb)
+
+- id: jsonb_concat
+  sql: SELECT jsonb_val || '{"d":4}' AS result FROM json_data WHERE id = 1
+  operator: "||"
+  signature: "||(jsonb, jsonb) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# - operator (delete key/index/keys from jsonb)
+
+- id: jsonb_delete_key_column
+  sql: SELECT jsonb_val - 'c' AS result FROM json_data WHERE id = 1
+  operator: "-"
+  signature: "-(jsonb, text) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_delete_index
+  sql: SELECT jsonb_arr - 0 AS result FROM json_data WHERE id = 1
+  operator: "-"
+  signature: "-(jsonb, int4) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_delete_keys
+  sql: SELECT jsonb_val - array['a','c'] AS result FROM json_data WHERE id = 1
+  operator: "-"
+  signature: "-(jsonb, anyarray) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# #- operator (delete at path)
+
+- id: jsonb_delete_path_column
+  sql: SELECT jsonb_val #- '{a,b}' AS result FROM json_data WHERE id = 2
+  operator: "#-"
+  signature: "#-(jsonb, anyarray) → jsonb"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# @? operator (does JSON path return any item?)
+
+- id: jsonb_path_exists_op
+  sql: SELECT jsonb_val @? '$.a' AS result FROM json_data WHERE id = 1
+  operator: "@?"
+  signature: "@?(jsonb, jsonpath) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# @@ operator (JSON path predicate check)
+
+- id: jsonb_path_match_op
+  sql: SELECT jsonb_val @@ '$.a == 1' AS result FROM json_data WHERE id = 1
+  operator: "@@"
+  signature: "@@(jsonb, jsonpath) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# Chained operators
+
+- id: json_chained_arrow
+  sql: SELECT json_val -> 'a' -> 'b' ->> 'c' AS result FROM json_data WHERE id = 2
+  operator: "-> ->>"
+  signature: json -> text -> text ->> text → text
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+- id: jsonb_chained_arrow
+  sql: SELECT jsonb_val -> 'a' -> 'b' ->> 'c' AS result FROM json_data WHERE id = 2
+  operator: "-> ->>"
+  signature: jsonb -> text -> text ->> text → text
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+# =============================================================================
+# Subscript (bracket) notation (PostgreSQL 14+)
+# =============================================================================
+
+- id: jsonb_subscript_field
+  sql: SELECT jsonb_val['a'] AS result FROM json_data WHERE id = 1
+  operator: "[]"
+  signature: jsonb[text] → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_subscript_nested
+  sql: SELECT jsonb_val['a']['b']['c'] AS result FROM json_data WHERE id = 2
+  operator: "[]"
+  signature: jsonb[text][text][text] → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_subscript_array_index
+  sql: SELECT jsonb_arr[0] AS result FROM json_data WHERE id = 1
+  operator: "[]"
+  signature: jsonb[integer] → jsonb
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# =============================================================================
+# JSON Creation Functions
+# =============================================================================
+
+- id: json_arrow_null
+  sql: SELECT json_val -> 'a' AS result FROM json_data WHERE id = 5
+  operator: "->"
+  signature: "->(json, text) → json"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+- id: jsonb_arrow_null
+  sql: SELECT jsonb_val -> 'a' AS result FROM json_data WHERE id = 5
+  operator: "->"
+  signature: "->(jsonb, text) → jsonb"
+  expected_tds_status: ERROR
+  expected_rel_status: PASS
+
+# =============================================================================
+# jsonb comparison operators (B-tree ordering over jsonb's canonical text form)
+# https://www.postgresql.org/docs/16/datatype-json.html#JSON-INDEXING
+# =============================================================================
+
+- id: jsonb_eq
+  sql: SELECT jsonb_val = '{"a":1,"b":"hello","c":null}' AS result FROM json_data WHERE id = 1
+  operator: "="
+  signature: "=(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_neq
+  sql: SELECT jsonb_val <> '{"a":1}' AS result FROM json_data WHERE id = 1
+  operator: "<>"
+  signature: "<>(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_lt
+  sql: SELECT jsonb_val < '{"z":9}' AS result FROM json_data WHERE id = 1
+  operator: "<"
+  signature: "<(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_lte
+  sql: SELECT jsonb_val <= '{"z":9}' AS result FROM json_data WHERE id = 1
+  operator: "<="
+  signature: "<=(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_gt
+  sql: SELECT jsonb_val > '{"a":0}' AS result FROM json_data WHERE id = 1
+  operator: ">"
+  signature: ">(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: jsonb_gte
+  sql: SELECT jsonb_val >= '{"a":0}' AS result FROM json_data WHERE id = 1
+  operator: ">="
+  signature: ">=(jsonb, jsonb) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+

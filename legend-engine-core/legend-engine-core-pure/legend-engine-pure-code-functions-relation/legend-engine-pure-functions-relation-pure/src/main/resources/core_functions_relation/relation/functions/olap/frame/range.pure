@@ -22,79 +22,144 @@ Class meta::pure::functions::relation::_RangeInterval extends Frame
 {
 }
 
+'''
+Builds a window frame counted in **ordering values** rather than in rows.
+
+The bounds are offsets from the current row's ordering value `x`: the frame holds every row of the
+partition whose ordering value lies between `x + offsetFrom` and `x + offsetTo`. How many rows that
+is depends on the data, not on the position of the current row.
+
+Because membership is decided by value, **rows that tie on the ordering column always share a
+frame**. Over `0,1,10 / 0,1,10 / 0,3,30` ordered by the second column, `_range(unbounded(), 0)` gives
+`20` on *both* of the first two rows, where `rows(unbounded(), 0)` would give `10` then `20`.
+
+Direction follows the ordering. Under `ascending()` a positive offset reaches later values
+(`FOLLOWING`) and a negative one earlier values (`PRECEDING`); under `descending()` the two swap.
+`0` on either side is `CURRENT ROW`. `offsetFrom` may not exceed `offsetTo`; the function fails
+if it does.
+
+Write a bound as `meta::pure::functions::relation::unbounded()` to reach the edge of the partition,
+and use the `DurationUnit` overloads when the ordering column holds dates.
+
+**Parameters**
+- `offsetFrom` — lower bound, as an offset from the current row's ordering value.
+- `offsetTo` — upper bound, likewise.
+
+**Returns** the frame, to hand to `over`.
+
+**Examples**
+```pure
+// every row whose ordering value is within 1 of this row's
+$rel->extend(over(~p, ~o->ascending(), _range(-1, 1)), ~near:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+```
+
+**See also** `_range(UnboundedFrameValue[1], Number[1]):_Range[1]`,
+`_range(Integer[1], DurationUnit[1], Integer[1], DurationUnit[1]):_RangeInterval[1]`,
+`rows(Integer[1], Integer[1]):Rows[1]`,
+`over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[1], _Range[1]):_Window<T>[1]`
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:Number[1], offsetTo:Number[1]):_Range[1]
 {
   assert($offsetFrom <= $offsetTo, 'Invalid window frame boundary - lower bound of window frame cannot be greater than the upper bound!');
   ^_Range(offsetFrom = ^FrameNumericValue(value=$offsetFrom), offsetTo = ^FrameNumericValue(value=$offsetTo));
 }
 
+
+'''
+As `_range(Number[1], Number[1]):_Range[1]`, but the frame starts at the **edge of the partition** —
+every row from the partition boundary up to `x + offsetTo`. Write the lower bound as
+`meta::pure::functions::relation::unbounded()`.
+
+Under `ascending()` that boundary is the first row, so `_range(unbounded(), 0)` is a running frame
+over values. Under `descending()` it is the last, and the same call runs the other way.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Number[1]):_Range[1]
 {
   ^_Range(offsetFrom = $offsetFrom, offsetTo = ^FrameNumericValue(value=$offsetTo));
 }
 
+'''
+As `_range(Number[1], Number[1]):_Range[1]`, but the frame runs from `x + offsetFrom` to the **far
+edge of the partition**. Write the upper bound as `meta::pure::functions::relation::unbounded()`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:Number[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_Range[1]
 {
   ^_Range(offsetFrom = ^FrameNumericValue(value=$offsetFrom), offsetTo = $offsetTo);
 }
 
+'''
+As `_range(Number[1], Number[1]):_Range[1]`, but the frame is the **whole partition**, so the value
+computed over it is the same on every row whatever the ordering.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_Range[1]
 {
   ^_Range(offsetFrom = $offsetFrom, offsetTo = $offsetTo);
 }
 
+'''
+As `_range(Number[1], Number[1]):_Range[1]`, but for an ordering column holding **dates**: each
+bound is a whole number of `DurationUnit`s away from the current row's date, and the two bounds carry
+their units independently.
+
+`_range(-1, DurationUnit.DAYS, 0, DurationUnit.DAYS)` over a datetime column frames yesterday and
+today. As with the numeric form, rows sharing a date share a frame.
+
+**Parameters**
+- `offsetFrom` — lower bound, in `offsetFromDurationUnit`s from the current row's date.
+- `offsetFromDurationUnit` — the unit that bound is measured in.
+- `offsetTo` — upper bound.
+- `offsetToDurationUnit` — the unit that bound is measured in.
+
+**Returns** the interval frame, to hand to `over`.
+
+**Examples**
+```pure
+$rel->extend(over(~p, ~o->ascending(), _range(meta::pure::functions::relation::unbounded(), 0, DurationUnit.DAYS)),
+             ~toDate:{p,w,r| $p->reduce($w, $r, {r|$r.i}, {y|$y->plus()})})
+```
+
+**See also** `_range(UnboundedFrameValue[1], Integer[1], DurationUnit[1]):_RangeInterval[1]`,
+`over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[1], _RangeInterval[1]):_Window<T>[1]`
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:Integer[1], offsetFromDurationUnit:DurationUnit[1], offsetTo:Integer[1], offsetToDurationUnit:DurationUnit[1]):_RangeInterval[1]
 {
   ^_RangeInterval(offsetFrom = ^FrameIntervalValue(value=$offsetFrom, durationUnit=$offsetFromDurationUnit), offsetTo = ^FrameIntervalValue(value=$offsetTo, durationUnit=$offsetToDurationUnit));
 }
 
+'''
+As `_range(Integer[1], DurationUnit[1], Integer[1], DurationUnit[1]):_RangeInterval[1]`, but the
+frame starts at the edge of the partition. Only the upper bound carries a unit.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:meta::pure::functions::relation::UnboundedFrameValue[1], offsetTo:Integer[1], offsetToDurationUnit:DurationUnit[1]):_RangeInterval[1]
 {
   ^_RangeInterval(offsetFrom = $offsetFrom, offsetTo = ^FrameIntervalValue(value=$offsetTo, durationUnit=$offsetToDurationUnit));
 }
 
+'''
+As `_range(Integer[1], DurationUnit[1], Integer[1], DurationUnit[1]):_RangeInterval[1]`, but the
+frame runs to the far edge of the partition. Only the lower bound carries a unit.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
-    {
-         doc.doc = 'Returns a window frame, which defines a logically computed set of rows specified by starting and ending points. When the ORDER BY expression is ascending (ASC), the syntax n FOLLOWING means rows with values greater than (or later than) x, and n PRECEDING means rows with values less than (or earlier than) x, where x is the ORDER BY value for the current row. When the ORDER BY expression is descending (DESC), the opposite is true. The offsets 0 PRECEDING and 0 FOLLOWING are equivalent to CURRENT ROW.'
-    }
     meta::pure::functions::relation::_range(offsetFrom:Integer[1], offsetFromDurationUnit:DurationUnit[1], offsetTo:meta::pure::functions::relation::UnboundedFrameValue[1]):_RangeInterval[1]
 {
   ^_RangeInterval(offsetFrom = ^FrameIntervalValue(value=$offsetFrom, durationUnit=$offsetFromDurationUnit), offsetTo = $offsetTo);

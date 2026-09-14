@@ -410,7 +410,6 @@ function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::store::r
                   r:meta::relational::metamodel::datatype::Real[1]|'REAL',
                   r:meta::relational::metamodel::datatype::Other[1]|'OTHER',
                   r:meta::relational::metamodel::datatype::Array[1]|'ARRAY',
-                  r:meta::relational::metamodel::datatype::SemiStructured[1]|'SEMISTRUCTURED',
                   d:meta::relational::metamodel::datatype::DbSpecificDataType[1]|$d.dbSpecificSql,
                   d:meta::relational::metamodel::datatype::DataType[1]|'' //columns mapped to functions do not yet support specific DataTypes
                 ]

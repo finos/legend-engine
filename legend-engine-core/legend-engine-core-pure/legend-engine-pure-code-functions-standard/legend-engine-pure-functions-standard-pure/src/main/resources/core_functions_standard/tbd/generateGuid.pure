@@ -15,6 +15,23 @@
 
 import meta::pure::test::pct::*;
 
+'''
+A freshly generated globally unique identifier.
+
+**This is not a pure function** — it is stereotyped `SideEffectFunction` and returns a different
+value on every call, so two calls never agree and a query using it cannot be cached or replayed to
+the same result.
+
+**Returns** a new GUID, as a string.
+
+**Examples**
+```pure
+// no example can pin an output — every call gives a different one
+$rel->extend(~uid : x | generateGuid())   // a distinct identifier on each row
+```
+
+**See also** `meta::pure::functions::hash::hashCode(Any[*]):Integer[1]`
+'''
 native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::functions::string::generation::generateGuid():String[1];
 
 

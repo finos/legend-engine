@@ -14,7 +14,31 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Returns the ASCII integer value of the first character in the given string.'} 
+'''
+The ASCII code of a string's first character.
+
+**Only the first character is read** — the rest of the string is ignored rather than being an error,
+so `'abc'` and `'a'` both give 97. An empty string gives 0, which is also the code of the NUL
+character, so 0 does not distinguish "empty" from "a string starting with NUL".
+
+**Parameters**
+- `source` — the string whose first character to encode.
+
+**Returns** the ASCII code of the first character.
+
+**Examples**
+```pure
+'A'->ascii()     // 65
+'z'->ascii()     // 122
+'0'->ascii()     // 48
+' '->ascii()     // 32
+'abc'->ascii()   // 97, the trailing characters are ignored
+''->ascii()      // 0
+```
+
+**See also** `char(Integer[1]):String[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::ascii(source:String[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::ascii::testAsciiUpper<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

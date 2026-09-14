@@ -18,6 +18,7 @@ public enum IngestionMethod
 {
     BATCH_INSERT,
     CLIENT_FILE,
+    CLIENT_STREAM,
     DIRECT_INSERT
 
     }

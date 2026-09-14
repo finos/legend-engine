@@ -16,10 +16,32 @@ import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::relation::*;
 
+'''
+Joins each row to a relation computed **from that row**.
+
+`f` is called once per input row and may use the row's values, which is what an ordinary join cannot
+do — the right-hand side is not fixed. Each input row is then paired with every row `f` returned for
+it, and the result carries both column sets, `T+V`.
+
+**A row whose `f` returns nothing disappears from the result**, as in an inner join: over a
+department relation joined to its employees, a department with no employees is not in the output.
+
+**Parameters**
+- `rel` — the driving relation.
+- `f` — given one row, the relation to join it to.
+
+**Returns** the input columns and the computed ones, one output row per (input row, computed row)
+pair.
+
+**Examples**
+```pure
+$departments->lateral(x | $employees->filter(y | $y.department == $x.departmentId))
+```
+
+**See also** `join(Relation<T>[1], Relation<V>[1], JoinKind[1], Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]`,
+`meta::pure::functions::relation::variant::flatten(T[*], ColSpec<Z=(?:T)>[1]):Relation<Z>[1]`
+'''
 native function <<PCT.function>>
-{
-    doc.doc='Perform a lateral join, where the given function is applied to each row of the first relation, and the result is a relation that is joined with the second relation based on the function\'s output.'
-}
 meta::pure::functions::relation::lateral<T,V>(rel:Relation<T>[1], f:Function<{T[1]->Relation<V>[1]}>[1]):Relation<T+V>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::lateral::testLateralJoin<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

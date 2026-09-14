@@ -52,6 +52,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportFullInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
@@ -136,6 +138,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     {
                         if (executionContextSet.add(executionContext.name))
                         {
+                            if (executionContext.defaultRuntime == null && executionContext.mapping != null && executionContext.mappingProvider == null)
+                            {
+                                throw new EngineException("Data space execution context '" + executionContext.name + "' must specify a defaultRuntime when a mapping is set", executionContext.sourceInformation, EngineErrorType.COMPILATION);
+                            }
                             Root_meta_pure_runtime_PackageableRuntime runtime = executionContext.defaultRuntime != null ? context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation) : null;
                             Mapping mapping = executionContext.mapping != null
                                     ? context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation)
@@ -345,6 +351,56 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                                     ._supportUrl(((DataSpaceSupportCombinedInfo) dataSpace.supportInfo).supportUrl)
                                     ._emails(Lists.mutable.ofAll(((DataSpaceSupportCombinedInfo) dataSpace.supportInfo).emails)));
                         }
+                        else if (dataSpace.supportInfo instanceof DataSpaceSupportFullInfo)
+                        {
+                            DataSpaceSupportFullInfo full = (DataSpaceSupportFullInfo) dataSpace.supportInfo;
+                            org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportFullInfo fullImpl =
+                                    new org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportFullInfo_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceSupportFullInfo"));
+                            fullImpl._documentationUrl(dataSpace.supportInfo.documentationUrl);
+                            if (full.documentation != null)
+                            {
+                                fullImpl._documentation(buildDataSpaceLink(full.documentation, context));
+                            }
+                            if (full.website != null)
+                            {
+                                fullImpl._website(buildDataSpaceLink(full.website, context));
+                            }
+                            if (full.faqUrl != null)
+                            {
+                                fullImpl._faqUrl(buildDataSpaceLink(full.faqUrl, context));
+                            }
+                            if (full.supportUrl != null)
+                            {
+                                fullImpl._supportUrl(buildDataSpaceLink(full.supportUrl, context));
+                            }
+                            if (full.emails != null)
+                            {
+                                fullImpl._emails(ListIterate.collect(full.emails, e -> buildDataSpaceEmail(e, context)));
+                            }
+                            if (full.expertise != null)
+                            {
+                                fullImpl._expertise(ListIterate.collect(full.expertise, e -> buildDataSpaceExpertise(e, context)));
+                            }
+                            metamodel._supportInfo(fullImpl);
+                        }
+                    }
+
+                    // operational metadata
+                    if (dataSpace.operationalMetadata != null)
+                    {
+                        DataSpaceOperationalMetadata om = dataSpace.operationalMetadata;
+                        org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceOperationalMetadata_Impl omImpl =
+                                new org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceOperationalMetadata_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceOperationalMetadata"));
+                        if (om.coverageRegions != null && !om.coverageRegions.isEmpty())
+                        {
+                            omImpl._coverageRegions(ListIterate.collect(om.coverageRegions, (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceRegion r) ->
+                                    context.pureModel.getEnumValue("meta::pure::metamodel::dataSpace::Region", r.name())));
+                        }
+                        if (om.updateFrequency != null)
+                        {
+                            omImpl._updateFrequency(context.pureModel.getEnumValue("meta::pure::metamodel::dataSpace::DeliveryFrequency", om.updateFrequency.name()));
+                        }
+                        metamodel._operationalMetadata(omImpl);
                     }
 
                     if (dataSpace.executables != null)
@@ -750,5 +806,37 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                 ._paths(Lists.immutable.ofAll(sampleValues.paths))
                 ._rows(ListIterate.collect(sampleValues.rows, row -> new Root_meta_pure_data_RelationRow_Impl("", null, context.pureModel.getClass("meta::pure::data::RelationRow"))
                         ._values(Lists.immutable.ofAll(row.values))));
+    }
+
+    private static org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceLink buildDataSpaceLink(
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceLink link, CompileContext context)
+    {
+        return new org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceLink_Impl(
+                "", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceLink"))
+                ._label(link.label)
+                ._url(link.url);
+    }
+
+    private static org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceEmail buildDataSpaceEmail(
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceEmail email, CompileContext context)
+    {
+        return new org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceEmail_Impl(
+                "", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceEmail"))
+                ._title(email.title)
+                ._address(email.address);
+    }
+
+    private static org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExpertise buildDataSpaceExpertise(
+            org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExpertise expertise, CompileContext context)
+    {
+        org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExpertise impl =
+                new org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExpertise_Impl(
+                        "", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExpertise"))
+                        ._description(expertise.description);
+        if (expertise.expertIds != null)
+        {
+            impl._expertIds(Lists.mutable.ofAll(expertise.expertIds));
+        }
+        return impl;
     }
 }

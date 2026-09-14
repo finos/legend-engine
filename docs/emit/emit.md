@@ -845,6 +845,7 @@ infrastructure rather than the feature under test:
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
 | `mapping:m2m-derived-source-property` | Derived property on M2M source class |
 | `mapping:m2m-local-property` | Local property in M2M mapping |
+| `mapping:m2m-target-instantiation` | Target class constructed with the `new` operator (`^Target(...)`) inside an M2M transform |
 | `mapping:m2m-transform` | Model-to-model transform expression |
 | `mapping:mapping` | Generic mapping (legacy tag) |
 | `mapping:mapping-include` | Mapping include composition |
@@ -931,6 +932,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 |---|---|
 | `execution:bigquery-function` | BigQuery function activator |
 | `execution:binding` | External format binding |
+| `execution:connection-time-zone` | Time zone named on a relational connection, settling the zone a TIMESTAMP column's wall clock is read out of |
 | `execution:data-element` | Data element definition |
 | `execution:external-format` | External format specification |
 | `execution:external-format-binding` | External format binding |

@@ -20,7 +20,7 @@ import meta::pure::test::pct::*;
 
 function <<PCT.adapter>> {PCT.adapterName='Java Platform Binding'} meta::pure::executionPlan::platformBinding::legendJava::pct::testAdapterForJavaBindingExecution<X|o>(rawF:Function<{->X[o]}>[1]):X[o]
 {
-    let debug = noDebug();
+    let debug = if(meta::core::runtime::isOptionSet('ExecDebug'), | debug(), | noDebug());
 
     let elements = extractDependentElements($rawF)->distinct();
 

@@ -14,11 +14,28 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The hyperbolic tangent of a number.
+
+`sinh(x) / cosh(x)`. **Bounded strictly between -1 and 1**, approaching them as the argument grows in
+either direction, which is what makes it a common squashing function.
+
+**Parameters**
+- `number` — the argument, in radians.
+
+**Returns** the hyperbolic tangent.
+
+**Examples**
+```pure
+tanh(0)   // 0.0
+```
+
+**See also** `sinh(Number[1]):Float[1]`,
+`cosh(Number[1]):Float[1]`,
+`tanh(Number[1]):Float[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='tanh returns the hyperbolic tangent of a number'
-    }
 meta::pure::functions::math::tanh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

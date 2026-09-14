@@ -15,6 +15,30 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Stacks one relation on another, row-wise.
+
+Both relations must have the same type, which the signature enforces — this joins nothing and
+matches nothing, it simply puts the rows together. **Duplicates are kept**: this is a union-all, so
+follow with `distinct(Relation<T>[1]):Relation<T>[1]` if you want set semantics.
+
+The result carries no guaranteed row order, so sort afterwards if the order matters.
+
+**Parameters**
+- `rel1` — the first relation.
+- `rel2` — the second, of the same type.
+
+**Returns** the rows of both.
+
+**Examples**
+```pure
+$thisYear->concatenate($lastYear)
+$thisYear->concatenate($lastYear)->distinct()   // set semantics
+```
+
+**See also** `distinct(Relation<T>[1]):Relation<T>[1]`,
+`join(Relation<T>[1], Relation<V>[1], JoinKind[1], Function<{T[1], V[1]->Boolean[1]}>[1]):Relation<T+V>[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::concatenate<T>(rel1:Relation<T>[1], rel2:Relation<T>[1]):Relation<T>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

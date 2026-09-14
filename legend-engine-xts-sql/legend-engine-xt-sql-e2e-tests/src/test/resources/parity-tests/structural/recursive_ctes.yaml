@@ -1,0 +1,34 @@
+tests:
+  # =============================================================================
+  # WITH RECURSIVE common table expressions
+  # https://www.postgresql.org/docs/16/queries-with.html#QUERIES-WITH-RECURSIVE
+  # =============================================================================
+
+  - id: recursive_cte_number_series
+    sql: "WITH RECURSIVE t(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT n FROM t ORDER BY 1"
+    feature: "WITH RECURSIVE simple series"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: recursive_cte_hierarchy
+    sql: "WITH RECURSIVE org(id, name, dept_id, depth) AS (SELECT id, name, dept_id, 0 FROM persons WHERE dept_id = 1 UNION ALL SELECT p.id, p.name, p.dept_id, org.depth + 1 FROM persons p JOIN org ON p.dept_id = org.dept_id AND p.id > org.id) SELECT * FROM org ORDER BY depth, id"
+    feature: "WITH RECURSIVE self-join traversal"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: cte_materialized_hint
+    sql: "WITH cte AS MATERIALIZED (SELECT dept_id, COUNT(*) AS cnt FROM persons GROUP BY dept_id) SELECT * FROM cte ORDER BY 1"
+    feature: "WITH ... AS MATERIALIZED"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: cte_not_materialized_hint
+    sql: "WITH cte AS NOT MATERIALIZED (SELECT dept_id, COUNT(*) AS cnt FROM persons GROUP BY dept_id) SELECT * FROM cte ORDER BY 1"
+    feature: "WITH ... AS NOT MATERIALIZED"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

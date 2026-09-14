@@ -15,6 +15,26 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The columns of a relation, as metamodel objects.
+
+Reflection over the relation's shape rather than its data: each `Column` carries the name and, via
+its generic type, the declared type and multiplicity. Used by code that has to work with a relation
+whose shape is not known when it is written — `toString` builds its header this way.
+
+**Parameters**
+- `rel` — the relation to inspect.
+
+**Returns** its columns, in order.
+
+**Examples**
+```pure
+$rel->columns()->map(c | $c.name)   // the column names
+```
+
+**See also** `eval(ColSpec<(?:Z)⊆T>[1], T[1]):Z[0..1]`,
+`toString(Relation<T>[1]):String[1]`
+'''
 native function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::columns<T>(rel:Relation<T>[1]):Column<Nil,Any|*>[*];
 
 function <<test.Test>> meta::pure::functions::relation::tests::columns::testSimpleColumns():Boolean[1]

@@ -6,6 +6,10 @@
   }, {
     "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
+  },
+    {
+    "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""

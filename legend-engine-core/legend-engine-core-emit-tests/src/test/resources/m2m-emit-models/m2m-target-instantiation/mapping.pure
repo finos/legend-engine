@@ -1,0 +1,64 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Mapping
+Mapping demo::m2m::instantiation::CountryMapping
+(
+  *demo::m2m::instantiation::target::Country: Pure
+  {
+    ~src demo::m2m::instantiation::source::S_Country
+
+    code: $src.code,
+    details: $src->demo::m2m::instantiation::makeDetails()
+  }
+
+  testSuites:
+  [
+    targetInstantiationSuite:
+    {
+      function: |demo::m2m::instantiation::target::Country.all()->graphFetch(#{demo::m2m::instantiation::target::Country{code, details{name, capital{capitalName}}}}#)->serialize(#{demo::m2m::instantiation::target::Country{code, details{name, capital{capitalName}}}}#);
+      tests:
+      [
+        constructedComplexProperty:
+        {
+          data:
+          [
+            ModelStore: ModelStore
+              #{
+                demo::m2m::instantiation::source::S_Country:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"ES","name":"Spain","capitalName":"Madrid"}';
+                  }#
+              }#
+          ];
+          asserts:
+          [
+            expected:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"code":"ES","details":{"name":"Spain","capital":{"capitalName":"Madrid"}}}';
+                  }#;
+              }#
+          ];
+        }
+      ];
+    }
+  ]
+)

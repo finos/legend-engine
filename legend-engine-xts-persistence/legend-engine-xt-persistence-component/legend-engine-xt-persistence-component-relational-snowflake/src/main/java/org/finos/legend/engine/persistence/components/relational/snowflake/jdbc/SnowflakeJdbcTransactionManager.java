@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.jdbc;
 
-import net.snowflake.client.jdbc.SnowflakeResultSet;
+import net.snowflake.client.api.resultset.SnowflakeResultSet;
 import org.finos.legend.engine.persistence.components.executor.TabularData;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcTransactionManager;
 

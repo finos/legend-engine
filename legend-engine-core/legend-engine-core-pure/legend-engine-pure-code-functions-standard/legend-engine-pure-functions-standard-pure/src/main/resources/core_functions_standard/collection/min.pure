@@ -14,31 +14,50 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The smallest value in a collection, by the type's natural order.
+
+The mirror of `max(X[1..*]):X[1]`, and like it **not restricted to numbers** — it orders any
+primitive type. Takes `[1..*]`, so the result is `[1]`.
+
+**Parameters**
+- `values` — the values, at least one.
+
+**Returns** the smallest value.
+
+**Examples**
+```pure
+min([1, 5, 3])         // 1
+min(['a', 'c', 'b'])   // 'a'
+```
+
+**See also** `min(X[*]):X[0..1]`,
+`min(T[1..*], Function<{T[1], T[1]->Integer[1]}>[1]):T[1]`,
+`max(X[1..*]):X[1]`
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest value from the list by type order'
-  }
 meta::pure::functions::collection::min<X>(values : X[1..*]):X[1]
 {
   $values->sort()->first()->toOne();
 }
 
+'''
+As `min(X[1..*]):X[1]`, for a collection that may be empty — an empty collection gives empty.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest value from the list by type order'
-  }
 meta::pure::functions::collection::min<X>(values : X[*]):X[0..1]
 {
     $values->sort()->first();
 }
 
+'''
+As `min(X[1..*]):X[1]`, ordering by a supplied comparator rather than the type's natural order.
+`comp` returns a negative number when its first argument sorts before its second.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='min returns smallest value from the list by type order based on the supplied comp function'
-  }
 meta::pure::functions::collection::min<T>(col:T[1..*], comp:Function<{T[1],T[1]->Integer[1]}>[1]):T[1]
 {
     $col->tail()->fold({v, m | if($comp->eval($v, $m) < 0, | $v, | $m)}, $col->at(0))

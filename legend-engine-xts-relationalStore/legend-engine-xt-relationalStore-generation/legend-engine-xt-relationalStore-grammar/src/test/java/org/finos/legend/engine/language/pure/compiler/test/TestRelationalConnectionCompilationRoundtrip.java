@@ -175,7 +175,7 @@ public class TestRelationalConnectionCompilationRoundtrip
                 "      enabled: ['FEAT_1'];\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS]");
+                "}\n", "COMPILATION error at [80:5-83:5]: Unknown relational generation feature: FEAT_1. Known features are: [REMOVE_UNION_OR_JOINS, USE_DB_NATIVE_IMPLICIT_NULL_ORDERING]");
 
         Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
                 "###Connection\n" +
@@ -206,5 +206,40 @@ public class TestRelationalConnectionCompilationRoundtrip
         Assert.assertTrue(((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._enabled().isEmpty());
         Assert.assertEquals(1, ((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._disabled().size());
         Assert.assertEquals("REMOVE_UNION_OR_JOINS", ((Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0))._disabled().toList().get(0));
+    }
+
+    @Test
+    public void testConnectionWithUseDbNativeImplicitNullOrderingFeature()
+    {
+        Pair<PureModelContextData, PureModel> compiledGraph = test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: model::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  quoteIdentifiers: true;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
+                "  queryGenerationConfigs: [\n" +
+                "    GenerationFeaturesConfig\n" +
+                "    {\n" +
+                "      enabled: ['USE_DB_NATIVE_IMPLICIT_NULL_ORDERING'];\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) compiledGraph.getTwo().getConnection("simple::H2Connection", SourceInformation.getUnknownSourceInformation());
+        Assert.assertEquals(1, connection._queryGenerationConfigs().size());
+        Assert.assertTrue(connection._queryGenerationConfigs().toList().get(0) instanceof Root_meta_external_store_relational_runtime_GenerationFeaturesConfig);
+        Root_meta_external_store_relational_runtime_GenerationFeaturesConfig cfg = (Root_meta_external_store_relational_runtime_GenerationFeaturesConfig) connection._queryGenerationConfigs().toList().get(0);
+        Assert.assertEquals(1, cfg._enabled().size());
+        Assert.assertEquals("USE_DB_NATIVE_IMPLICIT_NULL_ORDERING", cfg._enabled().toList().get(0));
+        Assert.assertTrue(cfg._disabled().isEmpty());
     }
 }

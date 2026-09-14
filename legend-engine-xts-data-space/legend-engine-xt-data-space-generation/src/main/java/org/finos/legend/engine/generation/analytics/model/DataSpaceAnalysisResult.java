@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.generation.analytics.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.analytics.model.MappingModelCoverageAnalysisResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceOperationalMetadata;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
 
 import java.util.Collections;
@@ -36,6 +38,12 @@ public class DataSpaceAnalysisResult
     public String description;
     public DataSpaceSupportInfo supportInfo;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public DataSpaceOperationalMetadata operationalMetadata;
+
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public DataSpaceInfoAnalysisResult info;
+
     public List<DataSpaceExecutionContextAnalysisResult> executionContexts = Collections.emptyList();
     public String defaultExecutionContext;
 
@@ -48,4 +56,7 @@ public class DataSpaceAnalysisResult
     public List<DataSpaceModelDocumentationEntry> elementDocs = Collections.emptyList();
 
     public Map<String, MappingModelCoverageAnalysisResult> mappingToMappingCoverageResult;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    public List<DataSpaceReferencesMetadata> dataSpaceReferencesMetadataInfo = Collections.emptyList();
 }
