@@ -845,6 +845,7 @@ infrastructure rather than the feature under test:
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
 | `mapping:m2m-derived-source-property` | Derived property on M2M source class |
 | `mapping:m2m-local-property` | Local property in M2M mapping |
+| `mapping:m2m-target-instantiation` | Target class constructed with the `new` operator (`^Target(...)`) inside an M2M transform |
 | `mapping:m2m-transform` | Model-to-model transform expression |
 | `mapping:mapping` | Generic mapping (legacy tag) |
 | `mapping:mapping-include` | Mapping include composition |

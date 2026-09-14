@@ -1,0 +1,38 @@
+name: m2m-target-instantiation
+title: "M2M Target Class Instantiated with the `new` Operator"
+description: |
+  A model-to-model mapping whose complex property is filled by a function that
+  constructs the target class directly with the `new` operator (`^Target(...)`)
+  rather than by a class mapping -- the sub-class has no class mapping at all.
+  The embedded test suite graph-fetches through that complex property, so the
+  constructed instance has to survive the graph-fetch node's constraint pass,
+  not merely be produced. This is the combination "M2M: remove restriction on
+  creating target objects" opened up but did not cover: its own test reads a
+  primitive back off the constructed object, so the object never lands in a
+  complex property slot and the constraint walk is never generated. Here it is,
+  and the generated `allConstraints` casts whatever occupies the slot to
+  `Constrained`, which the `new`-generated `_pure.internal.*_Impl` did not
+  implement.
+
+modelSources:
+  model:
+    root: m2m-target-instantiation
+    files:
+      - model.pure
+      - mapping.pure
+
+features:
+  - execution:test-data
+  - grammar:function
+  - mapping:m2m-target-instantiation
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - new-operator
+  - graph-fetch
+  - constraints
+  - mapping-test
