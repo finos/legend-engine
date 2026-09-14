@@ -474,40 +474,12 @@
       "expectedError": "Ensure the target system understands Year or Year-month semantic."
     },
     {
-      "test": "meta::pure::functions::date::tests::testDateDiffDays_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffMilliseconds_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffMinutes_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffMonths_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffSeconds_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
       "test": "meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDateDiffWithDifferentTimeZones_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
+      "expectedError": "[unsupported-api] dateDiff with WEEKS is not supported on BigQuery: its DATE_DIFF counts week boundaries symmetrically, which does not match dateDiff"
     },
     {
       "test": "meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'dateDiff' (state: [Select, false]) is not supported yet"
+      "expectedError": "Ensure the target system understands Year or Year-month semantic."
     },
     {
       "test": "meta::pure::functions::date::tests::testDateFromDay_Function_1__Boolean_1_",

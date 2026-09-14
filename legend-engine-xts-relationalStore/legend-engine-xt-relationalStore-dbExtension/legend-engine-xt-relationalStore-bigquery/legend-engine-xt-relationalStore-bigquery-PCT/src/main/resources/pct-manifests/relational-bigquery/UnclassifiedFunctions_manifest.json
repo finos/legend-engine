@@ -6,10 +6,6 @@
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: CURRENT_USER"
     },
     {
-      "test": "meta::pure::functions::string::tests::ascii::testAsciiNewline_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
       "test": "meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for function TO_BASE64\n  Argument types: STRING\n  Signature: TO_BASE64(BYTES)\n    Argument 1: Unable to coerce type STRING to expected type BYTES"
     },
@@ -68,30 +64,6 @@
     {
       "test": "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_NoMatch_Function_1__Boolean_1_",
       "expectedError": "[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Unclosed string literal"
     },
     {
       "test": "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
