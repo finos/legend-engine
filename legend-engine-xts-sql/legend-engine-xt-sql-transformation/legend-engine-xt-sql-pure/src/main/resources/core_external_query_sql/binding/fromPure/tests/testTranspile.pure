@@ -3873,6 +3873,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'lag(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LAG2", ' +
     'lead(String) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD", ' +
     'lead(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD2", ' +
+    'lead(String, 2, \'abc\') OVER (PARTITION BY String ORDER BY Integer ASC) AS "LEAD3", ' +
     'nth_value(String, 2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTH", ' +
     'ntile(2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTILE", ' +
     'percent_rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "PERCENT_RANK", ' +
@@ -3895,12 +3896,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~[LAG2:{p,w,r| $p->lag($r, 2).String}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[LEAD:{p,w,r| $p->lead($r).String}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[LEAD2:{p,w,r| $p->lead($r, 2).String}])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[LEAD3:{p,w,r| meta::pure::functions::flow::coalesce($p->lead($r, 2).String, 'abc')}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[NTH:{p,w,r| $p->nth($w, $r, 2).String}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[NTILE:{p,w,r| $p->ntile($r, 2)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[PERCENT_RANK:{p,w,r| $p->percentRank($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[CUME_DIST:{p,w,r| $p->cumulativeDistribution($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[AGG_WITH_EXPRESSION:{p,w,r|if ($r.String == 'A', | $r.String, | [])}:y|$y->joinStrings(',')])
-              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, NTH, NTILE, PERCENT_RANK, CUME_DIST, AGG_WITH_EXPRESSION])
+              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, LEAD3, NTH, NTILE, PERCENT_RANK, CUME_DIST, AGG_WITH_EXPRESSION])
       }, true, false)
     ]
   )
