@@ -130,6 +130,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    );
 }
 
+// datetime_diff covers DATE operands too, BigQuery widening them on the way in. WEEKS is the one
+// unit left out: BigQuery counts week boundaries symmetrically, where dateDiff does not -- it answers
+// 1 from 2015-07-04 to 2015-07-05 but 0 back the other way -- so it fails here rather than quietly
+// disagreeing. Every other unit was checked against the live service and matches.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::dateDiffForBigQuery(params:String[3]):String[1]
+{
+   let unit = $params->at(2)->removeQuotesIfExist();
+   assert($unit != DurationUnit.WEEKS->toString(),
+          '[unsupported-api] dateDiff with WEEKS is not supported on BigQuery: its DATE_DIFF counts week boundaries symmetrically, which does not match dateDiff');
+   'datetime_diff(' + $params->at(1) + ', ' + $params->at(0) + ', ' + $unit->mapToDBUnitType() + ')';
+}
+
 // BigQuery matches with RE2, which takes the same inline flag syntax as the other engines.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::regexpInlineFlagsForBigQuery(regexpParametersAsString: String[1]):String[1]
 {
@@ -146,7 +158,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
-   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\\\'');
+   // A quoted literal may not carry a raw newline here, unlike most engines, so they are escaped.
+   // Backslashes are deliberately left alone: regex patterns reach the dialect already written for
+   // RE2, and doubling their backslashes would change what they match.
+   let literalReplacementPairForString = [
+      ^LiteralReplacement(old = '\'', new = '\\\''),
+      ^LiteralReplacement(old = '\n', new = '\\n'),
+      ^LiteralReplacement(old = '\r', new = '\\r')
+   ];
 
    newMap([
       pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
@@ -184,6 +203,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->dateDiffForBigQuery()})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='extract(day from %s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='format_datetime("%%A", DATETIME(%s))')),
