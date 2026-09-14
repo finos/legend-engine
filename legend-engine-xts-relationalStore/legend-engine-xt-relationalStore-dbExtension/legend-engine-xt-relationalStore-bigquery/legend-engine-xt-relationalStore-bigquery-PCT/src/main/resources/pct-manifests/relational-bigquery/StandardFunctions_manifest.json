@@ -91,47 +91,35 @@
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket"
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketDays_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMonths_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket"
     },
     {
       "test": "meta::pure::functions::hashCode::tests::testHashCode_Function_1__Boolean_1_",
@@ -344,14 +332,6 @@
     {
       "test": "meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNo matching signature for aggregate function VAR_SAMP\n  Argument types: ARRAY<FLOAT64>\n  Signature: VAR_SAMP(NUMERIC)\n    Argument 1: Unable to coerce type ARRAY<FLOAT64> to expected type NUMERIC\n  Signature: VAR_SAMP(BIGNUMERIC)\n    Argument 1: Unable to coerce type ARRAY<FLOAT64> to expected type BIGNUMERIC\n  Signature: VAR_SAMP(FLOAT64)\n    Argument 1: Unable to coerce type ARRAY<FLOAT64> to expected type FLOAT64"
-    },
-    {
-      "test": "meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuidWithRelation_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuid_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet"
     }
   ]
 }

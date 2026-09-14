@@ -26,14 +26,6 @@
       "expectedError": "[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet"
     },
     {
-      "test": "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceNotEqual_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'levenshteinDistance' (state: [Select, false]) is not supported yet"
-    },
-    {
       "test": "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nThird argument (pad pattern) for LPAD/RPAD cannot be empty"
     },

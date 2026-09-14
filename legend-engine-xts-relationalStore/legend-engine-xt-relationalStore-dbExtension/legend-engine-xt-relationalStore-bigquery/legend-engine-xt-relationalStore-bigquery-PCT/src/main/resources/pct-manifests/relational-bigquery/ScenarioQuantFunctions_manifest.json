@@ -23,7 +23,7 @@
     },
     {
       "test": "meta::external::scenario::quant::vwap::testMonthlyVWAP_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet"
+      "expectedError": "Execution error at ??, \"Unused format args. [2] arguments provided to expression \"round(%s, 0)\"\""
     }
   ]
 }
