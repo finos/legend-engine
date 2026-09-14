@@ -447,7 +447,7 @@
     },
     {
       "test": "meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"1970-01-01 00:00:00.0000000\""
+      "expectedError": "\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000"
     },
     {
       "test": "meta::pure::functions::date::tests::testAdjustByMicroseconds_Function_1__Boolean_1_",
@@ -516,10 +516,6 @@
     {
       "test": "meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_",
       "expectedError": "Ensure the target system understands Year or Year-month semantic."
-    },
-    {
-      "test": "meta::pure::functions::date::tests::testDatePart_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2015-08-29 22:22:22.9914234\""
     },
     {
       "test": "meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_",

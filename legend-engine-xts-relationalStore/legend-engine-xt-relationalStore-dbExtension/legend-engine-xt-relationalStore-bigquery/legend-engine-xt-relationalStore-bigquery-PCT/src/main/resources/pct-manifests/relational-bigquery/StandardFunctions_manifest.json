@@ -2,14 +2,6 @@
   "adapter": "meta::relational::tests::pct::bigQuery::testAdapterForRelationalWithBigQueryExecution_Function_1__X_o_",
   "exclusions": [
     {
-      "test": "meta::pure::functions::boolean::tests::inequalities::between::testBetween_DateTime_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"1032-01-01 00:32:34.000000000\""
-    },
-    {
-      "test": "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"1972-08-23 14:01:01.000000000\""
-    },
-    {
       "test": "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
       "expectedError": "\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000"
     },
@@ -90,32 +82,8 @@
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nAggregate function MIN not allowed in SELECT without FROM clause"
     },
     {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
-    },
-    {
       "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks_Function_1__Boolean_1_",
       "expectedError": "[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket"
-    },
-    {
-      "test": "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFailed to parse input string \"2024-01-31 00:32:34.999123456\""
     },
     {
       "test": "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_",
