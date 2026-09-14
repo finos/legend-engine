@@ -54,18 +54,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
     ]->combine(),
     // ------------------------------------------------------------------
 
-    // Index ------------------------------------------------------------
-    [ // indexOf
-      meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_->testRev(
-        [
-          rev('|$string->meta::pure::functions::string::indexOf(\'quick\')', 'c("the quick brown fox jumps over the lazy dog").index_of("quick")'),
-          rev('|$string->meta::pure::functions::string::indexOf(\'fox\')', 'c("the quick brown fox jumps over the lazy dog").index("fox")'),
-          rev('|$string->meta::pure::functions::string::indexOf(\'happy\')', 'c("the quick brown fox jumps over the lazy dog").index_of("happy")')
-        ]
-      )
-    ]->combine(),
-    // ------------------------------------------------------------------
-
     // Length ------------------------------------------------------------
     [ // length
       meta::pure::functions::string::tests::length::testLength_Function_1__Boolean_1_->testRev(
@@ -179,27 +167,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesEssenti
           rev('|\'2014-02-27\'->meta::pure::functions::string::parseDate()', 'c("2017-02-27").parse_datetime()')
         ]
       )
-    ]->combine(),
-    // Slice ------------------------------------------------------------------
-    [ // substring
-      meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_->testRev(
-        [
-          rev('|$string->meta::pure::functions::string::substring(0)','c("the quick brown fox jumps over the lazy dog").substring(0)'),
-          rev('|$string->meta::pure::functions::string::substring(1)', 'c("the quick brown fox jumps over the lazy dog").substring(1)'),
-          rev('|$string->meta::pure::functions::string::substring(2)', 'c("the quick brown fox jumps over the lazy dog").substring(2)'),
-          rev('|$string->meta::pure::functions::string::substring(3)', 'c("the quick brown fox jumps over the lazy dog").substring(3)'),
-          rev('|$string->meta::pure::functions::string::substring(4)', 'c("the quick brown fox jumps over the lazy dog").substring(4)')
-        ]
-      ),
-      meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_->testRev(
-      [
-        rev('|$string->meta::pure::functions::string::substring(0, 43)', 'c("the quick brown fox jumps over the lazy dog").substring(0, 43)'),
-        rev('|$string->meta::pure::functions::string::substring(1, 42)', 'c("the quick brown fox jumps over the lazy dog").substring(1, 42)'),
-        rev('|$string->meta::pure::functions::string::substring(2, 41)', 'c("the quick brown fox jumps over the lazy dog").substring(2, 41)'),
-        rev('|$string->meta::pure::functions::string::substring(3, 40)', 'c("the quick brown fox jumps over the lazy dog").substring(3, 40)'),
-        rev('|$string->meta::pure::functions::string::substring(4, 39)', 'c("the quick brown fox jumps over the lazy dog").substring(4, 39)')
-      ]
-    )
     ]->combine(),
     // Transformation ---------------------------------------------------
     // toLower

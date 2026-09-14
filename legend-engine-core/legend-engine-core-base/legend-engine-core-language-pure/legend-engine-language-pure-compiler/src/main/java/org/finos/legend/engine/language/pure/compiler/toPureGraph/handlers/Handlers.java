@@ -1773,6 +1773,11 @@ public class Handlers
 
         register(h("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", "toOne", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()), ps -> true));
 
+        register(m(m(h("meta::pure::functions::string::idxOf_String_1__String_1__Integer_1__Integer_1_", "idxOf", false, ps -> res("Integer", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::idxOf_String_1__String_1__Integer_1_", "idxOf", false, ps -> res("Integer", "one"), ps -> true))));
+        register(m(m(h("meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1__Integer_1_", "lastIdxOf", false, ps -> res("Integer", "one"), ps -> ps.size() == 3)),
+                m(h("meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1_", "lastIdxOf", false, ps -> res("Integer", "one"), ps -> true))));
+
         register(m(
                 m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
                         h("meta::pure::functions::collection::indexOf_T_MANY__T_1__Integer_1_", "indexOf", true, ps -> res("Integer", "one"), ps -> ps.size() == 2)),

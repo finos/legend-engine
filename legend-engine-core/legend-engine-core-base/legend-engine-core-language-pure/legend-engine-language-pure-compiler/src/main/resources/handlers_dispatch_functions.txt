@@ -589,6 +589,8 @@ meta::pure::functions::string::endsWith_String_1__String_1__Boolean_1_
 meta::pure::functions::string::equalIgnoreCase_String_1__String_1__Boolean_1_
 meta::pure::functions::string::format_String_1__Any_MANY__String_1_
 meta::pure::functions::string::humanize_String_1__String_1_
+meta::pure::functions::string::idxOf_String_1__String_1__Integer_1_
+meta::pure::functions::string::idxOf_String_1__String_1__Integer_1__Integer_1_
 meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_
 meta::pure::functions::string::indexOf_String_1__String_1__Integer_1__Integer_1_
 meta::pure::functions::string::isAlphaNumeric_String_1__Boolean_1_
@@ -605,6 +607,8 @@ meta::pure::functions::string::jaroWinklerSimilarity_String_1__String_1__Float_1
 meta::pure::functions::string::joinStrings_String_MANY__String_1_
 meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1_
 meta::pure::functions::string::joinStrings_String_MANY__String_1__String_1__String_1__String_1_
+meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1_
+meta::pure::functions::string::lastIdxOf_String_1__String_1__Integer_1__Integer_1_
 meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1_
 meta::pure::functions::string::lastIndexOf_String_1__String_1__Integer_1__Integer_1_
 meta::pure::functions::string::left_String_1__Integer_1__String_1_
