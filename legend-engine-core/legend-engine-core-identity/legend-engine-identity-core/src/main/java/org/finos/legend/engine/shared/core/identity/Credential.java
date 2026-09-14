@@ -19,6 +19,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface Credential
 {
     @JsonIgnore
+    default String id()
+    {
+        return null;
+    }
+
+    @JsonIgnore
     default boolean isValid()
     {
         return true;
