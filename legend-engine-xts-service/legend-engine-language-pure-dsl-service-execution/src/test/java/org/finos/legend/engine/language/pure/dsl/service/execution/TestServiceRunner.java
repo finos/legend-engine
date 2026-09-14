@@ -1325,6 +1325,21 @@ public class TestServiceRunner
         Assert.assertEquals("America/New_York, inside daylight saving time", shiftStartedAt("2012-05-20T17:10:52.501000000"), runShiftService("test::RuntimeDaylightSaving"));
     }
 
+    /**
+     * The same zone named three ways, and a fourth zone named as an offset. Pacific/Guam keeps no
+     * daylight saving time and is +10:00 the year round, so a bare offset and a UTC prefixed
+     * offset name that same zone and have to read the row as the same moment.
+     *
+     */
+    @Test
+    public void testConnectionTimeZoneTakesAnOffsetAsWellAsARegion()
+    {
+        Assert.assertEquals("UTC+0530", shiftStartedAt("2012-05-20T07:40:52.501000000"), runShiftService("test::RuntimeHalfHourOffset"));
+        String region = runShiftService("test::RuntimeRegion");
+        Assert.assertEquals("a bare offset", region, runShiftService("test::RuntimeOffset"));
+        Assert.assertEquals("a UTC prefixed offset", region, runShiftService("test::RuntimeUtcPrefixedOffset"));
+    }
+
     private static String runShiftService(String runtime)
     {
         return new TimeZoneServiceRunner(runtime).run(ServiceRunnerInput.newInstance().withSerializationFormat(SerializationFormat.PURE));

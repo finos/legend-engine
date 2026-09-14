@@ -161,6 +161,37 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
         MatcherAssert.assertThat(resultWithString, JsonMatchers.jsonEquals("[{\"name\":\"Firm A\",\"ranking\":1},{\"name\":\"Firm B\",\"ranking\":null}]"));
     }
 
+    /**
+     * A date and a date and time read out of JSON and written back, a DateTime carrying the
+     * subsecond digits it is read to. 1753-12-31 is among them because a day read as an instant in
+     * the wrong zone lands on the day before, and this reading has to be free of that.
+     */
+    @Test
+    public void testInternalizeDateAndDateTime()
+    {
+        String modelGrammar = "###Pure\n" +
+                "Class test::firm::model::Shift\n" +
+                "{\n" +
+                "   id        : Integer[1];\n" +
+                "   startedOn : StrictDate[1];\n" +
+                "   startedAt : DateTime[1];\n" +
+                "   endedAt   : DateTime[0..1];\n" +
+                "}" +
+                "\n\n" +
+                "###ExternalFormat\n" +
+                "Binding test::gen::TestBinding\n" +
+                "{\n" +
+                "  contentType: 'application/json';\n" +
+                "  modelIncludes: [ test::firm::model::Shift ];\n" +
+                "}";
+
+        String shiftTree = "#{test::firm::model::Shift {id, startedOn, startedAt, endedAt}}#";
+        String result = runTest(PureGrammarParser.newInstance().parseModel(modelGrammar),
+                "data:Byte[*]|test::firm::model::Shift->internalize(test::gen::TestBinding, $data)->graphFetch(" + shiftTree + ")->externalize(test::gen::TestBinding, " + shiftTree + ")",
+                Maps.mutable.with("data", resource("queries/shiftsTestData.json")));
+        MatcherAssert.assertThat(result, JsonMatchers.jsonEquals(resourceReader("queries/shiftsResult.json")));
+    }
+
     @Test
     public void testM2MChainingWithContentType()
     {

@@ -15,7 +15,8 @@
 // One store, one mapping, one query, and a Runtime per way of naming a time
 // zone. The table holds a wall clock the database keeps in the zone the
 // connection names, and a Pure DateTime is a moment, so each Runtime reads the
-// same stored row as a different instant.
+// same stored row as a different instant. Runtimes that name the same zone by
+// different spellings have to agree.
 
 ###Pure
 Class test::Shift
@@ -127,6 +128,98 @@ Runtime test::RuntimeDaylightSaving
           store: test::DB;
           type: H2;
           timezone: 'America/New_York';
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+// The same zone as Pacific/Guam, written as a bare offset, which the grammar
+// takes unquoted. java.util takes an offset only with a GMT prefix and answers
+// every other name it does not know with GMT.
+Runtime test::RuntimeOffset
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_offset:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          timezone: +1000;
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+// The same offset again with a UTC prefix. Before Java 21,
+// TimeZone.getTimeZone(ZoneId) passes this form to a lookup that knows region
+// names and GMT prefixed offsets only, and so reads it as GMT.
+Runtime test::RuntimeUtcPrefixedOffset
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_utc_prefixed:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          timezone: 'UTC+1000';
+          specification: LocalH2
+          {
+            testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';
+          };
+          auth: DefaultH2;
+        }
+      }#
+    ]
+  ];
+}
+
+// An offset that is not a whole number of hours, so an hours-only reading of
+// the shift would not show up as wrong here.
+Runtime test::RuntimeHalfHourOffset
+{
+  mappings:
+  [
+    test::Map
+  ];
+  connections:
+  [
+    test::DB:
+    [
+      connection_half_hour:
+      #{
+        RelationalDatabaseConnection
+        {
+          store: test::DB;
+          type: H2;
+          timezone: 'UTC+0530';
           specification: LocalH2
           {
             testDataSetupCSV: 'default\nshiftTable\nID,STARTED_AT\n1,2012-05-20T13:10:52.501\n---';

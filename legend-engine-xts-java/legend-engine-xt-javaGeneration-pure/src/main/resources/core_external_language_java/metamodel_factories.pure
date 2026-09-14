@@ -79,6 +79,9 @@ function meta::external::language::java::factory::javaSpliterators():           
 
 function meta::external::language::java::factory::javaInstant():                meta::external::language::java::metamodel::Class[1] { javaClass('java.time.Instant'); }
 function meta::external::language::java::factory::javaLocalDate():              meta::external::language::java::metamodel::Class[1] { javaClass('java.time.LocalDate'); }
+function meta::external::language::java::factory::javaLocalDateTime():          meta::external::language::java::metamodel::Class[1] { javaClass('java.time.LocalDateTime'); }
+function meta::external::language::java::factory::javaOffsetDateTime():         meta::external::language::java::metamodel::Class[1] { javaClass('java.time.OffsetDateTime'); }
+function meta::external::language::java::factory::javaZoneId():                 meta::external::language::java::metamodel::Class[1] { javaClass('java.time.ZoneId'); }
 
 function meta::external::language::java::factory::javaCollector():              meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'Collector'); }
 function meta::external::language::java::factory::javaCollectors():             meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'Collectors'); }
