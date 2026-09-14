@@ -18,6 +18,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.TestConnectionIntegrationLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.pure.code.core.CoreScenarioQuantCodeRepositoryProvider;
@@ -84,7 +85,10 @@ public class Test_Relational_BigQuery_PCT
 
     private static MutableList<TestServerResource> bigQueryTestConnectionResources()
     {
-        return Lists.mutable.with((TestServerResource) TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.BigQuery).getFirst());
+        TestConnectionIntegration bigQuery = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.BigQuery).getFirst();
+        // The sweep must follow the integration: ServersState.start() runs the resources in order,
+        // and it needs the connection the integration builds in start().
+        return Lists.mutable.with((TestServerResource) bigQuery, new BigQueryLeakedTableSweep(bigQuery));
     }
 
     private abstract static class BigQueryPCTReportConfiguration extends PCTReportConfiguration
