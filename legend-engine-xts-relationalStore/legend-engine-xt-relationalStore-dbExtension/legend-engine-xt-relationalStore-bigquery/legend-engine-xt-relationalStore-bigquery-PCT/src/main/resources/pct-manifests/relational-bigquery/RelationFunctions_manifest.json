@@ -34,10 +34,6 @@
       "expectedError": "Error while executing: Create Table leSchema.tb"
     },
     {
-      "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
-    },
-    {
       "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
       "expectedError": "pivot is not supported"
     },
@@ -47,19 +43,19 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_reverse' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_7907108_1789420596583 (id,payload) values(1,'[1,2,3]'), (2,'[4,5,6]'), (3,'[7,8,9]'), (4,'[10,11,12]'), (5,'[13,14,15]');"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_3262378_1789420599265 (id,payload) values(1,'[2,1,3]'), (2,'[5,6,4]'), (3,'[9,8,7]'), (4,'[10,11,12]'), (5,'[15,13,14]');"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_2482856_1789420603226 (id,payload,val) values(1,'[1,2,3]',1), (2,'[1,2,3]',4), (3,null,0);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_sort' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_8124063_1789420605860 (id,payload) values(1,'[1,2,3]'), (2,'[1,2,3,4,4,3,2,3,4,1,2]'), (3,null);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
@@ -75,19 +71,19 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_9335548_1789420608571 (val,payload) values(1,'[1,2,3]'), (3,'[1,2,3]'), (4,'[1,2,3]'), (5,null);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_1491051_1789420611661 (id,payload) values(0,'[]'), (1,'[1]'), (2,'[2,3,4]'), (3,null);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_8840469_1789420614343 (id,payload) values(0,'[]'), (1,'[1]'), (2,'[2,3,4]'), (3,null);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
@@ -95,7 +91,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_slice' (state: [Select, false]) is not supported yet"
+      "expectedError": "Error while executing: insert into leSchema.tb_1264394_1789420617753 (id,payload,fromRow,toRow) values(0,null,1,2), (1,'[1,2,3,4,5,6]',2,3), (2,'[1,2,3,4,5,6]',0,4), (3,'[1,2,3,4,5,6]',-3,-1);"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
@@ -126,16 +122,8 @@
       "expectedError": "pivot is not supported"
     },
     {
-      "test": "meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
-    },
-    {
       "test": "meta::pure::functions::relation::tests::composition::test_Slice_Size_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \")\" but got \",\""
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
     },
     {
       "test": "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
@@ -319,7 +307,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
     },
     {
       "test": "meta::pure::functions::relation::tests::first::testOLAPWithPartitionAndOrderFirstWindow_Function_1__Boolean_1_",
@@ -371,7 +359,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_OnlyNullsInRelation_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nQuantified comparisons (> ALL) are not supported"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nError getting access token for service account: oauth2.googleapis.com, iss: integration-bq-sa1@legend-integration-testing.iam.gserviceaccount.com"
     },
     {
       "test": "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_String_Function_1__Boolean_1_",
@@ -815,7 +803,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
-      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nNULLS LAST not supported with ascending sort order in RANGE clauses of analytic functions."
+      "expectedError": "Error while executing: insert into leSchema.tb_2414005_1789425623690 (menu_category,menu_cogs_usd) values('Beverage',0.5), ('Beverage',0.65), ('Beverage',0.75), ('Dessert',0.5), ('Dessert',1.0), ('Dessert',1.25), ('Dessert',2.5), ('Dessert',3.0), ('Snack',1.25), ('Snack',2.25), ('Snack',4.0);"
     },
     {
       "test": "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
@@ -855,10 +843,6 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
-    },
-    {
-      "test": "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
       "expectedError": "pivot is not supported"
     },
     {
