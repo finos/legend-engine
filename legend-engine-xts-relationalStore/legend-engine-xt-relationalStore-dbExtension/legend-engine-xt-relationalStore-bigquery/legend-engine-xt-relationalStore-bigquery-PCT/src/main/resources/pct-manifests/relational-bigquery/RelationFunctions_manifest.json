@@ -35,7 +35,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
+      "expectedError": "Not supported data type :'LONG' for Pure type: 'String'"
     },
     {
       "test": "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
@@ -659,7 +659,7 @@
     },
     {
       "test": "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
-      "expectedError": "pivot is not supported"
+      "expectedError": "Not supported data type :'LONG' for Pure type: 'String'"
     },
     {
       "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
