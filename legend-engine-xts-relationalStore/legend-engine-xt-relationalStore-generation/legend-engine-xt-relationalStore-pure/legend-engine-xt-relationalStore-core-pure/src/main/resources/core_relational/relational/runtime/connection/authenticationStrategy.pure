@@ -64,6 +64,11 @@ Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentity
     <<equality.Key>> additionalGcpScopes: String[*];
 }
 
+Class meta::pure::alloy::connections::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    <<equality.Key>> serviceAccountKeyVaultReference : String[1];
+}
+
 Class meta::pure::alloy::connections::alloy::authentication::OAuthAuthenticationStrategy extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
 {
    <<equality.Key>> oauthKey:String[1];

@@ -27,23 +27,172 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
-      windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      windowColumnProcessor = processWindowColumnForBigQuery_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForBigQuery_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
+      dataTypeToSqlText = dataTypeToSqlTextBigQuery_DataType_1__String_1_,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForBigQuery(),
+      lambdaParameterProcessor = buildLambdaParameterForBigQuery_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
+      lambdaProcessor = buildLambdaForBigQuery_RelationalLambda_1__SqlGenerationContext_1__String_1_,
+      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
 }
 
+function meta::relational::functions::sqlQueryToString::bigQuery::getDDLCommandsTranslatorForBigQuery(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+    createSchema = translateCreateSchemaStatementForBigQuery_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+    dropSchema = translateDropSchemaStatementForBigQuery_DropSchemaSQL_1__DbConfig_1__String_1_,
+    createTable = translateCreateTableStatementForBigQuery_CreateTableSQL_1__DbConfig_1__String_1_,
+    dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+    loadTable = loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateCreateSchemaStatementForBigQuery(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   // A schema is a dataset; the connection already names one, so 'default' resolves to it
+   if($createSchemaSQL.schema.name == 'default',
+    | [],
+    | 'Create Schema if not exists ' + $dbConfig.identifierProcessor($createSchemaSQL.schema.name) + ';');
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateDropSchemaStatementForBigQuery(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+   'Drop schema if exists ' + $dbConfig.identifierProcessor($dropSchemaSQL.schema.name) + ' cascade;';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::translateCreateTableStatementForBigQuery(createTableSQL:CreateTableSQL[1], dbConfig:DbConfig[1]) : String[1]
+{
+   // BigQuery has no explicit NULL constraint, and will only accept a primary key it does not enforce
+   let t = $createTableSQL.table;
+   let applyConstraints = $createTableSQL.applyConstraints;
+   'Create Table '+if($t.schema.name == 'default',|'',|$dbConfig.identifierProcessor($t.schema.name)+'.')+$dbConfig.identifierProcessor($t.name)+
+      + '('
+      + $t.columns->cast(@meta::relational::metamodel::Column)
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' + columnTypeForBigQuery($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false || $c.nullable == true, | '', | ' NOT NULL'))
+         ->joinStrings(',')
+      + if ($t.primaryKey->isEmpty() || $applyConstraints == false, | '', | ', PRIMARY KEY(' + $t.primaryKey->map(c | $c.name)->joinStrings(',') + ') NOT ENFORCED')
+      +');';
+}
+
+function {doc.doc='Given the platform (ie DB agnostic) data types, convert to BigQuery specific type'} meta::relational::functions::sqlQueryToString::bigQuery::dataTypeToSqlTextBigQuery(type: meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+    // BigQuery has no VARCHAR/CHAR, no BIT, and FLOAT/DOUBLE are spelled FLOAT64
+    $type->match([
+        v : meta::relational::metamodel::datatype::Varchar[1] | 'STRING',
+        c : meta::relational::metamodel::datatype::Char[1] | 'STRING',
+        f : meta::relational::metamodel::datatype::Float[1] | 'FLOAT64',
+        d : meta::relational::metamodel::datatype::Double[1] | 'FLOAT64',
+        b : meta::relational::metamodel::datatype::Bit[1] | 'BOOL',
+        b : meta::relational::metamodel::datatype::Boolean[1] | 'BOOL',
+        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'JSON',
+        j : meta::relational::metamodel::datatype::Json[1] | 'JSON',
+        // BigQuery has no map type and a bare ARRAY cannot be spelled in a cast; variant values are JSON
+        a : meta::relational::metamodel::datatype::Array[1] | 'JSON',
+        o : meta::relational::metamodel::datatype::Object[1] | 'JSON',
+        a : meta::relational::metamodel::datatype::DataType[1] | $a->meta::relational::functions::sqlQueryToString::default::getColumnTypeSqlTextDefault()
+    ]);
+}
+
+// NUMERIC accepts only scale 0..9 with at most 29 integer digits; anything wider has to be BIGNUMERIC,
+// which reaches scale 38 and 38 integer digits.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::decimalFamilyForBigQuery(precision:Integer[0..1], scale:Integer[0..1]):String[1]
+{
+   if($precision->isEmpty() || $scale->isEmpty(),
+    | 'NUMERIC',
+    | if(($scale->toOne() <= 9) && (($precision->toOne() - $scale->toOne()) <= 29),
+       | 'NUMERIC',
+       | 'BIGNUMERIC');
+   );
+}
+
+// Only a column declaration may carry precision and scale; CAST rejects a parameterised type outright,
+// so dataTypeToSqlTextBigQuery deliberately renders the bare family name instead.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::columnTypeForBigQuery(type:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $type->match([
+      d : meta::relational::metamodel::datatype::Decimal[1] | decimalColumnTypeForBigQuery($d.precision, $d.scale),
+      n : meta::relational::metamodel::datatype::Numeric[1] | decimalColumnTypeForBigQuery($n.precision, $n.scale),
+      a : meta::relational::metamodel::datatype::DataType[1] | $a->dataTypeToSqlTextBigQuery()
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::decimalColumnTypeForBigQuery(precision:Integer[0..1], scale:Integer[0..1]):String[1]
+{
+   if($precision->isEmpty() || $scale->isEmpty(),
+    | decimalFamilyForBigQuery($precision, $scale),
+    | let p = $precision->toOne();
+      let s = $scale->toOne();
+      if(($s <= 9) && (($p - $s) <= 29),
+       | format('NUMERIC(%d, %d)', [$p, $s]),
+       | if(($s <= 38) && (($p - $s) <= 38),
+          | format('BIGNUMERIC(%d, %d)', [$p, $s]),
+          | 'BIGNUMERIC'));
+   );
+}
+
+// datetime_diff covers DATE operands too, BigQuery widening them on the way in. WEEKS is the one
+// unit left out: BigQuery counts week boundaries symmetrically, where dateDiff does not -- it answers
+// 1 from 2015-07-04 to 2015-07-05 but 0 back the other way -- so it fails here rather than quietly
+// disagreeing. Every other unit was checked against the live service and matches.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::dateDiffForBigQuery(params:String[3]):String[1]
+{
+   let unit = $params->at(2)->removeQuotesIfExist();
+   assert($unit != DurationUnit.WEEKS->toString(),
+          '[unsupported-api] dateDiff with WEEKS is not supported on BigQuery: its DATE_DIFF counts week boundaries symmetrically, which does not match dateDiff');
+   'datetime_diff(' + $params->at(1) + ', ' + $params->at(0) + ', ' + $unit->mapToDBUnitType() + ')';
+}
+
+// Buckets are measured from the epoch, which is what timeBucket anchors to for every unit except
+// WEEKS. Pure's week buckets do not sit on a fixed origin at all -- a 1-week bucket of 2024-01-31
+// starts on 2024-01-29 but a 2-week bucket starts there too, and a 3-week bucket on 2024-01-15 --
+// so WEEKS fails here rather than answering from an origin that only looks right sometimes.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::timeBucketForBigQuery(params:String[3]):String[1]
+{
+   let unit = $params->at(2)->removeQuotesIfExist();
+   assert($unit != DurationUnit.WEEKS->toString(),
+          '[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket');
+   // the operand is cast because it is not always DATETIME: a TIMESTAMP reaches here too, and
+   // datetime_bucket requires its value and origin to be the same type
+   'datetime_bucket(cast(' + $params->at(0) + ' as datetime), interval ' + $params->at(1) + ' ' + $unit->mapToDBUnitType() + ', datetime \'1970-01-01\')';
+}
+
+// BigQuery matches with RE2, which takes the same inline flag syntax as the other engines.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::regexpInlineFlagsForBigQuery(regexpParametersAsString: String[1]):String[1]
+{
+   let flags = $regexpParametersAsString->removeQuotesIfExist()->split(',')
+                  ->map(p | newMap([
+                        pair('CASE_SENSITIVE', ''),
+                        pair('CASE_INSENSITIVE', 'i'),
+                        pair('MULTILINE', 'm'),
+                        pair('NON_NEWLINE_SENSITIVE', 's')
+                     ])->get($p))
+                  ->filter(f | $f != '')->joinStrings('');
+   if($flags == '', | '', | '(?' + $flags + ')');
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
-   let literalReplacementPairForString = ^LiteralReplacement(old = '\'', new = '\\\'');
+   // A quoted literal may not carry a raw newline here, unlike most engines, so they are escaped.
+   // Backslashes are deliberately left alone: regex patterns reach the dialect already written for
+   // RE2, and doubling their backslashes would change what they match.
+   let literalReplacementPairForString = [
+      ^LiteralReplacement(old = '\'', new = '\\\''),
+      ^LiteralReplacement(old = '\n', new = '\\n'),
+      ^LiteralReplacement(old = '\r', new = '\\r')
+   ];
 
    newMap([
       pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
+      // the shared default quotes booleans, which BigQuery reads as STRING and refuses to coerce to BOOL
+      pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E6S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      // %E*S, not %E6S: Pure writes nine fractional digits and a fixed width refuses to parse them
+      pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E*S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ]);
 }
@@ -55,31 +204,78 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
+    // concat keeps the pattern an expression, so an anchored match still works when it is a column
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format='regexp_contains(%s, concat(\'^(?:\', %s, \')$\'))')),
+    dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3] |
+                                                                     'regexp_contains(' + $p->at(0) + ', concat(\'' + $p->at(2)->regexpInlineFlagsForBigQuery() + '\', ' + $p->at(1) + '))';})),
+    // the part index reaches the dialect already 1-based, matching SAFE_ORDINAL; an empty separator
+    // splits into one element per character, where splitPart wants the whole string back
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='%s', transform={p:String[3] |
+                                                                     'case when ' + $p->at(1) + ' = \'\' then ' + $p->at(0) +
+                                                                     ' else split(' + $p->at(0) + ', ' + $p->at(1) + ')[SAFE_ORDINAL(' + $p->at(2) + ')] end';})),
+    dynaFnToSql('array_concatenate',      $allStates,            ^ToSql(format='to_json(array_concat(json_query_array(%s), json_query_array(%s)))')),
+    dynaFnToSql('array_contains',         $allStates,            ^ToSql(format='(select exists(select 1 from unnest(json_query_array(%s)) v where to_json_string(v) = to_json_string(to_json(%s))))')),
+    dynaFnToSql('array_distinct',         $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else to_json(ifnull(array_agg(s.v order by s.o), ARRAY<JSON>[])) end from (select any_value(v) as v, min(o) as o from unnest(json_query_array(%s)) v with offset o group by to_json_string(v)) s)'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_drop',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForBigQuery($p->at(0), 'o > greatest(%s, 0)'->format($p->at(1)), 'o')})),
+    dynaFnToSql('array_first',            $allStates,            ^ToSql(format='json_value(json_query_array(%s)[safe_offset(0)])')),
+    dynaFnToSql('array_flatten',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | '(select case when %s is null then null else to_json(ifnull(array_agg(e order by ao, bo), ARRAY<JSON>[])) end from unnest(json_query_array(%s)) a with offset ao, unnest(json_query_array(a)) e with offset bo)'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_init',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForBigQuery($p->at(0), 'o < array_length(json_query_array(%s))'->format($p->at(0)), 'o')})),
+    dynaFnToSql('array_last',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | 'json_value(json_query_array(%s)[safe_offset(array_length(json_query_array(%s)) - 1)])'->format([$p->at(0), $p->at(0)])})),
+    dynaFnToSql('array_max',              $allStates,            ^ToSql(format='(select max(cast(json_value(v) as numeric)) from unnest(json_query_array(%s)) v)')),
+    dynaFnToSql('array_min',              $allStates,            ^ToSql(format='(select min(cast(json_value(v) as numeric)) from unnest(json_query_array(%s)) v)')),
+    dynaFnToSql('array_position',         $allStates,            ^ToSql(format='(select coalesce(min(o), -1) from unnest(json_query_array(%s)) v with offset o where to_json_string(v) = to_json_string(to_json(%s)))')),
+    dynaFnToSql('array_reverse',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForBigQuery($p->at(0), '', 'o desc')})),
+    dynaFnToSql('array_size',             $allStates,            ^ToSql(format='coalesce(array_length(json_query_array(%s)), 0)')),
+    dynaFnToSql('array_slice',            $allStates,            ^ToSql(format='%s', transform={p:String[3] | reshapeJsonArrayForBigQuery($p->at(0), 'o > greatest(%s, 0) and o <= greatest(%s, 0)'->format([$p->at(1), $p->at(2)]), 'o')})),
+    dynaFnToSql('array_sort',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForBigQuery($p->at(0), '', jsonElementOrderingForBigQuery())})),
+    dynaFnToSql('array_tail',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | reshapeJsonArrayForBigQuery($p->at(0), 'o > 1', 'o')})),
+    dynaFnToSql('array_to_string',        $allStates,            ^ToSql(format='(select ifnull(string_agg(coalesce(json_value(v), to_json_string(v)), %s order by o), \'\') from unnest(json_query_array(%s)) v with offset o)', transform={p:String[2] | [$p->at(1), $p->at(0)]})),
+    dynaFnToSql('array_take',             $allStates,            ^ToSql(format='%s', transform={p:String[2] | reshapeJsonArrayForBigQuery($p->at(0), 'o <= greatest(%s, 0)'->format($p->at(1)), 'o')})),
+    dynaFnToSql('bitAnd',                 $allStates,            ^ToSql(format='(%s & %s)')),
+    dynaFnToSql('bitNot',                 $allStates,            ^ToSql(format='(~ %s)')),
+    dynaFnToSql('bitOr',                  $allStates,            ^ToSql(format='(%s | %s)')),
+    dynaFnToSql('bitShiftLeft',           $allStates,            ^ToSql(format='(%s << %s)')),
+    dynaFnToSql('bitShiftRight',          $allStates,            ^ToSql(format='(%s >> %s)')),
+    dynaFnToSql('bitXor',                 $allStates,            ^ToSql(format='(%s ^ %s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')),            
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->dateDiffForBigQuery()})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='extract(day from %s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='format_datetime("%%A", DATETIME(%s))')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='extract(dayofweek from %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='extract(dayofyear from %s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='safe_convert_bytes_to_string(from_base64(%s))')),
+    // cast(.. as JSON) is rejected; parse_json is the only accepted spelling
+    dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
+    // the shared default casts the JSON value itself, which BigQuery refuses; go through json_value
+    dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | castFromJsonForBigQuery($p->at(0), $p->at(1))})),
+    dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='to_json(%s)')),
+    dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
+    // generate_array includes the stop value, range() excludes it, so the bound is pulled in one step
+    dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+                                                                     let step = if($p->size() > 2, | $p->at(2), | '1');
+                                                                     'generate_array(' + $p->at(0) + ', ' + $p->at(1) + ' - sign(' + $step + '), ' + $step + ')';})),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='to_base64(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, month))')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, quarter))')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(current_date, month)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='date_trunc(current_date, quarter)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='date_trunc(current_date, year)%s', transform={p:String[*] | ''})),
-    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, week)')),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, week))')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='timestamp_trunc(timestamp %s, year)')),
     dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='timestamp_trunc(timestamp %s, day)')),
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='timestamp_trunc(timestamp %s, second)')),
-    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='timestamp_trunctimestamp %s, hour)')), 
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='timestamp_trunc(timestamp %s, hour)')), 
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='timestamp_trunc(timestamp %s, minute)')),
+    dynaFnToSql('generateGuid',           $allStates,            ^ToSql(format='generate_uuid()')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
+    dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='edit_distance(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
@@ -91,13 +287,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as int64)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='extract( quarter from %s)')),
-    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, 0)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract( second from %s)')),
     dynaFnToSql('split',                  $allStates,            ^ToSql(format='split(%s, %s)')),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='CURRENT_DATE()')),
+    dynaFnToSql('timeBucket',             $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->timeBucketForBigQuery()})),
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float64)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     // isoweek, not week: BigQuery's week counts from Sunday and numbers the days before the year's
@@ -118,6 +315,141 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
 }
 
+// BigQuery has no list functions over JSON, so reshaping an array means exploding it and rebuilding
+// it. WITH OFFSET counts from zero where Postgres ordinality counts from one, so o is shifted here
+// and the caller predicates read the same as the other stores'. The case guard keeps a null array
+// null, since array_agg over no rows is null either way and would otherwise yield an empty array.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::reshapeJsonArrayForBigQuery(array:String[1], where:String[1], order:String[1]):String[1]
+{
+  let filter = if($where == '', |'', |' where ' + $where);
+  '(select case when %s is null then null else to_json(ifnull(array_agg(t.v order by %s), ARRAY<JSON>[])) end from (select v as v, o + 1 as o from unnest(json_query_array(%s)) as v with offset o) t%s)'
+    ->format([$array, $order, $array, $filter]);
+}
+
+// JSON values have no ordering operator, so numbers sort numerically and everything else as text.
+// The numeric key is null for non-numbers, which falls through to the text key.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::jsonElementOrderingForBigQuery():String[1]
+{
+  '(case when json_type(t.v) = \'number\' then cast(json_value(t.v) as numeric) end), json_value(t.v)';
+}
+
+// BigQuery has no higher-order array function, so filter and map lower to a scalar subquery over
+// UNNEST. The offset column and the order by inside the aggregate are what preserve element order,
+// since scan order is not guaranteed. fold has no equivalent and fails with a specific message.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildLambdaForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  $lambda->match([
+    map: MapRelationalLambda[1]       | buildMapLambdaForBigQuery($map, $sgc),
+    filter: FilterRelationalLambda[1] | buildFilterLambdaForBigQuery($filter, $sgc),
+    fold: FoldRelationalLambda[1]     | fail('[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery'); '';
+  ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildMapLambdaForBigQuery(lambda: MapRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  '(select to_json(ifnull(array_agg(to_json(%s) order by legend_ord), ARRAY<JSON>[])) from %s)'->format([
+      $lambda.body->processOperation($sgc),
+      $lambda->flattenedSourceForBigQuery($sgc)
+   ]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildFilterLambdaForBigQuery(lambda: FilterRelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  '(select to_json(ifnull(array_agg(%s order by legend_ord), ARRAY<JSON>[])) from %s where %s)'->format([
+      $lambda.parameters->at(0).name,
+      $lambda->flattenedSourceForBigQuery($sgc),
+      $lambda.body->processOperation($sgc)
+   ]);
+}
+
+// UNNEST names the element column directly, so it is aliased to the lambda parameter and the
+// unqualified references the parameter processor emits resolve against it.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::flattenedSourceForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  'unnest(json_query_array(%s)) as %s with offset legend_ord'->format([
+      $lambda.parameters->at(0).value->processOperation($sgc)->asJsonArrayForBigQuery(),
+      $lambda.parameters->at(0).name
+   ]);
+}
+
+// json_query_array rejects anything that is not an array, where Snowflake's FLATTEN and DuckDB's
+// unnest normalise first. A single element reaches here when the value has already been narrowed,
+// so treat it as a one-element array rather than failing.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::asJsonArrayForBigQuery(expr:String[1]):String[1]
+{
+  'case when json_type(%s) = \'array\' then %s else json_array(%s) end'->format([$expr, $expr, $expr]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildLambdaParameterForBigQuery(param: RelationalLambdaParameter[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  castFromJsonForBigQuery($param.name, $sgc.dbConfig.dataTypeToSqlText($param.type));
+}
+
+// json_value extracts a scalar as unquoted text, where casting the JSON value itself keeps the
+// quotes around a JSON string. A JSON-typed parameter passes through untouched.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::castFromJsonForBigQuery(expr:String[1], dbType:String[1]):String[1]
+{
+  let unquoted = 'json_value(%s)'->format($expr);
+  if ($dbType->startsWith('JSON'),
+    | $expr,
+    | if ($dbType == 'STRING',
+        | '(%s)'->format($unquoted),
+        | 'cast(%s as %s)'->format([$unquoted, $dbType])));
+}
+
+// BigQuery accepts an explicit null ordering only inside a ROWS frame. Its default window frame is
+// RANGE, so an ordered window written without a frame inherits the same restriction, and a RANGE
+// frame admits a single ORDER BY key, which rules out the CASE shim too. Where the clause cannot be
+// written the ordering falls back to BigQuery's own, nulls low, which differs from the requested
+// ordering only when the sort column actually holds nulls -- so those windows run and order
+// correctly on data without nulls, rather than failing outright.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processWindowColumnForBigQuery(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let nullOrderingWritable = $w.window.frame->isNotEmpty() && ($w.window.frame->toOne().frameType == meta::relational::metamodel::FrameType.ROWS);
+
+   let partitionTranslation = if($w.window.partition->isNotEmpty(),
+        |'Partition By ' + $w.window.partition->map(f|$f->processOperation($sgc))->joinStrings(','),
+        |'');
+   let orderByTranslation = if($w.window.sortBy->isNotEmpty(),
+        |'Order By '+ $w.window.sortBy->map(s|
+              let rendered = $s.sortByElement->toOne()->processOperation($sgc);
+              if($nullOrderingWritable,
+                 | $sgc.dbConfig.processSortItem($rendered, $s.sortDirection, $s.nullOrder),
+                 | $rendered + $s.sortDirection->renderSortDirection());
+           )->joinStrings(', '),
+        |'');
+   let windowFrameTranslation = if($w.window.frame->isNotEmpty(),
+        |$w.window.frame->toOne()->processWindowFrame($sgc),
+        |'');
+   $w.func->processOperation($sgc) +
+   ' OVER (' +
+   [$partitionTranslation, $orderByTranslation, $windowFrameTranslation]->filter(s | $s != '')->joinStrings(' ') +
+   + ')';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processPivotForBigQuery(s:SelectSQLQuery[1], p:Pivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+   $p->match([
+      staticPivot: StaticPivot[1] | processStaticPivotForBigQuery($s, $staticPivot, $dbConfig, $format, $config, $extensions),
+      dynamicPivot: Pivot[1] | fail('[unsupported-api] dynamic pivot is not supported on BigQuery: its PIVOT takes a fixed IN list'); '';
+   ]);
+}
+
+// The quotes are part of the column name, not the quoting of it: downstream the platform refers to
+// the column as '<value>__|__<agg>', quotes included. Only the surrounding identifier quoting is
+// dialect-specific, backticks here where Databricks writes double quotes.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processStaticPivotForBigQuery(s:SelectSQLQuery[1], staticPivot:StaticPivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
+{
+   let pivotColumnName = $dbConfig.identifierProcessor($staticPivot.pivotColumns->toOne()->cast(@ColumnName).name);
+   let aggColumn = $staticPivot.aggColumns->cast(@Alias)->toOne();
+   let processedAggColumn = processSelectColumns($aggColumn.relationalElement, $dbConfig, $format->indent(), $config, true, $extensions);
+   let staticPivotValueAliases = $staticPivot.values->map(v | ^Alias(name = '`\'' + $v.value->toString() + pivotColumnDelimeter() + $aggColumn.name + '\'`', relationalElement = $v));
+   let processedStaticPivotValues = $staticPivotValueAliases->map(a | $a->processOperation($dbConfig, $format->indent(), $config, $extensions))->joinStrings(',');
+   ' ' + $format.separator + 'pivot (' + $processedAggColumn +
+   ' ' + $format.separator + 'for ' + $pivotColumnName +
+   ' ' + $format.separator + 'in (' + $processedStaticPivotValues + '))';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $s->processSelectSQLQueryForBigQuery($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
@@ -125,13 +457,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processSelectSQLQueryForBigQuery(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
-  assertEmpty($s.pivot, 'pivot is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
-  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
+  if($s.data == [],|'',
+    | ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)
+        + if($s.pivot->isEmpty(), | '', | processPivotForBigQuery($s, $s.pivot->toOne(), $dbConfig, $format, ^$config(useUnqualifiedColumnNameInPivot = true), $extensions))
+  ) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
