@@ -134,14 +134,6 @@
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nAggregate function COVAR_SAMP not allowed in SELECT without FROM clause"
     },
     {
-      "test": "meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
-    },
-    {
       "test": "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nAggregate function MAX not allowed in SELECT without FROM clause"
     },
@@ -192,14 +184,6 @@
     {
       "test": "meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nFunction not found: median"
-    },
-    {
-      "test": "meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::math::tests::min::testMin_IntegersArray_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"
     },
     {
       "test": "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
@@ -255,7 +239,7 @@
     },
     {
       "test": "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcSqlSyntaxErrorException: BigQueryException during runQuery\nSyntax error: Expected \"(\" but got keyword GROUP"
     },
     {
       "test": "meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_",

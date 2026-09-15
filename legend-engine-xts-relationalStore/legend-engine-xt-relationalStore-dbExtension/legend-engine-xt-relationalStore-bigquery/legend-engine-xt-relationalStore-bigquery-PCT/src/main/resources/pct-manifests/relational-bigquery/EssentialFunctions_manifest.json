@@ -67,7 +67,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldCollectionAccumulator_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
@@ -75,7 +75,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
@@ -83,7 +83,7 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
@@ -91,11 +91,11 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldWithEmptyAccumulator_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFoldWithSingleValue_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testFold_Function_1__Boolean_1_",
@@ -103,11 +103,11 @@
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testIntegerSum_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::fold::testStringSum_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] relational lambda processing not supported for Database Type: BigQuery"
+      "expectedError": "[unsupported-api] fold over an array is not supported on BigQuery: it has no reduce and no recursive CTE that can correlate inside a scalar subquery"
     },
     {
       "test": "meta::pure::functions::collection::tests::forall::testforAllOnEmptySet_Function_1__Boolean_1_",
@@ -500,10 +500,6 @@
     {
       "test": "meta::pure::functions::math::tests::round::testDecimalRound_Function_1__Boolean_1_",
       "expectedError": "com.google.cloud.bigquery.exception.BigQueryJdbcException: BigQueryException during runQuery\nIn NUMERIC(P, S), S must be between 0 and 9"
-    },
-    {
-      "test": "meta::pure::functions::math::tests::round::testFloatRoundWithScale_Function_1__Boolean_1_",
-      "expectedError": "Execution error at ??, \"Unused format args. [2] arguments provided to expression \"round(%s, 0)\"\""
     },
     {
       "test": "meta::pure::functions::math::tests::round::testNegativeFloatRoundHalfEvenUp_Function_1__Boolean_1_",
