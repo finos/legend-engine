@@ -1228,7 +1228,10 @@ Class meta::relational::functions::sqlQueryToString::DynaFunctionToSql
 
    toSql(parameters:RelationalOperationElement[*], sgcs:SqlGenerationContext[*])
    {
-      let processedParams = $parameters->zip($sgcs)->map(p | $p.first->processOperation($p.second));
+      let processedParams = $parameters->zip($sgcs)->map(p |
+         let s = $p.first->processOperation($p.second);
+         if($p.first->instanceOf(SelectSQLQuery), | $s->meta::relational::functions::sqlQueryToString::default::bracketSubQuery(), | $s);
+      );
       let params = if($this.toSql.transform->isEmpty() && $this.toSql.contextAwareTransform->isEmpty() , 
                       | $processedParams, 
                       | if($this.toSql.transform->isNotEmpty() ,

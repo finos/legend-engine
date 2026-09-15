@@ -20,7 +20,7 @@ tests:
     feature: "Multi-level nesting"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: nested_derived_in_derived
     sql: "SELECT sub2.dept_id, sub2.high_cnt FROM (SELECT dept_id, COUNT(*) AS high_cnt FROM (SELECT dept_id, salary FROM persons WHERE salary > 60000 AND dept_id IS NOT NULL) sub1 GROUP BY dept_id) sub2 ORDER BY 1"
@@ -35,7 +35,7 @@ tests:
     feature: "Subquery + JOIN"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # EXISTS + aggregate
   # Not an aliasing problem, so de-shadowing the subquery does not reach it. The GROUP BY stops the WHERE

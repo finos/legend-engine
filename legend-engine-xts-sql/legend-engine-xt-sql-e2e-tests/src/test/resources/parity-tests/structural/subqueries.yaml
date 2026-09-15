@@ -97,20 +97,20 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  # Subquery with aggregate comparison
+  # Subquery with aggregate comparison - a subquery in value position under a comparison is a scalar subquery
   - id: subquery_agg_comparison
     sql: "SELECT name, salary FROM persons WHERE salary > (SELECT AVG(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
     feature: "Subquery with aggregate comparison"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: subquery_agg_min
     sql: "SELECT name, salary FROM persons WHERE salary = (SELECT MIN(salary) FROM persons WHERE salary IS NOT NULL) ORDER BY 1"
     feature: "Subquery with aggregate comparison"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Subquery in HAVING
   - id: subquery_in_having
@@ -166,7 +166,7 @@ tests:
     feature: "Subquery in CASE"
     category: "subqueries"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Uncorrelated EXISTS
   - id: subquery_exists_uncorrelated
