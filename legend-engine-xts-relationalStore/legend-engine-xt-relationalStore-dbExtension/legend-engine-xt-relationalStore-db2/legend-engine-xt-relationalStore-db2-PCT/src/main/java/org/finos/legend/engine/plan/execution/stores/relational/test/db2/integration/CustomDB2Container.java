@@ -40,7 +40,8 @@ public class CustomDB2Container extends Db2Container
         {
             // a host UTS namespace, which testing defaulted to, rejects a container host name outright on podman
             HostConfig hostConfig = (cmd.getHostConfig() == null ? new HostConfig() : cmd.getHostConfig()).withShmSize(SHM_SIZE);
-            if (isPodman()) {
+            if (isPodman())
+            {
                 hostConfig = hostConfig.withUtSMode("private").withIpcMode("private");
             }
             cmd.withHostConfig(hostConfig);
