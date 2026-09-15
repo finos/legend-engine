@@ -15,14 +15,16 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test.db2.integration;
 
 import com.github.dockerjava.api.model.HostConfig;
+import com.github.dockerjava.api.model.VersionComponent;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.utility.DockerImageName;
 
+import java.util.List;
+
 public class CustomDB2Container extends Db2Container
 {
-    private static final String DEFAULT_REGISTRY = "docker.io";
-    private static final String IMAGE = "/ibmcom/db2:11.5.8.0";
-    private static final String CANONICAL_IMAGE_NAME = "ibmcom/db2";
+    private static final String IMAGE = "ibmcom/db2:11.5.8.0";
     // DB2 instance creation rejects host names that are not valid identifiers, such as the hex container id Docker assigns by default
     private static final String HOST_NAME = "db2server";
     // DB2 keeps most of its working memory in /dev/shm; the 64m default stalls instance configuration
@@ -30,15 +32,25 @@ public class CustomDB2Container extends Db2Container
 
     public CustomDB2Container()
     {
-        super(DockerImageName.parse(System.getProperty("legend.engine.testcontainer.registry", DEFAULT_REGISTRY) + IMAGE).asCompatibleSubstituteFor(CANONICAL_IMAGE_NAME));
+        super(DockerImageName.parse(IMAGE));
         this.acceptLicense();
         // the image remounts /database and starts the instance at boot, both of which need full privileges
         this.withPrivilegedMode(true);
         this.withCreateContainerCmdModifier(cmd ->
         {
-            // a host UTS namespace, which testing defaulted to, rejects a container host name outright
-            cmd.withHostConfig((cmd.getHostConfig() == null ? new HostConfig() : cmd.getHostConfig()).withUtSMode("private").withIpcMode("private").withShmSize(SHM_SIZE));
+            // a host UTS namespace, which testing defaulted to, rejects a container host name outright on podman
+            HostConfig hostConfig = (cmd.getHostConfig() == null ? new HostConfig() : cmd.getHostConfig()).withShmSize(SHM_SIZE);
+            if (isPodman()) {
+                hostConfig = hostConfig.withUtSMode("private").withIpcMode("private");
+            }
+            cmd.withHostConfig(hostConfig);
             cmd.withHostName(HOST_NAME);
         });
+    }
+
+    private static boolean isPodman()
+    {
+        List<VersionComponent> components = DockerClientFactory.instance().client().versionCmd().exec().getComponents();
+        return components != null && components.stream().anyMatch(c -> c.getName() != null && c.getName().startsWith("Podman"));
     }
 }
