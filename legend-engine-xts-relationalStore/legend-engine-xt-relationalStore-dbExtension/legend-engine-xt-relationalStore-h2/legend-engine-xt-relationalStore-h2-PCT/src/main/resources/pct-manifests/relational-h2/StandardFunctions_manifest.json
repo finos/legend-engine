@@ -23,7 +23,7 @@
     },
     {
       "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types \"INTEGER\" and \"DATE\" are not comparable;"
+      "expectedError" : "Values of types \"INTEGER\" and \"DATE\" are not comparable;"
     },
     {
       "test": "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
@@ -143,15 +143,15 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::bitAnd::testBitAnd_LargeNumbers_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\";"
+      "expectedError" : "Data conversion error converting \"-9223372036854775808\";"
     },
     {
       "test" : "meta::pure::functions::math::tests::bitNot::testBitNot_LargeNumbers_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\";"
+      "expectedError" : "Data conversion error converting \"-9223372036854775808\";"
     },
     {
       "test" : "meta::pure::functions::math::tests::bitOr::testBitOr_LargeNumbers_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\";"
+      "expectedError" : "Data conversion error converting \"-9223372036854775808\";"
     },
     {
       "test": "meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_",
@@ -167,7 +167,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::bitXor::testBitXor_LargeNumbers_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"-9223372036854775808\";"
+      "expectedError" : "Data conversion error converting \"-9223372036854775808\";"
     },
     {
       "test": "meta::pure::functions::math::tests::corr::testCorr_Function_1__Boolean_1_",

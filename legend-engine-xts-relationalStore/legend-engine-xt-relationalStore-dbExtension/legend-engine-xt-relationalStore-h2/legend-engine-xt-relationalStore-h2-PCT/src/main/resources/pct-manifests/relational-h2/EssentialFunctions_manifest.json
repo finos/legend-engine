@@ -32,7 +32,7 @@
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types \"INTEGER\" and \"DATE\" are not comparable; SQL statement:\nselect 1 in (1, 2, 5, 2, 'a', true, DATE'2014-02-01', 'c') [90110-214]"
+    "expectedError" : "Values of types \"INTEGER\" and \"DATE\" are not comparable; SQL statement:\nselect 1 in (1, 2, 5, 2, 'a', true, DATE'2014-02-01', 'c') [90110-214]"
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
@@ -329,28 +329,28 @@
     "expectedError" : "No SQL translation exists for the PURE function 'zip_T_MANY__U_MANY__Pair_MANY_'."
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(day, 12345678912, DATE'2016-02-29') [90008-214]"
+    "expectedError" : "Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(day, 12345678912, DATE'2016-02-29') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(hour, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
+    "expectedError" : "Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(hour, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000\""
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMinutesBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(minute, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
+    "expectedError" : "Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(minute, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"9600000000\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(month, 9600000000, DATE'2016-02-29') [90008-214]"
+    "expectedError" : "Invalid value \"9600000000\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(month, 9600000000, DATE'2016-02-29') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2012-03"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustBySecondsBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(second, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
+    "expectedError" : "Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(second, 12345678912, TIMESTAMP'2016-02-29 00:00:00') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(week, 12345678912, DATE'2016-02-29') [90008-214]"
+    "expectedError" : "Invalid value \"12345678912\" for parameter \"DATEADD count\"; SQL statement:\nselect dateadd(week, 12345678912, DATE'2016-02-29') [90008-214]"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
@@ -488,7 +488,7 @@
     "expectedError" : "\"\nexpected: 9.0\nactual:   27.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Division by zero: \"5\"; SQL statement:\nselect mod(5, 0) [22012-214]\"\nwhere the expected message was:\"Cannot divide 5 by zero\""
   }, {
     "test" : "meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.14D\nactual:   0.14\""
@@ -575,28 +575,28 @@
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T00:00:00.000000\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T00:00:00.000000', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
+    "expectedError" : "Error parsing \"2014-02-27T00:00:00.000000\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T00:00:00.000000', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateWithTimezone_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231-0500\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231-0500', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
+    "expectedError" : "Error parsing \"2014-02-27T10:01:35.231-0500\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231-0500', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateWithZ_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231Z\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231Z', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
+    "expectedError" : "Error parsing \"2014-02-27T10:01:35.231Z\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231Z', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDate_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Error parsing \"2014-02-27T10:01:35.231\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
+    "expectedError" : "Error parsing \"2014-02-27T10:01:35.231\"; SQL statement:\nselect cast(parsedatetime('2014-02-27T10:01:35.231', 'yyyy-MM-dd HH:mm:ss') as timestamp)"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimalWithPrecisionScale_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 123.123D\nactual:   123.12D\""
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"3.14159d\"; SQL statement:\nselect cast('3.14159d' as decimal(5,2)) [22018-214]"
+    "expectedError" : "Data conversion error converting \"3.14159d\"; SQL statement:\nselect cast('3.14159d' as decimal(5,2)) [22018-214]"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.000D\nactual:   0.0D\""
   }, {
     "test" : "meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Data conversion error converting \"9999999999999992\"; SQL statement:\nselect cast('9999999999999992' as integer) [22018-214]"
+    "expectedError" : "Data conversion error converting \"9999999999999992\"; SQL statement:\nselect cast('9999999999999992' as integer) [22018-214]"
   }, {
     "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""

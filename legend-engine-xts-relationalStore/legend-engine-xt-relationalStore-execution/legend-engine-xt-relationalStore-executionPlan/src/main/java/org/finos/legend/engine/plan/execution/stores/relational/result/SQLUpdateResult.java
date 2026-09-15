@@ -17,14 +17,17 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SQLUpdateResult extends SQLResult
@@ -57,6 +60,14 @@ public class SQLUpdateResult extends SQLResult
             if (e instanceof RuntimeException)
             {
                 throw (RuntimeException) e;
+            }
+            if (e instanceof SQLException)
+            {
+                // See the identical guard in SQLExecutionResult/RelationalResult for why PureExecutionException
+                // (not a bare RuntimeException) is required to carry the driver's own message forward, and why
+                // cleanErrorMessage is applied first.
+                String message = DatabaseManager.fromString(databaseType).cleanErrorMessage(e.getMessage());
+                throw new PureExecutionException(message, e);
             }
             throw new RuntimeException(e);
         }

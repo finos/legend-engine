@@ -96,4 +96,15 @@ public abstract class DatabaseManager
     {
         throw new UnsupportedOperationException("Local datasource specification not supported");
     }
+
+    /**
+     * Given a raw JDBC {@link java.sql.SQLException#getMessage()} string, return the dialect's best attempt at the
+     * underlying, driver-agnostic error text, stripping away any driver/server-specific wrapping the dialect's own
+     * JDBC stack is known to add. The default is a no-op: only a dialect whose driver is known to wrap messages in
+     * a recognizable, parseable shape should override this.
+     */
+    public String cleanErrorMessage(String rawMessage)
+    {
+        return rawMessage;
+    }
 }

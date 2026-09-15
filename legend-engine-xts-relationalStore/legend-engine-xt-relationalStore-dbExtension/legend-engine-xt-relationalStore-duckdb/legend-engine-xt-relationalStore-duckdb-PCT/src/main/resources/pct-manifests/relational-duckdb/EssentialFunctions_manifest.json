@@ -26,7 +26,7 @@
     "expectedError" : "Parameter to IN operation isn't a literal!"
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^"
+    "expectedError" : "Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^"
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
@@ -56,7 +56,7 @@
     "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldMixedAccumulatorTypes_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Binder Error: The initial value type must be the same as the list child type or a common super type"
+    "expectedError" : "Binder Error: The initial value type must be the same as the list child type or a common super type"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldToMany_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
@@ -155,10 +155,10 @@
     "expectedError" : "No SQL translation exists for the PURE function 'zip_T_MANY__U_MANY__Pair_MANY_'."
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByDaysBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Invalid Input Error: Type INT64 with value 12345678912 can't be cast because the value is out of range for the destination type INT32"
+    "expectedError" : "Invalid Input Error: Type INT64 with value 12345678912 can't be cast because the value is out of range for the destination type INT32"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByHoursBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Out of Range Error: Interval value 12345678912 hours out of range"
+    "expectedError" : "Out of Range Error: Interval value 12345678912 hours out of range"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMicrosecondsBigNumber_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: %2021-06-21T09:37:37.4990000+0000\nactual:   %2021-06-21T09:37:37.499+0000"
@@ -167,13 +167,13 @@
     "expectedError" : "\nexpected: %-21457-01-08T20:48:00+0000\nactual:   %21459-07-29T20:48:00+0000"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonthsBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Invalid Input Error: Type INT64 with value 9600000000 can't be cast because the value is out of range for the destination type INT32"
+    "expectedError" : "Invalid Input Error: Type INT64 with value 9600000000 can't be cast because the value is out of range for the destination type INT32"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2012-03"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Invalid Input Error: Type INT64 with value 12345678912 can't be cast because the value is out of range for the destination type INT32"
+    "expectedError" : "Invalid Input Error: Type INT64 with value 12345678912 can't be cast because the value is out of range for the destination type INT32"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_",
     "expectedError" : "DuckDB doesn't support YEAR and YEAR-MONTH"
@@ -314,16 +314,16 @@
     "expectedError" : "\nexpected: 16\nactual:   17"
   }, {
     "test" : "meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Out of Range Error: cannot take square root of a negative number\"\nwhere the expected message was:\"Unable to compute sqrt of -1.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::toDecimal::testIntToDecimal_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 8D\nactual:   8.0D"
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Invalid Input Error: ACOS is undefined outside [-1,1]\"\nwhere the expected message was:\"Unable to compute acos of 2.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Invalid Input Error: ASIN is undefined outside [-1,1]\"\nwhere the expected message was:\"Unable to compute asin of 2.0\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -395,7 +395,7 @@
     "expectedError" : "\nexpected: 123.12300D\nactual:   123.123D"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseDecimal_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Conversion Error: Could not convert string \"3.14159d\" to DECIMAL(18,3)\n\nLINE 1: select cast('3.14159d' as decimal)\n               ^"
+    "expectedError" : "Conversion Error: Could not convert string \"3.14159d\" to DECIMAL(18,3)\n\nLINE 1: select cast('3.14159d' as decimal)\n               ^"
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.000D\nactual:   0.0D"

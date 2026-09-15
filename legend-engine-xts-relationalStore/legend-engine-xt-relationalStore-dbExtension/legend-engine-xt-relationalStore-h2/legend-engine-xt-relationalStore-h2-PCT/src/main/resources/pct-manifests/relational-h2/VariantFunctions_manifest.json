@@ -2,31 +2,31 @@
   "adapter" : "meta::relational::tests::pct::h2::testAdapterForRelationalWithH2Execution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfFloat_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfInteger_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfNull_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfObject_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonArrayOfString_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonFloat_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonInteger_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonObject_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '{\"Hello\":null}'\nactual:   '{}'\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonString_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLNonTransientException: Exception calling user-defined function: \"legend_h2_extension_json_parse("
+    "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_",
     "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
@@ -86,7 +86,7 @@
     "expectedError" : "Failed to infer Postgres type while processing Cast expression to target type 'Array'"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToMapFromNonObjectVariant_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Map<String, Variant> is not managed yet!\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Exception calling user-defined function: \"legend_h2_extension_json_parse('\"\"not an object\"\"'): Unable to parse json as a Map. Content: '\"\"not an object\"\"'. Error: 'Cannot construct instance of `java.util.HashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('not an object')\\000a at [Source: (String)\"\"\"\"not an object\"\"\"\"; line: 1, column: 1]'\"; SQL statement:\nselect legend_h2_extension_json_parse('\"not an object\"') [90105-214]\"\nwhere the expected message was:\"Map<String, Variant> is not managed yet!\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToNull_Function_1__Boolean_1_",
     "expectedError" : "Data conversion error converting \"null\""
