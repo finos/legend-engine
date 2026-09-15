@@ -671,6 +671,11 @@ meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__Exe
 meta::pure::mapping::from_TabularDataSet_1__Mapping_1__PackageableRuntime_1__TabularDataSet_1_
 meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_
 meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_
+meta::pure::mapping::getEnumerationMappingValueByName_Mapping_1__Enumeration_1__String_1__Any_1__Enum_$0_1$_
+meta::pure::mapping::getSourceEnumValues_Mapping_1__Enumeration_1__Enum_MANY_
+meta::pure::mapping::getSourceEnumValuesByName_Mapping_1__Enumeration_1__String_1__Enum_MANY_
+meta::pure::mapping::mapToEnumValue_Enum_1__Enumeration_1__Mapping_1__Enum_1_
+meta::pure::mapping::mapToEnumValueOptional_Enum_$0_1$__Enumeration_1__Mapping_1__Enum_$0_1$_
 meta::pure::mapping::with_T_m__Mapping_1__PackageableRuntime_1__T_m_
 meta::pure::mapping::with_T_m__Mapping_1__Runtime_1__T_m_
 meta::pure::mapping::with_T_m__PackageableRuntime_1__T_m_

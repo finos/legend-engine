@@ -1054,7 +1054,12 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_,
-    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_
+    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::mapping::getSourceEnumValues_Mapping_1__Enumeration_1__Enum_MANY_,
+    meta::pure::mapping::getSourceEnumValuesByName_Mapping_1__Enumeration_1__String_1__Enum_MANY_,
+    meta::pure::mapping::getEnumerationMappingValueByName_Mapping_1__Enumeration_1__String_1__Any_1__Enum_$0_1$_,
+    meta::pure::mapping::mapToEnumValue_Enum_1__Enumeration_1__Mapping_1__Enum_1_,
+    meta::pure::mapping::mapToEnumValueOptional_Enum_$0_1$__Enumeration_1__Mapping_1__Enum_$0_1$_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 
