@@ -598,22 +598,6 @@
       "expectedError": "\nexpected: 4\nactual:   5"
     },
     {
-      "test": "meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::joinStrings::testJoinStringsSingleString_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::joinStrings::testJoinStringsUsingGenericArrow_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
-    },
-    {
-      "test": "meta::pure::functions::string::tests::joinStrings::testJoinStrings_Function_1__Boolean_1_",
-      "expectedError": "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
-    },
-    {
       "test": "meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_",
       "expectedError": "[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet"
     },
