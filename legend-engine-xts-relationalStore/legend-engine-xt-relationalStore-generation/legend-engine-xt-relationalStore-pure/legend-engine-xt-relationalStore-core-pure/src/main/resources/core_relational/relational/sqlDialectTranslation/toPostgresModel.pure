@@ -523,7 +523,11 @@ function <<access.private>> meta::relational::functions::toPostgresModel::compar
 }
 
 // A quantifier is carried as an anyOf/allOf wrapper around the sub-select rather than being fused into the
-// operator name, so the comparison is recognised by the shape of its right operand.
+// operator name, so the comparison is recognised by the shape of its right operand. A scalar comparison needs
+// no equivalent check here: its right operand is the sub-select directly, with no wrapper of any kind, so it
+// already falls through to the default DynaFunction handling below - convertElementToExpression turns a nested
+// SelectSQLQuery into a SubqueryExpression on its own (see convertSelectSQLQuery's isRootSelect branch), the
+// same way it already does for `in`.
 function <<access.private>> meta::relational::functions::toPostgresModel::isQuantifiedComparison(d:DynaFunction[1]):Boolean[1]
 {
   $d.name->in(['equal', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'])
