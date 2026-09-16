@@ -480,7 +480,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('percentile',                {p:meta::external::query::sql::metamodel::Expression[*]| percentileConverter($p)}),
     pair('cosh',                      functionCall('cosh')),
     pair('jaroWinklerSimilarity',     functionCall('jarowinkler_similarity')),
-    pair('convertTimeZone',           functionCall('convert_timezone')),
+    pair('convertTimeZone',           {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('convert_timezone', [$p->at(0), $p->at(1), $p->at(2)->cast(@StringLiteral)->convertDateTimeFormat()])}),
     pair('encodeBase64',              functionCall('encode_base64')),
     pair('decodeBase64',              functionCall('decode_base64')),
     pair('generateGuid',              functionCall('uuid')),
@@ -745,6 +745,14 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   ]->filter(p | $p.first == $unit.value).second->toOne('Postgres conversion for DurationUnit not found: ' + $unit.value);
 
   ^StringLiteral(value = $convertedUnit);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertDateTimeFormat(fmt:StringLiteral[1]):StringLiteral[1]
+{
+  // convert_timezone names its format in the Oracle style model the Postgres model uses, so a query's Pure format is
+  // translated here, the same way every other database's convertTimeZone translates it.
+  assert($fmt.value->validateDateTimeFormat(), | 'Found an invalid date format: ' + $fmt.value);
+  ^StringLiteral(value = $fmt.value->meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat());
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertDateFormat(fmt:StringLiteral[1]):StringLiteral[1]

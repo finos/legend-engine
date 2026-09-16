@@ -15,6 +15,7 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::sqlstring::*;
 import meta::pure::executionPlan::profiles::*;
+import meta::relational::tests::mapping::sqlFunction::convertTimeZone::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::store::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
@@ -410,12 +411,40 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
     //assertEquals('select cast("root".string1 as float) as "string2Date" from testDataTable as "root" where cast("root".string1 as float) = 123.456',$result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testConvertTimeZoneWithNewSyntaxInH2():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testConvertTimeZoneInH2():Boolean[1]
 {
-    assertError(|toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd?[ HH:mm:ss.S3]')], ['tzQuery']),
-                                                testMapping,
-                                                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions()),
-                'A sub-second width or an optional section cannot be written by H2\'s FORMATDATETIME: yyyy-MM-dd?[ HH:mm:ss.S3]');
+    // H2 is the one database whose SQL the dialect translation writes. It names a format in the Oracle style model
+    // the Postgres model uses, and writes the date with FORMATDATETIME, whose patterns are Java's.
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss', 'yyyy-MM-dd HH:mm:ss');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd"T"HH:mm:ss', 'yyyy-MM-dd\'\'T\'\'HH:mm:ss');
+
+    // a fraction is written to the width the format asks for, where a run of S used to be lowercased to a run of s
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.SSS', 'yyyy-MM-dd HH:mm:ss.SSS');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.SSSS', 'yyyy-MM-dd HH:mm:ss.SSSS');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.SSSSSSSSS', 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS');
+
+    // a sub-second width and an optional section are resolved before the dialect sees them
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.S6', 'yyyy-MM-dd HH:mm:ss.SSSSSS');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.S<1', 'yyyy-MM-dd HH:mm:ss.S');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd HH:mm:ss.S*', 'yyyy-MM-dd HH:mm:ss.SSSSSSSSS');
+    assertH2ConvertTimeZoneWrites('yyyy-MM-dd?[ HH:mm:ss.S3]', 'yyyy-MM-dd HH:mm:ss.SSS');
+
+    assertError(|h2ConvertTimeZoneSql('yyyy-MM-dd HH:mm:ss.S10'), 'The sub-second field S10 in the date format \'yyyy-MM-dd HH:mm:ss.S10\' needs more than the 9 digits SQL can write');
+    assertError(|h2ConvertTimeZoneSql('yyyy-MM-dd HH:mm:ss.SS'), 'Found an invalid date format: yyyy-MM-dd HH:mm:ss.SS');
+}
+
+function <<access.private>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::assertH2ConvertTimeZoneWrites(format:String[1], pattern:String[1]):Boolean[1]
+{
+    let sql = h2ConvertTimeZoneSql($format);
+    let expected = ', \'' + $pattern + '\')';
+    assert($sql->contains($expected), | 'expected formatdatetime to be given ' + $expected + ', got: ' + $sql);
+}
+
+function <<access.private>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::h2ConvertTimeZoneSql(format:String[1]):String[1]
+{
+    toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST', $format)], ['tzQuery']),
+                testMapping,
+                meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testDefaultJavaToSQLTimeFormat():Boolean[1]
