@@ -45,7 +45,17 @@ function meta::external::store::relational::sqlDialectTranslation::functionRegis
       sqlFunctionTest(
         simpleFunctionCall('convert_timezone', [literal(%2024-01-01T14:00:00), literal('America/Los_Angeles'), literal('YYYY-MM-DD HH24:MI:SS')]),
          '2024-01-01 06:00:00'
-      )                
+      ),
+      // A fraction of a second, which every dialect here spells its own way. MS and US are the two
+      // widths all of them can write, so they are the ones a test can expect the same answer from.
+      sqlFunctionTest(
+        simpleFunctionCall('convert_timezone', [literal(%2024-01-01T14:00:00.054), literal('America/New_York'), literal('YYYY-MM-DD HH24:MI:SS.MS')]),
+         '2024-01-01 09:00:00.054'
+      ),
+      sqlFunctionTest(
+        simpleFunctionCall('convert_timezone', [literal(%2024-01-01T14:00:00.054), literal('America/New_York'), literal('YYYY-MM-DD HH24:MI:SS.US')]),
+         '2024-01-01 09:00:00.054000'
+      )
     ]
   )
 }
