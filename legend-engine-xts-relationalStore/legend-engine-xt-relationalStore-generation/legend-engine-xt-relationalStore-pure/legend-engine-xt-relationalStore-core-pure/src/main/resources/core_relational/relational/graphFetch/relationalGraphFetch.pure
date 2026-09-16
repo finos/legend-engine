@@ -479,6 +479,15 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let parentIdx        = $orderedPaths->indexOf($parentPath);
    let currentIdx       = $orderedPaths->indexOf($currentPath);
    let currentIdxString = $currentIdx->toString();
+   // A property mapped through a Binding onto a semi-structured column has no set implementation
+   // registered in the mapping -- one is synthesised on demand during the SQL walk, and graph fetch
+   // routing has no walk to synthesise it from. Naming that beats the cast error the bare toOne()
+   // used to raise. Deliberately suggests nothing: a projection is a different query returning a
+   // different shape, not a substitute for a graph fetch.
+   assert($currentTree.sets->isNotEmpty(),
+          | 'Graph fetch does not support property \'' + $currentTree.property.name->toOne() +
+            '\': it is mapped through a Binding onto a semi-structured column, and set ' +
+            'implementations derived from a Binding are not resolvable during graph fetch routing.');
    let setImpls         = $currentTree.sets->toOne()->cast(@RelationalInstanceSetImplementation);
 
    let simplePrimitiveProperties = $currentTree.subTrees->cast(@PropertyGraphFetchTree).property

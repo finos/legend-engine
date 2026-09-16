@@ -2160,7 +2160,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionSimp
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(legalName, String, VARCHAR(8192), ""), (Firm Instance Count, Integer, INT, "")]\n'+
+      '  type = TDS[(legalName, String, VARCHAR(200), ""), (Firm Instance Count, Integer, INT, "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("Firm Instance Count", "")]\n'+
       '  sql = select "root".name as "legalName", count("root".name) over (partition by "root".name) as "Firm Instance Count" from Firm as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
@@ -2205,7 +2205,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionJoin
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(legalName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
+      '  type = TDS[(legalName, String, VARCHAR(200), ""), (lastName, String, VARCHAR(8192), "")]\n'+
       '  resultColumns = [("legalName", VARCHAR(200)), ("lastName", "")]\n'+
       '  sql = select "root".name as "legalName", substring("person_0".fullname, locate(\' \', "person_0".fullname) + 1, char_length("person_0".fullname)) as "lastName" from Firm as "root" left outer join Person as "person_0" on ("person_0".firm = "root".name)\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+
