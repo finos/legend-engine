@@ -944,6 +944,34 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: PASS
 
+  - id: string_agg__txt_txt__group_by_filtered
+    sql: "SELECT dept_id, STRING_AGG(name, ',' ORDER BY id DESC) FILTER (WHERE salary > 50000) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    function: string_agg
+    signature: "string_agg(text, text) → text"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: sum__big__group_by_filtered
+    sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    function: sum
+    signature: "sum(bigint) → numeric"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: sum__big__group_by_filtered_alongside_unfiltered
+    sql: "SELECT dept_id, SUM(salary) FILTER (WHERE active) AS filtered, SUM(salary) AS total FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    function: sum
+    signature: "sum(bigint) → numeric"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: count__any__group_by_filtered
+    sql: "SELECT dept_id, COUNT(*) FILTER (WHERE active) AS result FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    function: count
+    signature: "count(*) → bigint"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
   - id: sum__big__from_table
     sql: "SELECT SUM(numeric_val) AS result FROM numbers WHERE numeric_val IS NOT NULL"
     function: sum

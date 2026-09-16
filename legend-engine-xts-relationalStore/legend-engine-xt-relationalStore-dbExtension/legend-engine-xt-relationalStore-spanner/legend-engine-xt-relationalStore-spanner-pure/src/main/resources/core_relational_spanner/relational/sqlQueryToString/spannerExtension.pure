@@ -43,7 +43,7 @@ function meta::relational::functions::sqlQueryToString::spanner::createDbExtensi
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       joinStringsProcessor = processJoinStringsOperationForSpanner_JoinStrings_1__SqlGenerationContext_1__String_1_,
-      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
+      aggregateFunctionCallProcessor = processAggregateFunctionCallForSpanner_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForSpanner_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForSpanner_String_1__DbConfig_1__String_1_,
@@ -378,4 +378,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 {
    assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Spanner: regexp_replace replaces every occurrence');
    'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsSpanner($params->at(4)) + ', ' + $params->at(2) + ')';
+}
+
+// Spanner takes the in-paren ordering like Postgres, but has no FILTER clause, so the predicate becomes a CASE.
+function <<access.private>> meta::relational::functions::sqlQueryToString::spanner::processAggregateFunctionCallForSpanner(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAsCase($a, $sgc, AggregateOrderingStyle.IN_PAREN);
 }

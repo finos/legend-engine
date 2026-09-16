@@ -45,7 +45,7 @@ function meta::relational::functions::sqlQueryToString::postgres::createDbExtens
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForPostgres_JoinStrings_1__SqlGenerationContext_1__String_1_,
-      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
+      aggregateFunctionCallProcessor = processAggregateFunctionCallForPostgres_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForPostgres_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForPostgres_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
@@ -745,4 +745,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       $name,
       $name
    ]);
+}
+
+// Postgres has a native FILTER clause, and rejects the WITHIN GROUP suffix on plain aggregates such as string_agg.
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processAggregateFunctionCallForPostgres(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAnsi($a, $sgc, AggregateOrderingStyle.IN_PAREN);
 }

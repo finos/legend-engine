@@ -1067,24 +1067,38 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
 
-  if ($adjusted.sortItems->isEmpty(),
+  if ($adjusted.sortItems->isEmpty() && $adjusted.filter->isEmpty(),
     | ^TDSBuilder().aggregation($name, $mapLambda, $aggLambda, $context.relation->isTrue()),
     |
-      unsupported($context.relation->isTrue(), | 'ordered aggregation is only supported on relations');
+      unsupported($context.relation->isTrue(), | 'ordered or filtered aggregation is only supported on relations');
       unsupported($adjusted.sortItems.sortKey->forAll(k | $k->instanceOf(QualifiedNameReference)), | 'ordered aggregation only supports column sort keys');
-      ^OrderedAggregation(name = $name, map = $mapLambda, agg = $aggLambda,
-                          sortInfos = $adjusted.sortItems->map(si | $si->createSortItemFunction($context)));
+      // The predicate reads the same row the map lambda does, so it is built the same way.
+      let filterLambda = $adjusted.filter->map(f |
+        let filterExpression = processMapFunctionArgument($f, $context)->evaluateAndDeactivate();
+        // A nullable boolean column standing alone as the predicate -- FILTER (WHERE active) -- comes back as
+        // Boolean[0..1], which relation filter's Function<{T[1]->Boolean[1]}> will not match. Comparing it to
+        // true is the three-valued test SQL already applies here, and it lands back on Boolean[1].
+        let predicate = if ($filterExpression->isZeroOne(),
+          | sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$filterExpression, iv(true)]),
+          | $filterExpression);
+        lambda(functionType(rowExpressionContext($context).defaultVar, ^GenericType(rawType = Boolean), PureOne), $predicate);
+      );
+      ^GroupScopedAggregation(name = $name, map = $mapLambda, agg = $aggLambda,
+                              sortInfos = $adjusted.sortItems->map(si | $si->createSortItemFunction($context)),
+                              filter = $filterLambda);
   );
 }
 
-// An aggregate carrying an ORDER BY cannot be an AggColSpec -- the sort columns are gone by the time the
-// reduce lambda sees only mapped values. It becomes a group-scoped reduce instead; see TDSBuilder.groupBy.
-Class meta::external::query::sql::transformation::queryToPure::OrderedAggregation
+// An aggregate carrying an ORDER BY or a FILTER cannot be an AggColSpec -- by the time the reduce lambda sees
+// only the mapped values, the sort columns and the predicate's columns are both gone. It becomes a group-scoped
+// reduce instead, which is handed the whole group; see TDSBuilder.groupBy.
+Class meta::external::query::sql::transformation::queryToPure::GroupScopedAggregation
 {
   name:String[1];
   map:LambdaFunction<Any>[1];
   agg:LambdaFunction<Any>[1];
   sortInfos:ValueSpecification[*];
+  filter:LambdaFunction<Any>[0..1];
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::groupReduceColSpec(
@@ -1092,16 +1106,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   map:meta::pure::metamodel::function::Function<Any>[1],
   agg:meta::pure::metamodel::function::Function<Any>[1],
   sortInfos:ValueSpecification[*],
+  filter:meta::pure::metamodel::function::Function<Any>[0..1],
   relationType:GenericType[1]):meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1]
 {
   let returnType = $agg->functionReturnType();
   let returnMultiplicity = $agg->functionReturnMultiplicity();
 
+  // FILTER (WHERE p) is a filter of the group, which is what the relational layer turns back into the clause.
+  let group = if ($filter->isEmpty(),
+    | var('g', PureOne, $relationType),
+    | sfe(filter_Relation_1__Function_1__Relation_1_, $relationType, [], PureOne,
+          [var('g', PureOne, $relationType), iv($filter->toOne())]));
+
   let call = if ($sortInfos->isEmpty(),
     | sfe(reduce_Relation_1__Function_1__Function_1__U_m_, $returnType, [], $returnMultiplicity,
-          [var('g', PureOne, $relationType), iv($map), iv($agg)]),
+          [$group, iv($map), iv($agg)]),
     | sfe(reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_, $returnType, [], $returnMultiplicity,
-          [var('g', PureOne, $relationType), iv($map), iv($agg), iv($sortInfos)]));
+          [$group, iv($map), iv($agg), iv($sortInfos)]));
 
   ^meta::pure::metamodel::relation::FuncColSpec<Any, Any>(
     name = $name,
@@ -5680,8 +5701,8 @@ aggregation(
     let relationType = $func->evaluateAndDeactivate().genericType;
 
     let funcSpecs = $aggregates->map(a | $a->match([
-      o:OrderedAggregation[1] | groupReduceColSpec($o.name, $o.map, $o.agg, $o.sortInfos, $relationType),
-      s:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1] | groupReduceColSpec($s.name, $s.map, $s.reduce, [], $relationType)
+      o:GroupScopedAggregation[1] | groupReduceColSpec($o.name, $o.map, $o.agg, $o.sortInfos, $o.filter, $relationType),
+      s:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1] | groupReduceColSpec($s.name, $s.map, $s.reduce, [], [], $relationType)
     ]));
 
     let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
@@ -5705,7 +5726,7 @@ aggregation(
     aggregates: Any[*],
     relation:Boolean[1]){
 
-    if ($aggregates->exists(a | $a->instanceOf(OrderedAggregation)),
+    if ($aggregates->exists(a | $a->instanceOf(GroupScopedAggregation)),
       | $this.groupByReduce($func, $groupByColumns, $aggregates),
       | $this.groupByAggColSpec($func, $groupByColumns, $aggregates, $relation));
 

@@ -1126,6 +1126,7 @@ function meta::relational::functions::pureToSqlQuery::gatherAllOperations(op : R
    $op->match([
                   b:BinaryOperation[1]| gatherAllOperations($b.left, $processDynaFunctions)->concatenate(gatherAllOperations($b.right, $processDynaFunctions)),
                   u:UnaryOperation[1] | gatherAllOperations($u.nested, $processDynaFunctions),
+                  ac:AggregateFunctionCall[1] | if($processDynaFunctions,|$ac.func->gatherAllOperations($processDynaFunctions),|$ac),
                   d:DynaFunction[1]   | if($processDynaFunctions,|$d.parameters->map(p|$p->gatherAllOperations($processDynaFunctions)),|$d),
                   j:RelationalOperationElement[1]   | $j,
                   a:Any[1]            | []
@@ -4098,6 +4099,7 @@ function meta::relational::functions::pureToSqlQuery::getWindowColsFromOperation
   if($operation->isNotEmpty() && $operation->toOne()->instanceOf(DynaFunction),
     | $operation->cast(@DynaFunction).parameters->map(o|$o->match([
                                                                     d:DynaFunction[1] | $d->getWindowColsFromOperation(),
+                                                                    ac:AggregateFunctionCall[1] | $ac.func->getWindowColsFromOperation(),
                                                                     w:WindowColumn[1] | $w,
                                                                     a:Any[*] | []
                                                                   ])
@@ -4878,18 +4880,53 @@ function meta::relational::functions::pureToSqlQuery::processRelationReduce(f:Fu
    // filters window columns out of what the aggregate sees -- match it so the ordering cannot drift.
    let sortAliases = $state.aliases->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn));
 
-   // column/direction/nullOrder triples because DynaFunction.parameters is a RelationalOperationElement
-   // list and SortByInfo is not one. nullOrder is 'FIRST', 'LAST' or 'NONE'.
-   let result = if ($sorts->isEmpty(),
-                    | $agg,
-                    | let sortParams = $sorts->map(s | findAliasOrFail($s.column.name, $sortAliases).relationalElement
-                                                         ->concatenate(^Literal(value = if($s.direction == meta::pure::functions::relation::SortType.ASC, |'ASC', |'DESC')))
-                                                         ->concatenate(^Literal(value = if($s.nullOrder->isEmpty(), |'NONE', |$s.nullOrder->toOne().name->toOne()))));
-                      newDynaFunction('withinGroup', $agg->concatenate($sortParams));
-                );
+   let sortBy = $sorts->map(s | ^SortByInfo(sortByElement = findAliasOrFail($s.column.name, $sortAliases).relationalElement,
+                                            sortDirection = if($s.direction == meta::pure::functions::relation::SortType.ASC, | meta::relational::metamodel::SortDirection.ASC, | meta::relational::metamodel::SortDirection.DESC),
+                                            nullOrder = $s.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST))));
+
+   let filter = $f.parametersValues->at(0)->processGroupFilter($currentPropertyMapping, $operation, $sortAliases, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+
+   let result = if($sortBy->isEmpty() && $filter->isEmpty(),
+                   | $agg,
+                   | ^AggregateFunctionCall(func = $agg, sortBy = $sortBy, filter = $filter));
 
    let select = $operation.select;
    ^$operation(select = ^$select(columns = $result));
+}
+
+// A group-scoped aggregate takes the group as its first argument, so a filter applied to that argument narrows
+// what the aggregate sees without narrowing the query -- which relationally is FILTER (WHERE ...). Peels the
+// filter calls off the relation argument and returns their combined predicate, or nothing if there are none.
+//
+// Only a filter chain is recognised. Any other relation operation on the argument is left exactly as it was
+// before, because the relation argument is also how a top-level aggregate names its source and this is not the
+// place to reinterpret that.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processGroupFilter(rel:ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], aggAliases:RelationalOperationElement[*], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[0..1]
+{
+   let predicates = $rel->groupFilterPredicates();
+   if ($predicates->isEmpty(),
+       | [],
+       | // As processRelationEval: at the top level there is no enclosing map to have set the aliases up.
+         let aliases = if($aggAliases->isEmpty(), | $operation.select.columns->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn)), | $aggAliases);
+         let select = $operation.select;
+         let cursor = ^$operation(select = ^$select(columns = $aliases, filteringOperation = [], extraFilteringOperation = []));
+         let filterState = ^$state(aliases = $aliases, inAgg = true, inFilter = true);
+         let conditions = $predicates->map(p |
+                              processValueSpecification($p, $currentPropertyMapping, $cursor, $vars, $filterState->withRelationVarScope($p, $cursor), $joinType, $nodeId, $aggFromMap, $context, $extensions)
+                                 ->toOne()->cast(@SelectWithCursor).select.filteringOperation);
+         $conditions->andFilters($extensions);
+   );
+}
+
+// Outermost filter last, so chained filters read in source order once combined.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::groupFilterPredicates(rel:ValueSpecification[1]):ValueSpecification[*]
+{
+   $rel->byPassRouterInfo()->match([
+      fe:FunctionExpression[1] | if ($fe.func == meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_,
+                                     | $fe.parametersValues->at(0)->groupFilterPredicates()->concatenate($fe.parametersValues->at(1)),
+                                     | []),
+      v:ValueSpecification[1] | []
+   ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::processReduceWindow(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
@@ -5494,6 +5531,7 @@ function meta::relational::functions::pureToSqlQuery::containsElementRecursive(e
    $element->match(
       [
          f:BinaryOperation[1] |  containsElementRecursive($f.left, $elementToFind) || containsElementRecursive($f.right, $elementToFind);,
+         ac:AggregateFunctionCall[1] | $ac.func->containsElementRecursive($elementToFind),
          d:DynaFunction[1] | $d.parameters->containsElementRecursive($elementToFind),
          a:Any[1] | false;
       ]);
@@ -8430,6 +8468,9 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          d:DynaFunction[1]| $d.name +'_'+$d.parameters->buildUniqueName($alias, $selectColumns, $extensions),
          f:FreeMarkerOperationHolder[1]| $f.name +'_'+$f.parameters->buildUniqueName($alias, $selectColumns, $extensions),
          wc:WindowColumn[1]| $wc.columnName+'_'+ $wc.func->buildUniqueName($alias,$selectColumns, $extensions),
+         ac:AggregateFunctionCall[1]| 'agg('+$ac.func->buildUniqueName($alias, $selectColumns, $extensions)
+                                      +if($ac.sortBy->isEmpty(),|'',|'_order_'+$ac.sortBy.sortByElement->buildUniqueName($alias, $selectColumns, $extensions))
+                                      +if($ac.filter->isEmpty(),|'',|'_filter_'+$ac.filter->buildUniqueName($alias, $selectColumns, $extensions))+')',
          j:JoinStrings[1]|'join_'+$j.strings->buildUniqueName($alias, $selectColumns, $extensions)+$j.prefix->buildUniqueName($alias, $selectColumns, $extensions)+$j.separator->buildUniqueName($alias, $selectColumns, $extensions)+$j.suffix->buildUniqueName($alias, $selectColumns, $extensions),
          rj:RelationalOperationElementWithJoin[1]| $rj.joinTreeNode->toOne().joinName+ $rj.relationalOperationElement->buildUniqueName($alias, $selectColumns, $extensions),
          ssp:SemiStructuredPropertyAccess[1]|'ssp('+$ssp.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssp.property->buildUniqueName($alias, $selectColumns, $extensions)+']'+if($ssp.index->isEmpty(),|'',|'['+$ssp.index->toOne()->buildUniqueName($alias, $selectColumns, $extensions)+']')+')',
@@ -8888,8 +8929,12 @@ function meta::relational::functions::pureToSqlQuery::processRowCount(expression
 {
    // In a group lambda the argument is the group, already scoped by the enclosing GROUP BY.
    if ($state.inAgg,
-       | let select = $operation.select;
-         ^$operation(select = ^$select(columns = newDynaFunction('count', ^Literal(value=1))));,
+       | let aggAliases = $state.aliases->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn));
+         let filter = $expression.parametersValues->at(0)->processGroupFilter($currentPropertyMapping, $operation, $aggAliases, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
+         let countFn = newDynaFunction('count', ^Literal(value=1));
+         let count = if($filter->isEmpty(), | $countFn, | ^AggregateFunctionCall(func = $countFn, filter = $filter));
+         let select = $operation.select;
+         ^$operation(select = ^$select(columns = $count));,
        | processRowCountOverSubSelect($expression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
    );
 }
@@ -9797,6 +9842,9 @@ function meta::relational::functions::pureToSqlQuery::reprocessAliases(element:R
                         op:BinaryOperation[1]|^$op(left=$op.left->reprocessAliases($map, $oldColumnToNewColumn), right=$op.right->reprocessAliases($map, $oldColumnToNewColumn)),
                         op:VariableArityOperation[1]|^$op(args=$op.args->map(arg | $arg->reprocessAliases($map, $oldColumnToNewColumn))),
                         cn:ColumnName[1] | $cn,
+                        ac:AggregateFunctionCall[1]|^$ac(func = $ac.func->reprocessAliases($map, $oldColumnToNewColumn),
+                                                         sortBy = $ac.sortBy->map(s|^$s(sortByElement = $s.sortByElement->reprocessAliases($map, $oldColumnToNewColumn)))->cast(@SortByInfo),
+                                                         filter = $ac.filter->map(f|$f->reprocessAliases($map, $oldColumnToNewColumn))),
                         wc:WindowColumn[1]|let window=$wc.window;
                                             let wf = $wc.func ;
                                             ^$wc(window=^$window(partition=$window.partition->map(p|$p->reprocessAliases($map, $oldColumnToNewColumn))->cast(@RelationalOperationElement), sortBy = $window.sortBy->map(p|^$p(sortByElement = $p.sortByElement->reprocessAliases($map, $oldColumnToNewColumn)))), func=$wf->reprocessAliases($map, $oldColumnToNewColumn)->cast(@DynaFunction));,
@@ -9827,6 +9875,9 @@ function meta::relational::functions::pureToSqlQuery::reprocessTableAliasColumns
                         s:SelectSQLQuery[1]|^$s(filteringOperation = $s.filteringOperation->map(f|$f->reprocessTableAliasColumns($map)));,
                         t:TableAlias[1]| $t,
                         a:Alias[1]|^$a(relationalElement = $a.relationalElement->reprocessTableAliasColumns($map));,
+                        ac:AggregateFunctionCall[1]|^$ac(func = $ac.func->reprocessTableAliasColumns($map),
+                                                         sortBy = $ac.sortBy->map(s|^$s(sortByElement = $s.sortByElement->reprocessTableAliasColumns($map)))->cast(@SortByInfo),
+                                                         filter = $ac.filter->map(f|$f->reprocessTableAliasColumns($map))),
                         d:DynaFunction[1]|^DynaFunction(name=$d.name, parameters=$d.parameters->map(p | $p->reprocessTableAliasColumns($map))),
                         op:UnaryOperation[1]|^$op(nested=$op.nested->reprocessTableAliasColumns($map)),
                         op:BinaryOperation[1]|^$op(left=$op.left->reprocessTableAliasColumns($map), right=$op.right->reprocessTableAliasColumns($map)),
@@ -9891,6 +9942,7 @@ function meta::relational::functions::pureToSqlQuery::extractColumnAliases(eleme
                               l:Literal[1]|[],
                               l:LiteralList[1]|[],
                               j:JoinStrings[1]|$j.strings->extractColumnAliases(),
+                              ac:AggregateFunctionCall[1]|$ac.func->extractColumnAliases()->concatenate($ac.sortBy.sortByElement->extractColumnAliases())->concatenate($ac.filter->extractColumnAliases()),
                               d:DynaFunction[1]|$d.parameters->extractColumnAliases(),
                               a:Alias[1]|$a,
                               v:VariableArityOperation[1]|$v.args->extractColumnAliases()
@@ -9907,6 +9959,7 @@ function meta::relational::functions::pureToSqlQuery::extractStore(element:Relat
                               r:RelationalOperationElementWithJoin[1]|$r.relationalOperationElement->extractStore()->concatenate($r.joinTreeNode->flatten().database),
                               l:Literal[1]|[],
                               l:LiteralList[1]|[],
+                              ac:AggregateFunctionCall[1]|$ac.func->extractStore()->concatenate($ac.sortBy.sortByElement->map(e|$e->extractStore()))->concatenate($ac.filter->extractStore()),
                               d:DynaFunction[1]|$d.parameters->map(p|$p->extractStore()),
                               a:Alias[1]|[]
                           ]
@@ -9941,6 +9994,7 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                               n:ColumnName[1]|[],
                               r:RelationalOperationElementWithJoin[1]|$r.relationalOperationElement->extractTableAliasColumns()->concatenate($r.joinTreeNode->extractTableAliasColumns()),
                               wc: WindowColumn[1]| $wc.window->extractTableAliasColumns()->concatenate($wc.func->extractTableAliasColumns()),
+                              ac: AggregateFunctionCall[1]| $ac.func->extractTableAliasColumns()->concatenate($ac.sortBy.sortByElement->extractTableAliasColumns())->concatenate($ac.filter->extractTableAliasColumns()),
                               w:meta::relational::metamodel::Window[1]| $w.partition->extractTableAliasColumns()->concatenate($w.sortBy.sortByElement->extractTableAliasColumns()),
                               f:meta::relational::functions::pureToSqlQuery::metamodel::FreeMarkerOperationHolder[1]| $f.parameters->map(p|$p->extractTableAliasColumns());,
                               s:SemiStructuredObjectNavigation[1]|if($s.operand->type() != RelationalOperationElement, | $s.operand->extractTableAliasColumns(), | []),

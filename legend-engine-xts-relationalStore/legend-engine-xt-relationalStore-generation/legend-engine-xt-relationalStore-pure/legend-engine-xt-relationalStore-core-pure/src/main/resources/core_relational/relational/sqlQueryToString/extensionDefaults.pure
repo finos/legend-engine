@@ -805,34 +805,80 @@ function meta::relational::functions::sqlQueryToString::default::transformLikePa
       ->concatenate('');
 }
 
-// column/direction/nullOrder triples follow the aggregate; see processRelationReduce.
-function meta::relational::functions::sqlQueryToString::default::withinGroupOrderBy(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+// Two processors a dialect can name for an AggregateFunctionCall, differing only in how the FILTER clause is
+// rendered, each taking the ordering placement because that is an independent axis. Between them they cover
+// every dialect; only MemSQL's SEPARATOR placement needs its own.
+
+// The ANSI form: agg(x, ',') WITHIN GROUP (ORDER BY y) FILTER (WHERE p). For dialects that have the clause.
+function meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAnsi(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
 {
-   let rest = $f.parameters->tail();
-   assert($rest->size() > 0 && $rest->size()->mod(3) == 0, | 'withinGroup expects an aggregate followed by column/direction/nullOrder triples, got ' + $rest->size()->toString() + ' trailing parameters');
-   range(0, $rest->size(), 3)->map(i |
-      let directionStr = $rest->at($i + 1)->cast(@Literal).value->cast(@String);
-      let nullOrderStr = $rest->at($i + 2)->cast(@Literal).value->cast(@String);
-      let direction = if($directionStr->toUpper() == 'DESC', | meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::SortDirection.ASC);
-      let explicitNullOrder = [pair('FIRST', meta::relational::metamodel::NullOrder.FIRST), pair('LAST', meta::relational::metamodel::NullOrder.LAST)]->newMap()->get($nullOrderStr);
-      $sgc.dbConfig.processSortItem($rest->at($i)->processOperation($sgc), $direction, $explicitNullOrder);
-   )->joinStrings(', ');
+   processAggregateFunctionCallAnsi($a, $sgc, AggregateOrderingStyle.WITHIN_GROUP);
 }
 
-// Dialects wanting the ordering inside the aggregate's parentheses override this and rebuild from the inner
-// DynaFunction's parameters.
-function meta::relational::functions::sqlQueryToString::default::processWithinGroup(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+function meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAnsi(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1], ordering:AggregateOrderingStyle[1]):String[1]
 {
-   $f.parameters->at(0)->processOperation($sgc) + ' within group (order by ' + withinGroupOrderBy($f, $sgc) + ')';
+   let call = $a->renderAggregateCall($sgc, $ordering);
+   if($a.filter->isEmpty(),
+      | $call,
+      | // The predicate is a WHERE clause, so it renders in the context one does.
+        let config = $sgc.config;
+        $call + ' filter (where ' + $a.filter->toOne()->processOperation(^$sgc(config = ^$config(callingFromFilter = true))) + ')';
+   );
 }
 
-// DuckDB and Postgres reject WITHIN GROUP on plain aggregates such as string_agg; they take the ordering as a
-// trailing clause inside the aggregate's own parentheses instead.
-function meta::relational::functions::sqlQueryToString::default::processWithinGroupInline(f:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
+// The predicate folded onto the aggregate's value argument instead -- sum(case when p then col else null end).
+// Correct for sum, count, avg, min, max and the string aggregates, and valid on every dialect, which is why it
+// is the default and no dialect has to opt in for filtered aggregates to work.
+function meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAsCase(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
 {
-   let agg = $f.parameters->at(0)->processOperation($sgc);
-   assert($agg->endsWith(')'), | 'withinGroup expects the aggregate to render as a function call, got: ' + $agg);
-   $agg->substring(0, $agg->length() - 1) + ' order by ' + withinGroupOrderBy($f, $sgc) + ')';
+   processAggregateFunctionCallAsCase($a, $sgc, AggregateOrderingStyle.WITHIN_GROUP);
+}
+
+function meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAsCase(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1], ordering:AggregateOrderingStyle[1]):String[1]
+{
+   $a->aggregateFilterAsCase()->renderAggregateCall($sgc, $ordering);
+}
+
+function meta::relational::functions::sqlQueryToString::default::renderAggregateCall(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1], ordering:AggregateOrderingStyle[1]):String[1]
+{
+   if($a.sortBy->isEmpty(),
+      | $a.func->processOperation($sgc),
+      | if($ordering == AggregateOrderingStyle.IN_PAREN,
+           | $a.func->processOperationUpToLastParen($sgc) + ' order by ' + $a->aggregateOrderBy($sgc) + ')',
+           | $a.func->processOperation($sgc) + ' within group (order by ' + $a->aggregateOrderBy($sgc) + ')'));
+}
+
+// dynaFnToSql renders a complete call and offers no way to inject into its argument list, so putting the
+// ordering inside one means trimming the closing parenthesis back off. The one place that happens.
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::processOperationUpToLastParen(func:RelationalOperationElement[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let rendered = $func->processOperation($sgc);
+   assert($rendered->endsWith(')'), | 'an in-paren aggregate ordering needs the aggregate to render as a function call, got: ' + $rendered);
+   $rendered->substring(0, $rendered->length() - 1);
+}
+
+function meta::relational::functions::sqlQueryToString::default::aggregateOrderBy(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   $a.sortBy->map(s | $sgc.dbConfig.processSortItem($s.sortByElement->processOperation($sgc), $s.sortDirection, $s.nullOrder))->joinStrings(', ');
+}
+
+// Moves the predicate onto the aggregate's first argument as a CASE, clearing the filter. A no-op when there is
+// none, so the CASE processor can call it unconditionally.
+//
+// Built as a tree and rendered afterwards rather than spliced into a rendered string: the case chain is
+// flattened at render time and a stray 'when' inside a parameter derails it. The ordering is a sibling field, so
+// there is no wrapper to dig through and no way to land the CASE on a sort key.
+function meta::relational::functions::sqlQueryToString::default::aggregateFilterAsCase(a:AggregateFunctionCall[1]):AggregateFunctionCall[1]
+{
+   if($a.filter->isEmpty(),
+      | $a,
+      | assert($a.func->instanceOf(DynaFunction), | 'a filtered aggregate needs the aggregate to be a function call');
+        let func = $a.func->cast(@DynaFunction);
+        assert($func.parameters->isNotEmpty(), | 'a filtered aggregate needs the aggregate to take at least one argument, got: ' + $func.name);
+        // processCase needs an else branch; null is what makes the excluded rows invisible to the aggregate.
+        let cased = ^DynaFunction(name = 'case', parameters = [$a.filter->toOne(), $func.parameters->at(0), ^Literal(value = ^SQLNull())]);
+        ^$a(func = ^$func(parameters = $cased->concatenate($func.parameters->tail())), filter = []);
+   );
 }
 
 function meta::relational::functions::sqlQueryToString::default::transformPercentile(args: String[*], literalProcessor: meta::pure::metamodel::function::Function<{Type[1] -> LiteralProcessor[1]}>[1]): String[1]
