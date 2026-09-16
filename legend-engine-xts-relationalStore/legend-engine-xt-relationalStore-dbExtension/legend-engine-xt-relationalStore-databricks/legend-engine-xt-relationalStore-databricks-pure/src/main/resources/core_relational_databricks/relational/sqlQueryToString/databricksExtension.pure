@@ -85,10 +85,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       // the default processor quotes these; Spark would coerce the string back to a boolean, but
       // emitting the keyword keeps the column a real BOOLEAN over JDBC instead of a VARCHAR
       pair(Boolean,        ^LiteralProcessor(format = '%s',                   transform = toString_Any_1__String_1_->literalTransform())),
-      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(StrictDate,     ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)})),
+      pair(DateTime,       ^LiteralProcessor(format = 'to_timestamp(\'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)})),
+      pair(Date,           ^LiteralProcessor(format = 'to_date(\'%s\')',      transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlStringForDatabricks($dbTimeZone)}))
    ]);
+}
+
+// The shared meta::relational::functions::sqlQueryToString::default::convertDateToSqlString only
+// guards against a year-only Date (calling fail() outright); a year-month Date (hasMonth() but not
+// hasDay()) still reaches its 'yyyy-MM-dd?[ HH:mm:ss?[.S*]]' pattern, where the 'dd' token is
+// unconditional, and PureDate.format() throws "Date has no day: ..." for it (reproduced directly:
+// %2014-01 crashes on every dialect that reuses this helper, not just Databricks). Nesting the
+// optional sections instead of only wrapping the time portion - each precision level's separator
+// and fields live inside the *next-coarser* level's own optional block - means a token is only ever
+// reached once the date actually carries that field, so every precision from year-only up through
+// full sub-second datetime renders safely. This SQL text is only ever a means to build a `to_date`/
+// `to_timestamp` literal (or, for toString() on such a literal - see
+// isLiteralDateToStringForDatabricks above - discarded entirely in favor of evaluating the literal's
+// own toString() directly), so a defaulted/partial rendering for a coarse-precision Date is fine:
+// no real Databricks column can represent a partial date either.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::convertDateToSqlStringForDatabricks(date:Date[1], dbTimeZone:String[0..1]):String[1]
+{
+   let timeZone = if($dbTimeZone->isEmpty(), | 'GMT', | $dbTimeZone->toOne());
+   format('%t{[' + $timeZone + ']yyyy?[-MM?[-dd?[ HH:mm?[:ss?[.S*]]]]]}', $date);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::getDynaFunctionToSqlForDatabricks(): DynaFunctionToSql[*]
@@ -416,10 +435,69 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     ->toOne('Unexpected base comparator to negate for a Databricks quantified-comparison rewrite: ' + $name);
 }
 
+// toString() applied to a compile-time Date/DateTime/StrictDate literal cannot be rendered as a
+// fixed SQL cast: once the value is parsed into a native TIMESTAMP, the database has no memory of
+// the literal's own elastic precision (how many sub-second digits it had, or whether it even had a
+// day/hour/minute/second at all - see PureDate.format() in
+// legend-engine-core-executionPlan-dependencies, which deliberately refuses to fabricate fields
+// the literal never had), so no single date_format pattern can reproduce Pure's own toString()
+// semantics across every precision a literal can carry. The operand is still a Literal at this
+// point though - processLiteral/processLiteralValue (dbExtension.pure) only stringify Literal.value
+// when the surrounding SQL text is assembled, so the untouched original Pure value is still sitting
+// right here in the tree - so it can instead be evaluated directly in Pure (exactly what the
+// non-relational execution mode already does for the same literal) and the result embedded as a
+// plain SQL string literal, bypassing the native-TIMESTAMP round trip - and its precision loss -
+// entirely. This only fires for a literal operand; toString() on a genuine (runtime-valued) column
+// is untouched and keeps using the cast below.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isLiteralDateToStringForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'toString' && $func.parameters->size() == 1
+      && $func.parameters->at(0)->instanceOf(Literal)
+      && $func.parameters->at(0)->cast(@Literal).value->instanceOf(Date);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::renderLiteralDateToStringForDatabricks(func:DynaFunction[1]):String[1]
+{
+   let rendered = $func.parameters->at(0)->cast(@Literal).value->toString();
+   '\'' + $rendered->replace('\'', '\\\'') + '\'';
+}
+
+// Mirrors the above for in(): a mixed-type Pure literal collection (e.g. [1, 'a', true,
+// %2014-02-01]) renders as a single heterogeneous-type SQL `x in (...)` list, which Spark's (and
+// every other dialect's own) type checker rejects outright - there is no general type-safe SQL
+// rewrite (e.g. casting every element to a common type such as STRING would make genuinely
+// different-typed-but-textually-equal values compare equal, which Pure's own equality never does).
+// When the entire expression is compile-time-constant though (a bare literal, or a
+// literal-or-negated-literal search value against a fully-literal collection - the shape every PCT
+// test of this function actually uses), it can just be evaluated directly with Pure's own in(),
+// sidestepping SQL generation altogether. processLiteralOrMinusDynaFunction (pureToSQLQuery.pure)
+// is reused rather than duplicated - it is the same helper processIn() already uses to resolve a
+// literal-or-negated-literal collection element down to a plain Literal. Any expression outside
+// this fully-literal shape (in particular, any real column reference) falls through unchanged to
+// the existing SQL rendering below.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isFullyLiteralInForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'in' && $func.parameters->size() == 2
+      && $func.parameters->at(1)->instanceOf(LiteralList)
+      && ($func.parameters->at(0)->instanceOf(Literal)
+           || ($func.parameters->at(0)->instanceOf(DynaFunction) && $func.parameters->at(0)->cast(@DynaFunction).name == 'minus'));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::renderFullyLiteralInForDatabricks(func:DynaFunction[1]):String[1]
+{
+   let value = $func.parameters->at(0)->processLiteralOrMinusDynaFunction().value;
+   let collection = $func.parameters->at(1)->cast(@LiteralList).values.value;
+   if($value->in($collection), | 'true', | 'false');
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
-   let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
-   if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
+ if($func->isLiteralDateToStringForDatabricks(),
+    | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
+    | if($func->isFullyLiteralInForDatabricks(),
+         | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderFullyLiteralInForDatabricks(), transform = {p:String[*] | []})),
+         | let variantOverride = arrayFunctionVariantOverrideForDatabricks()->get($func.name);
+           if($variantOverride->isNotEmpty() && $func.parameters->isNotEmpty() && $func.parameters->at(0)->isSemiStructuredOperandForDatabricks(),
       | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = $variantOverride->toOne()),
       | // Databricks/Spark has no direct `CAST(MAP<..> AS VARIANT)`. A bare Map value passed to
         // `toVariant()` renders as `cast(map(...) as VARIANT)` by default, which Spark rejects
@@ -482,6 +560,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
              )
         )
    );
+      )
+ );
 }
 
 // True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a
