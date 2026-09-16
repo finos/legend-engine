@@ -107,6 +107,22 @@ function meta::relational::functions::toPostgresModel::convertElement(r:Relation
         u:meta::relational::metamodel::relation::Union[1]|                            convertUnion($u, $state, true);,
         t:meta::relational::metamodel::relation::Table[1]|                            convertTable($t, $state);,
         l:meta::relational::metamodel::Literal[1]|                                    convertLiteral($l, $state);,
+        // Mirrors convertLiteral's own dispatch: a ClassInstanceHolder holds the realized Pure value of a
+        // compile-time-constant expression with no SQL shape of its own (see processValue's catch-all and
+        // processIn's fully-literal short-circuit in pureToSQLQuery.pure). When that value is itself one of
+        // the types convertLiteral already knows how to render, defer to it directly (so e.g. a boolean
+        // renders as this model's own boolean literal, not the text "true"/"false" quoted as a string);
+        // otherwise fall back to its toString() rendered as a plain string literal, exactly as
+        // processOperation's own ClassInstanceHolder handling does for the older string-templating pipeline.
+        // Enum is deliberately excluded from the native-literal branch: convertLiteral's own Enum handling
+        // assumes a property-mapped context, and with no such mapping here renders the bare enum name as an
+        // unquoted SQL identifier (e.g. a raw `CITY`, failing with "column not found") rather than a value.
+        h:meta::relational::functions::pureToSqlQuery::ClassInstanceHolder[1]|
+           let v = $h.value;
+           if($v->instanceOf(Boolean) || $v->instanceOf(Number) || $v->instanceOf(String) || $v->instanceOf(Date),
+              | convertLiteral(^meta::relational::metamodel::Literal(value=$v), $state),
+              | convertLiteral(^meta::relational::metamodel::Literal(value=$v->toString()), $state));
+        ,
         s:meta::relational::metamodel::relation::SemiStructuredArrayFlatten[1]|       convertSemiStructuredArrayFlatten($s, $state);,
         s:meta::relational::metamodel::relation::SemiStructuredArrayFlattenOutput[1]| convertSemiStructuredArrayFlattenOutput($s, $state);,
         s:meta::relational::metamodel::operation::SemiStructuredObjectNavigation[1]|  convertSemiStructuredObjectNavigation($s, $state);,

@@ -361,14 +361,8 @@
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::string::tests::toString::ErrorType"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"

@@ -31,9 +31,6 @@
     "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "org.h2.jdbc.JdbcSQLSyntaxErrorException: Values of types \"INTEGER\" and \"DATE\" are not comparable; SQL statement:\nselect 1 in (1, 2, 5, 2, 'a', true, DATE'2014-02-01', 'c') [90110-214]"
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
@@ -595,9 +592,6 @@
     "test" : "meta::pure::functions::string::tests::toString::testBooleanToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'true'\nactual:   'TRUE'\""
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::string::tests::toString::ErrorType"
   }, {
@@ -609,9 +603,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testDateToString_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2014-01"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
-    "expectedError" : "\"Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testFloatToStringWithNegativeExponent_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '0.000000013421'\nactual:   '1.3421E-8'\""

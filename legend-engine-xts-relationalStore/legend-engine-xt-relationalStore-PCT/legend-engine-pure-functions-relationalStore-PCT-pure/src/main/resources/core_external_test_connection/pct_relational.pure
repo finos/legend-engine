@@ -834,7 +834,15 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
   let rand = random() * 10000000;
   let tableName = $class.name->toOne() + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
 
-  let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty());                
+  // isPrimitiveValueProperty() only tells us the property's declared kind (primitive/enum/unit/measure
+  // vs. class) is one a real database column could conceivably back; it doesn't guarantee this harness's
+  // own pureTypeToDataType() actually has a mapping for that specific type (e.g. no dialect-agnostic SQL
+  // column type is defined for a bare Enum here - see mapEnumValue/getEnumPropMappingTransformer for how
+  // enum-valued properties are meant to be property-mapped instead). Filtering on pureTypeToDataType()
+  // being non-empty - rather than unconditionally calling toOne() on it below - means a property this
+  // synthetic table can't back is simply left out of it (as if the class didn't declare it), instead of
+  // this scaffolding crashing outright for any class instance that merely has such a property.
+  let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty() && meta::relational::transform::fromPure::pureTypeToDataType($p->functionReturnType())->isNotEmpty());
   let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=meta::relational::transform::fromPure::pureTypeToDataType($p->functionReturnType())->toOne('type not supported: ' + $p->functionReturnType().rawType->toOne()->elementToPath()))));
   let idCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));

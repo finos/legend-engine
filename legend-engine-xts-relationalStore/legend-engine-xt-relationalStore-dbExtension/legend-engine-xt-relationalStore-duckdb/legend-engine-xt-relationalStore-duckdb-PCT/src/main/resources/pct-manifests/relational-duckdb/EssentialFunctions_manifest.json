@@ -25,9 +25,6 @@
     "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "Parameter to IN operation isn't a literal!"
   }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^"
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
@@ -394,9 +391,6 @@
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.000D\nactual:   0.0D"
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::string::tests::toString::ErrorType"
   }, {
@@ -408,9 +402,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testDateToString_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2014-01"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"

@@ -1183,9 +1183,26 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
       if ($fe.parametersValues->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow
                 ,| tdsQualifier($fe, $operation, $vars, $state, $extensions);
 
-                ,| 
+                ,|
                   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_q'), $aggFromMap, $context, $extensions)->toOne();
-                  
+
+                  if($leftSide.element->instanceOf(ClassInstanceHolder) && $fe.parametersValues->size() == 1,
+                     |
+                       // A qualified property invoked on a compile-time-constant receiver (e.g. a custom
+                       // toString() override called on a Literal Class instance) has no relational query
+                       // to build - $leftSide.element is a ClassInstanceHolder, not a SelectWithCursor, and
+                       // the qualifier's own expressionSequence can just be evaluated directly in Pure
+                       // against the known receiver, mirroring processPropertyFunctionExpression's identical
+                       // ClassInstanceHolder short-circuit for plain (non-qualified) properties above. Only
+                       // the no-extra-parameter shape is handled (every qualifier this is meant to unblock is
+                       // a bare `x.someQualifier()`); a parametrized qualifier falls through to the relational
+                       // path below, same as before this change.
+                       let c = $leftSide.element->cast(@ClassInstanceHolder);
+                       let val = $fe.func->cast(@QualifiedProperty<Any>)->evaluate(^List<Any>(values=$c.value))->toOne();
+                       let element = processValue($val, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
+                       ^OperationWithParentPropertyMapping(element=$element);
+                     ,
+                     |
                   let leftSideSelectWithCursor = $leftSide.element->cast(@SelectWithCursor);
 
                   let newMilestoningContext = getMilestoningContextForQualifiedProperty($fe, $operation.milestoningContext, $leftSide.element->cast(@SelectWithCursor).milestoningContext, $state, $vars, $context, $extensions);
@@ -1223,6 +1240,7 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
                                                                                                     ,| if($fe.genericType.rawType->toOne()->isTemporal(),| $res.element->cast(@SelectWithCursor).milestoningContext
                                                                                                                                                         ,| []););
                   manageMilestoningContextPropogationForQualifiedProperties($res, $milestoningContext);
+                     );
               );
   );
 }
@@ -6004,6 +6022,46 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
 {
    let processedValueArg = $valueArg->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
    let processedCollectionArg = $collectionArg->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(shouldIsolate=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
+
+   // A collection of non-primitive constant objects (e.g. [^Firm(legalName='f1'), ^Firm(legalName='f2')])
+   // renders each element as a bare ClassInstanceHolder (see processValue's catch-all) - which the rest of
+   // this function was never built to represent in SQL, and rightly so: a Firm instance has no SQL
+   // representation to push down at all. When the searched-for value and every collection element are each
+   // fully compile-time-constant (a Literal or a ClassInstanceHolder - never a real column/property access,
+   // which resolves to a TableAliasColumn/SelectWithCursor instead), Pure's own in() can just be evaluated
+   // directly and the boolean result embedded as a literal, sidestepping SQL generation for this shape
+   // entirely. This also covers a purely-primitive-but-mixed-type collection (e.g. [1, 'a', true,
+   // %2014-02-01]), which no SQL engine accepts in a single native IN list, and - since processContains
+   // delegates straight to processIn - contains() over either shape for free. Only ever short-circuits the
+   // multi-element-collection branch below (the single-collection-element branch, e.g. `x in [$var]`, is
+   // left completely untouched - its ClassInstanceHolder/mixed-literal shapes, if any, aren't covered here).
+   let multiCollectionOperands = if($processedCollectionArg->size() == 1,
+                                     | [],
+                                     | if($state.inFilter, |$processedCollectionArg->map(s | $s.select.filteringOperation), |$processedCollectionArg->map(s | $s.select.columns)));
+   let valueOperand = if($state.inFilter, |$processedValueArg.element->cast(@SelectWithCursor).select.filteringOperation, |$processedValueArg.element->cast(@SelectWithCursor).select.columns);
+   // A negative-number literal (e.g. minus(5)->in(...)) renders its value side as DynaFunction('minus',
+   // [Literal(5)]), not a bare Literal - the same shape processIn's own multi-element collection branch
+   // below already special-cases via processLiteralOrMinusDynaFunction, reused here for the same reason.
+   let valueIsConstant = $valueOperand->size() == 1 && ($valueOperand->toOne()->instanceOf(Literal) || $valueOperand->toOne()->instanceOf(ClassInstanceHolder)
+        || ($valueOperand->toOne()->instanceOf(DynaFunction) && $valueOperand->toOne()->cast(@DynaFunction).name == 'minus' && $valueOperand->toOne()->cast(@DynaFunction).parameters->size() == 1));
+   let isFullyConstantIn = $processedCollectionArg->size() != 1
+        && $valueIsConstant
+        && $multiCollectionOperands->forAll(e | $e->instanceOf(Literal) || $e->instanceOf(ClassInstanceHolder));
+
+   if($isFullyConstantIn,
+      | let value = $valueOperand->toOne()->match([l:Literal[1] | $l.value, c:ClassInstanceHolder[1] | $c.value, d:DynaFunction[1] | $d->processLiteralOrMinusDynaFunction().value]);
+        let collectionValues = $multiCollectionOperands->map(e | $e->match([l:Literal[1] | $l.value, c:ClassInstanceHolder[1] | $c.value]));
+        let result = $value->in($collectionValues);
+        // processIn's declared return type, and every caller up to the very top of query processing
+        // (processQuery casts the final result straight to SelectWithCursor), require a SelectWithCursor
+        // back - never a bare Literal/ClassInstanceHolder - so the boolean result is wrapped into the
+        // incoming $operation's own select exactly the way every other computed-constant arm of
+        // processValue already does (e.g. its String/Number/Boolean/Date arms just above), rather than
+        // returned bare. Once wrapped, it renders through the same ClassInstanceHolder path as every other
+        // non-relational constant value (see processOperation's dispatch in dbExtension.pure).
+        let select = $operation.select;
+        ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^ClassInstanceHolder(value=$result)), |^$select(columns = ^ClassInstanceHolder(value=$result))));,
+      |
    let singleProcessedCollectionArg = $processedCollectionArg->size() == 1;
    let reprocessedCollectionArg = if($singleProcessedCollectionArg,
                                      | $processedCollectionArg->toOne(),
@@ -6070,6 +6128,7 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                     ,|^$selectWithCursor(select = if($state.inFilter, |^$mergedSQL(filteringOperation=$op), |^$mergedSQL(columns=$op)), currentTreeNode=[], positionBeforeLastApplyJoinTreeNode=[]);
    );
 
+   );
 }
 
 function meta::relational::functions::pureToSqlQuery::extractPkValuesFromRelationalObjectReferences(objectRefs:String[*], pkOrder:String[*]):String[*]
@@ -8942,6 +9001,16 @@ function meta::relational::functions::pureToSqlQuery::extractSelectSQLQuery(src:
                   [
                      o:SelectWithCursor[1] | $o.select,
                      l:Literal[1] | [],
+                     // A ClassInstanceHolder (a bare Class/Enumeration reference, or any other non-relational
+                     // constant value with no dedicated Literal/InstanceValue handling - see processValue's
+                     // catch-all) is never itself a nested subquery - but unlike a Literal (which only ever
+                     // reaches this function wrapped inside a SelectWithCursor), a ClassInstanceHolder can
+                     // arrive here bare/unwrapped (e.g. Class/Enumeration-reference toString() operands), so
+                     // treating it as contributing nothing (like a Literal) silently drops it from callers
+                     // (e.g. processDynaFunction's parameter merging) that key off this being non-empty to
+                     // decide whether an operand has real data. Wrap it as its own column instead, mirroring
+                     // WindowColumn's identical "leaf value, not a subquery, but still real data" handling.
+                     c:ClassInstanceHolder[1] | ^SelectSQLQuery(columns=$c),
                      w:WindowColumn[1] | ^SelectSQLQuery(columns=$w);
                   ]
               )
@@ -11065,3 +11134,5 @@ function meta::relational::functions::pureToSqlQuery::processWriteToVariantTempT
       )
    );
 }
+
+
