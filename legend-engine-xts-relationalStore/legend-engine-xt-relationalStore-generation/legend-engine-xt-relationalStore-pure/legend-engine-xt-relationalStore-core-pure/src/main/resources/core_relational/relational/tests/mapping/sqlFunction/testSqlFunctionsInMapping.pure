@@ -410,12 +410,39 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::stringToFl
     //assertEquals('select cast("root".string1 as float) as "string2Date" from testDataTable as "root" where cast("root".string1 as float) = 123.456',$result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testConvertTimeZoneWithOptionalSectionInH2():Boolean[1]
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testConvertTimeZoneWithNewSyntaxInH2():Boolean[1]
 {
-    assertError(|toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd?[ HH:mm:ss]')], ['tzQuery']),
+    assertError(|toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd?[ HH:mm:ss.S3]')], ['tzQuery']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.H2, meta::relational::extension::relationalExtensions()),
-                'Optional sections and sub-second widths in a date format cannot be translated to SQL: yyyy-MM-dd?[ HH:mm:ss]');
+                'A sub-second width or an optional section cannot be written by H2\'s FORMATDATETIME: yyyy-MM-dd?[ HH:mm:ss.S3]');
+}
+
+function <<test.Test>> meta::relational::tests::mapping::sqlFunction::convertTimeZone::testDefaultJavaToSQLTimeFormat():Boolean[1]
+{
+    // a run of S is a fixed width, whatever its length
+    assertEquals('HH24:MI:SS.FF3', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('HH:mm:ss.SSS'));
+    assertEquals('SS.FF4', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.SSSS'));
+    assertEquals('SS.FF7', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.SSSSSSS'));
+
+    // a sub-second width is written to its maximum, or to all nine digits where it names none
+    assertEquals('SS.FF3', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S3'));
+    assertEquals('SS.FF4', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S!4'));
+    assertEquals('SS.FF6', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S<6'));
+    assertEquals('SS.FF9', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S*'));
+    assertEquals('SS.FF9', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S>3'));
+    assertEquals('SS.FF5', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S(2,5)'));
+    assertEquals('SS.FF9', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S(3!,*,"_")'));
+    assertEquals('SS.FF4', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S(4,4,",")'));
+
+    // a timestamp has every component, so a section writes its first alternative
+    assertEquals('SS.FF3', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss?[.S3]'));
+    assertEquals('YYYY-MM-DD"T"HH24:MI:SS.FF9', meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('yyyy-MM-dd?["T"HH:mm:ss?[.S9|".000000000"]]'));
+
+    assertError(|meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S(0,3!)'), 'The sub-second field S(0,3!) in the date format \'ss.S(0,3!)\' refuses a fraction longer than 3 digits, which SQL cannot do');
+    assertError(|meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss?[.S(0,3!)|".000"]'), 'The sub-second field S(0,3!) in the date format \'ss?[.S(0,3!)|".000"]\' refuses a fraction longer than 3 digits, which SQL cannot do');
+    assertError(|meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S10'), 'The sub-second field S10 in the date format \'ss.S10\' needs more than the 9 digits SQL can write');
+    assertError(|meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat('ss.S>12'), 'The sub-second field S>12 in the date format \'ss.S>12\' needs more than the 9 digits SQL can write');
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::toString::testToSQLStringToStringInDB2():Boolean[1]

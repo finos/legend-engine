@@ -569,9 +569,3 @@ function meta::pure::functions::date::validateDateTimeFormat(dateTimeFormat:Stri
   let time = '(?:"T"|T)?(?:H{2}|h{1}):m{2}:s{2}' + $fraction;
   $dateTimeFormat->matches('(\\[[A-Z][A-Z]([ACDKLMNORSTUVW])?([DSWT])?([T])?\\])?(MM/dd/|dd/MM/|MM-dd-|dd-MM-)?(?:y{4}|y{2})(([-/])?[mM]{1,2}(([-/])?(d{1,2})(?: *' + $time + '| *\\?\\[ *' + $time + '\\])?)?)? *("at")? *(h{2}:m{2}a)? *[zZxX]?');
 }
-
-function meta::pure::functions::date::usesOptionalSectionOrSubSecondWidth(dateTimeFormat:String[1]):Boolean[1]
-{
-  // for a format validateDateTimeFormat accepts, which is what a translation into another format language may not be able to say
-  $dateTimeFormat->matches('.*(\\?\\[|S[0-9<>*!(]).*');
-}
