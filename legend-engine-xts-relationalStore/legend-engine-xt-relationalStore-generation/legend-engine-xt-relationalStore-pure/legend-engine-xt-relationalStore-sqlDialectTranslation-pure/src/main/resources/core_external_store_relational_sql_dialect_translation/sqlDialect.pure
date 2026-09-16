@@ -167,8 +167,7 @@ function meta::external::store::relational::sqlDialectTranslation::simpleFunctio
 {
   functionProcessor(
     {sqlDialect, f, state, config |
-      $f->doFunctionCallChecks();
-      $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, $f.orderBy, $state, $config);
+      $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, $f.orderBy, $f.filter, $state, $config);
     },
     {n: FunctionCall[1] | true}
   )
@@ -203,11 +202,12 @@ function meta::external::store::relational::sqlDialectTranslation::withinGroupFu
 {
   functionProcessor(
     {sqlDialect, f, state, config |
-      assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
+      // Appended here rather than passed down, because FILTER follows the WITHIN GROUP suffix this processor
+      // adds itself.
       let base = $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, [], $state, $config);
       $base + $f.orderBy->executeIfNotEmptyElseReturnEmptyString({|
         ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sqlDialect->keyword('order by ', $state, $config) + $f.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(', ') + ')'
-      });
+      }) + $sqlDialect->generateFilterClause($f.filter, $state, $config);
     },
     {n: FunctionCall[1] | true}
   )
@@ -220,6 +220,8 @@ function meta::external::store::relational::sqlDialectTranslation::nativeFunctio
   simpleFunctionProcessor($sqlFunc.name);
 }
 
+// Still the guard for the argTransform and custom processors, which rebuild the call and would drop a filter.
+// simpleFunctionProcessor and withinGroupFunctionProcessor render it, so they no longer call this.
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::doFunctionCallChecks(f: FunctionCall[1]): Any[*]
 {
   assert($f.filter->isEmpty(), | 'Filtered function call processing not implemented yet');
@@ -265,6 +267,12 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
 // WITHIN GROUP suffix carried by group. Unlike Group.orderBy this can hold more than one sort key.
 function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1], orderBy:meta::external::query::sql::metamodel::SortItem[*], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
 {
+  generateFunctionCallWithArgs($sqlDialect, $targetFunction, $args, $window, $group, $distinct, $orderBy, [], $state, $config)
+}
+
+// FILTER (WHERE ...) sits between the WITHIN GROUP suffix and OVER.
+function meta::external::store::relational::sqlDialectTranslation::generateFunctionCallWithArgs(sqlDialect: SqlDialect[1], targetFunction:String[*], args: String[*], window: meta::external::query::sql::metamodel::Window[0..1], group:Group[0..1], distinct:Boolean[0..1], orderBy:meta::external::query::sql::metamodel::SortItem[*], filter:meta::external::query::sql::metamodel::Expression[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
   let sep0 = $state.separatorIfPretty(0, $config);
   let sep1 = $state.separatorIfPretty(1, $config);
 
@@ -284,11 +292,23 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
 
   $group->executeIfNotEmptyElseReturnEmptyString({|
     ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sep1 + $sqlDialect->keyword('order by ', $state, $config) + $sep1 + $group.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1) + ')'
-  }) + 
+  }) +
+
+  $sqlDialect->generateFilterClause($filter, $state, $config) +
  
   $window->executeIfNotEmptyElseReturnEmptyString({|
     ' ' + $sqlDialect->keyword('over', $state, $config) + ' (' + $sep1 + $sqlDialect->executeNodeProcessor($window->toOne(), [], $state->increaseLevel(), $config) + $sep0 + ')'
   });  
+}
+
+// Unconditionally native: this path has no CASE fallback, unlike the sqlQueryToString renderers. That holds
+// only while useDialectTranslation (relationalMappingExecution.pure) routes H2 SELECTs and nothing else,
+// H2 having a native FILTER. Routing a dialect without one through here strips the fallback silently.
+function meta::external::store::relational::sqlDialectTranslation::generateFilterClause(sqlDialect: SqlDialect[1], filter:meta::external::query::sql::metamodel::Expression[0..1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): String[1]
+{
+  $filter->executeIfNotEmptyElseReturnEmptyString({|
+    ' ' + $sqlDialect->keyword('filter', $state, $config) + ' (' + $sqlDialect->keyword('where', $state, $config) + ' ' + $sqlDialect->executeNodeProcessor($filter->toOne(), [], $state->increaseLevel(), $config) + ')'
+  });
 }
 
 function meta::external::store::relational::sqlDialectTranslation::identifierProcessor(processFunction: Function<{SqlDialect[1], String[1], Boolean[1], SqlDialectTranslationState[1], SqlDialectTranslationConfig[1] -> String[1]}>[1]): IdentifierProcessor[1]

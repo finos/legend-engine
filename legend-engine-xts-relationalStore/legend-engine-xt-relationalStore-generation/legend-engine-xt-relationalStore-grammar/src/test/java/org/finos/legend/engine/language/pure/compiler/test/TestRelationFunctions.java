@@ -351,6 +351,37 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
     @Test
+    public void testGroupByFuncColSpecFilteredGroup()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, grp Integer, name VARCHAR(200), amt Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', [~id->ascending()]))\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testGroupByFuncColSpecFilteredGroupUnknownColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, grp Integer, name VARCHAR(200), amt Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~grp, ~names : g | $g->filter(r | $r.nope > 10)->joinStrings(~name, ',', [~id->ascending()]))\n" +
+                        "}",
+                "COMPILATION error at [7:63-66]: The column 'nope' can't be found in the relation (id:Int, grp:Int, name:Varchar(200), amt:Int)"
+        );
+    }
+
+    @Test
     public void testGroupByFuncColSpecUnknownSortColumn()
     {
         test(

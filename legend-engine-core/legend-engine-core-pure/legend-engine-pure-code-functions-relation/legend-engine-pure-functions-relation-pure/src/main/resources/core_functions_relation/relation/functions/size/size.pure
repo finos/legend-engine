@@ -317,3 +317,48 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '   2,1\n'+
                   '#', $res->sort(~grp->ascending())->toString());
 }
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::size::testSize_GroupBy_Filtered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   grp, amt
+                   1, 5
+                   1, 20
+                   1, 50
+                   2, 5
+                   2, 30
+                 #->groupBy(~grp, ~cnt : g | $g->filter(r | $r.amt > 10)->size());
+              };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,cnt\n'+
+                  '   1,2\n'+
+                  '   2,1\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+// A group where the predicate matches nothing still produces a row, with a count of zero rather than an
+// absent value -- count is the one aggregate where the SQL and in-memory answers agree on an empty group.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::size::testSize_GroupBy_FilteredEmptyGroup<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+               | #TDS
+                   grp, amt
+                   1, 5
+                   1, 20
+                   2, 5
+                   2, 7
+                 #->groupBy(~grp, ~cnt : g | $g->filter(r | $r.amt > 10)->size());
+              };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,cnt\n'+
+                  '   1,1\n'+
+                  '   2,0\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}

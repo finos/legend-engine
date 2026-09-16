@@ -344,3 +344,140 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '   2,Cy Xu\n'+
                   '#', $res->sort(~grp->ascending())->toString());
 }
+
+// Filtering the group before aggregating is the ordered-aggregate sibling of a sort spec: it narrows what the
+// aggregate sees without narrowing the query, which relationally is FILTER (WHERE ...). Every group here keeps
+// at least one row -- an all-excluded group gives '' in memory but an absent value in SQL.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Filtered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name, amt
+                  1, 3, C, 50
+                  1, 1, A, 5
+                  1, 2, B, 20
+                  2, 4, Y, 30
+                  2, 1, X, 5
+                #->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,B,C\n'+
+                  '   2,Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredDescending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name, amt
+                  1, 3, C, 50
+                  1, 1, A, 5
+                  1, 2, B, 20
+                  2, 4, Y, 30
+                  2, 1, X, 5
+                #->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', ~id->descending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,C,B\n'+
+                  '   2,Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+// Chained filters must combine rather than the last one winning.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredChained<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name, amt
+                  1, 3, C, 50
+                  1, 1, A, 5
+                  1, 2, B, 20
+                  2, 4, Y, 30
+                  2, 1, X, 5
+                #->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->filter(r | $r.id > 2)->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,C\n'+
+                  '   2,Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+// The predicate column is neither aggregated nor a group key nor a sort key, so nothing else in the query
+// mentions it -- the reference has to survive on its own.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredOnUnprojectedColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name, region
+                  1, 3, C, EU
+                  1, 1, A, US
+                  1, 2, B, EU
+                  2, 4, Y, EU
+                  2, 1, X, US
+                #->groupBy(~grp, ~names : g | $g->filter(r | $r.region == 'EU')->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,names\n'+
+                  '   1,B,C\n'+
+                  '   2,Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
+
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Filtered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  id, name, amt
+                  3, C, 50
+                  1, A, 5
+                  2, B, 20
+                #->aggregate(~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', ~id->ascending()))
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   names\n'+
+                  '   B,C\n'+
+                  '#', $res->toString());
+}
+
+// A filtered and an unfiltered aggregate in one groupBy: the predicate must scope to its own column only.
+function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredAlongsideUnfiltered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {
+                |#TDS
+                  grp, id, name, amt
+                  1, 3, C, 50
+                  1, 1, A, 5
+                  1, 2, B, 20
+                  2, 4, Y, 30
+                  2, 1, X, 5
+                #->groupBy(~grp, ~[big : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, '|', ~id->ascending()),
+                                   all : g | $g->joinStrings(~name, '|', ~id->ascending())])
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals( '#TDS\n'+
+                  '   grp,big,all\n'+
+                  '   1,B|C,A|B|C\n'+
+                  '   2,Y,X|Y\n'+
+                  '#', $res->sort(~grp->ascending())->toString());
+}
