@@ -3659,7 +3659,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                   col(row:TDSRow[1] | []->cast(@Number), 'POWER'),
                   col(row:TDSRow[1] | []->cast(@Float), 'RADIANS'),
                   col(row:TDSRow[1] | []->cast(@Integer), 'ROUND'),
-                  col(row:TDSRow[1] | []->cast(@Decimal), 'ROUND_DEC'),
+                  col(row:TDSRow[1] | []->cast(@Number), 'ROUND_DEC'),
                   col(row:TDSRow[1] | []->cast(@Integer), 'SIGN'),
                   col(row:TDSRow[1] | []->cast(@Float), 'SIN'),
                   col(row:TDSRow[1] | []->cast(@Float), 'SQRT'),
