@@ -1,0 +1,170 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// End-to-end M2M coverage for the meta::pure::mapping enum helpers:
+//
+//   getSourceEnumValues, getSourceEnumValuesByName,
+//   getEnumerationMappingValueByName, mapToEnumValue, mapToEnumValueOptional
+//
+// The helpers each take a Mapping[1] parameter. Inside a M2M mapping the
+// Mapping element referenced by the expression must be a *different* element
+// from the one being defined (self-reference would recurse at plan-generation
+// time), so the enumeration mappings sit in the auxiliary EnumHelpersRefMapping
+// and every mapping-expression here reads from it.
+
+import meta::json::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
+import meta::pure::executionPlan::engine::java::roadmap::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+
+Enum meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour
+{
+   RED, GREEN, BLUE
+}
+
+Enum meta::pure::mapping::modelToModel::test::alloy::enumHelpers::SrcColour
+{
+   // BLUE is intentionally not referenced by any EnumerationMapping entry in
+   // EnumHelpersRefMapping so mapToEnumValue exercises its fallback branch
+   // (extractEnumValue(target, sourceEnum.name)); its name matches Colour.BLUE
+   // so the fallback resolves to a valid target value.
+   CRIMSON, EMERALD, AZURE, BLUE
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Source
+{
+   code       : String[1];
+   codeOpt    : String[0..1];
+   srcColour  : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::SrcColour[1];
+   srcColourOpt : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::SrcColour[0..1];
+}
+
+Class meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target
+{
+   fromCode         : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour[0..1];
+   fromCodeOptEmpty : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour[0..1];
+   sourceEnumNames  : String[1];
+   byMapName        : String[1];
+   fromSrcEnum      : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour[1];
+   fromSrcEnumOpt   : meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour[0..1];
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source with a string code and a source enum, and an M2M mapping that uses every meta::pure::mapping enum helper.',
+   doc.doc='When:  the mapping is executed with a code that hits the EnumerationMapping.',
+   doc.doc='Then:  fromCode/fromSrcEnum/fromSrcEnumOpt resolve to the correct target enum values and the source-value list helpers produce the mapping keys.'
+}
+meta::pure::mapping::modelToModel::test::alloy::enumHelpers::testEnumHelpersM2M_hit() : Boolean[1]
+{
+   let tree = #{ meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target {fromCode, fromCodeOptEmpty, sourceEnumNames, byMapName, fromSrcEnum, fromSrcEnumOpt} }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersM2MMapping,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Source,
+                                url='data:application/json,{"code":"r","codeOpt":null,"srcColour":"CRIMSON","srcColourOpt":"EMERALD"}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent(
+      '{"fromCode":"RED","fromCodeOptEmpty":null,"sourceEnumNames":"RED,GREEN,BLUE","byMapName":"RED,GREEN,BLUE","fromSrcEnum":"RED","fromSrcEnumOpt":"GREEN"}'->parseJSON(),
+      $result.values->toOne()->parseJSON()));
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
+{  serverVersion.start='v1_19_0',
+   doc.doc='Given: a source whose code does not appear in the EnumerationMapping and an empty optional source enum.',
+   doc.doc='When:  the mapping is executed.',
+   doc.doc='Then:  fromCode is empty (getEnumerationMappingValueByName returns []), fromSrcEnumOpt is empty (mapToEnumValueOptional short-circuits) and mapToEnumValue falls back to extractEnumValue by name.'
+}
+meta::pure::mapping::modelToModel::test::alloy::enumHelpers::testEnumHelpersM2M_missAndOptional() : Boolean[1]
+{
+   let tree = #{ meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target {fromCode, fromCodeOptEmpty, sourceEnumNames, byMapName, fromSrcEnum, fromSrcEnumOpt} }#;
+
+   let result = execute(
+      |meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target.all()->graphFetch($tree)->serialize($tree),
+      meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersM2MMapping,
+      ^Runtime(
+        connectionStores = [
+          ^ConnectionStore(
+            element=^ModelStore(),
+            connection= ^JsonModelConnection(
+                                class=meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Source,
+                                // mapToEnumValue receives AZURE, which is not a source value in EnumHelpersRefMapping.
+                                // The fallback path is extractEnumValue($targetEnumeration, $sourceEnum.name), and AZURE
+                                // is not a member of Colour, so the compiled fallback would fail. Use BLUE (a Colour
+                                // member) as the source-enum name to keep the fallback well-defined.
+                                url='data:application/json,{"code":"unknown","srcColour":"BLUE"}'
+                             )
+          )]
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+
+   assert(jsonEquivalent(
+      '{"fromCode":null,"fromCodeOptEmpty":null,"sourceEnumNames":"RED,GREEN,BLUE","byMapName":"RED,GREEN,BLUE","fromSrcEnum":"BLUE","fromSrcEnumOpt":null}'->parseJSON(),
+      $result.values->toOne()->parseJSON()));
+}
+
+###Mapping
+import meta::pure::mapping::*;
+import meta::pure::mapping::modelToModel::test::alloy::enumHelpers::*;
+
+// Auxiliary mapping element that holds the EnumerationMappings the helpers read.
+// Kept separate from EnumHelpersM2MMapping because each helper takes a Mapping[1]
+// argument and self-reference from a mapping expression back to the mapping being
+// defined is not supported.
+Mapping meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping
+(
+   meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour: EnumerationMapping ColourMap
+   {
+      RED:   ['r', 'CRIMSON'],
+      GREEN: ['g', 'EMERALD'],
+      BLUE:  ['b']
+   }
+)
+
+// Include EnumHelpersRefMapping so the Alloy execute path (which ships only the
+// executed mapping and its transitive includes to the server) also serializes the
+// EnumerationMappings the property-mapping expressions reference.
+Mapping meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersM2MMapping
+(
+   include meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping
+
+   *meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Target : Pure
+   {
+      ~src meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Source
+      fromCode         : getEnumerationMappingValueByName(meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour, 'ColourMap', $src.code)->cast(@meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour),
+      fromCodeOptEmpty : getEnumerationMappingValueByName(meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour, 'ColourMap', 'no-such-code')->cast(@meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour),
+      sourceEnumNames  : getSourceEnumValues(meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour)->map(e | $e.name)->joinStrings(','),
+      byMapName        : getSourceEnumValuesByName(meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour, 'ColourMap')->map(e | $e.name)->joinStrings(','),
+      fromSrcEnum      : mapToEnumValue($src.srcColour, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping)->cast(@meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour),
+      fromSrcEnumOpt   : mapToEnumValueOptional($src.srcColourOpt, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour, meta::pure::mapping::modelToModel::test::alloy::enumHelpers::EnumHelpersRefMapping)->cast(@meta::pure::mapping::modelToModel::test::alloy::enumHelpers::Colour)
+   }
+)
+
+
+
+
