@@ -37,6 +37,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
+      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
