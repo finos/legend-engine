@@ -692,7 +692,11 @@ public class Library
 
     public static Number round(Number number, long scale)
     {
-        if (number instanceof Double)
+        if (number instanceof Long)
+        {
+            return number;
+        }
+        else if (number instanceof Double)
         {
             return Library.round((Double) number, scale);
         }
