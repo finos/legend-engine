@@ -231,8 +231,8 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
 
 function <<test.Test>> meta::relational::tests::mapping::function::snowflake::testConvertTimeZoneWithSubSecondWidth():Boolean[1]
 {
-    assertError(|toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd"T"HH:mm:ss.S9')], ['tzQuery']),
+    let s = toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd"T"HH:mm:ss.S7')], ['tzQuery']),
                                                 testMapping,
-                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions()),
-                'Optional sections and sub-second widths in a date format cannot be translated to SQL: yyyy-MM-dd"T"HH:mm:ss.S9');
+                                                meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+    assertEquals('select TO_CHAR(CONVERT_TIMEZONE(\'EST\',"root".dateTime),\'YYYY-MM-DD"T"HH24:MI:SS.FF7\') as "tzQuery" from dataTable as "root"', $s);
 }
