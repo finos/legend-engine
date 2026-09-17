@@ -15,6 +15,13 @@
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 
+Class meta::relational::metamodel::AggregateFunctionCall extends meta::relational::metamodel::operation::Operation
+{
+   func   : RelationalOperationElement[1];
+   sortBy : SortByInfo[*];
+   filter : RelationalOperationElement[0..1];
+}
+
 Class meta::relational::metamodel::UpsertSQLQuery extends SQLQuery
 {
   data               : Table[1];

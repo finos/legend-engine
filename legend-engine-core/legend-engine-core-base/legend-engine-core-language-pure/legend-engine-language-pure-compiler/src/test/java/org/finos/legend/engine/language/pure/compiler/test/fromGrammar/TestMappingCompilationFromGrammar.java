@@ -777,6 +777,54 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
+    public void testClassMappingIdCollisionParentOverridesInclude()
+    {
+        test("Class test::Target { name: String[1]; }\n" +
+                "Class test::TargetSrcA { name: String[1]; }\n" +
+                "Class test::TargetSrcB { name: String[1]; }\n" +
+                "###Mapping\n" +
+                "Mapping test::child (\n" +
+                "  test::Target: Pure {\n" +
+                "    ~src test::TargetSrcA\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n" +
+                "Mapping test::parent (\n" +
+                "  include test::child\n" +
+                "  *test::Target: Pure {\n" +
+                "    ~src test::TargetSrcB\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testClassMappingIdCollisionAmbiguousBetweenIncludesStillFails()
+    {
+        test("Class test::Target { name: String[1]; }\n" +
+                "Class test::TargetSrcA { name: String[1]; }\n" +
+                "Class test::TargetSrcB { name: String[1]; }\n" +
+                "###Mapping\n" +
+                "Mapping test::childA (\n" +
+                "  test::Target: Pure {\n" +
+                "    ~src test::TargetSrcA\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n" +
+                "Mapping test::childB (\n" +
+                "  test::Target: Pure {\n" +
+                "    ~src test::TargetSrcB\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n" +
+                "Mapping test::parent (\n" +
+                "  include test::childA\n" +
+                "  include test::childB\n" +
+                ")\n",
+                "COMPILATION error at [17:1-20:1]: Duplicated class mappings found with ID 'test_Target' for class 'test::Target' found across mappings 'test::childA' and 'test::childB'. Add an explicit [id] to one of the class mappings, or mark exactly one as the root class mapping with '*' in mapping 'test::parent'");
+    }
+
+    @Test
     public void mappingTestFaultyLambda()
     {
         test("Class model::domain::Source {}\n" +

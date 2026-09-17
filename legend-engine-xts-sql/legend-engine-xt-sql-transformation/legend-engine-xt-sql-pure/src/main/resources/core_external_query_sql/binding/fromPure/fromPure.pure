@@ -1067,24 +1067,38 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
 
-  if ($adjusted.sortItems->isEmpty(),
+  if ($adjusted.sortItems->isEmpty() && $adjusted.filter->isEmpty(),
     | ^TDSBuilder().aggregation($name, $mapLambda, $aggLambda, $context.relation->isTrue()),
     |
-      unsupported($context.relation->isTrue(), | 'ordered aggregation is only supported on relations');
+      unsupported($context.relation->isTrue(), | 'ordered or filtered aggregation is only supported on relations');
       unsupported($adjusted.sortItems.sortKey->forAll(k | $k->instanceOf(QualifiedNameReference)), | 'ordered aggregation only supports column sort keys');
-      ^OrderedAggregation(name = $name, map = $mapLambda, agg = $aggLambda,
-                          sortInfos = $adjusted.sortItems->map(si | $si->createSortItemFunction($context)));
+      // The predicate reads the same row the map lambda does, so it is built the same way.
+      let filterLambda = $adjusted.filter->map(f |
+        let filterExpression = processMapFunctionArgument($f, $context)->evaluateAndDeactivate();
+        // A nullable boolean column standing alone as the predicate -- FILTER (WHERE active) -- comes back as
+        // Boolean[0..1], which relation filter's Function<{T[1]->Boolean[1]}> will not match. Comparing it to
+        // true is the three-valued test SQL already applies here, and it lands back on Boolean[1].
+        let predicate = if ($filterExpression->isZeroOne(),
+          | sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$filterExpression, iv(true)]),
+          | $filterExpression);
+        lambda(functionType(rowExpressionContext($context).defaultVar, ^GenericType(rawType = Boolean), PureOne), $predicate);
+      );
+      ^GroupScopedAggregation(name = $name, map = $mapLambda, agg = $aggLambda,
+                              sortInfos = $adjusted.sortItems->map(si | $si->createSortItemFunction($context)),
+                              filter = $filterLambda);
   );
 }
 
-// An aggregate carrying an ORDER BY cannot be an AggColSpec -- the sort columns are gone by the time the
-// reduce lambda sees only mapped values. It becomes a group-scoped reduce instead; see TDSBuilder.groupBy.
-Class meta::external::query::sql::transformation::queryToPure::OrderedAggregation
+// An aggregate carrying an ORDER BY or a FILTER cannot be an AggColSpec -- by the time the reduce lambda sees
+// only the mapped values, the sort columns and the predicate's columns are both gone. It becomes a group-scoped
+// reduce instead, which is handed the whole group; see TDSBuilder.groupBy.
+Class meta::external::query::sql::transformation::queryToPure::GroupScopedAggregation
 {
   name:String[1];
   map:LambdaFunction<Any>[1];
   agg:LambdaFunction<Any>[1];
   sortInfos:ValueSpecification[*];
+  filter:LambdaFunction<Any>[0..1];
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::groupReduceColSpec(
@@ -1092,16 +1106,23 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   map:meta::pure::metamodel::function::Function<Any>[1],
   agg:meta::pure::metamodel::function::Function<Any>[1],
   sortInfos:ValueSpecification[*],
+  filter:meta::pure::metamodel::function::Function<Any>[0..1],
   relationType:GenericType[1]):meta::pure::metamodel::relation::FuncColSpec<Any, Any>[1]
 {
   let returnType = $agg->functionReturnType();
   let returnMultiplicity = $agg->functionReturnMultiplicity();
 
+  // FILTER (WHERE p) is a filter of the group, which is what the relational layer turns back into the clause.
+  let group = if ($filter->isEmpty(),
+    | var('g', PureOne, $relationType),
+    | sfe(filter_Relation_1__Function_1__Relation_1_, $relationType, [], PureOne,
+          [var('g', PureOne, $relationType), iv($filter->toOne())]));
+
   let call = if ($sortInfos->isEmpty(),
     | sfe(reduce_Relation_1__Function_1__Function_1__U_m_, $returnType, [], $returnMultiplicity,
-          [var('g', PureOne, $relationType), iv($map), iv($agg)]),
+          [$group, iv($map), iv($agg)]),
     | sfe(reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_, $returnType, [], $returnMultiplicity,
-          [var('g', PureOne, $relationType), iv($map), iv($agg), iv($sortInfos)]));
+          [$group, iv($map), iv($agg), iv($sortInfos)]));
 
   ^meta::pure::metamodel::relation::FuncColSpec<Any, Any>(
     name = $name,
@@ -3303,6 +3324,78 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ])->getValue($operator);
 }
 
+// A subquery sitting where a value is expected - x = (select max(y) from t) - is a scalar subquery.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processScalarSubqueryComparison(c:ComparisonExpression[1], negated:Boolean[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug(|'processScalarSubqueryComparison', $context.debug);
+  assertRelation($context.relation, 'scalar subquery comparison');
+
+  let leftIsSubquery = $c.left->instanceOf(SubqueryExpression);
+  unsupported(!($c.left->instanceOf(SubqueryExpression) && $c.right->instanceOf(SubqueryExpression)),
+              | 'a comparison between two scalar subqueries');
+
+  let subQuery = if ($leftIsSubquery, | $c.left, | $c.right)->cast(@SubqueryExpression);
+  let value = if ($leftIsSubquery, | $c.right, | $c.left)->processExpression($expContext, $context);
+
+  let operator = if ($leftIsSubquery, | $c.operator->mirrorComparisonOperator(), | $c.operator);
+
+  if ($operator == ComparisonOperator.NOT_EQUAL,
+    | processScalarSubqueryComparison(^$c(left = $c.left, right = $c.right, operator = ComparisonOperator.EQUAL), !$negated, $expContext, $context),
+    |
+      unsupported($operator->isScalarComparableOperator(), | 'a scalar subquery compared with ' + $operator.name);
+
+      let relContext = processSubRelation($subQuery.query, $expContext, $context);
+      let rel = $relContext.expression->toOne();
+
+      assert($relContext.columns->size() == 1,
+             | 'a scalar subquery must return exactly one column, got ' + $relContext.columns->size()->toString());
+
+      let comparison = sfe(scalarComparisonFunction($operator), [$value, $rel]);
+
+      if ($negated,
+        | sfe(and_Boolean_1__Boolean_1__Boolean_1_, [sfe(isNotEmpty_Any_$0_1$__Boolean_1_, $value), sfe(not_Boolean_1__Boolean_1_, $comparison)]),
+        | $comparison);
+  );
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isScalarComparableOperator(operator:ComparisonOperator[1]):Boolean[1]
+{
+  $operator->in([
+    ComparisonOperator.EQUAL,
+    ComparisonOperator.NOT_EQUAL,
+    ComparisonOperator.LESS_THAN,
+    ComparisonOperator.LESS_THAN_OR_EQUAL,
+    ComparisonOperator.GREATER_THAN,
+    ComparisonOperator.GREATER_THAN_OR_EQUAL
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::mirrorComparisonOperator(operator:ComparisonOperator[1]):ComparisonOperator[1]
+{
+  [
+    pair(ComparisonOperator.LESS_THAN,             ComparisonOperator.GREATER_THAN),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    ComparisonOperator.GREATER_THAN_OR_EQUAL),
+    pair(ComparisonOperator.GREATER_THAN,          ComparisonOperator.LESS_THAN),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, ComparisonOperator.LESS_THAN_OR_EQUAL)
+  ]->getValue($operator, $operator);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::scalarComparisonFunction(operator:ComparisonOperator[1]):meta::pure::metamodel::function::Function<Any>[1]
+{
+  [
+    pair(ComparisonOperator.EQUAL,                 meta::pure::functions::relation::equalTo_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.GREATER_THAN,          meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.GREATER_THAN_OR_EQUAL, meta::pure::functions::relation::greaterThanEqual_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.LESS_THAN,             meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_),
+    pair(ComparisonOperator.LESS_THAN_OR_EQUAL,    meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_)
+  ]->getValue($operator);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::hasScalarSubqueryOperand(c:ComparisonExpression[1]):Boolean[1]
+{
+  $c.left->instanceOf(SubqueryExpression) || $c.right->instanceOf(SubqueryExpression);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQualifiedNameReference(q:QualifiedNameReference[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processQualififedNameReference', $context.debug);
@@ -4104,9 +4197,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug(|'processNotExpression', $context.debug);
 
   //a quantified comparison builds its own negation, since negating its two-valued result would keep the
-  //rows SQL leaves unknown
+  //rows SQL leaves unknown. A scalar subquery comparison is the same: negating the guarded predicate it would
+  //otherwise produce is not the negation SQL asks for, and both forms compile
   $n.value->match([
     q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, true, $expContext, $context),
+    c:ComparisonExpression[1] |
+      if ($c->hasScalarSubqueryOperand(),
+        | processScalarSubqueryComparison($c, true, $expContext, $context),
+        | nullOrSfe(not_Boolean_1__Boolean_1_, $c->processExpression($expContext, $context)));,
     e:meta::external::query::sql::metamodel::Expression[1] | nullOrSfe(not_Boolean_1__Boolean_1_, $e->processExpression($expContext, $context))
   ]);
 }
@@ -4437,12 +4535,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processComparisonExpression', $context.debug);
 
-  //in postgres a StringLiteral is unknown type by default. In this case, we can try to use the right hand side type to force correct typing
+  if ($c->hasScalarSubqueryOperand(),
+    | processScalarSubqueryComparison($c, false, $expContext, $context),
+    | processStandardComparisonExpression($c, $expContext, $context));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processStandardComparisonExpression(c:ComparisonExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
   let leftExpressionContext = if ($c.left->instanceOf(StringLiteral),
     | ^$expContext(type = getExpressionType($c.right, $context)),
     | $expContext);
-
-
 
   let left = $c.left->processExpression($leftExpressionContext, $context);
   let right = $c.right->processExpression(^$expContext(type = $left.genericType.rawType->toOne()), $context);
@@ -4825,7 +4927,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     b:BitwiseBinaryExpression[1] | walk($b.left, $b.right, $accumulator, $extras),
     b:BitwiseShiftExpression[1] | walk($b.value, $b.shift, $accumulator, $extras),
     c:Cast[1] | walk($c.expression, $accumulator, $extras),
-    c:ComparisonExpression[1] | walk($c.left, $c.right, $accumulator, $extras),
+    c:ComparisonExpression[1] | walk([$c.left, $c.right]->filter(e | !$e->instanceOf(SubqueryExpression)), $accumulator, $extras),
     e:Extract[1] | walk($e.expression, $accumulator, $extras),
     f:FunctionCall[1] |
       let w1 = walk($f.window.partitions, $f.window.orderBy.sortKey, $f.group.orderBy.sortKey, $accumulator, $extras);
@@ -5599,8 +5701,8 @@ aggregation(
     let relationType = $func->evaluateAndDeactivate().genericType;
 
     let funcSpecs = $aggregates->map(a | $a->match([
-      o:OrderedAggregation[1] | groupReduceColSpec($o.name, $o.map, $o.agg, $o.sortInfos, $relationType),
-      s:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1] | groupReduceColSpec($s.name, $s.map, $s.reduce, [], $relationType)
+      o:GroupScopedAggregation[1] | groupReduceColSpec($o.name, $o.map, $o.agg, $o.sortInfos, $o.filter, $relationType),
+      s:meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>[1] | groupReduceColSpec($s.name, $s.map, $s.reduce, [], [], $relationType)
     ]));
 
     let relationColumns = $func->resolveRelationColumns()->groupBy(x | $x.name->toOne());
@@ -5624,7 +5726,7 @@ aggregation(
     aggregates: Any[*],
     relation:Boolean[1]){
 
-    if ($aggregates->exists(a | $a->instanceOf(OrderedAggregation)),
+    if ($aggregates->exists(a | $a->instanceOf(GroupScopedAggregation)),
       | $this.groupByReduce($func, $groupByColumns, $aggregates),
       | $this.groupByAggColSpec($func, $groupByColumns, $aggregates, $relation));
 

@@ -1,0 +1,147 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The source model - the shape of the JSON document in the SEMISTRUCTURED column, typed through a
+// binding. Every embedded-array shape is present: an array of scalars, an array of objects, an
+// object inside an array element, an array inside an array element, and an array of scalars at the
+// leaf of that.
+###Pure
+Class chain::source::S_FirmRow
+{
+  id: Integer[1];
+  firm: chain::source::S_Firm[1];
+}
+
+Class chain::source::S_Firm
+{
+  legalName: String[1];
+  address: chain::source::S_Address[0..1];
+  tags: String[*];
+  divisions: chain::source::S_Division[*];
+  terms: chain::source::S_Terms[*];
+}
+
+// The embedded array hangs off a subtype, so reaching it needs a subType cast part-way along the
+// path. This is the shape the reported failure has.
+Class chain::source::S_Terms
+{
+  termId: String[1];
+}
+
+Class chain::source::S_RepoTerms extends chain::source::S_Terms
+{
+  collateral: chain::source::S_Collateral[*];
+}
+
+Class chain::source::S_Collateral
+{
+  collateralId: chain::source::S_Identifier[1];
+  quantity: Integer[1];
+}
+
+Class chain::source::S_Identifier
+{
+  identifier: String[1];
+}
+
+Class chain::source::S_Address
+{
+  line1: String[1];
+  city: String[1];
+}
+
+Class chain::source::S_Division
+{
+  name: String[1];
+  headcount: Integer[1];
+  location: chain::source::S_Location[0..1];
+  teams: chain::source::S_Team[*];
+}
+
+Class chain::source::S_Location
+{
+  city: String[1];
+  country: String[1];
+}
+
+Class chain::source::S_Team
+{
+  label: String[1];
+  members: String[*];
+}
+
+// The target model. Every property is renamed and several are transformed, so a query that
+// accidentally bypassed the model-to-model leg could not produce these results.
+Class chain::model::Firm
+{
+  id: Integer[1];
+  name: String[1];
+  city: String[0..1];
+  labels: String[*];
+  units: chain::model::Unit[*];
+  holdings: chain::model::Holding[*];
+}
+
+Class chain::model::Holding
+{
+  pieceId: String[0..1];
+  quantity: Integer[1];
+}
+
+Class chain::model::Unit
+{
+  unitName: String[1];
+  unitSize: Integer[1];
+  country: String[0..1];
+  squads: chain::model::Squad[*];
+}
+
+Class chain::model::Squad
+{
+  squadName: String[1];
+  memberCount: Integer[1];
+  memberNames: String[*];
+}
+
+
+###Relational
+Database chain::store::DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding chain::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    chain::source::S_Firm,
+    chain::source::S_Address,
+    chain::source::S_Division,
+    chain::source::S_Location,
+    chain::source::S_Team,
+    chain::source::S_Terms,
+    chain::source::S_RepoTerms,
+    chain::source::S_Collateral,
+    chain::source::S_Identifier
+  ];
+}

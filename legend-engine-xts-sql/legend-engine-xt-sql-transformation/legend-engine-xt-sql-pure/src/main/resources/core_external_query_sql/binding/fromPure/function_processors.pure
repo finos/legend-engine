@@ -791,12 +791,14 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
   map:meta::external::query::sql::metamodel::Expression[0..1];
   aggregate:meta::external::query::sql::metamodel::Expression[1];
   sortItems:meta::external::query::sql::metamodel::SortItem[*];
+  filter:meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   assert($aggregate.group->isNotEmpty(), 'percentile must be within group');
   unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
+  unsupported($aggregate.filter->isEmpty(), | 'aggregate filter not supported for percentile');
 
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.group.orderBy.sortKey->toOne(),
@@ -810,7 +812,8 @@ function meta::external::query::sql::transformation::queryToPure::defaultAggrega
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.arguments->first(),
     aggregate = $column->replaceAggregateArguments($context),
-    sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy)
+    sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy),
+    filter = $aggregate.filter
   );
 }
 
@@ -826,9 +829,9 @@ function meta::external::query::sql::transformation::queryToPure::replaceAggrega
         let processor = $f.name->functionProcessor($context.functionProcessors);
         let var = ^QualifiedNameReference(name=^QualifiedName());
         if ($processor.isAggregate,
-          // The ordering is lifted into AggregateFunctionPreProcessorWrapper.sortItems and must not survive here:
-          // this expression becomes the reduce lambda, which processFunctionCall rejects with an order by on it.
-          | ^$f(group = [], orderBy = [], arguments = $f.arguments->match([
+          // The ordering and the filter are lifted into AggregateFunctionPreProcessorWrapper and must not
+          // survive here: this expression becomes the reduce lambda, which sees only the mapped values.
+          | ^$f(group = [], orderBy = [], filter = [], arguments = $f.arguments->match([
               a:meta::external::query::sql::metamodel::Expression[0..1] | $var,
               a:meta::external::query::sql::metamodel::Expression[1..*] | $var->concatenate($a->tail()),
               a:meta::external::query::sql::metamodel::Expression[*] | unsupported('aggregation type currently not supported'); [];

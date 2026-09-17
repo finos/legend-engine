@@ -162,36 +162,93 @@ public class MappingValidator
 
     private void collectAndValidateClassMappingIds(org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId, Set<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> visitedMappings)
     {
+        collectAndValidateClassMappingIds(mapping, mapping, mappingByClassMappingId, new HashMap<>(), visitedMappings);
+    }
+
+    private void collectAndValidateClassMappingIds(org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping topLevelMapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByClassMappingId, Map<String, SetImplementation> setImplByClassMappingId, Set<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> visitedMappings)
+    {
         if (!visitedMappings.contains(mapping))
         {
             mapping._includes().each(mappingInclude ->
             {
-                this.collectAndValidateClassMappingIds(mappingInclude._included(), mappingByClassMappingId, visitedMappings);
+                this.collectAndValidateClassMappingIds(mappingInclude._included(), topLevelMapping, mappingByClassMappingId, setImplByClassMappingId, visitedMappings);
             });
             Set<String> ownedClassMappingIds = new HashSet<>();
             mapping._classMappings().select(classMapping -> !(classMapping instanceof EmbeddedSetImplementation)).each(classMapping ->
             {
-                // check ID duplication across mappings
-                if (mappingByClassMappingId.get(classMapping._id()) != null)
+                String id = classMapping._id();
+                org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping existingOwner = mappingByClassMappingId.get(id);
+                if (existingOwner != null && existingOwner != mapping)
                 {
-                    if (mappingByClassMappingId.get(classMapping._id()) != mapping)
+                    SetImplementation existing = setImplByClassMappingId.get(id);
+                    SetImplementation current = (SetImplementation) classMapping;
+                    DuplicateResolution resolution = resolveDuplicateClassMapping(existing, existingOwner, current, mapping, topLevelMapping);
+                    if (resolution == DuplicateResolution.CURRENT_WINS)
                     {
-                        // only throw if the ID is already associated but with another mapping
-                        throw new EngineException(classMapping._id());
+                        mappingByClassMappingId.put(id, mapping);
+                        setImplByClassMappingId.put(id, current);
                     }
+                    else if (resolution == DuplicateResolution.AMBIGUOUS)
+                    {
+                        throw new EngineException(buildDuplicateClassMappingMessage(id, existing, existingOwner, current, mapping));
+                    }
+                    // else EXISTING_WINS: keep map entries as-is.
                 }
-                else
+                else if (existingOwner == null)
                 {
-                    mappingByClassMappingId.put(classMapping._id(), mapping);
+                    mappingByClassMappingId.put(id, mapping);
+                    setImplByClassMappingId.put(id, (SetImplementation) classMapping);
                 }
                 // check ID duplication within mapping
-                if (!ownedClassMappingIds.add(classMapping._id()))
+                if (!ownedClassMappingIds.add(id))
                 {
-                    throw new EngineException(classMapping._id());
+                    throw new EngineException(id);
                 }
             });
             visitedMappings.add(mapping);
         }
+    }
+
+    private enum DuplicateResolution
+    {
+        CURRENT_WINS, EXISTING_WINS, AMBIGUOUS
+    }
+
+    /*
+        1. Different classes sharing an id → AMBIGUOUS (real conflict).
+        2. Class mapping declared in the top-level mapping wins over one from an include.
+        3. `*`-root breaks ties between two includes: exactly one `_root() == true` wins.
+        4. Otherwise AMBIGUOUS
+    * */
+    private static DuplicateResolution resolveDuplicateClassMapping(SetImplementation existing, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping existingOwner, SetImplementation current, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping currentOwner, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping topLevelMapping)
+    {
+        if (existing == null || current == null || existing._class() != current._class())
+        {
+            return DuplicateResolution.AMBIGUOUS;
+        }
+        if (currentOwner == topLevelMapping && existingOwner != topLevelMapping)
+        {
+            return DuplicateResolution.CURRENT_WINS;
+        }
+        if (existingOwner == topLevelMapping && currentOwner != topLevelMapping)
+        {
+            return DuplicateResolution.EXISTING_WINS;
+        }
+        if (existing._root() ^ current._root())
+        {
+            return current._root() ? DuplicateResolution.CURRENT_WINS : DuplicateResolution.EXISTING_WINS;
+        }
+        return DuplicateResolution.AMBIGUOUS;
+    }
+
+    private static String buildDuplicateClassMappingMessage(String id, SetImplementation existing, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping existingOwner, SetImplementation current, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping currentOwner)
+    {
+        String existingOwnerPath = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(existingOwner);
+        String currentOwnerPath = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(currentOwner);
+        String classPath = (existing != null && existing._class() != null)
+                ? org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(existing._class())
+                : "<unknown>";
+        return id + "' for class '" + classPath + "' found across mappings '" + existingOwnerPath + "' and '" + currentOwnerPath + "'. Add an explicit [id] to one of the class mappings, or mark exactly one as the root class mapping with '*";
     }
 
     private void collectAndValidateEnumerationMappingIds(org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mapping, Map<String, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> mappingByEnumerationMappingId, Set<org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping> visitedMappings)

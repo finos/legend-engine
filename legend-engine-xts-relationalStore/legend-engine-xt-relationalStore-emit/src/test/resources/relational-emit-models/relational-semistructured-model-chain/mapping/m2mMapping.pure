@@ -1,0 +1,58 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The upstream leg. Nothing here names the store: the chain is declared in the runtime, by the
+// ModelChainConnection bound to ModelStore.
+###Mapping
+Mapping chain::mapping::M2M
+(
+  *chain::model::Firm: Pure
+  {
+    ~src chain::source::S_FirmRow
+    id: $src.id,
+    name: $src.firm.legalName->toUpper(),
+    city: $src.firm.address.city,
+    // An array of scalars crossing the model-to-model boundary.
+    labels: $src.firm.tags,
+    // An array of nested objects crossing it.
+    units: $src.firm.divisions,
+    // The same, but the array is only reachable after a subType cast part-way along the path.
+    holdings: $src.firm.terms->subType(@chain::source::S_RepoTerms).collateral
+  }
+
+  *chain::model::Holding: Pure
+  {
+    ~src chain::source::S_Collateral
+    pieceId: $src.collateralId.identifier,
+    quantity: $src.quantity
+  }
+
+  *chain::model::Unit: Pure
+  {
+    ~src chain::source::S_Division
+    unitName: $src.name,
+    unitSize: $src.headcount,
+    country: $src.location.country,
+    // An array nested inside an element of the array above.
+    squads: $src.teams
+  }
+
+  *chain::model::Squad: Pure
+  {
+    ~src chain::source::S_Team
+    squadName: $src.label,
+    memberCount: $src.members->size(),
+    memberNames: $src.members
+  }
+)

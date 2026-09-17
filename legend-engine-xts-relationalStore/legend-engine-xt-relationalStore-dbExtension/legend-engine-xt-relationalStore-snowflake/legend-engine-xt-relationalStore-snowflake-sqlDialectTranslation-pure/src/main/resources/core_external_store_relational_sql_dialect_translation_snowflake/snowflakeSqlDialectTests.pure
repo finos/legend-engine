@@ -91,3 +91,91 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     )->inferTypes($config.functionRegistry), $state, $config)
   );
 }
+// ---------------------------------------------------------------------------
+// useDbNativeImplicitNullOrdering
+//
+// Snowflake's native null ordering already matches the canonical spec, so it declares no
+// nativeNullOrdering and there is nothing to compensate for. The flag is therefore a no-op here --
+// asserted explicitly so that a future change making Snowflake compensate does not go unnoticed.
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testNullOrderingConfig(useDbNativeImplicitNullOrdering: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(
+      dbType = 'Snowflake',
+      quoteIdentifiers = false,
+      useDbNativeImplicitNullOrdering = $useDbNativeImplicitNullOrdering
+    ),
+    formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testSortItem(ordering: SortItemOrdering[1], nullOrdering: SortItemNullOrdering[1]): SortItem[1]
+{
+  ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'c1')), ordering = $ordering, nullOrdering = $nullOrdering)
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testImplicitNullOrderingIsNoOpForCanonicalDialect(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+
+  let flagOff = testNullOrderingConfig(false);
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOff));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOff));
+
+  let flagOn = testNullOrderingConfig(true);
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOn));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOn));
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testExplicitNullOrderingUnaffectedByFlag(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(true);
+
+  assertEquals('c1 ASC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('c1 DESC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST), $state, $config));
+}
+
+// ---------------------------------------------------------------------------
+// StringAgg -> LISTAGG ... WITHIN GROUP (ORDER BY ...)
+//
+// Regression test: Snowflake's LISTAGG has no in-paren ORDER BY form -- ordering can only be supplied
+// via a trailing WITHIN GROUP (ORDER BY ...) clause. The functionProcessorMap entry for StringAgg must
+// therefore use withinGroupFunctionProcessor, not simpleFunctionProcessor (which renders orderBy inside
+// the function's own parens and produces SQL Snowflake rejects with "unexpected 'ORDER'").
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testOrderedStringAggCall(nullOrdering: SortItemNullOrdering[1]): FunctionCall[1]
+{
+  ^FunctionCall(
+    name = ^QualifiedName(parts = 'string_agg'),
+    arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'name')), ^StringLiteral(value = ',')],
+    orderBy = [
+      ^SortItem(
+        sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+        ordering = SortItemOrdering.ASCENDING,
+        nullOrdering = $nullOrdering
+      )
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::snowflake::tests::testStringAggRendersWithinGroupOrderBy(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(false);
+
+  assertEquals(
+    'listagg(name, \',\') WITHIN GROUP (ORDER BY id ASC NULLS FIRST)',
+    $dialect->executeNodeProcessor(testOrderedStringAggCall(SortItemNullOrdering.FIRST)->inferTypes($config.functionRegistry), $state, $config)
+  );
+  assertEquals(
+    'listagg(name, \',\') WITHIN GROUP (ORDER BY id ASC NULLS LAST)',
+    $dialect->executeNodeProcessor(testOrderedStringAggCall(SortItemNullOrdering.LAST)->inferTypes($config.functionRegistry), $state, $config)
+  );
+}

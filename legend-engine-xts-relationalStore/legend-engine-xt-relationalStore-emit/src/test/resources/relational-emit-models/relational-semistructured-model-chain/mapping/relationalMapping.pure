@@ -12,10 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
-
-public enum NullOrder
-{
-    FIRST,
-    LAST
-}
+// The downstream leg of the chain. A primary key is required: graph fetch asserts one on every set
+// implementation it reads, and an embedded set implementation inherits the root table's.
+###Mapping
+Mapping chain::mapping::Relational
+(
+  chain::source::S_FirmRow: Relational
+  {
+    ~primaryKey
+    (
+      [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE
+    id: [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID,
+    firm: Binding chain::store::FirmBinding : [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+  }
+)

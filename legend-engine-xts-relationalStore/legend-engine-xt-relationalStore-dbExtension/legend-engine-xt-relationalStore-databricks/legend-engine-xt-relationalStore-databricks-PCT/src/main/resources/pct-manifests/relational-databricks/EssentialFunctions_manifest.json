@@ -79,6 +79,9 @@
     "test" : "meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
+    "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
+    "expectedError" : "\nexpected: 0\nactual:   1"
+  }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesEmptyListExplicit_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'"
   }, {
@@ -361,9 +364,6 @@
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_",
     "expectedError" : "expected %2014-02-27 to be an instance of DateTime, actual: StrictDate"
   }, {
@@ -375,12 +375,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 'he quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy dog'"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
     "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"

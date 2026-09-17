@@ -1366,6 +1366,95 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFilteredAggregation():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Integer) FILTER (WHERE Integer > 10) AS "big" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[big : {g | $g->filter(x|$x.Integer > 10)->reduce(x|$x.Integer, y|$y->sum())}]
+            )}, true, false)
+    ]
+  )
+}
+
+// A filter and an ordering on the same aggregate: the filter narrows the group the ordering then sorts.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFilteredOrderedAggregation():Boolean[1]
+{
+  test(
+    'SELECT String, string_agg("String", \',\' ORDER BY "Integer" DESC) FILTER (WHERE Integer > 10) AS "ordered" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[ordered : {g | $g->filter(x|$x.Integer > 10)->reduce(x|$x.String, y|$y->joinStrings(','), [~Integer->descending()])}]
+            )}, true, false)
+    ]
+  )
+}
+
+// One filtered aggregate pulls its plain siblings into the same reduce shape, as an ordered one does.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFilteredAggregationMixedWithPlainAggregate():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Integer) FILTER (WHERE Integer > 10) AS "big", sum(Integer) AS "all" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[
+                big : {g | $g->filter(x|$x.Integer > 10)->reduce(x|$x.Integer, y|$y->sum())},
+                all : {g | $g->reduce(x|$x.Integer, y|$y->sum())}
+              ]
+            )}, true, false)
+    ]
+  )
+}
+
+// A bare boolean column as the predicate, the form a FILTER clause most often takes. It reaches the same
+// lambda builder the WHERE clause uses, so it needs no unwrapping into a comparison.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFilteredAggregationOnBooleanColumn():Boolean[1]
+{
+  test(
+    'SELECT String, sum(Integer) FILTER (WHERE "Boolean") AS "active" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[active : {g | $g->filter(x|$x.Boolean)->reduce(x|$x.Integer, y|$y->sum())}]
+            )}, true, false)
+    ]
+  )
+}
+
+// COUNT(*) has no argument, so its map lambda is the identity on the row -- a shape an ORDER BY could never
+// produce, and the one a filtered count has to push down through.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFilteredCountStar():Boolean[1]
+{
+  test(
+    'SELECT String, count(*) FILTER (WHERE Integer > 10) AS "big" FROM service."/service/service1" GROUP BY String',
+
+    [
+      c({| FlatInput.all()
+            ->project(~[Boolean : {x|$x.booleanIn}, Integer : {x|$x.integerIn}, Float : {x|$x.floatIn}, Decimal : {x|$x.decimalIn}, StrictDate : {x|$x.strictDateIn}, DateTime : {x|$x.dateTimeIn}, String : {x|$x.stringIn}])
+            ->groupBy(
+              ~[String],
+              ~[big : {g | $g->filter(x|$x.Integer > 10)->reduce(x|$x, y|$y->count())}]
+            )}, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
   test(
@@ -5341,6 +5430,155 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'a quantified comparison requires the subquery to return exactly one column, got 2'
   );
 }
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryEquality():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" = (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->equalTo(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->aggregate(~[m : e | $e.Integer : y | $y->max()])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryInequality():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" > (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->greaterThan(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->aggregate(~[m : e | $e.Integer : y | $y->max()])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryOnLeftIsMirrored():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2) < table1."Integer"',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->greaterThan(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->aggregate(~[m : e | $e.Integer : y | $y->max()])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryNotEqual():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" <> (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->equalTo(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->aggregate(~[m : e | $e.Integer : y | $y->max()])))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryNegated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE NOT table1."Integer" = (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->isNotEmpty()
+              && !($x.Integer->equalTo(
+                    meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                      ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                      ->aggregate(~[m : e | $e.Integer : y | $y->max()])))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryAggregateInsideFunction():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" > (SELECT floor(max(t2."Integer")) AS m FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              $x.Integer->greaterThan(
+                meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->aggregate(~[m : e | $e.Integer : y | $y->max()->toOne()->floor()])
+              )
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryTwoSubqueriesUnsupported():Boolean[1]
+{
+  error(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE (SELECT max(t2."Integer") AS m FROM service."/service/service2" t2) = (SELECT max(t3."Integer") AS m FROM service."/service/service2" t3)',
+    'Unsupported: a comparison between two scalar subqueries'
+  );
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testScalarSubqueryMultipleColumnsUnsupported():Boolean[1]
+{
+  error(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" = (SELECT t2."Integer", t2."ID" FROM service."/service/service2" t2)',
+    'a scalar subquery must return exactly one column, got 2'
+  );
+}
+
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testVariant():Boolean[1]
 {

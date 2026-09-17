@@ -43,7 +43,7 @@ function meta::relational::functions::pureToSqlQuery::processTDSSortColumns(f:Fu
 
 function meta::relational::functions::pureToSqlQuery::processTDSSortSortInfo(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let sortInfo = $f->instanceValuesAtParameter(1,$vars, $state.inScopeVars)->cast(@SortInfo<Any>)->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
+   let sortInfo = $f->instanceValuesAtParameter(1,$vars, $state.inScopeVars)->cast(@SortInfo<Any>)->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), emptyOrder = $s.emptyOrder->map(e | if($e == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.LAST))));
    $f->processTDSSort($currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $sortInfo, $extensions);
 }
 
@@ -64,7 +64,7 @@ function meta::relational::functions::pureToSqlQuery::processTDSSort(f:FunctionE
                         | meta::relational::metamodel::SortDirection.DESC,
                         | meta::relational::metamodel::SortDirection.ASC);
                      ^OrderBy(column = $info.column->findAliasOrFail($mainSelect), direction = $direction,
-                              nullOrder = $info.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST)));
+                              nullOrder = $info.emptyOrder->map(no | if($no == meta::pure::tds::EmptyOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST)));
                      )->concatenate($mainSelect.orderBy)
                   )
       );
@@ -259,6 +259,18 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                     // untranslatable 'substr' and would skip the 0-based to 1-based index correction.
                                                     pair(|$supportedFunction == processSubstr_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
                                                          |newDynaFunction('substring', correctSubstrIndices($f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))))
+                                                    ),
+                                                    pair(|$supportedFunction == processIdxOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('minus', zeroBasedIdxOf($f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))))
+                                                    ),
+                                                    pair(|$supportedFunction == processIdxOfFromIndex_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('if', zeroBasedIdxOfFromIndex($f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))))
+                                                    ),
+                                                    pair(|$supportedFunction == processLastIdxOf_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('if', zeroBasedLastIdxOf($f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))))
+                                                    ),
+                                                    pair(|$supportedFunction == processLastIdxOfFromIndex_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_,
+                                                         |newDynaFunction('if', zeroBasedLastIdxOfFromIndex($f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context))))
                                                     )
                                                   ],
                                                     | newDynaFunction($f.func.functionName->toOne(), $f.parametersValues->map(p|$p->processTdsLambda($columns, $returnColumnName, $vars, $state, $currentPropertyMapping, $paths, $context)));
@@ -423,7 +435,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsWindowColumn(
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
    let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement,
                                                     sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC),
-                                                    nullOrder = $si.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
+                                                    nullOrder = $si.emptyOrder->map(no | if($no == meta::pure::tds::EmptyOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
    let newFrame = if($frame->isEmpty(), | [], | $frame->toOne()->processWindowFrame());
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,

@@ -51,9 +51,20 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     keywords = memSQLKeywords(),
     functionProcessorMap = memSQLFunctionProcessorMap(),
     variablePlaceholderPrefixSuffixMap = memSQLVariablePlaceholderPrefixSuffixMap(),
+    nativeNullOrdering = {| memSQLNativeNullOrdering()},
     expectedSqlDialectTestErrors = memSQLFunctionTestsExpectedErrors(),
     isBooleanAliasForTinyInt = true
   )
+}
+
+// MemSQL sorts nulls low in both directions -- FIRST ascending, LAST descending -- the exact inverse
+// of the canonical spec, so every implicit sort needs an explicit clause. Same divergence as H2
+// 1.4.200. The legacy string-templated path classifies it via nullsLowWithClauseSupport.
+function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLNativeNullOrdering(): DialectNullOrdering[1]
+{
+  ^DialectNullOrdering(
+    nativeOrdering = [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST)]->newMap()
+  );
 }
 
 function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQLSqlDialectExtension(): Extension[1]
@@ -155,7 +166,7 @@ function meta::external::store::relational::sqlDialectTranslation::memSQL::memSQ
     pair('SQLStructureTests - LikeEscapeChar', 'MemSQL SQL Dialect does not support custom escape char with like'),
     pair(
       'SQLStructureTests - Qualify',
-      'Execution error at (resource:/core_external_store_relational_sql_dialect_translation/sqlDialect.pure line:154 column:47), \"Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"MemSQL\"\"'
+      'Dialect translation for node of type \"meta::external::query::sql::metamodel::extension::ExtendedQuerySpecification\" not implemented in SqlDialect for database type \"MemSQL\"'
     )
   ]->newMap()->cast(@Map<String, String>)
 }
@@ -1697,10 +1708,25 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
   generateFunctionCallWithArgs($sqlDialect, 'instr', [$sqlDialect->generateCast($processedArgs->at(0), 'binary', $state, $config), $sqlDialect->generateCast($processedArgs->at(1), 'binary', $state, $config)], $state, $config);
 }
 
+// MemSQL renders string_agg as GROUP_CONCAT, whose ordering goes *inside* the parentheses and
+// *before* SEPARATOR -- `group_concat(expr order by ... separator ',')` -- rather than as a trailing
+// WITHIN GROUP clause. The generic renderer cannot place it there, so this processor has to emit the
+// sort items itself; passing them to generateFunctionCallWithArgs' args-only overload silently drops
+// them, which left every ordered aggregate on MemSQL in arbitrary order.
+//
+// The sort items are marked inOrderedAggregate so null-ordering resolution knows its position (see
+// resolveNullOrdering). SingleStore does accept NULLS FIRST/LAST in an ORDER BY, so no suppression is
+// needed here -- unlike H2 1.4.200.
 function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::processorForStringAgg(f:FunctionCall[1], sqlDialect:SqlDialect[1], state:SqlDialectTranslationState[1], config:SqlDialectTranslationConfig[1]): String[1]
 {
   let processedArgs = $sqlDialect->processFunctionArgs($f.arguments, $state, $config);
-  let transformedArg = $processedArgs->at(0) + ' separator ' + $processedArgs->at(1);
+  // Either carrier: withinGroupConverter puts the sort on FunctionCall.orderBy, other converters use Group.orderBy.
+  let sortItems = $f.orderBy->concatenate($f.group.orderBy);
+  let ordering = $sortItems->executeIfNotEmptyElseReturnEmptyString({|
+    ' ' + $sqlDialect->keyword('order by', $state, $config) + ' ' +
+    $sortItems->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel()->inOrderedAggregate(), $config))->joinStrings(', ')
+  });
+  let transformedArg = $processedArgs->at(0) + $ordering + ' separator ' + $processedArgs->at(1);
   let groupConcatCall = generateFunctionCallWithArgs($sqlDialect, 'group_concat', $transformedArg, $state, $config);
   let trimString = 'trailing ' + $processedArgs->at(1) + ' FROM ' + $groupConcatCall;
   generateFunctionCallWithArgs($sqlDialect, 'trim', [$trimString], $state, $config);

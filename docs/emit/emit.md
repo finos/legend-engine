@@ -820,6 +820,7 @@ infrastructure rather than the feature under test:
 | `scaffolding:m2m-mapping` | Base model-to-model mapping |
 | `scaffolding:runtime` | A runtime definition |
 | `scaffolding:model-connection` | A model connection (M2M tests) |
+| `scaffolding:model-chain-connection` | A `ModelChainConnection` bound to `ModelStore`, serving an M2M mapping's source class from a downstream mapping |
 
 #### Grammar — Pure language constructs
 
@@ -843,6 +844,7 @@ infrastructure rather than the feature under test:
 | `mapping:aggregation-aware-mapping` | Aggregation-aware mapping |
 | `mapping:cross-store` | Cross-store mapping (M2M ↔ relational) |
 | `mapping:enumeration-mapping` | Enumeration value mapping / transform |
+| `mapping:m2m-chained-relational` | M2M mapping whose `~src` class is itself mapped to a relational store, chained through a `ModelChainConnection` |
 | `mapping:m2m-derived-source-property` | Derived property on M2M source class |
 | `mapping:m2m-local-property` | Local property in M2M mapping |
 | `mapping:m2m-target-instantiation` | Target class constructed with the `new` operator (`^Target(...)`) inside an M2M transform |

@@ -1317,7 +1317,8 @@ function meta::external::language::java::transform::defaultProhibitedFunctions(e
       Nil,
       Unit,
       Function,
-      meta::pure::graphFetch::RootGraphFetchTree
+      meta::pure::graphFetch::RootGraphFetchTree,
+      meta::pure::mapping::Mapping
    ];
 
    let excludeTestPackages = [

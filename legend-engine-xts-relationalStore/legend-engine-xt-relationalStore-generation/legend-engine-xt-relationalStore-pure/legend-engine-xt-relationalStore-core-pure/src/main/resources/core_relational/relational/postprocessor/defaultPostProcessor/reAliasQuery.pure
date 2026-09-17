@@ -92,6 +92,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                      union:Union[1]         | $union.queries->traverse(),
                      u:UnaryOperation[1]    | $u.nested->traverse(),
                      d:DynaFunction[1]      | $d.parameters->traverse();,
+                     ac:AggregateFunctionCall[1] | $ac.func->concatenate($ac.sortBy.sortByElement)->concatenate($ac.filter)->traverse();,
                      b:BinaryOperation[1]   | $b.left->traverse()->concatenate($b.right->traverse());,
                      a:Alias[1]             | $a.relationalElement->traverse();,
                      s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->traverse(),
@@ -210,6 +211,10 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                 fm:FreeMarkerOperationHolder[1] | let transformedParams = $fm.parameters->map(p | $p->transformAliasName($m));
                                     ^$fm(parameters=$transformedParams);,
       
+                ac:AggregateFunctionCall[1] | ^$ac(func = $ac.func->transformAliasName($m),
+                                                   sortBy = $ac.sortBy->map(s | ^$s(sortByElement = $s.sortByElement->transformAliasName($m))),
+                                                   filter = $ac.filter->map(f | $f->transformAliasName($m))),
+
                 wc:WindowColumn[1] |let transformedWindow = $wc.window->transformAliasName($m);
                                     let transformedFunc = $wc.func->transformAliasName($m);
                                     ^$wc(window = $transformedWindow->cast(@meta::relational::metamodel::Window),

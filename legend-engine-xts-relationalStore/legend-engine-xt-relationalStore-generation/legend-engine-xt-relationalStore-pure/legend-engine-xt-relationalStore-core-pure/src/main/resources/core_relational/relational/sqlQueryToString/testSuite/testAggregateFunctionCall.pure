@@ -1,0 +1,114 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::sqlQueryToString::*;
+import meta::relational::functions::sqlQueryToString::default::*;
+import meta::relational::metamodel::*;
+import meta::relational::runtime::*;
+import meta::relational::functions::sqlQueryToString::tests::aggregate::*;
+
+// The four combinations of the two aggregate processors and the two ordering placements, asserted as SQL text.
+// A PCT run proves the numbers come back right; only this says which form was actually emitted, so it is what
+// separates a native FILTER clause from the CASE rewrite that produces the same answer.
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::tests::aggregate::sumOfAmt():AggregateFunctionCall[1]
+{
+   ^AggregateFunctionCall(func = ^DynaFunction(name = 'sum', parameters = ^ColumnName(name = 'amt')));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::tests::aggregate::orderById():SortByInfo[1]
+{
+   ^SortByInfo(sortByElement = ^ColumnName(name = 'id'), sortDirection = meta::relational::metamodel::SortDirection.ASC);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::tests::aggregate::amtOverTen():RelationalOperationElement[1]
+{
+   ^DynaFunction(name = 'greaterThan', parameters = [^ColumnName(name = 'amt'), ^Literal(value = 10)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::tests::aggregate::render(a:AggregateFunctionCall[1], processor:meta::pure::metamodel::function::Function<{AggregateFunctionCall[1], SqlGenerationContext[1], AggregateOrderingStyle[1] -> String[1]}>[1], ordering:AggregateOrderingStyle[1]):String[1]
+{
+   let extensions = meta::relational::extension::relationalExtensions();
+   let sgc = ^SqlGenerationContext(dbConfig = createDbConfig(DatabaseType.H2, []),
+                                  format = ^Format(newLine = '', indent = ''),
+                                  generationState = ^GenerationState(generationSide = GenerationSide.Select, withinWhenClause = false),
+                                  config = ^Config(),
+                                  extensions = $extensions);
+   $processor->eval($a, $sgc, $ordering);
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testFilterAnsi():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(filter = amtOverTen());
+   assertEquals('sum(amt) filter (where amt > 10)',
+                $a->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+}
+
+// The predicate lands on the aggregate's value argument, never beside it.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testFilterAsCase():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(filter = amtOverTen());
+   assertEquals('sum(case when amt > 10 then amt else null end)',
+                $a->render(processAggregateFunctionCallAsCase_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testOrderingWithinGroup():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(sortBy = orderById());
+   assertEquals('sum(amt) within group (order by id asc)',
+                $a->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testOrderingInParen():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(sortBy = orderById());
+   assertEquals('sum(amt order by id asc)',
+                $a->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.IN_PAREN));
+}
+
+// FILTER follows the ordering, whichever placement the ordering takes.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testOrderingAndFilterAnsi():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(sortBy = orderById(), filter = amtOverTen());
+   assertEquals('sum(amt) within group (order by id asc) filter (where amt > 10)',
+                $a->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+   assertEquals('sum(amt order by id asc) filter (where amt > 10)',
+                $a->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.IN_PAREN));
+}
+
+// The CASE has to go on the value argument and leave the sort key alone -- the corner the nested-DynaFunction
+// encoding this replaced had to dig for.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testOrderingAndFilterAsCase():Boolean[1]
+{
+   let base = sumOfAmt();
+   let a = ^$base(sortBy = orderById(), filter = amtOverTen());
+   assertEquals('sum(case when amt > 10 then amt else null end) within group (order by id asc)',
+                $a->render(processAggregateFunctionCallAsCase_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+   assertEquals('sum(case when amt > 10 then amt else null end order by id asc)',
+                $a->render(processAggregateFunctionCallAsCase_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.IN_PAREN));
+}
+
+// No clauses at all renders as the bare aggregate, so wrapping is never a behaviour change on its own.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::aggregate::testNoClauses():Boolean[1]
+{
+   assertEquals('sum(amt)',
+                sumOfAmt()->render(processAggregateFunctionCallAnsi_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.WITHIN_GROUP));
+   assertEquals('sum(amt)',
+                sumOfAmt()->render(processAggregateFunctionCallAsCase_AggregateFunctionCall_1__SqlGenerationContext_1__AggregateOrderingStyle_1__String_1_, AggregateOrderingStyle.IN_PAREN));
+}

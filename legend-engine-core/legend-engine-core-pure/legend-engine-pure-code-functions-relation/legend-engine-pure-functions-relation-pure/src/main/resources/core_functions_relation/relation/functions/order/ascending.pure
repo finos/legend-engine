@@ -50,7 +50,7 @@ rather than left at the platform's canonical order.
 the same thing as a modifier on the key, and read better in a sort list.
 '''
 function <<PCT.function,
-           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::ascending<T> (column:ColSpec<T>[1], nullOrder:NullOrder[1]):SortInfo<T>[1]
+           functionType.NormalizeRequiredFunction>> meta::pure::functions::relation::ascending<T> (column:ColSpec<T>[1], emptyOrder:EmptyOrder[1]):SortInfo<T>[1]
 {
-   ^SortInfo<T>(column=$column, direction=SortType.ASC, nullOrder=$nullOrder)
+   ^SortInfo<T>(column=$column, direction=SortType.ASC, emptyOrder=$emptyOrder)
 }

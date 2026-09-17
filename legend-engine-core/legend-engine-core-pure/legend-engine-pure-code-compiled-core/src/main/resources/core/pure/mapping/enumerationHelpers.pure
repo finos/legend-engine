@@ -1,0 +1,107 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::mapping::*;
+
+// Transitive include-DAG walk over Mapping.includes.
+//
+// Two runtime paths exist for these helpers:
+//
+//   1. Interpreted-mode (Pure IDE / interpreter): the Pure body below is
+//      evaluated directly and delegates to
+//      meta::pure::mapping::allEnumerationMappings, which recurses through
+//      $mapping.includes at any depth.
+//
+//   2. Compiled-mode (production, Java platform binder): the body is NOT
+//      run; instead an inline function coder in
+//        legend-engine-xt-javaPlatformBinding-pure ::
+//           core_java_platform_binding/legendJavaPlatformBinding/planConventions/metaLibrary.pure
+//      resolves the include walk at code-gen time against the compile-time
+//      Mapping graph (via its own private recursive helper
+//      collectEnumerationMappingsTransitively) and emits a literal Java
+//      expression at the callsite (Arrays.asList(Enum.getEnumFromPureName(
+//      "A"), ...) or a chained conditional lookup). The runtime never sees
+//      a Mapping object, which the default processInstanceValue path cannot
+//      serialise ("Unhandled value type: meta::pure::mapping::Mapping").
+//
+// Both paths are unbounded in include depth. They are behavioural mirrors:
+// any semantic change to one must be reflected in the other.
+//
+// Signature constraints (both paths):
+//
+// * Body must remain a single expression: the router rejects multi-expression
+//   (let-bound) function bodies at router_routing.pure:558.
+//
+// * Type parameter <T> is intentionally NOT declared. The Java code
+//   generator's default FunctionSignatureFactory hard-asserts
+//   "Generics not supported" for any function with typeParameters
+//   (conventions.pure:624). Callsite <T> return-type inference is instead
+//   synthesised by Handlers.java, which reads T from the Enumeration<T>
+//   argument's genericType and overrides the callsite return type.
+//
+// Compiled-mode caller constraints (enforced by the coder):
+//
+// * The Mapping argument must be a literal Mapping reference (an InstanceValue
+//   whose values[0] is the Mapping element); computed Mapping expressions
+//   are unsupported.
+// * The enumerationMappingName argument (helpers 2 and 3) must be a String
+//   literal.
+function meta::pure::mapping::getSourceEnumValues(mapping: Mapping[1], enumeration: Enumeration<Any>[1]): Enum[*]
+{
+   $mapping->allEnumerationMappings()
+      ->filter(em | $em.enumeration->toOne() == $enumeration)
+      ->map(em | $em.enumValueMappings.enum)
+      ->distinct();
+}
+
+function meta::pure::mapping::getSourceEnumValuesByName(mapping: Mapping[1], enumeration: Enumeration<Any>[1], enumerationMappingName: String[1]): Enum[*]
+{
+   $mapping->allEnumerationMappings()
+      ->filter(em | ($em.enumeration->toOne() == $enumeration) && ($em.name == $enumerationMappingName))
+      ->map(em | $em.enumValueMappings.enum)
+      ->distinct();
+}
+
+function meta::pure::mapping::getEnumerationMappingValueByName(mapping: Mapping[1], enumeration: Enumeration<Any>[1], enumerationMappingName: String[1], sourceValue: Any[1]): Enum[0..1]
+{
+   $mapping->allEnumerationMappings()
+      ->filter(em | ($em.enumeration->toOne() == $enumeration) && ($em.name == $enumerationMappingName))
+      ->map(em | $em.enumValueMappings)
+      ->filter(evm | $evm.sourceValues->contains($sourceValue))
+      ->map(evm | $evm.enum)
+      ->first();
+}
+
+function meta::pure::mapping::mapToEnumValue(sourceEnum: Enum[1], targetEnumeration: Enumeration<Any>[1], mapping: Mapping[1]): Enum[1]
+{
+   if($mapping->allEnumerationMappings()
+        ->filter(em | $em.enumeration->toOne() == $targetEnumeration)
+        ->first()
+        ->map(em | $em.enumValueMappings->filter(evm | $evm.sourceValues->contains($sourceEnum.name)))
+        ->isNotEmpty(),
+      | $mapping->allEnumerationMappings()
+          ->filter(em | $em.enumeration->toOne() == $targetEnumeration)
+          ->first()
+          ->map(em | $em.enumValueMappings->filter(evm | $evm.sourceValues->contains($sourceEnum.name))->map(evm | $evm.enum)->first())
+          ->toOne(),
+      // cast keeps the if-expression typed as Enum; extractEnumValue on Enumeration<Any> returns Any.
+      | $targetEnumeration->extractEnumValue($sourceEnum.name)->cast(@Enum));
+}
+
+function meta::pure::mapping::mapToEnumValueOptional(sourceEnum: Enum[0..1], targetEnumeration: Enumeration<Any>[1], mapping: Mapping[1]): Enum[0..1]
+{
+   if($sourceEnum->isEmpty(),
+      | [],
+      | mapToEnumValue($sourceEnum->toOne(), $targetEnumeration, $mapping));
+}

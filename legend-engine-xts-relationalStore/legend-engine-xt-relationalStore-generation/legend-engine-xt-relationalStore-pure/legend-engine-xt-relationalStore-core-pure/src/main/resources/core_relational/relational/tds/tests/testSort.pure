@@ -73,6 +73,36 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortDescHel
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" order by "name" desc', $result->sqlRemoveFormatting());
 }
 
+// Query-level sort with an explicit null order. ManagerName mixes NULL and non-NULL, so the two
+// tests below differ in both the emitted clause and the row order. Unlike an unspecified sort --
+// which emits no clause on a database whose native ordering already matches the canonical spec --
+// an explicit emptyFirst/emptyLast is always rendered, on every dialect.
+function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscEmptyFirst():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project([p|$p.lastName, p|$p.manager.lastName], ['Name', 'ManagerName'])
+                   ->sort([meta::pure::tds::asc('ManagerName')->meta::pure::tds::emptyFirst()]),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals(
+      'select "root".LASTNAME as "Name", "persontable_1".LASTNAME as "ManagerName" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID) order by "ManagerName" asc nulls first',
+      $result->sqlRemoveFormatting()
+   );
+}
+
+function <<test.Test>> meta::relational::tests::tds::sort::testSimpleSortAscEmptyLast():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project([p|$p.lastName, p|$p.manager.lastName], ['Name', 'ManagerName'])
+                   ->sort([meta::pure::tds::asc('ManagerName')->meta::pure::tds::emptyLast()]),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals(
+      'select "root".LASTNAME as "Name", "persontable_1".LASTNAME as "ManagerName" from personTable as "root" left outer join personTable as "persontable_1" on ("root".MANAGERID = "persontable_1".ID) order by "ManagerName" asc nulls last',
+      $result->sqlRemoveFormatting()
+   );
+}
+
 function <<test.Test>> meta::relational::tests::tds::sort::testDoubleSortAsc1():Boolean[1]
 {
    let result = execute(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(['name','address']), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
@@ -175,7 +205,7 @@ function <<test.Test>> meta::relational::tests::tds::sort::testSortQuotes():Bool
   DatabaseType->enumValues()->filter(e|$e->in([DatabaseType.DB2, DatabaseType.Composite]))->forAll(type |
     let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, $type, meta::relational::extension::relationalExtensions());
     assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
-  );
+   );
 
   let query = toSQLString(|Person.all()->project([#/Person/firstName!name#, #/Person/address/name!address#])->sort(desc('address'))->sort('name');, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
   assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name" asc, "address" desc', $query);
@@ -218,3 +248,73 @@ function <<test.Test>> meta::relational::tests::tds::sort::testTableToTDSWithQuo
 
    assertEquals($expectedSql, $resWithQuotes->sqlRemoveFormatting());
 }
+
+
+function <<test.Test>> meta::relational::tests::tds::sort::testOlapRankDescEmptyLastH2():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(
+         [ p|$p.firm.legalName, p|$p.lastName, p|$p.manager.lastName ],
+         ['Firm', 'Name', 'ManagerName']
+       )
+       ->olapGroupBy(
+         ['Firm'],
+         meta::pure::tds::desc('ManagerName')->meta::pure::tds::emptyLast(),
+         w|$w->meta::pure::functions::math::olap::rank(),
+         'Rank'
+       )
+       ->sort([meta::pure::tds::asc('Firm'), meta::pure::tds::asc('Rank'), meta::pure::tds::asc('Name')])
+       ->limit(10),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   assertEquals(
+      'select top 10 "subselect"."Firm" as "Firm", "subselect"."Name" as "Name", "subselect"."ManagerName" as "ManagerName", "subselect"."Rank" as "Rank" from (select "firmtable_0".LEGALNAME as "Firm", "root".LASTNAME as "Name", "persontable_2".LASTNAME as "ManagerName", rank() over (partition by "firmtable_0".LEGALNAME order by "persontable_2".LASTNAME desc nulls last) as "Rank" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join personTable as "persontable_2" on ("root".MANAGERID = "persontable_2".ID)) as "subselect" order by "Firm" asc, "Rank" asc, "Name" asc',
+      $result->sqlRemoveFormatting()
+   );
+
+   // Check the (Firm, Name, Rank) triples row-by-row -- ManagerName is a driver
+   // column (mixes NULL/non-NULL) but not asserted, so we avoid the awkwardness
+   // of representing a TDSNull cell inside a Pure list. Pure lists are flat, so
+   // the expected list interleaves (Firm, Name, Rank) triples end-to-end.
+   let rows = $result.values.rows->map(r | [$r.getString('Firm'), $r.getString('Name'), $r.getInteger('Rank')->toString()])->makeString(',');
+   assertEquals(
+      'Firm A,Roberts,1,Firm B,Hill,1,Firm C,Harris,1,Firm X,Hill,1,Firm X,Smith,1,Firm X,Johnson,3,Firm X,Allen,4',
+      $rows
+   );
+}
+
+// Companion: desc('ManagerName')->emptyFirst() puts NULL-manager rows at rank 1
+// in the partition and Allen-manager last. Same outer sort, same fixture.
+function <<test.Test>> meta::relational::tests::tds::sort::testOlapRankDescEmptyFirstH2():Boolean[1]
+{
+   let result = execute(
+      |Person.all()->project(
+         [ p|$p.firm.legalName, p|$p.lastName, p|$p.manager.lastName ],
+         ['Firm', 'Name', 'ManagerName']
+       )
+       ->olapGroupBy(
+         ['Firm'],
+         meta::pure::tds::desc('ManagerName')->meta::pure::tds::emptyFirst(),
+         w|$w->meta::pure::functions::math::olap::rank(),
+         'Rank'
+       )
+       ->sort([meta::pure::tds::asc('Firm'), meta::pure::tds::asc('Rank'), meta::pure::tds::asc('Name')])
+       ->limit(10),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   // Explicit emptyFirst on DESC routes through the sort-item processor even
+   // though H2's native DESC null ordering is already FIRST -- the short-
+   // circuit only fires when the caller omits the null order.
+   assertEquals(
+      'select top 10 "subselect"."Firm" as "Firm", "subselect"."Name" as "Name", "subselect"."ManagerName" as "ManagerName", "subselect"."Rank" as "Rank" from (select "firmtable_0".LEGALNAME as "Firm", "root".LASTNAME as "Name", "persontable_2".LASTNAME as "ManagerName", rank() over (partition by "firmtable_0".LEGALNAME order by "persontable_2".LASTNAME desc nulls first) as "Rank" from personTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID) left outer join personTable as "persontable_2" on ("root".MANAGERID = "persontable_2".ID)) as "subselect" order by "Firm" asc, "Rank" asc, "Name" asc',
+      $result->sqlRemoveFormatting()
+   );
+
+   let rows = $result.values.rows->map(r | [$r.getString('Firm'), $r.getString('Name'), $r.getInteger('Rank')->toString()])->makeString(',');
+   assertEquals(
+      'Firm A,Roberts,1,Firm B,Hill,1,Firm C,Harris,1,Firm X,Allen,1,Firm X,Hill,2,Firm X,Smith,2,Firm X,Johnson,4',
+      $rows
+   );
+}
+
+
