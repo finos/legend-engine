@@ -434,6 +434,17 @@ public class TestServiceRunner
         Assert.assertEquals("Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mmm:ss.SSSZ is not a valid dateTime format in SerializationConfig\"", e1.getMessage());
     }
 
+    @Test
+    public void SimpleM2MServiceRunnerForDateTimeSerializationWithSubSecondWidthsAndOptionalSections()
+    {
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeSubSecondWidth__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231000+0000\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeOptionalSection__String_1_", "{\"birthDate\":\"2014-12-27T15:01:35.231+0000\"}");
+        this.testServiceExecutionWithDateTimeSerialization("test::serializeDateTimeTimeZoneOptionalSection__String_1_", "{\"birthDate\":\"2014-12-27 18:01:35.23+03\"}");
+
+        RuntimeException e = Assert.assertThrows(RuntimeException.class, () -> new SimpleM2MServiceRunnerForDateTimeSerialization("test::serializeInvalidSubSecondWidth__String_1_"));
+        Assert.assertEquals("Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), \"yyyy-MM-dd\"T\"HH:mm:ss.S(3)Z is not a valid dateTime format in SerializationConfig\"", e.getMessage());
+    }
+
     private static class SimpleM2MServiceRunnerForVarConflict extends AbstractServicePlanExecutor
     {
         SimpleM2MServiceRunnerForVarConflict(String function)
