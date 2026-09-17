@@ -429,6 +429,7 @@ meta::pure::functions::math::pow_Number_1__Number_1__Number_1_
 meta::pure::functions::math::rem_Number_1__Number_1__Number_1_
 meta::pure::functions::math::round_Decimal_1__Integer_1__Decimal_1_
 meta::pure::functions::math::round_Float_1__Integer_1__Float_1_
+meta::pure::functions::math::round_Number_1__Integer_1__Number_1_
 meta::pure::functions::math::round_Number_1__Integer_1_
 meta::pure::functions::math::sign_Number_1__Integer_1_
 meta::pure::functions::math::sin_Number_1__Float_1_

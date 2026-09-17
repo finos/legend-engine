@@ -4186,7 +4186,9 @@ function meta::external::query::sql::transformation::queryToPure::processRound(a
       round_Number_1__Integer_1_,
     | if ($args->at(0).genericType.rawType == Float,
         | round_Float_1__Integer_1__Float_1_,
-        | round_Decimal_1__Integer_1__Decimal_1_)
+        | if ($args->at(0).genericType.rawType == Decimal,
+            | round_Decimal_1__Integer_1__Decimal_1_,
+            | round_Number_1__Integer_1__Number_1_))
   );
 
   nullOrSfe($func, $args);
