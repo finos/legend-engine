@@ -1,0 +1,38 @@
+name: m2m-serialized-date-formats
+title: "Date-Times Serialized with a Date Format"
+description: |
+  An M2M mapping whose test suites graph fetch and serialize a DateTime with the
+  dateTimeFormat of an AlloySerializationConfig, each suite naming a different format,
+  for a date-time with a fraction of a second and one given only to the second. The
+  serializer formats with the engine's own implementation of the date format language,
+  not Pure's, so this covers that language as a plan actually writes it.
+
+  Two suites name their format in the long-standing syntax, where a run of S is a fixed
+  width written with zeros when there is no fraction. The rest use the sub-second widths
+  and optional sections added in legend-pure 5.98.0: one writes a fraction only where
+  there is one, one spells out the fixed width of SSS and must write exactly what SSS
+  does, and one names a sub-second width. That last is given only a date-time with a
+  fraction, because a width refuses one without, and EMIT cannot assert a failure.
+
+modelSources:
+  model:
+    root: m2m-serialized-date-formats
+    files:
+      - model/source.pure
+      - model/target.pure
+      - mapping/readingMapping.pure
+
+features:
+  - execution:serialization-date-time-format
+  - execution:test-data
+  - mapping:mapping
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - date-time
+  - date-format
+  - graph-fetch
+  - mapping-test
