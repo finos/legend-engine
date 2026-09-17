@@ -1,0 +1,94 @@
+// Copyright 2025 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::metamodel::extension::*;
+import meta::external::store::relational::sqlDialectTranslation::*;
+import meta::external::store::relational::sqlDialectTranslation::memSQL::*;
+import meta::external::store::relational::sqlDialectTranslation::memSQL::tests::*;
+import meta::external::store::relational::sqlDialectTranslation::utils::*;
+import meta::external::store::relational::sqlDialectTranslation::sqlTyping::typeInference::*;
+
+// ---------------------------------------------------------------------------
+// useDbNativeImplicitNullOrdering
+//
+// SDT asserts result rows and so cannot tell "no clause because the dialect is already canonical"
+// apart from "no clause because compensation was switched off". These assert the emitted SQL, which
+// is where that difference shows up.
+//
+// MemSQL sorts nulls low in both directions, so it is the dialect where compensation is most visible:
+// with the flag off every implicit sort carries a clause, and with it on none of them do.
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testDialect(): SqlDialect[1]
+{
+  memSQLSqlDialect()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testSqlDialectTranslationState(): SqlDialectTranslationState[1]
+{
+  ^SqlDialectTranslationState(level = 0)
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testNullOrderingConfig(useDbNativeImplicitNullOrdering: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(
+      dbType = 'MemSQL',
+      quoteIdentifiers = false,
+      useDbNativeImplicitNullOrdering = $useDbNativeImplicitNullOrdering,
+      nullOrdering = memSQLNativeNullOrdering()
+    ),
+    formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testSortItem(ordering: SortItemOrdering[1], nullOrdering: SortItemNullOrdering[1]): SortItem[1]
+{
+  ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'c1')), ordering = $ordering, nullOrdering = $nullOrdering)
+}
+
+// Flag off: nulls-low diverges from canonical in both directions, so both are compensated.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testImplicitNullOrderingCompensatedWhenFlagOff(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(false);
+
+  assertEquals('c1 ASC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// Flag on: compensation is suppressed, leaving MemSQL's native nulls-low behaviour in effect.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testImplicitNullOrderingSuppressedWhenFlagOn(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(true);
+
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// The flag governs implicit ordering only -- an explicit null order is always emitted verbatim.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::memSQL::tests::testExplicitNullOrderingUnaffectedByFlag(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(true);
+
+  assertEquals('c1 ASC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('c1 DESC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST), $state, $config));
+}

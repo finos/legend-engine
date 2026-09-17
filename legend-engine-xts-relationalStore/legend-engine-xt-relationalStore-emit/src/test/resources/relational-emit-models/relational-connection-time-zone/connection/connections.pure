@@ -1,0 +1,182 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// A connection per way of naming a time zone, each carrying the same row. The
+// test data rides on the connection rather than on the test, because a test
+// that brings its own `connections:` block has its connection rebuilt by
+// RelationalConnectionFactory.buildH2TestConnection, which keeps the store and
+// drops everything else the connection said -- the time zone included.
+
+###Connection
+RelationalDatabaseConnection demo::connection::ShiftGmtConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ShiftRegionConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  timezone: 'Pacific/Guam';
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ShiftOffsetConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  timezone: +1000;
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ShiftUtcPrefixedOffsetConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  timezone: 'UTC+1000';
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ShiftHalfHourOffsetConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  timezone: 'UTC+0530';
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+RelationalDatabaseConnection demo::connection::ShiftDaylightSavingConnection
+{
+  store: demo::store::ShiftDB;
+  type: H2;
+  timezone: 'America/New_York';
+  specification: LocalH2
+  {
+    testDataSetupCSV: 'default\nshiftTable\nid,startedAt\n1,2012-05-20T13:10:52.501\n---';
+  };
+  auth: DefaultH2;
+}
+
+###Runtime
+Runtime demo::runtime::ShiftGmtRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftGmtConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftRegionRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftRegionConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftUtcPrefixedOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftUtcPrefixedOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftHalfHourOffsetRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftHalfHourOffsetConnection
+    ]
+  ];
+}
+
+Runtime demo::runtime::ShiftDaylightSavingRuntime
+{
+  mappings:
+  [
+    demo::ShiftMapping
+  ];
+  connections:
+  [
+    demo::store::ShiftDB:
+    [
+      h2: demo::connection::ShiftDaylightSavingConnection
+    ]
+  ];
+}

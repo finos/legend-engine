@@ -78,6 +78,55 @@ function meta::relational::metamodel::execute::tests::executeLegendFunction(func
 function meta::relational::metamodel::execute::tests::executeLegendFunction(func: FunctionDefinition<Any>[1], mapping: Mapping[1], db:Database[1], conn: Connection[1], csvs: String[*], expectedCsv: String[1], expectedSql: String[0..1], shouldDebug:Boolean[1]):Boolean[1]
 {
   let runtime = ^Runtime(connectionStores = ^ConnectionStore(connection = $conn, element = $db));
+  let planAsJson = $func->buildTestPlanAsJson($mapping, $runtime, $db, $csvs, $expectedSql, $shouldDebug);
+  let actualCsv = meta::legend::executePlanAsJSON($planAsJson, []->cast(@Pair<String, Any>), 'CSV');
+
+  let actualTds = $actualCsv->sortCsv();
+  let expectedTds = $expectedCsv->sortCsv();
+
+  assertEquals($expectedTds, $actualTds);
+}
+
+// Chained mapping: the query's mapping is a model-to-model mapping whose source class is mapped by
+// $chainedMapping to the relational store, so the runtime needs a ModelChainConnection on ModelStore
+// alongside the store's own connection.
+function meta::relational::metamodel::execute::tests::executeLegendFunctionWithModelChain(conn: Connection[1], csvs: String[*], modelFileName: String[1], funcName: String[1], mappingName: String[1], chainedMappingName: String[1], databaseName: String[1], expectedCsv: String[1]):Boolean[1]
+{
+  let planAsJson = buildChainedTestPlanAsJson($conn, $csvs, $modelFileName, $funcName, $mappingName, $chainedMappingName, $databaseName);
+  let actualCsv = meta::legend::executePlanAsJSON($planAsJson, []->cast(@Pair<String, Any>), 'CSV');
+
+  assertEquals($expectedCsv->sortCsv(), $actualCsv->sortCsv());
+}
+
+// As above, for a query returning serialized JSON (graph fetch) rather than a TDS.
+function meta::relational::metamodel::execute::tests::executeLegendFunctionWithModelChainJSON(conn: Connection[1], csvs: String[*], modelFileName: String[1], funcName: String[1], mappingName: String[1], chainedMappingName: String[1], databaseName: String[1], expectedJson: String[1]):Boolean[1]
+{
+  let planAsJson = buildChainedTestPlanAsJson($conn, $csvs, $modelFileName, $funcName, $mappingName, $chainedMappingName, $databaseName);
+  let actualJson = meta::legend::executePlanAsJSON($planAsJson, []->cast(@Pair<String, Any>));
+
+  assertJsonStringsEqual($expectedJson, $actualJson);
+}
+
+function <<access.private>> meta::relational::metamodel::execute::tests::buildChainedTestPlanAsJson(conn: Connection[1], csvs: String[*], modelFileName: String[1], funcName: String[1], mappingName: String[1], chainedMappingName: String[1], databaseName: String[1]):String[1]
+{
+  let elements = $modelFileName->meta::legend::compileLegendFile();
+
+  let function = $elements->filter(x | $x->elementToPath() == $funcName)->toOne('Not found: ' + $funcName)->cast(@FunctionDefinition<Any>);
+  let mapping = $elements->filter(x | $x->elementToPath() == $mappingName)->toOne('Not found: ' + $mappingName)->cast(@Mapping);
+  let chainedMapping = $elements->filter(x | $x->elementToPath() == $chainedMappingName)->toOne('Not found: ' + $chainedMappingName)->cast(@Mapping);
+  let db = $elements->filter(x | $x->elementToPath() == $databaseName)->toOne('Not found: ' + $databaseName)->cast(@Database);
+
+  let runtime = ^Runtime(connectionStores = [
+    ^ConnectionStore(connection = $conn, element = $db),
+    ^ConnectionStore(element = ^meta::external::store::model::ModelStore(),
+                     connection = ^meta::external::store::model::ModelChainConnection(mappings = [$chainedMapping]))
+  ]);
+
+  $function->buildTestPlanAsJson($mapping, $runtime, $db, $csvs, [], false);
+}
+
+function <<access.private>> meta::relational::metamodel::execute::tests::buildTestPlanAsJson(func: FunctionDefinition<Any>[1], mapping: Mapping[1], runtime: Runtime[1], db: Database[1], csvs: String[*], expectedSql: String[0..1], shouldDebug: Boolean[1]):String[1]
+{
   let setupFunc = 'meta::relational::tests::pct::process::setupDatabase_String_MANY__Database_1__Runtime_1__DebugContext_1__SequenceExecutionNode_1_'
     ->pathToElement()->cast(@Function<{String[*], Database[1], Runtime[1], DebugContext[1]->SequenceExecutionNode[1]}>);
   let setup = $setupFunc->eval($csvs, $db, $runtime, noDebug());
@@ -105,13 +154,7 @@ function meta::relational::metamodel::execute::tests::executeLegendFunction(func
   // transform to vX_X_X
   let plan = $planBindToJava->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan(meta::legend::getLegendExtensions());
   // serialize to json
-  let planAsJson = $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
-  let actualCsv = meta::legend::executePlanAsJSON($planAsJson, []->cast(@Pair<String, Any>), 'CSV');
-  
-  let actualTds = $actualCsv->sortCsv();
-  let expectedTds = $expectedCsv->sortCsv();
-    
-  assertEquals($expectedTds, $actualTds);
+  $plan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
 }
 
 function meta::relational::metamodel::execute::tests::extractSqlFromPlan(plan: ExecutionPlan[1]):String[1]

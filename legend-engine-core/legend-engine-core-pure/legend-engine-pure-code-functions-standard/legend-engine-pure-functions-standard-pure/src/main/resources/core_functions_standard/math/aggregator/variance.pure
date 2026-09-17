@@ -14,6 +14,33 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The variance of a collection, sample or population depending on the flag.
+
+`isBiasCorrected` selects the divisor: `true` divides by `n - 1` for a **sample** variance, `false`
+by `n` for a **population** variance. Prefer the named
+`varianceSample(Number[*]):Number[1]` and `variancePopulation(Number[*]):Number[1]` in ordinary code,
+which say which one they mean.
+
+**A single value gives 0 either way**, short-circuiting the division by `n - 1` that would otherwise
+fail for a sample variance.
+
+**Parameters**
+- `numbers` — the values.
+- `isBiasCorrected` — `true` for the sample variance, `false` for the population variance.
+
+**Returns** the variance.
+
+**Examples**
+```pure
+variance([1, 2], false)   // 0.25, dividing by n
+variance([1, 2], true)    // 0.5,  dividing by n - 1
+```
+
+**See also** `varianceSample(Number[*]):Number[1]`,
+`variancePopulation(Number[*]):Number[1]`,
+`stdDev(Number[1..*], Boolean[1]):Number[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::variance(numbers:Number[*], isBiasCorrected: Boolean[1]):Number[1]
 {
     if ($numbers->size() == 1,

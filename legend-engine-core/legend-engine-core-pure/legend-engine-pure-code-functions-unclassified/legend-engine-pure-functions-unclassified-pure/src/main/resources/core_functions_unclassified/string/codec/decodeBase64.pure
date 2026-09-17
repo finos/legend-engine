@@ -14,7 +14,27 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Decodes a Base64-encoded string and returns the original string.'}
+'''
+Decodes a Base64 string.
+
+**Padding is optional on input**: `'SGVsbG8sIFdvcmxkIQ'` decodes the same as
+`'SGVsbG8sIFdvcmxkIQ=='`, even though `encodeBase64(String[1]):String[1]` always emits the padded
+form. Round-tripping is therefore only guaranteed in the direction that ends in an encode.
+
+**Parameters**
+- `string` — the Base64 text to decode.
+
+**Returns** the decoded string.
+
+**Examples**
+```pure
+'SGVsbG8sIFdvcmxkIQ=='->decodeBase64()   // 'Hello, World!'
+'SGVsbG8sIFdvcmxkIQ'->decodeBase64()     // 'Hello, World!', unpadded input is accepted
+```
+
+**See also** `encodeBase64(String[1]):String[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::decodeBase64(string:String[1]):String[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::base64::testDecodeBase64<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

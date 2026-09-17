@@ -26,6 +26,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Conne
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.slf4j.Logger;
@@ -117,6 +118,7 @@ public class ConnectionStateManager implements Closeable
     public static String EVICTION_DURATION_SYSTEM_PROPERTY = "org.finos.legend.engine.execution.connectionStateEvictionDurationInSeconds";
 
     public static String POOL_NAME_KEY = "POOL_NAME_KEY";
+    public static final String INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY = "org.finos.legend.engine.execution.connectionPoolNameIncludesCredentialId";
     private static final String SEPARATOR = "_";
     private static final String DBPOOL = "DBPool_";
     private static ConnectionStateManager INSTANCE;
@@ -267,8 +269,25 @@ public class ConnectionStateManager implements Closeable
 
     public String poolNameFor(Identity identity, ConnectionKey key)
     {
-        String credentials = identity.getCredentials().stream().map(credential -> credential.getClass().getSimpleName()).collect(Collectors.joining("_"));
+        String credentials = identity.getCredentials().stream()
+                .map(this::credentialNameForPool)
+                .collect(Collectors.joining("_"));
         return DBPOOL + key.shortId() + SEPARATOR + identity.getName() + SEPARATOR + credentials;
+    }
+
+    private String credentialNameForPool(Credential credential)
+    {
+        String name = credential.getClass().getSimpleName();
+        if (!Boolean.getBoolean(INCLUDE_CREDENTIAL_ID_IN_POOL_NAME_PROPERTY))
+        {
+            return name;
+        }
+        String credentialId = credential.id();
+        if (credentialId == null || credentialId.isEmpty())
+        {
+            return name;
+        }
+        return name + "_" + credentialId;
     }
 
     public ConnectionStateManagerPOJO getConnectionStateManagerPOJO()

@@ -16,6 +16,31 @@ import meta::pure::functions::variant::convert::*;
 import meta::pure::functions::math::mathUtility::*;
 import meta::pure::test::pct::*;
 
+'''
+The value from one collection that sits where another collection is largest.
+
+An argmax: `col_containing_maximum` decides *which* position wins, and the value at that position of
+`col_to_return` is what comes back. The typical use is picking the row-derived value associated with
+a peak — the name of the top earner, the date of the highest reading — without sorting.
+
+The two collections are positional and must line up. **Returns empty when they are empty**, which is
+why the result is `[0..1]`.
+
+**Parameters**
+- `col_to_return` — the values to choose from.
+- `col_containing_maximum` — the values to compare.
+
+**Returns** the value at the position of the maximum, or empty.
+
+**Examples**
+```pure
+$rel->groupBy(~grp, ~top : x | $x.name : y | $y->maxBy($x.salary))
+```
+
+**See also** `maxBy(T[*], Number[*], Integer[1]):T[*]`,
+`minBy(T[*], Number[*], Integer[1]):T[*]`,
+`max(Number[*]):Number[0..1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::maxBy<T>(col_to_return:T[*], col_containing_maximum:Number[*]):T[0..1]
 {
   maxBy($col_to_return, $col_containing_maximum, 1)->head();
@@ -27,6 +52,10 @@ function <<functionType.ReducerFunction>> meta::pure::functions::math::maxBy<T>(
   maxBy($colRows.rowA, $colRows.rowB);
 }
 
+'''
+As `maxBy(T[*], Number[*]):T[0..1]`, returning the values at the `n` largest positions rather than
+just the largest — a top-`n` rather than a top-one.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::math::maxBy<T>(col_to_return:T[*], col_containing_maximum:Number[*], n:Integer[1]): T[*]
 {
   $col_to_return->zip($col_containing_maximum)->sort({x, y | $y.second->compare($x.second)})->slice(0, $n).first;

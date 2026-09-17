@@ -1,0 +1,23 @@
+{
+  "services": [
+    {
+      "path": "model::MyService",
+      "type": "Service",
+      "hasTestSuites": true,
+      "hasLegacyTests": false,
+      "testSuiteCount": 1
+    }
+  ],
+  "mappings": [],
+  "serviceCoverage": {
+    "totalElements": 1,
+    "elementsWithTests": 1,
+    "coveragePercentage": 1.0
+  },
+  "mappingCoverage": {
+    "totalElements": 0,
+    "elementsWithTests": 0,
+    "coveragePercentage": 0.0
+  }
+}
+

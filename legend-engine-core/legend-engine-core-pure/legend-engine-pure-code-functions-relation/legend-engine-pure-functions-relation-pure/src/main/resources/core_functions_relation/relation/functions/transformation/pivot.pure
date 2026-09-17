@@ -15,19 +15,90 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
-native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes multiple pivot columns and a single aggregate specification. All unique combinations of values from the pivot columns become new columns in the result. Each combination is aggregated according to the aggregate specification. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+'''
+Rotates values out of rows and into columns: each distinct combination of the pivot columns becomes a
+column of its own, holding the aggregate for that combination.
+
+**Grouping is implicit.** Every column that is neither pivoted nor consumed by the aggregate becomes
+a grouping column, so removing an unrelated column from the input changes the shape of the output.
+Pivoting `city, country, year, treePlanted` on `~[year]` aggregating `treePlanted` leaves `city` and
+`country` as the grouping columns.
+
+Generated columns are named `<value>__|__<aggName>` — `2011__|__newCol` — and combinations absent
+from a group are `null` there.
+
+**The result type is `Relation<Any>` and almost always needs a cast**, because which columns exist
+depends on the data rather than on the query:
+
+```pure
+$res->cast(@Relation<(city:String, country:String, '\'2011__|__newCol\'':Integer)>)
+```
+
+The quotes in a generated name are part of it, hence the doubling inside the cast. Use
+`pivot(Relation<T>[1], ColSpec<Z⊆T>[1], Any[1..*], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`
+to fix the column set in advance and avoid guessing it.
+
+**Parameters**
+- `r` — the relation to pivot.
+- `cols` — the columns whose values become new columns.
+- `agg` — the aggregate computed for each combination.
+
+**Returns** the grouping columns plus one column per combination, typed `Relation<Any>`.
+
+**Examples**
+```pure
+$rel->pivot(~[year], ~newCol : x | $x.treePlanted : y | $y->plus())
+```
+
+**See also** `pivot(Relation<T>[1], ColSpec<Z⊆T>[1], Any[1..*], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`,
+`groupBy(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Z+R>[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column and a single aggregate specification. All unique values from the pivot column become new columns in the result. Each value is aggregated according to the aggregate specification. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+'''
+As `pivot(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`,
+pivoting on a single column written without the brackets: `$rel->pivot(~year, ~newCol : x |
+$x.treePlanted : y | $y->plus())`.
+'''
+native function <<PCT.function>>
   meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column with explicitly specified values and a single aggregate specification. Only the specified pivot values become new columns in the result. Each value is aggregated according to the aggregate specification. This static pivot allows control over which columns appear in the output and their order. All remaining columns (not pivoted or aggregated) become grouping columns.'}
+'''
+As `pivot(Relation<T>[1], ColSpec<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`,
+but the output columns are **named up front** rather than discovered from the data — the static
+pivot.
+
+`values` fixes both which columns appear and their order. **Values present in the data but not
+listed are dropped**: over rows for 2000, 2011 and 2012, `pivot(~year, [2000, 2011], ...)` produces
+two columns and the 2012 rows contribute to neither.
+
+Prefer this form wherever the interesting values are known, since it makes the result type
+predictable and the cast that follows the pivot no longer a guess. The implicit grouping still
+applies, so a column left in the relation by accident — a per-row count, a timestamp — splits what
+you expected to be one row into several.
+
+**Examples**
+```pure
+$rel->pivot(~year, [2000, 2011], ~newCol : x | $x.treePlanted : y | $y->plus())
+```
+'''
+native function <<PCT.function>>
   meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], values:Any[1..*], agg:AggColSpec<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes multiple pivot columns and multiple aggregate specifications. All unique combinations of values from the pivot columns become new column groups in the result. For each combination, multiple aggregated columns are created (one per aggregate specification). All remaining columns (not pivoted or aggregated) become grouping columns.'}
+'''
+As `pivot(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpec<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`,
+with several aggregates: each combination of pivot values yields one column **per aggregate spec**,
+named `<value>__|__<aggName>` as before.
+'''
+native function <<PCT.function>>
   meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpecArray<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
-native function <<PCT.function>> {doc.doc = 'Pivots a relation by rotating data from rows into columns. Takes a single pivot column and multiple aggregate specifications. All unique values from the pivot column become new column groups in the result. For each value, multiple aggregated columns are created (one per aggregate specification). All remaining columns (not pivoted or aggregated) become grouping columns.'}
+'''
+As `pivot(Relation<T>[1], ColSpecArray<Z⊆T>[1], AggColSpecArray<{T[1]->K[0..1]}, {K[*]->V[0..1]}, R>[1]):Relation<Any>[1]`,
+pivoting on a single column written without the brackets.
+'''
+native function <<PCT.function>>
   meta::pure::functions::relation::pivot<T,Z,K,V,R>(r:Relation<T>[1], cols:ColSpec<Z⊆T>[1], agg:AggColSpecArray<{T[1]->K[0..1]},{K[*]->V[0..1]}, R>[1]):Relation<Any>[1];
 
 function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

@@ -34,11 +34,42 @@ public class TestCaseLoader
             {
                 throw new RuntimeException("Resource not found: " + resourcePath);
             }
-            return YAML_MAPPER.readValue(is, TestFile.class);
+            TestFile file = YAML_MAPPER.readValue(is, TestFile.class);
+            validate(file, resourcePath);
+            return file;
         }
         catch (IOException e)
         {
             throw new RuntimeException("Failed to load test file: " + resourcePath, e);
+        }
+    }
+
+    /**
+     * Enforces that at most one of function/operator/predicate/format_token/feature
+     * is set per test case, so misuse of the coverage-linkage fields fails loudly at
+     * load time rather than silently in a coverage mapper.
+     */
+    private static void validate(TestFile file, String resourcePath)
+    {
+        if (file.tests == null)
+        {
+            return;
+        }
+        for (TestCase tc : file.tests)
+        {
+            int count = 0;
+            count += tc.function != null ? 1 : 0;
+            count += tc.operator != null ? 1 : 0;
+            count += tc.predicate != null ? 1 : 0;
+            count += tc.format_token != null ? 1 : 0;
+            count += tc.feature != null ? 1 : 0;
+            if (count > 1)
+            {
+                throw new IllegalStateException(
+                        "Test case '" + tc.id + "' in " + resourcePath
+                                + " sets more than one of function/operator/predicate/format_token/feature; "
+                                + "at most one is allowed.");
+            }
         }
     }
 
@@ -78,6 +109,9 @@ public class TestCaseLoader
         public String skip;  // reason if test should be skipped
         public Boolean join_func;  // if true, use joined model function instead of FROM rewrite
         public String function;  // function name this test covers (for coverage linking)
+        public String operator;  // operator symbol this test covers, e.g. "->", "||", "=" (for operator coverage linking)
+        public String predicate; // predicate keyword this test covers, e.g. "BETWEEN", "IS NULL"
+        public String format_token;  // to_char/EXTRACT token this test covers, e.g. "YYYY", "isodow"
         public String signature;  // exact catalog signature this test covers
         public String feature;   // structural feature being tested (for structural parity)
         public String category;  // structural parity grouping (joins, window_frames, etc.)

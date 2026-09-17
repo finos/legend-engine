@@ -1,0 +1,123 @@
+tests:
+# =============================================================================
+# Array Operators
+# https://www.postgresql.org/docs/16/functions-array.html
+# =============================================================================
+
+- id: array_eq
+  sql: SELECT ARRAY[1,2,3] = ARRAY[1,2,3] AS result FROM persons WHERE id = 1
+  operator: "="
+  signature: "=(anyarray, anyarray) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: array_neq
+  sql: SELECT ARRAY[1,2,3] <> ARRAY[4,5,6] AS result FROM persons WHERE id = 1
+  operator: "<>"
+  signature: "<>(anyarray, anyarray) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: array_lt
+  sql: SELECT ARRAY[1,2] < ARRAY[1,3] AS result FROM persons WHERE id = 1
+  operator: "<"
+  signature: "<(anyarray, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: array_lte
+  sql: SELECT ARRAY[1,2] <= ARRAY[1,3] AS result FROM persons WHERE id = 1
+  operator: "<="
+  signature: "<=(anyarray, anyarray) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: array_gt
+  sql: SELECT ARRAY[1,3] > ARRAY[1,2] AS result FROM persons WHERE id = 1
+  operator: ">"
+  signature: ">(anyarray, anyarray) → bool"
+  expected_tds_status: FAIL
+  expected_rel_status: ERROR
+
+- id: array_gte
+  sql: SELECT ARRAY[1,3] >= ARRAY[1,2] AS result FROM persons WHERE id = 1
+  operator: ">="
+  signature: ">=(anyarray, anyarray) → bool"
+  expected_tds_status: PASS
+  expected_rel_status: ERROR
+
+- id: array_overlap
+  sql: SELECT ARRAY[1,2,3] && ARRAY[3,4,5] AS result FROM persons WHERE id = 1
+  operator: "&&"
+  signature: "&&(anyarray, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: array_contains
+  sql: SELECT ARRAY[1,2,3] @> ARRAY[2,3] AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anyarray, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+- id: array_contained_by
+  sql: SELECT ARRAY[2,3] <@ ARRAY[1,2,3] AS result FROM persons WHERE id = 1
+  operator: "<@"
+  signature: "<@(anyarray, anyarray) → bool"
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
+
+# ---------------------------------------------------------------------------
+# aclitem array operators (access-control-list entries; no schema-level grant
+# is created — these are literal aclitem values used purely to exercise the
+# operator signatures)
+# ---------------------------------------------------------------------------
+
+- id: aclitem_array_append
+  sql: SELECT ARRAY['foo=r/bar'::aclitem] + 'baz=w/bar'::aclitem AS result FROM persons WHERE id = 1
+  operator: "+"
+  signature: "+(anyarray, aclitem) → _aclitem"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: aclitem_array_remove
+  sql: SELECT ARRAY['foo=r/bar'::aclitem, 'baz=w/bar'::aclitem] - 'baz=w/bar'::aclitem AS result FROM persons WHERE id = 1
+  operator: "-"
+  signature: "-(anyarray, aclitem) → _aclitem"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+- id: aclitem_array_contains
+  sql: SELECT ARRAY['foo=r/bar'::aclitem, 'baz=w/bar'::aclitem] @> 'baz=w/bar'::aclitem AS result FROM persons WHERE id = 1
+  operator: "@>"
+  signature: "@>(anyarray, aclitem) → bool"
+  expected_tds_status: BUG
+  expected_rel_status: BUG
+
+# ---------------------------------------------------------------------------
+# anycompatiblearray || overloads (polymorphic concat between an array and a
+# scalar/array of a "compatible" element type)
+# ---------------------------------------------------------------------------
+
+- id: anycompatible_concat_scalar_array
+  sql: SELECT 4 || ARRAY[1,2,3] AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(anycompatible, anycompatiblearray) → anycompatiblearray"
+  expected_tds_status: FAIL
+  expected_rel_status: ERROR
+
+- id: anycompatible_concat_array_scalar
+  sql: SELECT ARRAY[1,2,3] || 4 AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(anycompatiblearray, anycompatible) → anycompatiblearray"
+  expected_tds_status: FAIL
+  expected_rel_status: ERROR
+
+- id: anycompatible_concat_array_array
+  sql: SELECT ARRAY[1,2] || ARRAY[3,4] AS result FROM persons WHERE id = 1
+  operator: "||"
+  signature: "||(anycompatiblearray, anycompatiblearray) → anycompatiblearray"
+  expected_tds_status: FAIL
+  expected_rel_status: ERROR
+
+

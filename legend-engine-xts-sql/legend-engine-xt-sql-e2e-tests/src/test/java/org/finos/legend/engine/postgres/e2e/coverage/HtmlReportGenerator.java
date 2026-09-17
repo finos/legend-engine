@@ -110,7 +110,9 @@ public class HtmlReportGenerator
     {
         generate(outputDir, "summary.md", "summary.html", "Legend SQL — Coverage Summary");
         generate(outputDir, "function-coverage.md", "function-coverage.html", "SQL Function Coverage");
+        generate(outputDir, "operator-coverage.md", "operator-coverage.html", "SQL Operator Coverage");
         generate(outputDir, "structural-parity.md", "structural-parity.html", "SQL Structural Parity");
+        generate(outputDir, "format-token-coverage.md", "format-token-coverage.html", "SQL Format Token Coverage");
         generate(outputDir, "failure-details.md", "failure-details.html", "SQL Failure Details");
     }
 
@@ -128,7 +130,7 @@ public class HtmlReportGenerator
             Node document = PARSER.parse(markdown);
             String htmlBody = RENDERER.render(document);
             // Rewrite internal .md links to point to the corresponding .html files
-            htmlBody = htmlBody.replaceAll("href=\"([^\"]*)\\.md(#[^\"]*)?\"", "href=\"$1$2\"");
+            htmlBody = htmlBody.replaceAll("href=\"([^\"]*)\\.md(#[^\"]*)?\"", "href=\"$1.html$2\"");
             String html = String.format(HTML_TEMPLATE, title, htmlBody);
             File htmlFile = new File(outputDir, htmlFileName);
             Files.write(htmlFile.toPath(), html.getBytes(StandardCharsets.UTF_8));

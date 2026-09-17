@@ -17,6 +17,28 @@ import meta::pure::functions::relation::*;
 import meta::pure::store::*;
 import meta::pure::test::pct::*;
 
+'''
+Writes a relation's rows into a target table, returning how many were written.
+
+**This has a side effect** — it is stereotyped `SideEffectFunction` and mutates the store, unlike
+every other function in this repository. The target is named by a `RelationElementAccessor`, whose
+type must match the relation's, so the columns are checked before anything is written.
+
+The return is the row count, not the relation, so a write ends a pipeline rather than continuing it.
+
+**Parameters**
+- `rel` — the rows to write.
+- `relationElementAccessor` — the target table.
+
+**Returns** the number of rows written.
+
+**Examples**
+```pure
+$rel->select()->write($target->newTDSRelationAccessor())   // 5, for a five-row relation
+```
+
+**See also** `concatenate(Relation<T>[1], Relation<T>[1]):Relation<T>[1]`
+'''
 native function <<PCT.function, functionType.SideEffectFunction>> meta::pure::functions::relation::write<T>(rel:Relation<T>[1], relationElementAccessor:RelationElementAccessor<T>[1]):Integer[1];
 
 function meta::pure::functions::relation::write::writeFunctions():Function<Any>[*]

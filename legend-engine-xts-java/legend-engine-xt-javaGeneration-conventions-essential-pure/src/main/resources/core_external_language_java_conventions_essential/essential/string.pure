@@ -35,6 +35,7 @@ function meta::external::language::java::generation::essential::string::register
 
          fc2(indexOf_String_1__String_1__Integer_1_,                             {ctx,s,toFind                | $s->j_invoke('indexOf', [$toFind])}),
          fc3(indexOf_String_1__String_1__Integer_1__Integer_1_,                  {ctx,s,toFind,fromIndex      | $s->j_invoke('indexOf', [$toFind, $fromIndex->j_cast(javaInt())])}),
+         fc3(lastIndexOf_String_1__String_1__Integer_1__Integer_1_,              {ctx,s,toFind,fromIndex      | $s->j_invoke('lastIndexOf', [$toFind, $fromIndex->j_cast(javaInt())], javaInt())}),
 
          fc1(length_String_1__Integer_1_,                                        {ctx,s                       | $s->j_invoke('length', [])}),
 

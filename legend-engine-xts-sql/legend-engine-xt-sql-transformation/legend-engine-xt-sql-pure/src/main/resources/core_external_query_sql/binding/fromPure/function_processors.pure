@@ -508,25 +508,40 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       window('lag', [], {args, fc, expCtx, ctx |
         assertRelation($expCtx.relation, 'lag');
 
-        let lag = $args->match([
-          v:ValueSpecification[2] | sfe(meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, []), $v->at(1)]),
+        let lead = $args->match([
+          v:ValueSpecification[2..3] | sfe(meta::pure::functions::relation::lag_Relation_1__T_1__Integer_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, []), $v->at(1)]),
           v:ValueSpecification[1] | sfe(meta::pure::functions::relation::lag_Relation_1__T_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, [])]),
-          v:ValueSpecification[*] | fail('incorrect number of args for lag'); iv(1);
+          v:ValueSpecification[*] | fail('incorrect number of args for lead'); iv(1);
         ]);
 
-        getWindowPropertyArg($args->first(), $lag, 'lag');
+        let func = getWindowPropertyArg($args->first(), $lead, 'lead');
+
+        $args->match([
+            v:ValueSpecification[3] | 
+              let type = bestCommonType($func.genericType.rawType->concatenate($args->at(2).genericType.rawType));
+              sfe(coalesce_T_$0_1$__T_$0_1$__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $func->concatenate($args->at(2)));,
+            v:ValueSpecification[*] | $func
+        ]);
+
       }),
 
       window('lead', [], {args, fc, expCtx, ctx |
         assertRelation($expCtx.relation, 'lead');
 
         let lead = $args->match([
-          v:ValueSpecification[2] | sfe(meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, []), $v->at(1)]),
+          v:ValueSpecification[2..3] | sfe(meta::pure::functions::relation::lead_Relation_1__T_1__Integer_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, []), $v->at(1)]),
           v:ValueSpecification[1] | sfe(meta::pure::functions::relation::lead_Relation_1__T_1__T_$0_1$_, [var('p', PureOne, []), var('r', PureOne, [])]),
           v:ValueSpecification[*] | fail('incorrect number of args for lead'); iv(1);
         ]);
 
-        getWindowPropertyArg($args->first(), $lead, 'lead');
+        let func = getWindowPropertyArg($args->first(), $lead, 'lead');
+
+        $args->match([
+            v:ValueSpecification[3] | 
+              let type = bestCommonType($func.genericType.rawType->concatenate($args->at(2).genericType.rawType));
+              sfe(coalesce_T_$0_1$__T_$0_1$__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $func->concatenate($args->at(2)));,
+            v:ValueSpecification[*] | $func
+        ]);
       }),
 
       window('nth_value', [], {args, fc, expCtx, ctx |
@@ -776,12 +791,14 @@ Class meta::external::query::sql::transformation::queryToPure::AggregateFunction
   map:meta::external::query::sql::metamodel::Expression[0..1];
   aggregate:meta::external::query::sql::metamodel::Expression[1];
   sortItems:meta::external::query::sql::metamodel::SortItem[*];
+  filter:meta::external::query::sql::metamodel::Expression[0..1];
 }
 
 function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1], context:SqlTransformContext[1]):AggregateFunctionPreProcessorWrapper[1]
 {
   assert($aggregate.group->isNotEmpty(), 'percentile must be within group');
   unsupported($aggregate.orderBy->isEmpty(), | 'aggregate order by not supported');
+  unsupported($aggregate.filter->isEmpty(), | 'aggregate filter not supported for percentile');
 
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.group.orderBy.sortKey->toOne(),
@@ -795,7 +812,8 @@ function meta::external::query::sql::transformation::queryToPure::defaultAggrega
   ^AggregateFunctionPreProcessorWrapper(
     map = $aggregate.arguments->first(),
     aggregate = $column->replaceAggregateArguments($context),
-    sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy)
+    sortItems = $aggregate.group.orderBy->concatenate($aggregate.orderBy),
+    filter = $aggregate.filter
   );
 }
 
@@ -811,9 +829,9 @@ function meta::external::query::sql::transformation::queryToPure::replaceAggrega
         let processor = $f.name->functionProcessor($context.functionProcessors);
         let var = ^QualifiedNameReference(name=^QualifiedName());
         if ($processor.isAggregate,
-          // The ordering is lifted into AggregateFunctionPreProcessorWrapper.sortItems and must not survive here:
-          // this expression becomes the reduce lambda, which processFunctionCall rejects with an order by on it.
-          | ^$f(group = [], orderBy = [], arguments = $f.arguments->match([
+          // The ordering and the filter are lifted into AggregateFunctionPreProcessorWrapper and must not
+          // survive here: this expression becomes the reduce lambda, which sees only the mapped values.
+          | ^$f(group = [], orderBy = [], filter = [], arguments = $f.arguments->match([
               a:meta::external::query::sql::metamodel::Expression[0..1] | $var,
               a:meta::external::query::sql::metamodel::Expression[1..*] | $var->concatenate($a->tail()),
               a:meta::external::query::sql::metamodel::Expression[*] | unsupported('aggregation type currently not supported'); [];

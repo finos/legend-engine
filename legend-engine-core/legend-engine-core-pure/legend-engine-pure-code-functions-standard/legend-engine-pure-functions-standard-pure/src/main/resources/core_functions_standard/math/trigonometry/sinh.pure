@@ -14,11 +14,27 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The hyperbolic sine of a number.
+
+`(e^x - e^-x) / 2`. Odd and unbounded: negating the argument negates the result, and `sinh(0)` is 0.
+
+**Parameters**
+- `number` — the argument, in radians.
+
+**Returns** the hyperbolic sine.
+
+**Examples**
+```pure
+sinh(0)   // 0.0
+```
+
+**See also** `sinh(Number[1]):Float[1]`,
+`cosh(Number[1]):Float[1]`,
+`tanh(Number[1]):Float[1]`
+'''
 native function
     <<PCT.function>>
-    {
-        doc.doc='sinh returns the hyperbolic sine of a number'
-    }
 meta::pure::functions::math::sinh(number:Number[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

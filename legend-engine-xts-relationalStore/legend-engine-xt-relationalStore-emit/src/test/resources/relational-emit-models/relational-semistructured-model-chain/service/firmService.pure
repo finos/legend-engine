@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Services rather than Mapping test suites because only a Service carries an explicit Runtime, and
+// the chain lives in the runtime: MappingTestRunner builds its runtime purely from the test's
+// store-test-data bindings, so a mapping testSuites block cannot name a ModelChainConnection.
+//
+// One route over the model and fixture: the relation projection, which is also the only form that
+// reaches DuckDB here (RelationalConnectionFactory picks DuckDB when the query returns a Relation
+// and H2 otherwise). Why the other two routes are not services is explained at the foot of this
+// file. Wider coverage lives in meta::relational::tests::semistructured::modelChain, which injects
+// the dialect connection directly.
+
+###Service
+// The reported shape in the relation form: project(~[...]) onto a to-many whose source array is
+// only reachable after a subType cast.
+//
+// Firm X's second term carries no collateral key and contributes a null row. That is how
+// semi-structured flattening behaves generally, not something the chain adds - the same projection
+// straight against chain::mapping::Relational produces the same row.
+Service chain::service::FirmHoldingsRelationService
+{
+  pattern: '/api/chain/firmHoldingsRelation';
+  documentation: 'Collateral piece ids per firm, as a relation, reached through a subType cast in the chain.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |chain::model::Firm.all()->project(~[id: x | $x.id, name: x | $x.name, pieceId: x | $x.holdings.pieceId]);
+    mapping: chain::mapping::M2M;
+    runtime: chain::runtime::FirmRuntime;
+  }
+  testSuites:
+  [
+    holdingsRelationSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          h2:
+            Reference
+            #{
+              chain::data::FirmData
+            }#
+        ]
+      ]
+      tests:
+      [
+        subTypeEmbeddedArrayAsRelation:
+        {
+          // Without this a Service suite compares against the whole execution envelope
+          // (builder, activities, result) rather than the rows.
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldMatch:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"name":"FIRM X","pieceId":"C1"},{"id":1,"name":"FIRM X","pieceId":"C2"},{"id":2,"name":"FIRM Y","pieceId":"C3"},{"id":3,"name":"FIRM Z","pieceId":null},{"id":1,"name":"FIRM X","pieceId":null}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The TabularDataSet and graph-fetch routes over this model are deliberately not services here.
+//
+// A relation return type is what selects the execution target: RelationalConnectionFactory picks
+// DuckDB when the query returns a Relation and H2 otherwise. relational-semistructured's mapping
+// makes the same point -- the TDS form "would silently run somewhere without a SEMISTRUCTURED type
+// and stop testing anything here". A TDS service over this model does reach H2 and then fails
+// inside legend_h2_extension_flatten_array, which cannot read the document this model's ###Data
+// block loads, while the identical query passes on both H2 and DuckDB under the PCT harness, whose
+// CSV loading differs. That is an EMIT harness gap, tracked separately from this model.
+//
+// Graph fetch cannot read anything behind a Binding at all. Routing resolves a property's sets
+// through mapping->classMappingById and a binding-mapped property registers no class mapping, so
+// plan generation fails. Supporting it also needs a per-element key for array elements, which the
+// relational metamodel has no notion of.
+//
+// Both shapes are covered, with their expected output, by
+// meta::relational::tests::semistructured::modelChain: the TDS ones run on every dialect the
+// parameterised suite covers, and the graph-fetch ones are parked with <<paramTest.Ignore>> as the
+// acceptance criteria for implementing it.

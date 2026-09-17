@@ -15,6 +15,55 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+Describes a window: how to partition a relation, how to order within a partition, and which rows
+around the current one to look at.
+
+`over` builds the window; it computes nothing on its own. Pass it to
+`extend(Relation<T>[1], _Window<T>[1], FuncColSpec<{Relation<T>[1], _Window<T>[1], T[1]->Any[0..1]}, R>[1]):Relation<T+R>[1]`,
+whose column function receives three arguments — the partition, the window and the current row:
+
+```pure
+$rel->extend(over(~grp, ~id->ascending()), ~n:{p,w,r| $p->rowNumber($r)})
+```
+
+A window has three independent parts, and each may be left out:
+
+- **Partition** — the rows are grouped by these columns and every computation stays inside one
+  group. Omit it and the whole relation is a single partition.
+- **Ordering** — sort keys built with `ascending(ColSpec<T>[1]):SortInfo<T>[1]` and
+  `descending(ColSpec<T>[1]):SortInfo<T>[1]`. Required for anything positional: `rank`, `lag`,
+  `first` and the rest are only meaningful once rows have an order.
+- **Frame** — which rows within the partition take part, built with
+  `rows(Integer[1], Integer[1]):Rows[1]` or the `_range` family. **Omit the frame and the window
+  runs from the start of the partition to the current row**, so a frameless aggregate is a running
+  total rather than a partition-wide one. Pass an explicit frame when you want either something
+  narrower or the whole partition.
+
+The overloads are the combinations of those three parts. This one takes partition columns as plain
+names and is the general form the others build on; in practice you write one of the `ColSpec`
+spellings below.
+
+**Parameters**
+- `cols` — the partition column names.
+- `sortInfo` — the sort keys, or empty for no ordering.
+- `frame` — the frame, or empty for start-of-partition to current row.
+
+**Returns** the window.
+
+**Examples**
+```pure
+over(~grp)                                    // partition only
+over(~id->ascending())                        // order only, one partition
+over(~grp, ~id->ascending())                  // partition and order
+over(~grp, ~id->ascending(), rows(-4, 0))     // and a five-row trailing frame
+over(~[grp, region], ~id->ascending())        // partition by two columns
+```
+
+**See also** `rows(Integer[1], Integer[1]):Rows[1]`,
+`ascending(ColSpec<T>[1]):SortInfo<T>[1]`,
+`reduce(Relation<T>[1], _Window<T>[1], T[1], Function<{T[1]->V[*]}>[1], Function<{V[*]->U[m]}>[1]):U[m]`
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -28,6 +77,10 @@ function
   );
 }
 
+'''
+As `over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`, partitioning by one column
+with no ordering and no frame: `over(~grp)`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -39,6 +92,10 @@ function
   );
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1]):_Window<T>[1]`, with an explicit row frame and still no ordering:
+`over(~grp, rows(-4, 0))`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -51,6 +108,10 @@ function
   );
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1]):_Window<T>[1]`, partitioning by several columns:
+`over(~[grp, region])`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -62,6 +123,10 @@ function
   );
 }
 
+'''
+As `over(ColSpecArray<(?:NULL)⊆T>[1]):_Window<T>[1]`, with an explicit row frame and still no
+ordering: `over(~[grp, region], rows(-4, 0))`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -74,6 +139,10 @@ function
   );
 }
 
+'''
+As `over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]`, ordering the whole relation
+as a single partition: `over(~id->ascending())`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -82,6 +151,11 @@ function
   over([],$sortInfo,[])
 }
 
+'''
+As `over(SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, with a value range frame rather than a row frame.
+A range frame is measured in values of the ordering column, so peer rows sharing a value are always
+included or excluded together — unlike `rows`, which counts positions.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -90,6 +164,10 @@ function
   over([],$sortInfo,$range)
 }
 
+'''
+As `over(SortInfo<(?:NULL)⊆T>[1], _Range[1]):_Window<T>[1]`, with the range expressed as a time
+interval — for ordering by a date or timestamp, where the frame is a duration rather than a count.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -98,6 +176,12 @@ function
   over([],$sortInfo,$rangeInterval)
 }
 
+'''
+Partition by one column and order within it — the most common spelling:
+`over(~grp, ~id->ascending())`. As
+`over(String[*], SortInfo<(?:NULL)⊆T>[*], Frame[0..1]):_Window<T>[1]` with no explicit frame, so the
+window runs from the start of each partition to the current row.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -106,6 +190,10 @@ function
   over($cols.name,$sortInfo,[])
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, with an explicit row frame:
+`over(~grp, ~id->ascending(), rows(-4, 0))` for a five-row trailing window.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -114,6 +202,10 @@ function
   over($cols.name,$sortInfo,$rows)
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, with a value range frame
+rather than a row frame, so peer rows sharing an ordering value are included or excluded together.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -122,6 +214,10 @@ function
   over($cols.name,$sortInfo,$range)
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[1], _Range[1]):_Window<T>[1]`, with the range
+expressed as a time interval, for ordering by a date or timestamp.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -130,6 +226,10 @@ function
   over($cols.name,$sortInfo,$rangeInterval)
 }
 
+'''
+As `over(ColSpec<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, partitioning by several
+columns: `over(~[grp, region], ~id->ascending())`.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -138,6 +238,10 @@ function
   over($cols.names,$sortInfo,[])
 }
 
+'''
+As `over(ColSpecArray<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, with an explicit row
+frame.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -146,6 +250,10 @@ function
   over($cols.names,$sortInfo,$rows)
 }
 
+'''
+As `over(ColSpecArray<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[*]):_Window<T>[1]`, with a value range
+frame rather than a row frame.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>
@@ -154,6 +262,10 @@ function
   over($cols.names,$sortInfo,$range)
 }
 
+'''
+As `over(ColSpecArray<(?:NULL)⊆T>[1], SortInfo<(?:NULL)⊆T>[1], _Range[1]):_Window<T>[1]`, with the
+range expressed as a time interval.
+'''
 function
     <<functionType.NormalizeRequiredFunction,
     PCT.function>>

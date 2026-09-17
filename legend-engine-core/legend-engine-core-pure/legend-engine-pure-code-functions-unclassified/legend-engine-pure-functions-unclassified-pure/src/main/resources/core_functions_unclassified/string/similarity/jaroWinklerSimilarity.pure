@@ -14,7 +14,30 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Calculates the Jaro-Winkler similarity between two strings, returning a value between 0 and 1.'}
+'''
+How similar two strings are, on the Jaro-Winkler scale from 0 to 1.
+
+1.0 means identical and 0.0 means nothing in common. The Winkler part weights a shared prefix, so
+strings that begin alike score higher than their raw Jaro similarity — which suits names and
+identifiers, where the discriminating characters usually come first. Unlike
+`levenshteinDistance(String[1], String[1]):Integer[1]`, **higher is more alike**, and the score is
+scale-free rather than a count, so it is comparable across strings of different lengths.
+
+**Parameters**
+- `str1` — the first string.
+- `str2` — the second string.
+
+**Returns** the similarity, between 0.0 and 1.0.
+
+**Examples**
+```pure
+'John Smith'->jaroWinklerSimilarity('John Smith')   // 1.0
+'John Smith'->jaroWinklerSimilarity('Jane Smith')   // 0.88
+```
+
+**See also** `levenshteinDistance(String[1], String[1]):Integer[1]`
+'''
+native function <<PCT.function>>
   meta::pure::functions::string::jaroWinklerSimilarity(str1:String[1], str2:String[1]):Float[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

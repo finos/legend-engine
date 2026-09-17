@@ -20,37 +20,180 @@ import meta::external::dataquality::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::functions::date::*;
 
+'''
+Whether a relation has no rows.
+
+The building block for a data quality rule that asserts something never happens: filter a relation
+down to the rows that violate the rule, then require the result to be empty. It counts rows, so a
+relation with columns but no rows is empty and the column list makes no difference.
+
+**Parameters**
+- `rel` — the relation to test.
+
+**Returns** `true` when the relation has no rows.
+
+**Examples**
+```pure
+$bars->filter(r | $r.volume < 0)->relationEmpty()   // true when no bar has negative volume
+```
+
+**See also** `relationNotEmpty(Relation<T>[1]):Boolean[1]`,
+`rowCountEqual(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::relationEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() == 0;
 }
 
+'''
+Whether a relation has at least one row.
+
+The complement of `relationEmpty(Relation<T>[1]):Boolean[1]`, for rules that assert something must
+be present rather than absent.
+
+**Parameters**
+- `rel` — the relation to test.
+
+**Returns** `true` when the relation has one row or more.
+
+**Examples**
+```pure
+$bars->filter(r | $r.symbol == 'AAPL')->relationNotEmpty()   // true when AAPL appears at all
+```
+
+**See also** `relationEmpty(Relation<T>[1]):Boolean[1]`,
+`rowCountGreaterThan(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::relationNotEmpty<T>(rel:Relation<T>[1]):Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() > 0;
 }
 
 // row count
+'''
+Whether a relation has strictly more rows than a limit.
+
+Strict, so a relation of exactly `lowerLimit` rows gives `false`; use
+`rowCountGreaterThanEqual(Relation<T>[1], Number[1]):Boolean[1]` when the limit itself should pass.
+The limit is a `Number`, so a fractional bound is accepted and compares as written.
+
+**Parameters**
+- `rel` — the relation to count.
+- `lowerLimit` — the count the relation must exceed.
+
+**Returns** `true` when the relation has more than `lowerLimit` rows.
+
+**Examples**
+```pure
+$threeRows->rowCountGreaterThan(1)   // true
+$threeRows->rowCountGreaterThan(3)   // false, the comparison is strict
+```
+
+**See also** `rowCountGreaterThanEqual(Relation<T>[1], Number[1]):Boolean[1]`,
+`rowCountLowerThan(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::rowCountGreaterThan<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() > $lowerLimit;
 }
 
+'''
+Whether a relation has at least as many rows as a limit.
+
+As `rowCountGreaterThan(Relation<T>[1], Number[1]):Boolean[1]`, but a relation of exactly
+`lowerLimit` rows passes.
+
+**Parameters**
+- `rel` — the relation to count.
+- `lowerLimit` — the smallest acceptable count.
+
+**Returns** `true` when the relation has `lowerLimit` rows or more.
+
+**Examples**
+```pure
+$threeRows->rowCountGreaterThanEqual(3)   // true, where rowCountGreaterThan(3) is false
+```
+
+**See also** `rowCountGreaterThan(Relation<T>[1], Number[1]):Boolean[1]`,
+`rowCountLowerThanEqual(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::rowCountGreaterThanEqual<T>(rel: Relation<T>[1], lowerLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() >= $lowerLimit;
 }
 
+'''
+Whether a relation has strictly fewer rows than a limit.
+
+Strict, so a relation of exactly `upperLimit` rows gives `false`; use
+`rowCountLowerThanEqual(Relation<T>[1], Number[1]):Boolean[1]` when the limit itself should pass.
+
+**Parameters**
+- `rel` — the relation to count.
+- `upperLimit` — the count the relation must stay below.
+
+**Returns** `true` when the relation has fewer than `upperLimit` rows.
+
+**Examples**
+```pure
+$threeRows->rowCountLowerThan(4)   // true
+$threeRows->rowCountLowerThan(3)   // false, the comparison is strict
+```
+
+**See also** `rowCountLowerThanEqual(Relation<T>[1], Number[1]):Boolean[1]`,
+`rowCountGreaterThan(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::rowCountLowerThan<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() < $upperLimit;
 }
 
+'''
+Whether a relation has no more rows than a limit.
+
+As `rowCountLowerThan(Relation<T>[1], Number[1]):Boolean[1]`, but a relation of exactly `upperLimit`
+rows passes.
+
+**Parameters**
+- `rel` — the relation to count.
+- `upperLimit` — the largest acceptable count.
+
+**Returns** `true` when the relation has `upperLimit` rows or fewer.
+
+**Examples**
+```pure
+$threeRows->rowCountLowerThanEqual(3)   // true, where rowCountLowerThan(3) is false
+```
+
+**See also** `rowCountLowerThan(Relation<T>[1], Number[1]):Boolean[1]`,
+`rowCountGreaterThanEqual(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::rowCountLowerThanEqual<T>(rel: Relation<T>[1], upperLimit: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() <= $upperLimit;
 }
 
+'''
+Whether a relation has exactly the given number of rows.
+
+Useful where a load is expected to produce a known count — a reference set, a fixed calendar — and
+either a shortfall or a surplus is a fault.
+
+**Parameters**
+- `rel` — the relation to count.
+- `equalTo` — the required count.
+
+**Returns** `true` when the relation has exactly `equalTo` rows.
+
+**Examples**
+```pure
+$threeRows->rowCountEqual(3)   // true
+$threeRows->rowCountEqual(2)   // false
+```
+
+**See also** `relationEmpty(Relation<T>[1]):Boolean[1]`,
+`rowCountGreaterThanEqual(Relation<T>[1], Number[1]):Boolean[1]`
+'''
 function <<PCT.function>> meta::external::dataquality::rowCountEqual<T>(rel: Relation<T>[1], equalTo: Number[1]): Boolean[1]
 {
   $rel->meta::pure::functions::relation::size() == $equalTo;

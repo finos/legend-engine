@@ -1,0 +1,34 @@
+tests:
+  # =============================================================================
+  # Standalone VALUES lists
+  # https://www.postgresql.org/docs/16/sql-values.html
+  # =============================================================================
+
+  - id: values_standalone_basic
+    sql: "VALUES (1, 'one'), (2, 'two'), (3, 'three')"
+    feature: "standalone VALUES list"
+    category: "values_clause"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: values_standalone_order_limit
+    sql: "SELECT * FROM (VALUES (1, 'one'), (2, 'two'), (3, 'three')) AS t(id, label) ORDER BY id DESC LIMIT 2"
+    feature: "VALUES as derived table with alias"
+    category: "values_clause"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  - id: values_in_union
+    sql: "VALUES (1), (2) UNION SELECT id FROM persons WHERE id IN (1, 2, 3)"
+    feature: "VALUES combined with UNION"
+    category: "values_clause"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: values_in_insert_not_applicable
+    sql: "SELECT * FROM (VALUES (1, 'a'::text), (2, 'b'::text)) AS t(id, val)"
+    feature: "VALUES with explicit column typing"
+    category: "values_clause"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+

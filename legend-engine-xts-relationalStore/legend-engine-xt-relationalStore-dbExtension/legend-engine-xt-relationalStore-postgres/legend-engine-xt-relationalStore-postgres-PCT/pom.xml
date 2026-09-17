@@ -241,6 +241,21 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-external-format-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-model</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-functions-relationalStore-PCT-pure</artifactId>
         </dependency>
         <dependency>

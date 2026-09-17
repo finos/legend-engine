@@ -850,6 +850,10 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     sort_TabularDataSet_1__String_1__SortDirection_1__TabularDataSet_1_,
     desc_String_1__SortInformation_1_,
     asc_String_1__SortInformation_1_,
+    asc_String_1__EmptyOrder_1__SortInformation_1_,
+    desc_String_1__EmptyOrder_1__SortInformation_1_,
+    meta::pure::tds::emptyFirst_SortInformation_1__SortInformation_1_,
+    meta::pure::tds::emptyLast_SortInformation_1__SortInformation_1_,
     slice_TabularDataSet_1__Integer_1__Integer_1__TabularDataSet_1_,
     drop_TabularDataSet_1__Integer_1__TabularDataSet_1_,
     limit_TabularDataSet_1__Integer_1__TabularDataSet_1_,
@@ -955,6 +959,10 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     right_String_1__Integer_1__String_1_,
     substr_String_1__Integer_1__String_1_,
     substr_String_1__Integer_1__Integer_1__String_1_,
+    idxOf_String_1__String_1__Integer_1_,
+    idxOf_String_1__String_1__Integer_1__Integer_1_,
+    lastIdxOf_String_1__String_1__Integer_1_,
+    lastIdxOf_String_1__String_1__Integer_1__Integer_1_,
     typeName_Any_1__String_1_,
     levenshteinDistance_String_1__String_1__Integer_1_,
     jaroWinklerSimilarity_String_1__String_1__Float_1_,
@@ -1041,6 +1049,11 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_,
     meta::pure::functions::relation::exists_Relation_1__Function_1__Boolean_1_,
     meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::equalTo_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThan_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::greaterThanEqual_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThan_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::functions::relation::lessThanEqual_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::equalAny_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::equalAll_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::greaterThanAny_U_$0_1$__Relation_1__Boolean_1_,
@@ -1050,7 +1063,12 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::relation::lessThanAny_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::lessThanAll_U_$0_1$__Relation_1__Boolean_1_,
     meta::pure::functions::relation::lessThanEqualAny_U_$0_1$__Relation_1__Boolean_1_,
-    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_
+    meta::pure::functions::relation::lessThanEqualAll_U_$0_1$__Relation_1__Boolean_1_,
+    meta::pure::mapping::getSourceEnumValues_Mapping_1__Enumeration_1__Enum_MANY_,
+    meta::pure::mapping::getSourceEnumValuesByName_Mapping_1__Enumeration_1__String_1__Enum_MANY_,
+    meta::pure::mapping::getEnumerationMappingValueByName_Mapping_1__Enumeration_1__String_1__Any_1__Enum_$0_1$_,
+    meta::pure::mapping::mapToEnumValue_Enum_1__Enumeration_1__Mapping_1__Enum_1_,
+    meta::pure::mapping::mapToEnumValueOptional_Enum_$0_1$__Enumeration_1__Mapping_1__Enum_$0_1$_
   ]->concatenate($extensions.routerExtensions().shouldStopRouting)
 }
 

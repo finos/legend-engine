@@ -87,7 +87,7 @@ Class <<access.private>>  meta::external::store::relational::sdt::framework::Sdt
 
 function <<access.private>> meta::external::store::relational::sdt::framework::generateSdtTestCaseSqls(sdt: SqlDialectTest[1], dbType: String[1], extensions: Extension[*]): SdtTestCaseSqls[1]
 {
-  let cfg = sdtTestSqlDialectTranslationConfig($dbType);
+  let cfg = sdtTestSqlDialectTranslationConfig($dbType, $extensions);
 
   ^SdtTestCaseSqls
   (
@@ -183,16 +183,19 @@ function meta::external::store::relational::sdt::framework::testConfigForSqlFunc
   );
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1]): SqlDialectTranslationConfig[1]
+function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1], extensions: Extension[*]): SqlDialectTranslationConfig[1]
 {
-  meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig($dbType, false);
+  meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig($dbType, false, $extensions);
 }
 
-function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1], quoteIdentifiers: Boolean[1]): SqlDialectTranslationConfig[1]
+// Built via newDbConfig rather than a bare ^DbConfig so the dialect's native null ordering is
+// resolved: SDT hand-builds its query AST, so a sort item left UNDEFINED here is exactly the
+// "no explicit clause" case whose correct rendering depends on that data.
+function <<access.private>> meta::external::store::relational::sdt::framework::sdtTestSqlDialectTranslationConfig(dbType: String[1], quoteIdentifiers: Boolean[1], extensions: Extension[*]): SqlDialectTranslationConfig[1]
 {
   ^SqlDialectTranslationConfig
   (
-    dbConfig = ^DbConfig(dbType = $dbType, quoteIdentifiers = $quoteIdentifiers),
+    dbConfig = meta::external::store::relational::sqlDialectTranslation::newDbConfig($dbType, [], $quoteIdentifiers, false, $extensions),
     formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
     functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
   )

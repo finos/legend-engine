@@ -89,6 +89,7 @@
                             <ignoredUnusedDeclaredDependencies>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-code-core-extension</dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-m2-dsl-diagram-grammar</dependency>
+                                <dependency>org.finos.legend.pure:legend-pure-m2-store-relational-pure</dependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
@@ -114,6 +115,14 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-store-relational-java</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

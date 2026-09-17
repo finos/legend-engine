@@ -323,6 +323,67 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements
   );
 }
 
+// SELECT * FROM testTable ORDER BY dept ASC, id ASC
+//
+// No explicit null ordering. Nulls must still sort as the largest value, so ascending puts them last
+// on every dialect -- the same result as the NULLS LAST case above. Databases whose native ordering
+// disagrees get an explicit clause generated for them, so this asserts one shared expectation rather
+// than per-dialect ones. See resolveNullOrdering in the sql dialect translation defaults.
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortByWithDefaultNullOrderingAsc(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        ),
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+          ordering = SortItemOrdering.ASCENDING,
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        )
+      ]
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [1, 'John', 'Engg']), ^TestResultRow(values = [3, 'Jessie', 'Engg']), ^TestResultRow(values = [2, 'Jenny', null()])]),
+    'SQLStructureTests - SortByWithDefaultNullOrderingAsc'
+  );
+}
+
+// SELECT * FROM testTable ORDER BY dept DESC, id DESC
+//
+// Descending counterpart: nulls are still the largest value, so they come first here.
+function <<SDT.test>> meta::external::store::relational::sdt::suite::sqlElements::testSortByWithDefaultNullOrderingDesc(): SqlDialectTest[1]
+{
+  testConfigForNulls(
+    ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = ^AllColumns()),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = [
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'dept')),
+          ordering = SortItemOrdering.DESCENDING,
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        ),
+        ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+          ordering = SortItemOrdering.DESCENDING,
+          nullOrdering = SortItemNullOrdering.UNDEFINED
+        )
+      ]
+    ),
+    ^TestResult(columnNames = ['id', 'name', 'dept'], rows = [^TestResultRow(values = [2, 'Jenny', null()]), ^TestResultRow(values = [3, 'Jessie', 'Engg']), ^TestResultRow(values = [1, 'John', 'Engg'])]),
+    'SQLStructureTests - SortByWithDefaultNullOrderingDesc'
+  );
+}
+
 // Tests on Limit and Offset
 
 // SELECT id, name FROM testTable ORDER BY id ASC NULLS LAST LIMIT 2

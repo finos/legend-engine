@@ -12,10 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
-
-public enum NullOrder
+###Pure
+Class demo::m2m::dates::target::Shift
 {
-    FIRST,
-    LAST
+  id: Integer[1];
+  startedOn: StrictDate[1];
+  startedAt: DateTime[1];
+  endedAt: DateTime[0..1];
 }

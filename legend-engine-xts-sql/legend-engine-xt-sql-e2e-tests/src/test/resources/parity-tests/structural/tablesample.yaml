@@ -1,0 +1,27 @@
+tests:
+  # =============================================================================
+  # TABLESAMPLE
+  # https://www.postgresql.org/docs/16/sql-select.html#SQL-FROM-TABLESAMPLE
+  # =============================================================================
+
+  - id: tablesample_bernoulli
+    sql: "SELECT COUNT(*) FROM persons TABLESAMPLE BERNOULLI (50) REPEATABLE (1)"
+    feature: "TABLESAMPLE BERNOULLI"
+    category: "tablesample"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: tablesample_system
+    sql: "SELECT COUNT(*) FROM persons TABLESAMPLE SYSTEM (50) REPEATABLE (1)"
+    feature: "TABLESAMPLE SYSTEM"
+    category: "tablesample"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: tablesample_no_repeatable
+    sql: "SELECT COUNT(*) FROM persons TABLESAMPLE BERNOULLI (10)"
+    feature: "TABLESAMPLE without REPEATABLE"
+    category: "tablesample"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+

@@ -1,0 +1,140 @@
+tests:
+# =============================================================================
+# EXTRACT / date_part field keywords
+# https://www.postgresql.org/docs/16/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT
+# One row per documented field (Table 9.33), applied to a representative
+# timestamp literal.
+# =============================================================================
+
+- id: extract_field__century
+  sql: "SELECT EXTRACT(CENTURY FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:century"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__day
+  sql: "SELECT EXTRACT(DAY FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:day"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__decade
+  sql: "SELECT EXTRACT(DECADE FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:decade"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__dow
+  sql: "SELECT EXTRACT(DOW FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:dow"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__doy
+  sql: "SELECT EXTRACT(DOY FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:doy"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__epoch
+  sql: "SELECT EXTRACT(EPOCH FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:epoch"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__hour
+  sql: "SELECT EXTRACT(HOUR FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:hour"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__isodow
+  sql: "SELECT EXTRACT(ISODOW FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:isodow"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__isoyear
+  sql: "SELECT EXTRACT(ISOYEAR FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:isoyear"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__julian
+  sql: "SELECT EXTRACT(JULIAN FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:julian"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__microseconds
+  sql: "SELECT EXTRACT(MICROSECONDS FROM TIMESTAMP '2024-06-15 13:45:22.123456') AS result"
+  format_token: "extract:microseconds"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__millennium
+  sql: "SELECT EXTRACT(MILLENNIUM FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:millennium"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__milliseconds
+  sql: "SELECT EXTRACT(MILLISECONDS FROM TIMESTAMP '2024-06-15 13:45:22.123') AS result"
+  format_token: "extract:milliseconds"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__minute
+  sql: "SELECT EXTRACT(MINUTE FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:minute"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__month
+  sql: "SELECT EXTRACT(MONTH FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:month"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__quarter
+  sql: "SELECT EXTRACT(QUARTER FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:quarter"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__second
+  sql: "SELECT EXTRACT(SECOND FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:second"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__timezone
+  sql: "SELECT EXTRACT(TIMEZONE FROM TIMESTAMPTZ '2024-06-15 13:45:22+02') AS result"
+  format_token: "extract:timezone"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__timezone_hour
+  sql: "SELECT EXTRACT(TIMEZONE_HOUR FROM TIMESTAMPTZ '2024-06-15 13:45:22+02') AS result"
+  format_token: "extract:timezone_hour"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__timezone_minute
+  sql: "SELECT EXTRACT(TIMEZONE_MINUTE FROM TIMESTAMPTZ '2024-06-15 13:45:22+02') AS result"
+  format_token: "extract:timezone_minute"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__week
+  sql: "SELECT EXTRACT(WEEK FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:week"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+
+- id: extract_field__year
+  sql: "SELECT EXTRACT(YEAR FROM TIMESTAMP '2024-06-15 13:45:22') AS result"
+  format_token: "extract:year"
+  expected_tds_status: PASS
+  expected_rel_status: PASS
+

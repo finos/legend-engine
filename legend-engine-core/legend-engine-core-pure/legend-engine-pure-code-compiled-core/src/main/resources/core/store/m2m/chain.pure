@@ -104,7 +104,8 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
 function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[0..1], mcc:ModelChainConnection[1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let returnType = $sq.vs.genericType.rawType->toOne();
-   assert($returnType->_subTypeOf(TabularDataSet), 'Non TDS return type not supported for Model Connections');
+   assert($returnType->_subTypeOf(TabularDataSet) || $returnType->_subTypeOf(meta::pure::metamodel::relation::Relation),
+          | 'Only TabularDataSet and Relation return types are supported for Model Chain Connections; got: ' + $returnType->elementToPath());
 
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
 
@@ -205,8 +206,14 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                     let newTypeParams =  $fe.genericType.typeArguments->map(t| let typeParam = $t.rawType->toOne();
                                                                                                                if($typeParam->instanceOf(DataType),
                                                                                                                   | if($typeParam->instanceOf(Enumeration),| ^GenericType(rawType=String),| $t),
-                                                                                                                  | let sc = sourceClassFromFunction($fe);
-                                                                                                                    if($sc->isNotEmpty(),|^GenericType(rawType=$sc.srcClass),|$t);
+                                                                                                                  // A Relation's type argument is its RelationType -- the shape of the
+                                                                                                                  // columns the relation produces, not a mapped class. There is no
+                                                                                                                  // source class behind it to re-point at.
+                                                                                                                  | if($typeParam->instanceOf(meta::pure::metamodel::relation::RelationType),
+                                                                                                                       | $t,
+                                                                                                                       | let sc = sourceClassFromFunction($fe);
+                                                                                                                         if($sc->isNotEmpty(),|^GenericType(rawType=$sc.srcClass),|$t);
+                                                                                                                    );
                                                                                                                 );
                                                                                                           );
                                                     let type = $fe.genericType.rawType->toOne();
@@ -245,18 +252,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
          i:InstanceValue[1]|let results = $i.values->map(v|$v->match([a:Class<Any>[1]|$e.sets->at(0)->cast(@PureInstanceSetImplementation).srcClass,
                                                                       l:FunctionRoutedValueSpecification[1]| $l.value->reprocess($e, $mapping, $mappings, $l,$trackPropertyFunction, $extensions),
                                                                       vs:ValueSpecification[1]|$vs->reprocess($e, $mapping, $mappings, [],$trackPropertyFunction, $extensions),
-                                                                      f:LambdaFunction<Any>[1]|
-                                                                                               let functionParam = if($f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->isNotEmpty(),
-                                                                                                                  |let param = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->at(0)->cast(@VariableExpression);
-                                                                                                                    pair($param.name, $param.genericType);,
-                                                                                                                  | []);
-                                                                                               let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));
-                                                                                               let results=  $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
-                                                                                               let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())->reprocessVars($functionParam)));
-                                                                                               ^Res(newExpression=^$f(classifierGenericType=$f->buildLambdaType($varMap, $r),
-                                                                                                                      expressionSequence=$results.newExpression->cast(@ValueSpecification)),
-                                                                                                     propertyFunctions= $results.propertyFunctions);               
-                                                                                               ,
+                                                                      f:LambdaFunction<Any>[1]| $f->reprocessLambda($e, $mapping, $mappings, $r, $trackPropertyFunction, $extensions),
                                                                       agg:meta::pure::functions::collection::AggregateValue<Any,Any,Any>[1]|
                                                                                                            let f = $agg.mapFn;
                                                                                                            let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
@@ -309,7 +305,25 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                       f:Float[1]|$f,
                                                                       e:Enumeration<Any>[1]|$e,
                                                                       st:StoreMappingClusteredValueSpecification[1]| $st,
-                                                                      gft:meta::pure::graphFetch::GraphFetchTree[1] | $gft
+                                                                      gft:meta::pure::graphFetch::GraphFetchTree[1] | $gft,
+                                                                      // TDSv1 col(): the lambda is over the target class and has to be re-sourced like any
+                                                                      // other. project(lambdas, names) never reaches here because its lambdas arrive bare.
+                                                                      cs:meta::pure::tds::BasicColumnSpecification<Any>[1]|
+                                                                           $cs->reprocessBasicColumnSpecification($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                      // Window columns: the lambda is over TDSRow, downstream of the chain boundary, so
+                                                                      // there is nothing to re-source.
+                                                                      ocs:meta::pure::tds::ColumnSpecification<Any>[1]| $ocs,
+                                                                      // Relation (TDSv2) column specifications. ColSpec/ColSpecArray carry names only.
+                                                                      c:meta::pure::metamodel::relation::ColSpec<Any>[1]| $c,
+                                                                      ca:meta::pure::metamodel::relation::ColSpecArray<Any>[1]| $ca,
+                                                                      fcs:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]|
+                                                                           $fcs->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                      fca:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]|
+                                                                           $fca->reprocessFuncColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                      acs:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]|
+                                                                           $acs->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions),
+                                                                      aca:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]|
+                                                                           $aca->reprocessAggColSpecArray($e, $mapping, $mappings, $trackPropertyFunction, $extensions)
                                                                      ]););
                             let values = $results->map(r|$r->match([v:Res[1]|$v.newExpression->match([i:InstanceValue[1]|$i.values,a:Any[1]|$a]),k:Any[1]|$k])); 
 
@@ -336,6 +350,110 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                             ^Res(newExpression=$newInstanceValue, vars=if($vars->isEmpty(),|[],|newMap($vars->map(r|$r->keyValues()))),propertyFunctions=$propertyFunctions);
       ]
    );
+}
+
+// Reprocessing of a lambda body, lifted out of the InstanceValue arm of reprocess so the column
+// specification arms (TDSv1 col() and the relation ~[] family) can reuse it.
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessLambda(f:LambdaFunction<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], r:FunctionRoutedValueSpecification[0..1], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
+{
+   let functionParam = if($f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->isNotEmpty(),
+                          |let param = $f->genericType().typeArguments.rawType->cast(@FunctionType).parameters->at(0)->cast(@VariableExpression);
+                            pair($param.name, $param.genericType);,
+                          | []);
+   let intermediateRes = $f.expressionSequence->evaluateAndDeactivate()->map(vs|$vs->inlineQualifiedProperties(^Map<VariableExpression, ValueSpecification>(), $f->openVariableValues(),$functionParam ,$extensions));
+   let results = $intermediateRes->map(ir| $ir->reprocessVar($functionParam))->cast(@ValueSpecification)->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
+   let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())->reprocessVars($functionParam)));
+   ^Res(newExpression=^$f(classifierGenericType=$f->buildLambdaType($varMap, $r),
+                          expressionSequence=$results.newExpression->cast(@ValueSpecification)),
+        propertyFunctions= $results.propertyFunctions);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessBasicColumnSpecification(cs:meta::pure::tds::BasicColumnSpecification<Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):Res[1]
+{
+   // Mirrors the AggregateValue arm above rather than going through buildLambdaType: a col() lambda
+   // reaches here still active, and buildLambdaType copies its parameter nodes, which forces an
+   // evaluation of the bound variable. functionType() hands back an inert copy instead.
+   let f = $cs.func->cast(@LambdaFunction<Any>);
+   let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
+   let fType = $f->functionType();
+   let fInputType = ^GenericType(rawType = $f.expressionSequence->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
+   let gen = ^GenericType
+             (
+                rawType = LambdaFunction,
+                typeArguments = ^GenericType(rawType = ^$fType
+                                                       (
+                                                          parameters = $fType.parameters->map(p|^$p(genericType = $fInputType)),
+                                                          returnType = $f->functionReturnType(),
+                                                          returnMultiplicity = $f->functionReturnMultiplicity()
+                                                       ))
+             );
+   let dummyLambda = {x:Any[1]| $x};
+   let newFunc = ^$dummyLambda(classifierGenericType = $gen, expressionSequence = $results.newExpression->cast(@ValueSpecification));
+   let keyValues = [^KeyValue(key = 'name', value = $cs.name), ^KeyValue(key = 'func', value = $newFunc)]
+                      ->concatenate(if($cs.documentation->isEmpty(), | [], | ^KeyValue(key = 'documentation', value = $cs.documentation->toOne())));
+   ^Res(newExpression = $cs->genericType()->toOne()->replaceFirstTypeArgument($fInputType)->dynamicNew($keyValues)->cast(@meta::pure::tds::BasicColumnSpecification<Any>),
+        propertyFunctions = $results.propertyFunctions);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpec(fcs:meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1]
+{
+   // Rebuilt with dynamicNew rather than copied: re-sourcing rewrites the lambda's input from the
+   // target class to the chain's source class, so the col spec's first type argument has to move
+   // with it. A ^$fcs(...) copy would keep the stale one and fail to type-check.
+   let res = $fcs.function->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions);
+   let newFunc = $res.newExpression->cast(@LambdaFunction<Any>);
+   $fcs->genericType()->toOne()->replaceFirstTypeArgument($newFunc.classifierGenericType.typeArguments->at(0))->dynamicNew([
+      ^KeyValue(key = 'name', value = $fcs.name),
+      ^KeyValue(key = 'function', value = $newFunc)
+   ])->cast(@meta::pure::metamodel::relation::FuncColSpec<Any,Any>);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessFuncColSpecArray(fca:meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1]
+{
+   let newSpecs = $fca.funcSpecs->map(f | $f->reprocessFuncColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions));
+   if($newSpecs->isEmpty(),
+      | $fca,
+      | // Read the new type argument off the rebuilt lambda, not off the rebuilt col spec's
+        // genericType(): compiled mode does not carry type arguments through dynamicNew, so that
+        // would be empty here even though it is populated under the interpreter.
+        $fca->genericType()->toOne()->replaceFirstTypeArgument($newSpecs->at(0).function->cast(@LambdaFunction<Any>).classifierGenericType.typeArguments->at(0))->dynamicNew([
+           ^KeyValue(key = 'funcSpecs', value = $newSpecs)
+        ])->cast(@meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>);
+   );
+}
+
+// Only the map side is re-sourced. The reduce side runs over values the map side has already
+// produced, on the target of the chain -- matching how the AggregateValue arm above leaves
+// aggregateFn untouched.
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpec(acs:meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>[1]
+{
+   let res = $acs.map->cast(@LambdaFunction<Any>)->reprocessLambda($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions);
+   let newMap = $res.newExpression->cast(@LambdaFunction<Any>);
+   $acs->genericType()->toOne()->replaceFirstTypeArgument($newMap.classifierGenericType.typeArguments->at(0))->dynamicNew([
+      ^KeyValue(key = 'name', value = $acs.name),
+      ^KeyValue(key = 'map', value = $newMap),
+      ^KeyValue(key = 'reduce', value = $acs.reduce)
+   ])->cast(@meta::pure::metamodel::relation::AggColSpec<Any,Any,Any>);
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessAggColSpecArray(aca:meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1], e:StoreMappingRoutedValueSpecification[0..1], mapping:Mapping[1], mappings:Mapping[*], trackPropertyFunction:Boolean[1], extensions:meta::pure::extension::Extension[*]):meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>[1]
+{
+   let newSpecs = $aca.aggSpecs->map(a | $a->reprocessAggColSpec($e, $mapping, $mappings, $trackPropertyFunction, $extensions));
+   if($newSpecs->isEmpty(),
+      | $aca,
+      | // See reprocessFuncColSpecArray: read the type argument off the rebuilt lambda, since
+        // dynamicNew does not carry type arguments in compiled mode.
+        $aca->genericType()->toOne()->replaceFirstTypeArgument($newSpecs->at(0).map->cast(@LambdaFunction<Any>).classifierGenericType.typeArguments->at(0))->dynamicNew([
+           ^KeyValue(key = 'aggSpecs', value = $newSpecs)
+        ])->cast(@meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>);
+   );
+}
+
+// The col spec's first type argument is the function type of its map/function lambda; once that
+// lambda has been re-sourced the argument has to be replaced to match.
+function <<access.private>> meta::pure::mapping::modelToModel::chain::replaceFirstTypeArgument(gt:GenericType[1], newFirst:GenericType[1]):GenericType[1]
+{
+   ^$gt(typeArguments = $newFirst->concatenate($gt.typeArguments->tail()));
 }
 
 function <<access.private>> meta::pure::mapping::modelToModel::chain::isSameGenericType(a:GenericType[1], b:GenericType[1]):Boolean[1]

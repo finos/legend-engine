@@ -103,7 +103,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   let runtime = getM2M2RRuntime();
   let mapping = ModelToModelMapping;
   let plan = planToString($query, $mapping, $runtime);
-  let expected = 'Relational\n(\n  type = TDS[(firstName, String, VARCHAR(8192), "")]\n  resultColumns = [("firstName", VARCHAR(200))]\n  sql = select "root".firstName as "firstName" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
+  let expected = 'Relational\n(\n  type = TDS[(firstName, String, VARCHAR(200), "")]\n  resultColumns = [("firstName", VARCHAR(200))]\n  sql = select "root".firstName as "firstName" from Person as "root"\n  connection = TestDatabaseConnection(type = "H2")\n)\n';
   assertEquals($expected, $plan);
 }
 

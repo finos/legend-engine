@@ -14,76 +14,128 @@
 
 import meta::pure::test::pct::*;
 
+'''
+The later of two dates.
+
+The date counterpart of `meta::pure::functions::math::max(Integer[1], Integer[1]):Integer[1]`, with
+the same two shapes: this and the two below compare **two arguments**, the six after them reduce a
+**collection**. `Date`, `StrictDate` and `DateTime` variants keep the argument type.
+
+Dates of differing precision compare by the start of the interval each covers, so a `StrictDate`
+sorts before any `DateTime` on the same day.
+
+**Parameters**
+- `left` — the first date.
+- `right` — the second date.
+
+**Returns** whichever is later.
+
+**Examples**
+```pure
+max(%2025-01-01, %2025-06-30)   // %2025-06-30
+```
+
+**See also** `max(Date[*]):Date[0..1]`,
+`min(Date[1], Date[1]):Date[1]`
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::max(left:Date[1], right:Date[1]):Date[1]
 {
     if($left < $right, | $right, | $left)
 }
 
+'''
+As `max(Date[1], Date[1]):Date[1]`, for `StrictDate` arguments, returning a `StrictDate`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::max(left:StrictDate[1], right:StrictDate[1]):StrictDate[1]
 {
     if($left < $right, | $right, | $left)
 }
 
+'''
+As `max(Date[1], Date[1]):Date[1]`, for `DateTime` arguments, returning a `DateTime`.
+'''
 function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::date::max(left:DateTime[1], right:DateTime[1]):DateTime[1]
 {
     if($left < $right, | $right, | $left)
 }
 
+'''
+The largest date in a collection.
+
+The collection form of `max(Date[1], Date[1]):Date[1]`, and the aggregate a relational `groupBy`
+or window aggregation calls. **An empty collection gives empty**, which is why this returns `[0..1]`;
+the `[1..*]` variant below returns `[1]` and needs no `toOne`.
+
+`Date`, `StrictDate` and `DateTime` variants keep the element type.
+
+**Parameters**
+- `dates` — the dates to reduce.
+
+**Returns** the largest date, or empty when there are none.
+
+**Examples**
+```pure
+max([%2025-02-10, %2025-02-10T20:10:20])   // %2025-02-10T20:10:20
+max([]->cast(@Date))                       // empty
+```
+
+**See also** `max(Date[1..*]):Date[1]`,
+`max(Date[1], Date[1]):Date[1]`,
+`min(Date[*]):Date[0..1]`
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest Date value from the list'
-  }
 meta::pure::functions::date::max(dates:Date[*]):Date[0..1]
 {
     $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `max(Date[*]):Date[0..1]`, for a collection known to hold at least one date, so the result is
+`[1]`.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest Date value from the list'
-  }
 meta::pure::functions::date::max(dates:Date[1..*]):Date[1]
 {
     $dates->fold({n, m | max($n, $m)}, $dates->at(0))
 }
 
+'''
+As `max(Date[*]):Date[0..1]`, for `StrictDate` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest StrictDate value from the list'
-  }
 meta::pure::functions::date::max(dates:StrictDate[*]):StrictDate[0..1]
 {
     $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `max(Date[1..*]):Date[1]`, for `StrictDate` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest Date value from the list'
-  }
 meta::pure::functions::date::max(dates:StrictDate[1..*]):StrictDate[1]
 {
     $dates->fold({n, m | max($n, $m)}, $dates->at(0))
 }
 
+'''
+As `max(Date[*]):Date[0..1]`, for `DateTime` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest DateTime value from the list'
-  }
 meta::pure::functions::date::max(dates:DateTime[*]):DateTime[0..1]
 {
     $dates->fold({n, m | max($n, $m->toOne())}, $dates->first())
 }
 
+'''
+As `max(Date[1..*]):Date[1]`, for `DateTime` values.
+'''
 function
   <<PCT.function, functionType.ReducerFunction>>
-  {
-      doc.doc='max returns smallest Date value from the list'
-  }
 meta::pure::functions::date::max(dates:DateTime[1..*]):DateTime[1]
 {
     $dates->fold({n, m | max($n, $m)}, $dates->at(0))

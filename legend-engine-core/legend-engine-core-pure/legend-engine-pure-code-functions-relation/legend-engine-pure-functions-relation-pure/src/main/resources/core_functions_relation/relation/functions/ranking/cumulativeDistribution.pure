@@ -15,6 +15,35 @@
 import meta::pure::test::pct::*;
 import meta::pure::metamodel::relation::*;
 
+'''
+The proportion of a partition's rows that sort at or before the current row.
+
+Rows counted at or before the current one, divided by the partition size. **The last row is always
+1.0 and no row is ever 0.0**, since a row always counts itself — which is what distinguishes this
+from `percentRank(Relation<T>[1], _Window<T>[1], T[1]):Float[1]`, whose first row is 0.0. Tied rows
+all take the proportion reached by the last of them.
+
+**Parameters**
+- `rel` — the partition, supplied by `extend`.
+- `w` — the window, supplied by `extend`.
+- `row` — the current row, supplied by `extend`.
+
+**Returns** the cumulative proportion, greater than 0.0 and at most 1.0.
+
+**Examples**
+```pure
+$rel->extend(over(~grp, ~id->descending()), ~cd:{p,w,r| round($p->cumulativeDistribution($w, $r), 2)})
+
+// a three-row partition, ids 8, 6, 2
+// id  cd
+//  8  0.33
+//  6  0.67
+//  2  1.0
+```
+
+**See also** `percentRank(Relation<T>[1], _Window<T>[1], T[1]):Float[1]`,
+`ntile(Relation<T>[1], T[1], Integer[1]):Integer[1]`
+'''
 native function <<PCT.function>> meta::pure::functions::relation::cumulativeDistribution<T>(rel:Relation<T>[1], w:_Window<T>[1], row:T[1]):Float[1];
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]

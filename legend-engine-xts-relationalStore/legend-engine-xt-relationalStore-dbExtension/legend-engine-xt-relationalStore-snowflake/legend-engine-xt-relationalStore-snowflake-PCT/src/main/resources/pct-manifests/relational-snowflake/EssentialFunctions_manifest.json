@@ -349,12 +349,6 @@
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
   }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testFromIndex_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'indexOf_String_1__String_1__Integer_1__Integer_1_'."
-  }, {
-    "test" : "meta::pure::functions::string::tests::indexOf::testSimple_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 4\nactual:   5\""
-  }, {
     "test" : "meta::pure::functions::string::tests::parseDate::testParseDateTypes_Function_1__Boolean_1_",
     "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: Can't parse '2014-02-27T00:00:00.000000' as timestamp with format 'YYYY-MM-DD HH24:MI:SS'"
   }, {
@@ -375,12 +369,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 0.0D\nactual:   0D\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStartEnd_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy do'\nactual:   'the quick brown fox jumps over the lazy do'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::substring::testStart_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 'he quick brown fox jumps over the lazy dog'\nactual:   'the quick brown fox jumps over the lazy dog'\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
     "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"

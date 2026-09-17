@@ -14,7 +14,30 @@
 
 import meta::pure::test::pct::*;
 
-native function <<PCT.function>> {doc.doc = 'Calculates the Levenshtein distance between two strings, returning the number of single character edits required to transform one string into the other.'}
+'''
+The number of single-character edits needed to turn one string into the other.
+
+Insertions, deletions and substitutions each count as one. **Lower is more alike** — 0 means the
+strings are identical — which is the opposite direction to
+`jaroWinklerSimilarity(String[1], String[1]):Float[1]`. It is an absolute count and not normalised
+by length, so a distance of 3 means something different between short strings than between long
+ones; divide by the longer length if you need a comparable ratio.
+
+**Parameters**
+- `str1` — the first string.
+- `str2` — the second string.
+
+**Returns** the edit distance.
+
+**Examples**
+```pure
+'John Smith'->levenshteinDistance('John Smith')   // 0
+'John Smith'->levenshteinDistance('Jane Smith')   // 3, substituting o-h-n for a-n-e
+```
+
+**See also** `jaroWinklerSimilarity(String[1], String[1]):Float[1]`
+'''
+native function <<PCT.function>>
 meta::pure::functions::string::levenshteinDistance(str1:String[1], str2:String[1]):Integer[1];
 
 function <<PCT.test>> meta::pure::functions::string::tests::levenshteinDistance::testLevenshteinDistanceEqual<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

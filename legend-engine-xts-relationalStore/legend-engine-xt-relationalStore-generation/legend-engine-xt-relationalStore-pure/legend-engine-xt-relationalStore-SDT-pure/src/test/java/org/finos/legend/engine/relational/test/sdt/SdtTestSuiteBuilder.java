@@ -45,6 +45,30 @@ public class SdtTestSuiteBuilder
             "meta::external::store::relational::sdt::suite"
     );
 
+    /**
+     * A dialect's expected-error entry is matched as a <i>substring</i> of the actual error, not for
+     * exact equality.
+     *
+     * <p>Exact matching forced every entry to carry the whole message, including the Pure source
+     * location that prefixes it (e.g.
+     * {@code Execution error at (resource:/.../sqlDialect.pure line:163 column:47), }). None of that
+     * describes the behaviour under test, and all of it is volatile: the line number shifts on any
+     * unrelated edit above the throw site, and the path changes if the file is moved or renamed
+     * during a refactor. Entries were breaking for reasons with nothing to do with the dialect.
+     *
+     * <p>Entries should therefore record only the distinguishing part of the message. They remain
+     * long and specific enough that a substring match is not meaningfully weaker. Existing entries
+     * that still hold a full message keep working, since a string trivially contains itself.
+     */
+    private static void assertErrorMatchesExpected(String testIdentifier, String expectedError, String actualError)
+    {
+        Assert.assertTrue(
+                "Expected error (as a substring) not found for '" + testIdentifier + "'.\n"
+                        + "  Expected substring: " + expectedError + "\n"
+                        + "  Actual error      : " + actualError,
+                actualError != null && actualError.contains(expectedError));
+    }
+
     public static Test buildSdtTestSuite(String dbType, Function<CompiledExecutionSupport, RichIterable<? extends Root_meta_pure_extension_Extension>> extensionsFunc)
     {
         final CompiledExecutionSupport es = getClassLoaderExecutionSupport();
@@ -120,11 +144,11 @@ public class SdtTestSuiteBuilder
                     {
                         // Check assert message
                         String assertMessage = m.group(2);
-                        Assert.assertEquals(expectedError, assertMessage.startsWith("\"") ? assertMessage.substring(1, assertMessage.length() - 1) : assertMessage);
+                        assertErrorMatchesExpected(this.getName(), expectedError, assertMessage.startsWith("\"") ? assertMessage.substring(1, assertMessage.length() - 1) : assertMessage);
                     }
                     else
                     {
-                        Assert.assertEquals(expectedError, e.getMessage());
+                        assertErrorMatchesExpected(this.getName(), expectedError, e.getMessage());
                     }
                     testPass = true;
                     return;

@@ -526,7 +526,7 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair(Least, simpleFunctionProcessor('least')),   
 
     // String Aggregate
-    pair(StringAgg, simpleFunctionProcessor('listagg')),
+    pair(StringAgg, withinGroupFunctionProcessor('listagg')),
 
     // Boolean Aggregate
     pair(BoolAnd, simpleFunctionProcessor('booland_agg')),

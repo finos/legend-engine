@@ -19,6 +19,7 @@ import meta::pure::mapping::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::functions::variant::convert::*;
+import meta::pure::functions::variant::navigation::*;
 import meta::pure::functions::relation::*;
 import meta::pure::functions::relation::variant::*;
 import meta::relational::metamodel::*;
@@ -39,11 +40,17 @@ function <<paramTest.Test>> meta::relational::mutation::tests::nonRelationalToRe
 {
   let targetRuntime = ^Runtime(connectionStores = ^ConnectionStore(connection = $conn, element = TempDb));
 
+  // Read a key back out rather than echoing the stored document. Asserting the document's text
+  // pins how the store spells JSON, which is not part of the variant contract and not what this
+  // flow is about: a store holding a canonical form cannot reproduce the bytes it was given.
+  // Postgres jsonb respaces to {"name": "Alice"} and Snowflake's VARIANT pretty-prints, while
+  // DuckDB and H2 keep the original text. Navigating to the key proves the same round trip and
+  // holds on all of them.
   let expected =
-    'value\n' +
-    '\'"{""name"":""Alice""}"\'\n' +
-    '\'"{""name"":""Bob""}"\'\n' +
-    '\'"{""name"":""Charlie""}"\'\n';
+    'name\n' +
+    'Alice\n' +
+    'Bob\n' +
+    'Charlie\n';
 
   executeLegendFunction(
     {|
@@ -54,7 +61,8 @@ function <<paramTest.Test>> meta::relational::mutation::tests::nonRelationalToRe
         ->fromJson()
         ->toMany(@Variant)
         ->flatten(~value)
-        ->select(~[value])
+        ->extend(~name:x | $x.value->get('name')->to(@String))
+        ->select(~[name])
         ->from($targetRuntime)
     },
     EmptyMapping,

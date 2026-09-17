@@ -47,7 +47,8 @@ public class EMIT_to_HTML
             "grammar:qualified-property",
             // mapping
             "mapping:aggregation-aware-mapping", "mapping:cross-store",
-            "mapping:enumeration-mapping", "mapping:m2m-derived-source-property",
+            "mapping:enumeration-mapping", "mapping:m2m-chained-relational",
+            "mapping:m2m-derived-source-property",
             "mapping:m2m-local-property", "mapping:m2m-transform", "mapping:mapping",
             "mapping:mapping-include", "mapping:operation-mapping",
             "mapping:operation-mapping-merge", "mapping:operation-mapping-merge-validation",
@@ -85,7 +86,8 @@ public class EMIT_to_HTML
             "execution:schema-set", "execution:service", "execution:service-test",
             "execution:shared-test-data", "execution:snowflake-app", "execution:test-data",
             // scaffolding
-            "scaffolding:class", "scaffolding:m2m-mapping", "scaffolding:model-connection",
+            "scaffolding:class", "scaffolding:m2m-mapping", "scaffolding:model-chain-connection",
+            "scaffolding:model-connection",
             "scaffolding:relational-connection", "scaffolding:relational-mapping",
             "scaffolding:relational-store", "scaffolding:runtime"
     );

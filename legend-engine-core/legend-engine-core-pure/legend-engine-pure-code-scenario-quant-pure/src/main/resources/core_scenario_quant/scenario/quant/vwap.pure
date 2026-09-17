@@ -17,6 +17,35 @@ import meta::pure::precisePrimitives::*;
 import meta::pure::test::pct::*;
 import meta::pure::functions::date::*;
 
+'''
+The volume-weighted average price of each symbol, per calendar month.
+
+Weights each bar's **typical price** — `(high + low + close) / 3`, not the close alone — by its
+volume, sums that over the month, and divides by the month's total volume. Bars are bucketed by
+`timeBucket(1, DurationUnit.MONTHS)`, so `month` is the first instant of the month a bar fell in and
+partial months at either end of the input are reported as ordinary months.
+
+Note that `closeByVolSum` is the sum of typical price times volume despite its name, and that both it
+and `vwap` are rounded to two decimal places while `volumeSum` is exact.
+
+**Parameters**
+- `rel` — a relation of OHLCV bars: `time`, `symbol`, `open`, `high`, `low`, `close`, `volume`.
+
+**Returns** one row per `symbol` and `month`, with `closeByVolSum`, `volumeSum` and `vwap`.
+
+**Examples**
+```pure
+$bars->monthlyVWAP()
+
+// symbol  month       closeByVolSum     volumeSum     vwap
+// AAPL    2026-01-01  168177755000.0    872700000     192.71
+// AAPL    2026-02-01  227944933333.33   1097000000    207.79
+// AAPL    2026-03-01  140986233333.33   637000000     221.33
+```
+
+**See also** `meta::external::scenario::quant::sma::simpleMovingAverage5Days`,
+`meta::external::scenario::quant::gap::gapAnalysis`
+'''
 function <<PCT.function>> meta::external::scenario::quant::vwap::monthlyVWAP(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], month:DateTime[1], closeByVolSum:Number[1], volumeSum:Integer[1], vwap:Float[1])>[1]
 {
     $rel

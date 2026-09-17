@@ -17,6 +17,36 @@ import meta::pure::precisePrimitives::*;
 import meta::pure::test::pct::*;
 import meta::pure::functions::flow::*;
 
+'''
+The overnight gap: how far each bar opened away from the previous close, as a percentage.
+
+`(open - previousClose) / previousClose * 100`, where "previous" is the preceding row for the same
+`symbol` ordered by `time`. A positive figure is a gap up, a negative one a gap down, and `0.0` means
+the bar opened exactly where the last one closed. Rows for different symbols never mix. Rounded to
+two decimal places.
+
+**The first bar of a symbol is not zero.** With no predecessor the comparison falls back to the bar's
+own close, so the figure reported is how far it opened from where it closed — `-0.5` in the example
+below, not `0.0`. Treat the leading row of each symbol as undefined rather than as a real gap.
+
+**Parameters**
+- `rel` — a relation of OHLCV bars: `time`, `symbol`, `open`, `high`, `low`, `close`, `volume`.
+
+**Returns** `symbol`, `time`, `open`, `close`, and the gap as `gapPercentage`.
+
+**Examples**
+```pure
+$bars->gapAnalysis()
+
+// symbol  time        open    close   gapPercentage
+// AAPL    2026-01-07  190.50  191.45  -0.5    no predecessor: measured against its own close
+// AAPL    2026-01-08  191.45  192.80   0.0    opened exactly at the previous close
+// AAPL    2026-01-09  195.00  195.90   1.14   gapped up from 192.80
+```
+
+**See also** `meta::external::scenario::quant::return::logReturn::logReturn`,
+`meta::external::scenario::quant::maxDrawDown::maxDrawDown`
+'''
 function <<PCT.function>> meta::external::scenario::quant::gap::gapAnalysis(rel:Relation<(time:Date[1], symbol:String[1], open:Numeric(19,2)[1], high:Numeric(19,2)[1], low:Numeric(19,2)[1], close:Numeric(19,2)[1], volume:Integer[1])>[1]):Relation<(symbol:String[1], time:Date[1], open:Numeric(19,2)[1], close:Numeric(19,2)[1], gapPercentage:Float[1])>[1]
 {
     $rel
