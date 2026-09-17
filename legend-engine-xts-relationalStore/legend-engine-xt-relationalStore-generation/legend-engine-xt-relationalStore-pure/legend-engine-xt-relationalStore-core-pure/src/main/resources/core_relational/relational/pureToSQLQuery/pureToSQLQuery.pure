@@ -6762,9 +6762,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
                                                                                                        | ^Literal(value = ^SQLNull())
                                                                                                     );
                                                                   ]);
+   // Only forward the inner column's enum property mapping when the outer getter is getEnum;
+   // other typed getters must return the raw DB value.
    let propertyMapping = $expressionToRoute->match([
                                                 fe:FunctionExpression[1] |
-                                                   if(['getNumber', 'getInteger', 'getDecimal', 'getString', 'getFloat', 'getDate', 'getDateTime', 'getStrictDate', 'getBoolean', 'getEnum']->contains($fe.func.functionName->toOne()),
+                                                   if($fe.func.functionName->toOne() == 'getEnum',
                                                       | let getterName = $fe->resolveTdsGetterColumnName($vars, $state);
                                                          let matchedPath = $paths->filter(p|$p.first->toLower() == $getterName->toLower());
                                                          if($matchedPath->isEmpty(), | [], | $matchedPath->toOne().second.propertyMapping);,
