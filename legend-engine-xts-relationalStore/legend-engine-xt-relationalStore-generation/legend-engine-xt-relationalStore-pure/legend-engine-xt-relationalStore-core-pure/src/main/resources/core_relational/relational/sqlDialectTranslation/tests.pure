@@ -238,21 +238,17 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
   assertConversion($expected, $windowColumn);
 }
 
-// Same pass-through guarantee for an ordered aggregate's WITHIN GROUP sort. 'NONE' (unspecified)
-// converts to UNDEFINED; 'FIRST'/'LAST' convert verbatim.
-function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertWithinGroupExplicitNullOrderIsPreserved(): Boolean[1]
+// Same pass-through guarantee for an ordered aggregate's sort. An unset NullOrder converts to
+// UNDEFINED (see testConvertAggregateFunctionCall above); an explicit FIRST/LAST converts verbatim.
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertAggregateFunctionCallExplicitNullOrderIsPreserved(): Boolean[1]
 {
-  let withinGroup = ^DynaFunction(
-    name = 'withinGroup',
-    parameters = [
-      ^DynaFunction(name = 'joinStrings', parameters = [getColumn('personTable', 'NAME'), ^meta::relational::metamodel::Literal(value = ',')]),
-      getColumn('personTable', 'ADDRESSID'),
-      ^meta::relational::metamodel::Literal(value = 'ASC'),
-      ^meta::relational::metamodel::Literal(value = 'FIRST')
-    ]
+  let aggregate = ^AggregateFunctionCall(
+    func = ^DynaFunction(name = 'joinStrings', parameters = [getColumn('personTable', 'NAME'), ^meta::relational::metamodel::Literal(value = ',')]),
+    sortBy = ^SortByInfo(sortByElement = getColumn('personTable', 'ADDRESSID'), sortDirection = meta::relational::metamodel::SortDirection.ASC, nullOrder = meta::relational::metamodel::NullOrder.FIRST)
   );
 
   let expected = ^FunctionCall(
+    distinct = false,
     name = ^QualifiedName(parts = 'string_agg'),
     arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = ['"root"', 'NAME'])), ^StringLiteral(value = ',')],
     orderBy = ^SortItem(
@@ -262,7 +258,7 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
     )
   );
 
-  assertConversion($expected, $withinGroup);
+  assertConversion($expected, $aggregate);
 }
 
 function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTabularFunction(): Boolean[1]
