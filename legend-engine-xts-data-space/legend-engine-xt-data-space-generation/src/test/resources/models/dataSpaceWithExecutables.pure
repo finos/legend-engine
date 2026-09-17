@@ -21,7 +21,6 @@ DataSpace domain::COVIDDataspace
     },
     {
       title: 'Exec 2';
-      description: 'Some more exec description';
       executable: service::CovidDataSingle;
     }
   ];
@@ -64,7 +63,7 @@ Service service::CovidDataSingle
     'anonymous',
     'akphi'
   ];
-  documentation: '';
+  documentation: 'Service description';
   autoActivateUpdates: true;
   execution: Single
   {
