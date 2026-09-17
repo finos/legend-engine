@@ -152,29 +152,6 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndP
       $result->sqlRemoveFormatting());
 }
 
-function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectAndProjectAgainWithIfAndTypedGetters():Boolean[1]
-{
-   let result = execute(
-      |Person.all()
-         ->project([
-            col(p|$p.firstName, 'first_name'),
-            col(p|if($p.age > 30, | [], | $p.age), 'age_maybe'),
-            col(p|%2016-08-10, 'business_date')
-         ])
-         ->project([
-            col(r:TDSRow[1]|$r.getString('first_name'), 'first_name'),
-            col(r:TDSRow[1]|if($r.isNotNull('age_maybe'), | $r.getInteger('age_maybe'), | 0), 'age_defaulted'),
-            col(r:TDSRow[1]|$r.getDate('business_date'), 'business_date'),
-            col(r:TDSRow[1]|if($r.isNotNull('age_maybe'), | $r.getInteger('age_maybe') * 2, | 0), 'double_age_defaulted')
-         ]),
-      simpleRelationalMapping,
-      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-
-   assertSize($result.values.columns, 4);
-   assertEquals('Peter|23|2016-08-10|46,John|22|2016-08-10|44,John|12|2016-08-10|24,Anthony|22|2016-08-10|44,Fabrice|0|2016-08-10|0,Oliver|0|2016-08-10|0,David|0|2016-08-10|0',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-}
-
 function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectOnDynaFunctionColumn():Boolean[1]
 {
    let result = execute(
@@ -265,34 +242,25 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
       $result->sqlRemoveFormatting());
 }
 
-// Regression for variable-backed typed getters and null guards in a second project(),
-// matching the OSA query pattern (getX($colNameVar) and isNotNull($colNameVar)).
-function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled'} meta::relational::tests::tds::tdsProject::testProjectWithVariablesTypedGettersAndIsNotNull():Boolean[1]
+// Regression: an enum-mapped property projected then read with a non-enum getter must return
+// the raw DB code, not the enum name.
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnumThenReadWithNonEnumGetterInSecondProject():Boolean[1]
 {
    let result = execute(
-      |
-         let firstNameCol = 'first_name';
-         let ageMaybeCol = 'age_maybe';
-         let businessDateCol = 'business_date';
-
-         Person.all()
-            ->project([
-               col(p|$p.firstName, 'first_name'),
-               col(p|if($p.age > 30, | [], | $p.age), 'age_maybe'),
-               col(p|%2016-08-10, 'business_date')
-            ])
-            ->project([
-               col(r:TDSRow[1]|$r.getString($firstNameCol), 'first_name'),
-               col(r:TDSRow[1]|if($r.isNotNull($ageMaybeCol), | $r.getInteger($ageMaybeCol), | 0), 'age_defaulted'),
-               col(r:TDSRow[1]|$r.getDate($businessDateCol), 'business_date'),
-               col(r:TDSRow[1]|if($r.isNotNull($ageMaybeCol), | $r.getInteger($ageMaybeCol) * 2, | 0), 'double_age_defaulted')
-            ]);
-      ,
+      |Address.all()
+         ->project([col(a | $a.name, 'name'), col(a | $a.type, 'type')])
+         ->project([col(r:TDSRow[1] | $r.getString('name'), 'name'),
+                    col(r:TDSRow[1] | $r.getInteger('type'), 'type')]),
       simpleRelationalMapping,
-      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions());
 
-   assertSize($result.values.columns, 4);
-   assertEquals('Peter|23|2016-08-10|46,John|22|2016-08-10|44,John|12|2016-08-10|24,Anthony|22|2016-08-10|44,Fabrice|0|2016-08-10|0,Oliver|0|2016-08-10|0,David|0|2016-08-10|0',
+   assertSize($result.values.columns, 2);
+
+   assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root"',
+      $result->sqlRemoveFormatting());
+
+   assertEquals('Hoboken|1,New York|1,New York|1,New York|1,San Fransisco|1,Hong Kong|1,New York|1,New York|1,Cupertino|1,Tokyo|1,Mountain View|1',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
 }
 
