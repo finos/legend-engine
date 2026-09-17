@@ -419,6 +419,35 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testCrossSto
    assertEquals('Drop table if exists temp_db2.temp_schema2.cross_temp_table_node_0;', $dropSql);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionNoParams():Boolean[1]
+{
+  let expected = 'RelationalBlockExecutionNode(type=TDS[(col,Integer,BIGINT,"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(col,Integer,BIGINT,"")]resultColumns=[("col","")]sql=select1as"col"fromtable(schema1.tb())as"tb_0"connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+
+  meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionNoParams(DatabaseType.Snowflake, $expected);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionParameterized():Boolean[1]
+{
+  let expected = 'RelationalBlockExecutionNode(type=TDS[(col1,String,VARCHAR(1024),""),(col2,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[var:String[1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(col1,String,VARCHAR(1024),""),(col2,Integer,INT,"")]resultColumns=[("col1",VARCHAR(200)),("col2",INT)]sql=select"tb_0".col1as"col1","tb_0".col2as"col2"fromtable(schema1.tb(\'${var?replace("\'","\'\'")}\',null,trim(\'abc\')))as"tb_0"connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+
+  meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionParameterized(DatabaseType.Snowflake, $expected);
+}
+
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionWithSchemaMapper():Boolean[1]
+{
+  let expected = 'RelationalBlockExecutionNode(type=TDS[(col,Integer,BIGINT,"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=TestDatabaseConnection(type="Snowflake"))Relational(type=TDS[(col,Integer,BIGINT,"")]resultColumns=[("col","")]sql=select1as"col"fromtable(schema1Renamed.tb())as"tb_0"connection=TestDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=TestDatabaseConnection(type="Snowflake"))))';
+
+  meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionWithSchemaMapper(DatabaseType.Snowflake, $expected);
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionWithTableMapper():Boolean[1]
+{
+  let expected = 'RelationalBlockExecutionNode(type=TDS[(col,Integer,BIGINT,"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=TestDatabaseConnection(type="Snowflake"))Relational(type=TDS[(col,Integer,BIGINT,"")]resultColumns=[("col","")]sql=select1as"col"fromtable(schema1Renamed.tbRenamed())as"tb_0"connection=TestDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=TestDatabaseConnection(type="Snowflake"))))';
+
+  meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionWithTableMapper(DatabaseType.Snowflake, $expected);
+}
+
 Class meta::pure::executionPlan::tests::snowflake::model::ParentRecord
 {
    zFieldAccount: String[1];

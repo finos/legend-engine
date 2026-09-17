@@ -53,6 +53,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
+      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
       variableDeclarationProcessor = variableDeclarationProcessor_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = meta::relational::functions::sqlQueryToString::snowflake::processJoinForSnowflake_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
@@ -150,6 +151,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*]):String[1]
 {
    'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ '))';
+}
+
+function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
+{
+   'table(' + meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor($schema, $functionName, $args, $sgc) + ')';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
@@ -642,7 +648,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSelectSQLQueryForSnowflake(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   $s->processSelectSQLQueryForSnowflake($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
+  $s->processSelectSQLQueryForSnowflake($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSelectSQLQueryForSnowflake(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]

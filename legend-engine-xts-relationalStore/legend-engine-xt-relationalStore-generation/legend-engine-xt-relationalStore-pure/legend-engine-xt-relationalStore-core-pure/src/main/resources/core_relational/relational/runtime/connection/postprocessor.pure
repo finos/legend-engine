@@ -143,6 +143,13 @@ function meta::pure::alloy::connections::postProcessTablesFn(tableNameMappers: m
                                                                                                                                           if(!$ns->isEmpty(),|^$tf(schema=$ns->toOne());
                                                                                                                                                             ,|$tf);
                                                                                                                                   );,
+                                                    tfc: meta::relational::metamodel::relation::TabularFunctionCall[1] | let tf = $tfc.function;
+                                                                                                                         let nt = processTabularFunctionMappers($tf, $tableNameMappers);
+                                                                                                                         if(!$nt->isEmpty(),| ^$tfc(function = $nt->toOne());
+                                                                                                                                        ,| let ns = processSchemaMappers($tf.schema, $schemaNameMappers);
+                                                                                                                                          if(!$ns->isEmpty(),|^$tfc(function = ^$tf(schema=$ns->toOne()));
+                                                                                                                                                            ,|$tfc);
+                                                                                                                         );,                                                                                                                                     
                                                     r:RelationalOperationElement[1] | $r]);}
 }
 
