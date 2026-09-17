@@ -643,9 +643,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
    $cols->map(cs|
          let expression = $cs.func->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
          let newElement = processTdsLambda($expression, $mainQuery.select.columns->cast(@Alias), false, $vars, $updatedState, $currentPropertyMapping, $paths, $context)->at(0);
+         // Only forward the inner column's enum property mapping when the outer getter is getEnum;
+         // other typed getters must return the raw DB value.
          let propertyMapping = $expression->match([
                                   f:FunctionExpression[1] |
-                                    if(['getNumber', 'getInteger', 'getDecimal', 'getString', 'getFloat', 'getDate', 'getDateTime', 'getStrictDate', 'getBoolean', 'getEnum']->contains($f.func.functionName->toOne()),
+                                    if($f.func.functionName->toOne() == 'getEnum',
                                       | let name = $f->resolveTdsGetterColumnName($vars, $updatedState);
                                         let matchedPath = $paths->filter(p|$p.first->toLower() == $name->toLower());
                                         if($matchedPath->isEmpty(), | [], | $matchedPath->toOne().second.propertyMapping->cast(@RelationalPropertyMapping));,
