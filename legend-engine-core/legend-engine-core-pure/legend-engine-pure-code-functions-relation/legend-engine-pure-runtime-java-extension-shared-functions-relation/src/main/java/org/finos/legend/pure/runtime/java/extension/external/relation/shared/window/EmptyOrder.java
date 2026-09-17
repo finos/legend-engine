@@ -14,7 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.extension.external.relation.shared.window;
 
-public enum NullOrder
+public enum EmptyOrder
 {
     FIRST,
     LAST

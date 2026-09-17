@@ -30,7 +30,7 @@ public class Window
 
     public Window(MutableList<? extends String> colSpec, RichIterable<Pair<Enum, Pair<Enum, String>>> sorts, Frame frame)
     {
-        this(colSpec, sorts.toList().collect(c -> new SortInfo(c.getTwo().getTwo(), SortDirection.valueOf(c.getOne()._name()), c.getTwo().getOne() == null ? null : NullOrder.valueOf(c.getTwo().getOne()._name()))).toList(), frame);
+        this(colSpec, sorts.toList().collect(c -> new SortInfo(c.getTwo().getTwo(), SortDirection.valueOf(c.getOne()._name()), c.getTwo().getOne() == null ? null : EmptyOrder.valueOf(c.getTwo().getOne()._name()))).toList(), frame);
     }
 
     public Window(MutableList<? extends String> colSpec, MutableList<SortInfo> sorts, Frame frame)
@@ -71,11 +71,11 @@ public class Window
                 window.getValueForMetaPropertyToMany("partition").collect(CoreInstance::getName).toList(),
                 window.getValueForMetaPropertyToMany("sortInfo").collect(c ->
                 {
-                    CoreInstance nullOrderInstance = c.getValueForMetaPropertyToOne("nullOrder");
+                    CoreInstance nullOrderInstance = c.getValueForMetaPropertyToOne("emptyOrder");
                     return new SortInfo(
                             c.getValueForMetaPropertyToOne("column").getValueForMetaPropertyToOne("name").getName(),
                             SortDirection.valueOf(c.getValueForMetaPropertyToOne("direction").getName()),
-                            nullOrderInstance == null ? null : NullOrder.valueOf(nullOrderInstance.getName()));
+                            nullOrderInstance == null ? null : EmptyOrder.valueOf(nullOrderInstance.getName()));
                 }).toList(),
                 Frame.build(window.getValueForMetaPropertyToOne("frame"), processorSupport, primitiveHandler)
         );
@@ -100,11 +100,11 @@ public class Window
         CoreInstance sortTypeEnum = ps.package_getByUserPath("meta::pure::functions::relation::SortType");
         CoreInstance sortDir = sortTypeEnum.getValueForMetaPropertyToMany("values").detect(e -> sortInfo.getDirection().name().equals(e.getValueForMetaPropertyToOne("name").getName()));
         result.setKeyValues(Lists.mutable.with("direction"), Lists.mutable.with(sortDir));
-        if (sortInfo.getNullOrder() != null)
+        if (sortInfo.getEmptyOrder() != null)
         {
-            CoreInstance nullOrderEnum = ps.package_getByUserPath("meta::pure::functions::relation::NullOrder");
-            CoreInstance nullOrderValue = nullOrderEnum.getValueForMetaPropertyToMany("values").detect(e -> sortInfo.getNullOrder().name().equals(e.getValueForMetaPropertyToOne("name").getName()));
-            result.setKeyValues(Lists.mutable.with("nullOrder"), Lists.mutable.with(nullOrderValue));
+            CoreInstance nullOrderEnum = ps.package_getByUserPath("meta::pure::functions::relation::EmptyOrder");
+            CoreInstance nullOrderValue = nullOrderEnum.getValueForMetaPropertyToMany("values").detect(e -> sortInfo.getEmptyOrder().name().equals(e.getValueForMetaPropertyToOne("name").getName()));
+            result.setKeyValues(Lists.mutable.with("emptyOrder"), Lists.mutable.with(nullOrderValue));
         }
         return result;
     }

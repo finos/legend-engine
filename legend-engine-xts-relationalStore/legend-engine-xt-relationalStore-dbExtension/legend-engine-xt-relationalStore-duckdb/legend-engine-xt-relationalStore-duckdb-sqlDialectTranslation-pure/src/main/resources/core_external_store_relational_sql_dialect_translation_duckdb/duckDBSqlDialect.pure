@@ -50,8 +50,20 @@ function meta::external::store::relational::sqlDialectTranslation::duckDB::duckD
     keywords = duckDBKeywords(),
     functionProcessorMap = duckDBFunctionProcessorMap(),
     variablePlaceholderPrefixSuffixMap = duckDBVariablePlaceholderPrefixSuffixMap(),
+    nativeNullOrdering = {| duckDBNativeNullOrdering()},
     expectedSqlDialectTestErrors = duckDBExpectedSqlDialectTestErrors()
   )
+}
+
+// DuckDB sorts nulls last regardless of direction. That agrees with the canonical spec on ascending
+// (canonical is also LAST there, so nothing is emitted) but contradicts it on descending, where
+// canonical is FIRST -- so a descending implicit sort gets an explicit NULLS FIRST. The legacy
+// string-templated path classifies it the same way, via nullsLastWithClauseSupport.
+function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBNativeNullOrdering(): DialectNullOrdering[1]
+{
+  ^DialectNullOrdering(
+    nativeOrdering = [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.LAST), pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST)]->newMap()
+  );
 }
 
 function meta::external::store::relational::sqlDialectTranslation::duckDB::duckDBSqlDialectExtension(): Extension[1]

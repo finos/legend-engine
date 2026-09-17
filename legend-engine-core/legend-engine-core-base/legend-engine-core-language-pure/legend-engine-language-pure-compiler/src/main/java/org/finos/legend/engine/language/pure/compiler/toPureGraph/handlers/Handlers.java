@@ -2385,8 +2385,8 @@ public class Handlers
         // the pattern uniform with the SortInfo/SortInformation narrowing below).
         register(h("meta::pure::tds::asc_String_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
         register(h("meta::pure::tds::desc_String_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
-        register(h("meta::pure::tds::asc_String_1__NullOrder_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
-        register(h("meta::pure::tds::desc_String_1__NullOrder_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::tds::asc_String_1__EmptyOrder_1__SortInformation_1_", "asc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::tds::desc_String_1__EmptyOrder_1__SortInformation_1_", "desc", false, ps -> res("meta::pure::tds::SortInformation", "one"), ps -> "String".equals(ps.get(0)._genericType()._rawType()._name())));
 
 
         register("meta::pure::functions::relation::write_Relation_1__RelationElementAccessor_1__Integer_1_", "write", true, ps -> res("Integer", "one"));
@@ -2395,8 +2395,8 @@ public class Handlers
         // TDS uses asc/desc names, but keeps behaviour explicit.
         register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
         register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
-        register(h("meta::pure::functions::relation::ascending_ColSpec_1__NullOrder_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
-        register(h("meta::pure::functions::relation::descending_ColSpec_1__NullOrder_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::functions::relation::ascending_ColSpec_1__EmptyOrder_1__SortInfo_1_", "ascending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
+        register(h("meta::pure::functions::relation::descending_ColSpec_1__EmptyOrder_1__SortInfo_1_", "descending", false, ps -> res("meta::pure::functions::relation::SortInfo", "one"), ps -> Lists.fixedSize.of(ps.get(0)._genericType()._typeArguments().getFirst()), ps -> "ColSpec".equals(ps.get(0)._genericType()._rawType()._name())));
         // emptyFirst/emptyLast: the name is shared between Relation (arg: SortInfo) and TDS
         // (arg: SortInformation). Without a rawType predicate the wrong handler can win and
         // return SortInformation for a SortInfo input, which collapses the outer sort() collection

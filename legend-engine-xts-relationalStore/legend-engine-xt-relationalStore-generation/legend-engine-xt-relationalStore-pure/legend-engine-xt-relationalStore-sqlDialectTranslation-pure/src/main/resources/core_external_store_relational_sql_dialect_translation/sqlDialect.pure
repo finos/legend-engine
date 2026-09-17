@@ -33,6 +33,15 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialect
   functionProcessorMap: Map<Class<SqlFunction>, FunctionProcessor>[0..1];
   variablePlaceholderPrefixSuffixMap: Map<String, Pair<String, String>>[1];
   isBooleanAliasForTinyInt: Boolean[1] = false;
+  // How this dialect behaves around null ordering -- see DialectNullOrdering. Empty means it matches
+  // the canonical/Postgres spec everywhere, so nothing needs compensating.
+  //
+  // A thunk rather than a value because answering can be expensive and target-dependent: H2 probes
+  // the running server's version here. It is evaluated at most once per query generation, by
+  // getDialectTranslationConfig, and only for the dialect actually being targeted -- evaluating it
+  // eagerly at dialect construction would fire H2's probe even when generating Snowflake SQL, since
+  // relationalExtensions() builds the H2 extension unconditionally.
+  nativeNullOrdering: Function<{->DialectNullOrdering[1]}>[0..1];
   // For testing
   initSqlStatementsForTests: String[*];
   expectedSqlDialectTestErrors: Map<String, String>[1];
@@ -206,7 +215,7 @@ function meta::external::store::relational::sqlDialectTranslation::withinGroupFu
       // adds itself.
       let base = $sqlDialect->generateFunctionCallWithArgs($functionName, $sqlDialect->processFunctionArgs($f.arguments, $state, $config), $f.window, $f.group, $f.distinct, [], $state, $config);
       $base + $f.orderBy->executeIfNotEmptyElseReturnEmptyString({|
-        ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sqlDialect->keyword('order by ', $state, $config) + $f.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(', ') + ')'
+        ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sqlDialect->keyword('order by ', $state, $config) + $f.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel()->inOrderedAggregate(), $config))->joinStrings(', ') + ')'
       }) + $sqlDialect->generateFilterClause($f.filter, $state, $config);
     },
     {n: FunctionCall[1] | true}
@@ -283,7 +292,7 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
   let argumentsString = $argsWithDistinct->joinStrings(',' + if($noArgIsMultiLine, |' ', |$state.separator(1, $config)));
 
   let orderByString = $orderBy->executeIfNotEmptyElseReturnEmptyString({|
-    ' ' + $sqlDialect->keyword('order by ', $state, $config) + $orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(', ')
+    ' ' + $sqlDialect->keyword('order by ', $state, $config) + $orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel()->inOrderedAggregate(), $config))->joinStrings(', ')
   });
 
   $functionName + '(' + if($noArgIsMultiLine, |'', |$state.separatorIfPretty(1, $config)) +
@@ -291,7 +300,7 @@ function meta::external::store::relational::sqlDialectTranslation::generateFunct
   if($noArgIsMultiLine, |'', |$state.separatorIfPretty(0, $config)) + ')' +
 
   $group->executeIfNotEmptyElseReturnEmptyString({|
-    ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sep1 + $sqlDialect->keyword('order by ', $state, $config) + $sep1 + $group.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel(), $config))->joinStrings(',' + $sep1) + ')'
+    ' ' + $sqlDialect->keyword('within group', $state, $config) + ' (' + $sep1 + $sqlDialect->keyword('order by ', $state, $config) + $sep1 + $group.orderBy->map(o | $sqlDialect->executeNodeProcessor($o, [], $state->increaseLevel()->inOrderedAggregate(), $config))->joinStrings(',' + $sep1) + ')'
   }) +
 
   $sqlDialect->generateFilterClause($filter, $state, $config) +

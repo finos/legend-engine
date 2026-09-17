@@ -3,6 +3,7 @@
   "pattern": "(meta::external::store::relational::sqlDialectTranslation::h2)(::.*)?",
   "dependencies": [
     "platform",
+    "platform_store_relational",
     "core_functions_standard",
     "core_functions_unclassified",
     "core",

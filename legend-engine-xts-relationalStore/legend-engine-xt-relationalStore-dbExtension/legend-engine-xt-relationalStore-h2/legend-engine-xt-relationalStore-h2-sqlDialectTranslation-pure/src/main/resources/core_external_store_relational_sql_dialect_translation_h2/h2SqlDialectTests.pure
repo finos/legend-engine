@@ -215,3 +215,157 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     )->inferTypes($config.functionRegistry), $state, $config)
   );
 }
+
+// ---------------------------------------------------------------------------
+// useDbNativeImplicitNullOrdering
+//
+// SDT asserts result rows and so cannot tell "no clause because the dialect is already canonical"
+// apart from "no clause because compensation was switched off". These assert the emitted SQL, which
+// is where that difference shows up.
+//
+// The native ordering is supplied explicitly per version rather than via h2NativeNullOrdering(),
+// which probes the running server -- pinning it keeps these deterministic whichever H2 is on the
+// classpath, and lets both sides of the version split be asserted in one place.
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::h2LatestNativeNullOrdering(): Map<SortItemOrdering, SortItemNullOrdering>[1]
+{
+  // 2.1.214 -- matches canonical
+  [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.LAST), pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.FIRST)]->newMap()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::h2LegacyNativeNullOrdering(): Map<SortItemOrdering, SortItemNullOrdering>[1]
+{
+  // 1.4.200 -- inverted from canonical
+  [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST)]->newMap()
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testNullOrderingConfig(nativeNullOrdering: Map<SortItemOrdering, SortItemNullOrdering>[1], useDbNativeImplicitNullOrdering: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  testNullOrderingConfig($nativeNullOrdering, $useDbNativeImplicitNullOrdering, true);
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testNullOrderingConfig(nativeNullOrdering: Map<SortItemOrdering, SortItemNullOrdering>[1], useDbNativeImplicitNullOrdering: Boolean[1], supportsNullOrderingInOrderedAggregate: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(
+      dbType = 'H2',
+      quoteIdentifiers = false,
+      useDbNativeImplicitNullOrdering = $useDbNativeImplicitNullOrdering,
+      nullOrdering = ^DialectNullOrdering(
+        nativeOrdering = $nativeNullOrdering,
+        supportedInOrderedAggregate = $supportsNullOrderingInOrderedAggregate
+      )
+    ),
+    formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testSortItem(ordering: SortItemOrdering[1], nullOrdering: SortItemNullOrdering[1]): SortItem[1]
+{
+  ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'c1')), ordering = $ordering, nullOrdering = $nullOrdering)
+}
+
+// 2.1.214 is already canonical, so nothing is emitted either way -- this is what keeps the existing
+// mostly-unclaused platform fixtures byte-identical.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testImplicitNullOrderingForLatestVersion(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+
+  let flagOff = testNullOrderingConfig(h2LatestNativeNullOrdering(), false);
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOff));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOff));
+
+  let flagOn = testNullOrderingConfig(h2LatestNativeNullOrdering(), true);
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOn));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $flagOn));
+}
+
+// 1.4.200 is inverted, so with the flag off both directions are compensated. This is the fix Alloy's
+// mapped execution (EMIT tests) depends on.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testImplicitNullOrderingCompensatedForLegacyVersion(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(h2LegacyNativeNullOrdering(), false);
+
+  assertEquals('c1 ASC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// Flag on: even on the diverging version nothing is emitted, so 1.4.200's native (inverted) ordering
+// is what takes effect.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testImplicitNullOrderingSuppressedForLegacyVersionWhenFlagOn(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(h2LegacyNativeNullOrdering(), true);
+
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// The flag governs implicit ordering only -- explicit is always emitted verbatim, on either version.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testExplicitNullOrderingUnaffectedByFlag(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(h2LegacyNativeNullOrdering(), true);
+
+  assertEquals('c1 ASC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('c1 DESC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST), $state, $config));
+}
+
+// ---------------------------------------------------------------------------
+// Null ordering inside an ordered-set aggregate
+//
+// H2 1.4.200's parser rejects NULLS FIRST/LAST inside WITHIN GROUP (ORDER BY ...) -- it fails with
+// `expected ")"`. Emitting a compensating clause there therefore produces SQL the database cannot
+// run at all, which is worse than ordering differently, so nothing is emitted in that position on
+// that version. 2.1.214 parses it normally.
+//
+// This is the case the shared SDT suite structurally cannot cover: its H2 runner is 2.1.214, so the
+// 1.4.200 side of the version split is only reachable here.
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::tests::orderedAggregateState(): SqlDialectTranslationState[1]
+{
+  testSqlDialectTranslationState()->inOrderedAggregate()
+}
+
+// 1.4.200: no clause in an ordered aggregate, even though a plain ORDER BY would be compensated,
+// and even for an explicit null order -- the syntax simply is not available.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testNullOrderingOmittedInOrderedAggregateForLegacyVersion(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = orderedAggregateState();
+  let config = testNullOrderingConfig(h2LegacyNativeNullOrdering(), false, false);
+
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST), $state, $config));
+}
+
+// The suppression is scoped to the ordered-aggregate position only: the same sort item in a plain
+// ORDER BY on the same version is still compensated.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testNullOrderingStillAppliedOutsideOrderedAggregateForLegacyVersion(): Boolean[1]
+{
+  let dialect = testDialect();
+  let config = testNullOrderingConfig(h2LegacyNativeNullOrdering(), false, false);
+
+  assertEquals('c1 ASC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), testSqlDialectTranslationState(), $config));
+}
+
+// 2.1.214 supports it, so an explicit null order is honoured inside an ordered aggregate.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::h2::tests::testNullOrderingKeptInOrderedAggregateForLatestVersion(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = orderedAggregateState();
+  let config = testNullOrderingConfig(h2LatestNativeNullOrdering(), false, true);
+
+  assertEquals('c1 ASC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  // Implicit stays unclaused because 2.1.214 is already canonical, not because it is unsupported.
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
