@@ -47,10 +47,33 @@ function meta::relational::functions::sqlDialectTranslation::getDialectTranslati
 
 function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
 {
+  getDialectTranslationConfig($dbType, $format, $dbTimeZone, $quoteIdentifiers, false, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(connection:DatabaseConnection[1], pretty:Boolean[1], useDbNativeImplicitNullOrdering:Boolean[1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
+{
+  getDialectTranslationConfig($connection.type, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $connection.timeZone, $connection.quoteIdentifiers, $useDbNativeImplicitNullOrdering, $extensions);
+}
+
+// Single place a new dialect-translation-wide toggle is added: a field on DbConfig plus a parameter
+// here. Everything downstream (rendering via generateSqlDialect) reads it off the one config object
+// instead of needing its own new parameter.
+function meta::relational::functions::sqlDialectTranslation::getDialectTranslationConfig(dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], useDbNativeImplicitNullOrdering:Boolean[1], extensions:Extension[*]):SqlDialectTranslationConfig[1]
+{
   let extraNodeProcessorsByDb = $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).sqlDialectTranslation_nodeProcessorsMapByDbType);
-  
+
+  // newDbConfig resolves the target dialect's native null ordering here -- once per query generation
+  // rather than per sort item, because answering can cost a round trip to the target: H2 probes the
+  // running server to tell 1.4.200 (null ordering inverted from canonical) from 2.1.214 (already
+  // canonical).
   ^SqlDialectTranslationConfig(
-    dbConfig = ^DbConfig(dbType = $dbType->toString(), dbTimeZone = $dbTimeZone, quoteIdentifiers = if($quoteIdentifiers->isEmpty(), | false, | $quoteIdentifiers->toOne())),
+    dbConfig = meta::external::store::relational::sqlDialectTranslation::newDbConfig(
+      $dbType->toString(),
+      $dbTimeZone,
+      if($quoteIdentifiers->isEmpty(), | false, | $quoteIdentifiers->toOne()),
+      $useDbNativeImplicitNullOrdering,
+      $extensions
+    ),
     formatConfig = $format,
     functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry(),
     extraNodeProcessors = if($extraNodeProcessorsByDb->isNotEmpty(), | $extraNodeProcessorsByDb->toOne()->get($dbType), |[])
@@ -84,9 +107,21 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
 
 function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
 {
-  let config = getDialectTranslationConfig($dbType, $format, $dbTimeZone, $quoteIdentifiers, $extensions);
+  relOpToString($r, $dbType, $format, $dbTimeZone, $quoteIdentifiers, false, $shouldOptimize, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], pretty:Boolean[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], useDbNativeImplicitNullOrdering:Boolean[1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
+{
+  relOpToString($r, $dbType, ^FormatConfig(pretty = $pretty, upperCaseKeywords = false), $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, $shouldOptimize, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::relOpToString(r:RelationalOperationElement[1], dbType:DatabaseType[1], format:FormatConfig[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], useDbNativeImplicitNullOrdering:Boolean[1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
+{
+  let config = getDialectTranslationConfig($dbType, $format, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, $extensions);
+  // Conversion is dialect-agnostic -- it produces a Postgres-spec AST. Null ordering is realised per
+  // dialect during rendering below, off $config.dbConfig.
   let node = $r->convertRelationalOperationElement($extensions);
-  let optimizedNode = if($shouldOptimize && $node->instanceOf(Query), 
+  let optimizedNode = if($shouldOptimize && $node->instanceOf(Query),
     | $node->cast(@Query)->planSqlStatement(^SqlPlanningConfig(dbType = $dbType->toString()), $extensions),
     | $node
   );
@@ -95,6 +130,11 @@ function meta::relational::functions::sqlDialectTranslation::relOpToString(r:Rel
 
 function meta::relational::functions::sqlDialectTranslation::toSqlDialect(n:Node[1], connection:DatabaseConnection[1], pretty:Boolean[1], extensions:Extension[*]):String[1]
 {
-  let config = getDialectTranslationConfig($connection, $pretty, $extensions);
+  toSqlDialect($n, $connection, $pretty, false, $extensions);
+}
+
+function meta::relational::functions::sqlDialectTranslation::toSqlDialect(n:Node[1], connection:DatabaseConnection[1], pretty:Boolean[1], useDbNativeImplicitNullOrdering:Boolean[1], extensions:Extension[*]):String[1]
+{
+  let config = getDialectTranslationConfig($connection, $pretty, $useDbNativeImplicitNullOrdering, $extensions);
   $n->generateSqlDialect($config, $extensions);
 }

@@ -35,13 +35,43 @@ function meta::external::store::relational::sqlDialectTranslation::sqlDialectTra
   'SqlDialectTranslation'
 }
 
-function meta::external::store::relational::sqlDialectTranslation::fetchSqlDialectForDbType(dbType: String[1], extensions: Extension[*]): SqlDialect[1]
+// Non-asserting counterpart to fetchSqlDialectForDbType: a dbType with no registered dialect yields
+// an empty result instead of failing. Used when reading optional dialect metadata while building a
+// config, where a dbType that is never actually rendered must not be turned into a hard error.
+// More than one dialect for a dbType is still a genuine misconfiguration and still fails.
+function meta::external::store::relational::sqlDialectTranslation::findSqlDialectForDbType(dbType: String[1], extensions: Extension[*]): SqlDialect[0..1]
 {
   let sqlDialects = $extensions.moduleExtensions->filter(m | $m.module == sqlDialectTranslationModuleExtensionName())->cast(@SqlDialectTranslationModuleExtension).extraSqlDialects;
   let filtered = $sqlDialects->filter(s | $s.dbType == $dbType);
-  assert($filtered->isNotEmpty(), | 'No SQL dialects provided in extensions for database type: "' + $dbType + '"');
-  assert($filtered->size() == 1, | 'Too many SQL dialects (' + $filtered->size()->toString() + ') provided in extensions for database type: "' + $dbType + '"');
-  $filtered->toOne();
+  assert($filtered->size() <= 1, | 'Too many SQL dialects (' + $filtered->size()->toString() + ') provided in extensions for database type: "' + $dbType + '"');
+  $filtered->first();
+}
+
+function meta::external::store::relational::sqlDialectTranslation::fetchSqlDialectForDbType(dbType: String[1], extensions: Extension[*]): SqlDialect[1]
+{
+  let found = findSqlDialectForDbType($dbType, $extensions);
+  assert($found->isNotEmpty(), | 'No SQL dialects provided in extensions for database type: "' + $dbType + '"');
+  $found->toOne();
+}
+
+// Builds a DbConfig with the target dialect's native null ordering resolved from its thunk. Every
+// path that constructs a DbConfig for real SQL generation should go through this: a DbConfig built
+// without it silently behaves as though the dialect were canonical-compliant, which produces wrong
+// results on dialects that actually diverge rather than an error.
+//
+// The thunk is evaluated exactly once here -- see SqlDialect.nativeNullOrdering for why it cannot be
+// resolved eagerly at dialect construction.
+function meta::external::store::relational::sqlDialectTranslation::newDbConfig(dbType: String[1], dbTimeZone: String[0..1], quoteIdentifiers: Boolean[1], useDbNativeImplicitNullOrdering: Boolean[1], extensions: Extension[*]): DbConfig[1]
+{
+  let dialect = findSqlDialectForDbType($dbType, $extensions);
+  ^DbConfig(
+    dbType = $dbType,
+    dbTimeZone = $dbTimeZone,
+    quoteIdentifiers = $quoteIdentifiers,
+    useDbNativeImplicitNullOrdering = $useDbNativeImplicitNullOrdering,
+    // Single eval: H2's thunk probes the running server, and every null-ordering fact comes from it.
+    nullOrdering = if($dialect.nativeNullOrdering->isEmpty(), | [], | $dialect.nativeNullOrdering->toOne()->eval())
+  );
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -67,7 +97,7 @@ function meta::external::store::relational::sqlDialectTranslation::generateSqlDi
 Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTranslationConfig
 {
   dbConfig: DbConfig[1];
-  formatConfig: FormatConfig[1]; 
+  formatConfig: FormatConfig[1];
   functionRegistry: Map<Class<SqlFunction>, SqlFunction>[1];
   extraNodeProcessors: Map<Class<Node>, NodeProcessor<Node>>[0..1];
 }
@@ -77,6 +107,26 @@ Class meta::external::store::relational::sqlDialectTranslation::DbConfig
   dbType: String[1];
   dbTimeZone: String[0..1];
   quoteIdentifiers: Boolean[1] = false;
+  // Opts implicit sorts out of canonical null ordering, leaving whatever the database does natively.
+  // Same name and meaning as the field on meta::relational::functions::sqlQueryToString::DbConfig,
+  // which is the equivalent toggle on the legacy string-templated path.
+  useDbNativeImplicitNullOrdering: Boolean[1] = false;
+  // Resolved once per query generation from SqlDialect.nativeNullOrdering (see the thunk there for
+  // why it is not evaluated at dialect construction). Empty means the dialect declared nothing, i.e.
+  // it matches the canonical spec everywhere and can express null ordering in any position.
+  nullOrdering: DialectNullOrdering[0..1];
+}
+
+// What a dialect reports about its own null-ordering behaviour, resolved once per query generation.
+Class meta::external::store::relational::sqlDialectTranslation::DialectNullOrdering
+{
+  // Null ordering applied natively when a sort carries no explicit NULLS FIRST/LAST clause.
+  // (Named nativeOrdering, not native -- `native` is a reserved keyword in Pure.)
+  nativeOrdering: Map<SortItemOrdering, SortItemNullOrdering>[1];
+  // Whether NULLS FIRST/LAST is even parseable inside an ordered-set aggregate's ORDER BY.
+  // H2 2.1.214 accepts it; H2 1.4.200's parser rejects it outright, so emitting a compensating
+  // clause there produces SQL the target cannot run rather than merely ordering differently.
+  supportedInOrderedAggregate: Boolean[1] = true;
 }
 
 Class meta::external::store::relational::sqlDialectTranslation::FormatConfig
@@ -108,11 +158,21 @@ Class meta::external::store::relational::sqlDialectTranslation::SqlDialectTransl
   }: String[1];
 
   nestedFreeMarkerOperation: Boolean[1] = false;
+
+  // Set while rendering the sort keys of an ordered-set aggregate (WITHIN GROUP, or the in-parens
+  // ORDER BY form). Some dialects accept NULLS FIRST/LAST in a top-level or window ORDER BY but
+  // reject it there, so the sort item processor has to know its position -- see resolveNullOrdering.
+  orderedAggregate: Boolean[1] = false;
 }
 
 function meta::external::store::relational::sqlDialectTranslation::increaseLevel(state: SqlDialectTranslationState[1]): SqlDialectTranslationState[1]
 {
   ^$state(level = $state.level + 1)
+}
+
+function meta::external::store::relational::sqlDialectTranslation::inOrderedAggregate(state: SqlDialectTranslationState[1]): SqlDialectTranslationState[1]
+{
+  ^$state(orderedAggregate = true)
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

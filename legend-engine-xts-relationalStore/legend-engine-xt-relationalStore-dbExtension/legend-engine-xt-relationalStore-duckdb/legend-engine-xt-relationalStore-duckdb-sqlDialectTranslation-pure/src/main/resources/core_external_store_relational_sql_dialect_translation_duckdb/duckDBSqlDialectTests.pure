@@ -91,3 +91,67 @@ function <<test.Test>> meta::external::store::relational::sqlDialectTranslation:
     )->inferTypes($config.functionRegistry), $state, $config)
   );
 }
+// ---------------------------------------------------------------------------
+// useDbNativeImplicitNullOrdering
+//
+// SDT asserts result rows and cannot distinguish "no clause because the dialect is already correct"
+// from "no clause because compensation was switched off" -- both produce whatever the database does
+// natively. These assert the emitted SQL instead, which is the only place that difference is visible.
+//
+// The config is built with DuckDB's real declared native ordering (duckDBNativeNullOrdering), so
+// these exercise the same data getDialectTranslationConfig would resolve at runtime.
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::tests::testNullOrderingConfig(useDbNativeImplicitNullOrdering: Boolean[1]): SqlDialectTranslationConfig[1]
+{
+  ^SqlDialectTranslationConfig
+  (
+    dbConfig = ^DbConfig(
+      dbType = 'DuckDB',
+      quoteIdentifiers = false,
+      useDbNativeImplicitNullOrdering = $useDbNativeImplicitNullOrdering,
+      nullOrdering = duckDBNativeNullOrdering()
+    ),
+    formatConfig = ^FormatConfig(pretty = false, upperCaseKeywords = true),
+    functionRegistry = meta::external::store::relational::sqlDialectTranslation::functionRegistry::sqlFunctionRegistry()
+  )
+}
+
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::duckDB::tests::testSortItem(ordering: SortItemOrdering[1], nullOrdering: SortItemNullOrdering[1]): SortItem[1]
+{
+  ^SortItem(sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'c1')), ordering = $ordering, nullOrdering = $nullOrdering)
+}
+
+// Flag off: DuckDB sorts nulls last natively, which already matches canonical on ascending (nothing
+// emitted) but contradicts it on descending (clause forced).
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::duckDB::tests::testImplicitNullOrderingCompensatedWhenFlagOff(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(false);
+
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// Flag on: compensation is suppressed, so no clause is emitted in either direction and DuckDB's
+// native nulls-last behaviour is left in effect.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::duckDB::tests::testImplicitNullOrderingSuppressedWhenFlagOn(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(true);
+
+  assertEquals('c1 ASC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+  assertEquals('c1 DESC', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.UNDEFINED), $state, $config));
+}
+
+// The flag governs implicit ordering only -- an explicit null order is always emitted verbatim.
+function <<test.Test>> meta::external::store::relational::sqlDialectTranslation::duckDB::tests::testExplicitNullOrderingUnaffectedByFlag(): Boolean[1]
+{
+  let dialect = testDialect();
+  let state = testSqlDialectTranslationState();
+  let config = testNullOrderingConfig(true);
+
+  assertEquals('c1 ASC NULLS FIRST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), $state, $config));
+  assertEquals('c1 DESC NULLS LAST', $dialect->executeNodeProcessor(testSortItem(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST), $state, $config));
+}

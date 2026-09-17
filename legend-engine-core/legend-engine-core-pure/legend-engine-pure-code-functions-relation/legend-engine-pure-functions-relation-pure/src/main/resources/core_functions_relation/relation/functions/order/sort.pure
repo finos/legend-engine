@@ -169,7 +169,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmpt
                 2, George
                 null, Pierre
                 1, Sachin
-              #->sort(~id->ascending(meta::pure::functions::relation::NullOrder.FIRST));
+              #->sort(~id->ascending(meta::pure::functions::relation::EmptyOrder.FIRST));
             });
 
   assertEquals('#TDS\n'+
@@ -188,7 +188,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::sort::testSortEmpt
                 2, George
                 null, Pierre
                 1, Sachin
-              #->sort(~id->ascending(meta::pure::functions::relation::NullOrder.LAST));
+              #->sort(~id->ascending(meta::pure::functions::relation::EmptyOrder.LAST));
             });
 
   assertEquals('#TDS\n'+

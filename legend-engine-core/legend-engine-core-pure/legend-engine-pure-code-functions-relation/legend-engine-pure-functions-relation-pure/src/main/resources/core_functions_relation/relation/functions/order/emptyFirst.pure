@@ -52,5 +52,5 @@ function
 {
    // Explicit construction (not a ^$sortInfo(..) copy) so the router's NormalizeRequiredFunction
    // preval folds this the same way it folds ascending()/descending().
-   ^SortInfo<T>(column=$sortInfo.column, direction=$sortInfo.direction, nullOrder=NullOrder.FIRST)
+   ^SortInfo<T>(column=$sortInfo.column, direction=$sortInfo.direction, emptyOrder=EmptyOrder.FIRST)
 }

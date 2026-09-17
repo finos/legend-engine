@@ -449,7 +449,7 @@ function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::
     | let query = $s->convertSqlQuery($extensions);
       let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
       // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
-      $optimizedQuery->toSqlDialect($connection, false, $extensions);,
+      $optimizedQuery->toSqlDialect($connection, false, $useDbNative, $extensions);,
     | if($pretty,
         | meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions),
         | meta::relational::functions::sqlQueryToString::sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions)
@@ -464,7 +464,7 @@ function meta::relational::mapping::toSqlString(s:SQLQuery[1], connection:meta::
     | let query = $s->convertSqlQuery($extensions);
       let optimizedQuery = $query->planSqlStatement(^SqlPlanningConfig(dbType = $connection.type->toString()), $extensions);
       // TODO: Not using pretty format processing here now as it leads to lots of SQL assert diffs.
-      $optimizedQuery->toSqlDialect($connection, false, $extensions);,
+      $optimizedQuery->toSqlDialect($connection, false, $useDbNative, $extensions);,
     | if($pretty,
         | meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions),
         | meta::relational::functions::sqlQueryToString::sqlQueryToString($s, $connection.type, $connection.timeZone, $connection.quoteIdentifiers, $useDbNative, $extensions)

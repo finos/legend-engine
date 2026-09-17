@@ -3847,7 +3847,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinAggColSp
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), emptyOrder = $s.emptyOrder->map(e | if($e == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.LAST))));
    let frame = $window.frame;
    let newColumnName = $f.parametersValues->last()->cast(@InstanceValue).values->at(0)->extractName();
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3858,7 +3858,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinAggColSp
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), emptyOrder = $s.emptyOrder->map(e | if($e == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.LAST))));
    let frame = $window.frame;
    let aggColSpec = $f.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::relation::AggColSpecArray<Any,Any,Any>);
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3873,7 +3873,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinFuncColS
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), emptyOrder = $s.emptyOrder->map(e | if($e == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.LAST))));
    let frame = $window.frame;
    let newColumnName = $f.parametersValues->last()->cast(@InstanceValue).values->at(0)->extractName();
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3884,7 +3884,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWinFuncColS
 {
    let window = $f.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::functions::relation::_Window<Any>);
    let partitionKeys = $window.partition;
-   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), nullOrder = $s.nullOrder));
+   let sortInfo = $window.sortInfo->map(s | ^SortInformation(column = $s.column.name, direction = if($s.direction == SortType.ASC, |meta::pure::tds::SortDirection.ASC,|meta::pure::tds::SortDirection.DESC), emptyOrder = $s.emptyOrder->map(e | if($e == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.FIRST, | meta::pure::tds::EmptyOrder.LAST))));
    let frame = $window.frame;
    let funcColSpec = $f.parametersValues->at(2)->cast(@InstanceValue).values->at(0)->cast(@meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>);
    let topQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
@@ -3969,7 +3969,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationWindowColum
    let windowElement = $partitionKeys->map(columnName|findAliasOrFail($columnName, $mainSelect).relationalElement);
    let sortElements = $sortInfo->map(si|^SortByInfo(sortByElement=findAliasOrFail($si.column, $mainSelect).relationalElement,
                                                     sortDirection = if($si.direction.name == meta::pure::tds::SortDirection.DESC.name,| meta::relational::metamodel::SortDirection.DESC,| meta::relational::metamodel::SortDirection.ASC),
-                                                    nullOrder = $si.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
+                                                    nullOrder = $si.emptyOrder->map(no | if($no == meta::pure::tds::EmptyOrder.FIRST,| meta::relational::metamodel::NullOrder.FIRST,| meta::relational::metamodel::NullOrder.LAST))));
    let newFrame = if($frame->isEmpty(), | [], | $frame->toOne()->processWindowFrame());
    let window = ^meta::relational::metamodel::WindowColumn(
       columnName = $newColumnName,
@@ -4880,9 +4880,11 @@ function meta::relational::functions::pureToSqlQuery::processRelationReduce(f:Fu
    // filters window columns out of what the aggregate sees -- match it so the ordering cannot drift.
    let sortAliases = $state.aliases->filter(c | !$c->instanceOf(meta::relational::metamodel::WindowColumn));
 
+   // column/direction/emptyOrder triples because DynaFunction.parameters is a RelationalOperationElement
+   // list and SortByInfo is not one. emptyOrder is 'FIRST', 'LAST' or 'NONE'.
    let sortBy = $sorts->map(s | ^SortByInfo(sortByElement = findAliasOrFail($s.column.name, $sortAliases).relationalElement,
                                             sortDirection = if($s.direction == meta::pure::functions::relation::SortType.ASC, | meta::relational::metamodel::SortDirection.ASC, | meta::relational::metamodel::SortDirection.DESC),
-                                            nullOrder = $s.nullOrder->map(no | if($no == meta::pure::functions::relation::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST))));
+                                            nullOrder = $s.emptyOrder->map(no | if($no == meta::pure::functions::relation::EmptyOrder.FIRST, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST))));
 
    let filter = $f.parametersValues->at(0)->processGroupFilter($currentPropertyMapping, $operation, $sortAliases, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions);
 

@@ -158,11 +158,23 @@ Enum meta::pure::tds::SortDirection
     ASC, DESC
 }
 
+// The TDS API owns its own ordering vocabulary rather than borrowing the Relation API's, matching
+// how SortDirection above already mirrors meta::pure::functions::relation::SortType. Callers crossing
+// between the two convert explicitly (see processTDSSortSortInfo in pureToSQLQuery).
+//
+// "Empty" rather than "Null" because Pure has no null -- a value is either present or the collection
+// is empty -- which is also why the helpers below are named emptyFirst/emptyLast. The relational
+// metamodel keeps NullOrder, since SQL genuinely has NULL and renders NULLS FIRST/LAST.
+Enum meta::pure::tds::EmptyOrder
+{
+    FIRST, LAST
+}
+
 Class meta::pure::tds::SortInformation
 {
    column : String[1];
    direction : SortDirection[1];
-   nullOrder : meta::pure::functions::relation::NullOrder[0..1];
+   emptyOrder : meta::pure::tds::EmptyOrder[0..1];
 }
 
 Class meta::pure::tds::ColumnSort<T>
@@ -709,30 +721,30 @@ function
 
 function
    {doc.doc = 'Helper function to create sort information with the specified column in ascending order and an explicit null ordering'}
-   meta::pure::tds::asc(column:String[1], nullOrder:meta::pure::functions::relation::NullOrder[1]):SortInformation[1]
+   meta::pure::tds::asc(column:String[1], emptyOrder:meta::pure::tds::EmptyOrder[1]):SortInformation[1]
 {
-   ^SortInformation(column=$column, direction=SortDirection.ASC, nullOrder=$nullOrder)
+   ^SortInformation(column=$column, direction=SortDirection.ASC, emptyOrder=$emptyOrder)
 }
 
 function
    {doc.doc = 'Helper function to create sort information with the specified column in descending order and an explicit null ordering'}
-   meta::pure::tds::desc(column:String[1], nullOrder:meta::pure::functions::relation::NullOrder[1]):SortInformation[1]
+   meta::pure::tds::desc(column:String[1], emptyOrder:meta::pure::tds::EmptyOrder[1]):SortInformation[1]
 {
-   ^SortInformation(column=$column, direction=SortDirection.DESC, nullOrder=$nullOrder)
+   ^SortInformation(column=$column, direction=SortDirection.DESC, emptyOrder=$emptyOrder)
 }
 
 function
    {doc.doc = 'Place empty values first in an existing SortInformation (SQL NULLS FIRST)'}
    meta::pure::tds::emptyFirst(sortInformation:SortInformation[1]):SortInformation[1]
 {
-   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.FIRST)
+   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, emptyOrder=meta::pure::tds::EmptyOrder.FIRST)
 }
 
 function
    {doc.doc = 'Place empty values last in an existing SortInformation (SQL NULLS LAST)'}
    meta::pure::tds::emptyLast(sortInformation:SortInformation[1]):SortInformation[1]
 {
-   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, nullOrder=meta::pure::functions::relation::NullOrder.LAST)
+   ^SortInformation(column=$sortInformation.column, direction=$sortInformation.direction, emptyOrder=meta::pure::tds::EmptyOrder.LAST)
 }
 
 

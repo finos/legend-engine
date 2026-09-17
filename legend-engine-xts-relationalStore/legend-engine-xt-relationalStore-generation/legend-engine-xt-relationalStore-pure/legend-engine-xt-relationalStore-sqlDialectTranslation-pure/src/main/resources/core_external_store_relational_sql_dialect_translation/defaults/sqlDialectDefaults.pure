@@ -535,11 +535,56 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::bet
   )
 }
 
+// A SortItem carries Postgres semantics. An explicit NULLS FIRST/LAST means exactly that on every
+// dialect and is emitted verbatim. UNDEFINED means "whatever Postgres would do" -- nulls sort as the
+// largest value (LAST ascending, FIRST descending) -- so each dialect decides how to realise that:
+// one whose native ordering already agrees emits no clause at all, keeping the generated SQL minimal
+// and existing fixtures untouched; one that disagrees gets an explicit clause so its results still
+// match the spec. Mirrors NullOrderingSupport.processSortItem on the legacy sqlQueryToString path.
+//
+// This is shared by root ORDER BY, window ORDER BY and WITHIN GROUP, since all three render their
+// sort keys through the SortItem node processor.
+// Nulls sort as the largest value: LAST when ascending, FIRST when descending.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::canonicalNullOrdering(ordering: SortItemOrdering[1]): SortItemNullOrdering[1]
+{
+  if($ordering == SortItemOrdering.DESCENDING, | SortItemNullOrdering.FIRST, | SortItemNullOrdering.LAST)
+}
+
+// No declared native ordering means the dialect is canonical-compliant (Postgres itself, Snowflake),
+// so it reports the canonical order and nothing gets compensated.
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::defaults::nativeNullOrderingFor(config: SqlDialectTranslationConfig[1], ordering: SortItemOrdering[1], canonical: SortItemNullOrdering[1]): SortItemNullOrdering[1]
+{
+  if($config.dbConfig.nullOrdering->isEmpty(),
+     | $canonical,
+     | $config.dbConfig.nullOrdering.nativeOrdering->toOne()->get($ordering)->defaultIfEmpty($canonical)->toOne())
+}
+
+function meta::external::store::relational::sqlDialectTranslation::defaults::resolveNullOrdering(sqlDialect: SqlDialect[1], s: SortItem[1], state: SqlDialectTranslationState[1], config: SqlDialectTranslationConfig[1]): SortItemNullOrdering[1]
+{
+  let canonical = canonicalNullOrdering($s.ordering);
+  let nativeOrdering = nativeNullOrderingFor($config, $s.ordering, $canonical);
+  // Where the dialect cannot express null ordering in this position at all, emit nothing -- including
+  // for an explicit FIRST/LAST. Forcing a clause there yields SQL the target refuses to parse (H2
+  // 1.4.200 fails on NULLS inside WITHIN GROUP) rather than merely ordering differently, so the
+  // ordering silently follows the database's native behaviour instead.
+  if($state.orderedAggregate && !$config.dbConfig.nullOrdering.supportedInOrderedAggregate->defaultIfEmpty(true)->toOne(),
+     | SortItemNullOrdering.UNDEFINED,
+     | if($s.nullOrdering != SortItemNullOrdering.UNDEFINED,
+          | $s.nullOrdering,
+          | if($config.dbConfig.useDbNativeImplicitNullOrdering || ($nativeOrdering == $canonical),
+               | SortItemNullOrdering.UNDEFINED,
+               | $canonical
+            )
+       )
+  );
+}
+
 function meta::external::store::relational::sqlDialectTranslation::defaults::sortItemProcessor_default(): NodeProcessor<SortItem>[1]
 {
   nodeProcessor(
     SortItem,
     {sqlDialect, s, state, config |
+      let nullOrdering = resolveNullOrdering($sqlDialect, $s, $state, $config);
       $sqlDialect->executeNodeProcessor($s.sortKey, [], $state, $config) + ' ' +
       if(
         [
@@ -550,11 +595,11 @@ function meta::external::store::relational::sqlDialectTranslation::defaults::sor
       ) +
       if(
         [
-          pair(|$s.nullOrdering == SortItemNullOrdering.FIRST, | ' ' + $sqlDialect->keyword('nulls first', $state, $config)),
-          pair(|$s.nullOrdering == SortItemNullOrdering.LAST, | ' ' + $sqlDialect->keyword('nulls last', $state, $config)),
-          pair(|$s.nullOrdering == SortItemNullOrdering.UNDEFINED, | '')
+          pair(|$nullOrdering == SortItemNullOrdering.FIRST, | ' ' + $sqlDialect->keyword('nulls first', $state, $config)),
+          pair(|$nullOrdering == SortItemNullOrdering.LAST, | ' ' + $sqlDialect->keyword('nulls last', $state, $config)),
+          pair(|$nullOrdering == SortItemNullOrdering.UNDEFINED, | '')
         ],
-        | failWithMessage('Unhandled sort item null ordering type: ' + $s.nullOrdering->toString())
+        | failWithMessage('Unhandled sort item null ordering type: ' + $nullOrdering->toString())
       );
     }
   )

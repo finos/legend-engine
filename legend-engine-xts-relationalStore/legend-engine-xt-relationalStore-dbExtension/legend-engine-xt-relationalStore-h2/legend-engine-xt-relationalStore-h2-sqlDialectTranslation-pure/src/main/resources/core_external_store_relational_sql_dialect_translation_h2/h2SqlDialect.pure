@@ -52,6 +52,7 @@ function meta::external::store::relational::sqlDialectTranslation::h2::h2SqlDial
     keywords = h2Keywords(),
     functionProcessorMap = h2FunctionProcessorMap(),
     variablePlaceholderPrefixSuffixMap = h2VariablePlaceholderPrefixSuffixMap(),
+    nativeNullOrdering = {| h2NativeNullOrdering()},
     expectedSqlDialectTestErrors = h2ExpectedSqlDialectTestErrors()
   )
 }
@@ -1081,6 +1082,46 @@ function <<access.private>> meta::external::store::relational::sqlDialectTransla
     pair('Boolean',     pair('', '')),
     pair('Enum',        pair('', ''))
   ]->newMap();
+}
+
+// Two versions of H2 coexist on this platform and they disagree about null ordering. 2.1.214 backs
+// most platform/PCT tests and already matches the canonical spec (nulls sort as the largest value:
+// LAST ascending, FIRST descending), so implicit sorts emit no clause for it and today's mostly
+// unclaused SQL fixtures stay byte-identical. 1.4.200 backs Alloy's mapped relational execution
+// (including EMIT tests) and is the exact inverse, so implicit sorts there need an explicit clause
+// to reach canonical ordering.
+//
+// The legacy string-templated path draws the same distinction by loading a whole version-specific
+// DbExtension -- compare nullsHighWithClauseSupport in h2Extension2_1_214.pure against
+// nullsLowWithClauseSupport in h2Extension1_4_200.pure.
+//
+// Evaluated at most once per query generation and only when H2 is the dialect being targeted -- see
+// SqlDialect.nativeNullOrdering for why this is reached through a thunk rather than a plain value.
+// 1.4.200 additionally cannot parse NULLS FIRST/LAST inside an ordered-set aggregate's ORDER BY
+// (`percentile_cont(...) WITHIN GROUP (ORDER BY c ASC NULLS LAST)` fails with `expected ")"`), so no
+// clause may be emitted there at all -- see supportedInOrderedAggregate on DialectNullOrdering.
+// 2.1.214 parses it fine, which the ordered-aggregate SDTs exercise on the H2 SDT runner.
+function meta::external::store::relational::sqlDialectTranslation::h2::h2NativeNullOrdering(): DialectNullOrdering[1]
+{
+  let latest = isH2LatestVersion();
+  ^DialectNullOrdering(
+    nativeOrdering = if($latest,
+       | [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.LAST),  pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.FIRST)]->newMap(),
+       | [pair(SortItemOrdering.ASCENDING, SortItemNullOrdering.FIRST), pair(SortItemOrdering.DESCENDING, SortItemNullOrdering.LAST)]->newMap()
+    ),
+    supportedInOrderedAggregate = $latest
+  );
+}
+
+// Detects which H2 version is actually on the classpath at runtime by querying it directly, mirroring
+// meta::relational::functions::sqlQueryToString::h2::getH2Versions in legend-engine-xt-relationalStore-
+// core-pure's legacy H2 extension (the only other place on the platform that needs to know this).
+function <<access.private>> meta::external::store::relational::sqlDialectTranslation::h2::isH2LatestVersion(): Boolean[1]
+{
+  let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = meta::relational::runtime::DatabaseType.H2);
+  let result = meta::relational::metamodel::execute::executeInDb('SELECT H2VERSION();', $conn, 60, 100);
+  let version = $result.rows.values->toOne()->toString();
+  !$version->startsWith('1.4');
 }
 
 // --------------------------------------------------------------------------

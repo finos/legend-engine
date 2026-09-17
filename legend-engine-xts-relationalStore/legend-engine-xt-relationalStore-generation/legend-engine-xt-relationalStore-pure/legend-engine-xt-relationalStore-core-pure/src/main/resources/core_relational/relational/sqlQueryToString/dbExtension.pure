@@ -534,7 +534,7 @@ function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuer
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], useDbNativeImplicitNullOrdering:Boolean[1], extensions:Extension[*]):String[1]
 {
   if(useDialectTranslation($sqlQuery, $dbType),
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, $dbTimeZone, $quoteIdentifiers, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, false, $extensions),
     | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering), ^Format(newLine='', indent=''), ^Config(), $extensions)
   )
 }
@@ -548,7 +548,7 @@ function meta::relational::functions::sqlQueryToString::sqlQueryToStringPretty(s
 {
   if(useDialectTranslation($sqlQuery, $dbType),
     // TODO: Use pretty format processing here. Skipping for now as it leads to lots of SQL assert diffs.
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, false, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, false, $extensions),
     | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering), ^Format(newLine='\n', indent='\t'), ^Config(), $extensions);
   );
 }
@@ -569,7 +569,7 @@ function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuer
 function meta::relational::functions::sqlQueryToString::sqlQueryToString(sqlQuery:SQLQuery[1], dbType:DatabaseType[1], dbTimeZone:String[0..1], quoteIdentifiers:Boolean[0..1], format:Format[1], useDbNativeImplicitNullOrdering:Boolean[1], shouldOptimize:Boolean[1], extensions:Extension[*]):String[1]
 {
   if(useDialectTranslation($sqlQuery, $dbType),
-    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $shouldOptimize, $extensions),
+    | meta::relational::functions::sqlDialectTranslation::relOpToString($sqlQuery, $dbType, false, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering, $shouldOptimize, $extensions),
     | processOperation($sqlQuery, createDbConfig($dbType, $dbTimeZone, $quoteIdentifiers, $useDbNativeImplicitNullOrdering), $format, ^Config(), $extensions)
   );
 }

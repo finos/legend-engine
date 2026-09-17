@@ -47,7 +47,7 @@ public class Sort extends AbstractNative implements Native
                 "    @Override\n" +
                 "    public org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, org.eclipse.collections.api.tuple.Pair<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum, String>> valueOf(Root_meta_pure_functions_relation_SortInfo<?> it)\n" +
                 "    {\n" +
-                "        return org.eclipse.collections.impl.tuple.Tuples.pair(it._direction(), org.eclipse.collections.impl.tuple.Tuples.pair(it._nullOrder(), it._column()._name()));\n" +
+                "        return org.eclipse.collections.impl.tuple.Tuples.pair(it._direction(), org.eclipse.collections.impl.tuple.Tuples.pair(it._emptyOrder(), it._column()._name()));\n" +
                 "    }\n" +
                 "})");
     }

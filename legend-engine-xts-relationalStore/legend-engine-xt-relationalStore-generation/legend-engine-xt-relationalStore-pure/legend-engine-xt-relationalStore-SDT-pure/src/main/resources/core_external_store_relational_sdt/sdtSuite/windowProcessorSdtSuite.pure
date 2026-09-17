@@ -103,7 +103,44 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColum
   );
 }
 
-// Tests on Window Processor 
+// Tests on Ordered Aggregates (LISTAGG / STRING_AGG WITHIN GROUP)
+
+// SELECT string_agg(name, ',' ORDER BY id ASC NULLS FIRST) AS result FROM testTable
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testOrderedAggregateWithNullsFirst(): SqlDialectTest[1]
+{
+  testConfigForOrderedAggregate(
+    'SQLStructureTests - OrderedAggregateWithNullsFirst',
+    SortItemNullOrdering.FIRST,
+    ^TestResult(columnNames = ['result'], rows = ^TestResultRow(values = 'D,B,A,C'))
+  );
+}
+
+// SELECT string_agg(name, ',' ORDER BY id ASC NULLS LAST) AS result FROM testTable
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testOrderedAggregateWithNullsLast(): SqlDialectTest[1]
+{
+  testConfigForOrderedAggregate(
+    'SQLStructureTests - OrderedAggregateWithNullsLast',
+    SortItemNullOrdering.LAST,
+    ^TestResult(columnNames = ['result'], rows = ^TestResultRow(values = 'B,A,C,D'))
+  );
+}
+
+// SELECT string_agg(name, ',' ORDER BY id ASC) AS result FROM testTable
+//
+// No explicit null ordering. Every dialect must still sort nulls as the largest value -- LAST when
+// ascending -- so the result is identical to the NULLS LAST case above regardless of what the
+// database does natively. Dialects that natively disagree have an explicit clause generated for
+// them; see resolveNullOrdering in the sql dialect translation defaults.
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testOrderedAggregateWithDefaultNullOrdering(): SqlDialectTest[1]
+{
+  testConfigForOrderedAggregate(
+    'SQLStructureTests - OrderedAggregateWithDefaultNullOrdering',
+    SortItemNullOrdering.UNDEFINED,
+    ^TestResult(columnNames = ['result'], rows = ^TestResultRow(values = 'B,A,C,D'))
+  );
+}
+
+// Tests on Window Processor
 
 // SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score ASC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByAsc(): SqlDialectTest[1]
@@ -164,6 +201,70 @@ function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColum
     )    
   )
 } 
+
+// SELECT testTable.student, testTable.dept, testTable.score, dense_rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS FIRST) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByWithNullsFirst(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessorWithNulls(
+    'SQLStructureTests - WindowSortByWithNullsFirst',
+    SortItemNullOrdering.FIRST,
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 2]),
+        ^TestResultRow(values = ['Bob', 'Science', null(), 1]),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 3]),
+        ^TestResultRow(values = ['Frank', 'Arts', null(), 1]),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 2]),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 3])
+      ]
+    )
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, dense_rank() OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST) AS result FROM testTable ORDER BY student ASC NULLS LAST
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByWithNullsLast(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessorWithNulls(
+    'SQLStructureTests - WindowSortByWithNullsLast',
+    SortItemNullOrdering.LAST,
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 1]),
+        ^TestResultRow(values = ['Bob', 'Science', null(), 3]),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 2]),
+        ^TestResultRow(values = ['Frank', 'Arts', null(), 3]),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 1]),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 2])
+      ]
+    )
+  )
+}
+
+// SELECT testTable.student, testTable.dept, testTable.score, dense_rank() OVER (PARTITION BY dept ORDER BY score DESC) AS result FROM testTable ORDER BY student ASC NULLS LAST
+//
+// No explicit null ordering on the window sort. Nulls must still rank as the largest value, which on
+// a descending sort means first -- so the null-score rows (Bob, Frank) take rank 1 on every dialect,
+// matching the NULLS FIRST case above.
+function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowSortByWithDefaultNullOrdering(): SqlDialectTest[1]
+{
+  testConfigForWindowProcessorWithNulls(
+    'SQLStructureTests - WindowSortByWithDefaultNullOrdering',
+    SortItemNullOrdering.UNDEFINED,
+    ^TestResult(
+      columnNames = ['student', 'dept', 'score', 'result'],
+      rows = [
+        ^TestResultRow(values = ['Alice', 'Science', 90, 2]),
+        ^TestResultRow(values = ['Bob', 'Science', null(), 1]),
+        ^TestResultRow(values = ['Charlie', 'Science', 85, 3]),
+        ^TestResultRow(values = ['Frank', 'Arts', null(), 1]),
+        ^TestResultRow(values = ['Greece', 'Arts', 83, 2]),
+        ^TestResultRow(values = ['Hannah', 'Arts', 80, 3])
+      ]
+    )
+  )
+}
 
 // SELECT testTable.student, testTable.dept, testTable.score, last_value(student) OVER (PARTITION BY dept ORDER BY score DESC NULLS LAST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS result FROM testTable ORDER BY student ASC NULLS LAST
 function <<SDT.test>> meta::external::store::relational::sdt::suite::windowColumn::testWindowFrameRows(): SqlDialectTest[1]
@@ -444,6 +545,112 @@ function meta::external::store::relational::sdt::framework::testConfigForWindowP
       orderBy = ^SortItem(
           sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'student')),
           ordering = SortItemOrdering.ASCENDING, 
+          nullOrdering = SortItemNullOrdering.LAST
+        )
+      )
+    ),
+    expectedResult = $expected
+  );
+}
+
+// LISTAGG/STRING_AGG WITHIN GROUP (ORDER BY id <nullOrdering>) over a table with one null id, so an
+// explicit null ordering on the aggregate's own orderBy (FunctionCall.orderBy, as opposed to a plain
+// sort or window sortBy) is actually observable in the concatenated result.
+function meta::external::store::relational::sdt::framework::testConfigForOrderedAggregate(identifier: String[1], nullOrdering: SortItemNullOrdering[1], expected: TestResult[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('id', ^ColumnType(name = 'integer')), pair('name', ^ColumnType(name = 'varchar'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['id', 'name'], values = [
+        list([literal(1), literal('B')]),
+        list([^NullLiteral(), literal('D')]),
+        list([literal(2), literal('A')]),
+        list([literal(3), literal('C')])
+      ])
+    ],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+        select = ^Select(
+          distinct = false,
+          selectItems = ^SingleColumn(
+            expression = ^FunctionCall(
+              name = ^QualifiedName(parts = 'string_agg'),
+              arguments = [^QualifiedNameReference(name = ^QualifiedName(parts = 'name')), ^StringLiteral(value = ',')],
+              orderBy = [
+                ^SortItem(
+                  sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'id')),
+                  ordering = SortItemOrdering.ASCENDING,
+                  nullOrdering = $nullOrdering
+                )
+              ]
+            ),
+            alias = 'result'
+          )
+        ),
+        from = ^Table(name = ^QualifiedName(parts = 'testTable'))
+      )
+    ),
+    expectedResult = $expected
+  );
+}
+
+// Same partitioned-by-dept, dense_rank() shape as testConfigForWindowProcessor, but with a null score
+// in each partition (Bob/Frank) so an explicit window-level null ordering is actually observable --
+// exercises the window-sortBy null-order clause (see convertWindowColumn / NullOrder in the relational
+// metamodel) rather than just the top-level ORDER BY covered by testConfigForNulls.
+function meta::external::store::relational::sdt::framework::testConfigForWindowProcessorWithNulls(identifier: String[1], nullOrdering: SortItemNullOrdering[1], expected: TestResult[1]): SqlDialectTest[1]
+{
+  ^SqlDialectTest(
+    identifier = $identifier,
+    setupStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true),
+      ^CreateTestTable(tableName = 'testTable', columns = [pair('student', ^ColumnType(name = 'varchar')), pair('dept', ^ColumnType(name = 'varchar')), pair('score', ^ColumnType(name = 'integer'))], isTempTable = true),
+      ^InsertIntoTestTable(tableName = 'testTable', columns = ['student', 'dept', 'score'], values = [
+        list([literal('Alice'), literal('Science'), literal(90)]),
+        list([literal('Bob'), literal('Science'), ^NullLiteral()]),
+        list([literal('Charlie'), literal('Science'), literal(85)]),
+        list([literal('Frank'), literal('Arts'), ^NullLiteral()]),
+        list([literal('Greece'), literal('Arts'), literal(83)]),
+        list([literal('Hannah'), literal('Arts'), literal(80)])
+    ])],
+    teardownStatements = [
+      ^DropTestTable(tableName = 'testTable', isTempTable = true)
+    ],
+    testQuery = ^Query(
+      queryBody = ^QuerySpecification(
+      select = ^Select(
+        distinct = false,
+        selectItems = [
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'student']))),
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'dept']))),
+        ^SingleColumn(expression = ^QualifiedNameReference(name = ^QualifiedName(parts = ['testTable', 'score']))),
+        ^SingleColumn(
+          expression = ^FunctionCall(
+            name = ^QualifiedName(parts = 'dense_rank'),
+            arguments = [],
+            window = ^meta::external::query::sql::metamodel::Window(
+              orderBy = [
+                ^SortItem(
+                  sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'score')),
+                  ordering = SortItemOrdering.DESCENDING,
+                  nullOrdering = $nullOrdering
+                )
+              ],
+              partitions = [^QualifiedNameReference(name = ^QualifiedName(parts = 'dept'))]
+            )
+          ),
+          alias = 'result'
+        )
+      ]),
+      from = ^Table(name = ^QualifiedName(parts = 'testTable')),
+      orderBy = ^SortItem(
+          sortKey = ^QualifiedNameReference(name = ^QualifiedName(parts = 'student')),
+          ordering = SortItemOrdering.ASCENDING,
           nullOrdering = SortItemNullOrdering.LAST
         )
       )
