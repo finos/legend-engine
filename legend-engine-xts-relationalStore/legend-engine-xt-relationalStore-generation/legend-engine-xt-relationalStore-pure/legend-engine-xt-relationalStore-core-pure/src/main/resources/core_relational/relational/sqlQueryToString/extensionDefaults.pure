@@ -969,3 +969,10 @@ function   meta::relational::functions::sqlQueryToString::default::defaultJavaTo
                   pair('I2', 'HH12')
                   ];  
 }
+
+function meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
+{
+   let renderedArgs = $args->map(a | $a.value->processOperation($sgc))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   $qualified + '(' + $renderedArgs + ')';
+}

@@ -59,6 +59,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       windowColumnProcessor = processWindowColumnForDatabricks_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForDatabricks_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks_String_1__String_1__FunctionParameter_MANY__String_1_,
+      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::databricks::tabularFunctionCallProcessorForDatabricks_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
@@ -1459,6 +1460,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionProcessorForDatabricks(schema:String[1], functionName:String[1], params:FunctionParameter[*]):String[1]
 {
    if($schema == '', | $functionName, | $schema + '.' + $functionName) + '(' + $params->map(p|$p.name)->joinStrings(', ') + ')';
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionCallProcessorForDatabricks(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
+{
+   let renderedArgs = $args->map(a | $a.value->processOperation($sgc))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   $qualified + '(' + $renderedArgs + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::variableDeclarationProcessorForDatabricks(v:VariableDeclaration[1], sgc:SqlGenerationContext[1]): String[1]

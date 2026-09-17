@@ -100,6 +100,11 @@ function meta::relational::functions::toPostgresModel::convertElement(r:Relation
         a:AggregateFunctionCall[1]|           convertAggregateFunctionCall($a, $state);,
         s:SelectSQLQuery[1]|                  convertSelectSQLQuery($s, $state);,
         tf:TabularFunction[1]|                ^TableFunction(functionCall = functionCall($tf.schema.name->concatenate($tf.name), []));,
+        tfr:TabularFunctionCall[1]|
+                                              ^TableFunction(functionCall = functionCall(
+                                                 $tfr.function.schema.name->concatenate($tfr.function.name),
+                                                 $tfr.arguments->map(a | $a.value->convertElementToExpression($state))
+                                              ));,
         l:LiteralList[1]|                     ^InListExpression(values = $l.values->map(v|$v->convertElementToExpression($state)));,
         f:FreeMarkerOperationHolder[1]|       convertFreeMarkerOperationHolder($f, $state);,
         t:TableFunctionParamPlaceHolder[1] |  fail('SQL Dialect translation for TableFunctionParamPlaceHolder not supported yet!'); literal(1);,

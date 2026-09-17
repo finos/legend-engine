@@ -33,6 +33,7 @@ function meta::relational::functions::sqlQueryToString::debugPrint::createDbExte
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
+      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForH2_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,
@@ -102,6 +103,13 @@ function meta::relational::functions::sqlQueryToString::debugPrint::lambdaProces
 function meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*] ):String[1]
 {
    'table('+ if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ '))';
+}
+
+function meta::relational::functions::sqlQueryToString::debugPrint::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
+{
+   let renderedArgs = $args->map(a | $a.value->processOperation($sgc))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   'table(' + $qualified + '(' + $renderedArgs + '))';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::debugPrint::processJoinForDebugPrint(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
