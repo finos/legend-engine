@@ -1,0 +1,252 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the 'License');
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an 'AS IS' BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Embedded arrays inside a SEMISTRUCTURED column, reached through a model-to-model mapping whose
+// source class is mapped to the relational store. The query runs target model -> M2M -> relational,
+// with a ModelChainConnection joining the two legs.
+//
+// Row 1 has two divisions, the first with two teams and the second with none. Row 2 has one
+// division with no teams. Row 3 has no divisions key at all, so a row with nothing to fan out must
+// still survive.
+
+import meta::relational::tests::semistructured::modelChain::*;
+import meta::pure::test::*;
+import meta::core::runtime::*;
+
+function meta::relational::tests::semistructured::modelChain::modelChainCsv(): String[1]
+{
+  'FIRM_SCHEMA\n' +
+  'FIRM_TABLE\n' +
+  'ID,FIRM_DETAILS\n' +
+  '1,"{""legalName"": ""Firm X"", ""address"": {""line1"": ""1 Main St"", ""city"": ""New York""}, ""tags"": [""alpha"", ""beta""], ""divisions"": [{""name"": ""Equities"", ""headcount"": 9, ""location"": {""city"": ""New York"", ""country"": ""US""}, ""teams"": [{""label"": ""Cash"", ""members"": [""Ann"", ""Bob""]}, {""label"": ""Derivatives"", ""members"": [""Cara""]}]}, {""name"": ""Fixed Income"", ""headcount"": 100, ""location"": {""city"": ""London"", ""country"": ""UK""}, ""teams"": []}], ""terms"": [{""termId"": ""T1"", ""collateral"": [{""collateralId"": {""identifier"": ""C1""}, ""quantity"": 10}, {""collateralId"": {""identifier"": ""C2""}, ""quantity"": 20}]}, {""termId"": ""T2""}]}"\n' +
+  '2,"{""legalName"": ""Firm Y"", ""address"": {""line1"": ""2 High St"", ""city"": ""London""}, ""tags"": [""gamma""], ""divisions"": [{""name"": ""Research"", ""headcount"": 5, ""location"": {""city"": ""London"", ""country"": ""UK""}, ""teams"": []}], ""terms"": [{""termId"": ""T3"", ""collateral"": [{""collateralId"": {""identifier"": ""C3""}, ""quantity"": 5}]}]}"\n' +
+  '3,"{""legalName"": ""Firm Z"", ""address"": {""line1"": ""3 Side St"", ""city"": ""Tokyo""}, ""tags"": []}"\n'
+}
+
+function meta::relational::tests::semistructured::modelChain::modelChainExecuteJSON(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  meta::relational::metamodel::execute::tests::executeLegendFunctionWithModelChainJSON(
+    $conn,
+    modelChainCsv(),
+    '/core_relational/relational/tests/semistructured/model/semiStructuredModelChain.legend',
+    $func,
+    'chain::mapping::M2M',
+    'chain::mapping::Relational',
+    'chain::store::DB',
+    $expected
+  );
+}
+
+function meta::relational::tests::semistructured::modelChain::modelChainExecuteTds(conn: Connection[1], func: String[1], expected: String[1]):Boolean[1]
+{
+  meta::relational::metamodel::execute::tests::executeLegendFunctionWithModelChain(
+    $conn,
+    modelChainCsv(),
+    '/core_relational/relational/tests/semistructured/model/semiStructuredModelChain.legend',
+    $func,
+    'chain::mapping::M2M',
+    'chain::mapping::Relational',
+    'chain::store::DB',
+    $expected
+  );
+}
+
+// Control: nothing in the tree is sourced from the semi-structured column, so this isolates the
+// bare chain from anything semi-structured.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainIdOnlyGraph(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteJSON($conn, 'chain::firmIdOnlyGraph__String_1_',
+    '{"builder":{"_type":"json"},"values":[{"id":1},{"id":2},{"id":3}]}'
+  );
+}
+
+// Control: every column is sourced from the semi-structured column, including a scalar array, but
+// all of them sit on the root target class, whose ~src class is the relationally mapped one.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainRootScalarsTds(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmScalarsTds__TabularDataSet_1_',
+    'Id,Name,City,Label\n' +
+    '1,FIRM X,New York,alpha\n' +
+    '1,FIRM X,New York,beta\n' +
+    '2,FIRM Y,London,gamma\n' +
+    '3,FIRM Z,Tokyo,null\n'
+  );
+}
+
+// The single-list project([col(...)]) form of the control above. The chain reprocesses a
+// BasicColumnSpecification by re-sourcing the lambda it carries; without an arm for it the query
+// fails on a match failure before reaching the store.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainRootScalarsColTds(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmScalarsColTds__TabularDataSet_1_',
+    'Id,Name,City\n' +
+    '1,FIRM X,New York\n' +
+    '2,FIRM Y,London\n' +
+    '3,FIRM Z,Tokyo\n'
+  );
+}
+
+// The four graph-fetch tests below are parked, not deleted: their bodies and expected output are
+// the acceptance criteria for the work that will turn them on.
+//
+// Graph fetch cannot read anything behind a Binding at all. Routing resolves a property's sets
+// through mapping->classMappingById, and a binding-mapped property registers no class mapping --
+// the set implementation is synthesised on demand during the SQL walk, which graph-fetch routing
+// does not perform. Not array-specific: a to-one String behind the binding fails the same way.
+//
+// Turning them on needs more than resolving the sets. Array elements need an identity, and
+// resolvePrimaryKey unwraps an embedded set implementation to its owner, so every element of an
+// embedded array resolves to the root table's primary key. Nothing in the relational metamodel
+// carries an array ordinal and no dialect emits one, so plan generation would produce rows that
+// are indistinguishable rather than crash -- worse than the current failure.
+//
+// The projection tests above read the same fixture, but they are not a substitute: a graph fetch
+// returns a nested object graph and a projection returns flat rows. Nothing here covers what these
+// four assert.
+//
+// No array of objects crosses the chain here, only a collection of scalars. A failure means the
+// problem is not specific to embedded objects.
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::modelChain::testModelChainScalarArray(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteJSON($conn, 'chain::firmScalarArrayGraph__String_1_',
+    '{"builder":{"_type":"json"},"values":[' +
+      '{"id":1,"name":"FIRM X","city":"New York","labels":["alpha","beta"]},' +
+      '{"id":2,"name":"FIRM Y","city":"London","labels":["gamma"]},' +
+      '{"id":3,"name":"FIRM Z","city":"Tokyo","labels":[]}' +
+    ']}'
+  );
+}
+
+// One level of embedded object array.
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::modelChain::testModelChainEmbeddedObjectArray(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteJSON($conn, 'chain::firmUnitsGraph__String_1_',
+    '{"builder":{"_type":"json"},"values":[' +
+      '{"id":1,"name":"FIRM X","units":[' +
+        '{"unitName":"Equities","unitSize":9,"country":"US"},' +
+        '{"unitName":"Fixed Income","unitSize":100,"country":"UK"}]},' +
+      '{"id":2,"name":"FIRM Y","units":[' +
+        '{"unitName":"Research","unitSize":5,"country":"UK"}]},' +
+      '{"id":3,"name":"FIRM Z","units":[]}' +
+    ']}'
+  );
+}
+
+// Two levels of embedded object array, with a scalar array at the leaf.
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::modelChain::testModelChainNestedEmbeddedObjectArray(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteJSON($conn, 'chain::firmFullGraph__String_1_',
+    '{"builder":{"_type":"json"},"values":[' +
+      '{"id":1,"name":"FIRM X","city":"New York","labels":["alpha","beta"],"units":[' +
+        '{"unitName":"Equities","unitSize":9,"country":"US","squads":[' +
+          '{"squadName":"Cash","memberCount":2,"memberNames":["Ann","Bob"]},' +
+          '{"squadName":"Derivatives","memberCount":1,"memberNames":["Cara"]}]},' +
+        '{"unitName":"Fixed Income","unitSize":100,"country":"UK","squads":[]}]},' +
+      '{"id":2,"name":"FIRM Y","city":"London","labels":["gamma"],"units":[' +
+        '{"unitName":"Research","unitSize":5,"country":"UK","squads":[]}]},' +
+      '{"id":3,"name":"FIRM Z","city":"Tokyo","labels":[],"units":[]}' +
+    ']}'
+  );
+}
+
+// The same two levels reached by a TDS projection instead of a graph fetch, which routes all the
+// way down to relational SQL. Contrast with the test above to tell a graph-fetch defect from one in
+// the semi-structured mapping underneath.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainNestedEmbeddedObjectArrayTds(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmUnitsTds__TabularDataSet_1_',
+    'Id,Name,Unit Name,Squad Name\n' +
+    '1,FIRM X,Equities,Cash\n' +
+    '1,FIRM X,Equities,Derivatives\n' +
+    '1,FIRM X,Fixed Income,null\n' +
+    '2,FIRM Y,Research,null\n' +
+    '3,FIRM Z,null,null\n'
+  );
+}
+
+// The reported shape: a TDS projection through the chain onto a to-many whose source array is only
+// reachable after a subType cast.
+//
+// Firm X's second term, T2, carries no `collateral` key, and it contributes a null row rather than
+// nothing. That is how semi-structured flattening behaves generally, not something the chain adds:
+// the same projection written directly against chain::mapping::Relational, with no chain involved,
+// produces the same row. Pure collection semantics would concatenate to [C1, C2] and yield two
+// rows; the engine instead flattens level by level with outer semantics at each one, which is also
+// what testModelChainNestedEmbeddedObjectArrayTds above asserts when it expects
+// 'Fixed Income,null' for a division whose teams array is empty. Tracked separately.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainSubTypeEmbeddedObjectArrayTds(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmHoldingsTds__TabularDataSet_1_',
+    'Id,Name,Piece Id\n' +
+    '1,FIRM X,C1\n' +
+    '1,FIRM X,C2\n' +
+    '1,FIRM X,null\n' +
+    '2,FIRM Y,C3\n' +
+    '3,FIRM Z,null\n'
+  );
+}
+
+function <<paramTest.Ignore>> meta::relational::tests::semistructured::modelChain::testModelChainSubTypeEmbeddedObjectArrayGraph(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteJSON($conn, 'chain::firmHoldingsGraph__String_1_',
+    '{"builder":{"_type":"json"},"values":[' +
+      '{"id":1,"name":"FIRM X","holdings":[' +
+        '{"pieceId":"C1","quantity":10},' +
+        '{"pieceId":"C2","quantity":20}]},' +
+      '{"id":2,"name":"FIRM Y","holdings":[' +
+        '{"pieceId":"C3","quantity":5}]},' +
+      '{"id":3,"name":"FIRM Z","holdings":[]}' +
+    ']}'
+  );
+}
+
+// The same three projections in the relation form - project(~[...]) returning a Relation (TDSv2)
+// rather than a TabularDataSet - to establish whether the reported failure is specific to the
+// older projection API.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainRootScalarsRelation(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmScalarsRelation__Relation_1_',
+    'id,name,city,label\n' +
+    '1,FIRM X,New York,alpha\n' +
+    '1,FIRM X,New York,beta\n' +
+    '2,FIRM Y,London,gamma\n' +
+    '3,FIRM Z,Tokyo,null\n'
+  );
+}
+
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainNestedEmbeddedObjectArrayRelation(conn: Connection[1]):Boolean[1]
+{
+  modelChainExecuteTds($conn, 'chain::firmUnitsRelation__Relation_1_',
+    'id,name,unitName,squadName\n' +
+    '1,FIRM X,Equities,Cash\n' +
+    '1,FIRM X,Equities,Derivatives\n' +
+    '1,FIRM X,Fixed Income,null\n' +
+    '2,FIRM Y,Research,null\n' +
+    '3,FIRM Z,null,null\n'
+  );
+}
+
+// The reported shape in the relation form.
+function <<paramTest.Test>> meta::relational::tests::semistructured::modelChain::testModelChainSubTypeEmbeddedObjectArrayRelation(conn: Connection[1]):Boolean[1]
+{
+  // Same null row for Firm X's collateral-less term as the TDS form above, for the same reason.
+  modelChainExecuteTds($conn, 'chain::firmHoldingsRelation__Relation_1_',
+    'id,name,pieceId\n' +
+    '1,FIRM X,C1\n' +
+    '1,FIRM X,C2\n' +
+    '1,FIRM X,null\n' +
+    '2,FIRM Y,C3\n' +
+    '3,FIRM Z,null\n'
+  );
+}

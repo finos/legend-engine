@@ -24,7 +24,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
 
   let expected ='Relational\n' +
             '(\n' +
-            '  type = TDS[(name, String, VARCHAR(8192), ""), (prop1, Boolean, BIT, "")]\n' +
+            '  type = TDS[(name, String, VARCHAR(200), ""), (prop1, Boolean, BIT, "")]\n' +
             '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n' +
             '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
             '  connection = RelationalDatabaseConnection(type = "H2")\n' +
@@ -51,7 +51,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
   let expected =
                 'Relational\n' +
                 '(\n' +
-                '  type = TDS[(name, String, VARCHAR(8192), ""), (prop2, String, VARCHAR(8192), "")]\n' +
+                '  type = TDS[(name, String, VARCHAR(200), ""), (prop2, String, VARCHAR(8192), "")]\n' +
                 '  resultColumns = [("name", VARCHAR(200)), ("prop2", "")]\n' +
                 '  sql = select "root".name as "name", case when "sourceannouncement_0".description like \'%RECEIVE CASH%\' then \'Cash\' else \'Stock\' end as "prop2" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
                 '  connection = RelationalDatabaseConnection(type = "H2")\n' +
@@ -79,7 +79,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
   let expectedLegacyH2 =
               'Relational\n' +
               '(\n' +
-              '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
+              '  type = TDS[(name, String, VARCHAR(200), ""), (prop3, Number, FLOAT, "")]\n' +
               '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
               '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = 0.0 then 0.0 else (((1.0 * "root".entitledQuantity) / "sourceannouncement_0".basis) * "sourceannouncement_0".grossRate) end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
               '  connection = RelationalDatabaseConnection(type = "H2")\n' +
@@ -87,7 +87,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
   let expectedNewH2 =
               'Relational\n' +
               '(\n' +
-              '  type = TDS[(name, String, VARCHAR(8192), ""), (prop3, Number, FLOAT, "")]\n' +
+              '  type = TDS[(name, String, VARCHAR(200), ""), (prop3, Number, FLOAT, "")]\n' +
               '  resultColumns = [("name", VARCHAR(200)), ("prop3", "")]\n' +
               '  sql = select "root".name as "name", case when "sourceannouncement_0".basis = cast(0.0 as float) then cast(0.0 as float) else ((1.0 * "root".entitledQuantity) / ("sourceannouncement_0".basis)) * "sourceannouncement_0".grossRate end as "prop3" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id)\n' +
               '  connection = RelationalDatabaseConnection(type = "H2")\n' +
@@ -121,7 +121,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
 
   let expected = 'Sequence\n' +
                 '(\n' +
-                '  type = TDS[(name, String, VARCHAR(8192), ""), (prop4, Boolean, BIT, "")]\n' +
+                '  type = TDS[(name, String, VARCHAR(200), ""), (prop4, Boolean, BIT, "")]\n' +
                 '  (\n' +
                 '    FunctionParametersValidationNode\n' +
                 '    (\n' +
@@ -129,7 +129,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
                 '    )\n' +
                 '    Relational\n' +
                 '    (\n' +
-                '      type = TDS[(name, String, VARCHAR(8192), ""), (prop4, Boolean, BIT, "")]\n' +
+                '      type = TDS[(name, String, VARCHAR(200), ""), (prop4, Boolean, BIT, "")]\n' +
                 '      resultColumns = [("name", VARCHAR(200)), ("prop4", "")]\n' +
                 '      sql = select "root".name as "name", "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\' as "prop4" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) where "sourceannouncement_0".name = \'${accountNum?replace("\'", "\'\'")}\'\n' +
                 '      connection = RelationalDatabaseConnection(type = "H2")\n' +
@@ -156,7 +156,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::tes
 
   let expected =  'Relational\n'+
                   '(\n'+
-                  '  type = TDS[(name, String, VARCHAR(8192), ""), (prop1, Boolean, BIT, "")]\n'+
+                  '  type = TDS[(name, String, VARCHAR(200), ""), (prop1, Boolean, BIT, "")]\n'+
                   '  resultColumns = [("name", VARCHAR(200)), ("prop1", "")]\n'+
                   '  sql = select "root".name as "name", "sourceannouncement_0".name = \'ha\' as "prop1" from S.sourceEntitlement as "root" left outer join S.SourceAnnouncement as "sourceannouncement_0" on ("root".id = "sourceannouncement_0".id) order by "name" asc\n'+
                   '  connection = RelationalDatabaseConnection(type = "H2")\n'+

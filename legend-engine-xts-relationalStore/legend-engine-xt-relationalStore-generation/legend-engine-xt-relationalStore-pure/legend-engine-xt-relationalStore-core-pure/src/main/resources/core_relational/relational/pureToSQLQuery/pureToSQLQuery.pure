@@ -6287,7 +6287,7 @@ function meta::relational::functions::pureToSqlQuery::replaceVariableByValues(vs
 function meta::relational::functions::pureToSqlQuery::processEvaluate(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    if($expression.parametersValues->size() == 1,
-      | processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();,
+      | processValueSpecificationReturnPropertyMapping($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();,
       | let filterFunctionExpression = $expression.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->match(
           [
             f:FunctionDefinition<Any>[1]|
@@ -6304,8 +6304,15 @@ function meta::relational::functions::pureToSqlQuery::processEvaluate(expression
           ]
         );
         let operationWithoutFilter = $operation->removeFilteringOperation();
-        let rightSide = processValueSpecification($expression.parametersValues->at(1), $currentPropertyMapping, $operationWithoutFilter, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
-        processValueSpecification($filterFunctionExpression, $currentPropertyMapping, $rightSide->extractSelectWithCursor($operationWithoutFilter), $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+        let rightSide = processValueSpecificationReturnPropertyMapping($expression.parametersValues->at(1), $currentPropertyMapping, $operationWithoutFilter, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+        // The lambda body is evaluated over the argument, so it inherits the property mapping the
+        // argument resolved to -- e.g. a SemiStructuredEmbeddedRelationalInstanceSetImplementation
+        // synthesised while walking into a Binding -- rather than the caller's. A model-to-model
+        // chain rewrites $x.a.b into eval(bLambda, eval(aLambda, $src)); without this the inner
+        // context is dropped and `b` falls through to rootClassMappingByClass, which cannot see a
+        // class that exists only inside the binding. Mirrors processMap.
+        let innerPM = if($rightSide.currentPropertyMapping->isEmpty(), | $currentPropertyMapping, | $rightSide.currentPropertyMapping);
+        processValueSpecificationReturnPropertyMapping($filterFunctionExpression, $innerPM, $rightSide.element->extractSelectWithCursor($operationWithoutFilter), $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
       );
 }
 

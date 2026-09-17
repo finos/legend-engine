@@ -1,0 +1,67 @@
+name: relational-semistructured-model-chain
+title: "Semi-Structured Embedded Arrays Through a Model-to-Model → Relational Chain"
+description: |
+  A JSON document in a SEMISTRUCTURED column carrying every embedded-array shape — an array of
+  scalars, an array of objects, an object inside an array element, an array inside an array
+  element, an array of scalars at the leaf of that, and an array reachable only after a subType
+  cast — read through a model-to-model mapping whose source class is mapped to the relational
+  store. A ModelChainConnection bound to ModelStore in the runtime joins the two legs, so execution
+  runs target model → M2M → relational.
+
+  This combination had no coverage anywhere: the semi-structured suite contains no `~src` and no
+  graph fetch, and no file in the repository held both a SEMISTRUCTURED column and a graphFetch.
+  Embedded arrays were reported as misbehaving through exactly this flow, and the model exists to
+  pin what the flow actually produces.
+
+  `FirmHoldingsRelationService` is the reported shape as a relation projection — the form a TDSv2
+  user writes, and the only form for which EMIT provisions a DuckDB target
+  (`RelationalConnectionFactory` picks DuckDB when the query returns a `Relation` and H2 otherwise).
+  It is the single service here; the comment at the foot of `service/firmService.pure` records why
+  the TabularDataSet and graph-fetch routes are not, and where they are covered instead.
+
+  One row has a division whose team array is empty and a term with no collateral, and another has
+  neither key at all, so outer-flatten semantics are asserted rather than assumed. A term with no
+  collateral contributes a null row rather than nothing; that is how semi-structured flattening
+  behaves generally, with or without a chain.
+
+  `docs/engineering/architecture/relational-dynafunctions.md` §11.8 records the defects this model
+  was built to pin down and what remains.
+
+modelSources:
+  model:
+    root: relational-semistructured-model-chain
+    files:
+      - store/db.pure
+      - mapping/relationalMapping.pure
+      - mapping/m2mMapping.pure
+      - connection/connections.pure
+      - runtime/runtime.pure
+      - data/testData.pure
+      - service/firmService.pure
+
+features:
+  - execution:data-element
+  - execution:service
+  - execution:service-test
+  - execution:shared-test-data
+  - mapping:m2m-chained-relational
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-chain-connection
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+  - store:relational-semistructured
+  - store:relational-semistructured-binding
+  - store:relational-semistructured-flatten
+stores:
+  - relational
+complexity: advanced
+tags:
+  - semi-structured
+  - json
+  - collection
+  - m2m
+  - model-chain
+  - duckdb

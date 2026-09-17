@@ -1,0 +1,31 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// RFC-4180: each JSON document is wrapped in " and every internal " is doubled.
+//
+// Row 1 has two divisions, the first with two teams and the second with none, and two terms, the
+// first with two collateral pieces and the second with none. Row 2 has one of each. Row 3 has
+// neither key, so a row with nothing to fan out must still survive.
+###Data
+Data chain::data::FirmData
+{
+  Relation
+  #{
+    FIRM_SCHEMA.FIRM_TABLE:
+      ID,FIRM_DETAILS
+      1,"{""legalName"":""Firm X"",""address"":{""line1"":""1 Main St"",""city"":""New York""},""tags"":[""alpha"",""beta""],""divisions"":[{""name"":""Equities"",""headcount"":9,""location"":{""city"":""New York"",""country"":""US""},""teams"":[{""label"":""Cash"",""members"":[""Ann"",""Bob""]},{""label"":""Derivatives"",""members"":[""Cara""]}]},{""name"":""Fixed Income"",""headcount"":100,""location"":{""city"":""London"",""country"":""UK""},""teams"":[]}],""terms"":[{""termId"":""T1"",""collateral"":[{""collateralId"":{""identifier"":""C1""},""quantity"":10},{""collateralId"":{""identifier"":""C2""},""quantity"":20}]},{""termId"":""T2""}]}"
+      2,"{""legalName"":""Firm Y"",""address"":{""line1"":""2 High St"",""city"":""London""},""tags"":[""gamma""],""divisions"":[{""name"":""Research"",""headcount"":5,""location"":{""city"":""London"",""country"":""UK""},""teams"":[]}],""terms"":[{""termId"":""T3"",""collateral"":[{""collateralId"":{""identifier"":""C3""},""quantity"":5}]}]}"
+      3,"{""legalName"":""Firm Z"",""address"":{""line1"":""3 Side St"",""city"":""Tokyo""},""tags"":[]}";
+  }#
+}

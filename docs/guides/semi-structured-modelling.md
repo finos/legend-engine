@@ -217,11 +217,21 @@ These are known limits, not bugs to report.
 | `explodeSemiStructured` outside a `Join` | not supported | Use `[*]` if you want a value rather than rows. |
 | Exploding something other than a plain column | not supported | The innermost explode must read a table or view column directly. |
 | `[-1]`, `..`, `a."key"` | not supported | Use `array_last`, an explicit path, and `a["key"]`. |
+| Graph fetching a complex property that is mapped through a binding | not supported | No equivalent — a projection returns flat rows, not a nested object graph. If you need the graph shape, this flow cannot produce it yet. Not specific to arrays; a single nested value fails too. |
+| A nested array whose inner array is empty or absent | gives a null row | Projecting only the leaf of `a.b.c` still produces a row for a `b` whose `c` is missing, rather than nothing. Filter the nulls out in the query. Applies with or without a model-to-model mapping. |
 
 # Where this is tested
 
 These expressions run against **DuckDB**, **Snowflake** and **Databricks** as part of the build.
 H2 supports a narrower set and is being retired.
+
+Reading an embedded array through a model-to-model mapping placed over the relational one — including
+one reachable only after a `subType` cast — **now works** for both projection forms, and is covered by
+`meta::relational::tests::semistructured::modelChain` and the `relational-semistructured-model-chain`
+EMIT model. The graph-fetch route over the same model is still unsupported; those tests are parked
+rather than deleted, so they assert the answers that route should give once it is implemented.
+`docs/engineering/architecture/model-to-model-chain.md` covers the chain end to end — how it is
+declared, how a query is rewritten and routed down to the store, and what still breaks.
 
 Two caveats. The function list is what has been *checked*, not everything that exists — the
 relational grammar has around 230 functions and this is the semi-structured corner of it. And

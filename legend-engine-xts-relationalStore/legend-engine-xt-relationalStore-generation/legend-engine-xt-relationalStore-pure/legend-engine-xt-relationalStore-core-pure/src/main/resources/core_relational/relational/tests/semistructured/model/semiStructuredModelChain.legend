@@ -1,0 +1,330 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The source model: the shape of the JSON document held in the SEMISTRUCTURED column, typed
+// through a binding. Every embedded-array shape is present - an array of scalars, an array of
+// objects, an object inside an array element, an array inside an array element, and an array of
+// scalars at the leaf of that.
+###Pure
+Class chain::source::S_FirmRow
+{
+  id: Integer[1];
+  firm: chain::source::S_Firm[1];
+}
+
+Class chain::source::S_Firm
+{
+  legalName: String[1];
+  address: chain::source::S_Address[0..1];
+  tags: String[*];
+  divisions: chain::source::S_Division[*];
+  terms: chain::source::S_Terms[*];
+}
+
+// The embedded array hangs off a subtype, so reaching it needs a subType cast part-way along the
+// path. This is the shape the reported failure has.
+Class chain::source::S_Terms
+{
+  termId: String[1];
+}
+
+Class chain::source::S_RepoTerms extends chain::source::S_Terms
+{
+  collateral: chain::source::S_Collateral[*];
+}
+
+Class chain::source::S_Collateral
+{
+  collateralId: chain::source::S_Identifier[1];
+  quantity: Integer[1];
+}
+
+Class chain::source::S_Identifier
+{
+  identifier: String[1];
+}
+
+Class chain::source::S_Address
+{
+  line1: String[1];
+  city: String[1];
+}
+
+Class chain::source::S_Division
+{
+  name: String[1];
+  headcount: Integer[1];
+  location: chain::source::S_Location[0..1];
+  teams: chain::source::S_Team[*];
+}
+
+Class chain::source::S_Location
+{
+  city: String[1];
+  country: String[1];
+}
+
+Class chain::source::S_Team
+{
+  label: String[1];
+  members: String[*];
+}
+
+// The target model. Every property is renamed and several are transformed, so a query that
+// accidentally bypassed the model-to-model leg could not produce these results.
+Class chain::model::Firm
+{
+  id: Integer[1];
+  name: String[1];
+  city: String[0..1];
+  labels: String[*];
+  units: chain::model::Unit[*];
+  holdings: chain::model::Holding[*];
+}
+
+Class chain::model::Holding
+{
+  pieceId: String[0..1];
+  quantity: Integer[1];
+}
+
+Class chain::model::Unit
+{
+  unitName: String[1];
+  unitSize: Integer[1];
+  country: String[0..1];
+  squads: chain::model::Squad[*];
+}
+
+Class chain::model::Squad
+{
+  squadName: String[1];
+  memberCount: Integer[1];
+  memberNames: String[*];
+}
+
+
+###Relational
+Database chain::store::DB
+(
+  Schema FIRM_SCHEMA
+  (
+    Table FIRM_TABLE
+    (
+      ID INTEGER PRIMARY KEY,
+      FIRM_DETAILS SEMISTRUCTURED
+    )
+  )
+)
+
+
+###ExternalFormat
+Binding chain::store::FirmBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    chain::source::S_Firm,
+    chain::source::S_Address,
+    chain::source::S_Division,
+    chain::source::S_Location,
+    chain::source::S_Team,
+    chain::source::S_Terms,
+    chain::source::S_RepoTerms,
+    chain::source::S_Collateral,
+    chain::source::S_Identifier
+  ];
+}
+
+
+###Mapping
+Mapping chain::mapping::Relational
+(
+  chain::source::S_FirmRow: Relational
+  {
+    ~primaryKey
+    (
+      [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID
+    )
+    ~mainTable [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE
+    id: [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.ID,
+    firm: Binding chain::store::FirmBinding : [chain::store::DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS
+  }
+)
+
+Mapping chain::mapping::M2M
+(
+  *chain::model::Firm: Pure
+  {
+    ~src chain::source::S_FirmRow
+    id: $src.id,
+    name: $src.firm.legalName->toUpper(),
+    city: $src.firm.address.city,
+    // An array of scalars crossing the model-to-model boundary.
+    labels: $src.firm.tags,
+    // An array of nested objects crossing it.
+    units: $src.firm.divisions,
+    // The same, but the array is only reachable after a subType cast part-way along the path.
+    holdings: $src.firm.terms->subType(@chain::source::S_RepoTerms).collateral
+  }
+
+  *chain::model::Holding: Pure
+  {
+    ~src chain::source::S_Collateral
+    pieceId: $src.collateralId.identifier,
+    quantity: $src.quantity
+  }
+
+  *chain::model::Unit: Pure
+  {
+    ~src chain::source::S_Division
+    unitName: $src.name,
+    unitSize: $src.headcount,
+    country: $src.location.country,
+    // An array nested inside an element of the array above.
+    squads: $src.teams
+  }
+
+  *chain::model::Squad: Pure
+  {
+    ~src chain::source::S_Team
+    squadName: $src.label,
+    memberCount: $src.members->size(),
+    memberNames: $src.members
+  }
+)
+
+
+###Pure
+// The graph fetch tree has to be written inline at both call sites: the router reads it out of the
+// call with ->cast(@InstanceValue) (core/pure/router/store/routing.pure), so a let-bound tree
+// arrives as a VariableExpression and plan generation fails.
+
+// Control: nothing in the tree is sourced from the semi-structured column, so this isolates the
+// bare chain from anything semi-structured.
+function chain::firmIdOnlyGraph(): String[1]
+{
+  chain::model::Firm.all()
+    ->graphFetch(#{chain::model::Firm{id}}#)
+    ->serialize(#{chain::model::Firm{id}}#);
+}
+
+// Graph fetch, no embedded object array: only the scalar collection crosses the chain. If this
+// fails, the problem is not specific to arrays of objects.
+function chain::firmScalarArrayGraph(): String[1]
+{
+  chain::model::Firm.all()
+    ->graphFetch(#{chain::model::Firm{id, name, city, labels}}#)
+    ->serialize(#{chain::model::Firm{id, name, city, labels}}#);
+}
+
+// Graph fetch one level into the embedded object array.
+function chain::firmUnitsGraph(): String[1]
+{
+  chain::model::Firm.all()
+    ->graphFetch(#{chain::model::Firm{id, name, units{unitName, unitSize, country}}}#)
+    ->serialize(#{chain::model::Firm{id, name, units{unitName, unitSize, country}}}#);
+}
+
+// Graph fetch two levels in, with a scalar array at the leaf.
+function chain::firmFullGraph(): String[1]
+{
+  chain::model::Firm.all()
+    ->graphFetch(#{chain::model::Firm{id, name, city, labels, units{unitName, unitSize, country, squads{squadName, memberCount, memberNames}}}}#)
+    ->serialize(#{chain::model::Firm{id, name, city, labels, units{unitName, unitSize, country, squads{squadName, memberCount, memberNames}}}}#);
+}
+
+// Control: every column is sourced from the semi-structured column, including a scalar array, but
+// all of them sit on the root target class, whose ~src class is the relationally mapped one. No
+// nested model-to-model class mapping is involved.
+function chain::firmScalarsTds(): TabularDataSet[1]
+{
+  chain::model::Firm.all()->project(
+    [x | $x.id, x | $x.name, x | $x.city, x | $x.labels],
+    ['Id', 'Name', 'City', 'Label']
+  )
+}
+
+// The single-list project([col(...)]) form of the control above. Everything projected sits on the
+// root target class, so this isolates the col() column-specification path through the chain from
+// anything to do with embedded arrays.
+function chain::firmScalarsColTds(): TabularDataSet[1]
+{
+  chain::model::Firm.all()->project([
+    col(x | $x.id, 'Id'),
+    col(x | $x.name, 'Name'),
+    col(x | $x.city, 'City')
+  ])
+}
+
+// The same two levels of embedded array reached by a TDS projection rather than a graph fetch.
+// Routed entirely down to relational SQL, so it separates a graph-fetch defect from one in the
+// semi-structured mapping underneath.
+function chain::firmUnitsTds(): TabularDataSet[1]
+{
+  chain::model::Firm.all()->project(
+    [x | $x.id, x | $x.name, x | $x.units.unitName, x | $x.units.squads.squadName],
+    ['Id', 'Name', 'Unit Name', 'Squad Name']
+  )
+}
+
+// The reported shape: a TDS projection reaching a to-many whose source array is only reachable
+// after a subType cast. Modelled on the query in the report, which projects
+// `$x.contract.Collateral.pieceId` where Collateral maps to
+// `$src.CONTENT.contract.contractualTerms.financialTerms->subType(@RepoTerms).collateral`.
+function chain::firmHoldingsTds(): TabularDataSet[1]
+{
+  chain::model::Firm.all()->project(
+    [x | $x.id, x | $x.name, x | $x.holdings.pieceId],
+    ['Id', 'Name', 'Piece Id']
+  )
+}
+
+// The same subType-reached array, graph fetched.
+function chain::firmHoldingsGraph(): String[1]
+{
+  chain::model::Firm.all()
+    ->graphFetch(#{chain::model::Firm{id, name, holdings{pieceId, quantity}}}#)
+    ->serialize(#{chain::model::Firm{id, name, holdings{pieceId, quantity}}}#);
+}
+
+// The same three projections again in the relation form, project(~[...]) returning a Relation
+// rather than a TabularDataSet.
+function chain::firmScalarsRelation(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  chain::model::Firm.all()->project(~[
+    id: x | $x.id,
+    name: x | $x.name,
+    city: x | $x.city,
+    label: x | $x.labels
+  ])
+}
+
+function chain::firmUnitsRelation(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  chain::model::Firm.all()->project(~[
+    id: x | $x.id,
+    name: x | $x.name,
+    unitName: x | $x.units.unitName,
+    squadName: x | $x.units.squads.squadName
+  ])
+}
+
+function chain::firmHoldingsRelation(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  chain::model::Firm.all()->project(~[
+    id: x | $x.id,
+    name: x | $x.name,
+    pieceId: x | $x.holdings.pieceId
+  ])
+}

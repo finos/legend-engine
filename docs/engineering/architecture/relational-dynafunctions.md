@@ -1330,6 +1330,7 @@ reads the warnings and a later phase promotes a wrong rule to an error.
 |---|---|
 | [Router & Pure-to-SQL](router-and-pure-to-sql.md) §5.3–5.7 | `DbExtension`, `DynaFunctionToSql` dispatch, dialect registration, null-safe equality — the router-side producer |
 | [ModelJoin](model-join.md) | `mergeSQLQueryData` and `processDynaFunction` interaction |
+| [Model-to-Model Chains](model-to-model-chain.md) | Semi-structured data reached through an M2M mapping over a relational one |
 | [`docs/pct/wiring-howto.md`](../../pct/wiring-howto.md) `:47-60`, `:185-202` | Pure function → DynaFunction → SQL wiring, and the Postgres-model translation error |
 | [Coding Standards](../standards/coding-standards.md) | `EngineException` / `SourceInformation` conventions referenced in §8 |
 
