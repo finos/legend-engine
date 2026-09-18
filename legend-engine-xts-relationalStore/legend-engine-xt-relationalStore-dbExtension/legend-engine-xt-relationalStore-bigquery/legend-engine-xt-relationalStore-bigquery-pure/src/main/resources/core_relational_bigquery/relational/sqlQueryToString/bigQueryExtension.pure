@@ -36,7 +36,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       ddlCommandsTranslator = getDDLCommandsTranslatorForBigQuery(),
       lambdaParameterProcessor = buildLambdaParameterForBigQuery_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
       lambdaProcessor = buildLambdaForBigQuery_RelationalLambda_1__SqlGenerationContext_1__String_1_,
-      withinGroupProcessor = meta::relational::functions::sqlQueryToString::default::processWithinGroupInline_DynaFunction_1__SqlGenerationContext_1__String_1_,
+      aggregateFunctionCallProcessor = processAggregateFunctionCallForBigQuery_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
 }
@@ -403,6 +403,21 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 // written the ordering falls back to BigQuery's own, nulls low, which differs from the requested
 // ordering only when the sort column actually holds nulls -- so those windows run and order
 // correctly on data without nulls, rather than failing outright.
+// BigQuery has no FILTER clause, so a filtered aggregate folds the predicate onto the value, and it
+// takes the ordering inside the aggregate's own parentheses rather than as a WITHIN GROUP suffix.
+//
+// It also refuses an explicit NULLS FIRST/LAST inside an aggregate's ORDER BY, in either direction,
+// exactly as it does outside a ROWS window frame. The ordering is rendered without the clause for
+// the duration of the call, leaving BigQuery's own nulls-low order, which differs from the requested
+// one only when the sort column actually holds nulls.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processAggregateFunctionCallForBigQuery(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
+{
+   let dbConfig = $sgc.dbConfig;
+   let dbExtension = $dbConfig.dbExtension;
+   let withoutNullOrdering = ^$sgc(dbConfig = ^$dbConfig(dbExtension = ^$dbExtension(nullOrderingSupport = nativeOnlySupport())));
+   meta::relational::functions::sqlQueryToString::default::processAggregateFunctionCallAsCase($a, $withoutNullOrdering, AggregateOrderingStyle.IN_PAREN);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processWindowColumnForBigQuery(w:WindowColumn[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let nullOrderingWritable = $w.window.frame->isNotEmpty() && ($w.window.frame->toOne().frameType == meta::relational::metamodel::FrameType.ROWS);
