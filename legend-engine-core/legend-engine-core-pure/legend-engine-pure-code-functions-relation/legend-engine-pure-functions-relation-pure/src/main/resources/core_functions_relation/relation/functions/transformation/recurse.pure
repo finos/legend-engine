@@ -65,7 +65,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::recurse::testFibon
 function <<PCT.test>> meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
   let tds = #TDS
-              title, employeeId, managerId
+              title:String[1], employeeId, managerId
               President, 1, null
               Vice President Engineering, 10, 1
               Programmer, 100, 10
