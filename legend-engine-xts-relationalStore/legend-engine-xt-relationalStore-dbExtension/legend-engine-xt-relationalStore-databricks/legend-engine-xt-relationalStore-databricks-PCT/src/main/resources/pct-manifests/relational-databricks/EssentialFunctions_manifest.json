@@ -310,9 +310,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "No error was thrown"
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatDate_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
@@ -343,9 +340,6 @@
     "test" : "meta::pure::functions::string::tests::format::testFormatRepr_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatString_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
@@ -360,9 +354,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
     "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:874 column:103), \"Cannot cast a collection of size 3 to multiplicity [1]\""

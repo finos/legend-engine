@@ -10604,8 +10604,126 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
               meta::relational::functions::pureToSqlQuery::processVariantJoinStrings_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             )
           ]->list()
+      ),
+      ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
+         first = meta::pure::functions::string::format_String_1__Any_MANY__String_1_,
+         second = pair(
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | meta::relational::functions::pureToSqlQuery::canProcessFormat($fe, $vars, $state)},
+            meta::relational::functions::pureToSqlQuery::processFormat_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+         )->list()
       )
    ])
+}
+
+// Pure's own split(String[1],String[1]):String[*] silently drops every empty result segment
+// (confirmed empirically: '%s%s'->split('%s') comes back size 3->1, and 'a%s%sb' loses its empty
+// middle segment too) - useless for counting '%s' occurrences or preserving segment positions for
+// interleaving. This preserves every segment, including empty ones, so segments->size() - 1 is
+// always exactly the number of separator occurrences.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::splitPreservingEmptySegments(s:String[1], sep:String[1]):String[*]
+{
+   let idx = $s->indexOf($sep);
+   if($idx < 0,
+      | [$s],
+      | [$s->substring(0, $idx)]->concatenate($s->substring($idx + $sep->length(), $s->length())->splitPreservingEmptySegments($sep))
+   );
+}
+
+// Narrow, additive support for format(String[1], Any[*]):String[1]: claims the call only when
+// the format string is a compile-time String literal using '%s' exclusively (no %d/%f/%r/%t/%%),
+// and the args collection is a literal-shaped array of exactly the matching arity. Any other shape
+// (dynamic format string, any other specifier, arg-count mismatch) is deliberately left unclaimed
+// so it falls straight through to the pre-existing "No SQL translation exists" error, byte-for-byte
+// unchanged. Uses the shallow byPassRouterInfo (not deepByPassRouterInfo/evaluateAndDeactivate) so
+// this never attempts to compile-time-evaluate an args element that depends on a runtime variable
+// (e.g. $this.someProperty inside a class's own toString() override) - it only inspects AST shape.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessFormat(fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):Boolean[1]
+{
+   let params = $fe.parametersValues;
+   let fmt = if($params->size() == 2,
+                | $params->at(0)->byPassRouterInfo()->match([
+                     iv:InstanceValue[1] | if($iv.values->size() == 1 && $iv.values->toOne()->instanceOf(String), | $iv.values->toOne()->cast(@String), | []),
+                     v:ValueSpecification[1] | []
+                  ]),
+                | []
+             );
+   let argCount = if($params->size() == 2,
+                     | $params->at(1)->byPassRouterInfo()->match([
+                          iv:InstanceValue[1] | $iv.values->size(),
+                          v:ValueSpecification[1] | -1
+                       ]),
+                     | -1
+                  );
+
+   if($fmt->isEmpty() || ($argCount < 0),
+      | false,
+      | let segments = $fmt->toOne()->splitPreservingEmptySegments('%s');
+        (($segments->size() - 1) == $argCount) && $segments->forAll(s | !$s->contains('%'));
+   );
+}
+
+// Processor for the shape canProcessFormat claims: splits the literal format string on '%s' and
+// interleaves the literal segments with each arg's own recursively-processed relational SQL
+// (so a property access or a conditional expression among the args renders as real SQL, exactly
+// as it would as an operand to any other function), cast to a string via the same 'toString'
+// DynaFunction every dialect already renders as a plain varchar cast. The pieces are joined with
+// a 'concat' DynaFunction, which every relational dialect already registers (H2/DuckDB/Databricks
+// render it as concat(...); Postgres renders it as the ||-joined chain) - both established,
+// per-dialect-tested rendering paths, reused here rather than duplicated.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processFormat(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let fmt = $expression.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@String);
+   let segments = $fmt->splitPreservingEmptySegments('%s');
+
+   let rawArgs = $expression.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values;
+   // Each element is either a ValueSpecification (a non-constant array element, e.g. $this.errorMessage
+   // or an if(...) conditional) or a plain Any literal (when the whole array literal is itself
+   // compile-time-constant, e.g. ['fox', 'dog']) - mirrors the same discriminator flattenConcatenate
+   // already uses above for exactly this InstanceValue.values ambiguity. A raw literal is lifted back
+   // into a single-element literal InstanceValue so every arg flows through the same processValueSpecification
+   // call uniformly.
+   let argVSs = $rawArgs->map(a | $a->match([
+                     vs:ValueSpecification[1] | $vs,
+                     any:Any[1]                | ^InstanceValue(genericType = $any->genericType(), multiplicity = PureOne, values = $any)
+                  ]));
+
+   let processedArgs = range(0, $argVSs->size())->map(i | $argVSs->at($i)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId, '_fmt' + $i->toString()), $aggFromMap, $context, $extensions)->toOne());
+
+   let parameterSQL = $processedArgs->map(x | extractSelectSQLQuery($x));
+
+   let sqlsToMerge = if($parameterSQL->size() > 1,
+                        | $parameterSQL->map(s | $s->manageIsolation([], [], $nodeId, false, ^$state(shouldIsolate=true), $context, $extensions)),
+                        | $parameterSQL
+                     );
+
+   let mergedSQL = if($parameterSQL->isEmpty(),
+                       | $operation.select,
+                       | $sqlsToMerge->mergeSQLQueryData($nodeId, $state, $context, $extensions)
+                    );
+
+   let processedArgOperandsRaw = if($parameterSQL->isEmpty(),
+                                    | []->cast(@RelationalOperationElement),
+                                    | $state.inFilter->if(| $mergedSQL.filteringOperation, | $mergedSQL.columns)
+                                 );
+
+   let processedArgOperands = $processedArgOperandsRaw->unwrapAlias();
+
+   let castedArgs = $processedArgOperands->map(a | ^DynaFunction(name = 'toString', parameters = [$a])->cast(@RelationalOperationElement));
+
+   let interleaved = range(0, $segments->size())->map(i |
+        let seg = ^Literal(value = $segments->at($i))->cast(@RelationalOperationElement);
+        if($i == 0, | [$seg], | [$castedArgs->at($i - 1), $seg]);
+      );
+
+   let finalOp = ^DynaFunction(name = 'concat', parameters = $interleaved);
+
+   ^$operation(select = $state.inFilter->if(
+                  | ^$mergedSQL(filteringOperation = $finalOp),
+                  | ^$mergedSQL(columns = $finalOp)
+               ),
+               currentTreeNode = [],
+               positionBeforeLastApplyJoinTreeNode = []
+              );
 }
 
 // Clustering-time context predicates. Predicates take only the FunctionExpression — no

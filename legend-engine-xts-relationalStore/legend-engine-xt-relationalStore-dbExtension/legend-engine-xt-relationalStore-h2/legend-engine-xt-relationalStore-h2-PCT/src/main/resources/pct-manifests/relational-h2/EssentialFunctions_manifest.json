@@ -515,7 +515,7 @@
     "expectedError" : "No error was thrown"
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+    "expectedError" : "\nexpected: 'the quick brown fox jumps over the lazy true'\nactual:   'the quick brown fox jumps over the lazy TRUE'"
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatDate_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
@@ -547,11 +547,8 @@
     "test" : "meta::pure::functions::string::tests::format::testFormatRepr_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatString_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
+    "expectedError" : "\nexpected: 'the quick brown fox jumps over the lazy 2014-01-01T00:00:00.000+0000'\nactual:   'the quick brown fox jumps over the lazy 2014-01-01 00:00:00'"
   }, {
     "test" : "meta::pure::functions::string::tests::joinStrings::testJoinStringsNoStrings_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""
@@ -606,9 +603,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testFloatToStringWithPositiveExponent_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '134210000.0'\nactual:   '1.3421E8'\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
     "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:874 column:103), \"Cannot cast a collection of size 3 to multiplicity [1]\""

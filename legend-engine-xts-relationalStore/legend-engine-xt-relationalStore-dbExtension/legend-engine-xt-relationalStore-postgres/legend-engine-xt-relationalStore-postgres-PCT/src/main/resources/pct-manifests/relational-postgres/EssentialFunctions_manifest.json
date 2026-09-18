@@ -310,9 +310,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatDate_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
   }, {
@@ -343,11 +340,8 @@
     "test" : "meta::pure::functions::string::tests::format::testFormatRepr_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatString_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
-    "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'."
+    "expectedError" : "\nexpected: 'the quick brown fox jumps over the lazy 2014-01-01T00:00:00.000+0000'\nactual:   'the quick brown fox jumps over the lazy 2014-01-01 00:00:00'"
   }, {
     "test" : "meta::pure::functions::string::tests::parseBoolean::testParseFalse_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'parseBoolean' (state: [Select, false]) is not supported yet\""
@@ -378,9 +372,6 @@
   }, {
     "test" : "meta::pure::functions::string::tests::parseInteger::testParseInteger_Function_1__Boolean_1_",
     "expectedError" : "org.postgresql.util.PSQLException: ERROR: value \"9999999999999992\" is out of range for type integer"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testDateTimeToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-01T00:00:00.000+0000'\nactual:   '2014-01-01 00:00:00'\""
