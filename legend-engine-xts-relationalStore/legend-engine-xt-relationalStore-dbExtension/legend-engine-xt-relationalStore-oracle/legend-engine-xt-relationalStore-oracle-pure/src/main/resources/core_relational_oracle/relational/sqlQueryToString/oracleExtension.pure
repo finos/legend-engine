@@ -25,6 +25,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    ^DbExtension(
       nullOrderingSupport = nullsHighWithClauseSupport(),
       isBooleanLiteralSupported = false,
+      commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::oracle::processCommonTableExpressionsForOracle_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -521,4 +522,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
    let maybeDate = $params->at(0)->replace('\'','')->parseDate();
    convertDateToSqlStringOracle($maybeDate, $context.dbConfig.dbTimeZone);
+}
+
+function meta::relational::functions::sqlQueryToString::oracle::processCommonTableExpressionsForOracle(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   // Oracle takes no RECURSIVE keyword - a WITH expression that references itself is recursive.
+   $ctes->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, '');
 }

@@ -2885,7 +2885,9 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
       $singleResult.element->match([
         selectWithCursor: SelectWithCursor[1] |
           let select = $selectWithCursor.select;
-          ^$singleResult(element = ^$selectWithCursor(select = ^$select(commonTableExpressions += $ctes)));,
+          // The let-bound CTEs come first: a CTE may only reference one declared before it, and the
+          // select's own CTEs (a recursive one, say) are built from the expression that uses them.
+          ^$singleResult(element = ^$selectWithCursor(select = ^$select(commonTableExpressions = $ctes->concatenate($select.commonTableExpressions))));,
         any: Any[1] | fail($any->type()->elementToPath() + ' not supported for multi expression'); $singleResult;
       ]);
     ,
@@ -6822,7 +6824,7 @@ function meta::relational::functions::pureToSqlQuery::processRecurse(expression:
         ]);
   );
 
-  let refCte = ^CommonTableExpressionReference(name =  $nodeId->replace('#', '_') + '_rcte', columns = $cteColumns);
+  let refCte = ^CommonTableExpressionReference(name =  'rcte' + $nodeId->replace('#', '_'), columns = $cteColumns);
 
   let refCteAlias = ^TableAlias(name = buildNodeId($nodeId,'_d1'), relationalElement = $refCte);
   
