@@ -7581,7 +7581,13 @@ function  meta::relational::functions::pureToSqlQuery::processJoinCondition(join
     assert($joinCondition.expressionSequence->size() <= 1, 'Lambda with more than one expression are not supported yet');
 
     let select = $operation.select;
-    let element_old = processValueSpecification($joinCondition.expressionSequence->at(0)->cast(@ValueSpecification), $currentPropertyMapping, ^$operation(select = ^$select(columns = $aliases)), $vars, ^$state(inScopeVars=$newOpenVars), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
+    let joinCursor = ^$operation(select = ^$select(columns = $aliases));
+    // The condition's own parameters have to shadow an enclosing binding of the same name. A lambda
+    // that ranges over a relation - recurse's step, say - registers its parameter by name, so without
+    // this a condition written {x,y|...} resolves $x to that outer relation and qualifies the column
+    // with an alias that is not in scope at the join.
+    let conditionState = ^$state(inScopeVars=$newOpenVars)->updateFunctionParamScope($joinCondition.classifierGenericType.typeArguments.rawType->cast(@FunctionType)->toOne(), $joinCursor);
+    let element_old = processValueSpecification($joinCondition.expressionSequence->at(0)->cast(@ValueSpecification), $currentPropertyMapping, $joinCursor, $vars, $conditionState, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
     let element_new = $element_old->match([
        i: Literal[1] | let val = $i.value->cast(@Boolean);
                        if($val ,|^DynaFunction(name = 'equal', parameters = [^Literal(value=1), ^Literal(value=1)]), |^DynaFunction(name = 'equal', parameters=[^Literal(value=1), ^Literal(value=0)]));,
