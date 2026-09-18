@@ -41,6 +41,7 @@ function <<access.private>> meta::relational::postProcessor::transformRelational
     v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
     f: FreeMarkerOperationHolder[1] | $f->rewriteFreeMarkerOperationHolder();,
     ll: LiteralList[1] | $ll->processLiteralList();,
+    t: TabularFunctionCall[1] | ^$t(arguments = $t.arguments->map(a | ^$a(value = $a.value->transformRelationalElement()))),
     r: RelationalOperationElement[1] | $r;
   ]);
 }

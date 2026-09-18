@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::relation::*;
 import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::relational::metamodel::*;
@@ -96,12 +97,24 @@ function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<A
 
 function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<Any>[1], expected:String[1], dbType:DatabaseType[1], extensions:Extension[*]): Boolean[1]
 {
+  runPlanTest($func, $expected, simpleRelationalMapping, relationalDB, $dbType, $extensions)
+}
+
+function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<Any>[1], expected:String[1], mapping:Mapping[1], store:Database[1], dbType:DatabaseType[1], extensions:Extension[*]): Boolean[1]
+{
+  runPlanTest($func, $expected, $mapping, $store, $dbType, ^meta::pure::runtime::ExecutionContext(), $extensions)
+}
+
+function meta::pure::executionPlan::tests::runPlanTest(func:FunctionDefinition<Any>[1], expected:String[1], mapping:Mapping[1], store:Database[1], dbType:DatabaseType[1], context:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]): Boolean[1]
+{
   let res = executionPlan(
     $func,
-    simpleRelationalMapping, 
-    ^Runtime(connectionStores = ^ConnectionStore(element = relationalDB, connection = ^DatabaseConnection(type = $dbType))), 
+    $mapping, 
+    ^Runtime(connectionStores = ^ConnectionStore(element = $store, connection = ^DatabaseConnection(type = $dbType))), 
+    $context,
     $extensions
   );
+
   assertEquals($expected, $res->planToStringWithoutFormatting($extensions));
 }
 
@@ -2883,4 +2896,122 @@ function <<test.Test>> {doc.doc = 'Test that execution plan generation when usin
    // Assert that the SQL contains CASE WHEN statement for the enum 'type' column
    let planString = $generatedPlan->planToString(meta::relational::extension::relationalExtensions());
    assert($planString->contains('case when "root".type in (\'FTC\', \'FTO\') then \'CONTRACT\' when "root".type = \'FTE\' then \'FULL_TIME\' else null end'), 'Expected enum push-down CASE expression in SQL');
+}
+
+function <<test.Test>> {doc.doc = 'Test that execution plans generate when using TabularFunction accessor with parameters'} meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionParameterizedMismatch():Boolean[1]  
+{
+  let db = ^Database(package = meta::pure::executionPlan::tests, name = 'db');
+  let schema = ^Schema(database = $db, name = 'schema1');
+  let tabular = ^TabularFunction(schema = $schema, name = 'tb', parameters = [
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'param1', type = ^meta::relational::metamodel::datatype::Varchar(size = 200))
+  ]);
+
+  $schema->mutateAdd('tabularFunctions', $tabular);
+  $db->mutateAdd('schemas', $schema);
+  
+  let var = 'abc';
+
+  let accessor = ^meta::pure::store::RelationStoreAccessor<Any>(path = ['meta::pure::executionPlan::tests', 'db'], sourceElement = $tabular, store = $db, arguments = [
+    $var->deactivate(),
+    []->deactivate()
+  ]);
+
+  let context = ^meta::pure::runtime::ExecutionContext()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION);
+
+  assertError(|runPlanTest(|$accessor->project(~[col: x | 1]), '', simpleRelationalMapping, $db, DatabaseType.H2, $context, relationalExtensions()), 'incorrect number or arguments supplied to relation store accessor for table function tb');
+}
+
+function {doc.doc = 'Test that execution plans generate when using TabularFunction accessor with parameters'} meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionParameterized(dbType:DatabaseType[1], expected:String[1]):Boolean[1]  
+{
+  let db = ^Database(package = meta::pure::executionPlan::tests, name = 'db');
+  let schema = ^Schema(database = $db, name = 'schema1');
+  let tabular = ^TabularFunction(schema = $schema, name = 'tb', parameters = [
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'param1', type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'param2', type = ^meta::relational::metamodel::datatype::Integer()),
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'param3', type = ^meta::relational::metamodel::datatype::Varchar(size = 200))
+  ], columns = [
+    ^Column(name = 'col1', nullable = false, type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    ^Column(name = 'col2', nullable = false, type = ^meta::relational::metamodel::datatype::Integer())
+  ]);
+
+  $schema->mutateAdd('tabularFunctions', $tabular);
+  $db->mutateAdd('schemas', $schema);
+  
+  let var = 'abc';
+
+  let accessor = ^meta::pure::store::RelationStoreAccessor<(col1:String[1], col2:Integer[1])>(path = ['meta::pure::executionPlan::tests', 'db'], sourceElement = $tabular, store = $db, arguments = [
+    $var->deactivate(),
+    []->deactivate(),
+    trim('abc')->deactivate()
+  ]);
+
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element = $db, connection = ^meta::external::store::relational::runtime::DatabaseConnection(type = $dbType)));
+
+  let context = ^meta::pure::runtime::ExecutionContext()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION);
+
+  runPlanTest(var:String[1]|$accessor->from($runtime), $expected, simpleRelationalMapping, $db, $dbType, $context, relationalExtensions());
+}
+
+function {doc.doc = 'Test that execution plans generate when using TabularFunction accessor'} meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionNoParams(dbType:DatabaseType[1], expected:String[1]):Boolean[1]  
+{
+  let db = ^Database(package = meta::pure::executionPlan::tests, name = 'db');
+  let schema = ^Schema(database = $db, name = 'schema1');
+  let tabular = ^TabularFunction(schema = $schema, name = 'tb');
+
+  $schema->mutateAdd('tabularFunctions', $tabular);
+  $db->mutateAdd('schemas', $schema);
+
+  let accessor = ^meta::pure::store::RelationStoreAccessor<Any>(path = ['meta::pure::executionPlan::tests', 'db'], sourceElement = $tabular, store = $db);
+
+  let context = ^meta::pure::runtime::ExecutionContext()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION);
+
+  runPlanTest(|$accessor->project(~[col: x | 1]), $expected, simpleRelationalMapping, $db, $dbType, $context, relationalExtensions());
+}
+
+function meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionWithTableMapper(dbType:DatabaseType[1], expected:String[1]):Boolean[1]
+{
+  testExecutionPlanForTabularFunctionMappers(
+    ^meta::pure::alloy::connections::TableNameMapper(from = 'tb', to = 'tbRenamed', schema = ^meta::pure::alloy::connections::SchemaNameMapper(from = 'schema1', to = 'schema1Renamed')),
+    $dbType, $expected);
+}
+
+function meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionWithSchemaMapper(dbType:DatabaseType[1], expected:String[1]):Boolean[1]
+{
+  testExecutionPlanForTabularFunctionMappers(^meta::pure::alloy::connections::SchemaNameMapper(from = 'schema1', to = 'schema1Renamed'), $dbType, $expected);
+}
+
+function meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionMappers(mappers:meta::pure::alloy::connections::Mapper[*], dbType:DatabaseType[1], expected:String[1]):Boolean[1]
+{
+  let db = ^Database(package = meta::pure::executionPlan::tests, name = 'dbSchemaMap');
+  let schema = ^Schema(database = $db, name = 'schema1');
+  let tabular = ^TabularFunction(schema = $schema, name = 'tb');
+
+  $schema->mutateAdd('tabularFunctions', $tabular);
+  $db->mutateAdd('schemas', $schema);
+
+  let accessor = ^meta::pure::store::RelationStoreAccessor<Any>(path = ['meta::pure::executionPlan::tests::', 'dbSchemaMap'], sourceElement = $tabular, store = $db);
+
+  let runtime = ^meta::core::runtime::Runtime(
+    connectionStores = ^meta::core::runtime::ConnectionStore(
+      element = $db,
+      connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(
+        type = DatabaseType.Snowflake,
+        queryPostProcessorsWithParameter = meta::pure::alloy::connections::tableMapperPostProcessor(
+          ^meta::pure::alloy::connections::MapperPostProcessor(mappers = $mappers)
+        )
+      )
+    )
+  );
+
+  let context = ^meta::pure::runtime::ExecutionContext()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION);
+
+  let result = meta::pure::executionPlan::executionPlan(
+      |$accessor->project(~[col: x | 1]),
+      simpleRelationalMapping,
+      $runtime,
+      $context,
+      meta::relational::extension::relationalExtensions()
+    );
+
+  assertEquals($expected, $result->meta::pure::executionPlan::toString::planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }

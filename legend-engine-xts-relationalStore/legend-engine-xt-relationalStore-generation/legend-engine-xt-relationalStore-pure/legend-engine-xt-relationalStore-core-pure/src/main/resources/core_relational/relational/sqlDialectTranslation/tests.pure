@@ -274,6 +274,34 @@ function <<test.Test>> meta::relational::functions::toPostgresModel::tests::test
   assertConversion($expected, ^TabularFunction(schema = $schema, name = 'ID'));
 }
 
+function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertTabularFunctionCall(): Boolean[1]
+{
+  let schema = TestDb.schemas->filter(s|$s.name == 'default')->toOne();
+  let p1 = ^meta::relational::metamodel::relation::FunctionParameter(name = 'p1', type = ^meta::relational::metamodel::datatype::Varchar(size = 100));
+  let p2 = ^meta::relational::metamodel::relation::FunctionParameter(name = 'p2', type = ^meta::relational::metamodel::datatype::Integer());
+  
+  let tf = ^meta::relational::metamodel::relation::TabularFunction(schema = $schema, name = 'fn', parameters = [$p1, $p2]);
+
+  let tfr = ^meta::relational::metamodel::relation::TabularFunctionCall(
+    function = $tf,
+    arguments = [
+      ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $p1, value = ^meta::relational::metamodel::Literal(value = 'foo')),
+      ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $p2, value = ^meta::relational::metamodel::Literal(value = 42))
+    ]
+  );
+
+  let node = convertElement($tfr, newState())->cast(@TableFunction);
+
+  assertEquals(^TableFunction(
+    functionCall = ^FunctionCall(
+                      name = ^QualifiedName(parts = ['default', 'fn']),
+                      arguments = [
+                        ^StringLiteral(value = 'foo'),
+                        ^IntegerLiteral(value = 42)
+                      ],
+                      distinct= false)), $node);
+}
+
 function <<test.Test>> meta::relational::functions::toPostgresModel::tests::testConvertDynaFnToLogicalExpression(): Boolean[1]
 {
   let function = ^DynaFunction(

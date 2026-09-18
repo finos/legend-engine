@@ -120,6 +120,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    pushDownEnumTransformations :Boolean[1] = false;
    legacyNullUnsafeEquals : Boolean[1] = false;
    correctSubstringIndexing :Boolean[1] = false;
+   useTabularFunctionCallTranslation :Boolean[1] = false;
    currentWindow : WindowColumn[0..1];
    idToClassMapping : Map<String, List<SetImplementation>>[1];
    colName : String[0..1];
@@ -366,7 +367,8 @@ function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mappi
              | ^$initialState(
                   pushDownEnumTransformations = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),
                   legacyNullUnsafeEquals = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.LEGACY_SQL_NULL_UNSAFE_EQUALS),
-                  correctSubstringIndexing = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.CORRECT_SQL_SUBSTRING_INDEXING)
+                  correctSubstringIndexing = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.CORRECT_SQL_SUBSTRING_INDEXING),
+                  useTabularFunctionCallTranslation = $exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION)
                 )
            );
 }
@@ -747,6 +749,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
   let relation = $r.sourceElement->cast(@NamedRelation);
   let relationalElement = $relation->match([
      v:meta::relational::metamodel::relation::View[1] | $v->processRelation([], JoinType.INNER, $nodeId, false, 0, true, [], $state, $context, $extensions),
+     tf:meta::relational::metamodel::relation::TabularFunction[1] | if ($state.useTabularFunctionCallTranslation, | buildTabularFunctionCall($r, $tf, $operation, $state, $nodeId, $context, $extensions), | $tf),
      n:meta::relational::metamodel::relation::NamedRelation[1] | $n
   ]);
   let tableAlias = ^TableAlias(name = 'dbAccessor' + buildNodeId($nodeId, '_i' + $index), relationalElement = $relationalElement);
@@ -761,10 +764,68 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
             );
 
   let milestonedRes = if($operation.milestoningContext->isNotEmpty(), | applyMilestoningTypeFilters($res, $operation.milestoningContext->toOne(), $state, false, false, $extensions), | $res);
-  
+
+
   print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: ' + $milestonedRes.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DebugPrint, $extensions) + '\n'));
 
   $milestonedRes;
+}
+
+// Builds a TabularFunctionCall from a RelationStoreAccessor that carries argument values.
+// Validates the name-keyed arguments against the TabularFunction's declared parameters (unknown
+// / missing / duplicate), reorders into declaration order, and lowers each argument value to a
+// RelationalOperationElement via lowerAccessorArgumentValue.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::buildTabularFunctionCall(
+   r:meta::pure::store::RelationStoreAccessor<Any>[1],
+   tf:meta::relational::metamodel::relation::TabularFunction[1],
+   operation:SelectWithCursor[1],
+   state:State[1],
+   nodeId:String[1],
+   context:DebugContext[1],
+   extensions:Extension[*]
+):meta::relational::metamodel::relation::TabularFunctionCall[1]
+{
+   let tfFqn = $tf.schema.database->elementToPath() + '.' + $tf.schema.name + '.' + $tf.name;
+
+   assertEquals($tf.parameters->size(), $r.arguments->size(), | 'incorrect number or arguments supplied to relation store accessor for table function ' + $tf.name);
+
+   
+  let arguments = $tf.parameters->zip($r.arguments)->map(pair | 
+    let value = lowerAccessorArgumentValue($pair.second, $operation, $state,
+                                                      buildNodeId($nodeId, '_tfa_' + $pair.first.name),
+                                                      $context, $extensions, $tfFqn);
+
+      ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $pair.first, value = $value);
+  );
+
+   ^meta::relational::metamodel::relation::TabularFunctionCall(function = $tf, arguments = $arguments);
+}
+
+// Lowers a RelationStoreAccessorArgument.value (typed Any[*]) into a RelationalOperationElement
+// that renders inside a TabularFunction call. Empty -> SQL NULL literal; bare Pure literals ->
+// Literal wrappers; InstanceValue -> unwrap and recurse; ValueSpecification -> route through the
+// existing processValueSpecification pipeline and pull the single lowered element back out.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::lowerAccessorArgumentValue(
+   vs:ValueSpecification[1],
+   operation:SelectWithCursor[1],
+   state:State[1],
+   nodeId:String[1],
+   context:DebugContext[1],
+   extensions:Extension[*],
+   tfFqn:String[1]
+):RelationalOperationElement[1]
+{
+  let processed = processValueSpecification($vs, [], $operation, ^Map<VariableExpression, ValueSpecification>(), $state, JoinType.INNER, $nodeId, ^List<ColumnGroup>(), $context, $extensions);
+  
+  assert($processed->size() == 1, | 'Expected exactly one lowered element for TabularFunction ' + $tfFqn + ' argument');
+
+  $processed->toOne()->match([
+    swc:SelectWithCursor[1] | $swc.select.columns->toOne()->match([
+                                  a:Alias[1] | $a.relationalElement,
+                                  x:RelationalOperationElement[1] | $x
+                              ]),
+    r:RelationalOperationElement[1] | $r
+  ]);
 }
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
@@ -5357,6 +5418,7 @@ function meta::relational::functions::pureToSqlQuery::processRelation(r: Relatio
                s:SelectSQLQuery[1] | $s,
                t:Table[1] | $t,
                f:TabularFunction[1] | $f,
+               f:TabularFunctionCall[1] | $f,
                cte: CommonTableExpressionReference[1] | $cte,
                u:Union[1] | $u,
                v:View[1]  | let selectWithCursor = processRelationalMappingSpecification($v, $c, $joinType, $nodeId, $addPk, $pkOffset, true, $milestoningContext, ^$state(inFilter=false), $context, $extensions);
@@ -9693,6 +9755,7 @@ function meta::relational::functions::pureToSqlQuery::findMainNamedRelation(rela
 {
    $relation->match([v:View[1]|$v,
                      tf:TabularFunction[1]|$tf,
+                     tf:TabularFunctionCall[1]|$tf.function,
                      s:SelectSQLQuery[1]|if($s.preIsolationCurrentTreeNode->isEmpty(),
                                                   |$s.data->toOne()->findLastJoinTreeNode(),
                                                   |$s.preIsolationCurrentTreeNode->toOne();
@@ -9712,6 +9775,7 @@ function meta::relational::functions::pureToSqlQuery::findMainRelation(relation 
       rf:RelationFunction[1] | $rf,
       v:View[1]               | $v,
       tf:TabularFunction[1]   | $tf,
+      tf:TabularFunctionCall[1]   | $tf,
       s:SelectSQLQuery[1]     | if($s.preIsolationCurrentTreeNode->isEmpty(),
                                       |$s.data->toOne()->findLastJoinTreeNode(),
                                       |$s.preIsolationCurrentTreeNode->toOne();
