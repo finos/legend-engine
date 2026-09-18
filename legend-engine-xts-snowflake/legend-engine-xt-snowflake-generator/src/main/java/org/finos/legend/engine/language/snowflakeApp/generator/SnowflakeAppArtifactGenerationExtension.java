@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -70,7 +71,7 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
         try
         {
             LOGGER.info("Generating snowflakeApp deploy artifact for " + element.getName());
-            SnowflakeAppArtifact artifact  = SnowflakeAppGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions);
+            SnowflakeAppArtifact artifact  = SnowflakeAppGenerator.generateArtifact(pureModel, (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) element, data, routerExtensions, Identity.getAnonymousIdentity());
             String content = mapper.writeValueAsString(artifact);
             result.add((new Artifact(content, FILE_NAME, "json")));
             LOGGER.info("Generated artifacts for " + element.getName());

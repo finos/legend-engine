@@ -102,7 +102,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public FunctionActivatorResult validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions, identity);
         FunctionActivatorResult errors = validate(identity, artifact);
         this.extraValidators.select(v -> v.supports(activator)).forEach(v -> errors.getErrors().addAll(v.validate(identity, activator)));
         return errors;
@@ -154,7 +154,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public SnowflakeDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions, identity);
         MutableList<? extends  FunctionActivatorError> validationError = validate(identity, artifact).getErrors();
         if (validationError.isEmpty())
         {
@@ -166,7 +166,7 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     @Override
     public SnowflakeAppArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        return SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions, Identity.getAnonymousIdentity());
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.generation.FunctionActivatorGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.snowflake.generator.extension.SnowflakeDeploymentDatasourceResolver;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.functionActivator.postDeployment.ActionContent;
@@ -33,19 +34,23 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppArtifact;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class SnowflakeAppGenerator
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAppGenerator.class);
 
-    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions, Identity identity)
     {
         Root_meta_external_function_activator_snowflakeApp_generation_Artifact fullArtifact = core_snowflake_core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateFullArtifact_SnowflakeApp_1__Extension_MANY__Artifact_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
         RelationalDatabaseConnection connection;
@@ -75,8 +80,20 @@ public class SnowflakeAppGenerator
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflake.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
-            String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
+            String deployedLocation = "";
+            try
+            {
+                SnowflakeDatasourceSpecification ds = SnowflakeDeploymentDatasourceResolver.resolve(connection, identity);
+                deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
+            }
+            catch (Exception e)
+            {
+                if (!identity.isAnonymous())
+                {
+                    throw e;
+                }
+                LOGGER.warn("Unable to resolve deployed-location metadata during anonymous SnowflakeApp generation; the generated artifact's deployedLocation will be empty until an authenticated user deploys it.", e);
+            }
             return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, actionContents, sdlc);
         }
         return new SnowflakeAppArtifact(content, actionContents, sdlc);

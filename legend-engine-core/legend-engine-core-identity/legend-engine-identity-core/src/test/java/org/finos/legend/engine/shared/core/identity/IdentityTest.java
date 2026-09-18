@@ -25,6 +25,8 @@ import java.lang.reflect.Modifier;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,6 +77,28 @@ class IdentityTest
 
         assertEquals("TestUser", identity.getName());
         assertEquals(2, identity.countCredentials());
+    }
+
+    @Test
+    public void shouldBeAnonymousForTheAnonymousIdentitySingleton()
+    {
+        assertTrue(Identity.getAnonymousIdentity().isAnonymous());
+    }
+
+    @Test
+    public void shouldBeAnonymousForAnUnknownIdentity()
+    {
+        assertTrue(Identity.makeUnknownIdentity().isAnonymous());
+    }
+
+    @Test
+    public void shouldNotBeAnonymousForAnIdentityWithARealCredential()
+    {
+        Identity identity = new Identity("someRealUser", new Credential()
+        {
+        });
+
+        assertFalse(identity.isAnonymous());
     }
 
     private void setFactories(MutableList<IdentityFactory> factories) throws Exception
