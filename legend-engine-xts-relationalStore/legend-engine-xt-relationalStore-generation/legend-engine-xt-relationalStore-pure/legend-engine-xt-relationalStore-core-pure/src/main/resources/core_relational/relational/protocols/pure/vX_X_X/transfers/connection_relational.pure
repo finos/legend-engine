@@ -171,6 +171,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
          ),
+      b:meta::pure::alloy::connections::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy(
+            _type = 'gcpServiceAccountKey',
+            serviceAccountKeyVaultReference = $b.serviceAccountKeyVaultReference
+         ),
       o:meta::pure::alloy::connections::alloy::authentication::OAuthAuthenticationStrategy[1] |
           ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy(
             _type = 'oauth',
