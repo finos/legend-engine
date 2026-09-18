@@ -666,5 +666,8 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,value,runningTotal\\n   1,10,10\\n   2,20,30\\n   3,30,60\\n   null,40,100\\n#'\nactual:   '#TDS\\n   id,value,runningTotal\\n   1,10,50\\n   2,20,70\\n   3,30,100\\n   null,40,40\\n#'"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+    "expectedError" : "Types don't match between the anchor and the recursive part in column"
   } ]
 }
