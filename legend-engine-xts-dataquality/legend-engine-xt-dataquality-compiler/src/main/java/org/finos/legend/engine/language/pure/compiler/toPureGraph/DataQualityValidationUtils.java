@@ -176,9 +176,93 @@ public class DataQualityValidationUtils
 
         validateNoDuplicates(comparison.keys, sourceInformation, "keys");
         validateNoDuplicates(comparison.columnsToCompare, sourceInformation, "columnsToCompare");
+        validateNoDuplicates(comparison.additionalColumnsToPersist, sourceInformation, "additionalColumnsToPersist");
         validateKeysExistInBothDatasets(comparison.keys, srcCols, tgtCols, sourceInformation, "keys");
         validateKeysExistInBothDatasets(comparison.columnsToCompare, srcCols, tgtCols, sourceInformation, "columnsToCompare");
         validateHashColumnsIfApplicable(comparison.strategy, srcCols, tgtCols, sourceInformation);
+        validateAdditionalColumnsToPersist(comparison, srcCols, tgtCols, sourceInformation);
+    }
+
+    /**
+     * Validates that every column in additionalColumnsToPersist:
+     *  - exists in at least one of the source or target relations, and
+     *  - does not overlap with keys, columnsToCompare, or MD5 hash column configuration.
+     */
+    private static void validateAdditionalColumnsToPersist(
+            DataQualityRelationComparison comparison,
+            Set<String> sourceColumns,
+            Set<String> targetColumns,
+            SourceInformation sourceInformation)
+    {
+        List<String> additional = comparison.additionalColumnsToPersist;
+        if (additional == null || additional.isEmpty())
+        {
+            return;
+        }
+
+        MutableSet<String> keySet = Sets.mutable.withAll(nullToEmpty(comparison.keys));
+        MutableSet<String> compareSet = Sets.mutable.withAll(nullToEmpty(comparison.columnsToCompare));
+        String sourceHashCol = null;
+        String targetHashCol = null;
+        if (comparison.strategy instanceof MD5HashStrategy)
+        {
+            MD5HashStrategy md5 = (MD5HashStrategy) comparison.strategy;
+            sourceHashCol = md5.sourceHashColumn;
+            targetHashCol = md5.targetHashColumn;
+        }
+
+        MutableSet<String> missingFromBoth = Sets.mutable.empty();
+        MutableSet<String> overlappingWithKeys = Sets.mutable.empty();
+        MutableSet<String> overlappingWithCompare = Sets.mutable.empty();
+        MutableSet<String> overlappingWithHash = Sets.mutable.empty();
+        for (String col : additional)
+        {
+            if (!sourceColumns.contains(col) && !targetColumns.contains(col))
+            {
+                missingFromBoth.add(col);
+            }
+            if (keySet.contains(col))
+            {
+                overlappingWithKeys.add(col);
+            }
+            if (compareSet.contains(col))
+            {
+                overlappingWithCompare.add(col);
+            }
+            if (col.equals(sourceHashCol) || col.equals(targetHashCol))
+            {
+                overlappingWithHash.add(col);
+            }
+        }
+
+        if (missingFromBoth.notEmpty())
+        {
+            throw new EngineException(
+                    "additionalColumnsToPersist column(s) " + missingFromBoth + " not found in either the source or target relation",
+                    sourceInformation,
+                    EngineErrorType.COMPILATION);
+        }
+        if (overlappingWithKeys.notEmpty())
+        {
+            throw new EngineException(
+                    "additionalColumnsToPersist column(s) " + overlappingWithKeys + " must not overlap with keys",
+                    sourceInformation,
+                    EngineErrorType.COMPILATION);
+        }
+        if (overlappingWithCompare.notEmpty())
+        {
+            throw new EngineException(
+                    "additionalColumnsToPersist column(s) " + overlappingWithCompare + " must not overlap with columnsToCompare",
+                    sourceInformation,
+                    EngineErrorType.COMPILATION);
+        }
+        if (overlappingWithHash.notEmpty())
+        {
+            throw new EngineException(
+                    "additionalColumnsToPersist column(s) " + overlappingWithHash + " must not overlap with sourceHashColumn or targetHashColumn",
+                    sourceInformation,
+                    EngineErrorType.COMPILATION);
+        }
     }
 
     public static List<String> findFloatingPointReconColumns(

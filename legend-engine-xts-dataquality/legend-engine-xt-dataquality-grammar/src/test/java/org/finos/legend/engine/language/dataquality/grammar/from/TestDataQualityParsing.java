@@ -431,4 +431,34 @@ public class TestDataQualityParsing extends TestGrammarParser.TestGrammarParserT
                 "}");
     }
 
+    @Test
+    public void testParserForValidRelationComparisonGrammar_withAdditionalColumnsToPersist()
+    {
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    columnsToCompare: [amount];\n" +
+                "    additionalColumnsToPersist: [lake_in_id, source_specific_column, target_specific_column];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}");
+    }
+
+    @Test
+    public void testParserForValidRelationComparisonGrammar_emptyAdditionalColumnsToPersist()
+    {
+        // empty additionalColumnsToPersist list is allowed - equivalent to omitting the field
+        test("###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::external::dataquality::testRecon\n" +
+                "{\n" +
+                "    source: src|#>{my::Store.sourceTable}#->filter(c|$c.active == true);\n" +
+                "    target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
+                "    keys: [id];\n" +
+                "    additionalColumnsToPersist: [];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}");
+    }
+
 }

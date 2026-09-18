@@ -204,6 +204,7 @@ public class TestDataQualityRoundtrip extends TestGrammarRoundtrip.TestGrammarRo
                 "   target: tgt|#>{my::Store.targetTable}#->filter(c|$c.active == true);\n" +
                 "   keys: [id, name];\n" +
                 "   columnsToCompare: [amount, quantity];\n" +
+                "   additionalColumnsToPersist: [lake_in_id, source_specific_column, target_specific_column];\n" +
                 "   strategy: MD5Hash\n" +
                 "   {\n" +
                 "     sourceHashColumn: srcHash;\n" +

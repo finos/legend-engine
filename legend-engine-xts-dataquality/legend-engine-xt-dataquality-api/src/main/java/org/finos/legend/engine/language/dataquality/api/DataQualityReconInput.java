@@ -45,5 +45,6 @@ public class DataQualityReconInput
     public Long queryLimit; //optional limit on the number of rows fetched from source and target queries
     public List<ParameterValue> sourceLambdaParameterValues; //parameter values for the source lambda
     public List<ParameterValue> targetLambdaParameterValues; //parameter values for the target lambda
+    public LinkedHashSet<String> additionalColumnsToPersist; //extra columns to persist in the recon output with _SOURCE/_TARGET suffixes; not part of the hash / keys / join. If a column exists only on one side, only that side's suffixed projection is emitted.
 
 }
