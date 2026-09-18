@@ -85,6 +85,7 @@ Class meta::external::dataquality::datarecon::DataQualityReconInput
   defectLimit: Integer[0..1]; //optional limit on the number of defect rows returned
   removeFrom: Boolean[1] = false; //whether the from function should be removed on source and target queries
   enrichDQColumns: Boolean[1] = false; //whether to add DQ columns to the response
+  additionalColumnsToPersist: String[*]; //extra columns to persist in the recon output with _SOURCE/_TARGET suffixes; not part of the hash / keys / join
 }
 
 Class meta::external::dataquality::DataQualityRelationComparison extends PackageableElement, meta::pure::metamodel::testable::Testable
@@ -97,6 +98,7 @@ Class meta::external::dataquality::DataQualityRelationComparison extends Package
   target: LambdaFunction<Any>[1];
   keys: String[*];
   columnsToCompare: String[*];
+  additionalColumnsToPersist: String[*];
   strategy: ReconStrategy[1];
   expectedMatch: Float[0..1];
   persistenceStrategy: DataQualityPersistenceStrategy[0..1];

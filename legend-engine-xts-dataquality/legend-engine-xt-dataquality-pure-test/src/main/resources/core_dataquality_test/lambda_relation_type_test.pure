@@ -161,3 +161,69 @@ function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::t
   let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
   assertEquals(['HASH_SOURCE', 'HASH_TARGET', 'ID_SOURCE', 'ID_TARGET'], $relType.columns.name);
 }
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationComparison_additionalColumnsToPersist_bothSides():Boolean[1]
+{
+  let element = meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(
+    '###DataQualityValidation' +
+    '      DataQualityRelationComparison meta::external::dataquality::tests::domain::RelationComparison' +
+    '      {' +
+    '        source: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, AGE]);' +
+    '        target: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, LASTNAME, AGE]);' +
+    '        keys: [ID];' +
+    '        columnsToCompare: [FIRSTNAME, LASTNAME];' +
+    '        additionalColumnsToPersist: [AGE];' +
+    '        strategy: MD5Hash;' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // Additional-persist cols come after compare cols; AGE exists on both sides so both variants are emitted.
+  assertEquals(
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'LASTNAME_SOURCE', 'LASTNAME_TARGET', 'AGE_SOURCE', 'AGE_TARGET'],
+    $relType.columns.name
+  );
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationComparison_additionalColumnsToPersist_sourceOnly():Boolean[1]
+{
+  let element = meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(
+    '###DataQualityValidation' +
+    '      DataQualityRelationComparison meta::external::dataquality::tests::domain::RelationComparison' +
+    '      {' +
+    '        source: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, ADDRESSID]);' +
+    '        target: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME]);' +
+    '        keys: [ID];' +
+    '        columnsToCompare: [FIRSTNAME];' +
+    '        additionalColumnsToPersist: [ADDRESSID];' +
+    '        strategy: MD5Hash;' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // ADDRESSID only exists on source, so only ADDRESSID_SOURCE is projected.
+  assertEquals(
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'ADDRESSID_SOURCE'],
+    $relType.columns.name
+  );
+}
+
+function <<test.Test>> meta::external::dataquality::tests::lambdaRelationType::testGetLambdaRelationType_relationComparison_additionalColumnsToPersist_targetOnly():Boolean[1]
+{
+  let element = meta::external::dataquality::tests::lambdaRelationType::loadDataQualityRelationComparison(
+    '###DataQualityValidation' +
+    '      DataQualityRelationComparison meta::external::dataquality::tests::domain::RelationComparison' +
+    '      {' +
+    '        source: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME]);' +
+    '        target: |#>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID, FIRSTNAME, FIRMID]);' +
+    '        keys: [ID];' +
+    '        columnsToCompare: [FIRSTNAME];' +
+    '        additionalColumnsToPersist: [FIRMID];' +
+    '        strategy: MD5Hash;' +
+    '      }'
+  );
+  let relType = getLambdaRelationType($element, meta::external::dataquality::tests::lambdaRelationType::testCompiler());
+  // FIRMID only exists on target, so only FIRMID_TARGET is projected.
+  assertEquals(
+    ['DIGEST_SOURCE', 'DIGEST_TARGET', 'ID_SOURCE', 'ID_TARGET', 'FIRSTNAME_SOURCE', 'FIRSTNAME_TARGET', 'FIRMID_TARGET'],
+    $relType.columns.name
+  );
+}

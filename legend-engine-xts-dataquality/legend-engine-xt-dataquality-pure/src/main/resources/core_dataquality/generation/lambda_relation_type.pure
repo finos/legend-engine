@@ -31,7 +31,8 @@ function meta::external::dataquality::lambdaRelationType::getLambdaRelationType(
                                             $c.columnsToCompare,
                                             meta::external::dataquality::lambdaRelationType::sourceHashColumnOf($c.strategy),
                                             meta::external::dataquality::lambdaRelationType::targetHashColumnOf($c.strategy),
-                                            true
+                                            true,
+                                            $c.additionalColumnsToPersist
                                           );
                                           getDataReconLambda($reconInput, $compiler);,
     e: PackageableElement[1]            | fail('Unsupported DataQuality element for relation type: ' + $e->elementToPath())->cast(@LambdaFunction<Any>);

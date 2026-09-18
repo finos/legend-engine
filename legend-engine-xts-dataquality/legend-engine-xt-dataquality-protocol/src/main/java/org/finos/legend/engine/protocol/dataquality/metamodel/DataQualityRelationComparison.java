@@ -34,6 +34,7 @@ public class DataQualityRelationComparison extends ModelGenerationSpecification
     public LambdaFunction target;
     public List<String> keys = Collections.emptyList();
     public List<String> columnsToCompare = Collections.emptyList();
+    public List<String> additionalColumnsToPersist = Collections.emptyList();
     public ReconStrategy strategy;
     public Double expectedMatch;
     public DataQualityPersistenceStrategy persistenceStrategy;
