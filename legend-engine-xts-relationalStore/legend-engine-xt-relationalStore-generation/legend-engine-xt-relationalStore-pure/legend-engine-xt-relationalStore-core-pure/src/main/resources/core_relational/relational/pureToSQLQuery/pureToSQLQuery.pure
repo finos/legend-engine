@@ -6905,9 +6905,24 @@ function meta::relational::functions::pureToSqlQuery::processRecurse(expression:
                         ->toOne()
                         ->cast(@SelectWithCursor);
 
+  // H2, Oracle and Snowflake require the self-reference to be a direct FROM item of a UNION ALL
+  // branch. A join in the step wraps the reference in a subquery that only re-projects the CTE's
+  // own columns, so unwrap that back to the reference; the alias around it keeps its name and the
+  // columns resolve the same way.
+  let unwrapped = $recurse.select->meta::relational::postProcessor::transform({e:RelationalOperationElement[1] |
+                              $e->match([
+                                 s: SelectSQLQuery[1] | if($s->isPassthroughSelectOverCte($refCte.name), |$refCte, |$s),
+                                 a: Any[1] | $e
+                              ]);
+                           })->cast(@SelectSQLQuery);
+
+  // The join leaves its result as a derived table, so the reference would still sit one level below
+  // the branch. Merge a wrapper that only renames the inner select's columns into that select.
+  let flattenedRecurse = $unwrapped->collapseRenamingWrapper($refCte.name);
+
   let unionTable = ^TableAlias(
                                 name = 'union',
-                                relationalElement = ^UnionAll(queries = $initial.select->concatenate($recurse.select))
+                                relationalElement = ^UnionAll(queries = $initial.select->concatenate($flattenedRecurse))
                   );
 
   let unionRoot = ^RootJoinTreeNode(alias = $unionTable);  
@@ -6922,6 +6937,84 @@ function meta::relational::functions::pureToSqlQuery::processRecurse(expression:
   let rcte = ^RecursiveCommonTableExpression(name = $refCte.name, sqlQuery = $unionSelect);
 
   ^$recurse(select = ^$cteReferenceSelect(commonTableExpressions = $rcte));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isPassthroughSelectOverCte(s:SelectSQLQuery[1], cteName:String[1]):Boolean[1]
+{
+  $s.data->isNotEmpty()
+    && $s.data->toOne()->children()->isEmpty()
+    && $s.data.alias.relationalElement->toOne()->match([
+         c: CommonTableExpressionReference[1] | $c.name == $cteName,
+         a: Any[1] | false
+       ])
+    && $s.filteringOperation->isEmpty()
+    && $s.groupBy->isEmpty()
+    && $s.havingOperation->isEmpty()
+    && $s.orderBy->isEmpty()
+    && $s.qualifyOperation->isEmpty()
+    && $s.pivot->isEmpty()
+    && $s.toRow->isEmpty()
+    && $s.fromRow->isEmpty()
+    && ($s.distinct->isEmpty() || !$s.distinct->toOne())
+    // only a 1:1 re-projection: a rename or a computed column would change what the alias exposes
+    && $s.columns->forAll(c | $c->match([
+         a: Alias[1] | $a.relationalElement->match([
+              tac: TableAliasColumn[1] | $a.name == $tac.columnName->orElse($tac.column.name),
+              x: Any[1] | false
+            ]),
+         tac: TableAliasColumn[1] | true,
+         x: Any[1] | false
+       ]));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::collapseRenamingWrapper(s:SelectSQLQuery[1], cteName:String[1]):SelectSQLQuery[1]
+{
+  let inner = if($s.data->isNotEmpty() && $s.data->toOne()->children()->isEmpty(),
+                 | $s.data.alias.relationalElement->toOne()->match([
+                     i: SelectSQLQuery[1] | $i,
+                     a: Any[1] | []->cast(@SelectSQLQuery)
+                   ]),
+                 | []);
+
+  let mergeable = $inner->isNotEmpty()
+                    && $inner->toOne()->referencesCteDirectly($cteName)
+                    && $s.filteringOperation->isEmpty() && $s.groupBy->isEmpty() && $s.havingOperation->isEmpty()
+                    && $s.orderBy->isEmpty() && $s.qualifyOperation->isEmpty() && $s.pivot->isEmpty()
+                    && $s.toRow->isEmpty() && $s.fromRow->isEmpty()
+                    && ($s.distinct->isEmpty() || !$s.distinct->toOne())
+                    && $s.columns->forAll(c | $c->match([a: Alias[1] | $a.relationalElement->instanceOf(TableAliasColumn), x: Any[1] | false]))
+                    && $inner->toOne().columns->forAll(c | $c->instanceOf(Alias));
+
+  if(!$mergeable,
+    | $s,
+    | let innerSelect = $inner->toOne();
+      let byName = newMap($innerSelect.columns->cast(@Alias)->map(a | pair($a.name, $a)));
+      let rewritten = $s.columns->cast(@Alias)->map(a |
+            let source = $a.relationalElement->cast(@TableAliasColumn);
+            let sourceName = $source.columnName->orElse($source.column.name);
+            let matched = $byName->get($sourceName);
+            if($matched->isEmpty(), |$a, |^$a(relationalElement = $matched->toOne().relationalElement));
+         );
+      // bail out if any column did not resolve - a partial merge would silently drop a projection
+      if($rewritten->size() == $s.columns->size() && $rewritten->forAll(a | !$a.relationalElement->instanceOf(TableAliasColumn) || $a.relationalElement->cast(@TableAliasColumn).alias != $s.data.alias->toOne()),
+        | ^$innerSelect(columns = $rewritten),
+        | $s);
+  );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::referencesCteDirectly(s:SelectSQLQuery[1], cteName:String[1]):Boolean[1]
+{
+  $s.data->isNotEmpty()
+    && $s.data->toOne()->meta::relational::functions::pureToSqlQuery::allTreeNodes()
+        ->exists(n | $n.alias.relationalElement->toOne()->match([
+             c: CommonTableExpressionReference[1] | $c.name == $cteName,
+             a: Any[1] | false
+           ]));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::allTreeNodes(r:RelationalTreeNode[1]):RelationalTreeNode[*]
+{
+  $r->concatenate($r->children()->map(c | $c->allTreeNodes()));
 }
 
 function meta::relational::functions::pureToSqlQuery::processLateral(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

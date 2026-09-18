@@ -405,8 +405,5 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Semi structured array element processing not supported for Database Type: Oracle\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
-    "expectedError" : "ORA-32042: recursive WITH clause must reference itself directly in one of the UNION ALL branches"
   } ]
 }

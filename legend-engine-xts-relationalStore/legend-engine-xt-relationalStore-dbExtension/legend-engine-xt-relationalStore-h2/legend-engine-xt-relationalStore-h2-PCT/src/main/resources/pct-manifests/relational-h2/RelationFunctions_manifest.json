@@ -183,8 +183,5 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: SemiStructuredArrayFlattenRelationObject instanceOf SemiStructuredArrayFlattenRelation"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
-    "expectedError" : "General error: \"java.lang.StackOverflowError\""
   } ]
 }
