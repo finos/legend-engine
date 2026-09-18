@@ -585,6 +585,113 @@ public class TestDataQualityCompilationFromGrammar extends TestCompilationFromGr
     }
 
     @Test
+    public void testRelationComparison_additionalColumnsToPersist_happyPath()
+    {
+        // A column in each of: source-only, target-only, both sides.
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE, ADDRESSID])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE, FIRMID])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['LASTNAME'];\n" +
+                "    additionalColumnsToPersist: ['AGE', 'ADDRESSID', 'FIRMID'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}");
+    }
+
+    @Test
+    public void testRelationComparison_additionalColumnsToPersist_missingFromBoth()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    additionalColumnsToPersist: ['NONEXISTENT'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-111:1]: additionalColumnsToPersist column(s) [NONEXISTENT] not found in either the source or target relation"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_additionalColumnsToPersist_overlapsWithKeys()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    additionalColumnsToPersist: ['FIRSTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-111:1]: additionalColumnsToPersist column(s) [FIRSTNAME] must not overlap with keys"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_additionalColumnsToPersist_overlapsWithColumnsToCompare()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    columnsToCompare: ['LASTNAME'];\n" +
+                "    additionalColumnsToPersist: ['LASTNAME'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-112:1]: additionalColumnsToPersist column(s) [LASTNAME] must not overlap with columnsToCompare"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_additionalColumnsToPersist_overlapsWithSourceHashColumn()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    additionalColumnsToPersist: ['LASTNAME'];\n" +
+                "    strategy: MD5Hash\n" +
+                "    {\n" +
+                "       sourceHashColumn: 'LASTNAME';\n" +
+                "       targetHashColumn: 'LASTNAME';\n" +
+                "    };\n" +
+                "}\n",
+                "COMPILATION error at [104:1-115:1]: additionalColumnsToPersist column(s) [LASTNAME] must not overlap with sourceHashColumn or targetHashColumn"
+        );
+    }
+
+    @Test
+    public void testRelationComparison_additionalColumnsToPersist_duplicates()
+    {
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +
+                "###DataQualityValidation\n" +
+                "DataQualityRelationComparison meta::dataquality::TestRelationComparison\n" +
+                "{\n" +
+                "    source: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    target: #>{meta::dataquality::db.personTable}#->select(~[FIRSTNAME, LASTNAME, AGE])->from(meta::dataquality::DataQualityRuntime);\n" +
+                "    keys: ['FIRSTNAME'];\n" +
+                "    additionalColumnsToPersist: ['AGE', 'AGE'];\n" +
+                "    strategy: MD5Hash;\n" +
+                "}\n",
+                "COMPILATION error at [104:1-111:1]: Duplicate additionalColumnsToPersist column(s) found: [AGE]"
+        );
+    }
+
+    @Test
     public void testRelationComparison_warnsWhenColumnsToCompareContainsFloatAndDouble()
     {
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(COMPILATION_PREREQUISITE_CODE +

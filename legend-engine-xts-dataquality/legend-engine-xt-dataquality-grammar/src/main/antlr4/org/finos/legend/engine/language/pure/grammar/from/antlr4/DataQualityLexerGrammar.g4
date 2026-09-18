@@ -36,6 +36,7 @@ RECON_SOURCE:                            'source';
 RECON_TARGET:                            'target';
 RECON_KEYS:                              'keys';
 COLUMNS_TO_COMPARE:                      'columnsToCompare';
+ADDITIONAL_COLUMNS_TO_PERSIST:           'additionalColumnsToPersist';
 RECON_STRATEGY:                          'strategy';
 RECON_STRATEGY_MD5:                      'MD5Hash';
 RECON_SOURCE_HASH_COLUMN:                'sourceHashColumn';

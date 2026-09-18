@@ -150,6 +150,16 @@ public class DataQualityTreeWalker
                     .collect(Collectors.toList());
         }
 
+        // additionalColumnsToPersist (optional)
+        DataQualityParserGrammar.AdditionalColumnsToPersistContext additionalColumnsToPersistContext = PureGrammarParserUtility.validateAndExtractOptionalField(
+                ctx.additionalColumnsToPersist(), "additionalColumnsToPersist", relationComparison.sourceInformation);
+        if (Objects.nonNull(additionalColumnsToPersistContext))
+        {
+            relationComparison.additionalColumnsToPersist = additionalColumnsToPersistContext.identifier().stream()
+                    .map(PureGrammarParserUtility::fromIdentifier)
+                    .collect(Collectors.toList());
+        }
+
         // strategy
         DataQualityParserGrammar.ReconStrategyContext reconStrategyContext = PureGrammarParserUtility.validateAndExtractRequiredField(
                 ctx.reconStrategy(), "strategy", relationComparison.sourceInformation);

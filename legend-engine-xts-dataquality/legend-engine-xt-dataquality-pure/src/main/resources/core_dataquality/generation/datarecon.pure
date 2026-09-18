@@ -48,8 +48,8 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
 
   let allParams = $renamedSourceParams->concatenate($renamedTargetParams);
 
-  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $compiler));
-  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $compiler));
+  let sourceDataset = $sourceParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'source_' + $param.name)}, prepareDataset($reconInput.source, 'source', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.sourceHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
+  let targetDataset = $targetParams->fold({param, valueSpecification | $valueSpecification->replaceVariableWithVariable($param.name, 'target_' + $param.name)}, prepareDataset($reconInput.target, 'target', $reconInput.keys, $reconInput.aggregatedHash, $reconInput.colsForHash, $reconInput.targetHashCol, $reconInput.includeColumnValues, $reconInput.removeFrom, $reconInput.additionalColumnsToPersist, $compiler));
 
   //join by keys
   let withJoin = buildJoinExpression($sourceDataset, $targetDataset, JoinKind.FULL, getJoinColumns($reconInput.keys), $reconInput.sourceHashCol, $reconInput.targetHashCol);
@@ -71,10 +71,10 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
     | $withLimit
   );
 
-  //reorder final output columns:, DQ cols, hash cols, keys (SOURCE/TARGET pairs), then compare cols (SOURCE/TARGET pairs)
+  //reorder final output columns:, DQ cols, hash cols, keys (SOURCE/TARGET pairs), then compare cols (SOURCE/TARGET pairs), then additional-persist cols
   let currentRelType = getRelType($withDqCols);
   let currentColNames = $currentRelType.columns->map(c | $c.name->toOne());
-  let orderedCols = buildFinalColumnOrder($currentColNames, $reconInput.keys, $reconInput.colsForHash, $sourceHashCol, $targetHashCol);
+  let orderedCols = buildFinalColumnOrder($currentColNames, $reconInput.keys, $reconInput.colsForHash, $sourceHashCol, $targetHashCol, $reconInput.additionalColumnsToPersist);
   let withOrderedCols = if ($orderedCols->isEmpty(),
     | $withDqCols,
     | let projectedRelType = ^RelationType<Nil>(columns = $orderedCols->map(colName | $currentRelType.columns->filter(col | $col.name->toOne() == $colName)->toOne()));
@@ -84,29 +84,32 @@ function meta::external::dataquality::datarecon::getDataReconLambda(reconInput: 
   lambda(^FunctionType(returnMultiplicity=$withOrderedCols.multiplicity, returnType=$withOrderedCols.genericType, parameters=$allParams), $withOrderedCols);
 }
 
-function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentColNames: String[*], keys: String[*], compareCols: String[*], sourceHashCol: String[1], targetHashCol: String[1]): String[*]
+function meta::external::dataquality::datarecon::buildFinalColumnOrder(currentColNames: String[*], keys: String[*], compareCols: String[*], sourceHashCol: String[1], targetHashCol: String[1], additionalColumnsToPersist: String[*]): String[*]
 {
   let keyOrder = $keys->fold({k, acc | $acc->concatenate($k + '_SOURCE')->concatenate($k + '_TARGET')}, []->cast(@String));
   let hashOrder = [$sourceHashCol, $targetHashCol];
 
+  //additional-persist cols come last; retain both _SOURCE and _TARGET when present in the current relation
+  let additionalOrder = $additionalColumnsToPersist->fold({c, acc | $acc->concatenate($c + '_SOURCE')->concatenate($c + '_TARGET')}, []->cast(@String));
+
   let compareOrder = if ($compareCols->isNotEmpty(),
     | $compareCols->fold({c, acc | $acc->concatenate($c + '_SOURCE')->concatenate($c + '_TARGET')}, []->cast(@String)),
-    | //derive compare cols from the current relation: every *_SOURCE column that is not a key or hash col
-      let exclusions = $keyOrder->concatenate($hashOrder);
+    | //derive compare cols from the current relation: every *_SOURCE column that is not a key, hash col or additional-persist col
+      let exclusions = $keyOrder->concatenate($hashOrder)->concatenate($additionalOrder);
       $currentColNames
         ->filter(c | $c->endsWith('_SOURCE') && !$exclusions->contains($c))
         ->fold({c, acc | let base = $c->substring(0, $c->length() - 7); $acc->concatenate($c)->concatenate($base + '_TARGET');}, []->cast(@String));
   );
 
-  //hash cols come first (after any non-side cols like DQ enrichment cols), then keys, then compare cols; dedupe as a key/compare col may also be a hash col
+  //hash cols come first (after any non-side cols like DQ enrichment cols), then keys, then compare cols, then additional-persist cols; dedupe as a key/compare col may also be a hash col
   let nonSideCols = $currentColNames->filter(c | !$c->endsWith('_SOURCE') && !$c->endsWith('_TARGET'));
-  let desired = $nonSideCols->concatenate($hashOrder)->concatenate($keyOrder)->concatenate($compareOrder)->distinct();
+  let desired = $nonSideCols->concatenate($hashOrder)->concatenate($keyOrder)->concatenate($compareOrder)->concatenate($additionalOrder)->distinct();
 
-  //keep only columns that actually exist in the final relation (e.g. compare cols absent when includeColumnValues=false)
+  //keep only columns that actually exist in the final relation (e.g. compare cols absent when includeColumnValues=false, or additional cols only exist on one side)
   $desired->filter(c | $currentColNames->contains($c));
 }
 
-function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): ValueSpecification[1]
+function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaFunction<Any>[1], type: String[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], hashCol: String[0..1], includeColumnValues: Boolean[1], removeFrom: Boolean[1], additionalPersistCols: String[*], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]): ValueSpecification[1]
 {  
   let hasFrom = $dataset->isEndingWithFromFunction();
   let withoutFrom = if ($hasFrom,
@@ -122,27 +125,35 @@ function meta::external::dataquality::datarecon::prepareDataset(dataset: LambdaF
   validateColumns($input, $type, $keys, $colsForHash, $hashCol);
 
   let suffix = '_' + $type->toUpper();
-    
+
+  //Only keep additional-persist cols that actually exist on this side; sides may differ (e.g. source_specific_column only in source)
+  let inputRelType = getRelType($input);
+  let inputColNames = $inputRelType.columns->map(c | $c.name->toOne());
+  let applicableAdditional = $additionalPersistCols->filter(c | $inputColNames->contains($c));
+
   //select relevant columns before normalization
-  let colsToSelect = if ($colsForHash->isEmpty() && $hashCol->isEmpty(),
-    | [], //if no cols given for hash then we will calculate hash on all columns
+  let colsToSelect = if ($colsForHash->isEmpty() && $hashCol->isEmpty() && $applicableAdditional->isEmpty(),
+    | [], //if no cols given for hash and no additional-persist cols then we will calculate hash on all columns
     | let colsRequiredForHash = if ($hashCol->isNotEmpty(), | $hashCol, | $colsForHash);
       let withIncludedCols = if ($includeColumnValues, | $colsRequiredForHash->union($colsForHash), | $colsRequiredForHash);
-      let selectColsBeforeNormalize = $keys->union($withIncludedCols)->distinct();
+      //when hash is calculated on all columns (colsForHash empty), we still need to include all input columns in the pre-select so nothing is dropped before hashing
+      let hashColsForSelect = if ($hashCol->isEmpty() && $colsForHash->isEmpty(), | $inputColNames, | $withIncludedCols);
+      let selectColsBeforeNormalize = $keys->union($hashColsForSelect)->union($applicableAdditional)->distinct();
   );
   let withSelectBeforeNormalize = if ($colsToSelect->isEmpty(), | $input, | buildSelectExpression($input, $colsToSelect));
-  
-  //normalize cols  
+
+  //normalize cols (additional-persist cols also get the suffix through this same call)
   let withNormalizedCols = normalizeColumns($withSelectBeforeNormalize, getRelType($input), $colsToSelect, $suffix);
 
-  //create hash
-  let withHash = if ($hashCol->isNotEmpty(), 
+  //create hash - additional-persist cols must be excluded so they don't influence the hash
+  let withHash = if ($hashCol->isNotEmpty(),
     | $withNormalizedCols,
-    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true, $dataset, $compiler);
+    | let withRowHash = buildRowHash($withNormalizedCols, $suffix, $type, true, $dataset, $compiler, $applicableAdditional);
       if ($includeColumnValues && !$aggregatedHash,
         | $withRowHash,
-        | //select only hash col + keys
-          let selectCols = $keys->map(col | $col + $suffix)->union('DIGEST' + $suffix)->distinct();
+        | //select only hash col + keys + additional-persist cols
+          let additionalWithSuffix = $applicableAdditional->map(c | $c + $suffix);
+          let selectCols = $keys->map(col | $col + $suffix)->union('DIGEST' + $suffix)->union($additionalWithSuffix)->distinct();
           buildSelectExpression($withRowHash, $selectCols);
       );
   );
@@ -247,7 +258,7 @@ function meta::external::dataquality::datarecon::buildAggregatedHash(input: Valu
   );
 
   //calculate hash of hashes
-  let aggHash = buildRowHash($groupBy, $suffix, $type, false, $contextLambda, $compiler);
+  let aggHash = buildRowHash($groupBy, $suffix, $type, false, $contextLambda, $compiler, []);
 
   //select only grouping cols and hash col
   let selectCols = $groupingCols->union('DIGEST' + $suffix);
@@ -281,10 +292,13 @@ function meta::external::dataquality::datarecon::buildExtendExpression(input: Va
   );
 }
 
-function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1], contextLambda: LambdaFunction<Any>[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1]):ValueSpecification[1]
+function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1], contextLambda: LambdaFunction<Any>[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], excludeFromHash: String[*]):ValueSpecification[1]
 {
   let relType = getRelType($input->compileViaGrammarWithContext($contextLambda, $compiler));
-  $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $relType.columns.name->sort(), 'row', $includeColName, $suffix));
+  //exclude columns (as suffixed names) from the hash so passthrough / additional-persist cols do not influence the digest
+  let excludeSuffixed = $excludeFromHash->map(c | $c + $suffix);
+  let colsToHash = $relType.columns.name->filter(c | !$excludeSuffixed->contains($c))->sort();
+  $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $colsToHash, 'row', $includeColName, $suffix));
 }
 
 function meta::external::dataquality::datarecon::buildColSpecArrayExpression(selectedCols: String[*]):ValueSpecification[1]
@@ -501,7 +515,17 @@ function meta::external::dataquality::datarecon::createReconInput(source: Lambda
   createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false, false);
 }
 
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], additionalColumnsToPersist: String[*]): DataQualityReconInput[1]
+{
+  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, [], false, false, $additionalColumnsToPersist);
+}
+
 function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1], enrichDQColumns: Boolean[1]): DataQualityReconInput[1]
 {
-  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit, removeFrom = $removeFrom, enrichDQColumns = $enrichDQColumns);
+  createReconInput($source, $target, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, $defectLimit, $removeFrom, $enrichDQColumns, []);
+}
+
+function meta::external::dataquality::datarecon::createReconInput(source: LambdaFunction<Any>[1], target: LambdaFunction<Any>[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1], defectLimit: Integer[0..1], removeFrom: Boolean[1], enrichDQColumns: Boolean[1], additionalColumnsToPersist: String[*]): DataQualityReconInput[1]
+{
+  ^DataQualityReconInput(source = $source, target = $target, keys = $keys, aggregatedHash = $aggregatedHash, colsForHash = $colsForHash, sourceHashCol = $sourceHashCol, targetHashCol = $targetHashCol, includeColumnValues = $includeColumnValues, defectLimit = $defectLimit, removeFrom = $removeFrom, enrichDQColumns = $enrichDQColumns, additionalColumnsToPersist = $additionalColumnsToPersist);
 }

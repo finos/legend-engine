@@ -83,8 +83,8 @@ public class DataQualityRelationComparisonArtifactGenerationExtension implements
             String sourceHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy ? ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._sourceHashColumn() : null;
             String targetHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy ? ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._targetHashColumn() : null;
 
-            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__DataQualityReconInput_1_(
-                            element._source(), element._target(), element._keys(), aggregatedHash, element._columnsToCompare(), sourceHash, targetHash, INCLUDE_COLUMN_VALUES, DEFAULT_DEFECT_LIMIT, false, ENRICH_DQ_COLUMNS, pureModel.getExecutionSupport()
+            Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput = core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__String_MANY__DataQualityReconInput_1_(
+                            element._source(), element._target(), element._keys(), aggregatedHash, element._columnsToCompare(), sourceHash, targetHash, INCLUDE_COLUMN_VALUES, DEFAULT_DEFECT_LIMIT, false, ENRICH_DQ_COLUMNS, element._additionalColumnsToPersist(), pureModel.getExecutionSupport()
             );
             LambdaFunction<?> dqLambdaFunction = DataQualityReconLambdaGenerator.generateLambda(pureModel, reconInput);
 
