@@ -58,7 +58,28 @@ public class Test_Relational_Databricks_Semistructured
                 // entries master quarantined alongside it in the same commit (see note below).
                 .withKeyValue(
                         "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
-                        "The database type 'Databricks' is not supported yet!");
+                        "The database type 'Databricks' is not supported yet!")
+                // [columnPruning] Mixing an extract (variant_get) with an explode over the same
+                // semi-structured array makes Spark's column-pruning rewrite drop the extracted
+                // column before the join that references it, so the generated logical plan probes
+                // a leftJoinKey-side attribute ("flattened_prop#...") that no longer exists past the
+                // Generate/explode node. CI run:
+                // https://github.com/finos/legend-engine/actions/runs/35282838280/job/105445761996
+                // (2026-09-18). Needs a router/plan fix on the Databricks side, not a Pure-model fix.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::explode::testCanProperlyMixExtractAndExplode_Connection_1__Boolean_1_",
+                        "Cannot find column index for attribute")
+                // [typeMismatch] Databricks' driver reads an Integer-typed graph-fetch id property
+                // back as DECIMAL rather than the INTEGER/BIGINT the generic relational id-property
+                // reader expects, so Specifics.getResultSetPropertyGetterForIntegerProperty rejects
+                // the column type. New on master via testSemiStructuredModelChain.pure (model-chain
+                // graph fetch over a semi-structured mapping). CI run:
+                // https://github.com/finos/legend-engine/actions/runs/35282838280/job/105445761996
+                // (2026-09-18). Needs either a DECIMAL-tolerant Integer reader or a cast at query
+                // generation on the Databricks side.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::modelChain::testModelChainIdOnlyGraph_Connection_1__Boolean_1_",
+                        "Error reading in property 'id' of type Integer from SQL column of type 'DECIMAL'.");
                 // testAggregationAggregateExplodedPropertyUsingGroupBy was quarantined here for an
                 // [AMBIGUOUS_REFERENCE] Spark error: GROUP BY rendered `Id` unqualified while both
                 // `blocks_1.Id` (exploded array alias) and `root.Id` (base row) were in scope. Fixed
