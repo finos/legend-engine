@@ -951,7 +951,7 @@ function meta::relational::functions::sqlQueryToString::default::escapeLikeExprD
 }
 
 
-function   meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts():Pair<String,String>[*]
+function meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts():Pair<String,String>[*]
 {
   let formatSubs = [
                   pair('yyyy', 'YYYY'), // Year
@@ -961,13 +961,155 @@ function   meta::relational::functions::sqlQueryToString::default::defaultJavaTo
                   pair('hh', 'I2'),   // Hour in day (0-12) padded
                   pair('h', 'FMHH12'),   // Hour in day (0-12)    
                   pair('mm', 'MI'),   // Minute in hour
-                  pair('SSSSSSSSS','FF9'),
-                  pair('SSSSSS','FF6'),
-                  pair('SSS','FF3'),
                   pair('ss', 'SS'),   // Second in minute
                   pair('I1', 'HH24'),   //replace intermediate placeholders
                   pair('I2', 'HH12')
-                  ];  
+                  ];
+}
+
+function meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat(format:String[1]):String[1]
+{
+  // A SQL timestamp has every component, so an optional section always writes its first alternative. A sub-second
+  // field is written to the width it names, and to all nine digits where it names no maximum.
+  let withSubseconds = $format->subsecondsToSQL(0, $format->length());
+  defaultJavaToSQLTimeParts()->fold({sub, date | $date->toOne()->replace($sub.first, $sub.second)}, $withSubseconds);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::subsecondsToSQL(format:String[1], index:Integer[1], end:Integer[1]):String[1]
+{
+  if($index >= $end,
+    | '',
+    | let character = $format->characterAt($index);
+      if($character == '"',
+        | let close = $format->quotedTextEnd($index + 1);
+          $format->substring($index, $close) + $format->subsecondsToSQL($close, $end);,
+        | if(($character == '?') && ($format->characterAt($index + 1) == '['),
+            | let close = $format->sectionEnd($index + 2);
+              $format->subsecondsToSQL($index + 2, $format->alternativeEnd($index + 2, $close)) + $format->subsecondsToSQL($close + 1, $end);,
+            | if($character == 'S',
+                | let fieldEnd = $format->subsecondFieldEnd($index);
+                  $format->substring($index, $fieldEnd)->subsecondFieldToSQL($format) + $format->subsecondsToSQL($fieldEnd, $end);,
+                | $character + $format->subsecondsToSQL($index + 1, $end)
+              )
+          )
+      );
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::subsecondFieldToSQL(field:String[1], format:String[1]):String[1]
+{
+  let tooWide = 'The sub-second field ' + $field + ' in the date format \'' + $format + '\' needs more than the 9 digits SQL can write';
+  let rest = $field->substring(1);
+  let width = if($rest->startsWith('('),
+    | let afterOpen = $rest->substring(1);
+      let minimum = $afterOpen->substring(0, $afterOpen->indexOf(','));
+      let afterMinimum = $afterOpen->substring($afterOpen->indexOf(',') + 1);
+      let comma = $afterMinimum->indexOf(',');
+      let maximum = $afterMinimum->substring(0, if($comma == -1, | $afterMinimum->indexOf(')'), | $comma));
+      assert((!$maximum->endsWith('!')) || $maximum->startsWith('*'), | 'The sub-second field ' + $field + ' in the date format \'' + $format + '\' refuses a fraction longer than ' + $maximum->replace('!', '') + ' digits, which SQL cannot do');
+      assert($minimum->replace('!', '')->parseInteger() <= 9, | $tooWide);
+      if($maximum->startsWith('*'), | 9, | $maximum->replace('!', '')->parseInteger());,
+    | if($rest->startsWith('*'),
+        | 9,
+        | if($rest->startsWith('>'),
+            | assert($rest->substring(1)->parseInteger() <= 9, | $tooWide);
+              9;,
+            | if($rest->startsWith('<') || $rest->startsWith('!'),
+                | $rest->substring(1)->parseInteger(),
+                | if($rest->matches('[0-9]+'), | $rest->parseInteger(), | $field->length())
+              )
+          )
+      )
+  );
+  assert($width <= 9, | $tooWide);
+  'FF' + $width->toString();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::subsecondFieldEnd(format:String[1], index:Integer[1]):Integer[1]
+{
+  let next = $format->characterAt($index + 1);
+  if($next == '(',
+    | $format->closingParenthesisEnd($index + 2),
+    | if(($next == '<') || ($next == '>') || ($next == '!'),
+        | $format->digitsEnd($index + 2),
+        | if($next == '*',
+            | $index + 2,
+            | if($next->matches('[0-9]'), | $format->digitsEnd($index + 1), | $format->runEnd('S', $index))
+          )
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::sectionEnd(format:String[1], index:Integer[1]):Integer[1]
+{
+  let character = $format->characterAt($index);
+  if(($character == '') || ($character == ']'),
+    | $index,
+    | if($character == '"',
+        | $format->sectionEnd($format->quotedTextEnd($index + 1)),
+        | if(($character == '?') && ($format->characterAt($index + 1) == '['),
+            | $format->sectionEnd($format->sectionEnd($index + 2) + 1),
+            | $format->sectionEnd($index + 1)
+          )
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::alternativeEnd(format:String[1], index:Integer[1], end:Integer[1]):Integer[1]
+{
+  if($index >= $end,
+    | $end,
+    | let character = $format->characterAt($index);
+      if($character == '|',
+        | $index,
+        | if($character == '"',
+            | $format->alternativeEnd($format->quotedTextEnd($index + 1), $end),
+            | if(($character == '?') && ($format->characterAt($index + 1) == '['),
+                | $format->alternativeEnd($format->sectionEnd($index + 2) + 1, $end),
+                | $format->alternativeEnd($index + 1, $end)
+              )
+          )
+      );
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::quotedTextEnd(format:String[1], index:Integer[1]):Integer[1]
+{
+  let character = $format->characterAt($index);
+  if($character == '',
+    | $format->length(),
+    | if($character == '\\',
+        | $format->quotedTextEnd($index + 2),
+        | if($character == '"', | $index + 1, | $format->quotedTextEnd($index + 1))
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::closingParenthesisEnd(format:String[1], index:Integer[1]):Integer[1]
+{
+  let character = $format->characterAt($index);
+  if($character == '',
+    | $format->length(),
+    | if($character == ')',
+        | $index + 1,
+        | if($character == '"', | $format->closingParenthesisEnd($format->quotedTextEnd($index + 1)), | $format->closingParenthesisEnd($index + 1))
+      )
+  );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::digitsEnd(format:String[1], index:Integer[1]):Integer[1]
+{
+  if($format->characterAt($index)->matches('[0-9]'), | $format->digitsEnd($index + 1), | $index);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::runEnd(format:String[1], character:String[1], index:Integer[1]):Integer[1]
+{
+  if($format->characterAt($index) == $character, | $format->runEnd($character, $index + 1), | $index);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::characterAt(format:String[1], index:Integer[1]):String[1]
+{
+  if($index < $format->length(), | $format->substring($index, $index + 1), | '');
 }
 
 function meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]

@@ -282,6 +282,40 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testLegacyDateFormatWarning()
+    {
+        test("function test::f(d: DateTime[1]): String[*]\n" +
+                "{\n" +
+                "  [format('%t{yyyy-MM-dd HH:mm:ss.SSS}', $d),\n" +
+                "   format('%t{S} and %t{SSSSSS}', [$d, $d]),\n" +
+                "   format('%t{yyyy-MM-dd HH:mm:ss?[.SSS]} %t{yyyy-MM-dd} %%t{SSS}', [$d, $d])]\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION warning at [3:11-39]: Date format 'yyyy-MM-dd HH:mm:ss.SSS' uses SSS, a deprecated form of the sub-second field. " +
+                        "Replace it with S3 for exactly 3 digits, ?[S3|\"000\"] for exactly 3 digits and zeros when the date has no sub-second, or S<3 for at most 3 digits.",
+                "COMPILATION warning at [4:11-32]: Date format 'S' uses S, a deprecated form of the sub-second field. " +
+                        "Replace it with S1 for exactly 1 digit, ?[S1|\"0\"] for exactly 1 digit and a zero when the date has no sub-second, or S<1 for at most 1 digit.",
+                "COMPILATION warning at [4:11-32]: Date format 'SSSSSS' uses SSSSSS, a deprecated form of the sub-second field. " +
+                        "Replace it with S6 for exactly 6 digits, ?[S6|\"000000\"] for exactly 6 digits and zeros when the date has no sub-second, or S* for however many digits the date has."));
+    }
+
+    @Test
+    public void testLegacyDateFormatInSerializationConfigWarning()
+    {
+        test("Class test::Person\n" +
+                "{\n" +
+                "  birthDate: DateTime[1];\n" +
+                "}\n" +
+                "\n" +
+                "function test::f(): String[*]\n" +
+                "{\n" +
+                "  [test::Person.all()->graphFetch(#{test::Person{birthDate}}#)->serialize(#{test::Person{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd HH:mm:ss.SSSX')),\n" +
+                "   test::Person.all()->graphFetch(#{test::Person{birthDate}}#)->serialize(#{test::Person{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd HH:mm:ss?[.S3]X'))]\n" +
+                "}\n", null, Lists.fixedSize.with(
+                "COMPILATION warning at [8:180-205]: Date format 'yyyy-MM-dd HH:mm:ss.SSSX' uses SSS, a deprecated form of the sub-second field. " +
+                        "Replace it with S3 for exactly 3 digits, ?[S3|\"000\"] for exactly 3 digits and zeros when the date has no sub-second, or S<3 for at most 3 digits."));
+    }
+
+    @Test
     public void testDuplicateEnumValueWarning()
     {
         test("Enum test::A\n" +

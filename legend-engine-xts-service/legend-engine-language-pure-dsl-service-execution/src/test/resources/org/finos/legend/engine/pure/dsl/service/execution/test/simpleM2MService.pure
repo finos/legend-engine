@@ -111,9 +111,29 @@ function test::serializeDateTimeCustomPattern(): String[1]
    test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='MM/dd/yyyy "at" hh:mma z'))
 }
 
+function test::serializeDateTimeSubSecondWidth(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.S6Z'))
+}
+
+function test::serializeDateTimeOptionalSection(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss?[.S*]Z'))
+}
+
+function test::serializeDateTimeTimeZoneOptionalSection(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{birthDate}}#)->serialize(#{test::targetPerson{birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EAT]yyyy-MM-dd HH:mm:ss?[.S<2]X'))
+}
+
 function test::serializeInvalidDateTimeFormat(): String[1]
 {
    test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mmm:ss.SSSZ'))
+}
+
+function test::serializeInvalidSubSecondWidth(): String[1]
+{
+   test::targetPerson.all()->graphFetch(#{test::targetPerson{age,birthDate}}#)->serialize(#{test::targetPerson{age,birthDate}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='yyyy-MM-dd"T"HH:mm:ss.S(3)Z'))
 }
 
 function test::M2MErrorMessage(input: String[1]): String[1]
