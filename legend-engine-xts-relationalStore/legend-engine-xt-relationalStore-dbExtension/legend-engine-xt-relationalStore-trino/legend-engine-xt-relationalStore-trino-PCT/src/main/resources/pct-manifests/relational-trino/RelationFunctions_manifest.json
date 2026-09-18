@@ -477,5 +477,8 @@
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: Trino"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+    "expectedError" : "is not coercible to recursion base relation output type"
   } ]
 }
