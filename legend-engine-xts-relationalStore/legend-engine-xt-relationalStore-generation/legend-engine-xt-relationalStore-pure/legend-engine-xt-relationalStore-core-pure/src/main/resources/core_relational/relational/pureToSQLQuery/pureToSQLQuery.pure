@@ -769,11 +769,33 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
   print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n'));
-  let res  = $functionExpression.func->match ([
-                                    p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1] | processColumnFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    a:Any[1]| processFunctionExpressionForNonPropertyFunction($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
+
+  // .toString() always compiles to this one global native function, regardless of the receiver's type -
+  // a receiver class's own qualified `toString` property (if it declares one) is dispatched to dynamically
+  // at runtime, from inside that native function's own (Java) implementation, once a real in-memory instance
+  // exists to inspect. Relationally there is no such instance yet, only a query being built - the SQL
+  // translation this native function is registered under (see extensionDefaults.pure) casts its argument's
+  // own SQL representation to a string, which is correct for the Number/Enum/Boolean/etc. values it was
+  // designed for but meaningless for a Class-typed argument, producing the row's identity column instead of
+  // the override's actual computation (confirmed empirically: 'select cast("root".pureId__ as varchar) ...'
+  // instead of the format()-based result). Redirect to the class's own qualified property - the same path an
+  // explicit `.someQualifiedProperty()` call already takes below - whenever the argument's type declares one
+  // named 'toString' with no extra explicit parameters (the only shape .toString() itself can ever call).
+  let dispatchFunctionExpression = if($functionExpression.func == meta::pure::functions::string::toString_Any_1__String_1_,
+                                      | let argType = $functionExpression.parametersValues->at(0)->byPassRouterInfo().genericType.rawType;
+                                        let ownToString = if($argType->isNotEmpty() && $argType->toOne()->instanceOf(Class),
+                                                            | $argType->toOne()->cast(@Class<Any>).qualifiedProperties->filter(q|$q.name == 'toString' && $q.classifierGenericType.typeArguments->at(0).rawType->cast(@FunctionType).parameters->size() == 1),
+                                                            | []
+                                                            );
+                                        if($ownToString->isEmpty(), |$functionExpression, |^$functionExpression(func = $ownToString->toOne()));,
+                                      | $functionExpression
+                                    );
+
+  let res  = $dispatchFunctionExpression.func->match ([
+                                    p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1] | processColumnFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    a:Any[1]| processFunctionExpressionForNonPropertyFunction($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
                                    ]);
 
   print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n  ' + $context.space + $res.element->match([s:SelectWithCursor[*]|$s.select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', '), w:WindowColumn[1]|^SelectSQLQuery(columns=$w)->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', ')])));
@@ -2479,7 +2501,24 @@ function meta::relational::functions::pureToSqlQuery::transformRelationFunctionP
 
 function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
+  let staticReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType;
+  // An unbound generic property (eg Pair<U,V>.first/.second on the raw class declaration) has no
+  // static rawType - genericType.rawType comes back empty regardless of what's actually bound at a
+  // specific instantiation. Whether it still belongs in this function's DataType[1] branch below is
+  // determined by how it got mapped, not by its static declaration: if it's a to-one property whose
+  // own RelationalPropertyMapping already resolves to a plain scalar column (not a join), it's being
+  // treated as data exactly like any real DataType property, so dispatch it there too. The
+  // placeholder type substituted below is never actually read for its identity by that branch for a
+  // to-one property (only String) - it exists solely to satisfy the match's DataType[1] case. Any
+  // other still-unhandled shape (eg a to-many unbound generic, or one resolving to a join) falls
+  // through to the original ->toOne() and keeps its original error.
+  let propertyReturnType = if($staticReturnType->isNotEmpty(),
+                              | $staticReturnType->toOne(),
+                              | if($property.multiplicity->hasToOneUpperBound() && $OrigrelationalPropertyMappings->at(0).relationalOperationElement->instanceOf(TableAliasColumn),
+                                   | String,
+                                   | $staticReturnType->toOne()
+                                )
+                            );
   let relationalPropertyMappings = $OrigrelationalPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
   let firstStep = $propertyReturnType->match(
                                  [

@@ -278,7 +278,7 @@
     "expectedError" : "\"Match does not support Non-Primitive return type..! Current return type : Any\""
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType"
+    "expectedError" : "Error mapping not found for class MA_Location cache:'MA_Address'"
   }, {
     "test" : "meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 9.0\nactual:   27.0"
@@ -362,15 +362,12 @@
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::string::tests::toString::ErrorType"
+    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:874 column:103), \"Cannot cast a collection of size 3 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 2 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   } ]
 }

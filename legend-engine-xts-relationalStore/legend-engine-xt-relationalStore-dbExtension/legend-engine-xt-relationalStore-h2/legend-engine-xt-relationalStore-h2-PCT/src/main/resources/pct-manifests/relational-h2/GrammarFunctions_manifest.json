@@ -90,10 +90,6 @@
       "expectedError": "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
     },
     {
-      "test": "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
-      "expectedError": "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
-    },
-    {
       "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
       "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
     },
@@ -179,7 +175,7 @@
     },
     {
       "test": "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
-      "expectedError": "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType"
+      "expectedError": "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:185 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
     },
     {
       "test": "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
@@ -231,7 +227,7 @@
     },
     {
       "test": "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
-      "expectedError": "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"
+      "expectedError": "\nexpected: 'Hoboken, NJ; Jersey City, NJ'\nactual:   'Hoboken, NJ; Hoboken, NJ'"
     },
     {
       "test": "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",

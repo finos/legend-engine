@@ -139,11 +139,21 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
             | let res = $json->meta::json::fromJSON(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult, ^meta::json::ExtendedJSONDeserializationConfig(typeKeyName='__TYPE', failOnUnknownProperties=true, nullReplacementInArray=TDSNull))->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne();
               // processResult
               if ($resultType->instanceOf(PrimitiveType) || $resultType->instanceOf(Enumeration) || $resultType->in([Variant, List, Map, Nil]),
-                | let preResultFinal = $res.result.rows->head().values->head();
+                | // A genuinely multi-row scalar result (eg. $people->map(p|p.lastName) returning one
+                  // row per person) has to be reconstructed row-by-row - reading only the first row's
+                  // first value, as below, silently truncates it to size 1. That single-value path is
+                  // still exactly right for the common case of one row - including a to-many result
+                  // whose value is a JSON array encoded as a single string/row (resultToType's own
+                  // to-many handling further down) - so it's kept as the fallback whenever there's at
+                  // most one row.
+                  let resultFinal = if($res.result.rows->size() > 1,
+                    | $res.result.rows->map(r | $r.values->head()->resultToType($f->functionReturnType(), PureOne)),
+                    | let preResultFinal = $res.result.rows->head().values->head();
 
-                  print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
+                      print(if($debug.debug,|'\nRaw Result:\n'+$preResultFinal->makeString('[',',',']'),|''));
 
-                  let resultFinal = $preResultFinal->resultToType($f->functionReturnType(), $f->functionReturnMultiplicity());
+                      $preResultFinal->resultToType($f->functionReturnType(), $f->functionReturnMultiplicity());
+                  );
 
                   print(if($debug.debug,|'\nResult Final:\n'+$resultFinal->makeString('[',',',']'),|''));
                   $resultFinal;,
@@ -546,7 +556,7 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                                   meta::pure::functions::relation::aggColSpec2_Function_1__Function_1__String_1__T_1__AggColSpec_1_
                                               ]),
                                     | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
-                                      ^$state
+                                      let mergedState = ^$state
                                       (
                                           current = ^$z(parametersValues = if ($z->cast(@FunctionExpression).func == write_Relation_1__RelationElementAccessor_1__Integer_1_,
                                                                               | let reproCurrent = $repro.current->cast(@ValueSpecification);
@@ -557,6 +567,17 @@ function meta::relational::tests::pct::process::reprocess(a:Any[1], state:Proces
                                           mapping = $repro.mapping->first(),
                                           replaced = $repro.replaced,
                                           csvs = $repro.csvs
+                                      );
+                                      // match()'s branch functions can declare a Class-typed parameter (eg. l:MA_Location[1])
+                                      // for a class no literal instance of ever appears anywhere in the test - scanClass, only
+                                      // ever invoked from a real instance's own classesToDatabase call, has no way to discover
+                                      // such a class, so the router has no table/mapping for it and match() fails with "Error
+                                      // mapping not found for class ...". Give every match() branch class an (empty, no-rows)
+                                      // table/mapping of its own so routing succeeds; a branch whose value never actually
+                                      // materializes still correctly never matches at runtime.
+                                      if($z.func->in([meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__T_m_, meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_]),
+                                         | meta::relational::tests::pct::process::ensureMatchBranchClassesMapped($z.parametersValues->at(1), $mergedState),
+                                         | $mergedState
                                       );,
                                     | ^$state
                                       (
@@ -674,7 +695,15 @@ function meta::relational::tests::pct::process::reprocessNew(values:Any[*], type
 
 function meta::relational::tests::pct::process::processTDS(tds:TDS<Any>[1], state:ProcessingState[1]):ProcessingState[1]
 {
-  let rand = random() * 10000000;
+  // now()'s own clock only actually has millisecond resolution (its nanosecond-unit reading is the
+  // same value padded with zeros, confirmed via an IDE probe) - with ~1500 PCT tests completing in
+  // single-digit milliseconds each, many land in the exact same millisecond, leaving only this random
+  // component to keep same-millisecond table names apart. The original 10^7 range wasn't wide enough
+  // to make that collision negligible at this test count - confirmed empirically this session via
+  // repeated, otherwise-identical `mvn clean test` runs producing different pass/fail outcomes for
+  // classes only reachable through this table-naming path. 10^15 is comfortably inside a double's
+  // exact-integer range and reduces the same-millisecond collision probability by a further ~10^8x.
+  let rand = random() * 1000000000000000;
   let table = ^Table
   (
     name = 'tb_' + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString(),
@@ -738,6 +767,53 @@ import meta::relational::metamodel::join::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
 
+// The functions argument to match() is a literal collection of LambdaFunctions - reactivating it
+// (consistent with how every other literal collection encountered during reprocessing is
+// materialized, eg. new_Class's own $z->reactivate()->evaluateAndDeactivate()) yields the actual
+// LambdaFunction values, whose declared parameter type (functionType().parameters.genericType.rawType)
+// is only populated once the lambda itself has likewise been reactivated - accessing it directly off
+// the as-parsed lambda returns empty.
+function <<access.private>> meta::relational::tests::pct::process::ensureMatchBranchClassesMapped(functionsArg:ValueSpecification[1], givenState:ProcessingState[1]):ProcessingState[1]
+{
+  let branchClasses = $functionsArg->reactivate()->evaluateAndDeactivate()
+                         ->map(l | $l->cast(@LambdaFunction<Any>)->evaluateAndDeactivate()->functionType().parameters->at(0).genericType.rawType)
+                         ->filter(t | $t->isNotEmpty())
+                         ->map(t | $t->toOne())
+                         ->filter(t | $t->instanceOf(Class) && $t != Any && $t != Nil)
+                         ->cast(@Class<Any>)
+                         ->removeDuplicates();
+  $branchClasses->fold({c, state | meta::relational::tests::pct::process::ensureClassMapped($c, $state)}, $givenState);
+}
+
+// Builds an empty (no-rows) table/root-mapping for $class if it doesn't already have one in
+// $givenState's mapping, so the router can find a mapping for it even though no literal instance
+// of it ever appears - mirrors classesToDatabase's own table-building (scanClass, classToTable,
+// buildJoins) minus buildCSV, since there's no value to populate a row from. Reuses (extends via
+// mutateAdd) $givenState's existing mapping if present, rather than building a second, separate one
+// for the same overall query - a Legend Mapping allows only one root SetImplementation per class.
+function <<access.private>> meta::relational::tests::pct::process::ensureClassMapped(class:Class<Any>[1], givenState:ProcessingState[1]):ProcessingState[1]
+{
+  let existingMapping = $givenState.mapping;
+  let alreadyMapped = $existingMapping->isNotEmpty() && $existingMapping->toOne().classMappings->filter(cm|$cm->cast(@RootRelationalInstanceSetImplementation).class == $class)->isNotEmpty();
+  if($alreadyMapped,
+     | $givenState,
+     | let state = ^$givenState
+                   (
+                     mapping = if($existingMapping->isEmpty(),
+                                  | ^Mapping(name = 'myMapping', package = meta::relational::tests::pct::process),
+                                  | $existingMapping->toOne()
+                               )
+                   );
+       let allClasses = scanClass($class)->filter(c | $state.mapping->toOne().classMappings->filter(cm|$cm->cast(@RootRelationalInstanceSetImplementation).class == $c)->isEmpty());
+       let tables = $allClasses->map(c|$c->classToTable($state.database, $state.schema, $state.mapping->toOne(), []));
+       let joins = $allClasses->map(c|$c->buildJoins($tables, $state.database));
+       $state.schema->mutateAdd('tables', $tables.table);
+       $state.database->mutateAdd('joins', $joins.join);
+       $state.mapping->toOne()->mutateAdd('classMappings', $tables.classMapping);
+       $state;
+  );
+}
+
 function meta::relational::tests::pct::process::classesToDatabase(values:Any[*], givenState:ProcessingState[1]):ProcessingState[1]
 {
   let _state = $givenState;
@@ -756,7 +832,11 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
         | let allClasses = scanClass($rootType);
 
           // Build schema
-          let tables = $allClasses->map(c|$c->classToTable($state.database, $state.schema, $state.mapping->toOne()));
+          // A sample is only meaningful for $rootType itself - scanClass's other results (supertypes,
+          // property-reachable classes) are discovered structurally, not from any value in $values, and
+          // classToTable's resolveType only ever consults it when a property's static type is otherwise
+          // unresolvable anyway, so passing [] for them changes nothing for every already-working case.
+          let tables = $allClasses->map(c|$c->classToTable($state.database, $state.schema, $state.mapping->toOne(), if($c == $rootType, |$values->at(0), |[])));
           let joins = $allClasses->map(c|$c->buildJoins($tables, $state.database));
 
           $state.schema->mutateAdd('tables', $tables.table);
@@ -791,11 +871,16 @@ function meta::relational::tests::pct::process::buildCSV(values:Any[*], class:Cl
   (
     v | let id = $values->indexOf($v) + $parentId*10;
         let r = $id
-        ->concatenate($info.properties->map(p | let res = $p->eval($v); if($res->isEmpty(),|'',|$res);))
+        ->concatenate($info.properties->map(p | let res = $p->eval($v); if($res->isEmpty(),|'',|$res->toOne()->toString()->csvEscapeValue());))
         ->concatenate($info.parentProperties->map(p | if($p == $property,|$parentId,|'-1')))
         ->makeString(',');
 
-        let props = $class.properties->filter(p|!$p->isPrimitiveValueProperty());
+        // A property already present in $info.properties was already written as a plain column above
+        // (classToTable's classification, which - for a generic property like List<T>.values or
+        // Pair<U,V>.first/.second - only isPrimitiveValueProperty() itself can't see is actually
+        // primitive at this specific instantiation) - only a genuine class-typed property needs its own
+        // recursive child table.
+        let props = $class.properties->filter(p|!$info.properties->contains($p));
         $props->map(p|
                       let vals = $p->eval($v);
                       buildCSV($vals, $p->functionReturnType().rawType->toOne()->cast(@Class<Any>), $p, $id, $maps);
@@ -811,6 +896,21 @@ function meta::relational::tests::pct::process::buildCSV(values:Any[*], class:Cl
   ));
 
   $maps;
+}
+
+// buildCSV's rows are comma-joined with no other delimiter, so a property value that itself
+// contains a comma (e.g. a String property like 'Hoboken, NJ') silently shifts every later column
+// in that row by one - setUpDataSQLsV2's own reader (meta::pure::functions::string::parseCSV(),
+// confirmed to already "properly handle/respect quoted values") supports standard CSV quoting, this
+// writer just never used it. Quote (and escape any embedded quote by doubling it, the standard CSV
+// convention parseCSV() expects) only when the value actually needs it - commas and quotes are rare
+// in practice, so this keeps ordinary numeric/short-string rows exactly as before.
+function <<access.private>> meta::relational::tests::pct::process::csvEscapeValue(value:String[1]):String[1]
+{
+  if($value->contains(',') || $value->contains('"') || $value->contains('\n'),
+     | '"' + $value->replace('"', '""') + '"',
+     | $value
+  );
 }
 
 Class meta::relational::tests::pct::process::ClassTableMapping
@@ -829,21 +929,44 @@ Class meta::relational::tests::pct::process::PropertyColumnMapping
   column : Column[1];
 }
 
-function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], db:Database[1], schema:Schema[1], mapping:Mapping[1]):ClassTableMapping[1]
+function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], db:Database[1], schema:Schema[1], mapping:Mapping[1], sampleValue:Any[0..1]):ClassTableMapping[1]
 {
-  let rand = random() * 10000000;
+  // See processTDS's identical table-naming for why this range was widened from 10^7 to 10^15.
+  let rand = random() * 1000000000000000;
   let tableName = $class.name->toOne() + $rand->floor()->toString() + '_' + now()->toEpochValue(DurationUnit.MILLISECONDS)->toString();
 
-  // isPrimitiveValueProperty() only tells us the property's declared kind (primitive/enum/unit/measure
-  // vs. class) is one a real database column could conceivably back; it doesn't guarantee this harness's
-  // own pureTypeToDataType() actually has a mapping for that specific type (e.g. no dialect-agnostic SQL
-  // column type is defined for a bare Enum here - see mapEnumValue/getEnumPropMappingTransformer for how
-  // enum-valued properties are meant to be property-mapped instead). Filtering on pureTypeToDataType()
-  // being non-empty - rather than unconditionally calling toOne() on it below - means a property this
-  // synthetic table can't back is simply left out of it (as if the class didn't declare it), instead of
-  // this scaffolding crashing outright for any class instance that merely has such a property.
-  let properties = $class.properties->filter(p|$p->isPrimitiveValueProperty() && meta::relational::transform::fromPure::pureTypeToDataType($p->functionReturnType())->isNotEmpty());
-  let cols = $properties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=meta::relational::transform::fromPure::pureTypeToDataType($p->functionReturnType())->toOne('type not supported: ' + $p->functionReturnType().rawType->toOne()->elementToPath()))));
+  // A property declared with a generic type parameter (eg. List<T>.values, Pair<U,V>.first/.second) has
+  // no resolvable rawType from the class's own (unbound) declaration - functionReturnType() comes back
+  // empty, confirmed via an IDE probe, since T isn't bound to anything until a specific instantiation
+  // (eg. Pair<String,Integer>) exists. Resolve it dynamically instead, from $sampleValue - one
+  // representative literal instance of this exact class, when the caller (classesToDatabase) has one -
+  // by evaluating the property and reading the RESULT's own genericType, which (unlike the class's
+  // static declaration) reflects the type actually bound at that specific instantiation. Falls back to
+  // the static functionReturnType() whenever that's already resolvable, identical to previous behavior
+  // for every already-supported, non-generic property - this is a superset of the old behavior, not a
+  // replacement for it. Called via $resolveType->eval($p), not $p->resolveType() - a locally `let`-bound
+  // lambda isn't found by name through the arrow-postfix call sugar the way a real function is.
+  let resolveType = {p:Property<Nil,Any|*>[1] |
+    let static = $p->functionReturnType();
+    if($static.rawType->isNotEmpty() || $sampleValue->isEmpty(),
+       | $static,
+       | $p->eval($sampleValue->toOne())->genericType()
+    );
+  };
+
+  // Classification no longer pre-filters on isPrimitiveValueProperty() (which only ever inspects the
+  // static declaration, so it's always false for a still-unresolved generic property, however its
+  // sample-resolved type turns out) - pureTypeToDataType()/instanceOf(Enumeration) against the resolved
+  // type is exactly as selective on its own: a genuine class-typed property's resolved type is a Class,
+  // which neither check accepts, so it's excluded here exactly as before, leaving buildJoins's own
+  // (also-updated) classification to route it to a join instead.
+  let enumProperties = $class.properties->filter(p|$resolveType->eval($p).rawType->toOne('')->instanceOf(Enumeration));
+  let otherProperties = $class.properties->filter(p|!$enumProperties->contains($p) && meta::relational::transform::fromPure::pureTypeToDataType($resolveType->eval($p))->isNotEmpty());
+  let properties = $enumProperties->concatenate($otherProperties);
+
+  let enumCols = $enumProperties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=^meta::relational::metamodel::datatype::Varchar(size=1024))));
+  let otherCols = $otherProperties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=meta::relational::transform::fromPure::pureTypeToDataType($resolveType->eval($p))->toOne('type not supported: ' + $resolveType->eval($p).rawType->toOne()->elementToPath()))));
+  let cols = $enumCols->concatenate($otherCols);
   let idCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
   let table = ^Table(name=$tableName, schema=$schema, primaryKey=$idCol, columns=$idCol->concatenate($cols.column));
   let tableAlias = ^TableAlias(database=$db, name=$class.name->toOne(), relationalElement = $table);
@@ -860,20 +983,39 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
                 mainTableAlias = $tableAlias                     
             );
 
+  // One EnumerationMapping per distinct enum TYPE (not per property or per classToTable call - the
+  // same Enumeration can recur across multiple properties/classes within one test, and classToTable
+  // itself can run more than once for the same class, e.g. once per element of a mapped collection;
+  // adding a second mapping for an enum type already present in $mapping throws "Duplicated
+  // enumeration mappings found"). Reuse an existing mapping for an enum type already registered;
+  // build+register a fresh one only for a type not seen yet in this test's mapping. Every value of
+  // the enumeration maps to its own name as the stored source value - this is what buildCSV (via each
+  // value's own default toString()) already writes into the column, so the two stay consistent.
+  let existingEnumMappings = $mapping.enumerationMappings->cast(@meta::pure::mapping::EnumerationMapping<Any>);
+  let neededEnumTypes = $enumProperties->map(p | $resolveType->eval($p).rawType->toOne())->removeDuplicates();
+  let newEnumMappings = $neededEnumTypes
+                          ->filter(t | $existingEnumMappings->filter(em | $em.enumeration == $t)->isEmpty())
+                          ->map(t | buildEnumerationMappingForType($t->cast(@Enumeration<Any>), $mapping));
+  $mapping->mutateAdd('enumerationMappings', $newEnumMappings);
+  let enumMappings = $existingEnumMappings->concatenate($newEnumMappings);
+
   let pmappings = $cols->map(c |
+                let matchingEnumMappings = $enumMappings->filter(em | $em.enumeration == $resolveType->eval($c.property).rawType->toOne());
+                let enumMapping = if($matchingEnumMappings->isEmpty(), | [], | $matchingEnumMappings->at(0));
                 ^RelationalPropertyMapping
                 (
                   property = $c.property,
                   sourceSetImplementationId = $class.name->toOne(),
                   targetSetImplementationId = '',
                   owner = $set,
+                  transformer = $enumMapping,
                   relationalOperationElement = ^TableAliasColumn
                                                 (
                                                   columnName = $c.column.name,
                                                   alias = $tableAlias,
                                                   column = $c.column
                                                 )
-                )
+                );
 
       );
 
@@ -888,6 +1030,17 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
   );  
 }
 
+function <<access.private>> meta::relational::tests::pct::process::buildEnumerationMappingForType(enumeration:Enumeration<Any>[1], mapping:Mapping[1]):meta::pure::mapping::EnumerationMapping<Any>[1]
+{
+  ^meta::pure::mapping::EnumerationMapping<Any>
+  (
+    name = $enumeration->elementToPath()->replace('::', '_') + '_EnumMapping',
+    parent = $mapping,
+    enumeration = $enumeration,
+    enumValueMappings = $enumeration->meta::pure::functions::meta::enumValues()->cast(@Enum)->map(e | ^meta::pure::mapping::EnumValueMapping(enum=$e, sourceValues=[$e->toString()]))
+  );
+}
+
 Class meta::relational::tests::pct::process::JoinRes
 {
   join : Join[1];
@@ -899,8 +1052,13 @@ Class meta::relational::tests::pct::process::JoinRes
 function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], classTableMappings:ClassTableMapping[*], db:Database[1]):meta::relational::tests::pct::process::JoinRes[*]
 {
   let src = $classTableMappings->filter(ctm|$ctm.class == $class)->toOne();
+  // Consistent with buildCSV: a property already resolved (by classToTable, via $sampleValue when its
+  // static type alone wasn't resolvable) to a plain column belongs there, not to a join - so classify
+  // by that outcome rather than re-deriving it here via isPrimitiveValueProperty(), which only ever
+  // sees the static declaration and would otherwise wrongly route eg. List<T>.values into a join whose
+  // target class ($targetType, from that same unresolved static type) doesn't exist.
   let cols = $class.properties
-                ->filter(p|!$p->isPrimitiveValueProperty())
+                ->filter(p|!$src.properties->contains($p))
                 ->map(p|
                         let targetType = $p->functionReturnType().rawType->toOne();
                         let target = $classTableMappings->filter(ctm|$ctm.class == $targetType)->toOne();
