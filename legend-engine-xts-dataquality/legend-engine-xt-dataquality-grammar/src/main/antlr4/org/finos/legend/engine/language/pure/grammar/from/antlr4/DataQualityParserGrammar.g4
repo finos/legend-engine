@@ -31,6 +31,7 @@ identifier:                             VALID_STRING | STRING
                                         | RECON_TARGET
                                         | RECON_KEYS
                                         | COLUMNS_TO_COMPARE
+                                        | ADDITIONAL_COLUMNS_TO_PERSIST
                                         | RECON_STRATEGY
                                         | RECON_STRATEGY_MD5
                                         | RECON_SOURCE_HASH_COLUMN
@@ -173,6 +174,7 @@ relationComparisonDefinition:   DATAQUALITYRELATIONCOMPARISON qualifiedName
                                         | reconTarget
                                         | reconKeys
                                         | columnsToCompare
+                                        | additionalColumnsToPersist
                                         | reconStrategy
                                         | reconExpectedMatch
                                         | persistenceStrategy
@@ -190,6 +192,10 @@ reconKeys:                              RECON_KEYS COLON BRACKET_OPEN
                                         BRACKET_CLOSE SEMI_COLON
 ;
 columnsToCompare:                       COLUMNS_TO_COMPARE COLON BRACKET_OPEN
+                                            (identifier (COMMA identifier)*)?
+                                        BRACKET_CLOSE SEMI_COLON
+;
+additionalColumnsToPersist:             ADDITIONAL_COLUMNS_TO_PERSIST COLON BRACKET_OPEN
                                             (identifier (COMMA identifier)*)?
                                         BRACKET_CLOSE SEMI_COLON
 ;
