@@ -185,11 +185,17 @@ public class DataSpaceAnalyticsHelper
                         Mapping mapping = null;
                         Root_meta_core_runtime_Runtime runtime = null;
                         FunctionDefinition<?> lambdaFunc = null;
+                        FunctionDefinition<?> returnTypeFunc = null;
                         boolean pointsToExecContextWithDefaultRuntime = false;
                         if (_el instanceof Service)
                         {
                             Service serviceProtocol = (Service) _el;
                             Root_meta_legend_service_metamodel_Service service = (Root_meta_legend_service_metamodel_Service)  ((Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable) executable)._executable();
+                            // don't set if service documentation is empty
+                            if ((executableAnalysisResult.description == null || executableAnalysisResult.description.isEmpty()) && service._documentation() != null && !service._documentation().isEmpty())
+                            {
+                                executableAnalysisResult.description = service._documentation();
+                            }
                             if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
                             {
                                 Root_meta_legend_service_metamodel_PureSingleExecution execution = ((Root_meta_legend_service_metamodel_PureSingleExecution) service._execution());
@@ -257,13 +263,14 @@ public class DataSpaceAnalyticsHelper
                             lambda.parameters = new ArrayList<>();
                             lambda.parameters.addAll(((Function) _el).parameters);
                             functionPointerExecutableInfo.query = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
+                            returnTypeFunc = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
                             executableAnalysisResult.info = functionPointerExecutableInfo;
                         }
                         else
                         {
                             throw new RuntimeException("Can't find protocol for service or function '" + executablePath + "'");
                         }
-                        executableAnalysisResult.executableReturnType = TestReturnTypeHelper.getReturnGenericType(lambdaFunc, pureModel);
+                        executableAnalysisResult.executableReturnType = TestReturnTypeHelper.getReturnGenericType(returnTypeFunc != null ? returnTypeFunc : lambdaFunc, pureModel);
                         boolean shouldBuildResult = buildResult && mapping != null && runtime != null &&
                                 ((_el instanceof Function) ? pointsToExecContextWithDefaultRuntime : true);
                         if (shouldBuildResult)
