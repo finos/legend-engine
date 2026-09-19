@@ -513,6 +513,164 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   assertLambdaEquals($expected, $actual, false);
 }
 
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_additionalColumnsToPersist_dynamicHash():Boolean[1]
+{
+  // Additional-persist column AGE is projected with the _SOURCE/_TARGET suffix but must not participate in the hash.
+  // The hash is computed only over FIRSTNAME (the sole column in colsForHash) plus the key ID.
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,FIRSTNAME,AGE])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, AGE_SOURCE: row | $row.AGE])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,AGE_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[ID_SOURCE,DIGEST_SOURCE,AGE_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,FIRSTNAME,AGE])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, AGE_TARGET: row | $row.AGE])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,AGE_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID_TARGET,DIGEST_TARGET,AGE_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET,AGE_SOURCE,AGE_TARGET])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_additionalColumnsToPersist_precomputedHash():Boolean[1]
+{
+  // With a precomputed hash column, no DIGEST is generated - the additional-persist column simply rides through the
+  // pre-select + normalize alongside the hash column, and is emitted with _SOURCE/_TARGET suffixes at the end of the output.
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,HASH,AGE])
+    ->extend(~[ID_SOURCE: row | $row.ID, AGE_SOURCE: row | $row.AGE, HASH_SOURCE: row | $row.HASH])
+    ->select(~[ID_SOURCE,AGE_SOURCE,HASH_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,HASH,AGE])
+          ->extend(~[ID_TARGET: row | $row.ID, AGE_TARGET: row | $row.AGE, HASH_TARGET: row | $row.HASH])
+          ->select(~[ID_TARGET,AGE_TARGET,HASH_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.HASH_SOURCE == $row.HASH_TARGET))
+    ->select(~[HASH_SOURCE,HASH_TARGET,ID_SOURCE,ID_TARGET,AGE_SOURCE,AGE_TARGET])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], 'HASH', 'HASH', false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_additionalColumnsToPersist_includeColumnValues():Boolean[1]
+{
+  // includeColumnValues=true keeps the compare columns in the output; the additional-persist column AGE is appended after
+  // them at the end of the final projection, and is still excluded from the digest.
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME, AGE_SOURCE: row | $row.AGE])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE,AGE_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME, AGE_TARGET: row | $row.AGE])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET,AGE_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET,FIRSTNAME_SOURCE,FIRSTNAME_TARGET,LASTNAME_SOURCE,LASTNAME_TARGET,AGE_SOURCE,AGE_TARGET])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['FIRSTNAME', 'LASTNAME'], [], [], true, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_additionalColumnsToPersist_sourceOnly():Boolean[1]
+{
+  // Additional-persist column ADDRESSID is present only on the source relation (the target lambda explicitly projects
+  // just [ID, FIRSTNAME]). 
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,FIRSTNAME,ADDRESSID])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, ADDRESSID_SOURCE: row | $row.ADDRESSID])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,ADDRESSID_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[ID_SOURCE,DIGEST_SOURCE,ADDRESSID_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,FIRSTNAME])
+          ->select(~[ID,FIRSTNAME])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET,ADDRESSID_SOURCE])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME])->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, 'FIRSTNAME', [], [], false, 'ADDRESSID'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_additionalColumnsToPersist_hashAllInputCols():Boolean[1]
+{
+  // When the user asks for additional-persist cols but supplies neither colsForHash nor a precomputed hashCol,
+  // the digest must still be computed over the full input relation minus the additional-persist cols.
+  // Here the sides expose [ID, FIRSTNAME, LASTNAME, AGE]; AGE is persisted, so the hash covers FIRSTNAME + ID + LASTNAME.
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+    ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+    ->extend(~[ID_SOURCE: row | $row.ID, FIRSTNAME_SOURCE: row | $row.FIRSTNAME, LASTNAME_SOURCE: row | $row.LASTNAME, AGE_SOURCE: row | $row.AGE])
+    ->select(~[ID_SOURCE,FIRSTNAME_SOURCE,LASTNAME_SOURCE,AGE_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.FIRSTNAME_SOURCE->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()) + if($row.LASTNAME_SOURCE->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[ID_SOURCE,DIGEST_SOURCE,AGE_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+          ->select(~[ID,FIRSTNAME,LASTNAME,AGE])
+          ->extend(~[ID_TARGET: row | $row.ID, FIRSTNAME_TARGET: row | $row.FIRSTNAME, LASTNAME_TARGET: row | $row.LASTNAME, AGE_TARGET: row | $row.AGE])
+          ->select(~[ID_TARGET,FIRSTNAME_TARGET,LASTNAME_TARGET,AGE_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.FIRSTNAME_TARGET->isEmpty(), | '', |'' + 'FIRSTNAME' + '' + $row.FIRSTNAME_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()) + if($row.LASTNAME_TARGET->isEmpty(), | '', |'' + 'LASTNAME' + '' + $row.LASTNAME_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID_TARGET,DIGEST_TARGET,AGE_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET,AGE_SOURCE,AGE_TARGET])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME,LASTNAME,AGE])->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->select(~[ID,FIRSTNAME,LASTNAME,AGE])->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, [], [], [], false, 'AGE'), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
   testRecon($expected, $runtime, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);

@@ -132,6 +132,8 @@ public class DataQualityGrammarComposerExtension implements PureGrammarComposerE
                 "   keys: [" + String.join(", ", relationComparison.keys) + "];\n") +
                 (isEmpty(relationComparison.columnsToCompare) ? "" :
                 "   columnsToCompare: [" + String.join(", ", relationComparison.columnsToCompare) + "];\n") +
+                (isEmpty(relationComparison.additionalColumnsToPersist) ? "" :
+                "   additionalColumnsToPersist: [" + String.join(", ", relationComparison.additionalColumnsToPersist) + "];\n") +
                 "   strategy: " + renderReconStrategy(relationComparison.strategy) + ";\n" +
                 (Objects.isNull(relationComparison.expectedMatch) ? "" :
                     "   expectedMatch: " + relationComparison.expectedMatch + ";\n") +

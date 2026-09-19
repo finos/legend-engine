@@ -346,7 +346,7 @@ public class DataQualityRelationComparisonTestRunner implements TestRunner
             String targetHash = strategy instanceof Root_meta_external_dataquality_MD5HashStrategy ? ((Root_meta_external_dataquality_MD5HashStrategy) strategy)._targetHashColumn() : null;
 
             Root_meta_external_dataquality_datarecon_DataQualityReconInput reconInput =
-                    core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__DataQualityReconInput_1_(
+                    core_dataquality_generation_datarecon.Root_meta_external_dataquality_datarecon_createReconInput_LambdaFunction_1__LambdaFunction_1__String_MANY__Boolean_1__String_MANY__String_$0_1$__String_$0_1$__Boolean_1__Integer_$0_1$__Boolean_1__Boolean_1__String_MANY__DataQualityReconInput_1_(
                             source,
                             target,
                             element._keys(),
@@ -358,6 +358,7 @@ public class DataQualityRelationComparisonTestRunner implements TestRunner
                             null,
                             false,
                             false,
+                            element._additionalColumnsToPersist(),
                             this.pureModel.getExecutionSupport()
                     );
             return DataQualityReconLambdaGenerator.generateLambda(this.pureModel, reconInput);
