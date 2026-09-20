@@ -573,8 +573,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let recurse = sfe(recurse_Relation_1__Function_1__Relation_1_, $anchorType, [], PureOne, [$anchor.expression->toOne(), $stepLambda->iv()]);
 
+  //the step's context is not reachable from the anchor's, so fold its source-level lets in here or
+  //cteAssignments cannot hoist them
   ^WithQueryContext(
-    context = ^$anchor(name = $query.name, expression = $recurse),
+    context = ^$anchor(name = $query.name, expression = $recurse,
+                       contexts = $anchor.contexts->concatenate($stepContext)),
     expression = $recurse,
     assignment = $stepParameter,
     inline = true
@@ -5329,8 +5332,12 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     $this.assignments->concatenate($this.contexts.assignmentsRecursive())
   }:ValueSpecification[*];
 
+  //an inline member needs no let of its own - its expression is spliced at the FROM site - but its
+  //SOURCE may carry leading lets, and this is the only place those are hoisted into the lambda
   cteAssignments() {
-    $this.withQueries->filter(w | !$w.inline)->map(w | $w.context.assignmentsRecursive->evaluateAndDeactivate()->concatenate($w.expression->evaluateAndDeactivate()))
+    $this.withQueries->map(w |
+      $w.context.assignmentsRecursive->evaluateAndDeactivate()
+        ->concatenate(if ($w.inline, | [], | $w.expression->evaluateAndDeactivate())))
   }:ValueSpecification[*];
 
 

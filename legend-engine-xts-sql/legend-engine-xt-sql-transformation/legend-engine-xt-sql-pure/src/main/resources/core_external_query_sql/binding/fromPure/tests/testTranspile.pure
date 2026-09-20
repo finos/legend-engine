@@ -4652,6 +4652,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+//service3's own lambda carries a leading `let const = 123`. cteAssignments is the only place those
+//source-level lets are hoisted, so an inline member must still contribute them even though it
+//contributes no let of its own - otherwise $const_r is unbound.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryHoistsSourceAssignments():Boolean[1]
+{
+  test(
+    'WITH RECURSIVE r AS (SELECT ID FROM service."/service/service3" UNION ALL SELECT ID FROM r WHERE ID < 5) select ID from r',
+
+    [
+      c({|
+            let const_r = 123;
+            FlatInput.all()->project(
+              ~[ ID: x | $x.idIn, Integer: x | $x.integerIn, 'The Enum Value': x | $x.enumVal, 'The Type': x | $x.type, Const: x | $const_r]
+            )->select(~[ID])
+             ->recurse(r | $r->filter(x | $x.ID < 5));
+      })
+    ]
+  )
+}
+
 //a member of a WITH RECURSIVE list that does not name itself keeps the ordinary let path
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryMixedWithPlain():Boolean[1]
 {
