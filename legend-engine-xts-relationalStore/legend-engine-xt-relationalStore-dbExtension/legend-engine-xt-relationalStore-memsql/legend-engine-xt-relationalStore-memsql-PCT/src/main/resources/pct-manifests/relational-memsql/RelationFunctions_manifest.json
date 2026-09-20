@@ -119,7 +119,7 @@
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlQueryToString/extensionDefaults.pure line:102 column:46), \"Cast exception: TableAliasColumn cannot be cast to Alias\""
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
