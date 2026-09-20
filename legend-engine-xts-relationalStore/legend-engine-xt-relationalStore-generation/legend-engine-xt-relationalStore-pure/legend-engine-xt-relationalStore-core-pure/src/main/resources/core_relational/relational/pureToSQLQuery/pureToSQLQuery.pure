@@ -7001,8 +7001,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::collaps
       let byName = newMap($innerSelect.columns->cast(@Alias)->map(a | pair($a.name, $a)));
       let rewritten = $s.columns->cast(@Alias)->map(a |
             let source = $a.relationalElement->cast(@TableAliasColumn);
-            let sourceName = $source.columnName->orElse($source.column.name);
-            let matched = $byName->get($sourceName);
+            //processTdsRenameColumns stamps columnName with the NEW name and leaves the inner name
+            //on column.name, so a rename wrapper only resolves through the latter
+            let matched = $byName->get($source.columnName->orElse($source.column.name))
+                            ->concatenate($byName->get($source.column.name))
+                            ->first();
             if($matched->isEmpty(), |$a, |^$a(relationalElement = $matched->toOne().relationalElement));
          );
       // bail out if any column did not resolve - a partial merge would silently drop a projection

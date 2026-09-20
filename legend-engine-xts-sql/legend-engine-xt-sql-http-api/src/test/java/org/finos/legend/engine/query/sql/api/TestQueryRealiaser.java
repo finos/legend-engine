@@ -63,6 +63,20 @@ public class TestQueryRealiaser
     }
 
     @Test
+    public void testJoinOfAliasedAndBareTable()
+    {
+        //the bare side must still be aliased and registered whichever order it appears in
+        test("select p.a, myTable2.b from myTable as p inner join myTable2 on (p.a = myTable2.b)",
+                "select p.a, t1.b from myTable as p inner join myTable2 as t1 on (p.a = t1.b)");
+
+        test("select myTable2.b, p.a from myTable2 inner join myTable as p on (p.a = myTable2.b)",
+                "select t1.b, p.a from myTable2 as t1 inner join myTable as p on (p.a = t1.b)");
+
+        test("select a from myTable as p, myTable2",
+                "select a from myTable as p, myTable2 as t1");
+    }
+
+    @Test
     public void testSubQuery()
     {
         test("select * from (select a from (select * from myTable left outer join myTable2 on myTable.a = myTable2.b))",

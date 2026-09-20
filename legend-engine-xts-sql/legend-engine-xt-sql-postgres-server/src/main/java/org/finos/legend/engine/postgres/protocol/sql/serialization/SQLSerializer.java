@@ -264,7 +264,8 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitNamedQuery(SqlBaseParser.NamedQueryContext ctx)
     {
-        return ctx.name.getText() + " AS (" + ctx.queryStatement().accept(this) + ")";
+        String columns = ctx.aliasedColumns() == null ? "" : " " + ctx.aliasedColumns().accept(this);
+        return ctx.name.getText() + columns + " AS (" + ctx.queryStatement().accept(this) + ")";
     }
 
     @Override
