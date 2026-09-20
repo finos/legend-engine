@@ -22,9 +22,6 @@
     "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_",
     "expectedError" : "Any is not managed yet!"
   }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
@@ -383,10 +380,10 @@
     "expectedError" : "Date has no day: 2014-01"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:874 column:103), \"Cannot cast a collection of size 3 to multiplicity [1]\""
+    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:1007 column:99), \"Cannot cast a collection of size 3 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:4250 column:37), \"Cannot cast a collection of size 2 to multiplicity [1]\""
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:4254 column:37), \"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""

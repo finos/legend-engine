@@ -13,9 +13,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
   }, {

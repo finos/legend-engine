@@ -62,7 +62,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       variableDeclarationProcessor = variableDeclarationProcessorForDatabricks_VariableDeclaration_1__SqlGenerationContext_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       joinProcessor = processJoinForDatabricks_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
-      joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
+      joinStringsProcessor = processJoinStringsOperationForDatabricks_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDatabricks_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       schemaNameToIdentifier = schemaNameToIdentifierForDatabricks_String_1__DbConfig_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
@@ -884,6 +884,130 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         ' OVER (' +
         $windowSpec +
         + ')';
+   );
+}
+
+// The shared meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall
+// never supplies a groupByCat, so a plain (non-windowed) group-by aggregate joinStrings() - the shape a
+// to-many primitive property's own joinStrings()-as-aggregate reconstruction takes - hits
+// processJoinStringsOperation's 'The database type ... is not supported yet!' assert. Databricks/Spark SQL
+// has a real aggregate-concat idiom, already proven correct for the window-function case just above
+// (array_join(collect_list(x), sep)) - reused here unwindowed, with the multi-string (stringCat) branch left
+// byte-for-byte identical to processJoinStringsOperationWithConcatCall.
+//
+// Unlike H2/DuckDB/Postgres's single-node string_agg/group_concat/LISTAGG (which happen to preserve
+// insertion/scan order incidentally), Spark's collect_list has NO row-order guarantee across the
+// distributed shuffle - so the plain unordered rendering below reproduces elements in an arbitrary
+// order. findDatabricksJoinStringsOrderColumn looks for a real, already-available ordering key: when
+// the single aggregated column is a bare TableAliasColumn (optionally wrapped in a single 'cast(...)'
+// DynaFunction - see below) on a real Table that carries its own single-column primaryKey (distinct
+// from the value column itself), that primaryKey doubles as a reliable per-row ordering key -
+// collecting (key, value) STRUCTs together, sorting by key, then projecting back to just the value
+// recovers the original row order regardless of shuffle order. This is opt-in and additive by
+// construction: it keys off the metamodel's own generic Table.primaryKey field, not a PCT-harness-
+// specific column-name guess (a 'guess a sibling pureId__-named column' heuristic was considered and
+// rejected as too fragile/harness-specific for general dialect-rendering code - see agent memory
+// joinstrings_ordering_upstream_wall.md), and it can never regress an existing passing test: this
+// whole groupByCat branch previously always threw 'The database type ... is not supported yet!' for
+// Databricks, so there is no prior Databricks output for this shape to preserve. Falls back to the
+// original unordered rendering (byte-identical) whenever no usable primaryKey is found - e.g. the
+// semistructured wildcard/array-flatten aggregate shape (testToManyPropertyAggregated), whose
+// aggregated column isn't a plain (optionally cast-wrapped) TableAliasColumn on a Table at all, so
+// findDatabricksJoinStringsOrderColumn returns empty and this dialect's behavior for that test is
+// completely unchanged.
+//
+// The unwrapping step below was added after live-cluster trace evidence (2026-09-19) showed the REAL
+// PCT harness call site never matches the bare-TableAliasColumn check at all: List<T>.values's own
+// qualified-property body is '$this.values->map(value | $value->toString())->joinStrings(...)' - so
+// the aggregated column is not the raw value__ column, it's the result of calling .toString() on it,
+// a DynaFunction named 'toString' (rendered by THIS FILE's own dynaFnToSql('toString', ...,
+// format='cast(%s as string)') registration, line ~239 - hence the 'cast(value__ as string)' text
+// seen in the actual rendered SQL, which is misleading: the wrapping DynaFunction's real .name is
+// 'toString', NOT 'cast', even though it renders using SQL's cast(...) syntax). A first attempt at
+// this fix (unwrapping only DynaFunction.name == 'cast') was live-cluster-validated to still miss
+// every real call site for exactly this reason - confirmed directly via the trace, not inferred. Every
+// prior validation of this function (Session 18) used hand-built IDE fixtures that passed a bare
+// TableAliasColumn directly, which never exercised either wrapping and so never caught the mismatch -
+// the fix was validated against the wrong shape twice before this. Unwrapping is narrow and safe: only
+// a DynaFunction named 'cast' or 'toString' is unwrapped (one level, its first parameter) - both are
+// single-value wrappers around the real column reference, never introducing or losing a row; any other
+// shape (including a doubly-wrapped or differently-named function) still falls through to the empty/
+// fallback case exactly as before.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::findDatabricksJoinStringsOrderColumn(js:JoinStrings[1]): TableAliasColumn[0..1]
+{
+   if(($js.strings->size() != 1),
+      | [],
+      | let col = $js.strings->at(0);
+        let unwrapped = if($col->instanceOf(DynaFunction),
+                           | let df = $col->cast(@DynaFunction);
+                             if((($df.name == 'cast') || ($df.name == 'toString')),
+                                | $df.parameters->at(0);,
+                                | $col;
+                             );,
+                           | $col;
+                        );
+        if(!$unwrapped->instanceOf(TableAliasColumn),
+           | [],
+           | let tac = $unwrapped->cast(@TableAliasColumn);
+             let source = $tac.alias.relationalElement;
+             if(!$source->instanceOf(Table),
+                | [],
+                | let pk = $source->cast(@Table).primaryKey;
+                  if(($pk->size() != 1) || ($pk->toOne() == $tac.column),
+                     | [],
+                     | ^TableAliasColumn(alias=$tac.alias, column=$pk->toOne());
+                  );
+             );
+        );
+   );
+}
+
+// Renders the ordered aggregate idiom for the size==1 groupByCat case once a usable order column has
+// been found - array_join(transform(array_sort(collect_list(struct(orderCol as k, valueCol as v)),
+// (left, right) -> ...), x -> x.v), sep). Live-cluster validation (2026-09-18) showed relying on
+// array_sort's IMPLICIT default struct ordering (single-arg array_sort, comparing fields left-to-right)
+// produces a genuine, reproducible wrong-order bug on Databricks: for a 3-element
+// ['a','b','c']->joinStrings('[', ', ', ']') case with strictly-increasing distinct integer order keys
+// (confirmed via direct inspection of the PCT harness's own pureId__ scheme - no overflow, no
+// duplicate/tied keys), the actual output was '[a, c, b]' - the first (smallest-key) element correctly
+// placed, but the second and third swapped. Root cause not fully isolated (no ad-hoc SQL access to the
+// live cluster to inspect Spark's internal struct-comparison codegen directly), but the fix does not
+// depend on isolating it: passing an EXPLICIT comparator lambda to array_sort's two-argument form makes
+// the ordering unambiguous - comparing only the integer key field, with no reliance on whatever Spark's
+// default multi-field struct ordering does internally for a mixed (int, string) struct. This is also
+// the more standard, more commonly-documented Spark SQL idiom for this exact 'sort collect_list by a
+// companion key' pattern. Two-parameter lambda parameter names are backtick-quoted, matching this same
+// file's own established convention for HOFs with more than one lambda parameter (see
+// buildFoldLambdaForDatabricks's '(`%s`, `%s`) -> %s' pattern for Spark's aggregate() HOF).
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processOrderedJoinStringsForDatabricks(js:JoinStrings[1], orderColumn:TableAliasColumn[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let valueSql = $js.strings->at(0)->processOperation($sgc);
+   let orderSql = $orderColumn->processOperation($sgc);
+   let separator = if($js.separator->isEmpty(), |'\'\'', |$js.separator->toOne()->processOperation($sgc));
+   let prefix = if($js.prefix->isEmpty(), |'\'\'', |$js.prefix->toOne()->processOperation($sgc));
+   let suffix = if($js.suffix->isEmpty(), |'\'\'', |$js.suffix->toOne()->processOperation($sgc));
+
+   let comparator = '(`left`, `right`) -> case when `left`.k < `right`.k then -1 when `left`.k > `right`.k then 1 else 0 end';
+   let aggregated = 'array_join(transform(array_sort(collect_list(struct(' + $orderSql + ' as k, ' + $valueSql + ' as v)), ' + $comparator + '), `x` -> x.v), ' + $separator + ')';
+
+   let wrapped = if(eq($prefix, '\'\''),
+                    | if(eq($suffix, '\'\''), | [$aggregated], | [$aggregated]->add($suffix)),
+                    | if(eq($suffix, '\'\''), | [$aggregated]->add(0, $prefix), | [$aggregated]->add(0, $prefix)->add($suffix)));
+
+   if($wrapped->size() == 1,
+      | $wrapped->at(0),
+      | $wrapped->joinStrings('concat(', ',', ')');
+   );
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::processJoinStringsOperationForDatabricks(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let orderColumn = $js->findDatabricksJoinStringsOrderColumn();
+   if($orderColumn->isNotEmpty(),
+      | processOrderedJoinStringsForDatabricks($js, $orderColumn->toOne(), $sgc);,
+      | processJoinStringsOperation($js, $sgc,
+           {col, sep| 'array_join(collect_list(' + $col + '), ' + $sep + ')'},
+           {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
    );
 }
 

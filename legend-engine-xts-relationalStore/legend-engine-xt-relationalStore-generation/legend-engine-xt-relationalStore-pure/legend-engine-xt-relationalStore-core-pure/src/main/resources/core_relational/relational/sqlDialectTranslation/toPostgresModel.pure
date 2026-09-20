@@ -932,9 +932,20 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   let separator = $js.separator->convertJoinStringsArg($state);
 
   if($strings->size() == 1,
-    | functionCall('string_agg', [$strings->at(0), $separator->defaultIfEmpty(literal(''))->toOne()]),
-    | let stringsWithSeparators = if($separator->isNotEmpty(), 
-        | $strings->init()->map(s|[$s, $separator->toOne()])->concatenate($strings->last()), 
+    // A single "string" here means this is the aggregate case (eg $this.values->joinStrings(...) over a
+    // to-many property, reduced by this point to one already-aggregated column) - string_agg() itself has
+    // no prefix/suffix concept, only value+separator, so prefix/suffix (computed above but previously never
+    // read on this branch - confirmed empirically the SQL simply dropped them, eg
+    // $this.values->joinStrings('[', ', ', ']') rendered as bare string_agg(...) with no '[' / ']' at all)
+    // have to be wrapped around the aggregate call afterward, the same way the multi-string branch below
+    // already wraps them around its own concat(...) call.
+    | let aggregated = functionCall('string_agg', [$strings->at(0), $separator->defaultIfEmpty(literal(''))->toOne()]);
+      if($prefix->isEmpty() && $suffix->isEmpty(),
+         | $aggregated,
+         | functionCall('concat', $prefix->concatenate([$aggregated])->concatenate($suffix));
+      );,
+    | let stringsWithSeparators = if($separator->isNotEmpty(),
+        | $strings->init()->map(s|[$s, $separator->toOne()])->concatenate($strings->last()),
         | $strings
       );
       functionCall('concat', $prefix->concatenate($stringsWithSeparators)->concatenate($suffix));

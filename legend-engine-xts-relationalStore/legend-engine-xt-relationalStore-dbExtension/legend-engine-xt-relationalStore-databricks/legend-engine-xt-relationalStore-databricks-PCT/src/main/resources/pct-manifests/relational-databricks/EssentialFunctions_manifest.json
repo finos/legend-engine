@@ -356,7 +356,7 @@
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:874 column:103), \"Cannot cast a collection of size 3 to multiplicity [1]\""
+    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:1193 column:76), \"Cannot cast a collection of size 0 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 2 to multiplicity [1]"
