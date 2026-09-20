@@ -258,7 +258,8 @@ public class SQLSerializer implements SqlBaseParserVisitor<String>
     @Override
     public String visitWith(SqlBaseParser.WithContext ctx)
     {
-        return "WITH " + ListIterate.collect(ctx.namedQuery(), x -> x.accept(this)).makeString(", ");
+        String recursive = ctx.RECURSIVE() != null ? "RECURSIVE " : "";
+        return "WITH " + recursive + ListIterate.collect(ctx.namedQuery(), x -> x.accept(this)).makeString(", ");
     }
 
     @Override
