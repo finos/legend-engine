@@ -6881,7 +6881,12 @@ function meta::relational::functions::pureToSqlQuery::processRecurse(expression:
 
   let cteColumns = $initial.select.columns->map(c |
         $c->match([
-          a: Alias[1] | ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::Other()),
+          // an alias over a plain column keeps that column's type: it is what the CTE declares, and
+          // what a dialect holds the recursive branch to
+          a: Alias[1] | ^Column(name = $a.name, type = $a.relationalElement->match([
+                            tac: TableAliasColumn[1] | $tac.column.type,
+                            o: Any[1] | ^meta::relational::metamodel::datatype::Other()
+                          ])),
           tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->orElse($tac.column.name), type = $tac.column.type)
         ]);
   );

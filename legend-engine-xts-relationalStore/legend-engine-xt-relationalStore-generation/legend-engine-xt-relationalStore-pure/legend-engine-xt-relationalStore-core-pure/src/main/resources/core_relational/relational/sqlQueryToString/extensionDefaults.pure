@@ -346,6 +346,40 @@ function meta::relational::functions::sqlQueryToString::default::processSelectSQ
    $s->processSelectSQLQueryDefault($sgc.dbConfig, $sgc.format, $sgc.config, $isSubSelect, $sgc.extensions);
 }
 
+// A recursive expression's columns are the anchor's, and a dialect may hold the recursive branch to
+// them exactly rather than coercing: Databricks widens DECIMAL(19,0) + 1 to DECIMAL(20,0) and then
+// refuses the UNION ALL with CANNOT_MERGE_INCOMPATIBLE_DATA_TYPE. A dialect that needs it calls this
+// before delegating to processCommonTableExpressionsProcessorDefault; the rest emit no casts at all.
+// A column the anchor computes carries no relational type, so there is nothing to coerce it to.
+function meta::relational::functions::sqlQueryToString::default::coerceRecursiveBranchToAnchorTypes(ctes:CommonTableExpression[*]):CommonTableExpression[*]
+{
+   $ctes->map(cte | $cte->match([
+      rcte: RecursiveCommonTableExpression[1] |
+         let sql = $rcte.sqlQuery;
+         let root = $sql.data->toOne();
+         let rootAlias = $root.alias;
+         let union = $rootAlias.relationalElement->toOne()->cast(@UnionAll);
+         let anchorTypes = $sql.columns->cast(@TableAliasColumn).column.type;
+         let anchor = $union.queries->at(0);
+         let coercedBranches = $union.queries->tail()->map(q |
+               ^$q(columns = $q.columns->zip($anchorTypes)->map(c |
+                     if($c.second->instanceOf(meta::relational::metamodel::datatype::Other),
+                       | $c.first,
+                       | $c.first->match([
+                           a: Alias[1] | ^$a(relationalElement = ^DynaFunction(name = 'cast', parameters = [$a.relationalElement, ^DataTypeInfo(dataType = $c.second)])),
+                           tac: TableAliasColumn[1] | ^Alias(name = $tac.columnName->orElse($tac.column.name),
+                                                             relationalElement = ^DynaFunction(name = 'cast', parameters = [$tac, ^DataTypeInfo(dataType = $c.second)])),
+                           o: RelationalOperationElement[1] | $o
+                         ]);
+                     );
+                  ));
+            );
+         let newUnion = ^$union(queries = $anchor->concatenate($coercedBranches));
+         ^$rcte(sqlQuery = ^$sql(data = ^$root(alias = ^$rootAlias(relationalElement = $newUnion))));,
+      c: CommonTableExpression[1] | $c
+   ]));
+}
+
 function meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    $ctes->processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, 'RECURSIVE ');
