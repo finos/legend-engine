@@ -5,14 +5,14 @@ tests:
     feature: "Basic CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: cte_basic_filter
     sql: "WITH high_earners AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM high_earners ORDER BY 1"
     feature: "Basic CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Multiple CTEs
   - id: cte_multiple
@@ -20,7 +20,7 @@ tests:
     feature: "Multiple CTEs"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE referencing another CTE
   - id: cte_chained
@@ -28,7 +28,7 @@ tests:
     feature: "CTE referencing CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with aggregation
   - id: cte_with_agg
@@ -36,14 +36,14 @@ tests:
     feature: "CTE with aggregation"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: cte_with_agg_having
     sql: "WITH dept_counts AS (SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 2) SELECT dept_id, cnt FROM dept_counts ORDER BY 1"
     feature: "CTE with aggregation"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE used in JOIN
   - id: cte_in_join
@@ -74,7 +74,7 @@ tests:
     feature: "CTE with window function"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with UNION
   - id: cte_with_union
@@ -90,7 +90,7 @@ tests:
     feature: "CTE filter on aggregate"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with CASE expression
   - id: cte_with_case
@@ -98,4 +98,4 @@ tests:
     feature: "CTE with CASE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

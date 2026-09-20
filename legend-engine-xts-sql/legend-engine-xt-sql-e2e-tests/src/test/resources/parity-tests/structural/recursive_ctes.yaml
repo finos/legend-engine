@@ -70,4 +70,4 @@ tests:
     feature: "WITH RECURSIVE list mixing a recursive and a plain member"
     category: "recursive_ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

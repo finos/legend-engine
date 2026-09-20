@@ -246,7 +246,7 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
     let extensions = meta::relational::extension::relationalExtensions();
     let _context = rootContext($sources, $compiler, $extensions);
     let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
-    let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
+    let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true));
     let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
     let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
   //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -277,7 +277,12 @@ function meta::external::query::sql::transformation::queryToPure::getPlanResult(
 
 
   let plan = if ($context.relation->isTrue(), | [], | getPlan($context, $sources, $extensions));
-  let lambda = if ($context.relation->isTrue(), | $context.lambda($context.scopeWithFrom->isTrue()), | []);
+  //a let-bound CTE needs the whole-lambda from() to reach the relational CommonTableExpression
+  //handler; without it the router materialises each let into its own node and the body runs in
+  //memory. scopeWithFrom is about source-level scoping and is turned off precisely when a CTE is
+  //present, so it cannot be the flag that decides this.
+  let wrapWithFrom = $context.scopeWithFrom->isTrue() || $context.withQueries->filter(w | !$w.inline)->isNotEmpty();
+  let lambda = if ($context.relation->isTrue(), | $context.lambda($wrapWithFrom), | []);
   let mapping = if ($context.relation->isTrue(), | getMapping($sources), | []);
   let runtime = if ($context.relation->isTrue(), | getRuntime($sources, $extensions), | []);
 
@@ -480,10 +485,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWithQuery(query: WithQuery[1], _context: SqlTransformContext[1]): WithQueryContext[1]
 {
   debug(|'processWithQuery', $_context.debug);
-
-  //a let-bound CTE loses push-down: the router evaluates the body as-is and applies the outer
-  //filter and projection outside the database. Only the inlined recursive form escapes that.
-  assert($_context.withSupported, | 'with queries currently not supported');
 
   let newContext = $query.query->processQuery($_context);
 
@@ -5275,7 +5276,6 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   tableFunctionProcessors: FunctionProcessor[1..*];
   windows: NamedWindow[*];
   withQueries: WithQueryContext[*];
-  withSupported: Boolean[1] = false; //currently only enable for dynamic source use case as plan generation is incorrect for normal sources
   root:Boolean[1];
   sources: SQLSource[*];
   expression: ValueSpecification[0..1];
