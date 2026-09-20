@@ -232,5 +232,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 function meta::relational::functions::sqlQueryToString::sqlServer::processCommonTableExpressionsForSqlServer(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
    // SqlServer takes no RECURSIVE keyword - a WITH expression that references itself is recursive.
-   $ctes->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, '');
+   // the anchor's literal columns widen to what the branch carries; T-SQL will not narrow the branch
+   $ctes->meta::relational::functions::sqlQueryToString::default::coerceAnchorLiteralsToBranchTypes()
+        ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, '');
 }

@@ -351,6 +351,53 @@ function meta::relational::functions::sqlQueryToString::default::processSelectSQ
 // refuses the UNION ALL with CANNOT_MERGE_INCOMPATIBLE_DATA_TYPE. A dialect that needs it calls this
 // before delegating to processCommonTableExpressionsProcessorDefault; the rest emit no casts at all.
 // A column the anchor computes carries no relational type, so there is nothing to coerce it to.
+// The other half of the same problem: where a recursive expression's anchor computes a column, the
+// column has no relational type and takes whatever the literal implies - 'N/A' is varchar(3) - while
+// the branch reads a real column. SQL Server and Trino hold the two to the same type and will not
+// narrow the branch to fit, so the anchor is widened to what the branch carries. Only a column the
+// anchor computes is touched, and only when the branch's type is known.
+function meta::relational::functions::sqlQueryToString::default::coerceAnchorLiteralsToBranchTypes(ctes:CommonTableExpression[*]):CommonTableExpression[*]
+{
+   $ctes->map(cte | $cte->match([
+      rcte: RecursiveCommonTableExpression[1] |
+         let sql = $rcte.sqlQuery;
+         let root = $sql.data->toOne();
+         let rootAlias = $root.alias;
+         let union = $rootAlias.relationalElement->toOne()->cast(@UnionAll);
+         let anchor = $union.queries->at(0);
+         let branches = $union.queries->tail();
+         if($branches->isEmpty(),
+           | $rcte,
+           | let branchTypes = $branches->head()->toOne().columns->map(c | $c->relationalColumnType());
+             let coercedAnchor = ^$anchor(columns = $anchor.columns->zip($branchTypes)->map(c |
+                   if($c.second->instanceOf(meta::relational::metamodel::datatype::Other)
+                        || !$c.first->relationalColumnType()->instanceOf(meta::relational::metamodel::datatype::Other),
+                     | $c.first,
+                     | $c.first->match([
+                         a: Alias[1] | ^$a(relationalElement = ^DynaFunction(name = 'cast', parameters = [$a.relationalElement, ^DataTypeInfo(dataType = $c.second)])),
+                         // an anchor that reads another CTE projects bare columns, with no alias to copy
+                         tac: TableAliasColumn[1] | ^Alias(name = $tac.columnName->orElse($tac.column.name),
+                                                           relationalElement = ^DynaFunction(name = 'cast', parameters = [$tac, ^DataTypeInfo(dataType = $c.second)])),
+                         o: RelationalOperationElement[1] | $o
+                       ]);
+                   );
+                ));
+             let newUnion = ^$union(queries = $coercedAnchor->concatenate($branches));
+             ^$rcte(sqlQuery = ^$sql(data = ^$root(alias = ^$rootAlias(relationalElement = $newUnion))));
+         );,
+      c: CommonTableExpression[1] | $c
+   ]));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::default::relationalColumnType(col:RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[1]
+{
+   $col->match([
+      a: Alias[1] | $a.relationalElement->relationalColumnType(),
+      tac: TableAliasColumn[1] | $tac.column.type,
+      o: RelationalOperationElement[1] | ^meta::relational::metamodel::datatype::Other()
+   ]);
+}
+
 function meta::relational::functions::sqlQueryToString::default::coerceRecursiveBranchToAnchorTypes(ctes:CommonTableExpression[*]):CommonTableExpression[*]
 {
    $ctes->map(cte | $cte->match([
