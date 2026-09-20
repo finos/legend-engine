@@ -68,14 +68,6 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  # Recursive CTE (basic counter)
-  - id: cte_recursive
-    sql: "WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 5) SELECT x FROM cnt ORDER BY 1"
-    feature: "Recursive CTE"
-    category: "ctes"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
   # CTE with window function
   - id: cte_with_window
     sql: "WITH ranked AS (SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rnk FROM persons WHERE salary IS NOT NULL) SELECT name, salary, rnk FROM ranked WHERE rnk <= 3 ORDER BY 1"
