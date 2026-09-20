@@ -2924,7 +2924,9 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
         
         let cteReferenceSelect = ^TdsSelectSqlQuery
         (
-          columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $cteAlias)),
+          //a TDS select carries Alias-wrapped columns; a bare TableAliasColumn here makes every
+          //TDSRow accessor over the CTE fail its cast in tdsQualifier
+          columns = $cteColumns->map(c | ^Alias(name = $c.name, relationalElement = ^TableAliasColumn(columnName = $c.name, column = $c, alias = $cteAlias))),
           data = ^RootJoinTreeNode(alias = $cteAlias),
           paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
         );

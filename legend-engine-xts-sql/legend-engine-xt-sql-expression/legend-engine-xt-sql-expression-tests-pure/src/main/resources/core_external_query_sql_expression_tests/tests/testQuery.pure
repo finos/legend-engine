@@ -44,6 +44,6 @@ function <<test.Test>> meta::external::query::sql::expression::tests::testMultiL
     meta::pure::extension::runtime::getExtensions(),
     noDebug()
   );
-  assertEquals('with q as (select "mytab_0".name as "name" from myTab as "mytab_0") select "q_0"."name" from q as "q_0" where "q_0"."name" = \'www\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
+  assertEquals('with q as (select "mytab_0".name as "name" from myTab as "mytab_0") select "q_0"."name" as "name" from q as "q_0" where "q_0"."name" = \'www\'', $plan.rootExecutionNode->cast(@RelationalTdsInstantiationExecutionNode).executionNodes->cast(@SQLExecutionNode).sqlQuery);
 
 }

@@ -403,7 +403,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                               let pre_y = $result->match([
                                                                            c: ClusteredValueSpecification[1]|^$c(val = ^$r(value = $c.val)),
                                                                            a: Any[1]| if($r.sets->isEmpty(),                                           // This check is needed for expressions (like : let x = 1->from($mapping, $runtime)) where there are no sets found
-                                                                                         | $clusterResponse.cluster,
+                                                                                         | if($r.store->isNotEmpty(),                                  // a from(<lambda>, mapping, runtime) whose lambda routing already resolved to one store - see routing.pure
+                                                                                              | $r->meta::pure::router::clustering::buildClusterForResolvedStore($clusterResponse.cluster, $openVariables, $extensions),
+                                                                                              | $clusterResponse.cluster),
                                                                                          | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping->toOne(), $extensions));
                                                                          ]
                                                                     );
@@ -566,6 +568,30 @@ function <<access.private>> meta::pure::router::clustering::buildCluster(s:Store
     );
 }
 
+
+//from(<lambda>, mapping, runtime) wraps the routed lambda in an SFE that carries it on func rather
+//than on parametersValues, so clustering finds nothing to descend into and resolves no sets. Without
+//a cluster here the whole from() becomes platform work: the router materialises each let into its
+//own execution node and the body runs in memory instead of reaching the store. routing.pure records
+//the store it already resolved for that lambda, which is the only reliable signal that the contents
+//belong to a store at all - a platform-only body leaves it empty and keeps the old behaviour.
+function <<access.private>> meta::pure::router::clustering::buildClusterForResolvedStore(r:StoreMappingRoutedValueSpecification[1], clustered: ValueSpecification[1], openVariables:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]):StoreMappingClusteredValueSpecification[1]
+{
+  let store = $r.store->toOne();
+
+  ^StoreMappingClusteredValueSpecification(
+    genericType  = $r.genericType,
+    multiplicity = $r.multiplicity,
+    s = meta::pure::extension::storeContractFromStore($extensions, $store),
+    store = $store,
+    mapping = $r.mapping,
+    runtime = $r.runtime,
+    openVars = $openVariables,
+    val = $clustered,
+    exeCtx = $r.executionContext,
+    executable = true
+  );
+}
 
 function <<access.private>> meta::pure::router::clustering::buildCluster(r:StoreMappingRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], mapping:Mapping[1], storeContract : StoreContract[1], store : Store[1], extensions:meta::pure::extension::Extension[*]):StoreMappingClusteredValueSpecification[1]
 {
