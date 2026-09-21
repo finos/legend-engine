@@ -89,7 +89,7 @@ public class TestCompilerFromGrammar
                 "{\n" +
                 "   #SQL{select a from abc}#;" +
                 "   true;" +
-                "}","COMPILATION error at [1:1-3:37]: Error in 'pack::f__Boolean_1_': no cte named \"abc\"\" found. Known ctes []");
+                "}","COMPILATION error at [1:1-3:37]: Error in 'pack::f__Boolean_1_': no cte named \"abc\" found. Known ctes []");
     }
 
     @Test
