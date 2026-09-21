@@ -303,6 +303,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 Result res = new ExecutionNodeExecutor(this.identity, connectionAwareState).visit((SequenceExecutionNode) relationalBlockExecutionNode);
                 ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().unlockAllBlockConnections();
+                ((RelationalStoreExecutionState) connectionAwareState.getStoreExecutionState(StoreType.Relational)).getBlockConnectionContext().attachBlockConnectionsTo(res);
                 return res;
             }
             catch (Exception e)

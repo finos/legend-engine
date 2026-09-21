@@ -78,6 +78,7 @@ public class StreamingObjectResult<T> extends StreamingResult
     {
         this.objectStream = null;
         this.childResult.close();
+        super.close();
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.state.ConnectionStateManager;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
@@ -566,6 +567,118 @@ public class TestExecutionPlan extends AlloyTestServer
     {
         String json = objectMapper.writeValueAsString(getRelationalResult().toStream().iterator());
         Assert.assertEquals("[{\"firmName\":\"FA\",\"pk_0\":\"FA\",\"employee_name\":\"abc\"},{\"firmName\":\"FA\",\"pk_0\":\"FA\",\"employee_name\":\"xyz\"}]", json);
+    }
+
+    /**
+     * A block whose last node realizes a scalar returns a {@link ConstantResult}, which carries no
+     * connection of its own. The block attaches its connection to that result, so closing the result
+     * releases it - without the attachment nothing downstream can reach the connection and it stays
+     * checked out of the pool for the lifetime of the JVM.
+     */
+    @Test
+    public void testScalarAllocationBlockHandsItsConnectionToTheResult() throws Exception
+    {
+        SingleExecutionPlan executionPlan = objectMapper.readValue(buildScalarAllocationBlockPlan(), SingleExecutionPlan.class);
+        long activeBefore = activeConnectionsOnTestServer();
+
+        for (int execution = 1; execution <= 3; execution++)
+        {
+            Result result = planExecutor.execute(executionPlan, Maps.mutable.empty(), null, Identity.getAnonymousIdentity());
+
+            Assert.assertTrue(result instanceof ConstantResult);
+            Assert.assertEquals("Curtis", ((ConstantResult) result).getValue());
+            Assert.assertEquals(
+                    "the block released its connection instead of handing it to the result",
+                    1L,
+                    activeConnectionsOnTestServer() - activeBefore);
+
+            result.close();
+            Assert.assertEquals(
+                    "connections leaked after " + execution + " execution(s) of a scalar-allocation block",
+                    0L,
+                    activeConnectionsOnTestServer() - activeBefore);
+        }
+    }
+
+    /**
+     * a block ending in a streaming result does hand the connection over,
+     * so the block must leave it open until the caller has consumed the rows.
+     */
+    @Test
+    public void testStreamingBlockKeepsItsConnectionUntilResultIsClosed() throws JsonProcessingException
+    {
+        long activeBefore = activeConnectionsOnTestServer();
+
+        RelationalResult result = getRelationalResult();
+        Assert.assertEquals(activeBefore + 1, activeConnectionsOnTestServer());
+
+        result.close();
+        Assert.assertEquals(activeBefore, activeConnectionsOnTestServer());
+    }
+
+    private static long activeConnectionsOnTestServer()
+    {
+        return ConnectionStateManager.getInstance().getConnectionStateManagerPOJO().getPools().stream()
+                .filter(pool -> pool.name.contains("port:" + serverPort))
+                .mapToLong(pool -> pool.dynamic.activeConnections)
+                .sum();
+    }
+
+    private String buildScalarAllocationBlockPlan()
+    {
+        String connection = "{\n" +
+                "  \"_type\": \"RelationalDatabaseConnection\",\n" +
+                "  \"type\": \"H2\",\n" +
+                "  \"authenticationStrategy\": {\"_type\": \"test\"},\n" +
+                "  \"datasourceSpecification\": {\n" +
+                "    \"_type\": \"static\",\n" +
+                "    \"databaseName\": \"testDB\",\n" +
+                "    \"host\": \"127.0.0.1\",\n" +
+                "    \"port\": \"" + serverPort + "\"\n" +
+                "  }\n" +
+                "}";
+
+        return "{\n" +
+                "  \"templateFunctions\": [],\n" +
+                "  \"rootExecutionNode\": {\n" +
+                "    \"_type\": \"allocation\",\n" +
+                "    \"varName\": \"maxName\",\n" +
+                "    \"realizeInMemory\": false,\n" +
+                "    \"resultSizeRange\": {\"lowerBound\": 1, \"upperBound\": 1},\n" +
+                "    \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"String\"},\n" +
+                "    \"executionNodes\": [\n" +
+                "      {\n" +
+                "        \"_type\": \"relationalBlock\",\n" +
+                "        \"isolationLevel\": 0,\n" +
+                "        \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"String\"},\n" +
+                "        \"executionNodes\": [\n" +
+                "          {\n" +
+                "            \"_type\": \"sql\",\n" +
+                "            \"sqlQuery\": \"SET @TAG = 1;\",\n" +
+                "            \"resultColumns\": [],\n" +
+                "            \"resultType\": {\"_type\": \"void\"},\n" +
+                "            \"connection\": " + connection + "\n" +
+                "          },\n" +
+                "          {\n" +
+                "            \"_type\": \"relationalDataTypeInstantiation\",\n" +
+                "            \"resultSizeRange\": {\"lowerBound\": 1, \"upperBound\": 1},\n" +
+                "            \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"String\"},\n" +
+                "            \"executionNodes\": [\n" +
+                "              {\n" +
+                "                \"_type\": \"sql\",\n" +
+                "                \"sqlQuery\": \"select max(name) from employeeTable\",\n" +
+                "                \"resultColumns\": [{\"label\": \"max(name)\", \"dataType\": \"\"}],\n" +
+                "                \"resultType\": {\"_type\": \"dataType\", \"dataType\": \"meta::pure::metamodel::type::Any\"},\n" +
+                "                \"connection\": " + connection + "\n" +
+                "              }\n" +
+                "            ]\n" +
+                "          }\n" +
+                "        ],\n" +
+                "        \"finallyExecutionNodes\": []\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
     }
 
     private RelationalResult getRelationalResult() throws com.fasterxml.jackson.core.JsonProcessingException

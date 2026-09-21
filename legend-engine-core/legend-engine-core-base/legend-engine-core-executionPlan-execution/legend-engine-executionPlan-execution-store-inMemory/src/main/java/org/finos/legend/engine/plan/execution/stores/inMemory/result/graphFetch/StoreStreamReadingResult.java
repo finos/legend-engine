@@ -46,5 +46,6 @@ public class StoreStreamReadingResult<T> extends Result
         {
             this.objectsIterator.close();
         }
+        super.close();
     }
 }

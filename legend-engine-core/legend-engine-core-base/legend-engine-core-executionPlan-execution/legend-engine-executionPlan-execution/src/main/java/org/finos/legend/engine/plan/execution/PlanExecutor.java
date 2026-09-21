@@ -253,7 +253,11 @@ public class PlanExecutor
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
             // execute
-            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(identity, state));
+            Result result = singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(identity, state));
+            // Variables can own resources - a block that returns a realized value hands its connection to
+            // the result bound to the variable - and are read by name until the plan finishes, so they are
+            // released together once the execution's own result has been consumed.
+            return result.addCloseable(() -> state.closeVariables(result));
         }
     }
 
