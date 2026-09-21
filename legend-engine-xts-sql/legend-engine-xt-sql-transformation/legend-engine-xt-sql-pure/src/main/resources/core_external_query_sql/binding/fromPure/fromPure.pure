@@ -1875,8 +1875,19 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //all of the child contexts are in scope for joining on so the new context needs to know about them.
   //an enclosing relation visible for correlation is not a join side, so it keeps its own row variable
   let outerNames = $context.lateralOuterAliases.first;
-  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
-  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
+
+  //Reach into a side's own children only where that side is a nested join, whose sides genuinely are
+  //addressable from here - the same distinction leftContexts/rightContexts make above, and the map
+  //has to agree with them or processQualifiedNameReference's correlated-owner lookup finds a context
+  //with no row variable. Any other side publishes exactly one scope, its relationName. A derived
+  //table also carries the subquery's internal scopes, which SQL hides from the enclosing query;
+  //mapping those made a re-bound alias collide with the enclosing one, and newMap resolves duplicate
+  //keys last-wins, so the outer binding was silently replaced by the derived table's row variable.
+  let leftRowContexts = if ($join.left->instanceOf(Join), | $left.contexts, | []);
+  let rightRowContexts = if ($join.right->instanceOf(Join), | $right.contexts, | []);
+
+  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($leftRowContexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
+  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($rightRowContexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
 
   let expContext = expressionContext([], $context.lateralOuterAliases->concatenate($leftRows)->concatenate($rightRows)->newMap(), $context.relation->isTrue());
 

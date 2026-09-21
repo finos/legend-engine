@@ -5090,6 +5090,94 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   assert($context.expression->toOne()->resolveRelationColumns()->exists(c | $c.name == 'flag'));
 }
 
+// A join whose right side is a derived table that itself joins, and re-binds inside that join an
+// alias the enclosing query already holds. processStandardJoin fed its alias -> row-variable map
+// from $left.contexts/$right.contexts - a side's OWN child scopes. For a derived table those are
+// the subquery's internals, which standard SQL does not make addressable from outside, and newMap
+// resolves a duplicate key last-wins with the right side concatenated last. So the outer 't' was
+// rebound to the derived table's row2, while the column name still resolved off the left side:
+// "The column 'Integer_t' can't be found in the relation (maxInt_latest:Integer)". The row map has
+// to use the scopes the join context itself publishes (the side, or a nested join's sides) rather
+// than reaching through a side into its children.
+//
+// A single-table derived table cannot show this - it carries no child contexts to leak. The inner
+// join is what makes processStandardJoin populate them.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinDerivedTableShadowsOuterAlias():Boolean[1]
+{
+  test(
+    'SELECT t."String" AS "String" ' +
+    'FROM service."/service/service1" AS t ' +
+    'INNER JOIN (SELECT MAX(t."Integer") AS "maxInt" ' +
+    'FROM service."/service/service2" AS t ' +
+    'INNER JOIN service."/service/service2" AS u ON t."ID" = u."ID") AS latest ' +
+    'ON t."Integer" = latest."maxInt"',
+    [
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->rename(~Boolean, ~Boolean_t)
+          ->rename(~Integer, ~Integer_t)
+          ->rename(~Float, ~Float_t)
+          ->rename(~Decimal, ~Decimal_t)
+          ->rename(~StrictDate, ~StrictDate_t)
+          ->rename(~DateTime, ~DateTime_t)
+          ->rename(~String, ~String_t)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+              ->rename(~ID, ~ID_t)
+              ->rename(~Integer, ~Integer_t)
+              ->rename(~String, ~String_t)
+              ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->rename(~ID, ~ID_u)
+                  ->rename(~Integer, ~Integer_u)
+                  ->rename(~String, ~String_u), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.ID_t == $row2.ID_u})
+              ->aggregate(~[maxInt : x | $x.Integer_t : y | $y->max()])
+              ->rename(~maxInt, ~maxInt_latest), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.Integer_t == $row2.maxInt_latest})
+          ->select(~[String_t])
+          ->rename(~String_t, ~String)})
+    ]
+  )
+}
+
+// The same defect where the shadowed alias denotes the SAME source inside and out, which is the
+// shape the corpus actually hits (a MAX(...) GROUP BY latest-row subquery joined back to its own
+// table). It fails identically - that is what shows the binding is to a row variable, not a table.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinDerivedTableShadowsOuterAliasSameSource():Boolean[1]
+{
+  test(
+    'SELECT t."ID" AS "ID" ' +
+    'FROM service."/service/service2" AS t ' +
+    'INNER JOIN (SELECT t."String" AS "String", MAX(t."Integer") AS "maxInt" ' +
+    'FROM service."/service/service2" AS t ' +
+    'INNER JOIN service."/service/service2" AS u ON t."ID" = u."ID" ' +
+    'GROUP BY t."String") AS latest ' +
+    'ON t."String" = latest."String" AND t."Integer" = latest."maxInt"',
+    [
+      c({| meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+          ->rename(~ID, ~ID_t)
+          ->rename(~Integer, ~Integer_t)
+          ->rename(~String, ~String_t)
+          ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+              ->rename(~ID, ~ID_t)
+              ->rename(~Integer, ~Integer_t)
+              ->rename(~String, ~String_t)
+              ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                  ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                  ->rename(~ID, ~ID_u)
+                  ->rename(~Integer, ~Integer_u)
+                  ->rename(~String, ~String_u), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | $row1.ID_t == $row2.ID_u})
+              ->rename(~String_t, ~String)
+              ->groupBy(~[String], ~[maxInt : x | $x.Integer_t : y | $y->max()])
+              ->rename(~String, ~String_latest)
+              ->rename(~maxInt, ~maxInt_latest), meta::pure::functions::relation::JoinKind.INNER, {row1, row2 | ($row1.String_t == $row2.String_latest) && ($row1.Integer_t == $row2.maxInt_latest)})
+          ->select(~[ID_t])
+          ->rename(~ID_t, ~ID)})
+    ]
+  )
+}
+
 // A correlated subquery that reuses the outer alias and then references an
 // OUTER-only column through it. The inner FROM shadows the outer for the whole subquery, so
 // 'Decimal' is genuinely out of scope. This used to be accepted by resolving outward past the
