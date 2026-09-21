@@ -354,7 +354,14 @@ function <<access.private>> meta::relational::executionPlan::platformBinding::le
                      | [])
                )
                ->concatenate(
-                  $currentSetPks->size()->range()->map(pkIdx | '    index_' + $s->toString() + '.add(columnNames.indexOf("' + 'PK_' + $pkIdx->toString() + if($sets->size() == 1, | '', | '_' + $s->toString()) + '") + 1);')
+                  // The SQL side (processConcatenate's column alignment, pureToSQLQuery.pure) always aliases each
+                  // set's PK column(s) under a single plain name shared across every UNION arm (e.g. "pk_0"), never
+                  // suffixed by set index -- unlike the *Java field* naming below (pk$_<idx>_<setIndex>), which does
+                  // need a per-set suffix to avoid multiple sets' PK fields colliding on the one shared implementation
+                  // class. Searching columnNames for a suffixed "PK_<idx>_<setIndex>" name here never finds a match
+                  // for setIndex > 0 (indexOf returns -1, +1 -> 0 is silently stored as a "valid" index), later
+                  // surfacing as an unrelated IndexOutOfBoundsException in objectCreation's columnTypes.get(-1).
+                  $currentSetPks->size()->range()->map(pkIdx | '    index_' + $s->toString() + '.add(columnNames.indexOf("' + 'PK_' + $pkIdx->toString() + '") + 1);')
                )->joinStrings('\n') + '\n' +
             '    this.propertyIndices.add(index_' + $s->toString() + ');';
          })->joinStrings('\n\n')+'\n\n'+

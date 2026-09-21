@@ -861,7 +861,21 @@ function meta::relational::functions::pureToSqlQuery::toVariantFriendlyValue(col
 {
   let toList = {toList: RelationalOperationElement[*] |
     let arrayType = if ($dataType->isNotEmpty() && $dataType->toOne()->instanceOf(meta::relational::metamodel::datatype::Array), |$dataType->toOne(), |^meta::relational::metamodel::datatype::Array(type = $dataType));
-    newDynaFunction('cast', newDynaFunction('toVariantList', $toList)->concatenate(^DataTypeInfo(dataType = $arrayType)));
+    // An array of SemiStructured elements (e.g. from concatenate()/fold() mixing types -- see
+    // genericTypeToDataType's Any -> SemiStructured case) needs each element individually
+    // converted to a genuine Variant value before list construction: casting the whole native
+    // array to a semi-structured array type only works if every dialect's native-array-to-JSON/
+    // VARIANT cast can reinterpret arbitrary element SQL text, which isn't true in general (e.g.
+    // a bare string literal isn't valid JSON without quoting). Routing each element through the
+    // existing toVariant DynaFunction reuses every dialect's own, already-correct scalar
+    // Variant-conversion template instead of relying on that assumption. A plain typed array
+    // (Integer[]/String[]/...) is untouched -- its elements go into toVariantList as before.
+    let elementType = $arrayType->cast(@meta::relational::metamodel::datatype::Array).type;
+    let wrappedList = if($elementType->isNotEmpty() && $elementType->toOne()->instanceOf(meta::relational::metamodel::datatype::SemiStructured),
+                          | $toList->map(e | newDynaFunction('toVariant', $e)),
+                          | $toList
+                        );
+    newDynaFunction('cast', newDynaFunction('toVariantList', $wrappedList)->concatenate(^DataTypeInfo(dataType = $arrayType)));
   };
 
   // Wraps a single already-built element in exactly one more array layer, treating $dataType as

@@ -155,7 +155,27 @@ function <<access.private>> meta::pure::router::store::routing::buildStoreMappin
 
   let final = if($isPropertyOrQP,
     | $routedVS->buildPropertyAccess($value->cast(@FunctionExpression), $targetSet, $permutationSets, $last, $idToClassMapping, $exeCtx, $extensions, $debug),
-    | ^$routedVS(sets = $targetSet, value = $routedVS.value->evaluateAndDeactivate()->build($permutationSets, $targetSet, $routedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug));
+    | // $routedVS.id is this node's own FunctionExpression id, not necessarily the id of a PermutationSet
+      // routing decision made *for* this node -- that's only true for a "leaf" routed node (a class-typed
+      // getAll()/property-access whose own routing created exactly one matching PermutationSet). A node that
+      // simply *combines* several already-independently-routed sub-expressions (e.g. concatenate() of two
+      // different classes) has no PermutationSet of its own; its id can coincidentally collide with an
+      // unrelated child's PermutationSet id (both id namespaces are separate integer counters), causing the
+      // self-lookup above to silently pick just one of the combined classes rather than none or all of them.
+      // Build the value first (each independently-routed child resolves its own targetSet correctly via its
+      // own id, unaffected by this), then additionally union in whatever sets those built children carry --
+      // purely additive, so a leaf node (no such children) or a node with children of the same resolved
+      // class (the common case) is unaffected; only a genuinely multi-class combiner gains the classes the
+      // self-lookup alone would have dropped. childSets comes first: it reflects the combining expression's
+      // own parameter order (which downstream SQL generation numbers its per-class discriminator by), while
+      // targetSet is only the coincidental self-id guess -- putting it first would let it win the dedup and
+      // silently reorder a multi-class combiner's classes relative to the SQL-side discriminator numbering.
+      let builtValue = $routedVS.value->evaluateAndDeactivate()->build($permutationSets, $targetSet, $routedVS.mapping, $idToClassMapping, $exeCtx, $extensions, $debug);
+      let childSets = $builtValue->match([
+        fe:FunctionExpression[1] | $fe.parametersValues->filter(p|$p->instanceOf(StoreMappingRoutedValueSpecification))->cast(@StoreMappingRoutedValueSpecification).sets,
+        a:Any[1]                 | []
+      ]);
+      ^$routedVS(sets = $childSets->concatenate($targetSet)->removeDuplicatesBy(s|$s.id), value = $builtValue);
   );
 
   $final->propagateVoid($final);

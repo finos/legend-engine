@@ -53,6 +53,25 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::manageNa
 
 function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocol(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], funcReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]): Any[1]
 {
+  // A query whose result type resolves to a bare DataType (e.g. Any, from mixed-type collection
+  // functions like concatenate()/fold() -- see genericTypeToDataType's Any -> SemiStructured case)
+  // executes as a DataTypeBuilder result rather than a TDSBuilder one, even though this harness
+  // function is only ever reached for a Relation-typed PCT expectation. Such a result is a flat
+  // Any-typed value list, not a Relation/TDS at all -- reconstructing it as a TDS (as the rest of
+  // this function does for a genuine TDSBuilder) would hand back a value of type TDS where the
+  // test expects Any. Mirror processDataTypeResult's plain value-list extraction instead, boxed in
+  // a List so this many-valued result still fits this function's [1] signature -- the caller
+  // (testAdapterForRelationalExecution) unboxes it back to the declared multiplicity via its own
+  // final ->toMultiplicity(@[o]) call.
+  if ($r.builder->instanceOf(meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DataTypeBuilder),
+    | let trans = meta::protocols::pure::vX_X_X::invocation::execution::execute::dataTypeTransformer($r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::DataTypeBuilder).type);
+      ^List<Any>(values=$r.result.rows.values->map(v|$trans->eval($v)));,
+    | getTDSResultFromProtocolForTDSBuilder($r, $funcReturnType, $extensions)
+  );
+}
+
+function <<access.private>> meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSResultFromProtocolForTDSBuilder(r:meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::RelationalTDSResult[1], funcReturnType:GenericType[1], extensions:meta::pure::extension::Extension[*]): Any[1]
+{
   let cols = $r.builder->cast(@meta::protocols::pure::vX_X_X::metamodel::invocation::execution::execute::TDSBuilder).columns;
 
   // We lose column type info after pivot, so need to compensate from protocol.
@@ -66,6 +85,34 @@ function meta::protocols::pure::vX_X_X::invocation::execution::execute::getTDSRe
                       )->map(t | manageName($c.name) + ':' + $t));
                 );
 
+  // KNOWN LIMITATION: a present-but-empty String value in any row here is indistinguishable from
+  // TDSNull once round-tripped through the CSV text below and re-parsed by stringToTDS() -- it
+  // always comes back as null (surfaces as PCT test meta::pure::functions::relation::tests::
+  // composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_, currently quarantined
+  // in every relational PCT manifest with this exact reason).
+  //
+  // Root cause is upstream in legend-pure, not fixable from this file:
+  // https://github.com/finos/legend-pure/blob/master/legend-pure-dsl/legend-pure-dsl-tds/legend-pure-m2-dsl-tds-grammar/src/main/java/org/finos/legend/pure/m2/inlinedsl/tds/TDSExtension.java
+  // `makePureCsvSpecs()` configures the underlying io.deephaven.csv reader with
+  // `nullValueLiterals(Arrays.asList("", "null"))`, so any decoded zero-length field -- quoted or
+  // bare -- is treated as null. Confirmed empirically (2026-09, against legend-pure master @
+  // eedb55d) that this cannot be worked around from legend-engine:
+  //   - Quoting the empty value (toCSVString('') -> "''") does not help: the null check applies to
+  //     the decoded/logical value, not the raw token, so a quoted-empty field collapses exactly
+  //     like a bare one.
+  //   - Patching TDS.csv on a copy after an initial sentinel-bearing parse does not help either:
+  //     TDS.toString() re-decodes .csv fresh through the same reader on every call rather than
+  //     reading a value materialized once at parse time, so any "empty" text in .csv re-collapses
+  //     to null the next time it's displayed or compared -- there is no point at which a sentinel
+  //     can be safely swapped back to a true empty string.
+  // A real fix requires changing legend-pure. Blanket-removing "" from nullValueLiterals would
+  // change every #TDS ... # grammar literal's "blank means null" convention repo-wide -- a much
+  // safer, narrower option is to make TDS's decode/render path multiplicity-aware: a decoded-null
+  // value in a column declared mandatory ([1], where null was never a legal value to begin with)
+  // could render as '' instead of the literal text "null", leaving genuinely optional ([0..1])
+  // columns' existing null semantics untouched.
+  // The identical pattern (same root cause) also exists in legend-engine-xt-deephaven-pure's
+  // getDeephavenTDSResultFromProtocol (execution_deephaven_execute.pure).
   let tdsString = $columns->joinStrings(',') + '\n' +
                                 $r.result.rows->map(x|
                                   range($x.values->size())->map(z |
@@ -355,8 +402,15 @@ function <<access.private>> meta::protocols::pure::vX_X_X::invocation::execution
                             let element = $c->pathToElement();
                             if ($element->instanceOf(PrimitiveType) && $element->toOne()->cast(@Type)->isExtendedPrimitiveType(),
                               |$element->cast(@Type)->bypassExtendedPrimitives().name->toOne()->dataTypeTransformer(),
-                              |let t = $element->cast(@Enumeration<Any>);
-                              {a:Any[1]|$t->extractEnumValue($a->toString())};
+                              |if ($element->instanceOf(Enumeration),
+                                |let t = $element->cast(@Enumeration<Any>);
+                                 {a:Any[1]|$t->extractEnumValue($a->toString())};,
+                                // A plain Class (e.g. Any, from a mixed-type collection result --
+                                // see genericTypeToDataType's Any -> SemiStructured case) needs no
+                                // enum-value extraction; the JSON-deserialized value is already the
+                                // right shape.
+                                |{a:Any[1]|$a}
+                              );
                             );
                           },
                           |{a:Any[1]|$a}

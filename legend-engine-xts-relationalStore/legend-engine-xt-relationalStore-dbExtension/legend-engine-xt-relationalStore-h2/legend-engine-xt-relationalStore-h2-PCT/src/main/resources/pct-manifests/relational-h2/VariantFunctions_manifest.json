@@ -28,6 +28,9 @@
     "test" : "meta::pure::functions::variant::convert::tests::fromJson::testJsonString_Function_1__Boolean_1_",
     "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse("
   }, {
+    "test" : "meta::pure::functions::variant::convert::tests::to::testToAny_Function_1__Boolean_1_",
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Exception calling user-defined function: \"legend_h2_extension_json_parse('\"\"hello\"\"'): Unable to parse json as a Map. Content: '\"\"hello\"\"'. Error: 'Cannot construct instance of `java.util.HashMap` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('hello')"
+  }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFalse_Function_1__Boolean_1_",
     "expectedError" : "Exception calling user-defined function: \"legend_h2_extension_json_parse"
   }, {

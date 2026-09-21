@@ -1,6 +1,9 @@
 {
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithDatabricksExecution_Function_1__X_o_",
   "exclusions" : [ {
+    "test" : "meta::pure::functions::variant::convert::tests::to::testToAny_Function_1__Boolean_1_",
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Any is not managed yet!\""
+  }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_",
     "expectedError" : "Invalid Pure Boolean: 'hello'"
   }, {

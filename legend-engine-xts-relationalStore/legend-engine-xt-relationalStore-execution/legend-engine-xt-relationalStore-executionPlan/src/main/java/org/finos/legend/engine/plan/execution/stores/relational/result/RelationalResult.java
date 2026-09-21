@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.opentracing.Span;
@@ -508,11 +509,11 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             {
                 try
                 {
-                    result = OBJECT_MAPPER.writeValueAsString(array.getArray());
+                    result = arrayValueToJson(array.getArray());
                 }
-                catch (IOException e)
+                catch (RuntimeException e)
                 {
-                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), array), e);
+                    throw new UncheckedIOException(String.format("Unable to process variant result as JSON from column '%s' with value: %s", this.resultSetMetaData.getColumnLabel(columnIndex), array), new IOException(e));
                 }
             }
         }
@@ -561,6 +562,79 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             result = resultSet.getObject(columnIndex);
         }
         return result;
+    }
+
+    /**
+     * Renders a JDBC array value (from {@link Array#getArray()}) as JSON text, without going
+     * through Jackson's default bean-reflection serialization. That matters for an array whose
+     * element type is itself semi-structured/JSON (e.g. DuckDB's {@code JSON[]}): those elements
+     * come back as opaque, driver-specific wrapper objects (e.g. {@code org.duckdb.JsonNode})
+     * that Jackson has no serializer for, so its default reflection over the wrapper's own bean
+     * getters produces garbage (e.g. {@code {"array":false,"null":false,"number":true,...}})
+     * instead of the value. Every JDBC driver's JSON-column wrapper is expected to render correct
+     * JSON text from its own toString() (this is the same assumption the isVariantColumn branch
+     * just below already relies on for a scalar semi-structured value).
+     *
+     * Not every driver wraps a semi-structured element in a rich object, though -- confirmed live
+     * on Databricks, whose JDBC driver returns each element of an {@code ARRAY<VARIANT>} column as
+     * a plain Java String that is already valid JSON text (e.g. "1", not a quoted "\"1\""). A plain
+     * (non-JSON) typed array (e.g. VARCHAR[]) also returns String elements, but there the string
+     * IS the raw value and needs proper JSON quoting/escaping -- the two cases are indistinguishable
+     * by Java type alone. Disambiguate by content: if the string already parses as JSON, trust it
+     * verbatim (matching the isVariantColumn branch's identical assumption for a scalar value);
+     * only fall back to escaping it as a JSON string when it doesn't. This can misfire only for a
+     * plain string array element whose entire content happens to already look like a JSON token
+     * (e.g. a VARCHAR[] value of "123" or "true") -- a narrow, pre-existing ambiguity in what the
+     * JDBC layer hands back, not something a per-element check can fully resolve either way.
+     */
+    private static String arrayValueToJson(Object arrayValue)
+    {
+        if (arrayValue == null)
+        {
+            return "null";
+        }
+        int length = java.lang.reflect.Array.getLength(arrayValue);
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < length; i++)
+        {
+            if (i > 0)
+            {
+                sb.append(",");
+            }
+            Object element = java.lang.reflect.Array.get(arrayValue, i);
+            sb.append(arrayElementToJson(element));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    private static String arrayElementToJson(Object element)
+    {
+        if (element != null && element.getClass().isArray())
+        {
+            return arrayValueToJson(element);
+        }
+        if (element instanceof String)
+        {
+            // readTree() alone only parses a leading JSON value and silently ignores anything
+            // after it, so a genuine raw string like "9876 Hello World Street" would otherwise be
+            // misdetected as already-JSON (a bare number "9876") and truncated. Only trust it as
+            // already-JSON if parsing consumes the entire string -- confirmed via parser.nextToken()
+            // returning null (Jackson skips insignificant trailing whitespace on its own).
+            try (com.fasterxml.jackson.core.JsonParser parser = OBJECT_MAPPER.getFactory().createParser((String) element))
+            {
+                JsonNode node = OBJECT_MAPPER.readTree(parser);
+                if (parser.nextToken() == null)
+                {
+                    return node.toString();
+                }
+            }
+            catch (IOException e)
+            {
+                // Not parseable as JSON at all -- a genuine raw string value, fall through to be escaped.
+            }
+        }
+        return ExecutionResultObjectMapperFactory.getPurePrimitiveToJsonConverter().valueOf(element);
     }
 
     public Object getTransformedValue(int columnIndex) throws SQLException

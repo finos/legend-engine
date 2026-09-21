@@ -16,12 +16,6 @@
     "test" : "meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_",
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(0)"
   }, {
-    "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "Parameter to IN operation isn't a literal!"
   }, {
@@ -50,7 +44,7 @@
     "expectedError" : "The initial value type must be the same as the list child type or a common super type"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
+    "expectedError" : "Execution error at ??, \"Binder Error: The initial value type must be the same as the list child type or a common super type\""
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
@@ -80,7 +74,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:204 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    "expectedError" : "Type missing: meta::pure::metamodel::type::Class"
   }, {
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0\nactual:   1"
@@ -93,9 +87,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionExplicit_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
-    "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionMixedTypes_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."

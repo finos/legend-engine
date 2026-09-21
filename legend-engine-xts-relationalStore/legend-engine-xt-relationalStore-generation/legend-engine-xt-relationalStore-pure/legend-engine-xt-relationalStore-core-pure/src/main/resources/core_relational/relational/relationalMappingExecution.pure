@@ -194,14 +194,18 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                   e : Enumeration<Any>[1] | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
                                   p : PrimitiveType[1]    | ^DataTypeResultType( genericType=^GenericType(rawType=$class)),
                                   c : Class<Any>[1] |
-                                    if($c->in([Variant, List, Map]),
+                                    if($c->in([Variant, List, Map, Any]),
                                       | ^DataTypeResultType(genericType=^GenericType(rawType=$class)),
                                       | ^ClassResultType
                                         (
                                               genericType=^GenericType(rawType=$class),
+                                              // concatenate() (and any other function combining getAll()s of multiple genuinely different classes) routes
+                                              // through several independent SetImplementations at once, not just one -- ->at(0) here used to silently
+                                              // keep only the first, leaving every other class's rows with no matching SetImplementation for object
+                                              // reconstruction. resolveOperation already accepts SetImplementation[*], so pass all of them.
                                               setImplementations = if($ext->isEmpty(),
                                                                       | $m->toOne('mapping missing and cannot construct return type for class: ' + $class->elementToPath())->rootClassMappingByClass($c)->toOne(),
-                                                                      | $ext->cast(@StoreMappingRoutedValueSpecification).sets->at(0)
+                                                                      | $ext->cast(@StoreMappingRoutedValueSpecification).sets
                                                                   )->resolveOperation($m->toOne())
                                         )
                                     )

@@ -20,13 +20,13 @@
     "expectedError" : "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(0)\""
   }, {
     "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateMixedType_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:283 column:54), \"Couldn't find DynaFunction to Postgres model translation for toVariant().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateSimple_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::concatenate::testConcatenateTypeInference_Function_1__Boolean_1_",
-    "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""
+    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:283 column:54), \"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
     "expectedError" : "\"Parameter to IN operation isn't a literal!\""
@@ -89,7 +89,7 @@
     "expectedError" : "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
-    "expectedError" : "Any is not managed yet!"
+    "expectedError" : "Execution error at ??, \"Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda\""
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndNonEmptyIdentity_Function_1__Boolean_1_",
     "expectedError" : "Match failure: FoldRelationalLambdaObject instanceOf FoldRelationalLambda"
@@ -131,7 +131,7 @@
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:204 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    "expectedError" : "Type missing: meta::pure::metamodel::type::Class"
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toVariantList()."
@@ -200,7 +200,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionMixedTypes_Function_1__Boolean_1_",
-    "expectedError" : "\"Any is not managed yet!\""
+    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlDialectTranslation/toPostgresModel.pure line:283 column:54), \"Couldn't find DynaFunction to Postgres model translation for toVariant().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionSimple_Function_1__Boolean_1_",
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantList().\""

@@ -448,8 +448,10 @@ function <<access.private>> meta::pure::functions::meta::findExpressionsForFunct
                                                          l : LambdaFunction<Any>[1] | $l.expressionSequence->map(e | $e->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs));,
                                                          a:Any[1] | []]););,
                ve:VariableExpression[1] | [],
-               
-               cls:ClassSetImplementationHolder[1] | $cls.value->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);
+
+               cls:ClassSetImplementationHolder[1] | $cls.value->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);,
+
+               fr:FunctionRoutedValueSpecification[1] | $fr.value->findExpressionsForFunctionInValueSpecification($funcs, $shouldRecurse, $visitedFuncs);
                ]
           );
 
