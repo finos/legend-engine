@@ -472,6 +472,14 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   assert($context.singleExecutionContext, 'With queries with multiple runtimes/mappings currently not supported');
 
+  //a self-reference without RECURSIVE would otherwise surface further down as an unresolved table
+  //name, which reads like a missing source rather than a missing keyword. Only the first offender is
+  //named: the remedy is the same keyword for all of them, and it keeps the message readable
+  let selfReferencing = $with.withQueries->filter(w | $w.query.queryBody->isSelfReferencing($w.name));
+  assert($with.recursive || $selfReferencing->isEmpty(),
+         | 'CTE "' + $selfReferencing.name->first()->toOne()
+             + '" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause');
+
   $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery($with.recursive, ^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
 }
 
@@ -5308,7 +5316,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
   withQuery(name:String[1]){
     let cte = $this.withQueries->filter(w | $w.context.name == $name);
-    assert($cte->isNotEmpty(), | 'no cte named "' + $name + '"" found. Known ctes ' + $this.withQueries.context.name->joinStrings('[', ',', ']'));
+    assert($cte->isNotEmpty(), | 'no cte named "' + $name + '" found. Known ctes ' + $this.withQueries.context.name->joinStrings('[', ',', ']'));
     $cte->toOne();
   }:WithQueryContext[1];
 

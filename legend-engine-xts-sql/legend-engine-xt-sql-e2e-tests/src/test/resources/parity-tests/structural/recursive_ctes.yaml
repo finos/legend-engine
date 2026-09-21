@@ -71,3 +71,12 @@ tests:
     category: "recursive_ctes"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+
+  # Postgres accepts WITH RECURSIVE whose members never reference themselves; it is then an
+  # ordinary CTE list. The keyword alone must not send a member down the recurse() path.
+  - id: recursive_keyword_without_recursion
+    sql: "WITH RECURSIVE t AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM t ORDER BY 1"
+    feature: "WITH RECURSIVE with no self-referencing member"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

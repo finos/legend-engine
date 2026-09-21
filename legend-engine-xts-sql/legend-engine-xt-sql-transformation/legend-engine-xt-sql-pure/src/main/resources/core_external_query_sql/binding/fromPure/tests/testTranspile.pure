@@ -4690,6 +4690,45 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+//RECURSIVE is what makes a member visible to itself, in Postgres and here. The keyword alone does
+//not make a member recursive, and its absence makes a self-reference unresolvable - both directions
+//match what Postgres does with the same SQL.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveKeywordAndSelfReferenceAreIndependent():Boolean[1]
+{
+  //a member that does not name itself takes the ordinary path, keyword or not
+  test(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM service."/service/service1" WHERE "Integer" > 5) select "Integer" from myCTE',
+
+    [
+      c({|
+            let myCTE = FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->filter(x | $x.Integer > 5)->select(~[Integer]);
+            $myCTE;
+      })
+    ]
+  );
+
+  //and a self-reference without the keyword is rejected where the mistake is, naming the member
+  //and telling the reader what to type
+  error(
+    'WITH myCTE AS (SELECT "Integer" FROM myCTE) select "Integer" from myCTE',
+    'CTE "myCTE" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause'
+  );
+
+  //the member at fault is named even when it is not the first
+  error(
+    'WITH a AS (SELECT "Integer" FROM service."/service/service1"), b AS (SELECT "Integer" FROM b) select "Integer" from b',
+    'CTE "b" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause'
+  );
+
+  //an ordinary unresolved name still reports as one
+  error(
+    'WITH a AS (SELECT "Integer" FROM service."/service/service1") select "Integer" from nope',
+    'no cte named "nope" found. Known ctes [a]'
+  );
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryUnsupportedShapes():Boolean[1]
 {
   //recurse() concatenates every round, so it cannot honour UNION's de-duplication
