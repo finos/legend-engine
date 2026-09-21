@@ -492,7 +492,24 @@ function meta::relational::functions::pureToSqlQuery::processNewMap(f:FunctionEx
   let columns = $results.select.columns->filter(x | !$x->instanceOf(Literal) || !$x->cast(@Literal).value->instanceOf(SQLNull))->cast(@DynaFunction);
   $columns->forAll(x | assertEquals('pair', $x.name));
 
-  let variantObj = newDynaFunction('toVariantObject', $columns.parameters);
+  // A pair's value may itself be a nested list()/newMap() construction -- this file's own
+  // cast(toVariantList(...)|toVariantObject(...), ...) output shape -- which the shared router
+  // renders as this dialect's own native Array/Map-typed SQL expression (e.g. Databricks'
+  // MAP<STRING,BIGINT>, Snowflake's MAP(VARCHAR(1024),NUMBER(38,0))). Some dialects' object-
+  // construction function rejects that native type as a value argument outright and needs a
+  // genuine VARIANT-compatible value instead ("cannot cast \"MAP<STRING, BIGINT>\" to \"VARIANT\""
+  // on Databricks; "Function OBJECT_CONSTRUCT does not support MAP(VARCHAR(1024), NUMBER(38,0))
+  // argument type" on Snowflake -- both confirmed against the dialects' own manifests, 2026-09-04).
+  // Routing such a value through toVariant(...) first lets each dialect's own already-correct
+  // Variant-conversion template do that native-type-to-VARIANT step, instead of embedding the raw
+  // typed cast directly. DuckDB/H2/Postgres's own object-literal syntaxes tolerate a typed nested
+  // value directly, so this is additive there, not a behavior change for already-working paths.
+  let wrappedParams = $columns->map(p |
+    let value = $p.parameters->at(1);
+    [$p.parameters->at(0), if($value->isNestedVariantConstruction(), | newDynaFunction('toVariant', [$value]), | $value)];
+  );
+
+  let variantObj = newDynaFunction('toVariantObject', $wrappedParams);
   let dynaFunc = newDynaFunction('cast', [$variantObj, ^DataTypeInfo(dataType = $f.genericType->genericTypeToDataType($f.multiplicity))]);
 
   let select = $operation.select;
@@ -825,6 +842,21 @@ function meta::relational::functions::pureToSqlQuery::processVariantFilter(f:Fun
   ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = $relOp),|^$select(columns = $relOp)));  
 }
 
+// True when $c is this file's own nested list()/newMap() construction output shape --
+// cast(toVariantList(...)|toVariantObject(...), ...) -- as opposed to some other relational
+// element (a plain column, an already-array property mapping, etc.) that merely happens to be a
+// single element too. Shared by toVariantFriendlyValue (boxes such an element into one more array
+// layer) and processNewMap (routes such a value through toVariant(...) before embedding it, since
+// some dialects' object-construction function rejects a nested native Array/Map-typed value).
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isNestedVariantConstruction(c: RelationalOperationElement[1]): Boolean[1]
+{
+  $c->instanceOf(DynaFunction)
+    && $c->cast(@DynaFunction).name == 'cast'
+    && $c->cast(@DynaFunction).parameters->isNotEmpty()
+    && $c->cast(@DynaFunction).parameters->at(0)->instanceOf(DynaFunction)
+    && $c->cast(@DynaFunction).parameters->at(0)->cast(@DynaFunction).name->in(['toVariantList', 'toVariantObject']);
+}
+
 function meta::relational::functions::pureToSqlQuery::toVariantFriendlyValue(cols: RelationalOperationElement[*], dataType: meta::relational::metamodel::datatype::DataType[0..1]):RelationalOperationElement[1]
 {
   let toList = {toList: RelationalOperationElement[*] |
@@ -832,8 +864,49 @@ function meta::relational::functions::pureToSqlQuery::toVariantFriendlyValue(col
     newDynaFunction('cast', newDynaFunction('toVariantList', $toList)->concatenate(^DataTypeInfo(dataType = $arrayType)));
   };
 
+  // Wraps a single already-built element in exactly one more array layer, treating $dataType as
+  // that element's own type -- never reusing it in place of the array type the way $toList's
+  // "already an Array? reuse it verbatim" shortcut does above. That shortcut is only valid when
+  // $dataType describes the *whole resulting array* (the convention some other callers use); here
+  // $dataType is always "the type of one element" of the array/map being built, even when that
+  // element type is itself an Array (a nested list()/newMap()), so it must always be wrapped in a
+  // fresh layer, never substituted for the array type itself.
+  //
+  // $c is routed through toVariant(...) before being boxed, for the same reason processNewMap does
+  // this for a nested map value (see isNestedVariantConstruction): $c is itself a native
+  // Array/Map-typed SQL expression (this function's or processNewMap's own prior cast), and at
+  // least one dialect (Databricks, confirmed live 2026-09-04) rejects casting a native composite
+  // type directly to its VARIANT type one level further up -- e.g. list(newMap(...)) inside an
+  // outer list() renders the inner element as ARRAY<MAP<...>>, and Databricks' "cannot cast
+  // \"ARRAY<MAP<STRING, BIGINT>>\" to \"VARIANT\"" fires the next time that whole value needs to
+  // become VARIANT (map-of-map's failure, one nesting level higher). Routing through toVariant(...)
+  // here lets each dialect's own conversion template do that step, matching processNewMap.
+  //
+  // The array's own cast target is declared as Array(SemiStructured), not Array($dataType):
+  // $dataType is $c's *native* type (e.g. Map), but every element here has just been converted to
+  // a genuine Variant value by the toVariant(...) wrap above, so SemiStructured is what the array
+  // actually now holds. Declaring it as Array($dataType) instead (confirmed live on Databricks,
+  // 2026-09-04) forces the analyzer to cast each freshly-converted Variant element straight back
+  // down to its native type to satisfy the array's declared element type -- undoing the wrap -- so
+  // the *next* enclosing toVariant(...) hits the identical native-type-to-VARIANT cast failure this
+  // fix exists to avoid, just one nesting level further out.
+  let wrapOneElement = {c: RelationalOperationElement[1] |
+    newDynaFunction('cast', newDynaFunction('toVariantList', [newDynaFunction('toVariant', [$c])])->concatenate(^DataTypeInfo(dataType = ^meta::relational::metamodel::datatype::Array(type = ^meta::relational::metamodel::datatype::SemiStructured()))));
+  };
+
   $cols->unwrapAlias()->match([
     l: Literal[1] | $toList->eval($l->filter(v | !$v.value->instanceOf(SQLNull))),
+    // A single element that is itself a nested list()/newMap() construction -- i.e. this exact
+    // function's own output shape, cast(toVariantList(...)|toVariantObject(...), ...) -- is one
+    // element of *this* array/map and must still be boxed, the same as any other single element
+    // would be. Passed through unwrapped, list(list(x)) and list(newMap(...)) silently collapse to
+    // their inner value with the outer nesting level dropped. A plain single relational element
+    // that is *not* one of this function's own outputs (e.g. an already-array column from a
+    // property mapping, reached via array_first/array_last/etc.) is genuinely already the value
+    // this function would build, so it is passed through unchanged by the arm below instead.
+    c: DynaFunction[1] | if($c->isNestedVariantConstruction(),
+                            | $wrapOneElement->eval($c),
+                            | $c),
     c: RelationalOperationElement[1] | $c,
     a: RelationalOperationElement[*] | $toList->eval($a)
   ]);

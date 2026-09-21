@@ -45,11 +45,5 @@
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToManyVariant_Function_1__Boolean_1_",
     "expectedError" : "Integer is not managed yet!"
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfList_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: '[[[1]]]'\nactual:   '[1]'\""
-  }, {
-    "test" : "meta::pure::functions::variant::convert::tests::toVariant::testListOfMap_Function_1__Boolean_1_",
-    "expectedError" : "Unimplemented type for cast (MAP(VARCHAR, BIGINT) -> MAP(VARCHAR, BIGINT)[])\n\nLINE 1: select ifnull(to_json(cast(MAP {'hello': cast(MAP {'world': 2} as MAP(VARCHAR..."
   } ]
 }
