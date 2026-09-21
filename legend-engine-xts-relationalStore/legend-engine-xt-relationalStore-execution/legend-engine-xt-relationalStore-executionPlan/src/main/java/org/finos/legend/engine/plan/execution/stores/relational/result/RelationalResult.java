@@ -70,6 +70,7 @@ import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.finos.legend.pure.m4.tools.time.TimeZones;
 import org.slf4j.Logger;
 
@@ -194,6 +195,17 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
             if (e instanceof RuntimeException)
             {
                 throw (RuntimeException) e;
+            }
+            if (e instanceof SQLException)
+            {
+                // A plain RuntimeException(e) would set getMessage() to e.toString(), burying the driver's own
+                // message behind its exception class name and hiding it from PureException.findPureException's
+                // instanceof check. PureExecutionException carries the driver's message forward untouched and
+                // is itself a PureException, so it survives the compiled dispatcher's generic-wrapper fallback.
+                // cleanErrorMessage lets a dialect strip its own driver-specific wrapping (e.g. Databricks'
+                // Hive-Thrift response envelope); dialects with no such wrapping return the message unchanged.
+                String message = DatabaseManager.fromString(databaseType).cleanErrorMessage(e.getMessage());
+                throw new PureExecutionException(message, e);
             }
             throw new RuntimeException(e);
         }

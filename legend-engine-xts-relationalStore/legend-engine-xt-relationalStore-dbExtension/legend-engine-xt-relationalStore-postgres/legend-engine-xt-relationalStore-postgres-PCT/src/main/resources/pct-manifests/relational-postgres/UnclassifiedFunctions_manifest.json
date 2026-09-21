@@ -2,13 +2,13 @@
   "adapter" : "meta::relational::tests::pct::postgres::testAdapterForRelationalWithPostgresExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"(\"\n  Position: 20"
+    "expectedError" : "Execution error at ??, \"ERROR: syntax error at or near \"(\"\n  Position: 20\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: invalid base64 end sequence\n  Hint: Input data is missing padding, is truncated, or is otherwise corrupted."
+    "expectedError" : "Execution error at ??, \"ERROR: invalid base64 end sequence\n  Hint: Input data is missing padding, is truncated, or is otherwise corrupted.\""
   }, {
     "test" : "meta::pure::functions::string::tests::char::testEmptyChar_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: null character not permitted"
+    "expectedError" : "Execution error at ??, \"ERROR: null character not permitted\""
   }, {
     "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""

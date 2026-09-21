@@ -23,10 +23,10 @@
     "expectedError" : "Integer is not managed yet"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"For input string: \"1.25\"\"\""
+    "expectedError" : "[INVALID_VARIANT_CAST] org.apache.spark.SparkRuntimeException: [INVALID_VARIANT_CAST] The variant value `\"1.25\"` cannot be cast into `\"BIGINT\"`. Please use `try_variant_get` instead. SQLSTATE: 22023"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToListFromNonArrayVariant_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"List<Variant> is not managed yet!\"\""
+    "expectedError" : "[INVALID_VARIANT_CAST] org.apache.spark.SparkRuntimeException: [INVALID_VARIANT_CAST] The variant value `\"not an array\"` cannot be cast into `\"ARRAY<VARIANT>\"`. Please use `try_variant_get` instead. SQLSTATE: 22023"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_",
     "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\""

@@ -764,6 +764,8 @@
                                         <include>org.slf4j:jcl-over-slf4j:${slf4j.version}</include>
                                         <include>org.slf4j:slf4j-ext:${slf4j.version}</include>
                                         <include>org.finos.legend.pure:legend-pure-m4</include>
+                                        <include>org.finos.legend.pure:legend-pure-m3-core</include>
+                                        <include>org.finos.legend.pure:legend-pure-m3-bootstrap-generator</include>
                                         <include>ch.qos.reload4j:reload4j:${reload4j.version}</include>
                                     </includes>
                                 </bannedDependencies>

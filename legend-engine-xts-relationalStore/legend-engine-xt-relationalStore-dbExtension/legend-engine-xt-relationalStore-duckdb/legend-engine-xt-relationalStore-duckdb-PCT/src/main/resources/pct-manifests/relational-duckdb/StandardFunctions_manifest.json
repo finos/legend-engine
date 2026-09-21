@@ -23,7 +23,7 @@
     },
     {
       "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^"
+      "expectedError" : "Conversion Error: Unimplemented type for cast (INTEGER -> DATE)\n\nLINE 1: select 1 in (1, 2, 5, 2, 'a', true, DATE '2014-02-01', 'c')\n               ^"
     },
     {
       "test": "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
@@ -95,7 +95,7 @@
     },
     {
       "test": "meta::pure::functions::math::tests::bitShiftLeft::testBitShiftLeft_MoreThan62Bits_Function_1__Boolean_1_",
-      "expectedError": "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\"\""
+      "expectedError": "Execution error message mismatch.\nThe actual message was \"Out of Range Error: Overflow in left shift (1 << 63)\"\nwhere the expected message was:\"Unsupported number of bits to shift - max bits allowed is 62\""
     },
     {
       "test": "meta::pure::functions::math::tests::bitShiftRight::testBitShiftRight_MoreThan62Bits_Function_1__Boolean_1_",
@@ -123,7 +123,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'"
+      "expectedError" : "Binder Error: No function matches the given name and argument types 'max_by(INTEGER, INTEGER, INTEGER, INTEGER)'"
     },
     {
       "test": "meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_",
@@ -147,7 +147,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'"
+      "expectedError" : "Binder Error: No function matches the given name and argument types 'min_by(INTEGER, INTEGER, INTEGER, INTEGER)'"
     },
     {
       "test": "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
@@ -163,19 +163,19 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Binder Error: No function matches the given name and argument types 'quantile_cont(BIGINT[], DECIMAL(3,2))'"
+      "expectedError" : "Binder Error: No function matches the given name and argument types 'quantile_cont(BIGINT[], DECIMAL(3,2))'"
     },
     {
       "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Catalog Error: Aggregate Function with name percentile_cont does not exist!"
+      "expectedError" : "Catalog Error: Aggregate Function with name percentile_cont does not exist!"
     },
     {
       "test" : "meta::pure::functions::math::tests::toDegrees::testToDegrees_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."
+      "expectedError" : "Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."
     },
     {
       "test" : "meta::pure::functions::math::tests::toRadians::testToRadians_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."
+      "expectedError" : "Out of Range Error: Overflow in multiplication of DECIMAL(18) (10 * 565486677646162740). You might want to add an explicit cast to a bigger decimal."
     }
   ]
 }

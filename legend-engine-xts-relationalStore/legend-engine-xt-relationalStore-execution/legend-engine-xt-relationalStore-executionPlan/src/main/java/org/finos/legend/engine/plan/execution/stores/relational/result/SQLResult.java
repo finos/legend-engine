@@ -28,9 +28,11 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.function.Consumer;
@@ -77,6 +79,14 @@ public abstract class SQLResult extends Result implements StoreExecutable
             if (e instanceof RuntimeException)
             {
                 throw (RuntimeException) e;
+            }
+            if (e instanceof SQLException)
+            {
+                // See the identical guard in SQLExecutionResult/RelationalResult for why PureExecutionException
+                // (not a bare RuntimeException) is required to carry the driver's own message forward, and why
+                // cleanErrorMessage is applied first.
+                String message = DatabaseManager.fromString(databaseType).cleanErrorMessage(e.getMessage());
+                throw new PureExecutionException(message, e);
             }
             throw new RuntimeException(e);
         }

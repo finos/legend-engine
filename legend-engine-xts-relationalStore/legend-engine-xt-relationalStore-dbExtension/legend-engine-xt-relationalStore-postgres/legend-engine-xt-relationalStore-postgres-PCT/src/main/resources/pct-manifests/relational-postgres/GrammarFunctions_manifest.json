@@ -122,7 +122,7 @@
     "expectedError" : "\"\nexpected: -4.0D\nactual:   -4.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: bigint out of range"
+    "expectedError" : "Execution error at ??, \"ERROR: bigint out of range\""
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
@@ -134,7 +134,7 @@
     "expectedError" : "\"\nexpected: 6.0D\nactual:   6.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: bigint out of range"
+    "expectedError" : "Execution error at ??, \"ERROR: bigint out of range\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
@@ -143,7 +143,7 @@
     "expectedError" : "\"\nexpected: 353791.470D\nactual:   353791.47\""
   }, {
     "test" : "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: bigint out of range"
+    "expectedError" : "Execution error at ??, \"ERROR: bigint out of range\""
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
     "expectedError" : "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"

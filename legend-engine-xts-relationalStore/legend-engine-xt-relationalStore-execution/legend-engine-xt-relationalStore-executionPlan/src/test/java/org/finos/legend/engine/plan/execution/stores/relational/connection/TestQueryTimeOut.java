@@ -129,7 +129,7 @@ public class TestQueryTimeOut extends AlloyTestServer
         }
         catch (Exception e)
         {
-            Assert.assertEquals("org.h2.jdbc.JdbcSQLTimeoutException: Statement was canceled or the session timed out; SQL statement:", e.getMessage().substring(0, e.getMessage().indexOf('\n')));
+            Assert.assertEquals("Execution error at ??, \"Statement was canceled or the session timed out; SQL statement:", e.getMessage().substring(0, e.getMessage().indexOf('\n')));
             return;
         }
         Assert.fail("Cannot test QueryTimeOut as query runs for less than 1 second");

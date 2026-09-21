@@ -3,7 +3,7 @@
   "exclusions": [
     {
       "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect false and ((1.0 * 12) / 0) > 0"
+      "expectedError" : "Division by zero: \"12.0\"; SQL statement:\nselect false and ((1.0 * 12) / 0) > 0"
     },
     {
       "test": "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
@@ -11,7 +11,7 @@
     },
     {
       "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Division by zero: \"12.0\"; SQL statement:\nselect true or ((1.0 * 12) / 0) > 0"
+      "expectedError" : "Division by zero: \"12.0\"; SQL statement:\nselect true or ((1.0 * 12) / 0) > 0"
     },
     {
       "test": "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
@@ -203,7 +203,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"-9223372036854775718\";"
+      "expectedError" : "Numeric value out of range: \"-9223372036854775718\";"
     },
     {
       "test": "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
@@ -215,7 +215,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"9223372036854775807\""
+      "expectedError" : "Numeric value out of range: \"9223372036854775807\""
     },
     {
       "test": "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
@@ -227,7 +227,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
-      "expectedError" : "org.h2.jdbc.JdbcSQLDataException: Numeric value out of range: \"2\"; SQL statement:\nselect 2 * 9223372036854775807"
+      "expectedError" : "Numeric value out of range: \"2\"; SQL statement:\nselect 2 * 9223372036854775807"
     },
     {
       "test": "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",

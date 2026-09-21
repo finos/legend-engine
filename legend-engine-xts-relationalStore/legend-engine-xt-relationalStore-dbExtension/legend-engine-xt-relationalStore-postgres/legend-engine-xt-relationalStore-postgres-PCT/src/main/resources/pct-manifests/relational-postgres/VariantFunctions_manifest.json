@@ -2,7 +2,7 @@
   "adapter" : "meta::relational::tests::pct::postgres::testAdapterForRelationalWithPostgresExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToBooleanFromBadString_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Invalid Pure Boolean: 'hello'\"\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ERROR: invalid input syntax for type boolean: \"hello\"\"\nwhere the expected message was:\"Invalid Pure Boolean: 'hello'\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToClassWithInheritance_Function_1__Boolean_1_",
     "expectedError" : "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::to::Pet"
@@ -20,13 +20,13 @@
     "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Month is not managed yet!\"\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToIntegerFromFloat_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"Integer is not managed yet!\"\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ERROR: invalid input syntax for type bigint: \"1.25\"\"\nwhere the expected message was:\"Integer is not managed yet!\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToIntegerFromStringFloat_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"For input string: \"1.25\"\"\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ERROR: invalid input syntax for type bigint: \"1.25\"\"\nwhere the expected message was:\"For input string: \"1.25\"\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToStrictDateFromWrongString_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\"\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ERROR: invalid input syntax for type date: \"2020\"\"\nwhere the expected message was:\"StrictDate must be a calendar day, got: 2020\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::toMany::testToClassWithInheritance_Function_1__Boolean_1_",
     "expectedError" : "mapping missing and cannot construct return type for class: meta::pure::functions::variant::convert::tests::toMany::Pet"

@@ -14,7 +14,7 @@
     "expectedError" : "AsOfJoins are not supported in the generic generator!"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: syntax error at or near \"(\"\n"
+    "expectedError" : "Execution error at ??, \"ERROR: syntax error at or near \"(\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_",
     "expectedError" : "QUALIFY grammar is not supported"
@@ -50,7 +50,7 @@
     "expectedError" : "pivot is not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ERROR: more than one row returned by a subquery used as an expression\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"

@@ -135,7 +135,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in subtraction of INT64 (-9223372036854775718 - 132)!"
+      "expectedError" : "Out of Range Error: Overflow in subtraction of INT64 (-9223372036854775718 - 132)!"
     },
     {
       "test": "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
@@ -143,7 +143,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Parser Error: SELECT clause without selection list"
+      "expectedError" : "Parser Error: SELECT clause without selection list"
     },
     {
       "test": "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
@@ -151,7 +151,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in addition of INT64 (9223372036854775807 + 3)!"
+      "expectedError" : "Out of Range Error: Overflow in addition of INT64 (9223372036854775807 + 3)!"
     },
     {
       "test": "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
@@ -163,7 +163,7 @@
     },
     {
       "test" : "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
-      "expectedError" : "java.sql.SQLException: Out of Range Error: Overflow in multiplication of INT64 (2 * 9223372036854775807)!"
+      "expectedError" : "Out of Range Error: Overflow in multiplication of INT64 (2 * 9223372036854775807)!"
     },
     {
       "test": "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",

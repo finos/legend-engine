@@ -97,9 +97,6 @@
     "test" : "meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
-    "test" : "meta::pure::functions::collection::tests::slice::testSliceError_Function_1__Boolean_1_",
-    "expectedError" : "The low bound (3) can't be higher than the high bound (2) in a slice operation"
-  }, {
     "test" : "meta::pure::functions::collection::tests::sort::testMixedSortNoComparator_Function_1__Boolean_1_",
     "expectedError" : "Not supported: Number"
   }, {
@@ -299,7 +296,7 @@
     "expectedError" : "\nexpected: 9.0\nactual:   27.0"
   }, {
     "test" : "meta::pure::functions::math::tests::rem::testRemError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Remainder by zero"
   }, {
     "test" : "meta::pure::functions::math::tests::rem::testRemWithDecimals_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.14D\nactual:   0.14"
