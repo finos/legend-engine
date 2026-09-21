@@ -131,7 +131,7 @@
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:204 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toVariantList()."

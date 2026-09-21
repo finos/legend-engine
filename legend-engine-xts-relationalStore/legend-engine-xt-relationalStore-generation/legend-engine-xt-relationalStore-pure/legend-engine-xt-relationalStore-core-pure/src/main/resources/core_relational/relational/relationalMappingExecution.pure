@@ -110,9 +110,28 @@ function meta::relational::mapping::TDSSelectQueryToTDSResultType(class:Type[1],
         );
 }
 
+function <<access.private>> meta::relational::mapping::resolveTypeForUnboundReturnTypeParameter(fe:FunctionExpression[1]):meta::pure::metamodel::type::Type[1]
+{
+   let returnTypeParamName = $fe.genericType.typeParameter->toOne().name;
+   let matchingParam = $fe.func->functionType().parameters->zip($fe.parametersValues)
+                           ->filter(p | $p.first.genericType.typeParameter->isNotEmpty() && $p.first.genericType.typeParameter->toOne().name == $returnTypeParamName)
+                           ->first();
+   assert($matchingParam->isNotEmpty(), | 'Cannot determine the relational result type for \'' + $fe.func->elementToPath() + '\': its return type is an unresolved type parameter (\'' + $returnTypeParamName + '\') and no parameter of the function declares that same type parameter.');
+   $matchingParam->toOne().second.genericType.rawType->toOne();
+}
+
 function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], query:SQLQuery[1], node:ExecutionNode[1], m:Mapping[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1]):ExecutionNode[1]
 {
-   let possibleClass = $sq.vs.genericType.rawType->toOne();
+   // A non-native wrapper function (e.g. head(), whose body is just `$set->first()`) can reach this point with
+   // sq.vs already substituted -- by the router's preval inlining -- for its body's own inner FunctionExpression
+   // (first()'s call), without that inner call's return-type parameter being re-bound to the concrete type of
+   // the outer call's argument. genericType.rawType is then empty and genericType.typeParameter is populated
+   // instead. Recover the concrete type from whichever parameter of the function declares that same type
+   // parameter -- that parameter's own argument value is the outer call's, and is already concrete.
+   let possibleClass = if($sq.vs.genericType.rawType->isNotEmpty(),
+                           | $sq.vs.genericType.rawType->toOne(),
+                           | $sq.vs->cast(@FunctionExpression)->resolveTypeForUnboundReturnTypeParameter()
+                          );
    let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($sq.vs); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
    let resultType = if([
                           pair(
