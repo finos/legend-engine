@@ -107,5 +107,6 @@ public class VoidRelationalResult extends Result
             {
             }
         }
+        super.close();
     }
 }

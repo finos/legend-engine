@@ -94,6 +94,11 @@ public class BlockConnectionContext
         this.blockConnectionMap.values().forEach(BlockConnection::close);
     }
 
+    public void attachBlockConnectionsTo(Result result)
+    {
+        this.blockConnectionMap.values().forEach(result::addCloseable);
+    }
+
     public void closeAllBlockConnectionsAsync()
     {
         this.blockConnectionMap.values().forEach(blockConnection -> CompletableFuture.runAsync(blockConnection::close));

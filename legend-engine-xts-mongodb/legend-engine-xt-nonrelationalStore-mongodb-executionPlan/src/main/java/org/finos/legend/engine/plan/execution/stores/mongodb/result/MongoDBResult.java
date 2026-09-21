@@ -59,6 +59,7 @@ public class MongoDBResult extends Result
     {
         this.mongoCursor.close();
         this.mongoClient.close();
+        super.close();
     }
 
     @Override

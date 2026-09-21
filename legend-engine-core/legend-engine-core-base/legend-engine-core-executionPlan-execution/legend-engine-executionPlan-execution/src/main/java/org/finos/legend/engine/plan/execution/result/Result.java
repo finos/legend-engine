@@ -16,14 +16,20 @@ package org.finos.legend.engine.plan.execution.result;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.dependencies.store.shared.IResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public abstract class Result implements IResult
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Result.class);
+
     public String status;
     public GenerationInfo generationInfo = null;
     public List<ExecutionActivity> activities;
+
+    private final List<AutoCloseable> closeables = Lists.mutable.empty();
 
     public Result(String status)
     {
@@ -44,7 +50,28 @@ public abstract class Result implements IResult
         return this;
     }
 
+    public Result addCloseable(AutoCloseable closeable)
+    {
+        if (closeable != null)
+        {
+            this.closeables.add(closeable);
+        }
+        return this;
+    }
+
     public void close()
     {
+        this.closeables.forEach(closeable ->
+        {
+            try
+            {
+                closeable.close();
+            }
+            catch (Exception e)
+            {
+                LOGGER.error("error closing resource attached to result", e);
+            }
+        });
+        this.closeables.clear();
     }
 }

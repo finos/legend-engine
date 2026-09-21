@@ -77,6 +77,7 @@ public class ExternalFormatSerializeResult extends StreamingResult
         {
             this.childResult.close();
         }
+        super.close();
     }
 
     @Override

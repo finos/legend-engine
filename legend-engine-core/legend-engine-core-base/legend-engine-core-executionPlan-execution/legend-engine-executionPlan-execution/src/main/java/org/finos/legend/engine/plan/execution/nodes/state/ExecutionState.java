@@ -329,6 +329,17 @@ public class ExecutionState
         this.res.put(key, result);
     }
 
+    public void closeVariables(Result retained)
+    {
+        this.res.values().forEach(result ->
+        {
+            if (result != retained)
+            {
+                result.close();
+            }
+        });
+    }
+
     public void addParameterValue(String parameter, Object value)
     {
         addResult(parameter, (value instanceof Result) ? (Result) value : new ConstantResult(value));
