@@ -441,6 +441,15 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
 
 
     @Test
+    public void testAnalyticsForDataSpaceWithExecutableReferencingAnotherFunction() throws Exception
+    {
+        Artifact analyticsArtifact = runExtensionAndGetAnalytics("models/dataSpaceWithExecutableReferencingAnotherFunction.pure", "domain::COVIDDataspace");
+        Assert.assertEquals("json", analyticsArtifact.format);
+        Assert.assertTrue(analyticsArtifact.content.contains("\"executable\":\"domain::wrappedQuery__TabularDataSet_1_\""));
+        Assert.assertTrue(analyticsArtifact.content.contains("\"executableReturnType\""));
+    }
+
+    @Test
     public void testAnalyticsForDataSpaceTemplateWithExecutablesWithInlineRelationQuery() throws Exception
     {
         Artifact analyticsArtifact = runExtensionAndGetAnalytics("models/dataSpaceWithTemplateExecutablesWithInlineRelationQuery.pure", "domain::COVIDDataspace");

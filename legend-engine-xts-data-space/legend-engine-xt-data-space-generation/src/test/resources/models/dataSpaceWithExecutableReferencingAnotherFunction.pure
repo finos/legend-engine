@@ -1,0 +1,104 @@
+###DataSpace
+DataSpace domain::COVIDDataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: mapping::CovidDataMapping;
+      defaultRuntime: runtime::H2Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+  title: 'COVID Sample Data';
+  description: 'this is description of this COVIDDataspace';
+  executables:
+  [
+    {
+      id: 1;
+      title: 'wrapper exec';
+      executable: domain::wrappedQuery():TabularDataSet[1];
+      executionContextKey: 'dummyContext';
+    }
+  ];
+}
+
+###Relational
+Database store::CovidDataStore
+(
+  Table COVID_DATA
+  (
+    ID INTEGER PRIMARY KEY,
+    CASES INTEGER
+  )
+)
+
+
+###Pure
+Class domain::COVIDData
+{
+  id: Integer[1];
+  cases: Float[0..1];
+}
+
+function domain::baseQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  domain::COVIDData.all()->project([x: domain::COVIDData[1]|$x.cases], ['Cases'])
+}
+
+###Pure
+import domain::*;
+
+function domain::wrappedQuery(): meta::pure::tds::TabularDataSet[1]
+{
+  baseQuery()->from(
+    mapping::CovidDataMapping,
+    runtime::H2Runtime
+  )
+}
+
+###Mapping
+Mapping mapping::CovidDataMapping
+(
+  domain::COVIDData: Relational
+  {
+    ~primaryKey
+    (
+      [store::CovidDataStore]COVID_DATA.ID
+    )
+    ~mainTable [store::CovidDataStore]COVID_DATA
+    id: [store::CovidDataStore]COVID_DATA.ID,
+    cases: [store::CovidDataStore]COVID_DATA.CASES
+  }
+)
+
+###Connection
+RelationalDatabaseConnection runtime::connection::H2Connection
+{
+  store: store::CovidDataStore;
+  type: H2;
+  specification: LocalH2
+  {
+    testDataSetupSqls: [
+      'DROP TABLE IF EXISTS COVID_DATA;\nCREATE TABLE COVID_DATA(ID INT PRIMARY KEY, CASES INT);\nINSERT INTO COVID_DATA VALUES(1, 405);\n'
+      ];
+  };
+  auth: DefaultH2;
+}
+
+###Runtime
+Runtime runtime::H2Runtime
+{
+  mappings:
+  [
+    mapping::CovidDataMapping
+  ];
+  connections:
+  [
+    store::CovidDataStore:
+    [
+      connection_1: runtime::connection::H2Connection
+    ]
+  ];
+}
+
