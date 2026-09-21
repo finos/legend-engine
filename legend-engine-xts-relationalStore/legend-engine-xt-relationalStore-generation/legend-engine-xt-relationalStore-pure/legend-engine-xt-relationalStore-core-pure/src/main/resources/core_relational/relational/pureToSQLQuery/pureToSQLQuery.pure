@@ -1758,8 +1758,39 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::addMiss
   );
   pair($operation, ^$column(name = $newColumnName));
 }
+// Sentinel DynaFunction name a mapping-level construct (see PolymorphicChildTableMapping's own
+// comment in pct_relational.pure) uses to carry a JoinStrings node's four fields (strings, prefix,
+// separator, suffix) through a property mapping's own relationalOperationElement. A real JoinStrings
+// metamodel instance can't be used directly there: it is one of the few RelationalOperationElement
+// subtypes printRelationalOperationElement (grammarSerializerExtension.pure) has no case for, so a
+// mapping built with one embedded fails the harness's own print-then-recompile round trip (confirmed
+// live, Session 43 - "Match failure: ... instanceOf JoinStrings"). An ordinary, arbitrarily-named
+// DynaFunction call, by contrast, is already fully generic on both the printer and parser side
+// (confirmed Session 40 via TestRelationalGrammarRoundtrip's own testEnumDynaFunctionWithJoin), so
+// resolveDynaFunction converts this sentinel back into a real JoinStrings and delegates to
+// resolveJoinStrings the moment it is encountered post-reparse - the sentinel name is otherwise inert
+// and never appears via any real Pure function's own translation.
+function meta::relational::functions::pureToSqlQuery::isolateAndJoinStringsSentinelName():String[1]
+{
+  '__isolateAndJoinStrings';
+}
+
 // Resolves placeholder TACs inside a DynaFunction by recursing into each parameter.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveDynaFunction(d:DynaFunction[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  if($d.name == isolateAndJoinStringsSentinelName(),
+     | let js = ^meta::relational::metamodel::operation::JoinStrings(
+                  strings   = $d.parameters->at(0),
+                  prefix    = $d.parameters->at(1),
+                  separator = $d.parameters->at(2),
+                  suffix    = $d.parameters->at(3)
+                );
+       $js->resolveJoinStrings($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);,
+     | resolveOrdinaryDynaFunction($d, $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+  );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveOrdinaryDynaFunction(d:DynaFunction[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
   let newSelect = if($d.parameters->isEmpty(),
     | let select = $srcOperation.select;
@@ -1835,19 +1866,77 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 }
 // Resolves placeholder TACs inside JoinStrings by recursing into .strings, .prefix,
 // .separator, and .suffix sub-elements.
+//
+// .strings is resolved separately from prefix/separator/suffix (always plain literals in every known
+// usage) because it is the one operand where a nested to-many join embedded as a DynaFunction argument
+// (see PolymorphicChildTableMapping's own comment in pct_relational.pure) needs to be recognised and
+// isolated into its OWN aggregate scope, rather than flattened into the enclosing join tree, before this
+// JoinStrings collapses whatever it finds into one scalar value. resolveJoinElement's own
+// DynaFunction-argument recursion has no reliable way to distinguish "this nested join needs its own
+// GROUP BY" from "this is a legitimately flat chain continuation" for a BARE join reached that way - but
+// an explicitly-authored JoinStrings node (carrying its own separator/prefix/suffix, unlike a bare join)
+// is an unambiguous, deliberate signal that whatever rows resolving .strings fans out across should be
+// collapsed right here. This mirrors buildJoinStrings's own top-level dispatch (same
+// $aggFromMap.values->isEmpty() gate, same strings->size()==1 restriction, same manageAggregation call
+// with srcOperation as the pre-navigation cut point) - the only difference is WHERE this JoinStrings was
+// found (embedded inside a DynaFunction argument mid-resolution, rather than as a standalone
+// .joinStrings() FunctionExpression). See agent memory testliststring_harness_and_third_wall.md,
+// Session 42/43, for the full design history and why this signal (rather than a Join-multiplicity check
+// on a bare RelationalOperationElementWithJoin) is the safe one: no other production code path
+// constructs a JoinStrings node that reaches this dispatch arm today, so this new branch is unreachable
+// for every existing DynaFunction+join combination (eg an enum EnumerationMapping's own to-one
+// case(...)/if(...)-with-a-join-branch dispatch) and only fires for a construct that deliberately opts
+// in by embedding a JoinStrings.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveJoinStrings(js:JoinStrings[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
   let resolve = {r:RelationalOperationElement[1] |
     let swc = $r->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
     $state.inFilter->if(|$swc.select.filteringOperation, |$swc.select.columns)->toOne();
   };
+
+  let stringsResolved = $js.strings->map(s | $s->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions));
+  let mergedStrings = $stringsResolved.select->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+  let resolvedStringsCol = $state.inFilter->if(|$mergedStrings.filteringOperation, |$mergedStrings.columns);
+
   let resolved = ^$js(
-    strings   = $js.strings->map(s | $resolve->eval($s)),
+    strings   = $resolvedStringsCol,
     prefix    = $js.prefix->map(p | $resolve->eval($p)),
     separator = $js.separator->map(p | $resolve->eval($p)),
     suffix    = $js.suffix->map(p | $resolve->eval($p))
   );
-   $srcOperation->wrapLeafRelop($resolved, $state);
+
+  let isAggregation = ($js.strings->size() == 1) && !$aggFromMap.values->isEmpty();
+  if($isAggregation,
+     // manageAggregation's own GROUP BY is whatever ColumnGroup sits last in the aggFromMap it is
+     // given - correct at buildJoinStrings's own top-level call sites, since a nested .map() always
+     // pushes its OWN receiver's identity there right before diving into its lambda body (see
+     // processMap), keeping the ambient aggFromMap in sync with the isolation's own cut point. This
+     // JoinStrings was instead found embedded inside a DynaFunction argument, with NO intervening
+     // .map() boundary - the ambient $aggFromMap here is still whatever some earlier, unrelated
+     // ancestor scope pushed (eg the outermost List's own identity), not srcOperation's own current
+     // position. Passing it straight through produced syntactically-valid but semantically-wrong SQL
+     // (confirmed live, Session 43: an isolated subquery's own GROUP BY referencing an alias -
+     // "root" - not even in scope inside it, H2 rejecting it with "Column ROOT.PUREID__ not found").
+     // Build a fresh, correctly-scoped ColumnGroup from srcOperation's own current alias instead.
+     | manageAggregation($mergedStrings, $resolved, $srcOperation, $state, $nodeId, joinStringsIsolationAggFromMap($srcOperation, $aggFromMap), $context, $extensions);,
+     | $srcOperation->wrapLeafRelop($resolved, $state);
+  );
+}
+
+// The GROUP BY key to use when resolveJoinStrings isolates a nested to-many join with no
+// enclosing .map() boundary of its own: srcOperation's own current alias's primary key, if it
+// resolves to a plain Table (always true for the PolymorphicChildTableMapping construct this exists
+// for - a fresh discriminator child table). Falls back to the ambient aggFromMap unchanged for any
+// other relationalElement shape (eg a SelectSQLQuery), preserving today's behaviour rather than
+// guessing at a key that may not exist.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::joinStringsIsolationAggFromMap(srcOperation:SelectWithCursor[1], aggFromMap:List<ColumnGroup>[1]):List<ColumnGroup>[1]
+{
+  let alias = $srcOperation.currentTreeNode->toOne().alias->toOne();
+  let relation = $alias.relationalElement->toOne();
+  if($relation->instanceOf(Table),
+     | list(^ColumnGroup(columns = $relation->cast(@Table).primaryKey->map(pk | ^TableAliasColumn(alias = $alias, column = $pk))));,
+     | $aggFromMap;
+  );
 }
 // Places a leaf RelationalOperationElement (one with no column sub-references) onto
 // the srcOperation's select.columns or filteringOperation depending on state.inFilter.
@@ -4243,6 +4332,53 @@ function meta::relational::functions::pureToSqlQuery::containsAggregationFunctio
    $f->match([f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->evaluateAndDeactivate()->containsAggregationFunctionInValueSpecification($supported),a:Any[1]|false]);
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::mergeMapReceiverElements(elements:SelectWithCursor[*], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+   // processMap's own receiver ($f.parametersValues->at(0)) can resolve to more than one
+   // independent SelectWithCursor when the mapped collection is itself a literal, computed
+   // collection (eg two separate `pair(...)`-built values) rather than rows drawn from one real
+   // table - each such value comes back from processValueSpecificationReturnPropertyMapping as
+   // its OWN OperationWithParentPropertyMapping, each with select.data empty (no FROM clause,
+   // purely computed literal values). Modeled directly on processConcatenate's own
+   // no-real-table-divergence branch (this file, ~line 3022 onward): UNION ALL the arms into one
+   // combined SelectWithCursor, so the rest of processMap can proceed exactly as if there had only
+   // ever been one element all along.
+   assert($elements->map(e | $e.select.columns->size())->removeDuplicates()->size() <= 1,
+      | 'processMap: cannot merge multiple independent receiver results with differing column counts');
+
+   let aligned = $elements->map(e | let select = $e.select;
+                                     let alignedColumns = $select.columns->map(c | $c->match([
+                                                                                       a:Alias[1] | $a,
+                                                                                       t:TableAliasColumn[1] | $t,
+                                                                                       other:RelationalOperationElement[1] | ^Alias(name='value', relationalElement=$other)
+                                                                                     ]));
+                                     ^$e(select = ^$select(columns = $alignedColumns));
+                               );
+
+   let selects = $aligned.select->map(s | $s->pushSavedFilteringOperation($extensions));
+
+   let rootTable = ^TableAlias(name = 'union', relationalElement = ^UnionAll(queries = $selects));
+   let newRoot = ^RootJoinTreeNode(alias = $rootTable);
+   let firstSel = $aligned->at(0).select;
+
+   ^SelectWithCursor(
+      select = ^$firstSel(
+                     columns = $firstSel.columns->map(c | $c->match([
+                                     a:Alias[1] | ^TableAliasColumn(column = ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::Integer()), alias = $rootTable),
+                                     t:TableAliasColumn[1] | ^$t(alias = $rootTable)
+                                  ])),
+                     data = $newRoot,
+                     savedFilteringOperation = [],
+                     leftSideOfFilter = if($firstSel.leftSideOfFilter->isEmpty(), |[], |$newRoot),
+                     filteringOperation = [],
+                     havingOperation = [],
+                     groupBy = [],
+                     qualifyOperation = []
+                ),
+      currentTreeNode = $newRoot
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
   let windowFns = [first_Relation_1___Window_1__T_1__T_$0_1$_, offset_Relation_1__T_1__Integer_1__T_$0_1$_, last_Relation_1___Window_1__T_1__T_$0_1$_, nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_];
@@ -4251,7 +4387,16 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
       processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $newState, $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions);,
 
     | let res = processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions);
-      let mainQuery = $res.element->toOne()->cast(@SelectWithCursor)->manageIsolation([], $nodeId, false, $state, $context, $extensions);//$res.element->toOne()->cast(@SelectWithCursor);
+      let receiverElements = $res.element->cast(@SelectWithCursor);
+      // The receiver ordinarily resolves to exactly one SelectWithCursor. A literal, computed
+      // multi-element collection (eg a collection of `pair(...)`-built values) instead resolves to
+      // one independent SelectWithCursor PER element - merge those via UNION ALL rather than
+      // crashing on the ->toOne() below; see mergeMapReceiverElements for the full rationale.
+      let mergedReceiverElement = if($receiverElements->size() > 1,
+                                     | $receiverElements->mergeMapReceiverElements($context, $extensions);,
+                                     | $receiverElements->toOne();
+                                  );
+      let mainQuery = $mergedReceiverElement->manageIsolation([], $nodeId, false, $state, $context, $extensions);//$res.element->toOne()->cast(@SelectWithCursor);
       let select = $mainQuery.select;
       let mainQueryWithColumns = ^$mainQuery(select = ^$select(columns=[]));
 
@@ -4301,12 +4446,22 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
                                               // (see agent memory `to_many_primitive_join_duplication_bug.md` /
                                               // `testliststring_harness_and_third_wall.md`) that a receiver genuinely
                                               // backed by one scalar DataType column reduces to exactly one bare,
-                                              // non-Alias-wrapped TableAliasColumn here, structurally distinct from an
+                                              // non-Alias-wrapped operation element here, structurally distinct from an
                                               // ordinary Class-typed receiver (multiple Alias-wrapped identity/property
                                               // columns in the same probe). This fallback is unreachable for the
                                               // overwhelming majority of .map() calls, since an ordinary lambda's
                                               // parameter type is always statically resolvable and never reaches here.
-                                              $select.columns->size() == 1 && $select.columns->toOne()->instanceOf(TableAliasColumn);
+                                              //
+                                              // Originally checked instanceOf(TableAliasColumn) specifically (the only
+                                              // shape a uniform to-many-primitive property - eg List<String>.values -
+                                              // ever produces here). Widened to "bare, i.e. not Alias-wrapped" rather
+                                              // than enumerating every concrete RelationalOperationElement subtype,
+                                              // since a HETEROGENEOUS to-many property (eg List<Any>.values mixing a
+                                              // primitive with a nested List instance) resolves through an ordinary
+                                              // `if(kind__='P', value__, <join>)` DynaFunction instead of a bare
+                                              // column - still exactly one bare, non-Alias-wrapped operation element,
+                                              // the same structural signal, just a different concrete node type.
+                                              $select.columns->size() == 1 && !$select.columns->toOne()->instanceOf(Alias);
                                          );,
                                       a:Any[*] | false
                                    ]);

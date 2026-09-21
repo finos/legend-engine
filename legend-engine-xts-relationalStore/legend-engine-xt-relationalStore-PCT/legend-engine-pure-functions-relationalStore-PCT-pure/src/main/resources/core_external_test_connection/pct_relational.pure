@@ -146,7 +146,16 @@ function meta::relational::tests::pct::testAdapterForRelationalExecution<X|o>(f:
                   // whose value is a JSON array encoded as a single string/row (resultToType's own
                   // to-many handling further down) - so it's kept as the fallback whenever there's at
                   // most one row.
-                  let resultFinal = if($res.result.rows->size() > 1,
+                  //
+                  // A [0..1]/[1]-declared expression can still see more than one physical SQL row -
+                  // eg. a ->filter(...)->first()/->toOne() qualified property whose relational mapping
+                  // is a SQL no-op relying on downstream narrowing that this harness itself must
+                  // provide. Exploding every row into its own result there would be wrong (it isn't a
+                  // genuinely many-cardinality expression), so only take the row-per-result path when
+                  // the ORIGINAL Pure expression's own declared multiplicity is actually many-valued;
+                  // otherwise fall through to the single-row branch below and arbitrarily take the
+                  // first row, mirroring how a real to-one join would be narrowed.
+                  let resultFinal = if($res.result.rows->size() > 1 && !$f->functionReturnMultiplicity()->hasToOneUpperBound(),
                     | $res.result.rows->map(r | $r.values->head()->resultToType($f->functionReturnType(), PureOne)),
                     | let preResultFinal = $res.result.rows->head().values->head();
 
@@ -979,7 +988,13 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
           // possible for a class with exactly one equality key - a class with none (or more than one)
           // keeps today's exact behavior (every occurrence writes all its own values, duplicates and all)
           // since there is no known way to identify "the same value" reliably otherwise.
-          let rootEqKeyProps = $rootType.properties->filter(pr | $pr->hasStereotype('Key', meta::pure::profiles::equality));
+          //
+          // Restricted to a TO-ONE equality key: ->eval($v)->toOne() below assumes exactly one value per
+          // instance, which fails ("Cannot cast a collection of size N to multiplicity [1]") for a
+          // to-many <<equality.Key>> property - eg meta::pure::functions::collection::List<T>.values,
+          // which the standard library itself marks <<equality.Key>> despite being to-many. A to-many key
+          // falls back to today's no-dedup behavior, the same as a class with zero or multiple keys.
+          let rootEqKeyProps = $rootType.properties->filter(pr | $pr->hasStereotype('Key', meta::pure::profiles::equality) && $pr.multiplicity->hasToOneUpperBound());
           let dedupedValues = if($existingRootInfo->isEmpty() || $rootEqKeyProps->size() != 1,
               | $values,
               | let keyProp = $rootEqKeyProps->toOne();
@@ -995,6 +1010,12 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
           // relies on across sibling parent values within a single call.
           let priorChunkCounts = $allTables->map(t|pair($t, $t.csv->size()));
           let priorMultiChunkCounts = $allTables.multiPrimitiveMappings->map(m|pair($m, $m.csv->size()));
+          // A polymorphic to-many property (see PolymorphicChildTableMapping's own comment) writes into
+          // TWO physical child tables (the kind__/value__ discriminator table, and - only for container
+          // rows - the nested-values table), each needing its own independent chunk-count snapshot/delta,
+          // mirroring multiPrimitiveMappings's single-table version above.
+          let priorPolyChunkCounts = $allTables.polymorphicMappings->map(m|pair($m, $m.csv->size()));
+          let priorPolyNestedChunkCounts = $allTables.polymorphicMappings->map(m|pair($m, $m.nestedCsv->size()));
 
           if($dedupedValues->isEmpty(),
              | [],
@@ -1020,7 +1041,9 @@ function meta::relational::tests::pct::process::classesToDatabase(values:Any[*],
           // SAME table name appearing in more than one block - it just runs another INSERT batch against
           // the table it already created) - which requires re-attaching a real header here.
           let newCsvs = $priorChunkCounts->map(p|meta::relational::tests::pct::process::newCsvChunk($p.first.csv, $p.second, $p.first.table.schema.name->toOne(), $p.first.table.name, $p.first.table.columns->cast(@Column).name))
-                        ->concatenate($priorMultiChunkCounts->map(p|meta::relational::tests::pct::process::newCsvChunk($p.first.csv, $p.second, $p.first.table.schema.name->toOne(), $p.first.table.name, $p.first.table.columns->cast(@Column).name)));
+                        ->concatenate($priorMultiChunkCounts->map(p|meta::relational::tests::pct::process::newCsvChunk($p.first.csv, $p.second, $p.first.table.schema.name->toOne(), $p.first.table.name, $p.first.table.columns->cast(@Column).name)))
+                        ->concatenate($priorPolyChunkCounts->map(p|meta::relational::tests::pct::process::newCsvChunk($p.first.csv, $p.second, $p.first.table.schema.name->toOne(), $p.first.table.name, $p.first.table.columns->cast(@Column).name)))
+                        ->concatenate($priorPolyNestedChunkCounts->map(p|meta::relational::tests::pct::process::newCsvChunk($p.first.nestedCsv, $p.second, $p.first.nestedTable.schema.name->toOne(), $p.first.nestedTable.name, $p.first.nestedTable.columns->cast(@Column).name)));
           $state.mapping->toOne()->mutateAdd('classMappings', $newTables.classMapping);
 
           ^$state
@@ -1056,7 +1079,7 @@ function meta::relational::tests::pct::process::buildCSV(values:Any[*], class:Cl
         // neither of those - it gets its own row-writing step below, not this recursive-class path
         // (functionReturnType().rawType->toOne()->cast(@Class<Any>) would crash on it: there's no Class
         // to cast to, only a resolved primitive DataType).
-        let props = $class.properties->filter(p|!$info.properties->contains($p) && !$info.multiPrimitiveMappings.property->contains($p));
+        let props = $class.properties->filter(p|!$info.properties->contains($p) && !$info.multiPrimitiveMappings.property->contains($p) && !$info.polymorphicMappings.property->contains($p));
         $props->map(p|
                       let vals = $p->eval($v);
                       buildCSV($vals, $p->functionReturnType().rawType->toOne()->cast(@Class<Any>), $p, $id, $maps);
@@ -1080,6 +1103,44 @@ function meta::relational::tests::pct::process::buildCSV(values:Any[*], class:Cl
           $m->mutateAdd('csv', if($m.csv->isEmpty(),
               |$childHeader+'\n'+$childRows,
               |$childRows
+          ));
+        );
+
+        // A polymorphic to-many property (PolymorphicChildTableMapping) writes exactly one discriminator
+        // row per top-level element (kind__='P' plus its own value__, or kind__='C' with an empty
+        // value__), and - only for a container ('C') element - a further one row per nested element into
+        // the SEPARATE nested-values table, FK'd to the discriminator row's own id. Unlike a to-many
+        // class-typed property, this never builds a second ClassTableMapping/RootRelationalInstanceSet
+        // Implementation for the nested List instance - its own .values are written directly, since the
+        // property mapping (classToTable) already reads them back through a plain nested join, not
+        // through a mapped object navigation.
+        $info.polymorphicMappings->map(m |
+          let vals = $m.property->eval($v);
+          let discRows = $vals->map(cv |
+            let cid = $id*1000 + $vals->indexOf($cv);
+            if($cv->instanceOf(meta::pure::functions::collection::List),
+               | let nested = $cv->cast(@meta::pure::functions::collection::List<Any>).values;
+                 let nestedHeader = $m.nestedTable.schema.name->toOne()+'\n'+
+                                    $m.nestedTable.name+'\n'+
+                                    $m.nestedTable.columns->cast(@Column).name->joinStrings(',');
+                 let nestedRows = $nested->map(nv |
+                   let nid = $cid*1000 + $nested->indexOf($nv);
+                   $nid->toString()+','+$cid->toString()+','+$nv->toString()->csvEscapeValue();
+                 )->joinStrings('\n');
+                 $m->mutateAdd('nestedCsv', if($m.nestedCsv->isEmpty(),
+                     |$nestedHeader+'\n'+$nestedRows,
+                     |$nestedRows
+                 ));
+                 $cid->toString()+','+$id->toString()+',C,';,
+               | $cid->toString()+','+$id->toString()+',P,'+$cv->toString()->csvEscapeValue();
+            );
+          )->joinStrings('\n');
+          let discHeader = $m.table.schema.name->toOne()+'\n'+
+                             $m.table.name+'\n'+
+                             $m.table.columns->cast(@Column).name->joinStrings(',');
+          $m->mutateAdd('csv', if($m.csv->isEmpty(),
+              |$discHeader+'\n'+$discRows,
+              |$discRows
           ));
         );
 
@@ -1126,6 +1187,11 @@ Class meta::relational::tests::pct::process::ClassTableMapping
   // its own comment), tracked here so buildJoins/buildCSV know to skip them (they're already fully
   // wired) and so buildCSV knows where to write each element's own row.
   multiPrimitiveMappings : PrimitiveChildTableMapping[*];
+  // A to-many property whose elements are a HETEROGENEOUS mix (some primitive, some themselves a
+  // nested List instance - eg List<Any>.values in the standard library's own List<T>.toString()/
+  // format() PCT tests) doesn't fit multiPrimitiveMappings either (no single resolvable DataType for
+  // the whole collection). See PolymorphicChildTableMapping's own comment.
+  polymorphicMappings : PolymorphicChildTableMapping[*];
   // Stringified <<equality.Key>> property values already physically written to this table (across every
   // occurrence that has reused it so far - see classesToDatabase's own dedup comment) - lets a later
   // occurrence recognize a value it shares with an earlier one (eg both operands of in()/contains()
@@ -1156,6 +1222,49 @@ Class meta::relational::tests::pct::process::PrimitiveChildTableMapping
   table : Table[1];
   valueColumn : Column[1];
   csv : String[*];
+}
+
+// One of these per to-many polymorphic (heterogeneous-element) property classToTable builds child
+// tables for - see ClassTableMapping.polymorphicMappings. Two REAL, DDL-plain physical tables, never a
+// schema-level union/derived table (which this harness's own print-then-recompile round trip cannot
+// express - see plan.md Sessions 21-24): `table` holds one discriminator row per top-level element
+// (pureId__, a parent-FK, kind__ - 'P'/'C' - and value__, populated only for a 'P' row); `nestedTable`
+// holds one row per element of a 'C' row's own nested List.values (pureId__, a FK back to `table`'s own
+// row, and value__). The property's own RelationalPropertyMapping (classToTable) reads this back via an
+// ordinary `if(kind__='P', value__, [db]@Join | nestedTable.value__)` DynaFunction, whose container
+// branch is a PLAIN to-many join - never an embedded subquery - reusing the exact same JoinStrings
+// aggregation already proven correct for multiPrimitiveMappings, just one join-hop deeper. Confirmed via
+// a live IDE probe (see agent memory `testliststring_harness_and_third_wall.md`, Session 40) that this
+// exact if(...)-with-a-join-branch shape round-trips through this harness's own grammar printer with
+// zero new syntax needed.
+Class meta::relational::tests::pct::process::PolymorphicChildTableMapping
+{
+  property : Property<Nil,Any|*>[1];
+  table : Table[1];
+  valueColumn : Column[1];
+  csv : String[*];
+  nestedTable : Table[1];
+  nestedValueColumn : Column[1];
+  nestedCsv : String[*];
+}
+
+// A to-many property whose resolved element type is neither a primitive nor a Class (eg
+// List<Any>.values instantiated with a HETEROGENEOUS mix of a plain String and a nested List<String>
+// instance) can't be classified as multiPrimitive (no single resolvable DataType for the whole
+// collection) nor routed through buildJoins's ordinary class-typed-join path (there's no single target
+// Class - some elements aren't instances of any Class at all). Detected here per-ELEMENT instead,
+// directly against $sampleValue's own evaluated result: a value is "simple polymorphic" if it's either
+// a plain primitive (resolvable via pureTypeToDataType against its own runtime type) or a
+// meta::pure::functions::collection::List instance whose OWN values are themselves uniformly
+// primitive - deliberately bounded to this one shape (not general Class polymorphism), matching exactly
+// what List<Any>.toString()/format()'s heterogeneous-list PCT tests need.
+function <<access.private>> meta::relational::tests::pct::process::isSimplePolymorphicValue(v:Any[1]):Boolean[1]
+{
+  meta::relational::transform::fromPure::pureTypeToDataType($v->genericType())->isNotEmpty() ||
+  (
+    $v->instanceOf(meta::pure::functions::collection::List) &&
+    $v->cast(@meta::pure::functions::collection::List<Any>).values->forAll(sv | meta::relational::transform::fromPure::pureTypeToDataType($sv->genericType())->isNotEmpty())
+  );
 }
 
 function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1], db:Database[1], schema:Schema[1], mapping:Mapping[1], sampleValue:Any[0..1]):ClassTableMapping[1]
@@ -1203,6 +1312,22 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
                                                                && !$otherProperties->contains($p)
                                                                && meta::relational::transform::fromPure::pureTypeToDataType($resolveType->eval($p))->isNotEmpty()
                                                                && !$p.multiplicity->hasToOneUpperBound());
+  // A to-many property left unclassified by every bucket above (its resolved element type, via
+  // $resolveType's own sampleValue-based fallback, is a common supertype like Any - not a primitive,
+  // not an Enumeration) may still be a POLYMORPHIC collection classToTable CAN represent, provided every
+  // individual element - inspected directly via $sampleValue, not the collapsed common supertype -
+  // satisfies isSimplePolymorphicValue (primitive, or a nested List of uniformly primitive values). Only
+  // attempted when a sample is available (mirrors resolveType's own sampleValue dependency) and the
+  // sample's own evaluated elements are actually heterogeneous enough to need it - a property that's
+  // already uniform (all-primitive or all-Class) was already correctly classified above or is left to
+  // buildJoins's own class-typed-join path unchanged.
+  let polymorphicProperties = $class.properties->filter(p|!$enumProperties->contains($p)
+                                                             && !$otherProperties->contains($p)
+                                                             && !$multiPrimitiveProperties->contains($p)
+                                                             && !$p.multiplicity->hasToOneUpperBound()
+                                                             && $sampleValue->isNotEmpty()
+                                                             && $p->eval($sampleValue->toOne())->isNotEmpty()
+                                                             && $p->eval($sampleValue->toOne())->forAll(v | meta::relational::tests::pct::process::isSimplePolymorphicValue($v)));
   let properties = $enumProperties->concatenate($otherProperties);
 
   let enumCols = $enumProperties->map(p|^PropertyColumnMapping(property=$p, column=^Column(name=$p.name->toOne(), type=^meta::relational::metamodel::datatype::Varchar(size=1024))));
@@ -1321,13 +1446,120 @@ function meta::relational::tests::pct::process::classToTable(class:Class<Any>[1]
     ^PrimitiveChildTableMapping(property=$p, table=$childTable, valueColumn=$valueCol);
   );
 
+  // Each polymorphic (heterogeneous-element) to-many property gets TWO small child tables - see
+  // PolymorphicChildTableMapping's own comment - plus a Join from this class's own table to the
+  // discriminator table, a SECOND Join from the discriminator table to the nested-values table, and one
+  // RelationalPropertyMapping whose value expression is an ordinary `if(kind__='P', value__, [db]@Join |
+  // nestedTable.value__)` DynaFunction - never an embedded subquery/UnionAll, exactly the shape proven
+  // to round-trip this harness's own grammar printer (see agent memory
+  // `testliststring_harness_and_third_wall.md`, Session 40).
+  let polymorphicMappings = $polymorphicProperties->map(p |
+    let childRand = random() * 1000000000000000;
+    let childTableName = $tableName + '_' + $p.name->toOne() + '_poly_' + $childRand->floor()->toString();
+    let childIdCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
+    let fkCol = ^Column(name=$class.name->toOne()+'_'+$p.name->toOne()+'__', type=^meta::relational::metamodel::datatype::Integer());
+    let kindCol = ^Column(name='kind__', type=^meta::relational::metamodel::datatype::Varchar(size=1));
+    let valueCol = ^Column(name='value__', type=^meta::relational::metamodel::datatype::Varchar(size=1024));
+    let childTable = ^Table(name=$childTableName, schema=$schema, primaryKey=$childIdCol, columns=[$childIdCol, $fkCol, $kindCol, $valueCol]);
+    $schema->mutateAdd('tables', $childTable);
+
+    let nestedRand = random() * 1000000000000000;
+    let nestedTableName = $tableName + '_' + $p.name->toOne() + '_polyvals_' + $nestedRand->floor()->toString();
+    let nestedIdCol = ^Column(name='pureId__', type=^meta::relational::metamodel::datatype::Integer());
+    let nestedFkCol = ^Column(name='parentRow__', type=^meta::relational::metamodel::datatype::Integer());
+    let nestedValueCol = ^Column(name='value__', type=^meta::relational::metamodel::datatype::Varchar(size=1024));
+    let nestedTable = ^Table(name=$nestedTableName, schema=$schema, primaryKey=$nestedIdCol, columns=[$nestedIdCol, $nestedFkCol, $nestedValueCol]);
+    $schema->mutateAdd('tables', $nestedTable);
+
+    let parentAlias = ^TableAlias(database=$db, name='src', relationalElement=$table);
+    let childAlias = ^TableAlias(database=$db, name=$childTableName, relationalElement=$childTable);
+    let nestedAlias = ^TableAlias(database=$db, name=$nestedTableName, relationalElement=$nestedTable);
+
+    let parentJoin = ^Join
+               (
+                 name = $class.name->toOne() + '_' + $p.name->toOne() + '_poly',
+                 aliases = [pair($parentAlias,$childAlias),pair($childAlias,$parentAlias)],
+                 operation = ^DynaFunction
+                             (
+                               name = 'equal',
+                               parameters = [
+                                 ^TableAliasColumn(alias=$parentAlias, column=$idCol),
+                                 ^TableAliasColumn(alias=$childAlias, column=$fkCol)
+                               ]
+                             )
+               );
+    $db->mutateAdd('joins', $parentJoin);
+
+    let nestedJoin = ^Join
+               (
+                 name = $class.name->toOne() + '_' + $p.name->toOne() + '_polyvals',
+                 aliases = [pair($childAlias,$nestedAlias),pair($nestedAlias,$childAlias)],
+                 operation = ^DynaFunction
+                             (
+                               name = 'equal',
+                               parameters = [
+                                 ^TableAliasColumn(alias=$childAlias, column=$childIdCol),
+                                 ^TableAliasColumn(alias=$nestedAlias, column=$nestedFkCol)
+                               ]
+                             )
+               );
+    $db->mutateAdd('joins', $nestedJoin);
+
+    let propMapping = ^RelationalPropertyMapping
+                       (
+                         property = $p,
+                         sourceSetImplementationId = $class.name->toOne(),
+                         targetSetImplementationId = '',
+                         owner = $set,
+                         relationalOperationElement = ^RelationalOperationElementWithJoin
+                                                      (
+                                                        joinTreeNode = ^JoinTreeNode(joinName=$parentJoin.name, database=$db, alias=$parentAlias, join=$parentJoin),
+                                                        relationalOperationElement = ^DynaFunction
+                                                                                     (
+                                                                                       name = 'if',
+                                                                                       parameters = [
+                                                                                         ^DynaFunction(name='equal', parameters=[^TableAliasColumn(alias=$childAlias, column=$kindCol), ^Literal(value='P')]),
+                                                                                         ^TableAliasColumn(alias=$childAlias, column=$valueCol),
+                                                                                         // Wrapped in the router's `__isolateAndJoinStrings` sentinel DynaFunction (rather than a
+                                                                                         // bare RelationalOperationElementWithJoin, as multiPrimitiveMappings's own single-level
+                                                                                         // construct uses, or a raw JoinStrings, which this harness's own print-then-recompile
+                                                                                         // round trip can't carry - see resolveDynaFunction's own comment in pureToSQLQuery.pure)
+                                                                                         // carrying the exact prefix/separator/suffix
+                                                                                         // meta::pure::functions::collection::List<T>.toString()'s own generic body applies
+                                                                                         // recursively to a nested List's own values ('[' + values->joinStrings(', ') + ']') -
+                                                                                         // this is the signal the router needs to isolate this nested to-many join into its own
+                                                                                         // aggregate scope instead of flattening it into the outer discriminator join's own scope.
+                                                                                         ^DynaFunction
+                                                                                         (
+                                                                                           name = meta::relational::functions::pureToSqlQuery::isolateAndJoinStringsSentinelName(),
+                                                                                           parameters = [
+                                                                                             ^RelationalOperationElementWithJoin
+                                                                                             (
+                                                                                               joinTreeNode = ^JoinTreeNode(joinName=$nestedJoin.name, database=$db, alias=$childAlias, join=$nestedJoin),
+                                                                                               relationalOperationElement = ^TableAliasColumn(alias=$nestedAlias, column=$nestedValueCol)
+                                                                                             ),
+                                                                                             ^Literal(value='['),
+                                                                                             ^Literal(value=', '),
+                                                                                             ^Literal(value=']')
+                                                                                           ]
+                                                                                         )
+                                                                                       ]
+                                                                                     )
+                                                      )
+                       );
+    $set->mutateAdd('propertyMappings', $propMapping);
+
+    ^PolymorphicChildTableMapping(property=$p, table=$childTable, valueColumn=$valueCol, nestedTable=$nestedTable, nestedValueColumn=$nestedValueCol);
+  );
+
   ^ClassTableMapping
   (
     class = $class,
     table = $table,
     properties = $properties,
     classMapping = $set,
-    multiPrimitiveMappings = $multiPrimitiveMappings
+    multiPrimitiveMappings = $multiPrimitiveMappings,
+    polymorphicMappings = $polymorphicMappings
   );
 }
 
@@ -1361,9 +1593,13 @@ function meta::relational::tests::pct::process::buildJoins(class:Class<Any>[1], 
   // primitive property (eg List<T>.values) was already fully wired - own child table, own join, own
   // RelationalPropertyMapping - by classToTable itself (see multiPrimitiveMappings there), so it's
   // excluded here the same way a plain column is, rather than wrongly routed into THIS function's
-  // class-typed-join path (which would hit the identical "$targetType doesn't exist" problem).
+  // class-typed-join path (which would hit the identical "$targetType doesn't exist" problem). A
+  // polymorphic (heterogeneous-element) to-many property (see polymorphicMappings) was fully wired the
+  // same way and needs the identical exclusion - functionReturnType() is completely EMPTY for it (an
+  // unbound generic, not merely unresolved to Any), so $targetType->toOne() below would crash with
+  // "Cannot cast a collection of size 0 to multiplicity [1]".
   let cols = $class.properties
-                ->filter(p|!$src.properties->contains($p) && !$src.multiPrimitiveMappings.property->contains($p))
+                ->filter(p|!$src.properties->contains($p) && !$src.multiPrimitiveMappings.property->contains($p) && !$src.polymorphicMappings.property->contains($p))
                 ->map(p|
                         let targetType = $p->functionReturnType().rawType->toOne();
                         let target = $classTableMappings->filter(ctm|$ctm.class == $targetType)->toOne();
@@ -1616,4 +1852,5 @@ function <<test.Test>> meta::relational::tests::pct::process::tests::classToDB::
                 'zip'
                ], $res.mapping.classMappings->cast(@RootRelationalInstanceSetImplementation).propertyMappings.property.name);
 }
+
 

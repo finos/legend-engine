@@ -46,6 +46,17 @@ Class meta::pure::router::routing::RoutingState
    executionContext: meta::pure::runtime::ExecutionContext[1] = ^meta::pure::runtime::ExecutionContext();
    graphFetchFlow  : Boolean[0..1];
    functionExpressionStack : FunctionExpression[*];
+   // Type-parameter-name -> concrete GenericType bindings currently in scope, populated while routing
+   // an inlined (BRANCH B) generic FunctionDefinition's own body, mirroring
+   // meta::pure::router::preeval::State.inScopeTypeParams/addToScope. Kept on RoutingState itself
+   // (rather than threaded as a new explicit function parameter, the way vars/inScopeVars are) so it
+   // propagates through the whole recursive routing walk for free via the existing ^$state(...)
+   // copy-with-override pattern. MUST be reset back to $state.inScopeTypeParams at every point that
+   // already resets depth/propertyMap this same way (processCollection's own sibling fold, and
+   // routeFunctionExpressionFunctionDefinition's second fold) - otherwise one sibling argument's own
+   // generic-inlining binding could leak sideways into an unrelated sibling sharing a common
+   // type-parameter name (T/U/V), the same leak processCollection already guards against for variables.
+   inScopeTypeParams : Map<String, GenericType>[1] = ^Map<String, GenericType>();
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -91,24 +102,28 @@ function meta::pure::router::routing::processCollection(state:RoutingState[1], c
                                               |^$last(
                                                 value = $c,
                                                 depth = $state.depth,
-                                                propertyMap = $state.propertyMap
+                                                propertyMap = $state.propertyMap,
+                                                inScopeTypeParams = $state.inScopeTypeParams
                                               )->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);),
                                         pair( |$c->instanceOf(Path) && $shouldProcess->eval($c),
                                               |^$last(
                                                   value = $c,
                                                   depth = $state.depth,
-                                                  propertyMap = $state.propertyMap
+                                                  propertyMap = $state.propertyMap,
+                                                  inScopeTypeParams = $state.inScopeTypeParams
                                                 )->routePath($executionContext, $vars, $inScopeVars, $extensions, $debug);),
                                         pair( |$c->instanceOf(KeyExpression) && $shouldProcess->eval($c),
                                               |let ke = $c->cast(@KeyExpression);
-                                              let routedExpression = ^$last(value = $ke.expression, depth = $state.depth, propertyMap = $state.propertyMap)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
+                                              let routedExpression = ^$last(value = $ke.expression, depth = $state.depth, propertyMap = $state.propertyMap, inScopeTypeParams = $state.inScopeTypeParams)->routeValueSpecification($executionContext, $vars, $inScopeVars, $extensions, $debug);
                                               ^$last(value = ^$ke(expression=$routedExpression.value->cast(@ValueSpecification)->toOne()),
                                                       depth = $state.depth,
-                                                      propertyMap = $state.propertyMap);)
+                                                      propertyMap = $state.propertyMap,
+                                                      inScopeTypeParams = $state.inScopeTypeParams);)
                                       ],
                                       |^$last(value = $c,
                                               depth = $state.depth,
-                                              propertyMap = $state.propertyMap
+                                              propertyMap = $state.propertyMap,
+                                              inScopeTypeParams = $state.inScopeTypeParams
                                             )
                                    );
                      $a->add($newState);
@@ -319,8 +334,42 @@ function meta::pure::router::routing::prevalAggColSpec(a:AggColSpec<Any,Any,Any>
   ^$reduceR(value = $newColSpec);
 }
 
+// Local reimplementation of meta::pure::router::preeval::resolveGenericType/resolveFunctionType's own
+// substitution rule, against RoutingState's own inScopeTypeParams rather than preeval's private State -
+// different package, different State type, so not directly reusable from there. A no-op whenever
+// inScopeTypeParams is empty (i.e. outside any active generic-function-inlining context), by construction.
+function <<access.private>> meta::pure::router::routing::resolveGenericTypeAgainstScope(in:GenericType[1], inScopeTypeParams:Map<String, GenericType>[1]):GenericType[1]
+{
+  if($in.typeParameter->isNotEmpty(),
+    | let bound = $inScopeTypeParams->get($in.typeParameter->toOne().name);
+      if($bound->isEmpty(), | $in, | $bound->toOne());,
+    | if($in.rawType->isNotEmpty() && $in.rawType->toOne()->instanceOf(FunctionType),
+        | ^$in(rawType = $in.rawType->cast(@FunctionType)->toOne()->resolveFunctionTypeAgainstScope($inScopeTypeParams));,
+        | ^$in(typeArguments = $in.typeArguments->map(ta|$ta->resolveGenericTypeAgainstScope($inScopeTypeParams)));
+      );
+  );
+}
+
+function <<access.private>> meta::pure::router::routing::resolveFunctionTypeAgainstScope(in:FunctionType[1], inScopeTypeParams:Map<String, GenericType>[1]):FunctionType[1]
+{
+  ^$in
+  (
+    parameters = $in.parameters->map(x|^$x(genericType = $x.genericType->resolveGenericTypeAgainstScope($inScopeTypeParams))),
+    returnType = $in.returnType->resolveGenericTypeAgainstScope($inScopeTypeParams)
+  );
+}
+
 function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
+  // Resolve $fe's own genericType/resolvedTypeParameters against whatever generic-inlining scope is
+  // currently active (a no-op outside one). Runs on EVERY entry to this function, including every
+  // recursive re-entry reached while routing an inlined BRANCH B body's own nested calls - the
+  // structural property that makes this recursive rather than a single outermost-node patch.
+  let resolvedFe = if($state.inScopeTypeParams->isEmpty(),
+                      | $fe,
+                      | ^$fe(genericType = $fe.genericType->resolveGenericTypeAgainstScope($state.inScopeTypeParams),
+                             resolvedTypeParameters = $fe.resolvedTypeParameters->map(rtp|$rtp->resolveGenericTypeAgainstScope($state.inScopeTypeParams)))
+                    );
   if ($fe.parametersValues->isEmpty(),
       | if ($f->instanceOf(NativeFunction) || $f->shouldStop($extensions),
           | $state,
@@ -353,10 +402,10 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                         if($p->isFunction(),
                                                           | let i   = $p->byPassRouterInfo()->cast(@InstanceValue);
                                                             let res = if($i.values->size() == 1,
-                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
+                                                                        |^$i(values=$i.values->at(0))->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));,
                                                                         |$i.values->cast(@Function<Any>)
                                                                                   ->fold(
-                                                                                    {f,a| let processOne    = ^$i(values=$f)->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$a(propertyMap=$state.propertyMap, shouldBeRouted=$currentLast.shouldBeRouted), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                    {f,a| let processOne    = ^$i(values=$f)->match([r:ExtendedRoutedValueSpecification[1]|$r.value,v:ValueSpecification[1]|$v])->cast(@InstanceValue)->processLambda($routed, ^$a(propertyMap=$state.propertyMap, shouldBeRouted=$currentLast.shouldBeRouted, inScopeTypeParams=$state.inScopeTypeParams), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                           let existingValue = $a.value->evaluateAndDeactivate()->toOne()->cast(@InstanceValue);
                                                                                           ^$processOne(
                                                                                               depth = $lastFirstPass.depth,
@@ -391,7 +440,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                         [
                                                                                                                                           x:FunctionExpression[1]|$a->concatenate($fe->cast(@FunctionExpression)->processAggregationFunctionExpression($routed, ^$currentLast(routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, $debug));,
                                                                                                                                           x:FuncColSpec<Any,Any>[1]|
-                                                                                                                                             let res = prevalFuncColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                             let res = prevalFuncColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                              $a->concatenate($res);,
                                                                                                                                           x:FuncColSpecArray<Any,Any>[1]|
                                                                                                                                             // Per-sibling snapshot: reset shouldBeRouted / functionExpressionStack / depth
@@ -403,7 +452,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let res = $x.funcSpecs->fold({f, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalFuncColSpec($f, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@FuncColSpec<Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@FuncColSpec<Any, Any>)))
@@ -413,7 +462,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let newState = $res.first;
                                                                                                                                             $a->concatenate(^$newState(value = $funcSpecs));,
                                                                                                                                           x:AggColSpec<Any,Any,Any>[1]|
-                                                                                                                                            let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                            let res = prevalAggColSpec($x, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                             $a->concatenate($res);,
                                                                                                                                           x:AggColSpecArray<Any,Any,Any>[1]|
                                                                                                                                             // Per-sibling snapshot -- see the sibling FuncColSpecArray arm above for the full
@@ -421,7 +470,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let res = $x.aggSpecs->fold({as, a|
                                                                                                                                                 let oldState = $a.first;
                                                                                                                                                 let colSpecs = $a.second;
-                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let newState = prevalAggColSpec($as, $routed, ^$oldState(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $oldState.routingStrategy, counter = $oldState.counter, shouldBeRouted = $lastState.shouldBeRouted, depth = $lastState.depth), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 pair($newState, ^$colSpecs(values += $newState.value->cast(@AggColSpec<Any, Any, Any>)));
                                                                                                                                               },
                                                                                                                                               pair($lastState, list([]->cast(@AggColSpec<Any, Any, Any>)))
@@ -431,7 +480,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                             let newState = $res.first;
                                                                                                                                             $a->concatenate(^$newState(value=$aggSpecs));,
                                                                                                                                           agg:meta::pure::functions::collection::AggregateValue<Nil,Any,Any>[1]|
-                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 let aggFn = processAggregationValueFunction($agg.aggregateFn, $routed, $mapFn, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 
                                                                                                                                                 let d = $p->cast(@ValueSpecification).genericType->dynamicNew(
@@ -446,7 +495,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                                                                                       );
                                                                                                                                                 $a->concatenate(^$aggFn(value=$d));,
                                                                                                                                           agg:meta::pure::tds::AggregateValue<Any,Any>[1]|
-                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
+                                                                                                                                                let mapFn = processAggregationValueFunction($agg.mapFn, $routed, ^$currentLast(pathPrefix=$pathPrefix, propertyMap=$state.propertyMap, inScopeTypeParams=$state.inScopeTypeParams, routingStrategy = $lastState.routingStrategy, counter = $lastState.counter), $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
                                                                                                                                                 let aggFn = processAggregationValueFunction($agg.aggregateFn, $routed, $mapFn, $executionContext, $vars, $inScopeVars, $extensions, ^$debug(space = $debug.space+'  '));
 
                                                                                                                                                 let d = $p->cast(@ValueSpecification).genericType->dynamicNew(
@@ -489,9 +538,9 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
 
         let lastSecondPass = $secondPassResults->last()->toOne();
 
-        let returnClass = if($fe.genericType.rawType->first() == Checked,
-                              | $fe.genericType.typeArguments->first().rawType,
-                              | $fe.genericType.rawType->first()
+        let returnClass = if($resolvedFe.genericType.rawType->first() == Checked,
+                              | $resolvedFe.genericType.typeArguments->first().rawType,
+                              | $resolvedFe.genericType.rawType->first()
                             );
 
         let newSet = $routed->concatenate($secondPass.value->filter(p|$p->instanceOf(ExtendedRoutedValueSpecification))->cast(@ExtendedRoutedValueSpecification));
@@ -514,7 +563,7 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                   );
             );
 
-        let fullRes = ^$fe(parametersValues = $secondPass.value->cast(@ValueSpecification));
+        let fullRes = ^$resolvedFe(parametersValues = $secondPass.value->cast(@ValueSpecification));
 
         let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)), $inScopeVars);
 
@@ -537,8 +586,8 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                                                                                                   ^$routedExprSeq(value=^$fullRes(func=$newQp), pathPrefix=$state.pathPrefix);,
                                                           e:ExtendedRoutedValueSpecification[1] | let qpSrcState = $firstPassResults->at(0);              //rebuild Qp with routed expressionSequence
                                                                                                   let newQp = ^$qp(expressionSequence=$e, owner=^PropertyOwner());
-                                                                                                  let qpVal = ^$e(genericType = $fe.genericType,
-                                                                                                                  multiplicity = $fe.multiplicity,
+                                                                                                  let qpVal = ^$e(genericType = $resolvedFe.genericType,
+                                                                                                                  multiplicity = $resolvedFe.multiplicity,
                                                                                                                   value = ^$fullRes(func=$newQp));
                                                                                                   ^$routedExprSeq(value=$qpVal, pathPrefix=$state.pathPrefix);
                                                                                                   ]);
@@ -556,7 +605,23 @@ function meta::pure::router::routing::routeFunctionExpressionFunctionDefinition(
                     ^$lastSecondPass(shouldBeRouted = $shouldBeRouted, value=$possiblyWrapperd, pathPrefix=$state.pathPrefix);,
                   | let newVars = $fullRes->mapVariables(newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),$inScopeVars);
                     assert($f->cast(@FunctionDefinition<Any>).expressionSequence->size() <= 1, | 'Function ' +$f->cast(@FunctionDefinition<Any>)->elementToPath() + ' is not yet supported as functions with more than one expression can not be routed');
-                    ^$lastSecondPass(value=$f->cast(@FunctionDefinition<Any>).expressionSequence->at(0))->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
+                    // BRANCH B: $f's own declaration-time body, whose genericType is expressed in terms of
+                    // $f's OWN unbound type parameters (shared/compiled once across every call site), is
+                    // about to be routed directly. Resolve those type parameters against $resolvedFe's own
+                    // already-known concrete bindings (resolvedTypeParameters) before recursing, and layer
+                    // the resulting binding onto (rather than replacing) the scope already in effect, so a
+                    // nested generic-in-generic call's own inner names correctly shadow the outer ones.
+                    let rawBody = $f->cast(@FunctionDefinition<Any>).expressionSequence->at(0);
+                    let typeParamNames = $f->functionType().typeParameters.name;
+                    let newTypeParams = if($typeParamNames->isEmpty() || $resolvedFe.resolvedTypeParameters->isEmpty(),
+                                            | $state.inScopeTypeParams,
+                                            | $state.inScopeTypeParams->putAll($typeParamNames->zip($resolvedFe.resolvedTypeParameters))
+                                          );
+                    let resolvedBody = if($newTypeParams->isEmpty(),
+                                          | $rawBody,
+                                          | ^$rawBody(genericType = $rawBody.genericType->resolveGenericTypeAgainstScope($newTypeParams));
+                                        );
+                    ^$lastSecondPass(value=$resolvedBody, inScopeTypeParams=$newTypeParams)->routeValueSpecification($executionContext, $vars->putAll($newVars), $inScopeVars, $extensions, $debug);
               );
         );
   );

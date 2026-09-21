@@ -74,16 +74,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::head::testHeadOnOneElement_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::head::testHeadSimple_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at ??, \"Expected at most one object, but found many\""
   }, {
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0\nactual:   1"
@@ -341,7 +332,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:229 column:57), \"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
@@ -391,11 +382,8 @@
     "test" : "meta::pure::functions::string::tests::toString::testDateToString_Function_1__Boolean_1_",
     "expectedError" : "Date has no day: 2014-01"
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:1007 column:99), \"Cannot cast a collection of size 3 to multiplicity [1]\""
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:4254 column:37), \"Cannot cast a collection of size 2 to multiplicity [1]\""
+    "expectedError" : "The system can't find a mapping (0) for the class 'meta::pure::functions::collection::Pair' in the mapping ''"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPersonToString_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"

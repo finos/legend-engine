@@ -138,3 +138,249 @@ function <<access.private>> meta::pure::router::tests::topLevelFunctionToTestWit
     let firstResult = $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
     $businessDate->topLevelFunctionToTestWithClashingParametersProcessingFunc($prevBusinessDate);
 }
+
+// Regression suite for routeFunctionExpressionFunctionDefinition's own generic-type handling
+// (core/pure/router/routing/router_routing.pure) - specifically its fallback branch ("BRANCH B") that
+// inlines a generic, non-native, single-expression-body FunctionDefinition (pair(), toIndexed(), get(),
+// head(), etc.) by routing the function's raw, compiled-once declaration body directly. That body's
+// genericType carries the function's UNBOUND declared type parameters (e.g. Pair<U,V>), shared across
+// every call site, unless the call site's own already-resolved concrete binding
+// (FunctionExpression.resolvedTypeParameters) is substituted in first. See testPairCollectionToString's
+// own multi-session history (testpaircollectiontostring_two_walls.md, Sessions 25-32) for the full
+// investigation.
+//
+// STATUS as of Session 33 (2026-09-20): the underlying defect in BRANCH B is CONFIRMED and still OPEN -
+// testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeFor{Pair,ToIndexed,Get} and
+// ...ResolvesGenericTypeForNestedGenericCallInHeadShapedFunction below are EXPECTED TO FAIL until it is
+// fixed. Session 32 implemented a single top-level genericType substitution on the raw inlined body
+// (mirroring meta::pure::router::preeval's addToScope/resolveGenericType) - it fixed pair()/toIndexed()/
+// get() but regressed meta::pure::functions::collection::tests::head::testHeadComplex via the full H2 PCT
+// sweep. Session 33 implemented a genuinely RECURSIVE fix instead - a new RoutingState.inScopeTypeParams
+// field, scoped exactly like the pre-existing depth/propertyMap fields (explicitly reset to the enclosing
+// $state's own value at every sibling-fold point in processCollection and in
+// routeFunctionExpressionFunctionDefinition's own lambda/aggregate-column fold, so bindings can never leak
+// across sibling expressions - mirroring testRouterScopeDoesNotLeakAcrossExpressions's own pre-existing
+// guarantee for variable scoping), populated at BRANCH B and consulted afresh on ENTRY to
+// routeFunctionExpressionFunctionDefinition for every FunctionExpression reached during the recursive
+// walk (not just the outermost inlined node) via two new local helpers, resolveGenericTypeAgainstScope/
+// resolveFunctionTypeAgainstScope. This is verified, live, to reach genuinely nested calls that a one-shot
+// patch structurally cannot - see ...ResolvesGenericTypeForNestedGenericCallInHeadShapedFunction below,
+// confirmed to pass under Session 33's fix (outerGenericType=String, nestedReceiverGenericType=String,
+// i.e. both first()'s own top-level node AND distinct()'s genuinely nested receiver resolve correctly).
+//
+// Despite being strictly more thorough than Session 32's own attempt, Session 33's fix reproduces
+// testHeadComplex's EXACT SAME regression, byte-for-byte identical error text ("Cannot cast a collection
+// of size 2 to multiplicity [0..1]") - disproving Session 32's own working theory (that the gap was
+// "stale nested resolvedTypeParameters"/"the receiver's own inner genericType never touched"). Session 33
+// root-caused it precisely instead: head<T>()'s body calls first(), whose relational mapping
+// (meta::relational::functions::pureToSqlQuery, the PureFunctionToRelationalFunctionPair table) is
+// processNoOp - a SQL no-op that relies on the row being narrowed to "just the first one" by some
+// downstream mechanism, not by the generated SQL itself. While head's own body carried an UNRESOLVED
+// genericType (Session 32/33's shared starting point), routing evidently could not fully push the call
+// down to SQL, and fell back to a path that computes first() correctly. Once genericType is fully
+// resolved (by EITHER Session 32's narrower fix or Session 33's recursive one - both trigger this
+// identically), the call becomes newly eligible for full SQL push-down, the underlying query genuinely
+// returns 2 physical rows (firm2 has 2 employees), and
+// core_external_test_connection/pct_relational.pure's own result-reconstruction heuristic (lines
+// ~141-156: "$res.result.rows->size() > 1" is read as "the original Pure expression was itself
+// many-cardinality per row" - true for e.g. $people->map(p|p.lastName), false for first()'s own "many
+// rows come back, only the first matters" shape) maps each of the 2 rows into its own scalar result,
+// producing a 2-element list that then fails the OUTER testHeadComplex lambda's own declared T[0..1] cast
+// at pct_relational.pure line 176. This is a downstream relational-execution/PCT-test-harness interaction
+// - orthogonal to, and not curable by, any amount of router-level genericType-completeness work - and
+// plausibly (not confirmed either way this session) affects every other processNoOp-mapped, multiplicity-
+// narrowing NativeFunction the same way once called from inside a newly-fully-resolvable generic body, a
+// materially larger and differently-shaped blast radius than either session anticipated. Per this
+// project's own "more invasive than anticipated -> stop, revert, keep the test suite" convention, Session
+// 33's fix was reverted in full; router_routing.pure carries zero diff from its pre-session baseline. This
+// suite is left in place, genuinely failing on all four affected-case tests, as the regression net for
+// whoever attempts the real fix next - see plan.md's Session 33 write-up for the complete evidence trail,
+// including the live H2-adapter reproduction and the exact pct_relational.pure lines implicated.
+//
+// Methodological note (extended by Session 33): a router-only probe (routeFunction(f, []), inspecting
+// only the routed body's own genericType, no relational store at all) reports head<T>() as "fixed" just
+// as confidently as pair()/toIndexed()/get() are, REGARDLESS of whether the fix is a shallow one-shot
+// patch or Session 33's genuinely recursive one - the real defect this specific case exposes is invisible
+// to ANY router-only check, however thorough, because it lives entirely in relational SQL-push-down
+// eligibility and the PCT test harness's own result-reconstruction heuristic, neither of which a
+// routeFunction(f, [])-only probe ever touches. Only the full relational PCT execution (specifically,
+// running testHeadComplex through the real H2 adapter) surfaced the regression, and no strengthening of
+// the router-only suite alone (e.g. testing genuinely nested generic calls, as Session 33 also did) can
+// substitute for it. A router-only suite remains a real, necessary, fast, store-independent regression net
+// for the ROUTER-LEVEL half of this defect (and is, per Session 33, demonstrably able to distinguish a
+// shallow one-shot fix from a genuinely recursive one) but was NEVER sufficient on its own to validate a
+// fix here, and Session 33's own experience shows that even a strictly MORE thorough router-level fix does
+// not change that - the full H2/DuckDB/Postgres PCT sweep remains mandatory before any future fix attempt
+// is considered safe, exactly as this project's own testing discipline already requires.
+//
+// These tests deliberately avoid the relational store entirely (routeFunction(f, []), no extensions) -
+// the defect lives in core-platform router code shared by every store extension, not in relational-
+// specific translation, so a store-independent regression net is the correct scope for detecting IT (see
+// the methodological note above for why it is not sufficient for validating a FIX). This mirrors this
+// file's own established routeFunction(f, [])+printFunctionDefinition idiom, adapted to inspect the
+// routed node's own genericType field directly (the exact thing the defect corrupts) rather than the
+// printed grammar text (which does not surface a genericType-only corruption).
+function <<access.private>> meta::pure::router::tests::genericTypeSummary(f:FunctionDefinition<Any>[1]):String[1]
+{
+  let routed = meta::pure::router::routeFunction($f, [])->evaluateAndDeactivate();
+  let body   = $routed.expressionSequence->at(0)->cast(@ValueSpecification)->evaluateAndDeactivate();
+  let gt     = $body.genericType->evaluateAndDeactivate();
+  let rawTypeStr = if($gt.rawType->isEmpty(),
+                        | 'NORAWTYPE',
+                        | $gt.rawType->toOne()->cast(@PackageableElement)->meta::pure::functions::meta::elementToPath()
+                      );
+  let argStrs = $gt.typeArguments->map(ta|
+      let ta2 = $ta->evaluateAndDeactivate();
+      if($ta2.rawType->isNotEmpty(),
+         | $ta2.rawType->toOne()->cast(@PackageableElement)->meta::pure::functions::meta::elementToPath(),
+         | 'UNBOUND:' + $ta2.typeParameter.name->joinStrings(',')
+        );
+  );
+  if($argStrs->isEmpty(), | $rawTypeStr, | $rawTypeStr + '<' + $argStrs->joinStrings(',') + '>');
+}
+
+// Affected case 1 (the original testPairCollectionToString/testPairToString regression): pair()'s own
+// body is `new Pair<U,V>(first=$a,second=$b)` - a single expression, non-native, non-stop-listed
+// FunctionDefinition, exactly BRANCH B's target shape. Before the fix: 'Pair<UNBOUND:U,UNBOUND:V>'.
+function <<access.private>> meta::pure::router::tests::probePairTypeParam(): Pair<String,String>[1]
+{
+  pair('a', 'b');
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeForPair():Boolean[1]
+{
+  assertEquals('meta::pure::functions::collection::Pair<String,String>',
+               genericTypeSummary(probePairTypeParam__Pair_1_));
+}
+
+// Affected case 2: toIndexed<T>()'s body is `zip(range($values->size()), $values)` - single expression,
+// generic in T only (Integer, from range(), was always concrete; only the T type argument was corrupted).
+// Before the fix: 'Pair<Integer,UNBOUND:T>'. Demonstrates the defect is not pair()-specific and can
+// partially corrupt a multi-argument generic type (only the unresolved type parameter, not the whole type).
+function <<access.private>> meta::pure::router::tests::probeToIndexed(): Pair<Integer,String>[*]
+{
+  toIndexed(['a', 'b']);
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeForToIndexed():Boolean[1]
+{
+  assertEquals('meta::pure::functions::collection::Pair<Integer,String>',
+               genericTypeSummary(probeToIndexed__Pair_MANY_));
+}
+
+// Affected case 3: get<U>()'s body is `$l.values->at($index)` - single expression, and the function's
+// OWN return type is the bare unbound type parameter U (no wrapping raw type at all, unlike Pair<U,V>).
+// Before the fix, the routed body's genericType.rawType is itself completely empty ('NORAWTYPE') - the
+// precise shape that crashes meta::relational::...::genericTypeToDataType downstream in the relational
+// router (pureToSQLQuery_variant.pure), i.e. the closest store-independent analogue of
+// testPairCollectionToString's own Wall 2 crash.
+function <<access.private>> meta::pure::router::tests::probeGet(): String[1]
+{
+  get(list(['a', 'b']), 0);
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeForGet():Boolean[1]
+{
+  assertEquals('String', genericTypeSummary(probeGet__String_1_));
+}
+
+// Control 1: union<T>() has the same generic, single-expression shape as pair()/toIndexed()/get(), but is
+// on router_routing.pure's own shouldStopFunctions() stop-list - it never reaches BRANCH B at all (BRANCH
+// A's $fe copy-preserves its already-concrete genericType by construction). Confirms the fix's own
+// isEmpty()-gated no-op path does not accidentally engage for a function this suite expects to be
+// unaffected, both before and after the fix.
+function <<access.private>> meta::pure::router::tests::probeUnionControl(): String[*]
+{
+  union(['a', 'b'], ['b', 'c']);
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionPreservesGenericTypeForStopListedGenericFunction():Boolean[1]
+{
+  assertEquals('String', genericTypeSummary(probeUnionControl__String_MANY_));
+}
+
+// Control 2: an ordinary (non-generic) user-defined single-expression function. This takes BRANCH B too,
+// but has no type parameters at all, so the fix's substitution must be a no-op here - the exact "preserve
+// 100% of existing behavior for the overwhelmingly common non-generic case" guarantee the fix relies on.
+function <<access.private>> meta::pure::router::tests::plainSingleExpressionControlHelper(x:Integer[1], y:Integer[1]): Integer[1]
+{
+  $x + $y;
+}
+
+function <<access.private>> meta::pure::router::tests::probePlainSingleExpressionControl(): Integer[1]
+{
+  plainSingleExpressionControlHelper(3, 4);
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionPreservesGenericTypeForNonGenericInlinedFunction():Boolean[1]
+{
+  assertEquals('Integer', genericTypeSummary(probePlainSingleExpressionControl__Integer_1_));
+}
+
+// Regression guard (Session 33, 2026-09-20): a router-only reproduction of testHeadComplex's own shape -
+// a generic function whose single-expression body contains a NESTED generic-aware call - but deliberately
+// TWO levels deep rather than head<T>()'s own one level (`$set->first()`, where first() IS the body's
+// own top node). This guards against a NARROWER class of future fix than the one this file's other three
+// affected-case tests above already guard against: a "one-shot, outermost-node-only" patch (substitute
+// the single top-level inlined body node's own genericType and stop) would happen to satisfy head<T>'s
+// OWN shape (there is no second nesting level to expose the gap) while still leaving a genuinely NESTED
+// call's own genericType (here, distinct()'s, one level inside first()'s own receiver parameter)
+// unresolved. EXPECTED TO FAIL as of Session 33, for the exact same reason and against the exact same
+// unimplemented fix as testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeFor{Pair,ToIndexed,
+// Get} above - Session 33 implemented a genuinely recursive fix (RoutingState.inScopeTypeParams, scoped
+// exactly like depth/propertyMap, consulted afresh on every entry to
+// routeFunctionExpressionFunctionDefinition rather than patched once at the top) that DOES make this test
+// pass, confirmed live (outerGenericType=String, nestedReceiverGenericType=String, i.e. genuinely deeper
+// than a one-shot patch could reach) - but that same fix was found, via the real H2 PCT adapter (not this
+// router-only suite), to reproduce testHeadComplex's own regression byte-for-byte identically to Session
+// 32's narrower attempt ("Cannot cast a collection of size 2 to multiplicity [0..1]"), and Session 33's
+// own further investigation pinned the actual cause to something this router-only guard cannot see at
+// all: making a generic function's inlined body's genericType concrete/resolvable makes a NativeFunction
+// inside it (here first(), whose relational mapping is meta::relational::functions::pureToSqlQuery::
+// processNoOp - a SQL no-op relying on the row being narrowed to one downstream) newly ELIGIBLE for full
+// SQL push-down, which a >1-physical-row query then trips over a pre-existing multi-row-scalar-result
+// heuristic in core_external_test_connection/pct_relational.pure (lines ~141-156: rows->size()>1 is
+// treated as "the ORIGINAL Pure expression was itself many-cardinality per row", which is the wrong
+// inference for first()'s specific "many rows come back, only the first is semantically meaningful"
+// shape) - a downstream relational-execution/PCT-harness interaction, not a router-level genericType
+// completeness gap. Per this file's own header comment and plan.md's Session 33 write-up: the fix was
+// reverted in full (same as Session 32's outcome), so this test is intentionally red alongside the other
+// three, not a passing guard - it strengthens the regression net for the ROUTER-LEVEL half of the problem
+// (proving any future fix attempt must be recursive, not one-shot) while making explicit that a
+// router-only check, however thorough, cannot by itself validate a fix here; the full H2/DuckDB/Postgres
+// PCT sweep remains mandatory, exactly as this project's testing discipline already requires.
+function <<access.private>> meta::pure::router::tests::myHeadOfDistinct<T>(set:T[*]): T[0..1]
+{
+  $set->distinct()->first();
+}
+
+function <<access.private>> meta::pure::router::tests::probeHeadOfDistinct(): String[0..1]
+{
+  meta::pure::router::tests::myHeadOfDistinct(['a', 'b']);
+}
+
+function <<access.private>> meta::pure::router::tests::nestedGenericTypeSummary(f:FunctionDefinition<Any>[1]):String[1]
+{
+  let routed = meta::pure::router::routeFunction($f, [])->evaluateAndDeactivate();
+  let bodyRaw = $routed.expressionSequence->at(0)->cast(@ValueSpecification)->evaluateAndDeactivate();
+  let bodyUnclustered = $bodyRaw->match([p:meta::pure::router::platform::metamodel::clustering::PlatformClusteredValueSpecification[1]|$p.val, v:ValueSpecification[1]|$v]);
+  let outerFe = $bodyUnclustered->meta::pure::router::byPassRouterInfo()->evaluateAndDeactivate()->cast(@FunctionExpression);
+  let outerGt = if($outerFe.genericType.rawType->isEmpty(),
+                    | 'NORAWTYPE-OUTER',
+                    | $outerFe.genericType.rawType->toOne()->cast(@PackageableElement)->meta::pure::functions::meta::elementToPath());
+
+  // outerFe is first(); its own receiver parameter (parametersValues->at(0)) is the routed distinct()
+  // call - a genuinely nested FunctionExpression, not the same node as outerFe.
+  let nestedRaw = $outerFe.parametersValues->at(0)->cast(@ValueSpecification)->evaluateAndDeactivate()->meta::pure::router::byPassRouterInfo()->evaluateAndDeactivate();
+  let nestedGt = if($nestedRaw->cast(@ValueSpecification).genericType.rawType->isEmpty(),
+                     | 'NORAWTYPE-NESTED',
+                     | $nestedRaw->cast(@ValueSpecification).genericType.rawType->toOne()->cast(@PackageableElement)->meta::pure::functions::meta::elementToPath());
+
+  'outerGenericType=' + $outerGt + ' | nestedReceiverGenericType=' + $nestedGt;
+}
+
+function <<test.Test>> meta::pure::router::tests::testRouteFunctionExpressionFunctionDefinitionResolvesGenericTypeForNestedGenericCallInHeadShapedFunction():Boolean[1]
+{
+  assertEquals('outerGenericType=String | nestedReceiverGenericType=String',
+               nestedGenericTypeSummary(probeHeadOfDistinct__String_$0_1$_));
+}

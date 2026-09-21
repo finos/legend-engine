@@ -125,7 +125,7 @@
     "expectedError" : "\"Couldn't find DynaFunction to Postgres model translation for toVariantObject().\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at ??, \"Expected at most one object, but found many\""
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadOnEmptySet_Function_1__Boolean_1_",
     "expectedError" : "Couldn't find DynaFunction to Postgres model translation for toVariantList()."
@@ -536,7 +536,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
-    "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:229 column:57), \"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
     "expectedError" : "\"Cannot cast a collection of size 0 to multiplicity [1]\""
@@ -601,11 +601,8 @@
     "test" : "meta::pure::functions::string::tests::toString::testFloatToStringWithPositiveExponent_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '134210000.0'\nactual:   '1.3421E8'\""
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_external_test_connection/pct_relational.pure line:1007 column:99), \"Cannot cast a collection of size 3 to multiplicity [1]\""
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:4254 column:37), \"Cannot cast a collection of size 2 to multiplicity [1]\""
+    "expectedError" : "The system can't find a mapping (0) for the class 'meta::pure::functions::collection::Pair' in the mapping ''"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'\""
