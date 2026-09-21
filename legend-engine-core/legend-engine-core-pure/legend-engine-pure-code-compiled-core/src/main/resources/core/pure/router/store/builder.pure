@@ -297,7 +297,7 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
       ^Void(genericType=^GenericType(rawType=Nil), multiplicity=PureOne)->evaluateAndDeactivate();,
     | print(if($debug.debug,|$debug.space+'\n',|''));
       let deduped = $propertyMappings->removeDuplicates({a,b|$a.property == $b.property && $a.sourceSetImplementationId == $b.sourceSetImplementationId && $a.targetSetImplementationId == $b.targetSetImplementationId});
-      let routedPropertyMapping = $deduped->map(pm|$pm->potentiallyRoutePropertyMapping($sourceRoutedVS, $propertyRoutedVS, $extensions, $debug));
+      let routedPropertyMapping = $deduped->map(pm|$pm->potentiallyRoutePropertyMapping($sourceRoutedVS, $propertyRoutedVS, $exeCtx, $extensions, $debug));
       // Attach the resolved propertyMappings to the StoreMappingRoutedValueSpecification —
       // these are picked up downstream by store-specific executors, for ex. in 
       // pureToSQLQuery as propertyMappingFromRouter
@@ -309,7 +309,7 @@ function <<access.private>> meta::pure::router::store::routing::buildNonDataType
   );
 }
 
-function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
+function <<access.private>> meta::pure::router::store::routing::potentiallyRoutePropertyMapping(pm:PropertyMapping[1], sourceRoutedVS:StoreMappingRoutedValueSpecification[1], propertyRoutedVS:StoreMappingRoutedValueSpecification[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):PropertyMapping[1]
 {
   $pm->match(
     [
@@ -357,7 +357,8 @@ function <<access.private>> meta::pure::router::store::routing::potentiallyRoute
           depth = '',
           propertyMap = ^PropertyMap(),
           routingStrategy = $newRoutingStrategy,
-          graphFetchFlow = false
+          graphFetchFlow = false,
+          executionContext = $executionContext
         );
 
         let routed = $m.joinCondition->routeFunction(false, $initialState, ^ExecutionContext(), $initialVars, [], $extensions, $debug);
