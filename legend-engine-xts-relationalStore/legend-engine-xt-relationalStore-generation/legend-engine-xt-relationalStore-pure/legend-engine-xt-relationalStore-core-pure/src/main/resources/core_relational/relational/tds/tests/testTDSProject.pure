@@ -242,6 +242,28 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
       $result->sqlRemoveFormatting());
 }
 
+// Regression: an enum-mapped property projected then read with a non-enum getter must return
+// the raw DB code, not the enum name.
+function <<test.Test>> meta::relational::tests::tds::tdsProject::testProjectEnumThenReadWithNonEnumGetterInSecondProject():Boolean[1]
+{
+   let result = execute(
+      |Address.all()
+         ->project([col(a | $a.name, 'name'), col(a | $a.type, 'type')])
+         ->project([col(r:TDSRow[1] | $r.getString('name'), 'name'),
+                    col(r:TDSRow[1] | $r.getInteger('type'), 'type')]),
+      simpleRelationalMapping,
+      meta::external::store::relational::tests::testRuntime(),
+      meta::relational::extension::relationalExtensions());
+
+   assertSize($result.values.columns, 2);
+
+   assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root"',
+      $result->sqlRemoveFormatting());
+
+   assertEquals('Hoboken|1,New York|1,New York|1,New York|1,San Fransisco|1,Hong Kong|1,New York|1,New York|1,Cupertino|1,Tokyo|1,Mountain View|1',
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+}
+
 function <<test.ToFix>> meta::relational::tests::tds::tdsProject::testProjectWithVariables2():Boolean[1]
 {
    let result = execute(
