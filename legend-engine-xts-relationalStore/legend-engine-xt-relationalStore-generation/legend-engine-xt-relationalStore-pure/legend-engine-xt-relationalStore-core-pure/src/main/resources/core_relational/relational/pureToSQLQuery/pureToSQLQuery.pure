@@ -1505,7 +1505,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                      );,
                                                    | ^$nestedSelect(
                                                         columns=$nestedColumnsReprocessed.second->concatenate(if($isolateGroupBy, |$colForGroupBy.second, |[]))->concatenate($flattenColumnsInSelect),
-                                                        preIsolationCurrentTreeNode = $updatedCurrentTreeNode,
+                                                        preIsolationCurrentTreeNode = $updatedCurrentTreeNode->filter(n|$nestedSelect.data->toOne()->getAllNodes()->cast(@RelationalTreeNode)->map(t|$t.alias.relation())->contains($n.alias.relation()))->first(),
                                                         filteringOperation= $filtersPartition.first->andFilters($extensions),
                                                         groupBy = if($isolateGroupBy, |$select.groupBy, |[]),
                                                         orderBy = if($isolateGroupBy, |$select.orderBy, |$parentNestedPartitionedOrderBys.second.values)
@@ -8033,8 +8033,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(p:SelectSQ
 
    print(if(!$context.debug, |'',|$context.space+'  ? '+$finalIsolationDecision->toString()+' / State isolation:'+$state.shouldIsolate->toString()+', Isolation required (filter or inner joins):'+$thisIsolationDecision->toString()+'\n'));
 
-   let res2 = if($finalIsolationDecision, |^$p(preIsolationCurrentTreeNode=[])->isolateSubJoins($p.data->toOne(), $extraColumns, $aliasForExtractedColumns, $nodeId, $inner, $state, $context, $extensions).second, |^$p(preIsolationCurrentTreeNode=[]));
-
+    let res2 = if($finalIsolationDecision, |^$p(preIsolationCurrentTreeNode=[])->isolateSubJoins($p.data->toOne(), $extraColumns, $aliasForExtractedColumns, $nodeId, $inner, $state, $context, $extensions).second, | ^$p(preIsolationCurrentTreeNode = $p.preIsolationCurrentTreeNode->filter(n|$p.data->toOne()->getAllNodes()->cast(@RelationalTreeNode)->map(t|$t.alias.relation())->contains($n.alias.relation()))->first()));
    print(if(!$context.debug, |'',
             | $context.space+'*>Isolation Result: \n'+
               $context.space+'  '+$res2->printDebugQuery($context.space, $extensions))

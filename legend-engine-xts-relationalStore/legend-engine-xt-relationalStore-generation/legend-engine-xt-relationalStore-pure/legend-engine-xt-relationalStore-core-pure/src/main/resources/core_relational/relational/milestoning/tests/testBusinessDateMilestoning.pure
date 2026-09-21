@@ -1385,6 +1385,16 @@ function <<test.Test>> meta::relational::tests::milestoning::businessdate::testB
   assertEquals(['ProductName1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(','))->sort());
 }
 
+function <<test.Test>> meta::relational::tests::milestoning::businessdate::testInlinePropertyMappingJoinFromClassFilteredSubSelect():Boolean[1]
+{
+   let businessDate = %2015-10-16;
+
+   let result = execute(|meta::relational::tests::milestoning::Order.all()->project([o|$o.product($businessDate).classification($businessDate).type], ['type']), meta::relational::tests::milestoning::inlineWithClassFilterThroughJoinMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
+   let tds = $result.values->at(0);
+   assertEquals(['STOCK', 'null'], $tds.rows->map(r|$r.values->map(v|if($v->instanceOf(meta::pure::tds::TDSNull), |'null', |$v->toString())))->sortBy(v|$v));
+}
+
 function <<test.Test>> meta::relational::tests::milestoning::businessdate::testBusinessTemporalPredicateOnMultiHopFilterJoinNavigation():Boolean[1]
 {
    let businessDate = %2015-9-1;
