@@ -73,7 +73,8 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
                                                                              // May want to optimize that with a native function
                                                                              ^$a(values = $val->slice(0, $b.second)
                                                                                           ->concatenate(
-                                                                                             $b.first->extractEnumValue($val->at($b.second)->cast(@String))
+                                                                                             // An EnumerationMapping-backed source column may already arrive decoded.
+                                                                                             $val->at($b.second)->match([s:String[1] | $b.first->extractEnumValue($s), v:Any[1] | $v])
                                                                                           )
                                                                                           ->concatenate(
                                                                                              $val->slice($b.second+1, $val->size())
@@ -377,13 +378,16 @@ function <<access.private>> meta::pure::mapping::modelToModel::chain::reprocessB
    let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $trackPropertyFunction, $extensions));
    let fType = $f->functionType();
    let fInputType = ^GenericType(rawType = $f.expressionSequence->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
+   // Read off the reprocessed body, not $f: reprocess can change the effective return type
+   // (e.g. manageEnumeration downgrades Enumeration to String).
+   let newReturnType = $results.newExpression->cast(@ValueSpecification)->last()->toOne().genericType;
    let gen = ^GenericType
              (
                 rawType = LambdaFunction,
                 typeArguments = ^GenericType(rawType = ^$fType
                                                        (
                                                           parameters = $fType.parameters->map(p|^$p(genericType = $fInputType)),
-                                                          returnType = $f->functionReturnType(),
+                                                          returnType = $newReturnType,
                                                           returnMultiplicity = $f->functionReturnMultiplicity()
                                                        ))
              );
