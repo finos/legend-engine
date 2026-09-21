@@ -947,6 +947,7 @@ so live in the `mapping:` domain alongside their relational counterparts:
 | `execution:plan-generation` | Execution plan generation |
 | `execution:post-validation` | Service post-validation |
 | `execution:schema-set` | Schema set definition |
+| `execution:serialization-date-time-format` | `dateTimeFormat` on the `AlloySerializationConfig` a graph fetch `serialize` writes its date-times with |
 | `execution:service` | Service definition |
 | `execution:service-test` | Service test suite |
 | `execution:shared-test-data` | Shared test data element |
