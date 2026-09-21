@@ -344,6 +344,6 @@
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
   }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 2 to multiplicity [1]"
+    "expectedError" : "The system can't find a mapping (0) for the class 'meta::pure::functions::collection::Pair' in the mapping ''"
   } ]
 }

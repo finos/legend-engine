@@ -933,31 +933,59 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 // single-value wrappers around the real column reference, never introducing or losing a row; any other
 // shape (including a doubly-wrapped or differently-named function) still falls through to the empty/
 // fallback case exactly as before.
+//
+// A THIRD wrapping shape was found live-cluster (2026-09-21, Session 44): a heterogeneous/polymorphic
+// to-many property's own value expression is `if(kind__='P', value__, <isolated nested aggregate>)` (see
+// pct_relational.pure's PolymorphicChildTableMapping) - once wrapped in .toString() this is
+// `toString(if(...))`, so after unwrapping the 'toString' layer the result is a DynaFunction named 'if',
+// never a bare TableAliasColumn, and the whole lookup previously gave up - the row-identity column
+// (the discriminator table's own primaryKey) was reachable, just one hop further than this function used
+// to look. This is not a harness-specific shape: `if(...)`/CASE-style conditional columns are an
+// ordinary, common Pure relational-mapping idiom, not particular to any one test. findDatabricksOrderColumnCandidate
+// below generalizes the single-level unwrap into a small recursion: 'cast'/'toString' still unwrap to
+// their one parameter (now at any depth, a strict superset of the prior one-level behavior); a 3-parameter
+// 'if' recurses into its 'then' branch first, falling back to its 'else' branch - the 'else' branch, in
+// every case built by pureToSQLQuery.pure's isolate-and-aggregate machinery, resolves to a correlated
+// subquery's own derived-table column (alias.relationalElement is a SelectSQLQuery, not a Table), so
+// recursing into it is safe by construction: the Table-instanceOf guard below rejects it and this
+// function still falls through to the unordered fallback for that branch, exactly as before. Any other
+// DynaFunction shape (including a differently-named or differently-arity function) still falls through
+// to empty, unchanged.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::findDatabricksJoinStringsOrderColumn(js:JoinStrings[1]): TableAliasColumn[0..1]
 {
    if(($js.strings->size() != 1),
       | [],
-      | let col = $js.strings->at(0);
-        let unwrapped = if($col->instanceOf(DynaFunction),
-                           | let df = $col->cast(@DynaFunction);
-                             if((($df.name == 'cast') || ($df.name == 'toString')),
-                                | $df.parameters->at(0);,
-                                | $col;
-                             );,
-                           | $col;
-                        );
-        if(!$unwrapped->instanceOf(TableAliasColumn),
+      | meta::relational::functions::sqlQueryToString::databricks::findDatabricksOrderColumnCandidate($js.strings->at(0));
+   );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::findDatabricksOrderColumnCandidate(col:RelationalOperationElement[1]): TableAliasColumn[0..1]
+{
+   if($col->instanceOf(TableAliasColumn),
+      | let tac = $col->cast(@TableAliasColumn);
+        let source = $tac.alias.relationalElement;
+        if(!$source->instanceOf(Table),
            | [],
-           | let tac = $unwrapped->cast(@TableAliasColumn);
-             let source = $tac.alias.relationalElement;
-             if(!$source->instanceOf(Table),
+           | let pk = $source->cast(@Table).primaryKey;
+             if(($pk->size() != 1) || ($pk->toOne() == $tac.column),
                 | [],
-                | let pk = $source->cast(@Table).primaryKey;
-                  if(($pk->size() != 1) || ($pk->toOne() == $tac.column),
-                     | [],
-                     | ^TableAliasColumn(alias=$tac.alias, column=$pk->toOne());
-                  );
+                | ^TableAliasColumn(alias=$tac.alias, column=$pk->toOne());
              );
+        );,
+      | if($col->instanceOf(DynaFunction),
+           | let df = $col->cast(@DynaFunction);
+             if((($df.name == 'cast') || ($df.name == 'toString')) && ($df.parameters->size() == 1),
+                | meta::relational::functions::sqlQueryToString::databricks::findDatabricksOrderColumnCandidate($df.parameters->at(0));,
+                | if(($df.name == 'if') && ($df.parameters->size() == 3),
+                     | let fromThen = meta::relational::functions::sqlQueryToString::databricks::findDatabricksOrderColumnCandidate($df.parameters->at(1));
+                       if($fromThen->isNotEmpty(),
+                          | $fromThen;,
+                          | meta::relational::functions::sqlQueryToString::databricks::findDatabricksOrderColumnCandidate($df.parameters->at(2));
+                       );,
+                     | [];
+                  );
+             );,
+           | [];
         );
    );
 }
