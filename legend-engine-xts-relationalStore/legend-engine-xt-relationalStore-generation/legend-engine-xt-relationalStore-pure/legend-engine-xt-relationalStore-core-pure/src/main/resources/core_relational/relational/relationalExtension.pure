@@ -406,9 +406,10 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             pair(
                {params: RelationalOperationElement[*] | true},
                {params: RelationalOperationElement[*] | let size = ($params->size()-1)/2;
-                                                    let range = range(0, $size->floor()*2, 2);
-                                                    let types = $range->map(o | $params->at($o + 1)->inferRelationalType())->concatenate($params->at($params->size()-1)->inferRelationalType());
-                                                    if($types->isSafeTypePossible(), | $types->getSafeType(), | []);}
+                                                        let range = range(0, $size->floor()*2, 2);
+                                                        let types = $range->map(o | $params->at($o + 1)->inferRelationalType())->concatenate($params->at($params->size()-1)->inferRelationalType());
+                                                        if($types->isSafeTypePossible(), | $types->getSafeType(), | []);}
+            )
          ])
       ),
 
