@@ -88,6 +88,97 @@ public class TestRelation
     }
 
     @Test
+    public void testColSpecWithStereotype()
+    {
+        testLambda("|test::Person.all()->project(~[<<test::SampleProfile.important>> 'Person Name':x|$x.name])");
+    }
+
+    @Test
+    public void testColSpecWithTaggedValue()
+    {
+        testLambda("|test::Person.all()->project(~[{test::SampleProfile.doc = 'model documentation'} 'Person Name':x|$x.name])");
+    }
+
+    @Test
+    public void testColSpecWithStereotypeAndTaggedValue()
+    {
+        testLambda("|test::Person.all()->project(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'model documentation'} 'Person Name':x|$x.name])");
+    }
+
+    @Test
+    public void testColSpecArrayWithAnnotations()
+    {
+        testLambda("|test::Person.all()->project(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'name documentation'} 'Person Name':x|$x.name, <<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'age documentation'} 'Person Age':x|$x.age])");
+    }
+
+    @Test
+    public void testGroupByColSpecWithAnnotations()
+    {
+        testLambda("|test::Person.all()->project(~['Person Name':x|$x.name, 'Person Age Sum':x|$x.age])->groupBy(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'name documentation'} 'Person Name'], ~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'age documentation'} 'Person Age Sum':x|$x.'Person Age Sum':x|$x->sum()])");
+    }
+
+    @Test
+    public void testExtendColSpecWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'derived column'} derived:c|'ok'])");
+    }
+
+    @Test
+    public void testExtendColSpecArrayWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'first derived'} a:c|'ok', <<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'second derived'} b:c|'no'])");
+    }
+
+    @Test
+    public void testSelectColSpecArrayWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->select(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'kept column'} a, <<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'other kept'} b])");
+    }
+
+    @Test
+    public void testRenameColSpecWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->rename(~<<test::SampleProfile.important>> {test::SampleProfile.doc = 'old name'} a, ~<<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'new name'} b)");
+    }
+
+    @Test
+    public void testSortColSpecWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->sort([~<<test::SampleProfile.important>> {test::SampleProfile.doc = 'sort key'} a->ascending()])");
+    }
+
+    @Test
+    public void testPivotColSpecWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->pivot(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'pivot key'} region], ~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'pivot value'} total:x|$x.amount:y|$y->sum()])");
+    }
+
+    @Test
+    public void testAggregateTwoLambdaColSpecWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->groupBy(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'grouping key'} region], ~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'sum aggregate'} total:x|$x.amount:y|$y->sum()])");
+    }
+
+    @Test
+    public void testOverColSpecArrayWithAnnotations()
+    {
+        testLambda("|#>{path::Store.table}#->extend(over(~[<<test::SampleProfile.important>> {test::SampleProfile.doc = 'partition key'} a, <<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'ordering key'} b]), ~[running:{p, f, r|1}:x|$x->sum()])");
+    }
+
+    @Test
+    public void testProjectColSpecWithAnnotationsPretty()
+    {
+        testLambdaPretty(
+                "|test::Person.all()->project(\n" +
+                        "  ~[\n" +
+                        "     <<test::SampleProfile.important>> {test::SampleProfile.doc = 'name documentation'} 'Person Name': x|$x.name,\n" +
+                        "     <<test::SampleProfile.deprecated>> {test::SampleProfile.doc = 'age documentation'} 'Person Age': x|$x.age\n" +
+                        "   ]\n" +
+                        ")"
+        );
+    }
+
+    @Test
     public void testCast()
     {
         testLambda("|test::Person.all()->meta::pure::functions::lang::cast(@Relation<(someCol:String, someCol:String)>)");

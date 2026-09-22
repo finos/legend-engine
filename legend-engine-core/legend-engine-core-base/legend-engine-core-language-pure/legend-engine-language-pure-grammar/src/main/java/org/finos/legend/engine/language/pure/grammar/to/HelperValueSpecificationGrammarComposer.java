@@ -101,7 +101,11 @@ public class HelperValueSpecificationGrammarComposer
 
     public static String printColSpec(ColSpec col, DEPRECATED_PureGrammarComposerCore transformer)
     {
-        return PureGrammarComposerUtility.convertIdentifier(col.name, transformer.identifierConverter()) + (col.genericType != null ? ":" + printGenericType(col.genericType, transformer) : "") + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "") + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
+        return HelperDomainGrammarComposer.renderAnnotations(col.stereotypes, col.taggedValues)
+                + PureGrammarComposerUtility.convertIdentifier(col.name, transformer.identifierConverter())
+                + (col.genericType != null ? ":" + printGenericType(col.genericType, transformer) : "")
+                + (col.function1 != null ? ":" + (transformer.isRenderingPretty() ? " " : "") + col.function1.accept(transformer) : "")
+                + (col.function2 != null ? ":" + col.function2.accept(transformer) : "");
     }
 
     public static String printColSpecArray(ColSpecArray colSpecArray, DEPRECATED_PureGrammarComposerCore transformer)
