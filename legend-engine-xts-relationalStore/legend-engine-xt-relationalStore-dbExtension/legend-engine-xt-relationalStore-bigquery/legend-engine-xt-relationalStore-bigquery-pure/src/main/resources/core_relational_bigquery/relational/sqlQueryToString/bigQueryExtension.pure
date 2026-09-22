@@ -37,6 +37,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
       lambdaParameterProcessor = buildLambdaParameterForBigQuery_RelationalLambdaParameter_1__SqlGenerationContext_1__String_1_,
       lambdaProcessor = buildLambdaForBigQuery_RelationalLambda_1__SqlGenerationContext_1__String_1_,
       aggregateFunctionCallProcessor = processAggregateFunctionCallForBigQuery_AggregateFunctionCall_1__SqlGenerationContext_1__String_1_,
+      commonTableExpressionsProcessor = processCommonTableExpressionsForBigQuery_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch
    );
 }
@@ -410,6 +411,25 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 // exactly as it does outside a ROWS window frame. The ordering is rendered without the clause for
 // the duration of the call, leaving BigQuery's own nulls-low order, which differs from the requested
 // one only when the sort column actually holds nulls.
+// No column list on a common table expression, recursive or not: the names come from the first
+// branch's aliases.
+function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processCommonTableExpressionsForBigQuery(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   if($ctes->isNotEmpty(),
+   | let recursive = $ctes->filter(c | $c->instanceOf(RecursiveCommonTableExpression))->isNotEmpty();
+     'WITH ' + if($recursive, |'RECURSIVE ', |'') + $ctes->map(cte |
+                   let name = $sgc.dbConfig.identifierProcessor($cte.name);
+                   $cte->match([
+                    rcte: RecursiveCommonTableExpression[1] |
+                      $name + ' AS (\n\t' +
+                        $cte.sqlQuery.data.alias.relationalElement->cast(@UnionAll).queries->map(q | $sgc.dbConfig.selectSQLQueryProcessor($q, ^$sgc(format = $sgc.format->indent()), $isSubSelect))->joinStrings('', '\nUNION ALL\n\t', '') + '\n)',
+                    any: CommonTableExpression[1] |
+                      $name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte.sqlQuery, ^$sgc(format = $sgc.format->indent()), $isSubSelect) + ')';
+                   ]);
+                  )->joinStrings(', \n') + ' \n';
+   , | '');
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processAggregateFunctionCallForBigQuery(a:AggregateFunctionCall[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let dbConfig = $sgc.dbConfig;
