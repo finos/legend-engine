@@ -78,6 +78,7 @@ public class JsonStreamingResult extends StreamingResult
         {
             this.childResult.close();
         }
+        super.close();
     }
 
     @Override

@@ -1,0 +1,48 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::test::pct::reversePCT::framework::*;
+
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::recurse::reverses():ReversesForSource[1]
+{
+  ^ReversesForSource(
+    source = '/core_functions_relation/relation/functions/transformation/recurse.pure',
+    reverses = [
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::recurse::testFibonacci_Function_1__Boolean_1_',
+                      [
+                        rev('|$tds->meta::pure::functions::relation::recurse(x: meta::pure::metamodel::relation::Relation<(depth:Integer[0..1], number:Integer[0..1], nextNumber:Integer[0..1])>[1]|$x->meta::pure::functions::relation::filter(r: (depth:Integer[0..1], number:Integer[0..1], nextNumber:Integer[0..1])[1]|($r.depth->meta::pure::functions::multiplicity::toOne() + 1) < 10)->meta::pure::functions::relation::project(~[depth:r: (depth:Integer[0..1], number:Integer[0..1], nextNumber:Integer[0..1])[1]|$r.depth->meta::pure::functions::multiplicity::toOne() + 1,number:r: (depth:Integer[0..1], number:Integer[0..1], nextNumber:Integer[0..1])[1]|$r.nextNumber,nextNumber:r: (depth:Integer[0..1], number:Integer[0..1], nextNumber:Integer[0..1])[1]|$r.nextNumber->meta::pure::functions::multiplicity::toOne() + $r.number->meta::pure::functions::multiplicity::toOne()]))',
+                            'WITH RECURSIVE rcte_d("depth", "number", "nextNumber") AS (\n  select "table0_0".depth as "depth", "table0_0".number as "number", "table0_0".nextNumber as "nextNumber" from csv(\'depth,number,nextNumber\n              0,0,1\') as "table0_0"\nUNION ALL\n  select ("rcte_d_0"."depth" + 1) as "depth", "rcte_d_0"."nextNumber" as "number", ("rcte_d_0"."nextNumber" + "rcte_d_0"."number") as "nextNumber" from rcte_d as "rcte_d_0" where ("rcte_d_0"."depth" + 1) < 10\n) \nselect "rcte_d_0"."depth", "rcte_d_0"."number", "rcte_d_0"."nextNumber" from rcte_d as "rcte_d_0"'
+                        )
+                      ]
+                 ),
+                 revsForTest(
+                      'meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_',
+                      [
+                        rev('|let initial = $tds->meta::pure::functions::relation::filter(r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1])[1]|$r.title == \'President\')->meta::pure::functions::relation::extend(~managerTitle:x: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1])[1]|\'N/A\');\n'+
+                            ' $initial->meta::pure::functions::relation::recurse(x: meta::pure::metamodel::relation::Relation<(title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1])>[1]|$x->meta::pure::functions::relation::join($tds->meta::pure::functions::relation::project(~[eTitle:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1])[1]|$r.title,eId:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1])[1]|$r.employeeId,mId:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1])[1]|$r.managerId]), meta::pure::functions::relation::JoinKind.INNER, {x: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1])[1], y: (eTitle:String[1], eId:Integer[0..1], mId:Integer[0..1])[1]|$x.employeeId == $y.mId})->meta::pure::functions::relation::project(~[title:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1], eTitle:String[1], eId:Integer[0..1], mId:Integer[0..1])[1]|$r.eTitle,employeeId:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1], eTitle:String[1], eId:Integer[0..1], mId:Integer[0..1])[1]|$r.eId,managerId:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1], eTitle:String[1], eId:Integer[0..1], mId:Integer[0..1])[1]|$r.mId,managerTitle:r: (title:String[1], employeeId:Integer[0..1], managerId:Integer[0..1], managerTitle:String[1], eTitle:String[1], eId:Integer[0..1], mId:Integer[0..1])[1]|$r.title]));\n'+
+                            '',
+                            'WITH RECURSIVE initial("title", "employeeId", "managerId", "managerTitle") AS (select "table1_0".title as "title", "table1_0".employeeId as "employeeId", "table1_0".managerId as "managerId", Text\'N/A\' as "managerTitle" from csv(\'title,employeeId,managerId\n              President,1,null\n              Vice President Engineering,10,1\n              Programmer,100,10\n              QA Engineer,101,10\n              Vice President HR,20,1\n              Recruitment Analyst,200,20\') as "table1_0" where "table1_0".title = Text\'President\'), \nrcte_d_3("title", "employeeId", "managerId", "managerTitle") AS (\n  select "initial_0"."title", "initial_0"."employeeId", "initial_0"."managerId", "initial_0"."managerTitle" from initial as "initial_0"\nUNION ALL\n  select "table0_0"."eTitle" as "title", "table0_0"."eId" as "employeeId", "table0_0"."mId" as "managerId", "rcte_d_3_1"."title" as "managerTitle" from rcte_d_3 as "rcte_d_3_1" inner join (select "table0_1".title as "eTitle", "table0_1".employeeId as "eId", "table0_1".managerId as "mId" from csv(\'title,employeeId,managerId\n              President,1,null\n              Vice President Engineering,10,1\n              Programmer,100,10\n              QA Engineer,101,10\n              Vice President HR,20,1\n              Recruitment Analyst,200,20\') as "table0_1") as "table0_0" on ("rcte_d_3_1"."employeeId" is not distinct from "table0_0"."mId")\n) \nselect "rcte_d_3_0"."title", "rcte_d_3_0"."employeeId", "rcte_d_3_0"."managerId", "rcte_d_3_0"."managerTitle" from rcte_d_3 as "rcte_d_3_0"'
+                        )
+                      ]
+                 )
+               ]
+  )
+}
+
+function meta::external::query::sql::reversePCT::tests::relation::functions::transformation::recurse::exec():Boolean[1]
+{
+   meta::pure::functions::relation::tests::recurse::testFibonacci(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+}

@@ -767,8 +767,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   //https://docs.snowflake.com/en/sql-reference/functions/convert_timezone
   let unWrappedfmt =  $params->at(2)->substring(1, $params->at(2)->length()-1);
   assert($unWrappedfmt->validateDateTimeFormat(),'Found an invalid date format');
-  let formatpairs = meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeParts();
-  let format = $formatpairs->fold( {sub, date|  $date->toOne()->replace($sub.first,$sub.second)},$params->at(2));
+  let format = '\'' + meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat($unWrappedfmt) + '\'';
   format('TO_CHAR(CONVERT_TIMEZONE(%s,%s),%s)',[$params->at(1),$params->at(0),$format]);
 }
 

@@ -51,6 +51,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    ^DbExtension(
       nullOrderingSupport = nullsLowWithClauseSupport(),
       isBooleanLiteralSupported = true,
+      commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::databricks::processCommonTableExpressionsForDatabricks_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       collectionThresholdLimit = 10000,
       aliasLimit = 255,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -1828,4 +1829,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
            | fail('Date construction with ' + $params->size()->toString() + ' parameters not supported for Databricks'); '';
         )
    );
+}
+
+function meta::relational::functions::sqlQueryToString::databricks::processCommonTableExpressionsForDatabricks(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   // Spark widens the arithmetic in a recursive branch - DECIMAL(19,0) + 1 becomes DECIMAL(20,0) -
+   // and then refuses the UNION ALL with CANNOT_MERGE_INCOMPATIBLE_DATA_TYPE, so the branch is
+   // coerced back to the columns the anchor declares.
+   $ctes->meta::relational::functions::sqlQueryToString::default::coerceRecursiveBranchToAnchorTypes()
+        ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, 'RECURSIVE ');
 }

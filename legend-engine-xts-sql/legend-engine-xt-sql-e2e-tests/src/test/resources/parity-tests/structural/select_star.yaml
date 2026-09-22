@@ -50,7 +50,7 @@ tests:
     feature: "SELECT * from CTE"
     category: "select_star"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Mixed star and named columns
   - id: star_mixed_with_expression

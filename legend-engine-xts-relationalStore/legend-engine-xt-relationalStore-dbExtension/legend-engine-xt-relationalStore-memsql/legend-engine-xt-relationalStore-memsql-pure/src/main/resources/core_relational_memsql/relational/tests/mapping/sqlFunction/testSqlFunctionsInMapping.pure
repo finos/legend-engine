@@ -157,3 +157,11 @@ function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::co
                                                 meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
     assertEquals('select TO_CHAR(CONVERT_TZ(`root`.dateTime,\'GMT\',\'EST\'),\'YYYY-MM-DD HH24:MI:SS\') as `tzm`, TO_CHAR(CONVERT_TZ(`root`.dateTime,\'GMT\',\'EST\'),\'YYYY-MM-DDTHH24:MI:SS.FF3\') as `tzQuery` from dataTable as `root`',$s);
 }
+
+function <<test.Test>> meta::relational::memsql::tests::mapping::sqlFunction::convertTZ::testConvertTZWithOptionalSection():Boolean[1]
+{
+    let s = toSQLString(|SqlFunctionDemo.all()->project([s|$s.dateTime->convertTimeZone('EST','yyyy-MM-dd HH:mm:ss?[.S3]')], ['tzQuery']),
+                                                testMapping,
+                                                meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
+    assertEquals('select TO_CHAR(CONVERT_TZ(`root`.dateTime,\'GMT\',\'EST\'),\'YYYY-MM-DD HH24:MI:SS.FF3\') as `tzQuery` from dataTable as `root`', $s);
+}

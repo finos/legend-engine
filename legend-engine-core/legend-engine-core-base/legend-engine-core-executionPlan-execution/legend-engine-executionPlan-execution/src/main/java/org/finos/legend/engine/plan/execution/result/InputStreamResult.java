@@ -74,6 +74,7 @@ public class InputStreamResult extends Result
         {
             LOGGER.error("Error closing InputStreamResult", e);
         }
+        super.close();
     }
 
     @Override

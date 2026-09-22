@@ -1608,7 +1608,7 @@ function meta::relational::functions::pureToSqlQuery::buildCorrelatedSubQuery(se
                                                      );,
                                                    | ^$nestedSelect(
                                                         columns=$nestedColumnsReprocessed.second->concatenate(if($isolateGroupBy, |$colForGroupBy.second, |[]))->concatenate($flattenColumnsInSelect),
-                                                        preIsolationCurrentTreeNode = $updatedCurrentTreeNode,
+                                                        preIsolationCurrentTreeNode = $updatedCurrentTreeNode->filter(n|$nestedSelect.data->toOne()->getAllNodes()->cast(@RelationalTreeNode)->map(t|$t.alias.relation())->contains($n.alias.relation()))->first(),
                                                         filteringOperation= $filtersPartition.first->andFilters($extensions),
                                                         groupBy = if($isolateGroupBy, |$select.groupBy, |[]),
                                                         orderBy = if($isolateGroupBy, |$select.orderBy, |$parentNestedPartitionedOrderBys.second.values)
@@ -3061,7 +3061,12 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
 
         let cteColumns = $cteSelect.columns->map(c |
               $c->match([
-                a: Alias[1] | ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::Other()),
+                // same as the recursive case: an alias over a plain column keeps that column's type, so a
+                // later expression that reads this CTE knows what it is reading
+                a: Alias[1] | ^Column(name = $a.name, type = $a.relationalElement->match([
+                                  tac: TableAliasColumn[1] | $tac.column.type,
+                                  o: Any[1] | ^meta::relational::metamodel::datatype::Other()
+                                ])),
                 tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->orElse($tac.column.name), type = $tac.column.type)
               ]);
         );
@@ -3070,7 +3075,9 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
         
         let cteReferenceSelect = ^TdsSelectSqlQuery
         (
-          columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $cteAlias)),
+          //a TDS select carries Alias-wrapped columns; a bare TableAliasColumn here makes every
+          //TDSRow accessor over the CTE fail its cast in tdsQualifier
+          columns = $cteColumns->map(c | ^Alias(name = $c.name, relationalElement = ^TableAliasColumn(columnName = $c.name, column = $c, alias = $cteAlias))),
           data = ^RootJoinTreeNode(alias = $cteAlias),
           paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
         );
@@ -3097,7 +3104,9 @@ function meta::relational::functions::pureToSqlQuery::processFunctionDefinition(
       $singleResult.element->match([
         selectWithCursor: SelectWithCursor[1] |
           let select = $selectWithCursor.select;
-          ^$singleResult(element = ^$selectWithCursor(select = ^$select(commonTableExpressions += $ctes)));,
+          // The let-bound CTEs come first: a CTE may only reference one declared before it, and the
+          // select's own CTEs (a recursive one, say) are built from the expression that uses them.
+          ^$singleResult(element = ^$selectWithCursor(select = ^$select(commonTableExpressions = $ctes->concatenate($select.commonTableExpressions))));,
         any: Any[1] | fail($any->type()->elementToPath() + ' not supported for multi expression'); $singleResult;
       ]);
     ,
@@ -7265,6 +7274,158 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
    );
 }
 
+function meta::relational::functions::pureToSqlQuery::processRecurse(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+  let initial = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
+                        ->toOne()
+                        ->cast(@SelectWithCursor);
+
+  let cteColumns = $initial.select.columns->map(c |
+        $c->match([
+          // an alias over a plain column keeps that column's type: it is what the CTE declares, and
+          // what a dialect holds the recursive branch to
+          a: Alias[1] | ^Column(name = $a.name, type = $a.relationalElement->match([
+                            tac: TableAliasColumn[1] | $tac.column.type,
+                            o: Any[1] | ^meta::relational::metamodel::datatype::Other()
+                          ])),
+          tac: TableAliasColumn[1] | ^Column(name = $tac.columnName->orElse($tac.column.name), type = $tac.column.type)
+        ]);
+  );
+
+  let refCte = ^CommonTableExpressionReference(name =  'rcte' + $nodeId->replace('#', '_'), columns = $cteColumns);
+
+  let refCteAlias = ^TableAlias(name = buildNodeId($nodeId,'_d1'), relationalElement = $refCte);
+  
+  let cteReferenceSelect = ^TdsSelectSqlQuery
+  (
+    columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $refCteAlias)),
+    data = ^RootJoinTreeNode(alias = $refCteAlias),
+    paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
+  );
+
+  let recurseFunc = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->cast(@FunctionDefinition<Any>)->toOne();
+
+  let newState = $state->updateFunctionParamScope($recurseFunc.classifierGenericType.typeArguments.rawType->cast(@FunctionType)->toOne(), ^$initial(select = $cteReferenceSelect));
+
+  let recurse = processValueSpecification($recurseFunc.expressionSequence->toOne('recurse only support single expression'), $currentPropertyMapping, $operation, $vars, $newState, $joinType, buildNodeId($nodeId, '_d2'), $aggFromMap, $context, $extensions)
+                        ->toOne()
+                        ->cast(@SelectWithCursor);
+
+  // H2, Oracle and Snowflake require the self-reference to be a direct FROM item of a UNION ALL
+  // branch. A join in the step wraps the reference in a subquery that only re-projects the CTE's
+  // own columns, so unwrap that back to the reference; the alias around it keeps its name and the
+  // columns resolve the same way.
+  let unwrapped = $recurse.select->meta::relational::postProcessor::transform({e:RelationalOperationElement[1] |
+                              $e->match([
+                                 s: SelectSQLQuery[1] | if($s->isPassthroughSelectOverCte($refCte.name), |$refCte, |$s),
+                                 a: Any[1] | $e
+                              ]);
+                           })->cast(@SelectSQLQuery);
+
+  // The join leaves its result as a derived table, so the reference would still sit one level below
+  // the branch. Merge a wrapper that only renames the inner select's columns into that select.
+  let flattenedRecurse = $unwrapped->collapseRenamingWrapper($refCte.name);
+
+  let unionTable = ^TableAlias(
+                                name = 'union',
+                                relationalElement = ^UnionAll(queries = $initial.select->concatenate($flattenedRecurse))
+                  );
+
+  let unionRoot = ^RootJoinTreeNode(alias = $unionTable);  
+
+  let unionSelect = ^TdsSelectSqlQuery
+  (
+    columns = $cteColumns->map(c | ^TableAliasColumn(columnName = $c.name, column = $c, alias = $unionTable)),
+    data = $unionRoot,
+    paths =  $cteColumns->map(c| pair($c.name, ^PathInformation(type = $c->meta::relational::metamodel::datatype::pureTypeForDbColumn(), relationalType = $c.type)))
+  );
+
+  let rcte = ^RecursiveCommonTableExpression(name = $refCte.name, sqlQuery = $unionSelect);
+
+  ^$recurse(select = ^$cteReferenceSelect(commonTableExpressions = $rcte));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isPassthroughSelectOverCte(s:SelectSQLQuery[1], cteName:String[1]):Boolean[1]
+{
+  $s.data->isNotEmpty()
+    && $s.data->toOne()->children()->isEmpty()
+    && $s.data.alias.relationalElement->toOne()->match([
+         c: CommonTableExpressionReference[1] | $c.name == $cteName,
+         a: Any[1] | false
+       ])
+    && $s.filteringOperation->isEmpty()
+    && $s.groupBy->isEmpty()
+    && $s.havingOperation->isEmpty()
+    && $s.orderBy->isEmpty()
+    && $s.qualifyOperation->isEmpty()
+    && $s.pivot->isEmpty()
+    && $s.toRow->isEmpty()
+    && $s.fromRow->isEmpty()
+    && ($s.distinct->isEmpty() || !$s.distinct->toOne())
+    // only a 1:1 re-projection: a rename or a computed column would change what the alias exposes
+    && $s.columns->forAll(c | $c->match([
+         a: Alias[1] | $a.relationalElement->match([
+              tac: TableAliasColumn[1] | $a.name == $tac.columnName->orElse($tac.column.name),
+              x: Any[1] | false
+            ]),
+         tac: TableAliasColumn[1] | true,
+         x: Any[1] | false
+       ]));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::collapseRenamingWrapper(s:SelectSQLQuery[1], cteName:String[1]):SelectSQLQuery[1]
+{
+  let inner = if($s.data->isNotEmpty() && $s.data->toOne()->children()->isEmpty(),
+                 | $s.data.alias.relationalElement->toOne()->match([
+                     i: SelectSQLQuery[1] | $i,
+                     a: Any[1] | []->cast(@SelectSQLQuery)
+                   ]),
+                 | []);
+
+  let mergeable = $inner->isNotEmpty()
+                    && $inner->toOne()->referencesCteDirectly($cteName)
+                    && $s.filteringOperation->isEmpty() && $s.groupBy->isEmpty() && $s.havingOperation->isEmpty()
+                    && $s.orderBy->isEmpty() && $s.qualifyOperation->isEmpty() && $s.pivot->isEmpty()
+                    && $s.toRow->isEmpty() && $s.fromRow->isEmpty()
+                    && ($s.distinct->isEmpty() || !$s.distinct->toOne())
+                    && $s.columns->forAll(c | $c->match([a: Alias[1] | $a.relationalElement->instanceOf(TableAliasColumn), x: Any[1] | false]))
+                    && $inner->toOne().columns->forAll(c | $c->instanceOf(Alias));
+
+  if(!$mergeable,
+    | $s,
+    | let innerSelect = $inner->toOne();
+      let byName = newMap($innerSelect.columns->cast(@Alias)->map(a | pair($a.name, $a)));
+      let rewritten = $s.columns->cast(@Alias)->map(a |
+            let source = $a.relationalElement->cast(@TableAliasColumn);
+            //processTdsRenameColumns stamps columnName with the NEW name and leaves the inner name
+            //on column.name, so a rename wrapper only resolves through the latter
+            let matched = $byName->get($source.columnName->orElse($source.column.name))
+                            ->concatenate($byName->get($source.column.name))
+                            ->first();
+            if($matched->isEmpty(), |$a, |^$a(relationalElement = $matched->toOne().relationalElement));
+         );
+      // bail out if any column did not resolve - a partial merge would silently drop a projection
+      if($rewritten->size() == $s.columns->size() && $rewritten->forAll(a | !$a.relationalElement->instanceOf(TableAliasColumn) || $a.relationalElement->cast(@TableAliasColumn).alias != $s.data.alias->toOne()),
+        | ^$innerSelect(columns = $rewritten),
+        | $s);
+  );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::referencesCteDirectly(s:SelectSQLQuery[1], cteName:String[1]):Boolean[1]
+{
+  $s.data->isNotEmpty()
+    && $s.data->toOne()->meta::relational::functions::pureToSqlQuery::allTreeNodes()
+        ->exists(n | $n.alias.relationalElement->toOne()->match([
+             c: CommonTableExpressionReference[1] | $c.name == $cteName,
+             a: Any[1] | false
+           ]));
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::allTreeNodes(r:RelationalTreeNode[1]):RelationalTreeNode[*]
+{
+  $r->concatenate($r->children()->map(c | $c->allTreeNodes()));
+}
+
 function meta::relational::functions::pureToSqlQuery::processLateral(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let lateralInput = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d0'), $aggFromMap, $context, $extensions)
@@ -7998,7 +8159,13 @@ function  meta::relational::functions::pureToSqlQuery::processJoinCondition(join
     assert($joinCondition.expressionSequence->size() <= 1, 'Lambda with more than one expression are not supported yet');
 
     let select = $operation.select;
-    let element_old = processValueSpecification($joinCondition.expressionSequence->at(0)->cast(@ValueSpecification), $currentPropertyMapping, ^$operation(select = ^$select(columns = $aliases)), $vars, ^$state(inScopeVars=$newOpenVars), $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
+    let joinCursor = ^$operation(select = ^$select(columns = $aliases));
+    // The condition's own parameters have to shadow an enclosing binding of the same name. A lambda
+    // that ranges over a relation - recurse's step, say - registers its parameter by name, so without
+    // this a condition written {x,y|...} resolves $x to that outer relation and qualifies the column
+    // with an alias that is not in scope at the join.
+    let conditionState = ^$state(inScopeVars=$newOpenVars)->updateFunctionParamScope($joinCondition.classifierGenericType.typeArguments.rawType->cast(@FunctionType)->toOne(), $joinCursor);
+    let element_old = processValueSpecification($joinCondition.expressionSequence->at(0)->cast(@ValueSpecification), $currentPropertyMapping, $joinCursor, $vars, $conditionState, $joinType, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor).select.columns->toOne();
     let element_new = $element_old->match([
        i: Literal[1] | let val = $i.value->cast(@Boolean);
                        if($val ,|^DynaFunction(name = 'equal', parameters = [^Literal(value=1), ^Literal(value=1)]), |^DynaFunction(name = 'equal', parameters=[^Literal(value=1), ^Literal(value=0)]));,
@@ -8653,8 +8820,7 @@ function meta::relational::functions::pureToSqlQuery::manageIsolation(p:SelectSQ
 
    print(if(!$context.debug, |'',|$context.space+'  ? '+$finalIsolationDecision->toString()+' / State isolation:'+$state.shouldIsolate->toString()+', Isolation required (filter or inner joins):'+$thisIsolationDecision->toString()+'\n'));
 
-   let res2 = if($finalIsolationDecision, |^$p(preIsolationCurrentTreeNode=[])->isolateSubJoins($p.data->toOne(), $extraColumns, $aliasForExtractedColumns, $nodeId, $inner, $state, $context, $extensions).second, |^$p(preIsolationCurrentTreeNode=[]));
-
+    let res2 = if($finalIsolationDecision, |^$p(preIsolationCurrentTreeNode=[])->isolateSubJoins($p.data->toOne(), $extraColumns, $aliasForExtractedColumns, $nodeId, $inner, $state, $context, $extensions).second, | ^$p(preIsolationCurrentTreeNode = $p.preIsolationCurrentTreeNode->filter(n|$p.data->toOne()->getAllNodes()->cast(@RelationalTreeNode)->map(t|$t.alias.relation())->contains($n.alias.relation()))->first()));
    print(if(!$context.debug, |'',
             | $context.space+'*>Isolation Result: \n'+
               $context.space+'  '+$res2->printDebugQuery($context.space, $extensions))
@@ -11769,6 +11935,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processPivot_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processLateral_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_, second = meta::relational::functions::pureToSqlQuery::processRecurse_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
 
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::denseRank_Relation_1___Window_1__T_1__Integer_1_, second = meta::relational::functions::pureToSqlQuery::processWindowFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

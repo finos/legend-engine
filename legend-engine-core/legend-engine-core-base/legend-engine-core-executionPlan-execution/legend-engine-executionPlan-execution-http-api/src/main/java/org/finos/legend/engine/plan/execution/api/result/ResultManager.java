@@ -73,7 +73,14 @@ public class ResultManager
         }
         else if (result instanceof ConstantResult)
         {
-            return ManageConstantResult.manageResult(user, ((ConstantResult) result).getValue());
+            try
+            {
+                return ManageConstantResult.manageResult(user, ((ConstantResult) result).getValue());
+            }
+            finally
+            {
+                result.close();
+            }
         }
         else
         {

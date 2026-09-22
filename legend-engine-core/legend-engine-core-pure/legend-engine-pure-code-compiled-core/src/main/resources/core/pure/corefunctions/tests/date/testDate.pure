@@ -28,9 +28,17 @@ function <<test.Test>> meta::pure::functions::date::tests::testValidateDateTimeF
   assert($invalidFormats->map(format | validateDateTimeFormat($format))->assertNotContains(true));
 }
 
+function <<test.Test>> meta::pure::functions::date::tests::testValidateDateTimeFormatWithSubSecondWidthOrOptionalSection():Boolean[1]
+{
+  let formats = ['yyyy-MM-dd"T"HH:mm:ss.S3Z', 'yyyy-MM-dd"T"HH:mm:ss.S9', 'yyyy-MM-dd HH:mm:ss.S<6', 'yyyy-MM-dd HH:mm:ss.S>3', 'yyyy-MM-dd HH:mm:ss.S*', 'yyyy-MM-dd HH:mm:ss.S!3', 'yyyy-MM-dd HH:mm:ss.S(3,9)', 'yyyy-MM-dd HH:mm:ss.S(3!,*!,"_")', 'yyyy-MM-dd HH:mm:ss.S(3,3,"\\"")', 'yyyy-MM-dd HH:mm:ss?[.S3]', 'yyyy-MM-dd"T"HH:mm:ss?[.S9|".000000000"]Z', 'yyyy-MM-dd?["T"HH:mm:ss]', 'yyyy-MM-dd?[ HH:mm:ss?[.S*]]', '[EST]yyyy-MM-dd?["T"HH:mm:ss?[.S3]]X'];
+  assert($formats->map(format | validateDateTimeFormat($format))->assertNotContains(false));
+
+  let invalidFormats = ['yyyy-MM-dd HH:mm:ss.S', 'yyyy-MM-dd HH:mm:ss?[.S3', 'yyyy-MM-dd HH:mm:ss.S(3)', 'yyyy-MM-dd?[HH:mm', 'yyyy-MM-dd HH:mm:ss.S<', 'yyyy-MM-dd HH:mm:ss?[|.S3]', 'yyyy-MM-dd?["T"HH:mm:ss'];
+  assert($invalidFormats->map(format | validateDateTimeFormat($format))->assertNotContains(true));
+}
+
 
 function <<test.Test>> meta::pure::functions::date::tests::testconvertTimeZone():Boolean[1]
 {
    assertEquals('2024-08-15T11:33:42.054-0400', convertTimeZone(%2024-08-15T15:33:42.054+0000,'America/New_York','yyyy-MM-dd"T"HH:mm:ss.SSSZ'));
 } 
- 

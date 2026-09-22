@@ -153,3 +153,38 @@ tests:
     category: "joins"
     expected_tds_status: PASS
     expected_rel_status: PASS
+
+  # A FROM-clause subquery that re-binds an alias the enclosing query already holds. The subquery
+  # has to join internally for this to bite: a single-table derived table publishes no child scopes
+  # for processStandardJoin's alias -> row-variable map to reach into, so it cannot collide.
+  - id: join_derived_table_shadows_outer_alias
+    sql: "SELECT p.name FROM persons p INNER JOIN (SELECT MAX(p.id) AS max_id FROM persons p INNER JOIN departments d ON p.dept_id = d.id) s ON p.id = s.max_id ORDER BY 1"
+    feature: "JOIN on derived table re-binding an outer alias"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # The latest-row shape the corpus actually hits: MAX(...) GROUP BY in the derived table, joined
+  # back to the same table the derived table reads, under the same alias inside and out.
+  - id: join_derived_table_shadows_outer_alias_grouped
+    sql: "SELECT p.name, p.salary FROM persons p INNER JOIN (SELECT p.dept_id AS dept_id, MAX(p.salary) AS max_salary FROM persons p INNER JOIN departments d ON p.dept_id = d.id GROUP BY p.dept_id) s ON p.dept_id = s.dept_id AND p.salary = s.max_salary ORDER BY 1"
+    feature: "JOIN on derived table re-binding an outer alias"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: PASS
+
+  # Regression guard for the derived-table alias-shadowing fix in processStandardJoin.
+  #
+  # The aliases here are distinct and the SQL is ordinary - Postgres runs it without complaint.
+  # Legend suffixes each relation after the first with its position ('p' inside the derived table
+  # becomes 'p_1'), which collides with the enclosing query's own 'p_1'. The derived table used to
+  # publish its internal scopes to the join's alias -> row-variable map, and newMap resolves a
+  # duplicate key last-wins, so the outer 'p_1' was rebound to the derived table's row: "The column
+  # 'id_p_1' can't be found in the relation (max_id_s:Integer)". Relation path only; TDS was
+  # unaffected. Revert the processStandardJoin change and this goes ERROR again.
+  - id: join_derived_table_alias_collides_with_generated_suffix
+    sql: "SELECT p_1.name FROM persons p_1 INNER JOIN (SELECT MAX(p.id) AS max_id FROM persons p INNER JOIN persons u ON p.id = u.id) s ON p_1.id = s.max_id ORDER BY 1"
+    feature: "JOIN on derived table whose inner scope collides with an outer alias"
+    category: "joins"
+    expected_tds_status: PASS
+    expected_rel_status: PASS

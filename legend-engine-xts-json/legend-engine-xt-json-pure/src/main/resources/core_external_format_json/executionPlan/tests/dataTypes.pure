@@ -57,6 +57,37 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
   assertJsonStringsEqual(readFile('/core_external_format_json/executionPlan/tests/resources/allTypesWithSchema.json')->toOne(), $result);
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::types::testDateTimeFormat(): Boolean[1]
+{
+  // A run of S is a fixed width, so a date-time with no fraction is written with zeros
+  assertJsonStringsEqual(
+    '{"dateTime":"2012-05-20T13:10:52.501+0000","repeatedDateTime":["2012-05-20T13:10:52.000+0000","2012-05-20T13:10:52.501+0000"]}',
+    externalizeDateTimes('yyyy-MM-dd"T"HH:mm:ss.SSSZ')
+  );
+}
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::types::testDateTimeFormatWithSubSecondWidthsAndOptionalSections(): Boolean[1]
+{
+  // An optional section writes a fraction only where a date-time has one, and S* writes every digit it has
+  assertJsonStringsEqual(
+    '{"dateTime":"2012-05-20T13:10:52.501+0000","repeatedDateTime":["2012-05-20T13:10:52+0000","2012-05-20T13:10:52.501234567+0000"]}',
+    externalizeDateTimes('yyyy-MM-dd"T"HH:mm:ss?[.S*]Z')
+  );
+  // The second alternative is written where the first cannot be
+  assertJsonStringsEqual(
+    '{"dateTime":"2012-05-20T13:10:52.501000+0000","repeatedDateTime":["2012-05-20T13:10:52.000000+0000","2012-05-20T13:10:52.501234+0000"]}',
+    externalizeDateTimes('yyyy-MM-dd"T"HH:mm:ss?[.S6|".000000"]Z')
+  );
+}
+
+function <<access.private>> meta::external::format::json::executionPlan::test::types::externalizeDateTimes(dateTimeFormat:String[1]): String[1]
+{
+  let config = ^meta::external::format::json::metamodel::externalize::JsonSchemaExternalizeConfig(dateTimeFormat=$dateTimeFormat);
+  let query  = {data:Byte[*] | DateTimes->fromJson($data)->toJson(#{DateTimes{dateTime,repeatedDateTime}}#, $config)};
+  let input  = '{"dateTime":"2012-05-20T13:10:52.501","repeatedDateTime":["2012-05-20T13:10:52","2012-05-20T13:10:52.501234567"]}';
+  executeLegendQuery($query, pair('data', convertStringToBytes($input)), jsonExtensions());
+}
+
 ###Pure
 import meta::pure::unit::*;
 import meta::external::format::json::executionPlan::test::types::*;
@@ -102,6 +133,12 @@ Class meta::external::format::json::executionPlan::test::types::AllTypes
   measure            : Mass~Kilogram[1];
   optionalMeasure    : Mass~Kilogram[0..1];
   repeatedMeasure    : Mass~Kilogram[*];
+}
+
+Class meta::external::format::json::executionPlan::test::types::DateTimes
+{
+  dateTime         : DateTime[1];
+  repeatedDateTime : DateTime[*];
 }
 
 Enum meta::external::format::json::executionPlan::test::types::Gender

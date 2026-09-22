@@ -71,5 +71,6 @@ public class GraphFetchResult extends Result
         {
             this.graphFetchSpan.finish();
         }
+        super.close();
     }
 }

@@ -1686,6 +1686,14 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
+      "test": "meta::pure::functions::relation::tests::recurse::testFibonacci_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
       "test": "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },

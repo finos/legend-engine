@@ -91,24 +91,17 @@ public class TestPureDate
     {
         PureDate date = PureDate.newPureDate(2014, 1, 1, 1, 1, 1, "070004235");
         Assert.assertEquals("2013-12-31 20:01:01.070-0500", date.format("[EST]yyyy-MM-dd HH:mm:ss.SSSZ"));
-        Assert.assertEquals("2013-12-31 20:01:01.070-0500", date.format("[EST]yyyy-MM-dd [EST]HH:mm:ss.SSSZ"));
-        try
-        {
-            date.format("[EST]yyyy-MM-dd [CST] HH:mm:ss.SSSZ");
-            Assert.fail();
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Cannot set multiple timezones: EST, CST", e.getMessage());
-        }
+        assertFormatFails("Time zone can only be set at the beginning of the format string", date, "[EST]yyyy-MM-dd [EST]HH:mm:ss.SSSZ");
+        assertFormatFails("Time zone can only be set at the beginning of the format string", date, "[EST]yyyy-MM-dd [CST] HH:mm:ss.SSSZ");
     }
 
     @Test
     public void testFormatRefersToNonexistentComponent()
     {
-        // When a date has no hour, timezone shifts are no-ops, so multiple timezones don't conflict
         PureDate date = PureDate.newPureDate(2014, 1, 1);
-        Assert.assertEquals("2014-01-01 00:00:00.000+0000", date.format("[EST]yyyy-MM-dd[CST] HH:mm:ss.SSSZ"));
+        Assert.assertEquals("2014-01-01 00:00:00.000+0000", date.format("[EST]yyyy-MM-dd HH:mm:ss.SSSZ"));
+        // a zone anywhere but the start is refused, whether or not the date has an hour for it to shift
+        assertFormatFails("Time zone can only be set at the beginning of the format string", date, "[EST]yyyy-MM-dd[CST] HH:mm:ss.SSSZ");
     }
 
     @Test
@@ -193,35 +186,9 @@ public class TestPureDate
     public void testParseISO8601ColonOffsetsNotSupported()
     {
         // PureDate parser requires RFC 822 style offsets (+0530), not colon-separated (+05:30)
-        try
-        {
-            PureDate.parsePureDate("2023-01-01T00:00:00+05:30");
-            Assert.fail("Expected exception for colon-separated offset");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // expected
-        }
-
-        try
-        {
-            PureDate.parsePureDate("2023-01-01T00:00:00-05:00");
-            Assert.fail("Expected exception for colon-separated offset");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // expected
-        }
-
-        try
-        {
-            PureDate.parsePureDate("2023-01-01T00:00:00+00:00");
-            Assert.fail("Expected exception for colon-separated offset");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // expected
-        }
+        Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.parsePureDate("2023-01-01T00:00:00+05:30"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.parsePureDate("2023-01-01T00:00:00-05:00"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.parsePureDate("2023-01-01T00:00:00+00:00"));
     }
 
     @Test
@@ -336,27 +303,11 @@ public class TestPureDate
 
         // Year only
         PureDate yearOnly = PureDate.parsePureDate("2023");
-        try
-        {
-            yearOnly.format(fmt9);
-            Assert.fail("Expected exception for year-only date formatted with full datetime format");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Date has no month: 2023", e.getMessage());
-        }
+        Assert.assertEquals("Date has no month: 2023", Assert.assertThrows(IllegalArgumentException.class, () -> yearOnly.format(fmt9)).getMessage());
 
         // Year-month
         PureDate yearMonth = PureDate.parsePureDate("2023-01");
-        try
-        {
-            yearMonth.format(fmt9);
-            Assert.fail("Expected exception for year-month date formatted with full datetime format");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Date has no day: 2023-01", e.getMessage());
-        }
+        Assert.assertEquals("Date has no day: 2023-01", Assert.assertThrows(IllegalArgumentException.class, () -> yearMonth.format(fmt9)).getMessage());
 
         // Date only — hours, minutes, seconds padded with 0
         PureDate dateOnly = PureDate.parsePureDate("2023-01-01");
@@ -410,50 +361,106 @@ public class TestPureDate
         Assert.assertEquals("2023-06-15T00", dateOnly.format(fmtHours));
     }
 
+    @Test
+    public void testFormatReadsARunOfSAsAFixedWidth()
+    {
+        Assert.assertEquals("2014-03-10 13:07:44.070", PureDate.parsePureDate("2014-03-10T13:07:44.07").format("yyyy-MM-dd HH:mm:ss.SSS"));
+        Assert.assertEquals("44.0700", PureDate.parsePureDate("2014-03-10T13:07:44.070004235").format("ss.SSSS"));
+        Assert.assertEquals("13:07:44.000", PureDate.parsePureDate("2014-03-10T13:07:44").format("HH:mm:ss.SSS"));
+    }
+
+    @Test
+    public void testFormatWritesADefaultForAMissingTimeComponent()
+    {
+        Assert.assertEquals("2014-03-10 12:00:00 AM +0000 Z", PureDate.parsePureDate("2014-03-10").format("yyyy-MM-dd hh:mm:ss a Z X"));
+        Assert.assertEquals("PMPM", PureDate.parsePureDate("2014-03-10T13:07:44").format("aa"));
+    }
+
+    @Test
+    public void testFormatWithSubSecondWidth()
+    {
+        PureDate twoDigits = PureDate.parsePureDate("2014-03-10T13:07:44.07");
+        PureDate nineDigits = PureDate.parsePureDate("2014-03-10T13:07:44.070004235");
+        Assert.assertEquals("070", twoDigits.format("S3"));
+        Assert.assertEquals("07", twoDigits.format("S<3"));
+        Assert.assertEquals("070004235", nineDigits.format("S*"));
+        Assert.assertEquals("0700", nineDigits.format("S(2,4)"));
+        assertFormatFails("Date has a 2 digit sub-second, but 3 are required: 2014-03-10T13:07:44.07", twoDigits, "S!3");
+    }
+
+    @Test
+    public void testFormatWithOptionalSections()
+    {
+        String formatString = "yyyy-MM-dd?[\"T\"HH:mm:ss?[.S3]]";
+        Assert.assertEquals("2014-03-10", PureDate.parsePureDate("2014-03-10").format(formatString));
+        Assert.assertEquals("2014-03-10", PureDate.parsePureDate("2014-03-10T13:07").format(formatString));
+        Assert.assertEquals("2014-03-10T13:07:44", PureDate.parsePureDate("2014-03-10T13:07:44").format(formatString));
+        Assert.assertEquals("2014-03-10T13:07:44.070", PureDate.parsePureDate("2014-03-10T13:07:44.07").format(formatString));
+    }
+
+    @Test
+    public void testFormatReadsAStringUsingNewSyntaxAsPureDoes()
+    {
+        // a string written for Pure's language cannot have been written for this platform's, so a missing hour
+        // fails rather than writing zeros, and a run of S is at most that many digits rather than exactly that many
+        assertFormatFails("Date has no hour: 2014-03-10", PureDate.parsePureDate("2014-03-10"), "HH:mm?[:ss]");
+
+        String formatString = "HH:mm:ss?[.SSS|\" (no fraction)\"]";
+        Assert.assertEquals("13:07:44.07", PureDate.parsePureDate("2014-03-10T13:07:44.07").format(formatString));
+        Assert.assertEquals("13:07:44 (no fraction)", PureDate.parsePureDate("2014-03-10T13:07:44").format(formatString));
+    }
+
+    @Test
+    public void testFormatReadsTimeZonesAsPureDoes()
+    {
+        Assert.assertEquals("2014-03-10 09:07 America/New_York", PureDate.parsePureDate("2014-03-10T13:07:44").format("[America/New_York]yyyy-MM-dd HH:mm z"));
+        Assert.assertEquals("18:37+0530", PureDate.parsePureDate("2014-03-10T13:07").format("[Asia/Kolkata]HH:mmX"));
+        assertFormatFails("Unknown time zone: Foo/Bar", PureDate.parsePureDate("2014-03-10"), "[Foo/Bar]yyyy-MM-dd");
+    }
+
+    @Test
+    public void testFormatTwoDigitYearHasNoSign()
+    {
+        Assert.assertEquals("44-03-10", PureDate.newPureDate(-44, 3, 10).format("yy-MM-dd"));
+    }
+
+    @Test
+    public void testFormatWithMoreFormatStringsThanArePatternsKept()
+    {
+        PureDate date = PureDate.newPureDate(2014, 3, 10);
+        for (int round = 0; round < 2; round++)
+        {
+            for (int i = 0; i < 200; i++)
+            {
+                Assert.assertEquals("2014 " + i, date.format("yyyy\" " + i + "\""));
+            }
+        }
+    }
+
+    private static void assertFormatFails(String expectedMessage, PureDate date, String formatString)
+    {
+        Assert.assertEquals(
+                expectedMessage,
+                Assert.assertThrows("Expected formatting " + date + " with " + formatString + " to fail", IllegalArgumentException.class, () -> date.format(formatString)).getMessage());
+    }
+
 
 
     @Test
     public void testInvalidSubseconds()
     {
-        try
-        {
-            PureDate.newPureDate(2016, 5, 17, 10, 26, 33, null);
-            Assert.fail("Expected exception");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Invalid subsecond value: null", e.getMessage());
-        }
-
-        try
-        {
-            PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "");
-            Assert.fail("Expected exception");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Invalid subsecond value: \"\"", e.getMessage());
-        }
-
-        try
-        {
-            PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "789as9898");
-            Assert.fail("Expected exception");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Invalid subsecond value: \"789as9898\"", e.getMessage());
-        }
-
-        try
-        {
-            PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "-789");
-            Assert.fail("Expected exception");
-        }
-        catch (IllegalArgumentException e)
-        {
-            Assert.assertEquals("Invalid subsecond value: \"-789\"", e.getMessage());
-        }
+        Assert.assertEquals(
+                "Invalid subsecond value: null",
+                Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.newPureDate(2016, 5, 17, 10, 26, 33, null)).getMessage());
+        Assert.assertEquals(
+                "Invalid subsecond value: \"\"",
+                Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "")).getMessage());
+        Assert.assertEquals(
+                "Invalid subsecond value: \"789as9898\"",
+                Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "789as9898")).getMessage());
+        Assert.assertEquals(
+                "Invalid subsecond value: \"-789\"",
+                Assert.assertThrows(IllegalArgumentException.class, () -> PureDate.newPureDate(2016, 5, 17, 10, 26, 33, "-789")).getMessage());
     }
 
     @Test

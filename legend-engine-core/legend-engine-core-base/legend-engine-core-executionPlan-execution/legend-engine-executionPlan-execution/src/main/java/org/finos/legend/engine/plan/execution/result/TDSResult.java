@@ -117,6 +117,7 @@ public final class TDSResult extends StreamingResult implements IResult, StoreEx
             StoreExecutableManager.INSTANCE.removeExecutable(this.sessionId, this);
         }
         this.cancel();
+        super.close();
     }
 
     @Override

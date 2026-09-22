@@ -246,7 +246,7 @@ function meta::external::query::sql::transformation::queryToPure::sqlToPure(quer
     let extensions = meta::relational::extension::relationalExtensions();
     let _context = rootContext($sources, $compiler, $extensions);
     let context = ^$_context(extraPackageableElements=$extraPackages,scopeVariables = $scopeVariables, failOnInvalidColumns = true);
-    let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true, withSupported = true));
+    let sqlTransformContext = $query->processRootQuery(^$context(scopeWithFrom = true));
     let lambda = $sqlTransformContext.lambda($context.scopeWithFrom->isTrue());
     let pureFunc = if ($preval, | $lambda->meta::pure::router::preeval::preval($extensions), | $lambda);
   //  println('Transfomed: '+$pureFunc->printFunctionDefinition(meta::external::query::sql::transformation::queryToPure::dynamicGrammarConfiguration(), ^GContext(space='')));
@@ -277,7 +277,12 @@ function meta::external::query::sql::transformation::queryToPure::getPlanResult(
 
 
   let plan = if ($context.relation->isTrue(), | [], | getPlan($context, $sources, $extensions));
-  let lambda = if ($context.relation->isTrue(), | $context.lambda($context.scopeWithFrom->isTrue()), | []);
+  //a let-bound CTE needs the whole-lambda from() to reach the relational CommonTableExpression
+  //handler; without it the router materialises each let into its own node and the body runs in
+  //memory. scopeWithFrom is about source-level scoping and is turned off precisely when a CTE is
+  //present, so it cannot be the flag that decides this.
+  let wrapWithFrom = $context.scopeWithFrom->isTrue() || $context.withQueries->filter(w | !$w.inline)->isNotEmpty();
+  let lambda = if ($context.relation->isTrue(), | $context.lambda($wrapWithFrom), | []);
   let mapping = if ($context.relation->isTrue(), | getMapping($sources), | []);
   let runtime = if ($context.relation->isTrue(), | getRuntime($sources, $extensions), | []);
 
@@ -465,11 +470,24 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processWith', $context.debug);
 
-  assert($context.withSupported, | 'with queries currently not supported');
-
   assert($context.singleExecutionContext, 'With queries with multiple runtimes/mappings currently not supported');
 
-  $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery(^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
+  //a self-reference without RECURSIVE would otherwise surface further down as an unresolved table
+  //name, which reads like a missing source rather than a missing keyword. Only the first offender is
+  //named: the remedy is the same keyword for all of them, and it keeps the message readable
+  let selfReferencing = $with.withQueries->filter(w | $w.query.queryBody->isSelfReferencing($w.name));
+  assert($with.recursive || $selfReferencing->isEmpty(),
+         | 'CTE "' + $selfReferencing.name->first()->toOne()
+             + '" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause');
+
+  $with.withQueries->fold({w, acc | $acc->concatenate($w->processWithQuery($with.recursive, ^$context(name = $w.name, root = false, withQueries = $context.withQueries->concatenate($acc))))}, []);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWithQuery(query: WithQuery[1], recursive: Boolean[1], _context: SqlTransformContext[1]): WithQueryContext[1]
+{
+  if ($recursive && $query.query.queryBody->isSelfReferencing($query.name),
+    | $query->processRecursiveWithQuery($_context),
+    | $query->processWithQuery($_context));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processWithQuery(query: WithQuery[1], _context: SqlTransformContext[1]): WithQueryContext[1]
@@ -483,6 +501,136 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let letFunction = sfe(letFunction_String_1__T_m__T_m_, $genericType, [], PureOne, [$query.name->iv(), $newContext.expression->toOne()]);
 
   ^WithQueryContext(context = ^$newContext(name = $query.name), expression = $letFunction, assignment = var($query.name, PureOne, $genericType));
+}
+
+//a WITH RECURSIVE list may hold ordinary members too - only the ones naming themselves map to recurse()
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelfReferencing(relation: Relation[1], name: String[1]): Boolean[1]
+{
+  $relation->match([
+    t: Table[1]              | $t.name.parts->size() == 1 && $t.name.parts->at(0) == $name,
+    a: AliasedRelation[1]    | $a.relation->isSelfReferencing($name),
+    l: LateralRelation[1]    | $l.relation->isSelfReferencing($name),
+    j: Join[1]               | $j.left->isSelfReferencing($name) || $j.right->isSelfReferencing($name),
+    tsq: TableSubquery[1]    | $tsq.query.queryBody->isSelfReferencing($name),
+    qws: QueryWithScope[1]   | $qws.queryBody->isSelfReferencing($name),
+    set: SetOperation[1]     | $set.left->isSelfReferencing($name) || $set.right->isSelfReferencing($name),
+    qs: QuerySpecification[1]| $qs.from->exists(r | $r->isSelfReferencing($name)),
+    v: Values[1]             | false,
+    tf: TableFunction[1]     | false,
+    //a new Relation subtype must decide explicitly: a silent false sends the member down the
+    //let path, where it is gated rather than mapped, and the reason is invisible
+    r: Relation[1]           | fail('cannot determine whether ' + $r->genericType().rawType->toOne()->cast(@Type)->elementToPath() + ' references "' + $name + '"'); false;
+  ]);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRecursiveWithQuery(query: WithQuery[1], _context: SqlTransformContext[1]): WithQueryContext[1]
+{
+  debug(|'processRecursiveWithQuery', $_context.debug);
+
+  assertRelation($_context.relation, 'WITH RECURSIVE');
+
+  let union = $query.query.queryBody->match([
+    u: Union[1]     | $u,
+    q: QueryBody[1] | unsupported('WITH RECURSIVE requires the member to be <anchor> UNION ALL <step>'); $q->cast(@Union);
+  ]);
+
+  assert(!$union.distinct, | 'WITH RECURSIVE requires UNION ALL; UNION would have to de-duplicate across rounds, which recurse() does not do');
+  assert($union.orderBy->isEmpty() && $union.limit->isEmpty() && $union.offset->isEmpty(), | 'ORDER BY / LIMIT / OFFSET inside a WITH RECURSIVE member is not supported');
+  assert(!$union.left->isSelfReferencing($query.name), | 'the anchor of a WITH RECURSIVE member cannot reference "' + $query.name + '"');
+  assert($union.right->isSelfReferencing($query.name), | 'the recursive step of "' + $query.name + '" must reference "' + $query.name + '"');
+
+  //t(a, b) names the member's columns, so push the names onto the anchor's select items rather than
+  //renaming afterwards: rename() cannot carry a column's multiplicity through in Pure source, and
+  //RecurseInference compares the anchor and the step on multiplicity too
+  let anchorRelation = $union.left->aliasSelectItemsPositionally($query.columns);
+
+  let anchorContext = wrapWithFrom($anchorRelation->processRelation(^$_context(name = $query.name, root = false, id = $_context.id + 1)));
+
+  //a from-less select is wrapped as a single unnamed TDS column with no resolvable schema, which
+  //gives recurse() nothing to fix the shape of the step against
+  assert($anchorContext.columns->isNotEmpty(), | 'the anchor of a WITH RECURSIVE member must select from a relation; a from-less anchor such as SELECT 1 is not supported');
+
+  let anchor = $anchorContext->applyCteColumnAliases($query.columns);
+  let anchorColumns = $anchor.columns;
+  let anchorType = $anchor.expression->toOne()->evaluateAndDeactivate().genericType->toOne();
+
+  let stepParameter = var($query.name, PureOne, $anchorType);
+
+  let stepScope = ^WithQueryContext(
+    context = ^$anchor(name = $query.name),
+    expression = $stepParameter,
+    assignment = $stepParameter,
+    inline = true
+  );
+
+  let stepRelation = $union.right->aliasSelectItemsPositionally($anchorColumns.name);
+
+  let stepContext = wrapWithFrom($stepRelation->processRelation(^$_context(
+    name = $query.name + '_step',
+    root = false,
+    id = $_context.id + 3,
+    withQueries = $_context.withQueries->concatenate($stepScope)
+  )));
+
+  //RecurseInference asserts the step returns the anchor's columns by name and in order; SQL is positional
+  let step = $stepContext->renameColumnsPositionally($anchorColumns.name);
+
+  let stepLambda = lambda(
+    functionType($stepParameter, $anchorType, PureOne),
+    $step.expression->toOne()
+  );
+
+  let recurse = sfe(recurse_Relation_1__Function_1__Relation_1_, $anchorType, [], PureOne, [$anchor.expression->toOne(), $stepLambda->iv()]);
+
+  //the step's context is not reachable from the anchor's, so fold its source-level lets in here or
+  //cteAssignments cannot hoist them
+  ^WithQueryContext(
+    context = ^$anchor(name = $query.name, expression = $recurse,
+                       contexts = $anchor.contexts->concatenate($stepContext)),
+    expression = $recurse,
+    assignment = $stepParameter,
+    inline = true
+  );
+}
+
+//gives each select item the name the recursion needs, so no rename is emitted downstream. Only a
+//select list that is entirely SingleColumn can be named this way; SELECT * falls back to the rename.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::aliasSelectItemsPositionally(relation: Relation[1], names: String[*]): Relation[1]
+{
+  if ($names->isEmpty(),
+    | $relation,
+    | $relation->match([
+        qs: QuerySpecification[1] |
+              if ($qs.select.selectItems->size() != $names->size() || !$qs.select.selectItems->forAll(si | $si->instanceOf(SingleColumn)),
+                | $qs,
+                | let aliased = $qs.select.selectItems->cast(@SingleColumn)->zip($names)->map(p | let sc = $p.first; ^$sc(alias = $p.second););
+                  let select = $qs.select;
+                  ^$qs(select = ^$select(selectItems = $aliased));),
+        qws: QueryWithScope[1] | ^$qws(queryBody = $qws.queryBody->aliasSelectItemsPositionally($names)->cast(@QueryBody)),
+        tsq: TableSubquery[1]  | let inner = $tsq.query;
+                                 ^$tsq(query = ^$inner(queryBody = $inner.queryBody->aliasSelectItemsPositionally($names)->cast(@QueryBody)));,
+        r: Relation[1]         | $r
+      ]));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::applyCteColumnAliases(context: SqlTransformContext[1], columns: String[*]): SqlTransformContext[1]
+{
+  if ($columns->isEmpty(),
+    | $context,
+    | assertEquals($context.columns->size(), $columns->size(), | 'WITH clause column alias list has ' + $columns->size()->toString() + ' entries but the query returns ' + $context.columns->size()->toString());
+      $context->renameColumnsPositionally($columns););
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::renameColumnsPositionally(context: SqlTransformContext[1], names: String[*]): SqlTransformContext[1]
+{
+  assertEquals($names->size(), $context.columns->size(), | 'expected ' + $names->size()->toString() + ' columns but found ' + $context.columns->size()->toString() + ': ' + $context.columns.name->joinStrings('[', ', ', ']'));
+
+  let renames = $context.columns.name->zip($names)->filter(p | $p.first != $p.second);
+
+  if ($renames->isEmpty(),
+    | $context,
+    | let renamed = ^TDSBuilder().rename($context.expression->toOne(), $renames, $context.relation->isTrue());
+      clone(^$context(expression = $renamed, aliases = []), $context););
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQueryBody(queryBody: QueryBody[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -1875,8 +2023,19 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //all of the child contexts are in scope for joining on so the new context needs to know about them.
   //an enclosing relation visible for correlation is not a join side, so it keeps its own row variable
   let outerNames = $context.lateralOuterAliases.first;
-  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($left.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
-  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($right.contexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
+
+  //Reach into a side's own children only where that side is a nested join, whose sides genuinely are
+  //addressable from here - the same distinction leftContexts/rightContexts make above, and the map
+  //has to agree with them or processQualifiedNameReference's correlated-owner lookup finds a context
+  //with no row variable. Any other side publishes exactly one scope, its relationName. A derived
+  //table also carries the subquery's internal scopes, which SQL hides from the enclosing query;
+  //mapping those made a re-bound alias collide with the enclosing one, and newMap resolves duplicate
+  //keys last-wins, so the outer binding was silently replaced by the derived table's row variable.
+  let leftRowContexts = if ($join.left->instanceOf(Join), | $left.contexts, | []);
+  let rightRowContexts = if ($join.right->instanceOf(Join), | $right.contexts, | []);
+
+  let leftRows = $leftName->map(n | pair($n, $row1))->concatenate($leftRowContexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row1)));
+  let rightRows = $rightName->map(n | pair($n, $row2))->concatenate($rightRowContexts->filter(c | !$c.name->toOne()->in($outerNames))->map(c | pair($c.name->toOne(), $row2)));
 
   let expContext = expressionContext([], $context.lateralOuterAliases->concatenate($leftRows)->concatenate($rightRows)->newMap(), $context.relation->isTrue());
 
@@ -2374,8 +2533,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let name = $table.name.parts->at(0);
       let cte = $context.withQuery($name);
 
-      let functionType = ^FunctionType(returnMultiplicity = PureOne, returnType = $cte.assignment->evaluateAndDeactivate().genericType->toOne());
-      let func = lambda($functionType, $cte.assignment);
+      let cteExpression = if ($cte.inline, | $cte.expression, | $cte.assignment)->evaluateAndDeactivate();
+      let functionType = ^FunctionType(returnMultiplicity = PureOne, returnType = $cteExpression.genericType->toOne());
+      let func = lambda($functionType, $cteExpression);
 
       let source = ^SQLSource(type = 'cte', func = $func, key = ^SQLSourceArgument(name = 'name', index = 0, value = $name));
 
@@ -5123,6 +5283,8 @@ Class meta::external::query::sql::transformation::queryToPure::WithQueryContext
   context:SqlTransformContext[1];
   expression:ValueSpecification[1];
   assignment:VariableExpression[1];
+  //a recursive CTE has no let to bind; its expression is spliced in at each FROM that names it
+  inline:Boolean[1] = false;
 }
 
 Class meta::external::query::sql::transformation::queryToPure::SqlTransformContext
@@ -5133,7 +5295,6 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   tableFunctionProcessors: FunctionProcessor[1..*];
   windows: NamedWindow[*];
   withQueries: WithQueryContext[*];
-  withSupported: Boolean[1] = false; //currently only enable for dynamic source use case as plan generation is incorrect for normal sources
   root:Boolean[1];
   sources: SQLSource[*];
   expression: ValueSpecification[0..1];
@@ -5166,7 +5327,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
   withQuery(name:String[1]){
     let cte = $this.withQueries->filter(w | $w.context.name == $name);
-    assert($cte->isNotEmpty(), | 'no cte named "' + $name + '"" found. Known ctes ' + $this.withQueries.context.name->joinStrings('[', ',', ']'));
+    assert($cte->isNotEmpty(), | 'no cte named "' + $name + '" found. Known ctes ' + $this.withQueries.context.name->joinStrings('[', ',', ']'));
     $cte->toOne();
   }:WithQueryContext[1];
 
@@ -5190,8 +5351,12 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     $this.assignments->concatenate($this.contexts.assignmentsRecursive())
   }:ValueSpecification[*];
 
+  //an inline member needs no let of its own - its expression is spliced at the FROM site - but its
+  //SOURCE may carry leading lets, and this is the only place those are hoisted into the lambda
   cteAssignments() {
-    $this.withQueries->map(w | $w.context.assignmentsRecursive->evaluateAndDeactivate()->concatenate($w.expression->evaluateAndDeactivate()))
+    $this.withQueries->map(w |
+      $w.context.assignmentsRecursive->evaluateAndDeactivate()
+        ->concatenate(if ($w.inline, | [], | $w.expression->evaluateAndDeactivate())))
   }:ValueSpecification[*];
 
 
@@ -5322,7 +5487,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
                           ^$compiled(classifierGenericType = ^$cgt(typeArguments = ^$typeArguments(rawType = ^$functionType(parameters = $functionType.parameters->filter(p | !$p.name->in($scopedVariables))))));
     );
 
-    if ($this.withQueries->isNotEmpty() && $wrapWithFromIfRequired,
+    if ($this.withQueries->filter(w | !$w.inline)->isNotEmpty() && $wrapWithFromIfRequired,
       | wrapWithLambdaFrom($descoped, $this.sources, $this.extensions),
       | $descoped);
 

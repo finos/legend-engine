@@ -16,7 +16,7 @@ tests:
     feature: "WITH RECURSIVE self-join traversal"
     category: "recursive_ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: cte_materialized_hint
     sql: "WITH cte AS MATERIALIZED (SELECT dept_id, COUNT(*) AS cnt FROM persons GROUP BY dept_id) SELECT * FROM cte ORDER BY 1"
@@ -32,3 +32,51 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
+
+  # -----------------------------------------------------------------------------
+  # Shapes the queryToPure -> recurse() mapping covers
+  # -----------------------------------------------------------------------------
+
+  - id: recursive_cte_from_table_anchor
+    sql: "WITH RECURSIVE t(n) AS (SELECT id FROM persons WHERE id = 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT n FROM t ORDER BY 1"
+    feature: "WITH RECURSIVE over a table-backed anchor"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: recursive_cte_downstream_filter
+    sql: "WITH RECURSIVE t(n) AS (SELECT id FROM persons WHERE id = 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT n FROM t WHERE n > 2 ORDER BY 1"
+    feature: "WITH RECURSIVE feeding a downstream filter"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: recursive_cte_downstream_aggregate
+    sql: "WITH RECURSIVE t(n) AS (SELECT id FROM persons WHERE id = 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5) SELECT COUNT(*) AS cnt FROM t"
+    feature: "WITH RECURSIVE feeding a downstream aggregate"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: recursive_cte_union_distinct_unsupported
+    sql: "WITH RECURSIVE t(n) AS (SELECT id FROM persons WHERE id = 1 UNION SELECT n + 1 FROM t WHERE n < 5) SELECT n FROM t ORDER BY 1"
+    feature: "WITH RECURSIVE using UNION rather than UNION ALL"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+
+  - id: recursive_cte_mixed_with_plain
+    sql: "WITH RECURSIVE t(n) AS (SELECT id FROM persons WHERE id = 1 UNION ALL SELECT n + 1 FROM t WHERE n < 5), summary AS (SELECT n FROM t WHERE n > 2) SELECT n FROM summary ORDER BY 1"
+    feature: "WITH RECURSIVE list mixing a recursive and a plain member"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  # Postgres accepts WITH RECURSIVE whose members never reference themselves; it is then an
+  # ordinary CTE list. The keyword alone must not send a member down the recurse() path.
+  - id: recursive_keyword_without_recursion
+    sql: "WITH RECURSIVE t AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM t ORDER BY 1"
+    feature: "WITH RECURSIVE with no self-referencing member"
+    category: "recursive_ctes"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS

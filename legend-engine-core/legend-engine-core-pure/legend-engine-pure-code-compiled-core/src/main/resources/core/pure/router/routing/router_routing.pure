@@ -43,7 +43,7 @@ Class meta::pure::router::routing::RoutingState
    routingStrategy : RoutingStrategy[1];
    shouldBeRouted  : Boolean[1];
    value           : Any[0..1];
-   executionContext: meta::pure::runtime::ExecutionContext[1] = ^meta::pure::runtime::ExecutionContext();
+   executionContext: meta::pure::runtime::ExecutionContext[1];
    graphFetchFlow  : Boolean[0..1];
    functionExpressionStack : FunctionExpression[*];
    // Type-parameter-name -> concrete GenericType bindings currently in scope, populated while routing
@@ -67,7 +67,7 @@ Class meta::pure::router::routing::PropertyMap
 function meta::pure::router::routing::enrichFunctionExpressions(expressions:ValueSpecification[*], routingStrategy:RoutingStrategy[1], executionContext:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
    let initialVars = newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>));
-   let initialState = ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow);
+   let initialState = ^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow, executionContext = $executionContext);
    enrichFunctionExpressions($expressions, $initialState, $executionContext, $initialVars, $inScopeVars, $extensions, $debug);
 }
 
@@ -1109,6 +1109,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     meta::pure::functions::flow::coalesce_T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$__T_$0_1$_,
     flatten_T_MANY__ColSpec_1__Relation_1_,
     lateral_Relation_1__Function_1__Relation_1_,
+    recurse_Relation_1__Function_1__Relation_1_,
     meta::pure::functions::relation::eval_ColSpec_1__T_1__Z_$0_1$_,
     meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__U_m_,
     meta::pure::functions::relation::reduce_Relation_1__Function_1__Function_1__SortInfo_MANY__U_m_,

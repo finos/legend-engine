@@ -763,6 +763,12 @@
     "test" : "meta::pure::functions::relation::tests::rank::testOLAPWithPartitionAndOrderRank_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testFibonacci_Function_1__Boolean_1_",
+    "expectedError" : "UNIMPLEMENTED: Recursive WITH expressions are not supported"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+    "expectedError" : "UNIMPLEMENTED: Recursive WITH expressions are not supported"
+  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {

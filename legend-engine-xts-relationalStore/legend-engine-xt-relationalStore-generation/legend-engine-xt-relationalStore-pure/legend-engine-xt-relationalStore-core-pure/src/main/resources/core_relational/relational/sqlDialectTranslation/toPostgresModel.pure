@@ -156,7 +156,22 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     | []
   );
 
-  let withQueries = $s.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSelectSqlQuery(newState($state.extensions))));
+  // A recursive expression keeps its UNION ALL at the top - that is what makes it recursive - and the
+  // whole clause carries the column list and the RECURSIVE marker.
+  let recursiveCtes = $s.commonTableExpressions->filter(c | $c->instanceOf(meta::relational::metamodel::relation::RecursiveCommonTableExpression));
+  let withQueries = $s.commonTableExpressions->map(e|
+      ^WithQuery(
+        name = $e.name->toIdentifier(),
+        columns = if($recursiveCtes->isEmpty(), |[], |$e->commonTableExpressionColumnNames()),
+        query = $e->match([
+          r: meta::relational::metamodel::relation::RecursiveCommonTableExpression[1] |
+                $r.sqlQuery.data.alias.relationalElement->toOne()
+                  ->cast(@meta::relational::metamodel::relation::UnionAll)
+                  ->convertElement(newState($state.extensions))
+                  ->cast(@meta::external::query::sql::metamodel::TableSubquery).query,
+          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery(newState($state.extensions))
+        ])
+      ));
 
   let baseQuery = ^ExtendedQuerySpecification(
                         select  = ^Select(
@@ -175,7 +190,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
   let query = if($withQueries->isNotEmpty(),
                   |^QueryWithScope(
-                     with = ^With(withQueries = $withQueries),
+                     with = ^With(withQueries = $withQueries, recursive = $recursiveCtes->isNotEmpty()),
                      queryBody = $baseQuery
                    ),
                   |$baseQuery                   
@@ -185,6 +200,15 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     | $query,
     | ^TableSubquery(query = ^Query(queryBody = $query))
   );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::commonTableExpressionColumnNames(cte:CommonTableExpression[1]):String[*]
+{
+  $cte.sqlQuery.columns->map(c | $c->match([
+     a: Alias[1] | $a.name,
+     tac: TableAliasColumn[1] | $tac.columnName->orElse($tac.column.name),
+     o: RelationalOperationElement[1] | ''
+  ]))->filter(n | $n != '');
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertLimit(s:SelectSQLQuery[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]
@@ -496,7 +520,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('percentile',                {p:meta::external::query::sql::metamodel::Expression[*]| percentileConverter($p)}),
     pair('cosh',                      functionCall('cosh')),
     pair('jaroWinklerSimilarity',     functionCall('jarowinkler_similarity')),
-    pair('convertTimeZone',           functionCall('convert_timezone')),
+    pair('convertTimeZone',           {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('convert_timezone', [$p->at(0), $p->at(1), $p->at(2)->cast(@StringLiteral)->convertDateTimeFormat()])}),
     pair('encodeBase64',              functionCall('encode_base64')),
     pair('decodeBase64',              functionCall('decode_base64')),
     pair('generateGuid',              functionCall('uuid')),
@@ -761,6 +785,14 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
   ]->filter(p | $p.first == $unit.value).second->toOne('Postgres conversion for DurationUnit not found: ' + $unit.value);
 
   ^StringLiteral(value = $convertedUnit);
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::convertDateTimeFormat(fmt:StringLiteral[1]):StringLiteral[1]
+{
+  // convert_timezone names its format in the Oracle style model the Postgres model uses, so a query's Pure format is
+  // translated here, the same way every other database's convertTimeZone translates it.
+  assert($fmt.value->validateDateTimeFormat(), | 'Found an invalid date format: ' + $fmt.value);
+  ^StringLiteral(value = $fmt.value->meta::relational::functions::sqlQueryToString::default::defaultJavaToSQLTimeFormat());
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertDateFormat(fmt:StringLiteral[1]):StringLiteral[1]

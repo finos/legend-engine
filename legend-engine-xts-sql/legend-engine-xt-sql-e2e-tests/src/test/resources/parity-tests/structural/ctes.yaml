@@ -5,14 +5,14 @@ tests:
     feature: "Basic CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: cte_basic_filter
     sql: "WITH high_earners AS (SELECT name, salary FROM persons WHERE salary > 70000) SELECT name, salary FROM high_earners ORDER BY 1"
     feature: "Basic CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Multiple CTEs
   - id: cte_multiple
@@ -20,7 +20,7 @@ tests:
     feature: "Multiple CTEs"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE referencing another CTE
   - id: cte_chained
@@ -28,7 +28,7 @@ tests:
     feature: "CTE referencing CTE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with aggregation
   - id: cte_with_agg
@@ -36,14 +36,14 @@ tests:
     feature: "CTE with aggregation"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: cte_with_agg_having
     sql: "WITH dept_counts AS (SELECT dept_id, COUNT(*) AS cnt FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id HAVING COUNT(*) > 2) SELECT dept_id, cnt FROM dept_counts ORDER BY 1"
     feature: "CTE with aggregation"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE used in JOIN
   - id: cte_in_join
@@ -68,21 +68,13 @@ tests:
     expected_tds_status: ERROR
     expected_rel_status: ERROR
 
-  # Recursive CTE (basic counter)
-  - id: cte_recursive
-    sql: "WITH RECURSIVE cnt(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM cnt WHERE x < 5) SELECT x FROM cnt ORDER BY 1"
-    feature: "Recursive CTE"
-    category: "ctes"
-    expected_tds_status: ERROR
-    expected_rel_status: ERROR
-
   # CTE with window function
   - id: cte_with_window
     sql: "WITH ranked AS (SELECT name, salary, RANK() OVER (ORDER BY salary DESC) AS rnk FROM persons WHERE salary IS NOT NULL) SELECT name, salary, rnk FROM ranked WHERE rnk <= 3 ORDER BY 1"
     feature: "CTE with window function"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with UNION
   - id: cte_with_union
@@ -98,7 +90,7 @@ tests:
     feature: "CTE filter on aggregate"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # CTE with CASE expression
   - id: cte_with_case
@@ -106,4 +98,4 @@ tests:
     feature: "CTE with CASE"
     category: "ctes"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS

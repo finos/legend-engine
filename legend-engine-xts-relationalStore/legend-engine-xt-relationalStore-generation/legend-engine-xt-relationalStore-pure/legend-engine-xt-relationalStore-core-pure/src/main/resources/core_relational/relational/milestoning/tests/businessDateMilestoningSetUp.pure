@@ -1762,6 +1762,30 @@ Mapping meta::relational::tests::milestoning::UnionOnViewWithMilestoningMapping
   }
 )
 
+Mapping meta::relational::tests::milestoning::inlineWithClassFilterThroughJoinMapping
+(
+   meta::relational::tests::milestoning::Order : Relational
+   {
+      ~mainTable [db]OrderTable
+      id : [db]OrderTable.id,
+      product[product] : [db]@Order_Product
+   }
+
+   meta::relational::tests::milestoning::Product[product] : Relational
+   {
+      ~filter [db]@Product_Exchange | [db]ExchangeInLondon
+      ~mainTable [db]ProductTable
+      id : [db]ProductTable.id,
+      name : [db]ProductTable.name,
+      classification() Inline[classification]
+   }
+
+   meta::relational::tests::milestoning::ProductClassification[classification] : Relational
+   {
+      ~mainTable [db]ProductTable
+      type : [db]@Product_Classification | ProductClassificationTable.type
+   }
+)
 ###Relational
 Database meta::relational::tests::milestoning::UnionOnViewWithMilestoning
 (

@@ -39,6 +39,7 @@ public class DeephavenStreamingResult extends Result
     public void close()
     {
         // No resources to close
+        super.close();
     }
 
     @Override

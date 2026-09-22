@@ -1,0 +1,57 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::mapping::*;
+import meta::pure::profiles::*;
+import meta::relational::mapping::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+
+//from(<lambda>, mapping, runtime) hands clustering an expression that carries the lambda on func
+//rather than on parametersValues, so nothing can be derived from it directly. Routing records the
+//store it resolved, and clustering keys off that. These two tests pin both sides of that decision:
+//a relational body must reach the store as one node, and a platform-only body must not be sent
+//there at all.
+
+function <<test.Test>> meta::relational::tests::query::multiExpression::testRelationalMultiExpressionIsOneRelationalNode():Boolean[1]
+{
+  let fn = {| from({| let p = Person.all()->project([x | $x.firstName], ['firstName']);
+                      $p->filter(r | $r.getString('firstName') == 'John'); },
+                   simpleRelationalMapping,
+                   meta::external::store::relational::tests::testRuntime()) };
+
+  let plan = meta::pure::executionPlan::executionPlan($fn, meta::relational::extension::relationalExtensions(), noDebug());
+
+  //the cast fails if the lets were materialised into separate nodes with the body left in memory
+  let sql = $plan.rootExecutionNode
+              ->cast(@RelationalTdsInstantiationExecutionNode).executionNodes
+              ->cast(@SQLExecutionNode).sqlQuery->toOne();
+
+  assert($sql->startsWith('with '), | 'expected a common table expression, got: ' + $sql);
+}
+
+function <<test.Test>> meta::relational::tests::query::multiExpression::testPlatformOnlyMultiExpressionStaysOnPlatform():Boolean[1]
+{
+  let fn = {| from({| let a = 1 + 1; $a + 2; },
+                   simpleRelationalMapping,
+                   meta::external::store::relational::tests::testRuntime()) };
+
+  let plan = meta::pure::executionPlan::executionPlan($fn, meta::relational::extension::relationalExtensions(), noDebug());
+
+  assert($plan.rootExecutionNode->instanceOf(PureExpressionPlatformExecutionNode),
+         | 'arithmetic with no relational content must not be pushed to the store, got: '
+             + $plan.rootExecutionNode->genericType().rawType->toOne()->meta::pure::functions::meta::elementToPath());
+}
