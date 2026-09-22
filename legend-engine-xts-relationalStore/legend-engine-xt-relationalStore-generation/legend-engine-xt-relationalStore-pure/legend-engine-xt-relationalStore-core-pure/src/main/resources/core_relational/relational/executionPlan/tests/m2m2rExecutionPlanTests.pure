@@ -164,6 +164,34 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
   assertEquals($expected, $response);
 }
 
+// Regression test for chain.pure:76 casting an already-decoded EnumerationMapping value to String.
+// Uses router::execute (interpreted, reaches executeChain), not generateAndExecutePlan/executionPlan
+// (compiled plan path, goes through planExecutionChain instead and never touches the buggy code).
+function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::executeProjectWithEnumColumn() : Boolean[1]
+{
+  let runtime = getM2M2RRuntime();
+  let connection = $runtime.connectionStores->at(1);
+  [
+    'DROP TABLE IF EXISTS Person;',
+    'CREATE TABLE Person(id INT, firstName VARCHAR(200), lastName VARCHAR(200), status VARCHAR(20));',
+    'INSERT INTO Person(id, firstName, lastName, status) values (1, \'Grace\', \'Davis\', \'ACTIVE\');',
+    'INSERT INTO Person(id, firstName, lastName, status) values (2, \'Alice\', \'Johnson\', \'INACTIVE\');'
+  ]->map(sqlString | $sqlString->meta::relational::metamodel::execute::executeInDb($connection));
+
+  let result = meta::pure::router::execute(
+    {|Person.all()->project([x|$x.firstName, x|$x.status], ['firstName', 'status'])},
+    ModelToModelMapping,
+    $runtime,
+    meta::relational::extension::relationalExtensions()
+  );
+
+  let expected = '['+
+                  '{"firstName":"Grace","status":"ACTIVE"},'+
+                  '{"firstName":"Alice","status":"INACTIVE"}'+
+                  ']';
+  assertEquals($expected, $result.values->cast(@TabularDataSet)->toOne()->meta::json::tdsToJSONKeyValueObjectString()->makeString());
+}
+
 function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::tests::planGraphFetchWithNestedDerivedProperty() : Boolean[1]
 {
   let query = {|PersonPeterSmith.all()->meta::pure::graphFetch::execution::graphFetch(#{PersonPeterSmith{isPeterSmith}}#)};
@@ -255,6 +283,7 @@ Class meta::pure::executionPlan::m2m2r::tests::Person
 {
   firstName : String[1];
   lastName  : String[1];
+  status    : meta::pure::executionPlan::m2m2r::tests::Status[1];
   fullName()
   {
     $this.firstName + ' ' + $this.lastName
@@ -269,6 +298,13 @@ Class meta::pure::executionPlan::m2m2r::tests::_Person
 {
   firstName : String[1];
   lastName  : String[1];
+  status    : meta::pure::executionPlan::m2m2r::tests::Status[1];
+}
+
+Enum meta::pure::executionPlan::m2m2r::tests::Status
+{
+  ACTIVE,
+  INACTIVE
 }
 
 ###Relational
@@ -278,7 +314,8 @@ Database meta::pure::executionPlan::m2m2r::tests::DB
     (
       id INTEGER PRIMARY KEY,
       firstName VARCHAR(200),
-      lastName VARCHAR(200)
+      lastName VARCHAR(200),
+      status VARCHAR(20)
     )
   )
 )
@@ -292,7 +329,8 @@ Mapping meta::pure::executionPlan::m2m2r::tests::ModelToModelMapping
   {
     ~src _Person
     firstName : $src.firstName,
-    lastName : $src.lastName
+    lastName : $src.lastName,
+    status : $src.status
   }
 
   PersonPeterSmith : Pure
@@ -304,10 +342,17 @@ Mapping meta::pure::executionPlan::m2m2r::tests::ModelToModelMapping
 
 Mapping meta::pure::executionPlan::m2m2r::tests::RelationalMapping
 (
+  meta::pure::executionPlan::m2m2r::tests::Status: EnumerationMapping StatusMapping
+  {
+    ACTIVE: ['ACTIVE'],
+    INACTIVE: ['INACTIVE']
+  }
+
   _Person : Relational
   {
     firstName : [DB] Person.firstName,
-    lastName : [DB] Person.lastName
+    lastName : [DB] Person.lastName,
+    status : EnumerationMapping StatusMapping : [DB] Person.status
   }
 )
 
