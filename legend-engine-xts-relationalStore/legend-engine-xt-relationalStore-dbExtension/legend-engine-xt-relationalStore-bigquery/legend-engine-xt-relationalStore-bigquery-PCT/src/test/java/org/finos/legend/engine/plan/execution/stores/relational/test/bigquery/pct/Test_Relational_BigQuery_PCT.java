@@ -86,8 +86,8 @@ public class Test_Relational_BigQuery_PCT
     private static MutableList<TestServerResource> bigQueryTestConnectionResources()
     {
         TestConnectionIntegration bigQuery = TestConnectionIntegrationLoader.extensions().select(c -> c.getDatabaseType() == DatabaseType.BigQuery).getFirst();
-        // The sweep must follow the integration: ServersState.start() runs the resources in order,
-        // and it needs the connection the integration builds in start().
+        // order matters: ServersState.start() runs these in sequence, and the sweep needs the
+        // connection the integration opens.
         return Lists.mutable.with((TestServerResource) bigQuery, new BigQueryLeakedTableSweep(bigQuery));
     }
 
