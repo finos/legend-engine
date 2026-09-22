@@ -37,6 +37,7 @@ Class meta::external::query::sql::metamodel::WithQuery extends meta::external::q
 Class meta::external::query::sql::metamodel::With extends meta::external::query::sql::metamodel::Statement
 {
   <<equality.Key>> withQueries: meta::external::query::sql::metamodel::WithQuery[*];
+  <<equality.Key>> recursive: Boolean[1] = false;
 }
 
 Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node

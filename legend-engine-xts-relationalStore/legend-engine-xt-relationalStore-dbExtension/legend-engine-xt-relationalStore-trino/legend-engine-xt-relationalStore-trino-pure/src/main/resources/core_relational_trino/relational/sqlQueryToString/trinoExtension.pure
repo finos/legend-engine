@@ -30,6 +30,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
    ^DbExtension(
       nullOrderingSupport = nullsLastWithClauseSupport(),
       isBooleanLiteralSupported = true,
+      commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::trino::processCommonTableExpressionsForTrino_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -366,4 +367,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
 {
    assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Trino: regexp_replace always replaces every occurrence');
    'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsTrino($params->at(4)) + ', ' + $params->at(2) + ')';
+}
+
+function meta::relational::functions::sqlQueryToString::trino::processCommonTableExpressionsForTrino(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   // Trino refuses to coerce the step to the anchor - 'recursion step relation output type
+   // (varchar(1024)) is not coercible to recursion base relation output type (varchar(3))' - so a
+   // literal in the anchor widens to the type the branch carries.
+   $ctes->meta::relational::functions::sqlQueryToString::default::coerceAnchorLiteralsToBranchTypes()
+        ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, 'RECURSIVE ');
 }

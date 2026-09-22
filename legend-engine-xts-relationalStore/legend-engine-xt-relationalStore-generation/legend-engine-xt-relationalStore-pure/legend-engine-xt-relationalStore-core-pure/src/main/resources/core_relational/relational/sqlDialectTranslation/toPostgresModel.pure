@@ -140,7 +140,22 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     | []
   );
 
-  let withQueries = $s.commonTableExpressions->map(e| ^WithQuery(name = $e.name->toIdentifier(), query = $e.sqlQuery->convertSelectSqlQuery(newState($state.extensions))));
+  // A recursive expression keeps its UNION ALL at the top - that is what makes it recursive - and the
+  // whole clause carries the column list and the RECURSIVE marker.
+  let recursiveCtes = $s.commonTableExpressions->filter(c | $c->instanceOf(meta::relational::metamodel::relation::RecursiveCommonTableExpression));
+  let withQueries = $s.commonTableExpressions->map(e|
+      ^WithQuery(
+        name = $e.name->toIdentifier(),
+        columns = if($recursiveCtes->isEmpty(), |[], |$e->commonTableExpressionColumnNames()),
+        query = $e->match([
+          r: meta::relational::metamodel::relation::RecursiveCommonTableExpression[1] |
+                $r.sqlQuery.data.alias.relationalElement->toOne()
+                  ->cast(@meta::relational::metamodel::relation::UnionAll)
+                  ->convertElement(newState($state.extensions))
+                  ->cast(@meta::external::query::sql::metamodel::TableSubquery).query,
+          c: CommonTableExpression[1] | $c.sqlQuery->convertSelectSqlQuery(newState($state.extensions))
+        ])
+      ));
 
   let baseQuery = ^ExtendedQuerySpecification(
                         select  = ^Select(
@@ -159,7 +174,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
 
   let query = if($withQueries->isNotEmpty(),
                   |^QueryWithScope(
-                     with = ^With(withQueries = $withQueries),
+                     with = ^With(withQueries = $withQueries, recursive = $recursiveCtes->isNotEmpty()),
                      queryBody = $baseQuery
                    ),
                   |$baseQuery                   
@@ -169,6 +184,15 @@ function <<access.private>> meta::relational::functions::toPostgresModel::conver
     | $query,
     | ^TableSubquery(query = ^Query(queryBody = $query))
   );
+}
+
+function <<access.private>> meta::relational::functions::toPostgresModel::commonTableExpressionColumnNames(cte:CommonTableExpression[1]):String[*]
+{
+  $cte.sqlQuery.columns->map(c | $c->match([
+     a: Alias[1] | $a.name,
+     tac: TableAliasColumn[1] | $tac.columnName->orElse($tac.column.name),
+     o: RelationalOperationElement[1] | ''
+  ]))->filter(n | $n != '');
 }
 
 function <<access.private>> meta::relational::functions::toPostgresModel::convertLimit(s:SelectSQLQuery[*], state:ModelConversionState[1]):meta::external::query::sql::metamodel::Expression[0..1]

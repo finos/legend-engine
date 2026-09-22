@@ -4626,6 +4626,181 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQuery():Boolean[1]
+{
+  test(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT "Integer" + 1 FROM myCTE WHERE "Integer" < 5) select "Integer" from myCTE',
+
+    [
+      c({|
+            FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->select(~[Integer])
+             ->recurse(myCTE | $myCTE->filter(x | $x.Integer < 5)->project(~[Integer: x | $x.Integer + 1]));
+      })
+    ]
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryColumnAliases():Boolean[1]
+{
+  test(
+    'WITH RECURSIVE myCTE(n) AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT n + 1 FROM myCTE WHERE n < 5) select n from myCTE',
+
+    [
+      c({|
+            FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->select(~[Integer])->rename(~Integer, ~n:Integer[1])
+             ->recurse(myCTE | $myCTE->filter(x | $x.n < 5)->project(~[n: x | $x.n + 1]));
+      })
+    ]
+  )
+}
+
+//service3's own lambda carries a leading `let const = 123`. cteAssignments is the only place those
+//source-level lets are hoisted, so an inline member must still contribute them even though it
+//contributes no let of its own - otherwise $const_r is unbound.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryHoistsSourceAssignments():Boolean[1]
+{
+  test(
+    'WITH RECURSIVE r AS (SELECT ID FROM service."/service/service3" UNION ALL SELECT ID FROM r WHERE ID < 5) select ID from r',
+
+    [
+      c({|
+            let const_r = 123;
+            FlatInput.all()->project(
+              ~[ ID: x | $x.idIn, Integer: x | $x.integerIn, 'The Enum Value': x | $x.enumVal, 'The Type': x | $x.type, Const: x | $const_r]
+            )->select(~[ID])
+             ->recurse(r | $r->filter(x | $x.ID < 5));
+      })
+    ]
+  )
+}
+
+//a member of a WITH RECURSIVE list that does not name itself keeps the ordinary let path
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryMixedWithPlain():Boolean[1]
+{
+  test(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT "Integer" + 1 FROM myCTE WHERE "Integer" < 5), plain AS (SELECT "Integer" FROM myCTE) select "Integer" from plain',
+
+    [
+      c({|
+            let plain = FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->select(~[Integer])
+             ->recurse(myCTE | $myCTE->filter(x | $x.Integer < 5)->project(~[Integer: x | $x.Integer + 1]));
+            $plain;
+      })
+    ]
+  )
+}
+
+//RECURSIVE is what makes a member visible to itself, in Postgres and here. The keyword alone does
+//not make a member recursive, and its absence makes a self-reference unresolvable - both directions
+//match what Postgres does with the same SQL.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveKeywordAndSelfReferenceAreIndependent():Boolean[1]
+{
+  //a member that does not name itself takes the ordinary path, keyword or not
+  test(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM service."/service/service1" WHERE "Integer" > 5) select "Integer" from myCTE',
+
+    [
+      c({|
+            let myCTE = FlatInput.all()->project(
+              ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+            )->filter(x | $x.Integer > 5)->select(~[Integer]);
+            $myCTE;
+      })
+    ]
+  );
+
+  //and a self-reference without the keyword is rejected where the mistake is, naming the member
+  //and telling the reader what to type
+  error(
+    'WITH myCTE AS (SELECT "Integer" FROM myCTE) select "Integer" from myCTE',
+    'CTE "myCTE" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause'
+  );
+
+  //the member at fault is named even when it is not the first
+  error(
+    'WITH a AS (SELECT "Integer" FROM service."/service/service1"), b AS (SELECT "Integer" FROM b) select "Integer" from b',
+    'CTE "b" references itself; write WITH RECURSIVE instead of WITH. The keyword goes once after WITH and applies to every member of the clause'
+  );
+
+  //an ordinary unresolved name still reports as one
+  error(
+    'WITH a AS (SELECT "Integer" FROM service."/service/service1") select "Integer" from nope',
+    'no cte named "nope" found. Known ctes [a]'
+  );
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRecursiveWithQueryUnsupportedShapes():Boolean[1]
+{
+  //recurse() concatenates every round, so it cannot honour UNION's de-duplication
+  error(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM service."/service/service1" UNION SELECT "Integer" + 1 FROM myCTE WHERE "Integer" < 5) select "Integer" from myCTE',
+    'WITH RECURSIVE requires UNION ALL; UNION would have to de-duplicate across rounds, which recurse() does not do'
+  );
+
+  error(
+    'WITH RECURSIVE myCTE AS (SELECT "Integer" FROM myCTE UNION ALL SELECT "Integer" FROM service."/service/service1") select "Integer" from myCTE',
+    'the anchor of a WITH RECURSIVE member cannot reference "myCTE"'
+  );
+
+  //a from-less anchor is wrapped as a schema-less single-column TDS, which gives recurse() nothing
+  //to fix the step's shape against
+  error(
+    'WITH RECURSIVE myCTE(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM myCTE WHERE n < 5) select n from myCTE',
+    'the anchor of a WITH RECURSIVE member must select from a relation; a from-less anchor such as SELECT 1 is not supported'
+  );
+
+  error(
+    'WITH RECURSIVE myCTE(a, b) AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT "Integer" + 1 FROM myCTE) select a from myCTE',
+    'WITH clause column alias list has 2 entries but the query returns 1'
+  );
+}
+
+//a CTE must reach the relational CommonTableExpression handler as ONE relational node. If the
+//whole-lambda from() is missing, the router materialises each let into its own execution node and
+//the body runs in memory - the plan root is a Sequence and the outer projection never reaches SQL.
+//Asserting the root node type is what catches that; asserting the lambda alone does not.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWithQueriesPushDownOnPlanPath():Boolean[1]
+{
+  let extensions = meta::relational::extension::relationalExtensions();
+  let sources = relationSources();
+
+  assertEquals(
+    'with c as (select "root".string as "String" from flat as "root" where "root".integer > 5) select "c_0"."String" as "String" from c as "c_0"',
+    planSql('WITH c AS (SELECT "String" FROM service."/service/service1" WHERE "Integer" > 5) SELECT "String" FROM c', $sources, $extensions));
+
+  //a member reading an earlier member stays in the same statement
+  assertEquals(
+    'with b as (select "root".integer as "Integer" from flat as "root"), r as (select "b_0"."Integer" as "Integer" from b as "b_0" where "b_0"."Integer" > 2) select "r_0"."Integer" as "Integer" from r as "r_0"',
+    planSql('WITH b AS (SELECT "Integer" FROM service."/service/service1"), r AS (SELECT "Integer" FROM b WHERE "Integer" > 2) SELECT "Integer" FROM r', $sources, $extensions));
+
+  //the shape that motivated this: a plain member reading a recursive one
+  assertEquals(
+    'with s as (with recursive rcte_d_2("Integer") as (select "root".integer as "Integer" from flat as "root" union all select "rcte_d_2_0"."Integer" + 1 as "Integer" from rcte_d_2 as "rcte_d_2_0" where "rcte_d_2_0"."Integer" < 5) select "rcte_d_2_0"."Integer" from rcte_d_2 as "rcte_d_2_0" where "rcte_d_2_0"."Integer" > 2) select "s_0"."Integer" as "Integer" from s as "s_0"',
+    planSql('WITH RECURSIVE t AS (SELECT "Integer" FROM service."/service/service1" UNION ALL SELECT "Integer" + 1 FROM t WHERE "Integer" < 5), s AS (SELECT "Integer" FROM t WHERE "Integer" > 2) SELECT "Integer" FROM s', $sources, $extensions));
+}
+
+//plans a statement the way the HTTP/parity path does and returns its single relational node's SQL.
+//The cast fails if the plan split, which is the regression being guarded.
+function meta::external::query::sql::transformation::queryToPure::tests::planSql(sql:String[1], sources:meta::external::query::sql::transformation::queryToPure::SQLSource[*], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+  let r = meta::external::query::sql::transformation::queryToPure::getPlanResultFromSQL(
+            $sources,
+            meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql),
+            $extensions);
+
+  let plan = meta::pure::executionPlan::executionPlan($r.lambda->toOne(), $r.mapping->toOne(), $r.runtime->toOne(), ^meta::pure::runtime::ExecutionContext(), $extensions);
+
+  $plan.rootExecutionNode
+    ->cast(@meta::relational::mapping::RelationalTdsInstantiationExecutionNode).executionNodes
+    ->cast(@meta::relational::mapping::SQLExecutionNode).sqlQuery->toOne();
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSimpleWithQueryFromScopingNoMappingRuntime():Boolean[1]
 {
 

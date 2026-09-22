@@ -488,7 +488,8 @@ public class SQLGrammarComposer
             @Override
             public String visit(With val)
             {
-                return !val.withQueries.isEmpty() ? "WITH " + FastList.newList(val.withQueries).collect(this::visit).makeString("", ", ", " ") : "";
+                String recursive = Boolean.TRUE.equals(val.recursive) ? "RECURSIVE " : "";
+                return !val.withQueries.isEmpty() ? "WITH " + recursive + FastList.newList(val.withQueries).collect(this::visit).makeString("", ", ", " ") : "";
             }
 
             @Override

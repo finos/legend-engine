@@ -67,6 +67,7 @@ public class QueryRealiaser extends BaseNodeModifierVisitor
     public Node visit(AliasedRelation val)
     {
         //we store the current state and the inner state becomes empty
+        AliasedRelation outerAlias = currentAlias;
         currentAlias = val;
         Map<String, String> scopeRealiases = UnifiedMap.newMap(realiases);
         boolean inRoot = root;
@@ -83,10 +84,12 @@ public class QueryRealiaser extends BaseNodeModifierVisitor
         scopeRealiases.put(val.alias, alias);
         result.alias = alias;
 
-        //we restore the outer state
+        //we restore the outer state. Leaving currentAlias pointing at this relation would make the
+        //next sibling in a join look aliased, so a bare table after an aliased one was never
+        //registered and every reference to it failed to resolve
         root = inRoot;
         realiases = scopeRealiases;
-        currentAlias = val;
+        currentAlias = outerAlias;
         return result;
     }
 

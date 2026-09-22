@@ -119,7 +119,7 @@
     "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/sqlQueryToString/extensionDefaults.pure line:102 column:46), \"Cast exception: TableAliasColumn cannot be cast to Alias\""
+    "expectedError" : "cannot appear in the definition of common table expression."
   }, {
     "test" : "meta::pure::functions::relation::tests::equalAll::testEqualAll_EmptyRelation_Function_1__Boolean_1_",
     "expectedError" : "cannot appear in the definition of common table expression."
@@ -816,6 +816,12 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "MemSQL does not support dynamic pivot"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testFibonacci_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+    "expectedError" : "cannot appear in the definition of common table expression"
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: MemSQL"

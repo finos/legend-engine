@@ -591,6 +591,58 @@ public class Handlers
         return Lists.mutable.with(toLateral, parameters.get(1).accept(valueSpecificationBuilder));
     };
 
+    public static final ParametersInference RecurseInference = (parameters, valueSpecificationBuilder) ->
+    {
+        ValueSpecification initial = parameters.get(0).accept(valueSpecificationBuilder);
+        PureModel pureModel = valueSpecificationBuilder.getContext().pureModel;
+        // A recursive CTE's schema is declared once, by the anchor: the step's parameter, the step's
+        // return and the whole expression are all Relation<anchor row type>. Without this the step's
+        // computed columns come back as Integer[1] where the anchor has Int, and T never unifies.
+        GenericType anchorRelation = relationOfRowType(initial._genericType()._typeArguments().getOnly(), pureModel);
+
+        if (parameters.get(1) instanceof LambdaFunction)
+        {
+            LambdaFunction stepLambda = (LambdaFunction) parameters.get(1);
+            stepLambda.parameters.get(0).genericType = CompileContext.convertGenericType(anchorRelation);
+            stepLambda.parameters.get(0).multiplicity = new org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity(1, 1);
+        }
+
+        ValueSpecification step = parameters.get(1).accept(valueSpecificationBuilder);
+        FunctionType stepType = funcType(step._genericType(), pureModel);
+        if (rowTypeOf(stepType._returnType()) != null)
+        {
+            MutableList<String> anchorColumns = relationColumnNames(anchorRelation);
+            MutableList<String> stepColumns = relationColumnNames(stepType._returnType());
+            Assert.assertTrue(anchorColumns.equals(stepColumns), () -> "recurse: the recursive step must return the initial relation's columns, in order - initial " + anchorColumns.makeString("(", ", ", ")") + ", step " + stepColumns.makeString("(", ", ", ")"), parameters.get(0).sourceInformation, EngineErrorType.COMPILATION);
+            stepType._returnType(anchorRelation);
+        }
+
+        return Lists.mutable.with(initial, step);
+    };
+
+    private static GenericType relationOfRowType(GenericType rowType, PureModel pureModel)
+    {
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                ._rawType(pureModel.getType(M3Paths.Relation))
+                ._typeArguments(Lists.fixedSize.of(rowType));
+    }
+
+    private static RelationType<?> rowTypeOf(GenericType relation)
+    {
+        if (relation == null || relation._typeArguments().isEmpty())
+        {
+            return null;
+        }
+        GenericType rowType = relation._typeArguments().getOnly();
+        return rowType != null && rowType._rawType() instanceof RelationType ? (RelationType<?>) rowType._rawType() : null;
+    }
+
+    private static MutableList<String> relationColumnNames(GenericType relation)
+    {
+        RelationType<?> rowType = rowTypeOf(relation);
+        return rowType == null ? Lists.mutable.empty() : Lists.mutable.withAll(rowType._columns()).collect(Column::_name);
+    }
+
     public static final ParametersInference FlattenColInference = (parameters, valueSpecificationBuilder) ->
     {
         ValueSpecification toFlatten = parameters.get(0).accept(valueSpecificationBuilder);
@@ -2362,6 +2414,10 @@ public class Handlers
 
         register(grp(LateralInference,
                 h("meta::pure::functions::relation::lateral_Relation_1__Function_1__Relation_1_", "lateral", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(0)._genericType()._typeArguments().getOnly()._rawType(), (RelationType<?>) funcReturnType(ps.get(1))._typeArguments().getOnly()._rawType()), pureModel), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly(), funcReturnType(ps.get(1))._typeArguments().getOnly()), ps -> true)
+        ));
+
+        register(grp(RecurseInference,
+                h("meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_", "recurse", false, ps -> res(relationOfRowType(ps.get(0)._genericType()._typeArguments().getOnly(), pureModel), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()._typeArguments().getOnly()), ps -> true)
         ));
 
         register(grp(FlattenColInference,

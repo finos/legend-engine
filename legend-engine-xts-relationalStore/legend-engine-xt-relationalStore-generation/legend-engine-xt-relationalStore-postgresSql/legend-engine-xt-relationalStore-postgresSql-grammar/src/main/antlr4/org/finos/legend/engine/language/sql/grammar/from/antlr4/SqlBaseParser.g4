@@ -280,7 +280,7 @@ aliasedColumns
     ;
 
 with
-    : WITH namedQuery (COMMA namedQuery)*
+    : WITH RECURSIVE? namedQuery (COMMA namedQuery)*
     ;
 
 namedQuery

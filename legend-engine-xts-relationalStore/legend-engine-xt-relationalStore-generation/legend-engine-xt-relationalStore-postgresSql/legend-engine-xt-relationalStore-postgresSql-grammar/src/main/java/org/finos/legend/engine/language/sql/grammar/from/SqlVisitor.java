@@ -555,6 +555,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     public Node visitWith(SqlBaseParser.WithContext ctx)
     {
         With with = new With();
+        with.recursive = ctx.RECURSIVE() != null;
         with.withQueries = ListIterate.collect(ctx.namedQuery(), q -> (WithQuery) visitNamedQuery(q));
         return with;
     }

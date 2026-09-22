@@ -437,6 +437,14 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testCommonTableExpressionRecursive()
+    {
+        check("WITH RECURSIVE cte1 (n) AS (SELECT 1 UNION ALL SELECT (n + 1) FROM cte1 WHERE n < 5) SELECT n FROM cte1");
+        check("WITH RECURSIVE cte1 AS (SELECT col FROM myTable UNION ALL SELECT col FROM cte1) SELECT col FROM cte1");
+        check("WITH RECURSIVE cte1 AS (SELECT col FROM myTable), cte2 AS (SELECT col FROM cte1 UNION ALL SELECT col FROM cte2) SELECT col FROM cte2");
+    }
+
+    @Test
     public void testCommonTableExpressionMultiple()
     {
         check("WITH cte1 (col1, col2) AS (SELECT col1, col2 FROM myTable1 AS t1 INNER JOIN myTable2 AS t2 ON (t1.col1 = t2.col2)), cte2 AS (SELECT SUM(), col FROM cte1 GROUP BY col) SELECT col FROM cte1");

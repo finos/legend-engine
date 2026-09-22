@@ -357,6 +357,19 @@ public class TestSQLSerializerRoundtrip
         assertRoundtrip("with a as (select 1 as x), b as (select 2 as y) select x, y from a, b");
     }
 
+    @Test
+    public void testWithColumnAliases()
+    {
+        assertRoundtrip("with cte (n) as (select 1) select n from cte");
+    }
+
+    @Test
+    public void testWithRecursive()
+    {
+        assertRoundtrip("with recursive cte (n) as (select 1 union all select n + 1 from cte where n < 5) select n from cte");
+        assertRoundtrip("with recursive cte as (select id from persons union all select id from cte) select id from cte");
+    }
+
     // ===== UNION / INTERSECT / EXCEPT =====
 
     @Test

@@ -39,6 +39,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
       nullOrderingSupport = nativeOnlySupport(),
       // T-SQL has no boolean values in select lists; project predicates via the case-when wrap (as Oracle does)
       isBooleanLiteralSupported = false,
+      commonTableExpressionsProcessor = meta::relational::functions::sqlQueryToString::sqlServer::processCommonTableExpressionsForSqlServer_CommonTableExpression_MANY__SqlGenerationContext_1__Boolean_1__String_1_,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
@@ -226,4 +227,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
   if ($dropSchemaSQL.schema.name == 'default', 
     |  [], 
     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
+}
+
+function meta::relational::functions::sqlQueryToString::sqlServer::processCommonTableExpressionsForSqlServer(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
+{
+   // SqlServer takes no RECURSIVE keyword - a WITH expression that references itself is recursive.
+   // the anchor's literal columns widen to what the branch carries; T-SQL will not narrow the branch
+   $ctes->meta::relational::functions::sqlQueryToString::default::coerceAnchorLiteralsToBranchTypes()
+        ->meta::relational::functions::sqlQueryToString::default::processCommonTableExpressionsProcessorDefault($sgc, $isSubSelect, '');
 }
