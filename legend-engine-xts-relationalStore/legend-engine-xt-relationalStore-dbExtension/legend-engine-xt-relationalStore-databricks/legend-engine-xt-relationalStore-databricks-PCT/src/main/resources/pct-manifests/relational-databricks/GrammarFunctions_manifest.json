@@ -5,7 +5,7 @@
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
@@ -20,7 +20,7 @@
     "expectedError" : "\"Filter expressions are only supported for Primitives and Enums. Filter contains a parameter of type BottomClass\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDateStrictYear_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
@@ -77,7 +77,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'."
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:185 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    "expectedError" : "Type missing: meta::pure::functions::lang::tests::model::LA_Person"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."

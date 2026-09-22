@@ -16,12 +16,6 @@
     "test" : "meta::pure::functions::collection::tests::at::testAt_Function_1__Boolean_1_",
     "expectedError" : "->at(...) function is supported only after direct access of 1->MANY properties. Current expression: ['a', 'b', 'c'] -> at(0)"
   }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "Parameter to IN operation isn't a literal!"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::contains::testContainsPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.DATA_DIFF_TYPES]"
-  }, {
     "test" : "meta::pure::functions::collection::tests::contains::testContainsWithFunction_Function_1__Boolean_1_",
     "expectedError" : "no viable alternative at input '->meta::pure::functions::collection::contains(meta::pure::functions::collection::tests::contains::ClassWithoutEquality.all()->meta::pure::functions::multiplicity::toOne(),meta::pure::functions::collection::tests::contains::comparator(a:meta::pure::functions::collection::tests::contains::ClassWithoutEquality[1],'"
   }, {
@@ -41,7 +35,7 @@
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/collection/iteration/find.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldEmptyListAndEmptyIdentity_Function_1__Boolean_1_",
-    "expectedError" : "[DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES] org.apache.spark.sql.catalyst.ExtendedAnalysisException: [DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES] Cannot resolve \"array_append(namedlambdavariable(), namedlambdavariable())\" due to data type mismatch: Input to `array_append` should have been \"ARRAY\" followed by a value with same element type, but it's [\"ARRAY<STRING>\", \"BIGINT\"]. SQLSTATE: 42K09"
+    "expectedError" : "Error running query: [DATATYPE_MISMATCH.ARRAY_FUNCTION_DIFF_TYPES]"
   }, {
     "test" : "meta::pure::functions::collection::tests::fold::testFoldFiltering_Function_1__Boolean_1_",
     "expectedError" : "Function does not exist 'meta::pure::functions::lang::copy(FO_Person[1],String[1],KeyExpression[1])'"
@@ -77,7 +71,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicates::testRemoveDuplicatesPrimitiveStandardFunctionMixedTypes_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: [1, 2, 3, '1', '3']\nactual:   [1, 2, 3]"
+    "expectedError" : "Error running query: [DATATYPE_MISMATCH.INVALID_ORDERING_TYPE]"
   }, {
     "test" : "meta::pure::functions::collection::tests::removeDuplicatesBy::testRemoveDuplicatesByPrimitive_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -140,13 +134,13 @@
     "expectedError" : "[INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] Error parsing ' 9600000000 MONTH' to interval"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_",
-    "expectedError" : "Date has no day: 2012-03"
+    "expectedError" : "\nexpected: %2015-03\nactual:   %2015-03-01"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_",
     "expectedError" : "[INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] Error parsing ' 12345678912 WEEK' to interval"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "\nexpected: %2016\nactual:   %2016-01-01"
   }, {
     "test" : "meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 2\nactual:   3"
@@ -179,13 +173,13 @@
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_",
-    "expectedError" : "Date has no day: 1973-11"
+    "expectedError" : "\nexpected: %1973-11\nactual:   %1973-11-01"
   }, {
     "test" : "meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "\nexpected: %1973\nactual:   %1973-01-01"
   }, {
     "test" : "meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get day of month for 2017\""
   }, {
     "test" : "meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -209,19 +203,19 @@
     "expectedError" : "No SQL translation exists for the PURE function 'hasSubsecond_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get hour for 2017\""
   }, {
     "test" : "meta::pure::functions::date::tests::testHour_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 17\nactual:   0"
   }, {
     "test" : "meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get minute for 2017\""
   }, {
     "test" : "meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"
   }, {
     "test" : "meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get second for 2017\""
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""
@@ -239,13 +233,13 @@
     "expectedError" : "No SQL translation exists for the PURE function 'match_Any_MANY__Function_$1_MANY$__P_o__T_m_'"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'match_Any_MANY__Function_$1_MANY$__P_o__T_m_'"
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/lang/flow/match.pure:223cc46-52); error compiling generated Java code:\nimport org.eclipse.collections.api.LazyIterable;\nimport org.eclipse.collections.api.block.function.Function0;\nimport org.eclipse.collections.api.block.function.Function;\nimport org.eclipse.collections.api.block.function.Function2;\nimport org.eclipse.collections.api.block.predicate.Predicate;\nimport org.eclipse.collections.api.block.procedure.Procedure;\nimport org.eclipse.collections.api.map.ImmutableMap;\nimport org.eclipse.collections.api.map.MutableMap;\nimport org.eclipse.collections.api.map.MutableMapIterable;\nimport org.eclipse.collections.api.map.MapIterable;\nimport org.eclipse.collections.api.map.primitive.IntObjectMap;\nimport org.eclipse.collections.api.set.MutableSet;\nimport org.eclipse.collections.api.set.SetIterable;\nimport org.eclipse.collections.api.list.MutableList;\nimport org.eclipse.collections.api.list.ListIterable;\nimport org.eclipse.collections.api.RichIterable;\nimport org.eclipse.collections.api.tuple.Pair;\nimport org.eclipse.collections.impl.factory.Lists;\nimport org.eclipse.collections.impl.factory.Maps;\nimport org.eclipse.collections.impl.map.mutable.UnifiedMap;\nimport org.eclipse.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy;\nimport org.eclipse.collections.impl.set.mutable.UnifiedSet;\nimport org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;\nimport org.eclipse.collections.impl.list.mutable.FastList;\nimport org.eclipse.collections.impl.factory.Sets;\nimport org.eclipse.collections.impl.block.function.checked.CheckedFunction0;\nimport org.eclipse.collections.impl.utility.Iterate;\nimport org.eclipse.collections.impl.utility.LazyIterate;\nimport org.eclipse.collections.impl.utility.StringIterate;\nimport org.finos.legend.pure.m4.coreinstance.CoreInstance;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;\nimport org.finos.legend.pure.m3.exception.PureExecutionException;\nimport org.finos.legend.pure.m3.execution.ExecutionSupport;\nimport org.finos.legend.pure.m3.navigation.ProcessorSupport;\nimport org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;\nimport org.finos.legend.pure.m3.navigation.generictype.GenericType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangeType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangedPath;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;\nimport org.finos.legend.pure.m3.tools.ListHelper;\nimport org.finos.legend.pure.runtime.java.compiled.execution.*;\nimport org.finos.legend.pure.runtime.java.compiled.execution.sourceInformation.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.defended.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.*;\nimport org.finos.legend.pure.runtime.java.compiled.metadata.*;\nimport java.lang.reflect.Method;\nimport java.math.BigInteger;\nimport java.sql.DatabaseMetaData;\nimport java.sql.PreparedStatement;\nimport java.sql.ResultSetMetaData;\nimport java.util.Iterator;\nimport java.util.Calendar;\nimport java.util.Map;\nimport java.util.ArrayDeque;\nimport java.util.Deque;\nimport org.json.simple.JSONObject;\n\n\npublic class DynaClass{\n   public static RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction> doProcess(final MapIterable<String, Object> vars, final MutableMap<String, Object> valMap, final IntObjectMap<CoreInstance> localLambdas, final ExecutionSupport es){\n       return _lambdas;\n   }\n}\n"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParamManyMatch_Function_1__Boolean_1_",
-    "expectedError" : "\"Match does not support Non-Primitive return type..! Current return type : Any\""
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/lang/flow/match.pure:135cc43-49); error compiling generated Java code:\nimport org.eclipse.collections.api.LazyIterable;\nimport org.eclipse.collections.api.block.function.Function0;\nimport org.eclipse.collections.api.block.function.Function;\nimport org.eclipse.collections.api.block.function.Function2;\nimport org.eclipse.collections.api.block.predicate.Predicate;\nimport org.eclipse.collections.api.block.procedure.Procedure;\nimport org.eclipse.collections.api.map.ImmutableMap;\nimport org.eclipse.collections.api.map.MutableMap;\nimport org.eclipse.collections.api.map.MutableMapIterable;\nimport org.eclipse.collections.api.map.MapIterable;\nimport org.eclipse.collections.api.map.primitive.IntObjectMap;\nimport org.eclipse.collections.api.set.MutableSet;\nimport org.eclipse.collections.api.set.SetIterable;\nimport org.eclipse.collections.api.list.MutableList;\nimport org.eclipse.collections.api.list.ListIterable;\nimport org.eclipse.collections.api.RichIterable;\nimport org.eclipse.collections.api.tuple.Pair;\nimport org.eclipse.collections.impl.factory.Lists;\nimport org.eclipse.collections.impl.factory.Maps;\nimport org.eclipse.collections.impl.map.mutable.UnifiedMap;\nimport org.eclipse.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy;\nimport org.eclipse.collections.impl.set.mutable.UnifiedSet;\nimport org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;\nimport org.eclipse.collections.impl.list.mutable.FastList;\nimport org.eclipse.collections.impl.factory.Sets;\nimport org.eclipse.collections.impl.block.function.checked.CheckedFunction0;\nimport org.eclipse.collections.impl.utility.Iterate;\nimport org.eclipse.collections.impl.utility.LazyIterate;\nimport org.eclipse.collections.impl.utility.StringIterate;\nimport org.finos.legend.pure.m4.coreinstance.CoreInstance;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;\nimport org.finos.legend.pure.m3.exception.PureExecutionException;\nimport org.finos.legend.pure.m3.execution.ExecutionSupport;\nimport org.finos.legend.pure.m3.navigation.ProcessorSupport;\nimport org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;\nimport org.finos.legend.pure.m3.navigation.generictype.GenericType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangeType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangedPath;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;\nimport org.finos.legend.pure.m3.tools.ListHelper;\nimport org.finos.legend.pure.runtime.java.compiled.execution.*;\nimport org.finos.legend.pure.runtime.java.compiled.execution.sourceInformation.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.defended.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.*;\nimport org.finos.legend.pure.runtime.java.compiled.metadata.*;\nimport java.lang.reflect.Method;\nimport java.math.BigInteger;\nimport java.sql.DatabaseMetaData;\nimport java.sql.PreparedStatement;\nimport java.sql.ResultSetMetaData;\nimport java.util.Iterator;\nimport java.util.Calendar;\nimport java.util.Map;\nimport java.util.ArrayDeque;\nimport java.util.Deque;\nimport org.json.simple.JSONObject;\n\n\npublic class DynaClass{\n   public static RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction> doProcess(final MapIterable<String, Object> vars, final MutableMap<String, Object> valMap, final IntObjectMap<CoreInstance> localLambdas, final ExecutionSupport es){\n       return _lambdas;\n   }\n}\n"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchWithFunctionsAsParam_Function_1__Boolean_1_",
-    "expectedError" : "\"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
+    "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/essential/lang/flow/match.pure:127cc43-49); error compiling generated Java code:\nimport org.eclipse.collections.api.LazyIterable;\nimport org.eclipse.collections.api.block.function.Function0;\nimport org.eclipse.collections.api.block.function.Function;\nimport org.eclipse.collections.api.block.function.Function2;\nimport org.eclipse.collections.api.block.predicate.Predicate;\nimport org.eclipse.collections.api.block.procedure.Procedure;\nimport org.eclipse.collections.api.map.ImmutableMap;\nimport org.eclipse.collections.api.map.MutableMap;\nimport org.eclipse.collections.api.map.MutableMapIterable;\nimport org.eclipse.collections.api.map.MapIterable;\nimport org.eclipse.collections.api.map.primitive.IntObjectMap;\nimport org.eclipse.collections.api.set.MutableSet;\nimport org.eclipse.collections.api.set.SetIterable;\nimport org.eclipse.collections.api.list.MutableList;\nimport org.eclipse.collections.api.list.ListIterable;\nimport org.eclipse.collections.api.RichIterable;\nimport org.eclipse.collections.api.tuple.Pair;\nimport org.eclipse.collections.impl.factory.Lists;\nimport org.eclipse.collections.impl.factory.Maps;\nimport org.eclipse.collections.impl.map.mutable.UnifiedMap;\nimport org.eclipse.collections.impl.map.strategy.mutable.UnifiedMapWithHashingStrategy;\nimport org.eclipse.collections.impl.set.mutable.UnifiedSet;\nimport org.eclipse.collections.impl.set.strategy.mutable.UnifiedSetWithHashingStrategy;\nimport org.eclipse.collections.impl.list.mutable.FastList;\nimport org.eclipse.collections.impl.factory.Sets;\nimport org.eclipse.collections.impl.block.function.checked.CheckedFunction0;\nimport org.eclipse.collections.impl.utility.Iterate;\nimport org.eclipse.collections.impl.utility.LazyIterate;\nimport org.eclipse.collections.impl.utility.StringIterate;\nimport org.finos.legend.pure.m4.coreinstance.CoreInstance;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;\nimport org.finos.legend.pure.m4.coreinstance.primitive.date.DateFunctions;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;\nimport org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;\nimport org.finos.legend.pure.m3.exception.PureExecutionException;\nimport org.finos.legend.pure.m3.execution.ExecutionSupport;\nimport org.finos.legend.pure.m3.navigation.ProcessorSupport;\nimport org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;\nimport org.finos.legend.pure.m3.navigation.generictype.GenericType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangeType;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.ChangedPath;\nimport org.finos.legend.pure.m3.serialization.filesystem.usercodestorage.vcs.Revision;\nimport org.finos.legend.pure.m3.tools.ListHelper;\nimport org.finos.legend.pure.runtime.java.compiled.execution.*;\nimport org.finos.legend.pure.runtime.java.compiled.execution.sourceInformation.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.coreinstance.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.function.defended.*;\nimport org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.*;\nimport org.finos.legend.pure.runtime.java.compiled.metadata.*;\nimport java.lang.reflect.Method;\nimport java.math.BigInteger;\nimport java.sql.DatabaseMetaData;\nimport java.sql.PreparedStatement;\nimport java.sql.ResultSetMetaData;\nimport java.util.Iterator;\nimport java.util.Calendar;\nimport java.util.Map;\nimport java.util.ArrayDeque;\nimport java.util.Deque;\nimport org.json.simple.JSONObject;\n\n\npublic class DynaClass{\n   public static RichIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction> doProcess(final MapIterable<String, Object> vars, final MutableMap<String, Object> valMap, final IntObjectMap<CoreInstance> localLambdas, final ExecutionSupport es){\n       return _lambdas;\n   }\n}\n"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchWithFunctionsManyMatch_Function_1__Boolean_1_",
     "expectedError" : "\"Match does not support Non-Primitive return type..! Current return type : Any\""
@@ -254,7 +248,7 @@
     "expectedError" : "\"Cast exception: Literal cannot be cast to SemiStructuredPropertyAccess\""
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchWithMixedReturnType_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType"
+    "expectedError" : "Function does not exist 'meta::pure::functions::meta::deactivate(Any[1])'"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchZeroWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match does not support Non-Primitive return type..! Current return type : Any\""
@@ -317,7 +311,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:229 column:57), \"Cannot cast a collection of size 2 to multiplicity [1]\""
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:230 column:57), \"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
