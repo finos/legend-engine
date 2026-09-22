@@ -1356,7 +1356,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
       join: Join[1]      | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
                             + $j.alias->map(a|^$a(name = '"' + $a.name + '"'))
                                 ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-                            + ' ' + 'on (' + processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
+                            + ' ' + 'on (' + processOperation($j.join.operation->inlineTableFunctionParamsForDatabricks(), $dbConfig, $format->indent(), ^Config(), $extensions) + ')'
+   ]);
+}
+
+// A join ON condition cannot contain a subquery on Databricks, so the (SELECT param_x FROM func_param_table)
+// indirection a table function parameter renders as everywhere else is not usable there - the parameter is
+// referenced by name instead.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::inlineTableFunctionParamsForDatabricks(r:RelationalOperationElement[1]): RelationalOperationElement[1]
+{
+   $r->match([
+      t: TableFunctionParamPlaceHolder[1] | ^ColumnName(name = $t.var.name),
+      d: DynaFunction[1]                  | ^$d(parameters = $d.parameters->map(p | $p->inlineTableFunctionParamsForDatabricks())),
+      o: RelationalOperationElement[1]    | $o
    ]);
 }
 
