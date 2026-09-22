@@ -29,12 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * PCT creates its fixture tables as plain tables, because BigQuery only accepts a temporary table
- * inside a script or session, so nothing reclaims them when a run ends and they accumulate in the
- * shared dataset. This drops the ones left behind by earlier runs.
- *
- * Age is read from BigQuery's own catalogue rather than inferred from the table name, and only
- * tables past the cutoff are touched, so a run happening concurrently keeps its fixtures.
+ * Drops fixture tables left behind by earlier runs. BigQuery allows a temporary table only inside a
+ * script or session, so PCT creates plain ones and nothing reclaims them. Only tables past the cutoff
+ * are touched, leaving a concurrent run its fixtures.
  */
 class BigQueryLeakedTableSweep implements TestServerResource
 {

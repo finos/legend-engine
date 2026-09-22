@@ -99,8 +99,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to Bi
     ]);
 }
 
-// NUMERIC accepts only scale 0..9 with at most 29 integer digits; anything wider has to be BIGNUMERIC,
-// which reaches scale 38 and 38 integer digits.
+// NUMERIC allows scale 0..9 and 29 integer digits; BIGNUMERIC reaches 38 and 38.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::decimalFamilyForBigQuery(precision:Integer[0..1], scale:Integer[0..1]):String[1]
 {
    if($precision->isEmpty() || $scale->isEmpty(),
@@ -111,8 +110,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    );
 }
 
-// Only a column declaration may carry precision and scale; CAST rejects a parameterised type outright,
-// so dataTypeToSqlTextBigQuery deliberately renders the bare family name instead.
+// CAST rejects a parameterised type, so dataTypeToSqlTextBigQuery renders the bare family name.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::columnTypeForBigQuery(type:meta::relational::metamodel::datatype::DataType[1]):String[1]
 {
    $type->match([
@@ -136,10 +134,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    );
 }
 
-// datetime_diff covers DATE operands too, BigQuery widening them on the way in. WEEKS is the one
-// unit left out: BigQuery counts week boundaries symmetrically, where dateDiff does not -- it answers
-// 1 from 2015-07-04 to 2015-07-05 but 0 back the other way -- so it fails here rather than quietly
-// disagreeing. Every other unit was checked against the live service and matches.
+// WEEKS is excluded because BigQuery counts week boundaries symmetrically and dateDiff does not.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::dateDiffForBigQuery(params:String[3]):String[1]
 {
    let unit = $params->at(2)->removeQuotesIfExist();
@@ -148,21 +143,18 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    'datetime_diff(' + $params->at(1) + ', ' + $params->at(0) + ', ' + $unit->mapToDBUnitType() + ')';
 }
 
-// Buckets are measured from the epoch, which is what timeBucket anchors to for every unit except
-// WEEKS. Pure's week buckets do not sit on a fixed origin at all -- a 1-week bucket of 2024-01-31
-// starts on 2024-01-29 but a 2-week bucket starts there too, and a 3-week bucket on 2024-01-15 --
-// so WEEKS fails here rather than answering from an origin that only looks right sometimes.
+// timeBucket measures from the epoch. WEEKS is excluded because Pure's week buckets sit on no fixed
+// origin.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::timeBucketForBigQuery(params:String[3]):String[1]
 {
    let unit = $params->at(2)->removeQuotesIfExist();
    assert($unit != DurationUnit.WEEKS->toString(),
           '[unsupported-api] timeBucket with WEEKS is not supported on BigQuery: its buckets run from a fixed origin, which does not match timeBucket');
-   // the operand is cast because it is not always DATETIME: a TIMESTAMP reaches here too, and
-   // datetime_bucket requires its value and origin to be the same type
+   // a TIMESTAMP reaches here too, and datetime_bucket needs value and origin to be the same type
    'datetime_bucket(cast(' + $params->at(0) + ' as datetime), interval ' + $params->at(1) + ' ' + $unit->mapToDBUnitType() + ', datetime \'1970-01-01\')';
 }
 
-// BigQuery matches with RE2, which takes the same inline flag syntax as the other engines.
+// RE2, so the inline flag syntax is the same as the other engines.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::regexpInlineFlagsForBigQuery(regexpParametersAsString: String[1]):String[1]
 {
    let flags = $regexpParametersAsString->removeQuotesIfExist()->split(',')
@@ -178,9 +170,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::getLiteralProcessorsForBigQuery():Map<Type,LiteralProcessor>[1]
 {
-   // A quoted literal may not carry a raw newline here, unlike most engines, so they are escaped.
-   // Backslashes are deliberately left alone: regex patterns reach the dialect already written for
-   // RE2, and doubling their backslashes would change what they match.
+   // A quoted literal may not carry a raw newline. Backslashes are left alone: regex patterns arrive
+   // written for RE2, and doubling their backslashes would change what they match.
    let literalReplacementPairForString = [
       ^LiteralReplacement(old = '\'', new = '\\\''),
       ^LiteralReplacement(old = '\n', new = '\\n'),
@@ -189,10 +180,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
 
    newMap([
       pair(String,         ^LiteralProcessor(format = '\'%s\'', transform = convertStringToSQLString($literalReplacementPairForString)->literalTransform(), literalReplacements = $literalReplacementPairForString)),
-      // the shared default quotes booleans, which BigQuery reads as STRING and refuses to coerce to BOOL
+      // a quoted boolean reads as STRING, which BigQuery will not coerce to BOOL
       pair(Boolean,        ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform())),
       pair(StrictDate,     ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')',   transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      // %E*S, not %E6S: Pure writes nine fractional digits and a fixed width refuses to parse them
+      // %E*S, not %E6S: Pure writes up to nine fractional digits
       pair(DateTime,       ^LiteralProcessor(format = 'PARSE_DATETIME(\'%%Y-%%m-%%d %%H:%%M:%%E*S\', \'%s\')', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(Date,           ^LiteralProcessor(format = 'PARSE_DATE(\'%%Y-%%m-%%d\', \'%s\')', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
    ]);
@@ -205,12 +196,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
-    // concat keeps the pattern an expression, so an anchored match still works when it is a column
+    // concat, not literal surgery, so the pattern may be a column
     dynaFnToSql('matches',                $allStates,            ^ToSql(format='regexp_contains(%s, concat(\'^(?:\', %s, \')$\'))')),
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3] |
                                                                      'regexp_contains(' + $p->at(0) + ', concat(\'' + $p->at(2)->regexpInlineFlagsForBigQuery() + '\', ' + $p->at(1) + '))';})),
-    // the part index reaches the dialect already 1-based, matching SAFE_ORDINAL; an empty separator
-    // splits into one element per character, where splitPart wants the whole string back
+    // the part index arrives 1-based, matching SAFE_ORDINAL. split on an empty separator yields one
+    // element per character, where splitPart wants the whole string
     dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='%s', transform={p:String[3] |
                                                                      'case when ' + $p->at(1) + ' = \'\' then ' + $p->at(0) +
                                                                      ' else split(' + $p->at(0) + ', ' + $p->at(1) + ')[SAFE_ORDINAL(' + $p->at(2) + ')] end';})),
@@ -249,14 +240,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='extract(dayofweek from %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='extract(dayofyear from %s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='safe_convert_bytes_to_string(from_base64(%s))')),
-    // cast(.. as JSON) is rejected; parse_json is the only accepted spelling
+    // cast(.. as JSON) is rejected
     dynaFnToSql('parseJson',              $allStates,            ^ToSql(format='parse_json(%s)')),
-    // the shared default casts the JSON value itself, which BigQuery refuses; go through json_value
+    // casting the JSON value itself is rejected
     dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | castFromJsonForBigQuery($p->at(0), $p->at(1))})),
     dynaFnToSql('toVariant',              $allStates,            ^ToSql(format='to_json(%s)')),
     dynaFnToSql('toVariantList',          $allStates,            ^ToSql(format='json_array(%s)', transform={p:String[*] | $p->joinStrings(',')})),
     dynaFnToSql('toVariantObject',        $allStates,            ^ToSql(format='json_object(%s)', transform={p:String[*] | $p->joinStrings(',')})),
-    // generate_array includes the stop value, range() excludes it, so the bound is pulled in one step
+    // generate_array includes its stop value, range() excludes it
     dynaFnToSql('range',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
                                                                      let step = if($p->size() > 2, | $p->at(2), | '1');
                                                                      'generate_array(' + $p->at(0) + ', ' + $p->at(1) + ' - sign(' + $step + '), ' + $step + ')';})),
@@ -316,10 +307,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   $formatPairs->filter(p | $p.first == $enumValue).second->toOne('Unsupported DateFormat: ' + $enumValue);
 }
 
-// BigQuery has no list functions over JSON, so reshaping an array means exploding it and rebuilding
-// it. WITH OFFSET counts from zero where Postgres ordinality counts from one, so o is shifted here
-// and the caller predicates read the same as the other stores'. The case guard keeps a null array
-// null, since array_agg over no rows is null either way and would otherwise yield an empty array.
+// No list functions over JSON, so reshaping explodes and rebuilds. o is shifted to 1-based, matching
+// WITH ORDINALITY, so the caller predicates read as they do elsewhere. The case guard keeps a null
+// array null, which array_agg over no rows would otherwise turn into an empty one.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::reshapeJsonArrayForBigQuery(array:String[1], where:String[1], order:String[1]):String[1]
 {
   let filter = if($where == '', |'', |' where ' + $where);
@@ -327,16 +317,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
     ->format([$array, $order, $array, $filter]);
 }
 
-// JSON values have no ordering operator, so numbers sort numerically and everything else as text.
-// The numeric key is null for non-numbers, which falls through to the text key.
+// JSON has no ordering operator. The numeric key is null for non-numbers, falling through to text.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::jsonElementOrderingForBigQuery():String[1]
 {
   '(case when json_type(t.v) = \'number\' then cast(json_value(t.v) as numeric) end), json_value(t.v)';
 }
 
-// BigQuery has no higher-order array function, so filter and map lower to a scalar subquery over
-// UNNEST. The offset column and the order by inside the aggregate are what preserve element order,
-// since scan order is not guaranteed. fold has no equivalent and fails with a specific message.
+// No higher-order array function, so filter and map lower to a scalar subquery over UNNEST. The
+// offset and the order by inside the aggregate are what preserve element order.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::buildLambdaForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
   $lambda->match([
@@ -363,8 +351,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    ]);
 }
 
-// UNNEST names the element column directly, so it is aliased to the lambda parameter and the
-// unqualified references the parameter processor emits resolve against it.
+// UNNEST names the element column, so it takes the parameter's name and unqualified references resolve.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::flattenedSourceForBigQuery(lambda: RelationalLambda[1], sgc: SqlGenerationContext[1]): String[1]
 {
   'unnest(json_query_array(%s)) as %s with offset legend_ord'->format([
@@ -373,9 +360,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    ]);
 }
 
-// json_query_array rejects anything that is not an array, where Snowflake's FLATTEN and DuckDB's
-// unnest normalise first. A single element reaches here when the value has already been narrowed,
-// so treat it as a one-element array rather than failing.
+// json_query_array rejects a non-array. A single element reaches here once the value is narrowed.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::asJsonArrayForBigQuery(expr:String[1]):String[1]
 {
   'case when json_type(%s) = \'array\' then %s else json_array(%s) end'->format([$expr, $expr, $expr]);
@@ -386,8 +371,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   castFromJsonForBigQuery($param.name, $sgc.dbConfig.dataTypeToSqlText($param.type));
 }
 
-// json_value extracts a scalar as unquoted text, where casting the JSON value itself keeps the
-// quotes around a JSON string. A JSON-typed parameter passes through untouched.
+// json_value gives unquoted text; casting the JSON value keeps a string's quotes.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::castFromJsonForBigQuery(expr:String[1], dbType:String[1]):String[1]
 {
   let unquoted = 'json_value(%s)'->format($expr);
@@ -398,19 +382,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
         | 'cast(%s as %s)'->format([$unquoted, $dbType])));
 }
 
-// BigQuery accepts an explicit null ordering only inside a ROWS frame. Its default window frame is
-// RANGE, so an ordered window written without a frame inherits the same restriction, and a RANGE
-// frame admits a single ORDER BY key, which rules out the CASE shim too. Where the clause cannot be
-// written the ordering falls back to BigQuery's own, nulls low, which differs from the requested
-// ordering only when the sort column actually holds nulls -- so those windows run and order
-// correctly on data without nulls, rather than failing outright.
-// BigQuery has no FILTER clause, so a filtered aggregate folds the predicate onto the value, and it
-// takes the ordering inside the aggregate's own parentheses rather than as a WITHIN GROUP suffix.
-//
-// It also refuses an explicit NULLS FIRST/LAST inside an aggregate's ORDER BY, in either direction,
-// exactly as it does outside a ROWS window frame. The ordering is rendered without the clause for
-// the duration of the call, leaving BigQuery's own nulls-low order, which differs from the requested
-// one only when the sort column actually holds nulls.
+// An explicit null ordering is accepted only inside a ROWS frame, and the default frame is RANGE, so
+// a window written without one inherits the restriction. A RANGE frame admits a single ORDER BY key,
+// so the CASE shim is unavailable too. Without the clause the order is BigQuery's own, nulls low.
+// No FILTER clause, so the predicate folds onto the value, and the ordering goes inside the
+// aggregate's parentheses. An explicit NULLS FIRST/LAST is rejected there as well, so the ordering
+// renders without it and falls back to BigQuery's own, nulls low.
 // No column list on a common table expression, recursive or not: the names come from the first
 // branch's aliases.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processCommonTableExpressionsForBigQuery(ctes:CommonTableExpression[*], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
@@ -470,9 +447,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
    ]);
 }
 
-// The quotes are part of the column name, not the quoting of it: downstream the platform refers to
-// the column as '<value>__|__<agg>', quotes included. Only the surrounding identifier quoting is
-// dialect-specific, backticks here where Databricks writes double quotes.
+// The quotes belong to the column name, not to the quoting of it: downstream the column is
+// '<value>__|__<agg>', quotes included. Only the outer identifier quoting is dialect-specific.
 function <<access.private>> meta::relational::functions::sqlQueryToString::bigQuery::processStaticPivotForBigQuery(s:SelectSQLQuery[1], staticPivot:StaticPivot[1], dbConfig:DbConfig[1], format:Format[1], config:Config[1], extensions:Extension[*]):String[1]
 {
    let pivotColumnName = $dbConfig.identifierProcessor($staticPivot.pivotColumns->toOne()->cast(@ColumnName).name);
