@@ -1,0 +1,497 @@
+{
+  "adapter" : "meta::relational::tests::pct::db2::testAdapterForRelationalWithDB2Execution_Function_1__X_o_",
+  "exclusions" : [
+    {
+      "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_Function_1__Boolean_1_",
+      "expectedError" : "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::asOfJoin::testAsOfJoinWithKeyMatch_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_Function_1__Boolean_1_",
+      "expectedError" : "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::asOfJoin::testSimpleAsOfJoin_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "AsOfJoins are not supported in the generic generator!"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testExtendLeadAdjustDerivedOffset_Function_1__Boolean_1_",
+      "expectedError" : "For input string:"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_",
+      "expectedError" : "\nexpected: '#TDS\\n   id,grp,name,newCol\\n   2,1,B,16\\n   6,1,F,16\\n   8,1,H,16\\n#'\nactual:   '#TDS\\n   id,grp,name,newCol\\n   10,0,J,10\\n   2,1,B,16\\n   6,1,F,16\\n   8,1,H,16\\n   1,2,A,6\\n   5,2,E,6\\n   3,3,C,10\\n   7,3,G,10\\n   4,4,D,4\\n   9,5,I,9\\n#'"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.FirmTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
+      "expectedError" : "\nexpected: '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   A,2,8,3\\n#'\nactual:   '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   D,1,10,1\\n   A,2,8,3\\n   B,2,8,2\\n#'"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameExtend_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.tb_"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testMixColumnNamesRenameFilter_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.tb_"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testMultiCoalesceInProject_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.SimpleNumbersTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterExtendConcatenate_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_to_string' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_reverse_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_sort_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_contains_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_contains' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_distinct_removeDuplicates_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_extend_indexExtraction_filter_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsEmptyOfModelConversion_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_filterOnIsNotEmptyOfModelConversion_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_functionComposition_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_indexOf_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_position' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isEmpty_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_isNotEmpty_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_size' (state: [Select, true]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_projectModelProperty_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantColumn_slice_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_keys_LateralFlatten_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testVariantMapColumn_values_LateralFlatten_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.PersonTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_ComplexGroupBy_Pivot_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_GroupBy_Pivot_Extend_Sort_Limit_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Extend_Filter_Select_Pivot_GroupBy_Extend_Sort_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Pivot_Filter_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Project_Filter_Before_Static_Pivot_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::drop::testSimpleDropShared_Function_1__Boolean_1_",
+      "expectedError" : "com.ibm.db2.jcc.am.SqlDataException: DB2 SQL Error: SQLCODE=-20539, SQLSTATE=2201W, SQLERRMC=null, DRIVER=4.33.31"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::drop::testSimpleDrop_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "com.ibm.db2.jcc.am.SqlDataException: DB2 SQL Error: SQLCODE=-20539, SQLSTATE=2201W, SQLERRMC=null, DRIVER=4.33.31"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
+      "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
+      "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
+      "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_fold_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_indexExtraction_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_keyExtraction_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_map_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIndexExtractionValue_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsEmptyOfKeyExtraction_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnKeyExtractionValue_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOutputFromLambda_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] The function 'array_size' (state: [Where, false]) is not supported yet"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Function_1__Boolean_1_",
+      "expectedError" : "Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoinAreInnerJoins_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Chained_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_CorrelatedColumnNameAlsoOnInner_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::lateral::testLateralJoin_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::over::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "\nexpected: '#TDS\\n   p,o,i,newCol\\n   300,2,20,null\\n   300,1,10,20\\n   200,3,30,null\\n   200,3,30,null\\n   200,2,20,60\\n   200,1,10,80\\n   200,1,10,80\\n   200,1,10,80\\n   100,3,30,null\\n   100,3,30,null\\n   100,2,20,60\\n   100,2,20,60\\n   100,1,10,100\\n   0,3,30,null\\n   0,1,10,30\\n   0,1,10,30\\n#'\nactual:   '#TDS\\n   p,o,i,newCol\\n   300,2,20,null\\n   300,1,10,20\\n   200,3,30,null\\n   200,3,30,null\\n   200,2,20,60\\n   200,1,10,null\\n   200,1,10,80\\n   200,1,10,80\\n   100,3,30,null\\n   100,3,30,null\\n   100,2,20,60\\n   100,2,20,60\\n   100,1,10,100\\n   0,3,30,null\\n   0,1,10,30\\n   0,1,10,30\\n#'"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
+      "expectedError" : "pivot is not supported"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectList_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
+      "expectedError" : "Window function with range frame using interval is not supported for this database type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Extend_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Nested_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Lateral operation not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Scalar_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Array_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Map_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_Variant_Navigation_Function_1__Boolean_1_",
+      "expectedError" : "[unsupported-api] Semi structured array element processing not supported for Database Type: DB2"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::recurse::testFibonacci_Function_1__Boolean_1_",
+      "expectedError" : "com.ibm.db2.jcc.am.SqlSyntaxErrorException: DB2 SQL Error: SQLCODE=-104, SQLSTATE=42601, SQLERRMC=rcte_d;\nWITH RECURSIVE;<space>, DRIVER=4.33.31"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+      "expectedError" : "com.ibm.db2.jcc.am.SqlSyntaxErrorException: DB2 SQL Error: SQLCODE=-104, SQLSTATE=42601, SQLERRMC=initial;\nWITH RECURSIVE;<space>, DRIVER=4.33.31"
+    }
+  ]
+}

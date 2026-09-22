@@ -44,6 +44,20 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::tes
    assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, false));
 }
 
+// nulls-high native ordering already matches the canonical ASC->LAST / DESC->FIRST pairing, so the
+// CASE is only ever reached through an explicit NULLS request
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsHighCaseOrderingSupport():Boolean[1]
+{
+   let support = nullsHighWithCaseSupport();
+   assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], false));
+   assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], false));
+   assertEquals('"keyAlias" asc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.ASC, [], false));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, false));
+   assertEquals('case when source.key is null then 0 else 1 end desc, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.LAST, false));
+   assertEquals('case when source.key is null then 0 else 1 end desc, "keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, meta::relational::metamodel::NullOrder.LAST, false));
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, meta::relational::metamodel::NullOrder.FIRST, false));
+}
+
 // With useDbNativeImplicitNullOrdering=true, implicit sorts must short-circuit to the bare
 // expression + direction regardless of the dialect's native ordering / CASE shim; explicit
 // NULLS orderings must still be honoured.
@@ -74,6 +88,15 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::tes
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testCaseNullOrderingSupportFlagOnSkipsCaseShim():Boolean[1]
 {
    let support = nullsLowWithCaseSupport();
+   assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], true));
+   assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
+   // explicit NULLS still routes through the CASE processor
+   assertEquals('case when source.key is null then 0 else 1 end, "keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], meta::relational::metamodel::NullOrder.FIRST, true));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::testNullsHighCaseOrderingSupportFlagOn():Boolean[1]
+{
+   let support = nullsHighWithCaseSupport();
    assertEquals('"keyAlias"', $support.processSortItem('"keyAlias"', 'source.key', [], [], true));
    assertEquals('"keyAlias" desc', $support.processSortItem('"keyAlias"', 'source.key', meta::relational::metamodel::SortDirection.DESC, [], true));
    // explicit NULLS still routes through the CASE processor

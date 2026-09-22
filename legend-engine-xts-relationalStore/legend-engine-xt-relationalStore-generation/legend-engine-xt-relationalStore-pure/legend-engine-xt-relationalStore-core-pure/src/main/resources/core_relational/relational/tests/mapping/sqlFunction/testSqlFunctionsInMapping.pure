@@ -533,7 +533,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseInteg
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.DB2, meta::relational::extension::relationalExtensions());
-   assertEquals('select cast("root".string2Integer as integer) as "parseInteger" from dataTable as "root"',$s);
+   assertEquals('select cast("root".string2Integer as bigint) as "parseInteger" from dataTable as "root"',$s);
 
 }
 

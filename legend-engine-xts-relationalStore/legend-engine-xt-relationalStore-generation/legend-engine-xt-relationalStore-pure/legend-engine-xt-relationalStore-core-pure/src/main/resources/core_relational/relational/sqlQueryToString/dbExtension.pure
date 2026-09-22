@@ -434,6 +434,14 @@ function meta::relational::functions::sqlQueryToString::nullsLowWithCaseSupport(
    );
 }
 
+function meta::relational::functions::sqlQueryToString::nullsHighWithCaseSupport():NullOrderingSupport[1]
+{
+   ^NullOrderingSupport(
+      nativeNullOrdering = {direction:meta::relational::metamodel::SortDirection[1]| if($direction == meta::relational::metamodel::SortDirection.DESC, | meta::relational::metamodel::NullOrder.FIRST, | meta::relational::metamodel::NullOrder.LAST)},
+      sortItemProcessor = processSortItemWithNullOrderingCase_String_1__String_1__SortDirection_$0_1$__NullOrder_1__String_1_
+   );
+}
+
 // No native NULLS FIRST/LAST clause and no CASE-shim -- see processSortItemIgnoringNullOrder.
 function meta::relational::functions::sqlQueryToString::nativeOnlySupport():NullOrderingSupport[1]
 {
