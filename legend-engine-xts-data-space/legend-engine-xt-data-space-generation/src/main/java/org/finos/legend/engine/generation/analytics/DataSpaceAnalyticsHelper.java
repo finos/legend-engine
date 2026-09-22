@@ -263,7 +263,13 @@ public class DataSpaceAnalyticsHelper
                             lambda.parameters = new ArrayList<>();
                             lambda.parameters.addAll(((Function) _el).parameters);
                             functionPointerExecutableInfo.query = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance().withIndentation(getTabSize(1)).build());
-                            returnTypeFunc = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext());
+                            try
+                            {
+                                returnTypeFunc = HelperValueSpecificationBuilder.buildLambda(lambda, pureModel.getContext(_el));
+                            }
+                            catch (Exception ignored)
+                            {
+                            }
                             executableAnalysisResult.info = functionPointerExecutableInfo;
                         }
                         else
