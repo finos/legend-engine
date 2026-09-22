@@ -664,6 +664,36 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                             | processTableAlias($c.alias, $dbConfig, $config)) + processColumnName($c.column.name->toOne(), $dbConfig)
                                           ,                                                                
                                           l:Literal[1]| processLiteral($l, $dbConfig, $sgc),
+                                          // A ClassInstanceHolder holds the fully-realized Pure value of some
+                                          // compile-time-constant expression that has no direct SQL literal
+                                          // shape of its own (a bare Class/Enumeration reference, or a boolean
+                                          // computed by evaluating an in()/toString() short-circuit directly in
+                                          // Pure rather than pushing it through SQL - see processIn and the
+                                          // toString() DynaFunction dispatch). When the held value is itself one
+                                          // of the types with a real LiteralProcessor (Boolean/Number/String/
+                                          // Date family), render it exactly as that type's own literal would
+                                          // be (so e.g. a boolean renders as the dialect's normal true/false, not
+                                          // as the text "true"/"false" always quoted as a string); for anything
+                                          // else (Class, Enumeration, List, Pair, a custom object with its own
+                                          // toString() override, ...), fall back to computing its toString()
+                                          // directly in Pure (mirroring what the non-relational execution mode
+                                          // already does for the same value) and rendering that as a plain
+                                          // string literal. Enum is deliberately excluded from the native-
+                                          // literal branch: every dialect's own Enum LiteralProcessor assumes a
+                                          // property-mapped context (rendering via getEnumPropMappingTransformer,
+                                          // or - with no such mapping, as seen here - the bare enum name as an
+                                          // unquoted SQL identifier, e.g. DuckDB/Postgres emitting a raw `CITY`
+                                          // and failing with "column not found"), which doesn't apply to an
+                                          // isolated constant value with no enclosing property navigation.
+                                          h:meta::relational::functions::pureToSqlQuery::ClassInstanceHolder[1]|
+                                             let v = $h.value;
+                                             let vIsNative = $v->instanceOf(Boolean) || $v->instanceOf(Number) || $v->instanceOf(String) || $v->instanceOf(Date);
+                                             let rendered = if($vIsNative,
+                                                | processLiteral(^Literal(value=$v), $dbConfig, $sgc),
+                                                | processLiteral(^Literal(value=$v->toString()), $dbConfig, $sgc));
+                                             println('PROBE CIH value type=' + $v->type().name->toOne() + ' vIsNative=' + $vIsNative->toString() + ' rendered=[' + $rendered + ']');
+                                             $rendered;
+                                          ,
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
                                           u:UpsertSQLQuery[1]| $u->processUpsertSQLQuery($sgc),
@@ -1040,6 +1070,21 @@ function meta::relational::functions::sqlQueryToString::parseSemiStructuredPathN
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processDynaFunction(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
 {
+   // A bare (unmapped) Enum literal - e.g. SomeEnumeration.VALUE->toString(), with no enclosing
+   // property navigation - reaches here as a genuine Literal whose .value is the raw Enum instance
+   // (see processEnumValue/mapEnumValue's no-property-mapping fallback in pureToSQLQuery.pure).
+   // The shared default Enum LiteralProcessor (format='%s', unquoted - see extensionDefaults.pure)
+   // assumes this raw text always gets consumed by a FreeMarker-based enum-resolution template
+   // downstream (equalEnumOpSelector etc.), which only fires for a mapped-property comparison.
+   // Rendered standalone as toString()'s own argument, the unquoted enum name reaches the database
+   // as a bare (and on most dialects, invalid) identifier instead of a value. Render it directly as
+   // a quoted string here instead - this only ever matches toString() applied to a bare, unmapped
+   // enum literal; a mapped-property toString() resolves to a TableAliasColumn/VarPlaceHolder, never
+   // this shape, and an enum literal compared via equal()/in() against a mapped column never reaches
+   // processDynaFunction as a 'toString' call at all, so neither is affected.
+   if($func.name == 'toString' && $func.parameters->size() == 1 && $func.parameters->at(0)->instanceOf(Literal) && $func.parameters->at(0)->cast(@Literal).value->instanceOf(Enum),
+      | processLiteral(^Literal(value = $func.parameters->at(0)->cast(@Literal).value->toString()), $sgc.dbConfig, $sgc),
+      |
    if ($func->isEqualsFromFilter($sgc.config),
       | processEqualFromFilter($func,$sgc),
       |
@@ -1064,7 +1109,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
         let newSgc = if($func.name->in(['and', 'or']), | $sgc, | ^$sgc(config = ^$config(callingFromFilter = [])));
         let paramWiseSgcs = if($result.toSql.parametersWithinWhenClause->isEmpty(),|range(0,$params->size(),1)->map(i|$newSgc),|$result.toSql.parametersWithinWhenClause->map(b|^$newSgc(generationState = ^$generationState(withinWhenClause=$b))));
         $result->toOne().toSql($params, $paramWiseSgcs);
-   ))))
+   )))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::processExtractFromSemiStructured(func:DynaFunction[1], sgc:SqlGenerationContext[1]):String[1]
@@ -1524,3 +1569,5 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   weekOfYear,
   year
 }
+
+

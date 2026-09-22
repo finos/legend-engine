@@ -249,13 +249,21 @@ function meta::pure::functions::meta::isDataTypeProperty(p: Property<Nil,Any|*>[
 function {doc.doc = 'Checks if the value of a property is a primitive (string/int/enum/etc.)'}
 meta::pure::functions::meta::isPrimitiveValueProperty(property : AbstractProperty<Any>[1]) : Boolean[1]
 {
-   $property.genericType.rawType->toOne()->match([
-      pt:PrimitiveType[1]    | true,
-      et:Enumeration<Any>[1] | true,
-      a:Class<Any>[1]        | false,
-      u: Unit[1]             | true,
-      m: Measure[1]          | true
-   ]);
+   // A property declared with an unresolved generic type parameter (e.g. List<T>.values:T[*], read
+   // directly off the generic Class rather than a concrete instantiation) has no rawType at all - not
+   // any of the concrete kinds below, primitive or otherwise - so this can't be answered true or false
+   // from the type alone; conservatively answer false (not confidently a primitive) rather than forcing
+   // a multiplicity violation via toOne() on an empty collection.
+   if($property.genericType.rawType->isEmpty(),
+      | false,
+      | $property.genericType.rawType->toOne()->match([
+           pt:PrimitiveType[1]    | true,
+           et:Enumeration<Any>[1] | true,
+           a:Class<Any>[1]        | false,
+           u: Unit[1]             | true,
+           m: Measure[1]          | true
+        ])
+   );
 }
 
 function {doc.doc = 'Returns recursively all types that are specialisation of a given class'}

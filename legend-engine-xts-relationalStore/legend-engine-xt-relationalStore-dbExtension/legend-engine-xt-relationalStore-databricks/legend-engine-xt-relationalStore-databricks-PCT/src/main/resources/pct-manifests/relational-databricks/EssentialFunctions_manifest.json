@@ -62,7 +62,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'forAll_T_MANY__Function_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::collection::tests::head::testHeadComplex_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at (resource:/core_relational/relational/relationalMappingExecution.pure line:204 column:129), \"The system is trying to get an element at offset 0 where the collection is of size 0\""
+    "expectedError" : "Execution error at ??, \"Expected at most one object, but found many\""
   }, {
     "test" : "meta::pure::functions::collection::tests::indexof::testIndexOfOneElement_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0\nactual:   1"
@@ -160,9 +160,6 @@
     "test" : "meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_",
     "expectedError" : "The DurationUnit 'WEEKS' is not supported yet for date_diff"
   }, {
-    "test" : "meta::pure::functions::date::tests::testDateDiffYears_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
-  }, {
     "test" : "meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
@@ -220,19 +217,10 @@
     "test" : "meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_",
     "expectedError" : "Ensure the target system understands Year or Year-month semantic."
   }, {
-    "test" : "meta::pure::functions::date::tests::testMinute_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 9\nactual:   0"
-  }, {
-    "test" : "meta::pure::functions::date::tests::testMonthNumber_Function_1__Boolean_1_",
-    "expectedError" : "Date has no day: 2015-04"
-  }, {
     "test" : "meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"
   }, {
     "test" : "meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_",
-    "expectedError" : "Ensure the target system understands Year or Year-month semantic."
-  }, {
-    "test" : "meta::pure::functions::date::tests::testYear_Function_1__Boolean_1_",
     "expectedError" : "Ensure the target system understands Year or Year-month semantic."
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
@@ -275,7 +263,7 @@
     "expectedError" : "\"Match does not support Non-Primitive return type..! Current return type : Any\""
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatch_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::lang::tests::match::MA_GeographicEntityType"
+    "expectedError" : "Error mapping not found for class MA_Location cache:'MA_Address'"
   }, {
     "test" : "meta::pure::functions::math::tests::pow::testNumberPow_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 9.0\nactual:   27.0"
@@ -307,9 +295,6 @@
     "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
     "expectedError" : "No error was thrown"
   }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatDate_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
@@ -332,15 +317,12 @@
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatList_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
+    "expectedError" : "Execution error at (resource:/core_relational/relational/pureToSQLQuery/pureToSQLQuery.pure line:229 column:57), \"Cannot cast a collection of size 2 to multiplicity [1]\""
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatPair_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatRepr_Function_1__Boolean_1_",
-    "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
-  }, {
-    "test" : "meta::pure::functions::string::tests::format::testFormatString_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::string::tests::format::testSimpleFormatDate_Function_1__Boolean_1_",
@@ -358,34 +340,7 @@
     "test" : "meta::pure::functions::string::tests::parseDecimal::testParseZero_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 0.0D\nactual:   0D"
   }, {
-    "test" : "meta::pure::functions::string::tests::toString::testClassToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testComplexClassToString_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::string::tests::toString::ErrorType"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testDateTimeToString_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '2014-01-01T00:00:00.000+0000'\nactual:   '2014-01-01 00:00:00'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testDateTimeWithTimezoneToString_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '2014-01-01T00:00:00.0000+0000'\nactual:   '2014-01-01 00:00:00'"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testDateToString_Function_1__Boolean_1_",
-    "expectedError" : "Date has no day: 2014-01"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testEnumerationToString_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: ClassInstanceHolderObject instanceOf ClassInstanceHolder"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testListToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
     "test" : "meta::pure::functions::string::tests::toString::testPairCollectionToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 2 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testPairToString_Function_1__Boolean_1_",
-    "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  }, {
-    "test" : "meta::pure::functions::string::tests::toString::testSimpleDateToString_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: '2014-01-02T01:54:27.352+0000'\nactual:   '2014-01-02 01:54:27.352'"
+    "expectedError" : "The system can't find a mapping (0) for the class 'meta::pure::functions::collection::Pair' in the mapping ''"
   } ]
 }

@@ -830,11 +830,33 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::lowerAc
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {
   print(if(!$context.debug, |'', | $context.space+'>Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n'));
-  let res  = $functionExpression.func->match ([
-                                    p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1] | processColumnFunctionExpression($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
-                                    a:Any[1]| processFunctionExpressionForNonPropertyFunction($functionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
+
+  // .toString() always compiles to this one global native function, regardless of the receiver's type -
+  // a receiver class's own qualified `toString` property (if it declares one) is dispatched to dynamically
+  // at runtime, from inside that native function's own (Java) implementation, once a real in-memory instance
+  // exists to inspect. Relationally there is no such instance yet, only a query being built - the SQL
+  // translation this native function is registered under (see extensionDefaults.pure) casts its argument's
+  // own SQL representation to a string, which is correct for the Number/Enum/Boolean/etc. values it was
+  // designed for but meaningless for a Class-typed argument, producing the row's identity column instead of
+  // the override's actual computation (confirmed empirically: 'select cast("root".pureId__ as varchar) ...'
+  // instead of the format()-based result). Redirect to the class's own qualified property - the same path an
+  // explicit `.someQualifiedProperty()` call already takes below - whenever the argument's type declares one
+  // named 'toString' with no extra explicit parameters (the only shape .toString() itself can ever call).
+  let dispatchFunctionExpression = if($functionExpression.func == meta::pure::functions::string::toString_Any_1__String_1_,
+                                      | let argType = $functionExpression.parametersValues->at(0)->byPassRouterInfo().genericType.rawType;
+                                        let ownToString = if($argType->isNotEmpty() && $argType->toOne()->instanceOf(Class),
+                                                            | $argType->toOne()->cast(@Class<Any>).qualifiedProperties->filter(q|$q.name == 'toString' && $q.classifierGenericType.typeArguments->at(0).rawType->cast(@FunctionType).parameters->size() == 1),
+                                                            | []
+                                                            );
+                                        if($ownToString->isEmpty(), |$functionExpression, |^$functionExpression(func = $ownToString->toOne()));,
+                                      | $functionExpression
+                                    );
+
+  let res  = $dispatchFunctionExpression.func->match ([
+                                    p:Property<Nil,Any|*>[1] | processPropertyFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    q:QualifiedProperty<Any>[1] | processQualifiedPropertyFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    c:meta::pure::metamodel::relation::Column<Nil,Any|*>[1] | processColumnFunctionExpression($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);,
+                                    a:Any[1]| processFunctionExpressionForNonPropertyFunction($dispatchFunctionExpression, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions);
                                    ]);
 
   print(if(!$context.debug, |'', | $context.space+'>End Process Function Expression: '+ $functionExpression.func.name->orElse('LambdaFunction') + '\n  ' + $context.space + $res.element->match([s:SelectWithCursor[*]|$s.select->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', '), w:WindowColumn[1]|^SelectSQLQuery(columns=$w)->map(s | $s->printDebugQuery($context.space, $extensions))->joinStrings(', ')])));
@@ -1245,9 +1267,26 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
       if ($fe.parametersValues->at(0)->byPassRouterInfo().genericType.rawType->toOne() == TDSRow
                 ,| tdsQualifier($fe, $operation, $vars, $state, $extensions);
 
-                ,| 
+                ,|
                   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_q'), $aggFromMap, $context, $extensions)->toOne();
-                  
+
+                  if($leftSide.element->instanceOf(ClassInstanceHolder) && $fe.parametersValues->size() == 1,
+                     |
+                       // A qualified property invoked on a compile-time-constant receiver (e.g. a custom
+                       // toString() override called on a Literal Class instance) has no relational query
+                       // to build - $leftSide.element is a ClassInstanceHolder, not a SelectWithCursor, and
+                       // the qualifier's own expressionSequence can just be evaluated directly in Pure
+                       // against the known receiver, mirroring processPropertyFunctionExpression's identical
+                       // ClassInstanceHolder short-circuit for plain (non-qualified) properties above. Only
+                       // the no-extra-parameter shape is handled (every qualifier this is meant to unblock is
+                       // a bare `x.someQualifier()`); a parametrized qualifier falls through to the relational
+                       // path below, same as before this change.
+                       let c = $leftSide.element->cast(@ClassInstanceHolder);
+                       let val = $fe.func->cast(@QualifiedProperty<Any>)->evaluate(^List<Any>(values=$c.value))->toOne();
+                       let element = processValue($val, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
+                       ^OperationWithParentPropertyMapping(element=$element);
+                     ,
+                     |
                   let leftSideSelectWithCursor = $leftSide.element->cast(@SelectWithCursor);
 
                   let newMilestoningContext = getMilestoningContextForQualifiedProperty($fe, $operation.milestoningContext, $leftSide.element->cast(@SelectWithCursor).milestoningContext, $state, $vars, $context, $extensions);
@@ -1285,6 +1324,7 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
                                                                                                     ,| if($fe.genericType.rawType->toOne()->isTemporal(),| $res.element->cast(@SelectWithCursor).milestoningContext
                                                                                                                                                         ,| []););
                   manageMilestoningContextPropogationForQualifiedProperties($res, $milestoningContext);
+                     );
               );
   );
 }
@@ -1781,8 +1821,39 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::addMiss
   );
   pair($operation, ^$column(name = $newColumnName));
 }
+// Sentinel DynaFunction name a mapping-level construct (see PolymorphicChildTableMapping's own
+// comment in pct_relational.pure) uses to carry a JoinStrings node's four fields (strings, prefix,
+// separator, suffix) through a property mapping's own relationalOperationElement. A real JoinStrings
+// metamodel instance can't be used directly there: it is one of the few RelationalOperationElement
+// subtypes printRelationalOperationElement (grammarSerializerExtension.pure) has no case for, so a
+// mapping built with one embedded fails the harness's own print-then-recompile round trip (confirmed
+// live, Session 43 - "Match failure: ... instanceOf JoinStrings"). An ordinary, arbitrarily-named
+// DynaFunction call, by contrast, is already fully generic on both the printer and parser side
+// (confirmed Session 40 via TestRelationalGrammarRoundtrip's own testEnumDynaFunctionWithJoin), so
+// resolveDynaFunction converts this sentinel back into a real JoinStrings and delegates to
+// resolveJoinStrings the moment it is encountered post-reparse - the sentinel name is otherwise inert
+// and never appears via any real Pure function's own translation.
+function meta::relational::functions::pureToSqlQuery::isolateAndJoinStringsSentinelName():String[1]
+{
+  '__isolateAndJoinStrings';
+}
+
 // Resolves placeholder TACs inside a DynaFunction by recursing into each parameter.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveDynaFunction(d:DynaFunction[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+  if($d.name == isolateAndJoinStringsSentinelName(),
+     | let js = ^meta::relational::metamodel::operation::JoinStrings(
+                  strings   = $d.parameters->at(0),
+                  prefix    = $d.parameters->at(1),
+                  separator = $d.parameters->at(2),
+                  suffix    = $d.parameters->at(3)
+                );
+       $js->resolveJoinStrings($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);,
+     | resolveOrdinaryDynaFunction($d, $state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
+  );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveOrdinaryDynaFunction(d:DynaFunction[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
   let newSelect = if($d.parameters->isEmpty(),
     | let select = $srcOperation.select;
@@ -1858,19 +1929,77 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::resolve
 }
 // Resolves placeholder TACs inside JoinStrings by recursing into .strings, .prefix,
 // .separator, and .suffix sub-elements.
+//
+// .strings is resolved separately from prefix/separator/suffix (always plain literals in every known
+// usage) because it is the one operand where a nested to-many join embedded as a DynaFunction argument
+// (see PolymorphicChildTableMapping's own comment in pct_relational.pure) needs to be recognised and
+// isolated into its OWN aggregate scope, rather than flattened into the enclosing join tree, before this
+// JoinStrings collapses whatever it finds into one scalar value. resolveJoinElement's own
+// DynaFunction-argument recursion has no reliable way to distinguish "this nested join needs its own
+// GROUP BY" from "this is a legitimately flat chain continuation" for a BARE join reached that way - but
+// an explicitly-authored JoinStrings node (carrying its own separator/prefix/suffix, unlike a bare join)
+// is an unambiguous, deliberate signal that whatever rows resolving .strings fans out across should be
+// collapsed right here. This mirrors buildJoinStrings's own top-level dispatch (same
+// $aggFromMap.values->isEmpty() gate, same strings->size()==1 restriction, same manageAggregation call
+// with srcOperation as the pre-navigation cut point) - the only difference is WHERE this JoinStrings was
+// found (embedded inside a DynaFunction argument mid-resolution, rather than as a standalone
+// .joinStrings() FunctionExpression). See agent memory testliststring_harness_and_third_wall.md,
+// Session 42/43, for the full design history and why this signal (rather than a Join-multiplicity check
+// on a bare RelationalOperationElementWithJoin) is the safe one: no other production code path
+// constructs a JoinStrings node that reaches this dispatch arm today, so this new branch is unreachable
+// for every existing DynaFunction+join combination (eg an enum EnumerationMapping's own to-one
+// case(...)/if(...)-with-a-join-branch dispatch) and only fires for a construct that deliberately opts
+// in by embedding a JoinStrings.
 function <<access.private>> meta::relational::functions::pureToSqlQuery::resolveJoinStrings(js:JoinStrings[1], state:State[1], srcOperation:SelectWithCursor[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], cancelJoinOnUnion:Boolean[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
   let resolve = {r:RelationalOperationElement[1] |
     let swc = $r->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions);
     $state.inFilter->if(|$swc.select.filteringOperation, |$swc.select.columns)->toOne();
   };
+
+  let stringsResolved = $js.strings->map(s | $s->processColumnsInRelationalOperationElements($state, $srcOperation, $nodeId, $aggFromMap, $cancelJoinOnUnion, $context, $extensions));
+  let mergedStrings = $stringsResolved.select->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+  let resolvedStringsCol = $state.inFilter->if(|$mergedStrings.filteringOperation, |$mergedStrings.columns);
+
   let resolved = ^$js(
-    strings   = $js.strings->map(s | $resolve->eval($s)),
+    strings   = $resolvedStringsCol,
     prefix    = $js.prefix->map(p | $resolve->eval($p)),
     separator = $js.separator->map(p | $resolve->eval($p)),
     suffix    = $js.suffix->map(p | $resolve->eval($p))
   );
-   $srcOperation->wrapLeafRelop($resolved, $state);
+
+  let isAggregation = ($js.strings->size() == 1) && !$aggFromMap.values->isEmpty();
+  if($isAggregation,
+     // manageAggregation's own GROUP BY is whatever ColumnGroup sits last in the aggFromMap it is
+     // given - correct at buildJoinStrings's own top-level call sites, since a nested .map() always
+     // pushes its OWN receiver's identity there right before diving into its lambda body (see
+     // processMap), keeping the ambient aggFromMap in sync with the isolation's own cut point. This
+     // JoinStrings was instead found embedded inside a DynaFunction argument, with NO intervening
+     // .map() boundary - the ambient $aggFromMap here is still whatever some earlier, unrelated
+     // ancestor scope pushed (eg the outermost List's own identity), not srcOperation's own current
+     // position. Passing it straight through produced syntactically-valid but semantically-wrong SQL
+     // (confirmed live, Session 43: an isolated subquery's own GROUP BY referencing an alias -
+     // "root" - not even in scope inside it, H2 rejecting it with "Column ROOT.PUREID__ not found").
+     // Build a fresh, correctly-scoped ColumnGroup from srcOperation's own current alias instead.
+     | manageAggregation($mergedStrings, $resolved, $srcOperation, $state, $nodeId, joinStringsIsolationAggFromMap($srcOperation, $aggFromMap), $context, $extensions);,
+     | $srcOperation->wrapLeafRelop($resolved, $state);
+  );
+}
+
+// The GROUP BY key to use when resolveJoinStrings isolates a nested to-many join with no
+// enclosing .map() boundary of its own: srcOperation's own current alias's primary key, if it
+// resolves to a plain Table (always true for the PolymorphicChildTableMapping construct this exists
+// for - a fresh discriminator child table). Falls back to the ambient aggFromMap unchanged for any
+// other relationalElement shape (eg a SelectSQLQuery), preserving today's behaviour rather than
+// guessing at a key that may not exist.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::joinStringsIsolationAggFromMap(srcOperation:SelectWithCursor[1], aggFromMap:List<ColumnGroup>[1]):List<ColumnGroup>[1]
+{
+  let alias = $srcOperation.currentTreeNode->toOne().alias->toOne();
+  let relation = $alias.relationalElement->toOne();
+  if($relation->instanceOf(Table),
+     | list(^ColumnGroup(columns = $relation->cast(@Table).primaryKey->map(pk | ^TableAliasColumn(alias = $alias, column = $pk))));,
+     | $aggFromMap;
+  );
 }
 // Places a leaf RelationalOperationElement (one with no column sub-references) onto
 // the srcOperation's select.columns or filteringOperation depending on state.inFilter.
@@ -2524,7 +2653,28 @@ function meta::relational::functions::pureToSqlQuery::transformRelationFunctionP
 
 function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
+  let staticReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType;
+  // An unbound generic property (eg Pair<U,V>.first/.second on the raw class declaration) has no
+  // static rawType - genericType.rawType comes back empty regardless of what's actually bound at a
+  // specific instantiation. Whether it still belongs in this function's DataType[1] branch below is
+  // determined by how it got mapped, not by its static declaration: if its own RelationalPropertyMapping
+  // already resolves to real data - either (a) a to-one property mapped as a plain scalar column
+  // (not a join), or (b) a to-many property mapped via a join straight to a column
+  // (`prop : [db]@Join | Table.Column`, eg List<T>.values once resolved - confirmed via a live IDE probe,
+  // see agent memory `to_many_primitive_join_duplication_bug.md`, that `resolveJoinElement` already
+  // handles this RelationalOperationElementWithJoin shape correctly regardless of the property's own
+  // multiplicity) - it's being treated as data exactly like any real DataType property, so dispatch it
+  // there too. The placeholder type substituted below is never actually read for its identity by that
+  // branch in either case (only String) - it exists solely to satisfy the match's DataType[1] case. Any
+  // other still-unhandled shape falls through to the original ->toOne() and keeps its original error.
+  let propertyReturnType = if($staticReturnType->isNotEmpty(),
+                              | $staticReturnType->toOne(),
+                              | if(($property.multiplicity->hasToOneUpperBound() && $OrigrelationalPropertyMappings->at(0).relationalOperationElement->instanceOf(TableAliasColumn))
+                                   || (!$property.multiplicity->hasToOneUpperBound() && $OrigrelationalPropertyMappings->at(0).relationalOperationElement->instanceOf(RelationalOperationElementWithJoin)),
+                                   | String,
+                                   | $staticReturnType->toOne()
+                                )
+                            );
   let relationalPropertyMappings = $OrigrelationalPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
   let firstStep = $propertyReturnType->match(
                                  [
@@ -4300,6 +4450,53 @@ function meta::relational::functions::pureToSqlQuery::containsAggregationFunctio
    $f->match([f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->evaluateAndDeactivate()->containsAggregationFunctionInValueSpecification($supported),a:Any[1]|false]);
 }
 
+function <<access.private>> meta::relational::functions::pureToSqlQuery::mergeMapReceiverElements(elements:SelectWithCursor[*], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
+{
+   // processMap's own receiver ($f.parametersValues->at(0)) can resolve to more than one
+   // independent SelectWithCursor when the mapped collection is itself a literal, computed
+   // collection (eg two separate `pair(...)`-built values) rather than rows drawn from one real
+   // table - each such value comes back from processValueSpecificationReturnPropertyMapping as
+   // its OWN OperationWithParentPropertyMapping, each with select.data empty (no FROM clause,
+   // purely computed literal values). Modeled directly on processConcatenate's own
+   // no-real-table-divergence branch (this file, ~line 3022 onward): UNION ALL the arms into one
+   // combined SelectWithCursor, so the rest of processMap can proceed exactly as if there had only
+   // ever been one element all along.
+   assert($elements->map(e | $e.select.columns->size())->removeDuplicates()->size() <= 1,
+      | 'processMap: cannot merge multiple independent receiver results with differing column counts');
+
+   let aligned = $elements->map(e | let select = $e.select;
+                                     let alignedColumns = $select.columns->map(c | $c->match([
+                                                                                       a:Alias[1] | $a,
+                                                                                       t:TableAliasColumn[1] | $t,
+                                                                                       other:RelationalOperationElement[1] | ^Alias(name='value', relationalElement=$other)
+                                                                                     ]));
+                                     ^$e(select = ^$select(columns = $alignedColumns));
+                               );
+
+   let selects = $aligned.select->map(s | $s->pushSavedFilteringOperation($extensions));
+
+   let rootTable = ^TableAlias(name = 'union', relationalElement = ^UnionAll(queries = $selects));
+   let newRoot = ^RootJoinTreeNode(alias = $rootTable);
+   let firstSel = $aligned->at(0).select;
+
+   ^SelectWithCursor(
+      select = ^$firstSel(
+                     columns = $firstSel.columns->map(c | $c->match([
+                                     a:Alias[1] | ^TableAliasColumn(column = ^Column(name = $a.name, type = ^meta::relational::metamodel::datatype::Integer()), alias = $rootTable),
+                                     t:TableAliasColumn[1] | ^$t(alias = $rootTable)
+                                  ])),
+                     data = $newRoot,
+                     savedFilteringOperation = [],
+                     leftSideOfFilter = if($firstSel.leftSideOfFilter->isEmpty(), |[], |$newRoot),
+                     filteringOperation = [],
+                     havingOperation = [],
+                     groupBy = [],
+                     qualifyOperation = []
+                ),
+      currentTreeNode = $newRoot
+   );
+}
+
 function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
   let windowFns = [first_Relation_1___Window_1__T_1__T_$0_1$_, offset_Relation_1__T_1__Integer_1__T_$0_1$_, last_Relation_1___Window_1__T_1__T_$0_1$_, nth_Relation_1___Window_1__T_1__Integer_1__T_$0_1$_];
@@ -4308,7 +4505,16 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
       processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $newState, $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions);,
 
     | let res = processValueSpecificationReturnPropertyMapping($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_d'), $aggFromMap, $context, $extensions);
-      let mainQuery = $res.element->toOne()->cast(@SelectWithCursor)->manageIsolation([], $nodeId, false, $state, $context, $extensions);//$res.element->toOne()->cast(@SelectWithCursor);
+      let receiverElements = $res.element->cast(@SelectWithCursor);
+      // The receiver ordinarily resolves to exactly one SelectWithCursor. A literal, computed
+      // multi-element collection (eg a collection of `pair(...)`-built values) instead resolves to
+      // one independent SelectWithCursor PER element - merge those via UNION ALL rather than
+      // crashing on the ->toOne() below; see mergeMapReceiverElements for the full rationale.
+      let mergedReceiverElement = if($receiverElements->size() > 1,
+                                     | $receiverElements->mergeMapReceiverElements($context, $extensions);,
+                                     | $receiverElements->toOne();
+                                  );
+      let mainQuery = $mergedReceiverElement->manageIsolation([], $nodeId, false, $state, $context, $extensions);//$res.element->toOne()->cast(@SelectWithCursor);
       let select = $mainQuery.select;
       let mainQueryWithColumns = ^$mainQuery(select = ^$select(columns=[]));
 
@@ -4343,7 +4549,38 @@ function meta::relational::functions::pureToSqlQuery::processMap(f:FunctionExpre
       let lambdaParamIsDataType = $func->match([
                                       fd:FunctionDefinition<Any>[1] |
                                          let params = $fd.classifierGenericType.typeArguments.rawType->toOne()->cast(@FunctionType).parameters->evaluateAndDeactivate();
-                                         $params->isNotEmpty() && $params->at(0).genericType.rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType);,
+                                         let staticParamType = if($params->isNotEmpty(), | $params->at(0).genericType.rawType, | []);
+                                         if($staticParamType->isNotEmpty(),
+                                            | $staticParamType->toOne()->instanceOf(meta::pure::metamodel::type::DataType);,
+                                            | // The lambda's own declared parameter type is unresolvable when it's an
+                                              // unbound generic type parameter never instantiated anywhere in the
+                                              // function's own body - eg `value` in List<T>.toString()'s own shared,
+                                              // generic `value|$value->toString()` body, where T is never bound (this
+                                              // one function is compiled once and reused for every List<T> instantiation).
+                                              // No static introspection can resolve this. But $select (built just above,
+                                              // from processing this map's actual receiver expression at this specific
+                                              // navigation) already carries the REAL, concrete relational resolution of
+                                              // what this parameter is actually bound to here - confirmed empirically
+                                              // (see agent memory `to_many_primitive_join_duplication_bug.md` /
+                                              // `testliststring_harness_and_third_wall.md`) that a receiver genuinely
+                                              // backed by one scalar DataType column reduces to exactly one bare,
+                                              // non-Alias-wrapped operation element here, structurally distinct from an
+                                              // ordinary Class-typed receiver (multiple Alias-wrapped identity/property
+                                              // columns in the same probe). This fallback is unreachable for the
+                                              // overwhelming majority of .map() calls, since an ordinary lambda's
+                                              // parameter type is always statically resolvable and never reaches here.
+                                              //
+                                              // Originally checked instanceOf(TableAliasColumn) specifically (the only
+                                              // shape a uniform to-many-primitive property - eg List<String>.values -
+                                              // ever produces here). Widened to "bare, i.e. not Alias-wrapped" rather
+                                              // than enumerating every concrete RelationalOperationElement subtype,
+                                              // since a HETEROGENEOUS to-many property (eg List<Any>.values mixing a
+                                              // primitive with a nested List instance) resolves through an ordinary
+                                              // `if(kind__='P', value__, <join>)` DynaFunction instead of a bare
+                                              // column - still exactly one bare, non-Alias-wrapped operation element,
+                                              // the same structural signal, just a different concrete node type.
+                                              $select.columns->size() == 1 && !$select.columns->toOne()->instanceOf(Alias);
+                                         );,
                                       a:Any[*] | false
                                    ]);
       let extraColumn = if($lambdaParamIsDataType || $isSemiStructuredPropertyMapping || $isVariant,
@@ -5453,8 +5690,21 @@ function meta::relational::functions::pureToSqlQuery::applyMilestoningTypeFilter
 function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::columnNamesWithRelationalElement(vs: RelationalMappingSpecification[1], c:Class<Any>[0..1], state: State[1]):Pair<String, RelationalOperationElement>[*]
 {
    $vs->match([
+               // Outside graphFetch, this "true" branch eagerly folds EVERY DataType property mapping into
+               // the base query, unconditionally - the graphFetch branch above it already narrows to only
+               // the properties actually requested, so it is left untouched here. For a to-many DataType
+               // property reached via a join (eg `prop : [db]@Join | Table.Column`), that eager fold is
+               // unsound: a to-many value can never fit as one column of a single base row, and applying
+               // its join here - unrequested, purely as a side effect of "make every property available up
+               // front" - both corrupts the base query's own row cardinality and, when that same property
+               // is genuinely navigated afterward, duplicates the join a second time (confirmed empirically:
+               // two independent applications of the same 1:3 join produced a 3x3=9-row self-cross-product).
+               // Excluding to-many properties from this specific unconditional branch defers them entirely
+               // to on-demand navigation, which already resolves them correctly on its own.
                r:RootRelationalInstanceSetImplementation[1] | $r->dataTypePropertyMappings()
-                                                              ->filter(x | if($state.graphFetchFlow == true, | $x.property->in($state.graphFetchProperties), | true))
+                                                              ->filter(x | if($state.graphFetchFlow == true,
+                                                                              | $x.property->in($state.graphFetchProperties),
+                                                                              | $x.property.multiplicity->hasToOneUpperBound()))
                                                               ->map(pm|   pair($pm.property.name->toOne(), buildPossibleEnumMappingPushDown($pm->cast(@RelationalPropertyMapping),$state).relationalOperationElement);)
                                                                           ,
                v:View[1] | $v.columnMappings->map(cm|pair($cm.columnName, $cm.relationalOperationElement));
@@ -6161,7 +6411,125 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
 {
    let processedValueArg = $valueArg->processValueSpecificationReturnPropertyMapping($currentPropertyMapping, $operation, $vars, $state, JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->toOne();
    let processedCollectionArg = $collectionArg->processValueSpecification($currentPropertyMapping, $operation, $vars, ^$state(shouldIsolate=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor);
+
+   // A collection of non-primitive constant objects (e.g. [^Firm(legalName='f1'), ^Firm(legalName='f2')])
+   // renders each element as a bare ClassInstanceHolder (see processValue's catch-all) - which the rest of
+   // this function was never built to represent in SQL, and rightly so: a Firm instance has no SQL
+   // representation to push down at all. When the searched-for value and every collection element are each
+   // fully compile-time-constant (a Literal or a ClassInstanceHolder - never a real column/property access,
+   // which resolves to a TableAliasColumn/SelectWithCursor instead), Pure's own in() can just be evaluated
+   // directly and the boolean result embedded as a literal, sidestepping SQL generation for this shape
+   // entirely. This also covers a purely-primitive-but-mixed-type collection (e.g. [1, 'a', true,
+   // %2014-02-01]), which no SQL engine accepts in a single native IN list, and - since processContains
+   // delegates straight to processIn - contains() over either shape for free. Only ever short-circuits the
+   // multi-element-collection branch below (the single-collection-element branch, e.g. `x in [$var]`, is
+   // left completely untouched - its ClassInstanceHolder/mixed-literal shapes, if any, aren't covered here).
+   let multiCollectionOperands = if($processedCollectionArg->size() == 1,
+                                     | [],
+                                     | if($state.inFilter, |$processedCollectionArg->map(s | $s.select.filteringOperation), |$processedCollectionArg->map(s | $s.select.columns)));
+   let valueOperand = if($state.inFilter, |$processedValueArg.element->cast(@SelectWithCursor).select.filteringOperation, |$processedValueArg.element->cast(@SelectWithCursor).select.columns);
+   // A negative-number literal (e.g. minus(5)->in(...)) renders its value side as DynaFunction('minus',
+   // [Literal(5)]), not a bare Literal - the same shape processIn's own multi-element collection branch
+   // below already special-cases via processLiteralOrMinusDynaFunction, reused here for the same reason.
+   let valueIsConstant = $valueOperand->size() == 1 && ($valueOperand->toOne()->instanceOf(Literal) || $valueOperand->toOne()->instanceOf(ClassInstanceHolder)
+        || ($valueOperand->toOne()->instanceOf(DynaFunction) && $valueOperand->toOne()->cast(@DynaFunction).name == 'minus' && $valueOperand->toOne()->cast(@DynaFunction).parameters->size() == 1));
+   let isFullyConstantIn = $processedCollectionArg->size() != 1
+        && $valueIsConstant
+        && $multiCollectionOperands->forAll(e | $e->instanceOf(Literal) || $e->instanceOf(ClassInstanceHolder));
+
+   if($isFullyConstantIn,
+      | let value = $valueOperand->toOne()->match([l:Literal[1] | $l.value, c:ClassInstanceHolder[1] | $c.value, d:DynaFunction[1] | $d->processLiteralOrMinusDynaFunction().value]);
+        let collectionValues = $multiCollectionOperands->map(e | $e->match([l:Literal[1] | $l.value, c:ClassInstanceHolder[1] | $c.value]));
+        let result = $value->in($collectionValues);
+        // processIn's declared return type, and every caller up to the very top of query processing
+        // (processQuery casts the final result straight to SelectWithCursor), require a SelectWithCursor
+        // back - never a bare Literal/ClassInstanceHolder - so the boolean result is wrapped into the
+        // incoming $operation's own select exactly the way every other computed-constant arm of
+        // processValue already does (e.g. its String/Number/Boolean/Date arms just above), rather than
+        // returned bare. Once wrapped, it renders through the same ClassInstanceHolder path as every other
+        // non-relational constant value (see processOperation's dispatch in dbExtension.pure).
+        let select = $operation.select;
+        ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^ClassInstanceHolder(value=$result)), |^$select(columns = ^ClassInstanceHolder(value=$result))));,
+      |
    let singleProcessedCollectionArg = $processedCollectionArg->size() == 1;
+
+   // A receiver whose class compares by Pure's own key-based equality (e.g. Firm's single
+   // <<equality.Key>> legalName property) rather than object identity resolves, like any other class
+   // instance reached without further property navigation, to a multi-column row (a synthetic id
+   // column - NOT stable across separate reprocessing occurrences of the same class, see buildCSV's own
+   // id formula in pct_relational.pure - plus the class's own real data columns), not the single scalar
+   // column the rest of this function (below) is built around. When exactly one such column corresponds
+   // to the class's own (single) equality-key property, on both the value and the collection side,
+   // handle the whole comparison in its own branch (equalityKeyInComparison below) instead: project
+   // each side down to just that one column and compare by the actual equality-key VALUE (matching
+   // Pure's own semantics for comparing such an instance) via a "value IN (subquery)" shape - the same
+   // shape processRelationIn already builds for Relation-typed IN - rather than by an id with no meaning
+   // across the two sides, or by a whole multi-column row this function was never built to compare as a
+   // unit. Left entirely to today's unchanged behavior (equalityKeyProperty stays empty) for every other
+   // shape: no resolvable class, more than one (or zero) equality-key properties, a multi-element
+   // literal collection, or a column layout the projection can't find a matching name in.
+   let valueClass = $valueArg->byPassRouterInfo().genericType.rawType->filter(t | $t->instanceOf(Class));
+
+   let equalityKeyProperty = if($singleProcessedCollectionArg,
+      | let eqKeyProps = if($valueClass->isEmpty(), | [], | $valueClass->toOne()->cast(@Class<Any>).properties->filter(p | $p->hasStereotype('Key', meta::pure::profiles::equality)));
+        if($eqKeyProps->size() == 1, | $eqKeyProps, | []);
+      , | []);
+
+   let projectedValueArg = if($equalityKeyProperty->isEmpty(), | [], | $processedValueArg.element->cast(@SelectWithCursor)->projectSelectWithCursorToNamedColumn($equalityKeyProperty->toOne().name->toOne(), $state.inFilter));
+   let projectedCollectionArg = if($equalityKeyProperty->isEmpty(), | [], | $processedCollectionArg->toOne()->projectSelectWithCursorToNamedColumn($equalityKeyProperty->toOne().name->toOne(), $state.inFilter));
+
+   let equalityKeyInComparison = $projectedValueArg->isNotEmpty() && $projectedCollectionArg->isNotEmpty();
+
+   // A collection that resolves to a genuine multi-column class-instance row (see equalityKeyProperty's
+   // own comment) can never contain a value whose own static type isn't that same class at all - Pure's
+   // == is always false across mismatched types (e.g. 3->in([^Firm(...), ^Firm(...)])), so there is
+   // nothing to push into SQL. Checked independently of equalityKeyInComparison above (which only covers
+   // a resolvable, single-equality-key CLASS value) so a plain primitive value - which has no class to
+   // resolve at all - is still recognized as definitely absent rather than falling through to the
+   // original scalar path's assert(), which has no way to represent this comparison either.
+   let collectionIsClassInstanceRow = $singleProcessedCollectionArg
+      && ((if($state.inFilter, | $processedCollectionArg->toOne().select.filteringOperation, | $processedCollectionArg->toOne().select.columns))->size() > 1);
+   let valueDefinitelyAbsentFromClassInstanceCollection = $collectionIsClassInstanceRow && $valueClass->isEmpty();
+
+   if($valueDefinitelyAbsentFromClassInstanceCollection,
+      | // Same "wrap a computed constant back into $operation's own select" pattern as isFullyConstantIn
+        // above - processIn's declared return type requires a SelectWithCursor back, never a bare
+        // ClassInstanceHolder.
+        let select = $operation.select;
+        ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^ClassInstanceHolder(value=false)), |^$select(columns = ^ClassInstanceHolder(value=false))));
+      ,
+      |
+   if($equalityKeyInComparison,
+      | // Only the value side needs merging with the outer $operation (matching processRelationIn's own
+        // shape) - the collection side stays a completely self-contained subquery, exactly as a real
+        // "column IN (SELECT ...)" needs; merging it in as well (as the scalar/list path below does for
+        // its own different shape) would cross-join the two independently-built synthetic tables instead
+        // of comparing them, silently turning a single boolean result into one row per pair.
+        let mergedValueSQL = mergeSQLQueryData([$projectedValueArg->toOne(), $operation]->map(x|$x->extractSelectSQLQuery()), $nodeId, $state, $context, $extensions);
+        // Unwrap the Alias down to its own underlying TableAliasColumn - an Alias reference used as an
+        // IN's left-hand operand renders as a bare, unqualified alias-name lookup (only valid when that
+        // same alias is ALSO one of the CURRENT query's own top-level SELECT columns, which it no longer
+        // is here - $op below replaces the whole SELECT list). TableAliasColumn has its own direct,
+        // fully-qualified rendering ("root".legalName, no re-aliasing) and is already how an IN's operand
+        // is built elsewhere in this codebase (see calendarFunctions.pure's WeekendCondition).
+        let rawValue = if($state.inFilter, | $mergedValueSQL.filteringOperation->toOne(), | $mergedValueSQL.columns->toOne());
+        let value = $rawValue->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]);
+        // The collection side is a SELF-CONTAINED, nested subquery embedded directly as a
+        // DynaFunction parameter (not itself the outer query's own top-level .select) - it will never be
+        // visited by whatever later step flushes an outer query's own pending
+        // .savedFilteringOperation into a real, rendered .filteringOperation (eg
+        // processFilter/processQuery's own top-level handling), so a filter contributed by
+        // reprocessNew's own equality-key scoping (pct_relational.pure) - or any other filter()
+        // reaching this point still in "saved" form - must be pushed explicitly here, or it silently
+        // never renders into SQL at all (confirmed via a live debug probe: printDebugQuery's own
+        // separate '>>>>> ' line showed the correct condition in .savedFilteringOperation while the
+        // main rendered query had no WHERE clause whatsoever).
+        let collectionSubSelect = $projectedCollectionArg->toOne().select->pushSavedFilteringOperation($extensions);
+        let op = ^DynaFunction(name = 'in', parameters = [$value, $collectionSubSelect]);
+        let selectWithCursor = $value->extractSelectWithCursor($operation);
+        ^$selectWithCursor(select = if($state.inFilter, |^$mergedValueSQL(filteringOperation=$op), |^$mergedValueSQL(columns=$op)), currentTreeNode=[], positionBeforeLastApplyJoinTreeNode=[]);
+      ,
+      |
    let reprocessedCollectionArg = if($singleProcessedCollectionArg,
                                      | $processedCollectionArg->toOne(),
                                      | let processedCollection = if($state.inFilter, |$processedCollectionArg->map(s | $s.select.filteringOperation), |$processedCollectionArg->map(s | $s.select.columns));
@@ -6232,6 +6600,26 @@ function meta::relational::functions::pureToSqlQuery::processIn(valueArg:ValueSp
                     ,|^$selectWithCursor(select = if($state.inFilter, |^$mergedSQL(filteringOperation=$op), |^$mergedSQL(columns=$op)), currentTreeNode=[], positionBeforeLastApplyJoinTreeNode=[]);
    );
 
+   );
+   );
+   );
+}
+
+// Projects a class-instance row's own SelectWithCursor down to just the one column matching a given
+// property name (an Alias whose own .name equals it) - used by processIn (see its own equality-key
+// comment) to compare a class instance by one specific property's value instead of by its whole
+// multi-column row or its synthetic, cross-occurrence-unstable id column. Returns empty, changing
+// nothing for the caller, if that shape isn't actually present (not exactly one column carries that
+// name) - never itself throws, so a caller unable to use its result can safely fall back to its own
+// existing (potentially still-crashing, exactly as before) handling.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::projectSelectWithCursorToNamedColumn(cursor:SelectWithCursor[1], columnName:String[1], inFilter:Boolean[1]):SelectWithCursor[0..1]
+{
+   let select = $cursor.select;
+   let operands = if($inFilter, | $select.filteringOperation, | $select.columns);
+   let namedAlias = $operands->filter(o | $o->instanceOf(Alias) && $o->cast(@Alias).name->stripMatchingQuotes() == $columnName);
+   if($namedAlias->size() == 1,
+      | ^$cursor(select = if($inFilter, | ^$select(filteringOperation = $namedAlias->toOne()), | ^$select(columns = $namedAlias->toOne()))),
+      | []);
 }
 
 function meta::relational::functions::pureToSqlQuery::extractPkValuesFromRelationalObjectReferences(objectRefs:String[*], pkOrder:String[*]):String[*]
@@ -9189,6 +9577,16 @@ function meta::relational::functions::pureToSqlQuery::extractSelectSQLQuery(src:
                   [
                      o:SelectWithCursor[1] | $o.select,
                      l:Literal[1] | [],
+                     // A ClassInstanceHolder (a bare Class/Enumeration reference, or any other non-relational
+                     // constant value with no dedicated Literal/InstanceValue handling - see processValue's
+                     // catch-all) is never itself a nested subquery - but unlike a Literal (which only ever
+                     // reaches this function wrapped inside a SelectWithCursor), a ClassInstanceHolder can
+                     // arrive here bare/unwrapped (e.g. Class/Enumeration-reference toString() operands), so
+                     // treating it as contributing nothing (like a Literal) silently drops it from callers
+                     // (e.g. processDynaFunction's parameter merging) that key off this being non-empty to
+                     // decide whether an operand has real data. Wrap it as its own column instead, mirroring
+                     // WindowColumn's identical "leaf value, not a subquery, but still real data" handling.
+                     c:ClassInstanceHolder[1] | ^SelectSQLQuery(columns=$c),
                      w:WindowColumn[1] | ^SelectSQLQuery(columns=$w);
                   ]
               )
@@ -10754,8 +11152,126 @@ function meta::relational::functions::pureToSqlQuery::getContextBasedSupportedFu
               meta::relational::functions::pureToSqlQuery::processVariantJoinStrings_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
             )
           ]->list()
+      ),
+      ^Pair<meta::pure::metamodel::function::Function<Any>, List<Pair<meta::pure::metamodel::function::Function<{FunctionExpression[1],Map<VariableExpression, ValueSpecification>[1],State[1]->Boolean[1]}>, meta::pure::metamodel::function::Function<{FunctionExpression[1], PropertyMapping[0..1], SelectWithCursor[1], Map<VariableExpression, ValueSpecification>[1], State[1], JoinType[1], String[1], List<ColumnGroup>[1], DebugContext[1], Extension[*]->RelationalOperationElement[1]}>>>>(
+         first = meta::pure::functions::string::format_String_1__Any_MANY__String_1_,
+         second = pair(
+            {fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1] | meta::relational::functions::pureToSqlQuery::canProcessFormat($fe, $vars, $state)},
+            meta::relational::functions::pureToSqlQuery::processFormat_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_
+         )->list()
       )
    ])
+}
+
+// Pure's own split(String[1],String[1]):String[*] silently drops every empty result segment
+// (confirmed empirically: '%s%s'->split('%s') comes back size 3->1, and 'a%s%sb' loses its empty
+// middle segment too) - useless for counting '%s' occurrences or preserving segment positions for
+// interleaving. This preserves every segment, including empty ones, so segments->size() - 1 is
+// always exactly the number of separator occurrences.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::splitPreservingEmptySegments(s:String[1], sep:String[1]):String[*]
+{
+   let idx = $s->indexOf($sep);
+   if($idx < 0,
+      | [$s],
+      | [$s->substring(0, $idx)]->concatenate($s->substring($idx + $sep->length(), $s->length())->splitPreservingEmptySegments($sep))
+   );
+}
+
+// Narrow, additive support for format(String[1], Any[*]):String[1]: claims the call only when
+// the format string is a compile-time String literal using '%s' exclusively (no %d/%f/%r/%t/%%),
+// and the args collection is a literal-shaped array of exactly the matching arity. Any other shape
+// (dynamic format string, any other specifier, arg-count mismatch) is deliberately left unclaimed
+// so it falls straight through to the pre-existing "No SQL translation exists" error, byte-for-byte
+// unchanged. Uses the shallow byPassRouterInfo (not deepByPassRouterInfo/evaluateAndDeactivate) so
+// this never attempts to compile-time-evaluate an args element that depends on a runtime variable
+// (e.g. $this.someProperty inside a class's own toString() override) - it only inspects AST shape.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::canProcessFormat(fe:FunctionExpression[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1]):Boolean[1]
+{
+   let params = $fe.parametersValues;
+   let fmt = if($params->size() == 2,
+                | $params->at(0)->byPassRouterInfo()->match([
+                     iv:InstanceValue[1] | if($iv.values->size() == 1 && $iv.values->toOne()->instanceOf(String), | $iv.values->toOne()->cast(@String), | []),
+                     v:ValueSpecification[1] | []
+                  ]),
+                | []
+             );
+   let argCount = if($params->size() == 2,
+                     | $params->at(1)->byPassRouterInfo()->match([
+                          iv:InstanceValue[1] | $iv.values->size(),
+                          v:ValueSpecification[1] | -1
+                       ]),
+                     | -1
+                  );
+
+   if($fmt->isEmpty() || ($argCount < 0),
+      | false,
+      | let segments = $fmt->toOne()->splitPreservingEmptySegments('%s');
+        (($segments->size() - 1) == $argCount) && $segments->forAll(s | !$s->contains('%'));
+   );
+}
+
+// Processor for the shape canProcessFormat claims: splits the literal format string on '%s' and
+// interleaves the literal segments with each arg's own recursively-processed relational SQL
+// (so a property access or a conditional expression among the args renders as real SQL, exactly
+// as it would as an operand to any other function), cast to a string via the same 'toString'
+// DynaFunction every dialect already renders as a plain varchar cast. The pieces are joined with
+// a 'concat' DynaFunction, which every relational dialect already registers (H2/DuckDB/Databricks
+// render it as concat(...); Postgres renders it as the ||-joined chain) - both established,
+// per-dialect-tested rendering paths, reused here rather than duplicated.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processFormat(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let fmt = $expression.parametersValues->at(0)->byPassRouterInfo()->cast(@InstanceValue).values->toOne()->cast(@String);
+   let segments = $fmt->splitPreservingEmptySegments('%s');
+
+   let rawArgs = $expression.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values;
+   // Each element is either a ValueSpecification (a non-constant array element, e.g. $this.errorMessage
+   // or an if(...) conditional) or a plain Any literal (when the whole array literal is itself
+   // compile-time-constant, e.g. ['fox', 'dog']) - mirrors the same discriminator flattenConcatenate
+   // already uses above for exactly this InstanceValue.values ambiguity. A raw literal is lifted back
+   // into a single-element literal InstanceValue so every arg flows through the same processValueSpecification
+   // call uniformly.
+   let argVSs = $rawArgs->map(a | $a->match([
+                     vs:ValueSpecification[1] | $vs,
+                     any:Any[1]                | ^InstanceValue(genericType = $any->genericType(), multiplicity = PureOne, values = $any)
+                  ]));
+
+   let processedArgs = range(0, $argVSs->size())->map(i | $argVSs->at($i)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId, '_fmt' + $i->toString()), $aggFromMap, $context, $extensions)->toOne());
+
+   let parameterSQL = $processedArgs->map(x | extractSelectSQLQuery($x));
+
+   let sqlsToMerge = if($parameterSQL->size() > 1,
+                        | $parameterSQL->map(s | $s->manageIsolation([], [], $nodeId, false, ^$state(shouldIsolate=true), $context, $extensions)),
+                        | $parameterSQL
+                     );
+
+   let mergedSQL = if($parameterSQL->isEmpty(),
+                       | $operation.select,
+                       | $sqlsToMerge->mergeSQLQueryData($nodeId, $state, $context, $extensions)
+                    );
+
+   let processedArgOperandsRaw = if($parameterSQL->isEmpty(),
+                                    | []->cast(@RelationalOperationElement),
+                                    | $state.inFilter->if(| $mergedSQL.filteringOperation, | $mergedSQL.columns)
+                                 );
+
+   let processedArgOperands = $processedArgOperandsRaw->unwrapAlias();
+
+   let castedArgs = $processedArgOperands->map(a | ^DynaFunction(name = 'toString', parameters = [$a])->cast(@RelationalOperationElement));
+
+   let interleaved = range(0, $segments->size())->map(i |
+        let seg = ^Literal(value = $segments->at($i))->cast(@RelationalOperationElement);
+        if($i == 0, | [$seg], | [$castedArgs->at($i - 1), $seg]);
+      );
+
+   let finalOp = ^DynaFunction(name = 'concat', parameters = $interleaved);
+
+   ^$operation(select = $state.inFilter->if(
+                  | ^$mergedSQL(filteringOperation = $finalOp),
+                  | ^$mergedSQL(columns = $finalOp)
+               ),
+               currentTreeNode = [],
+               positionBeforeLastApplyJoinTreeNode = []
+              );
 }
 
 // Clustering-time context predicates. Predicates take only the FunctionExpression — no
@@ -11328,3 +11844,6 @@ function meta::relational::functions::pureToSqlQuery::processWriteToVariantTempT
       )
    );
 }
+
+
+

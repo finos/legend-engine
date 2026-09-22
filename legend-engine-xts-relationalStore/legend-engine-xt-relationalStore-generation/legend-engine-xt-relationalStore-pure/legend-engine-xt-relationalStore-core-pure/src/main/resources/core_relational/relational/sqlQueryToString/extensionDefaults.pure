@@ -735,12 +735,30 @@ function meta::relational::functions::sqlQueryToString::default::processJoinStri
     let separator = if($js.separator->isEmpty(), |'\'\'', |$js.separator->toOne()->processOperation($sgc));
     let prefix = if($js.prefix->isEmpty(), |'\'\'', |$js.prefix->toOne()->processOperation($sgc));
     let suffix = if($js.suffix->isEmpty(), |'\'\'', |$js.suffix->toOne()->processOperation($sgc));
-    let strs = if(eq($prefix, '\'\''),
-                  | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
-                  | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
-    if ($strs->size() == 0, | $strs->at(0), | if ($isGroupByCat,
-        |assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $groupByCat->toOne()->eval($strs->at(0), $separator);,
-        |assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strs, $separator);));
+    // The aggregate (group-by-concat) case renders exactly one already-aggregated value, so prefix/suffix
+    // - unlike the multi-string case below - can never be folded INTO the list being aggregated: that
+    // would aggregate the prefix/suffix LITERALS themselves, once per grouped row, instead of wrapping
+    // the real aggregated result once. Confirmed as a real, reachable bug (not just theoretical): the
+    // previous version of this function always built $strs (folding prefix/suffix in) before branching
+    // on $isGroupByCat, then read $strs->at(0) in the aggregate branch - which, whenever prefix was
+    // non-empty, was the prefix literal (position 0 after $strings->add(0,$prefix)), not the real
+    // column, producing eg 'group_concat(\'[\', \', \')' -> literally '[, [, [' for a 3-row group instead
+    // of the real joined values, with the suffix silently dropped entirely either way.
+    if($isGroupByCat,
+       | assert($groupByCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!');
+         let aggregated = $groupByCat->toOne()->eval($strings->at(0), $separator);
+         let wrapped = if(eq($prefix, '\'\''),
+                          | if(eq($suffix, '\'\''), | [$aggregated], | [$aggregated]->add($suffix)),
+                          | if(eq($suffix, '\'\''), | [$aggregated]->add(0, $prefix), | [$aggregated]->add(0, $prefix)->add($suffix)));
+         if($wrapped->size() == 1,
+            | $wrapped->at(0),
+            | assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($wrapped, '\'\'');
+         );,
+       | let strs = if(eq($prefix, '\'\''),
+                       | if(eq($suffix, '\'\''), | $strings, | $strings->add($suffix)),
+                       | if(eq($suffix, '\'\''), | $strings->add(0, $prefix), | $strings->add(0, $prefix)->add($suffix)));
+         if ($strs->size() == 0, | $strs->at(0), | assert($stringCat->isNotEmpty(), 'The database type \''+$sgc.dbConfig.dbType->id()+'\' is not supported yet!'); $stringCat->toOne()->eval($strs, $separator););
+    );
 }
 
 function meta::relational::functions::sqlQueryToString::default::convertDateTimeFunctionHasCorrectParams(params:String[*]):Boolean[1]

@@ -417,10 +417,15 @@ function meta::relational::mapping::dataTypePropertyMappings(impl:RelationalInst
 {
   let propertyMappings = $impl->allPropertyMappings();
   let allPropertyMappings = if($impl->instanceOf(InlineEmbeddedSetImplementation), | $propertyMappings->concatenate($impl->cast(@InlineEmbeddedSetImplementation)->inlineEmbeddedProperties()), | $propertyMappings);
-  $allPropertyMappings->map(pm | $pm.property->genericType().typeArguments->at(1).rawType->toOne()->match([
-                                                                                                            d : meta::pure::metamodel::type::DataType[1] | $pm,
-                                                                                                            a : Any[1] | []
-                                                                                                          ]));
+  // A property declared with an unbound generic type parameter (eg. Pair<U,V>.first/.second,
+  // List<T>.values, on the raw class declaration) has no rawType for its type argument - the
+  // ->toOne() this used to run unconditionally threw "Cannot cast a collection of size 0 to
+  // multiplicity [1]" whenever such a property reached here. Such a property isn't a DataType
+  // property (it can't be, absent a bound type), so it belongs on the empty side of the original
+  // match - filter it out directly instead of casting into a match that assumes a value exists.
+  $allPropertyMappings->filter(pm | let rawType = $pm.property->genericType().typeArguments->at(1).rawType;
+                                     $rawType->isNotEmpty() && $rawType->toOne()->instanceOf(meta::pure::metamodel::type::DataType);
+                               );
 }
 
 function <<access.private>> meta::relational::mapping::inlineEmbeddedProperties(_this:InlineEmbeddedSetImplementation[1]):PropertyMapping[*]
