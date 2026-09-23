@@ -248,6 +248,23 @@ public class TestFreemarkerTimeZoneProcessing
         Assert.assertEquals("convert(DATETIME, '2018-10-15T20:00:00.123', 101),convert(DATETIME, '2018-10-16T20:00:00.123', 101)", processDateTimeCollectionWithTimeZone("UTC", freeMarkerDateParameters));
     }
 
+    /**
+     * A plan generated before the connection parser stripped the grammar's quotes from a zone id wrote the quotes into
+     * its SQL template as well, as ['America/New_York']. Such a plan must still process as though the id were bare.
+     */
+    @Test
+    public void testTimeZoneQuotedByOldPlan() throws Exception
+    {
+        MutableMap<String, Object> dateParameters = Maps.mutable.with("dateParam", "2018-10-15");
+        Assert.assertEquals("2018-10-15", processDateConstantTimeZoneNoConversion("'America/New_York'", dateParameters));
+
+        MutableMap<String, Object> dateTimeParameters = Maps.mutable.with("dateParam", "2018-10-15T20:00:00");
+        Assert.assertEquals("2018-10-15T16:00:00", processDateConstantTimeZoneNoConversion("'America/New_York'", dateTimeParameters));
+
+        MutableMap<String, Object> dateTimeCollectionParameters = Maps.mutable.with("dateParam", Lists.mutable.with("2018-10-15T20:00:00", "2018-10-16T20:00:00"));
+        Assert.assertEquals("convert(DATETIME, '2018-10-15T16:00:00', 101),convert(DATETIME, '2018-10-16T16:00:00', 101)", processDateTimeCollectionWithTimeZone("'America/New_York'", dateTimeCollectionParameters));
+    }
+
     @Test
     public void testNoTimeZoneSpecifiedThrowsException() throws Exception
     {

@@ -29,4 +29,31 @@ public abstract class DatabaseConnection extends Connection
 
     public List<PostProcessorWithParameter> postProcessorWithParameter = Collections.emptyList();
     public List<RelationalQueryGenerationConfig> queryGenerationConfigs;
+
+    public String getTimeZone()
+    {
+        return this.timeZone;
+    }
+
+    public void setTimeZone(String timeZone)
+    {
+        this.timeZone = fixTimeZoneId(timeZone);
+    }
+
+    /**
+     * Compatibility only: before the connection parser stripped them, the grammar's quotes around a zone id were
+     * kept as part of the value, so protocol JSON written then carries 'US/Arizona', quotes and all, which names no
+     * zone. The grammar only ever quoted with single quotes.
+     */
+    private static String fixTimeZoneId(String timeZone)
+    {
+        if ((timeZone != null) &&
+                (timeZone.length() >= 2) &&
+                (timeZone.charAt(0) == '\'') &&
+                (timeZone.charAt(timeZone.length() - 1) == '\''))
+        {
+            return timeZone.substring(1, timeZone.length() - 1);
+        }
+        return timeZone;
+    }
 }
