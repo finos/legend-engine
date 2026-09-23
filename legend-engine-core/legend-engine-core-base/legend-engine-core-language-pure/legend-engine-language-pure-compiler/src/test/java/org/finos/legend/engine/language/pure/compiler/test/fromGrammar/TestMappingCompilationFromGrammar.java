@@ -776,6 +776,61 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "COMPILATION error at [19:5-16]: Can't find class mapping for property 'required' of type 'test::Target' in mapping 'test::parent2' or any included mapping");
     }
 
+    private static final String PASS_THROUGH_CLASS_PROPERTY_SHARED_MODEL =
+            "Class test::Target { name: String[1]; }\n" +
+            "Class test::TargetSrc { name: String[1]; }\n" +
+            "Class test::Holder {\n" +
+            "  label: String[1];\n" +
+            "  target: test::Target[1];\n" +
+            "}\n" +
+            "Class test::HolderSrc {\n" +
+            "  label: String[1];\n" +
+            "  target: test::Target[1];\n" +
+            "}\n";
+
+    @Test
+    public void testPassThroughClassPropertyWithCollidingClassMappingInSameMapping()
+    {
+        // `target: $src.target` copies an already-built Target, so it needs no target mapping even though
+        // the same mapping declares one for Target from an unrelated ~src. Must compile.
+        test(PASS_THROUGH_CLASS_PROPERTY_SHARED_MODEL +
+                "###Mapping\n" +
+                "Mapping test::passThrough (\n" +
+                "  test::Target[T]: Pure {\n" +
+                "    ~src test::TargetSrc\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                "  *test::Holder: Pure {\n" +
+                "    ~src test::HolderSrc\n" +
+                "    label: $src.label,\n" +
+                "    target: $src.target\n" +
+                "  }\n" +
+                ")\n");
+    }
+
+    @Test
+    public void testPassThroughClassPropertyWithCollidingClassMappingViaInclude()
+    {
+        // Same pass-through, but the colliding Target mapping is reached through `include` —
+        // classMappingByClass recurses into included mappings, so it is found there too.
+        test(PASS_THROUGH_CLASS_PROPERTY_SHARED_MODEL +
+                "###Mapping\n" +
+                "Mapping test::child (\n" +
+                "  test::Target[T]: Pure {\n" +
+                "    ~src test::TargetSrc\n" +
+                "    name: $src.name\n" +
+                "  }\n" +
+                ")\n" +
+                "Mapping test::parentPassThrough (\n" +
+                "  include test::child\n" +
+                "  *test::Holder: Pure {\n" +
+                "    ~src test::HolderSrc\n" +
+                "    label: $src.label,\n" +
+                "    target: $src.target\n" +
+                "  }\n" +
+                ")\n");
+    }
+
     @Test
     public void mappingTestFaultyLambda()
     {
