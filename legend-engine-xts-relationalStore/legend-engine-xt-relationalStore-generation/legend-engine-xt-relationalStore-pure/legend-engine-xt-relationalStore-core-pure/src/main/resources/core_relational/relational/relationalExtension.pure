@@ -110,12 +110,11 @@ function meta::relational::runtime::dataSourceEquality(a:DataSource[1],b:DataSou
 
 function meta::relational::functions::typeInference::inferDynaFunctionReturnType(d: DynaFunction[1], failOnMatchFailure:Boolean[1]):meta::relational::metamodel::datatype::DataType[0..1]
 {
-   let dfToReturnFunctionMap =
-meta::relational::functions::typeInference::getDynaFunctionTypeInferenceMap();
+   let dfToReturnFunctionMap = meta::relational::functions::typeInference::getDynaFunctionTypeInferenceMap();
    let candidateMatchAndDTypePairs = $dfToReturnFunctionMap->get($d.name).values;
    let filteredMatchAndDTypePairs = $candidateMatchAndDTypePairs->filter(p | $p.first->eval($d.parameters));
    let result = if($filteredMatchAndDTypePairs->size() >= 1, | $filteredMatchAndDTypePairs->at(0).second->eval($d.parameters), | []);
-   if($failOnMatchFailure, | assert($result->isNotEmpty(), 'Type inference not supported yet! Dynafunction: ' + $d.name);, | []);
+   if($failOnMatchFailure, | assert($result->isNotEmpty(), 'Type inference not supported yet! Dyna function: ' + $d.name);, | []);
    $result;
 }
 
