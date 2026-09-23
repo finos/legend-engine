@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemorySto
 import org.finos.legend.engine.plan.execution.stores.relational.AthenaConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.BigQueryConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.ClickHouseConnectionExtension;
+import org.finos.legend.engine.plan.execution.stores.relational.DB2ConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.DatabricksConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.MemSQLConnectionExtension;
 import org.finos.legend.engine.plan.execution.stores.relational.PostgresConnectionExtension;
@@ -82,6 +83,7 @@ public class TestExtensions
                 .with(BigQueryConnectionExtension.class)
                 .with(ClickHouseConnectionExtension.class)
                 .with(DatabricksConnectionExtension.class)
+                .with(DB2ConnectionExtension.class)
                 .with(MemSQLConnectionExtension.class)
                 .with(PostgresConnectionExtension.class)
                 .with(RedshiftConnectionExtension.class)
