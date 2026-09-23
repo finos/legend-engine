@@ -417,7 +417,9 @@ Database meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB
     prop2 Decimal(4, 1),
     prop3 Numeric(4, 4),
     prop4 INTEGER,
-    prop5 DOUBLE
+    prop5 DOUBLE,
+    prop6 VARCHAR(20),
+    prop7 DATE
   )
 )
 
@@ -427,6 +429,7 @@ Class meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel
   intProp: Integer[1];
   floatProp: Float[1];
   numericProp: Decimal[1];
+  incompatibleProp: String[1];
 }
 
 ###Mapping
@@ -444,6 +447,10 @@ Mapping meta::relational::tests::runtime::typeInference::DecimalCompatibilityMap
       numericProp:  case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2),
           [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2,
           [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop3
+      ),
+      incompatibleProp: case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop6),
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop6,
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop7
       )
    }
 )
