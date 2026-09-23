@@ -1333,7 +1333,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //Left unaliased on purpose - see extensionColumnName. A plain column reference is excluded here
   //because it already names a real column of the relation; everything else is materialised into an
   //extend, and the key that reads it must spell it the way processExtend wrote it.
-  $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->map(e | ^SingleColumn(expression = $e));
+  $window.partitions->concatenate($window.orderBy.sortKey)->filter(o | !$o->instanceOf(QualifiedNameReference))->removeDuplicates()->map(e | ^SingleColumn(expression = $e));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getWindow(window:meta::external::query::sql::metamodel::Window[0..1], windows:NamedWindow[*]):meta::external::query::sql::metamodel::Window[0..1]
