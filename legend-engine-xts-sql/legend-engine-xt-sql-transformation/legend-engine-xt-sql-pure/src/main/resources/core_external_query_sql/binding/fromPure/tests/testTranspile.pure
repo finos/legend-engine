@@ -6510,12 +6510,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 //
 // The join is load-bearing. Without it there are no suffixes, the two spellings
 // coincide, and none of this reproduces - which is exactly why it went unnoticed.
+//
+// The second window in each case repeats the first one's key. extractWindowExtensionExpressions
+// runs over every window at once, so a repeated key used to be materialised once per window,
+// giving two extend columns of one name and a relation that rejects itself as duplicated.
 // ---------------------------------------------------------------------------
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeyExpressionOverJoin():Boolean[1]
 {
   test(
     'SELECT "t1"."String" AS "String", ' +
-    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", 0)) AS "rn" ' +
+    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", 0)) AS "rn", ' +
+    'rank() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", 0)) AS "rk" ' +
     'FROM service."/service/service1" "t1" ' +
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
     [
@@ -6549,12 +6554,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
-// The partition key takes the same path as the sort key, so it fails the same way.
+// The partition key takes the same path as the sort key, so it fails the same way -
+// and deduplicates the same way when two windows share it.
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowPartitionKeyExpressionOverJoin():Boolean[1]
 {
   test(
     'SELECT "t1"."String" AS "String", ' +
-    'row_number() OVER (PARTITION BY upper("t1"."String") ORDER BY "t1"."Integer") AS "rn" ' +
+    'row_number() OVER (PARTITION BY upper("t1"."String") ORDER BY "t1"."Integer") AS "rn", ' +
+    'rank() OVER (PARTITION BY upper("t1"."String") ORDER BY "t1"."Integer") AS "rk" ' +
     'FROM service."/service/service1" "t1" ' +
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
     [
@@ -6589,12 +6596,15 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 }
 
 // An expression key drawing from both join sides, so both suffixes have to resolve
-// inside one synthesised name.
+// inside one synthesised name. The second window's key differs from the first's, so
+// the two must stay separate - the dedup compares the expression, not the name it
+// renders to, and must not collapse keys that are not the same calculation.
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowOrderKeyExpressionAcrossBothJoinSides():Boolean[1]
 {
   test(
     'SELECT "t1"."String" AS "String", ' +
-    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", "t2"."Integer")) AS "rn" ' +
+    'row_number() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", "t2"."Integer")) AS "rn", ' +
+    'rank() OVER (PARTITION BY "t1"."Integer" ORDER BY coalesce("t1"."Float", 0)) AS "rk" ' +
     'FROM service."/service/service1" "t1" ' +
     'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer"',
     [
