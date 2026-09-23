@@ -103,11 +103,11 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 {
                     setImplementation = Root_meta_pure_mapping__classMappingByIdRecursive_Mapping_1__String_MANY__SetImplementation_MANY_(this.parentMapping, Lists.fixedSize.with(p._targetSetImplementationId()), this.context.pureModel.getExecutionSupport()).getFirst();
                     boolean idIsSyntheticDefault = HelperModelBuilder.getTypeFullPath(property._genericType()._rawType(), "_", this.context.pureModel.getExecutionSupport()).equals(p._targetSetImplementationId());
-                    // id is a compiler-generated placeholder — resolve class mapping by class, same as the no-id branch below.
-                    // Stamp the resolved SetImplementation's real id back onto the property mapping so downstream
-                    // consumers (router, JSON serializer, plan generator) navigate to the exact target we found
-                    // instead of re-resolving by class and picking a different SetImplementation.
-                    if (setImplementation == null && idIsSyntheticDefault)
+                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && idIsSyntheticDefault && checkTransformTypeMatchesPropertyType(property, last, context);
+                    // id is a compiler-generated placeholder: resolve by class instead, and stamp the real id back
+                    // so downstream consumers don't re-resolve and pick a different SetImplementation. Skipped for
+                    // a pass-through — the instance already exists, so any target's srcClass would fail the check below.
+                    if (setImplementation == null && idIsSyntheticDefault && !allowComplexPropertyMappingPassThrough)
                     {
                         setImplementation = Root_meta_pure_mapping__classMappingByClass_Mapping_1__Class_1__SetImplementation_MANY_(this.parentMapping, (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) property._genericType()._rawType(), this.context.pureModel.getExecutionSupport()).getFirst();
                         if (setImplementation != null)
@@ -115,14 +115,9 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                             p._targetSetImplementationId(setImplementation._id());
                         }
                     }
-                    boolean allowComplexPropertyMappingPassThrough = setImplementation == null && idIsSyntheticDefault && checkTransformTypeMatchesPropertyType(property, last, context);
-                    if (allowComplexPropertyMappingPassThrough)
+                    if (setImplementation == null && idIsSyntheticDefault)
                     {
                         // We need to have this as we have been adding defaultId to property mappings when users don't provide something explicitly. This is valid now but having it raises wrong warning
-                        p._targetSetImplementationId("");
-                    }
-                    if (setImplementation == null && !allowComplexPropertyMappingPassThrough && unmappedOptionalPassThrough && idIsSyntheticDefault)
-                    {
                         p._targetSetImplementationId("");
                     }
                     Assert.assertTrue((setImplementation != null) || allowComplexPropertyMappingPassThrough || unmappedOptionalPassThrough,
