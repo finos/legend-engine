@@ -499,7 +499,7 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt()
   let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
 
    let expected = [
-    pair(DatabaseType.DB2, $common),
+    pair(DatabaseType.DB2, 'select power("root".quantity, 1.0/3.0) as "cbrt" from tradeTable as "root"'),
     pair(DatabaseType.H2, 'select power("root".quantity, 1.0/3) as "cbrt" from tradeTable as "root"'),
     pair(DatabaseType.Composite, $common)
    ];
