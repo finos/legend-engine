@@ -295,9 +295,11 @@ function meta::external::dataquality::datarecon::buildExtendExpression(input: Va
 function meta::external::dataquality::datarecon::buildRowHash(input: ValueSpecification[1], suffix: String[1], type: String[1], includeColName: Boolean[1], contextLambda: LambdaFunction<Any>[1], compiler:Function<{LambdaFunction<Any>[1]->LambdaFunction<Any>[1]}>[1], excludeFromHash: String[*]):ValueSpecification[1]
 {
   let relType = getRelType($input->compileViaGrammarWithContext($contextLambda, $compiler));
-  //exclude columns (as suffixed names) from the hash so passthrough / additional-persist cols do not influence the digest
   let excludeSuffixed = $excludeFromHash->map(c | $c + $suffix);
-  let colsToHash = $relType.columns.name->filter(c | !$excludeSuffixed->contains($c))->sort();
+  let suffixLen = $suffix->length();
+  let colsToHash = $relType.columns.name
+      ->filter(c | !$excludeSuffixed->contains($c))
+      ->sortBy(c | if ($c->endsWith($suffix), | $c->substring(0, $c->length() - $suffixLen), | $c));
   $input->buildExtendExpression('DIGEST' + $suffix, String, buildHashFunctionExpression($relType, $colsToHash, 'row', $includeColName, $suffix));
 }
 

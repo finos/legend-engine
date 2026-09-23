@@ -671,6 +671,50 @@ function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_
   assertLambdaEquals($expected, $actual, false);
 }
 
+function <<test.Test>> meta::external::dataquality::tests::testLambdaGeneration_dataRecon_hashOrderConsistentAcrossSourceAndTarget():Boolean[1]
+{
+  // Regression: buildRowHash calls `sort()` on the SUFFIXED column names (_SOURCE / _TARGET) to decide
+  // the digest-input order. That sort is not stable across the two sides whenever two base names differ
+  // only by an appended `_<char>` where <char> straddles 'S' and 'T' in ASCII. Here the hash-input cols
+  // are HASH and HASH_S, so the two sides see:
+  //   source: sort([HASH_SOURCE, HASH_S_SOURCE, ID_SOURCE])
+  //           = [HASH_SOURCE, HASH_S_SOURCE, ID_SOURCE]   (at pos 6: 'O' < '_')
+  //   target: sort([HASH_TARGET, HASH_S_TARGET, ID_TARGET])
+  //           = [HASH_S_TARGET, HASH_TARGET, ID_TARGET]   (at pos 5: 'S' < 'T')
+  // The digest is then computed over columns in different orders on the two sides, so identical rows
+  // produce different digests and never match on the join. The expected below pins the correct
+  // behaviour: both sides must concatenate hash-input columns in the same base-name order
+  // (HASH, HASH_S, ID). 
+  let runtime = loadModel([])->filter(p | $p->elementToPath() == 'meta::external::dataquality::tests::domain::DataQualityRuntime')->toOne()->cast(@PackageableRuntime);
+  let expected = {| #>{meta::external::dataquality::tests::domain::db.personTable}#
+    ->extend(~HASH_S: row | $row.HASH)
+    ->select(~[ID,HASH,HASH_S])
+    ->extend(~[ID_SOURCE: row | $row.ID, HASH_SOURCE: row | $row.HASH, HASH_S_SOURCE: row | $row.HASH_S])
+    ->select(~[ID_SOURCE,HASH_SOURCE,HASH_S_SOURCE])
+    ->extend(~DIGEST_SOURCE: row | hash(if($row.HASH_SOURCE->isEmpty(), | '', |'' + 'HASH' + '' + $row.HASH_SOURCE->toOne()->toString()) + if($row.HASH_S_SOURCE->isEmpty(), | '', |'' + 'HASH_S' + '' + $row.HASH_S_SOURCE->toOne()->toString()) + if($row.ID_SOURCE->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_SOURCE->toOne()->toString()), HashType.MD5))
+    ->select(~[ID_SOURCE,DIGEST_SOURCE])
+    ->from($runtime)
+    ->join(
+        #>{meta::external::dataquality::tests::domain::db.personTable}#
+          ->extend(~HASH_S: row | $row.HASH)
+          ->select(~[ID,HASH,HASH_S])
+          ->extend(~[ID_TARGET: row | $row.ID, HASH_TARGET: row | $row.HASH, HASH_S_TARGET: row | $row.HASH_S])
+          ->select(~[ID_TARGET,HASH_TARGET,HASH_S_TARGET])
+          ->extend(~DIGEST_TARGET: row | hash(if($row.HASH_TARGET->isEmpty(), | '', |'' + 'HASH' + '' + $row.HASH_TARGET->toOne()->toString()) + if($row.HASH_S_TARGET->isEmpty(), | '', |'' + 'HASH_S' + '' + $row.HASH_S_TARGET->toOne()->toString()) + if($row.ID_TARGET->isEmpty(), | '', |'' + 'ID' + '' + $row.ID_TARGET->toOne()->toString()), HashType.MD5))
+          ->select(~[ID_TARGET,DIGEST_TARGET])
+          ->from($runtime),
+        JoinKind.FULL,
+        {x,y| $x.ID_SOURCE == $y.ID_TARGET}
+    )->filter(row | not($row.DIGEST_SOURCE == $row.DIGEST_TARGET))
+    ->select(~[DIGEST_SOURCE,DIGEST_TARGET,ID_SOURCE,ID_TARGET])
+  };
+
+  let source = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->extend(~HASH_S: row | $row.HASH)->from($runtime)};
+  let target = {| #>{meta::external::dataquality::tests::domain::db.personTable}#->extend(~HASH_S: row | $row.HASH)->from($runtime)};
+  let actual = getDataReconLambda(createReconInput($source, $target, 'ID', false, ['HASH', 'HASH_S'], [], [], false), {l:LambdaFunction<Any>[1] | compileViaGrammar($l)});
+  assertLambdaEquals($expected, $actual, false);
+}
+
 function meta::external::dataquality::tests::testRecon(expected:FunctionDefinition<Any>[1], runtime: PackageableRuntime[1], keys: String[*], aggregatedHash: Boolean[1], colsForHash: String[*], sourceHashCol: String[0..1], targetHashCol: String[0..1], includeColumnValues: Boolean[1]):Boolean[1]
 {
   testRecon($expected, $runtime, $keys, $aggregatedHash, $colsForHash, $sourceHashCol, $targetHashCol, $includeColumnValues, []);
