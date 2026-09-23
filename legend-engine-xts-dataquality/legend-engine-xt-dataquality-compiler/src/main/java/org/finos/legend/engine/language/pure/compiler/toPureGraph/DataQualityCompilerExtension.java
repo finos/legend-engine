@@ -322,6 +322,12 @@ public class DataQualityCompilerExtension implements CompilerExtension
                         metamodel._columnsToCompare(Lists.mutable.withAll(relationComparison.columnsToCompare));
                     }
 
+                    // Set additionalColumnsToPersist (optional)
+                    if (relationComparison.additionalColumnsToPersist != null && !relationComparison.additionalColumnsToPersist.isEmpty())
+                    {
+                        metamodel._additionalColumnsToPersist(Lists.mutable.withAll(relationComparison.additionalColumnsToPersist));
+                    }
+
                     // Set strategy
                     if (relationComparison.strategy != null)
                     {

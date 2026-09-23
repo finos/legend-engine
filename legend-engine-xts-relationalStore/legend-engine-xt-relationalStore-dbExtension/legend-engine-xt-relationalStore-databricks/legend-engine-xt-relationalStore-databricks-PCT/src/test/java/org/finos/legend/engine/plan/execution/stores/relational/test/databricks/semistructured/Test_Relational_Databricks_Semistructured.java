@@ -101,7 +101,17 @@ public class Test_Relational_Databricks_Semistructured
                 // VARIANT (not STRING) for the qualified-property join filter.
                 .withKeyValue(
                         "meta::relational::tests::semistructured::join::testJoinOnSemiStructuredPropertyWithQPFilter_Connection_1__Boolean_1_",
-                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]");
+                        "[DATATYPE_MISMATCH.UNEXPECTED_INPUT_TYPE]")
+                // [columnPruning] Mixing an extract (variant_get) with an explode over the same
+                // semi-structured array makes Spark's column-pruning rewrite drop the extracted
+                // column before the join that references it, so the generated logical plan probes
+                // a leftJoinKey-side attribute ("flattened_prop#...") that no longer exists past the
+                // Generate/explode node. CI run:
+                // https://github.com/finos/legend-engine/actions/runs/35282838280/job/105445761996
+                // (2026-09-18). Needs a router/plan fix on the Databricks side, not a Pure-model fix.
+                .withKeyValue(
+                        "meta::relational::tests::semistructured::explode::testCanProperlyMixExtractAndExplode_Connection_1__Boolean_1_",
+                        "Cannot find column index for attribute");
 
         Map<CoreInstance, String> failures = pathToReason.collect(
                 (k, v) -> Tuples.pair(executionSupport.getProcessorSupport().package_getByUserPath(k), v));
