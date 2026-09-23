@@ -6,8 +6,7 @@
   }, {
     "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_StrictDate_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
-  },
-    {
+  }, {
     "test" : "meta::pure::functions::boolean::tests::inequalities::between::testBetween_Date_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
   }, {
@@ -20,14 +19,8 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_",
-    "expectedError" : "NullPointer exception"
-  }, {
     "test" : "meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 53. DB::Exception: Cannot convert string 'a' to type UInt8. (TYPE_MISMATCH) (version 25.1.1.4165 (official build)) "
+    "expectedError" : "Error while executing: Create Table leSchema.Firm"
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
@@ -189,7 +182,7 @@
     "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 42. DB::Exception: Aggregate function argMax requires two arguments."
+    "expectedError" : "Execution error at ??, \"Code: 42. DB::Exception: Aggregate function argMax requires two arguments. (NUMBER_OF_ARGUMENTS_DOESNT_MATCH) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
@@ -213,7 +206,7 @@
     "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 42. DB::Exception: Aggregate function argMin requires two arguments."
+    "expectedError" : "Execution error at ??, \"Code: 42. DB::Exception: Aggregate function argMin requires two arguments. (NUMBER_OF_ARGUMENTS_DOESNT_MATCH) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"topK(1)(%s)[1]\"\""

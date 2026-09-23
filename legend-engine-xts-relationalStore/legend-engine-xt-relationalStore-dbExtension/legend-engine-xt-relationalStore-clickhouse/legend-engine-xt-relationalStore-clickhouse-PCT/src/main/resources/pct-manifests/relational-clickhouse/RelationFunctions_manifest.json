@@ -17,7 +17,7 @@
     "expectedError" : "\"AsOfJoins are not supported in the generic generator!\""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::TestJoin_CurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 403. DB::Exception: Cannot determine join keys in LEFT JOIN ... ON t1_1.user = CURRENT_USER(). (INVALID_JOIN_ON_EXPRESSION) (version 25.1.1.4165 (official build)) "
+    "expectedError" : "Execution error at ??, \"Code: 403. DB::Exception: Cannot determine join keys in LEFT JOIN ... ON t1_1.user = CURRENT_USER(). (INVALID_JOIN_ON_EXPRESSION) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testCoalesceInPreFilter_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: Create Table leSchema.OptionalPersonTypeForCompositionTests"
@@ -122,7 +122,7 @@
     "expectedError" : "from parent scope only supported for constants and CTE"
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Code: 125. DB::Exception: Scalar subquery returned more than one row. (INCORRECT_RESULT_OF_SCALAR_SUBQUERY) (version 25.1.1.4165 (official build)) \"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"
@@ -536,7 +536,7 @@
     "expectedError" : "name is not under aggregate function and not in GROUP BY keys"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 215. DB::Exception: Column t_0.name is not under aggregate function and not in GROUP BY keys. In query t2 AS (SELECT t_0.grp AS grp, concatWithSeparator(t_0.name, '') AS newCol, sum(t_0.id) AS YoCol FROM t AS t_0 GROUP BY grp)."
+    "expectedError" : "Execution error at ??, \"Code: 215. DB::Exception: Column t_0.name is not under aggregate function and not in GROUP BY keys. In query t2 AS (SELECT t_0.grp AS grp, concatWithSeparator(t_0.name, '') AS newCol, sum(t_0.id) AS YoCol FROM t AS t_0 GROUP BY grp). (NOT_AN_AGGREGATE) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::relation::tests::write::testWrite_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 5\nactual:   -1\""

@@ -10,12 +10,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 1.0D\nactual:   1D\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00932: inconsistent datatypes: expected NUMBER got DATE\n\nhttps://docs.oracle.com/error-help/db/ora-00932/"
-  }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
   }, {
@@ -212,49 +206,49 @@
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] relational lambda processing not supported for Database Type: Oracle\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities_Function_1__Boolean_1_",
     "expectedError" : "For input string: \"13440585709080677242063127757900067936760000\""
@@ -263,16 +257,16 @@
     "expectedError" : "For input string: \"-13440585709080677242063127757900067936720000\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVarianceSample_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::string::generation::tests::generateGuid::testGenerateGuidWithRelation_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'generateGuid' (state: [Select, false]) is not supported yet\""

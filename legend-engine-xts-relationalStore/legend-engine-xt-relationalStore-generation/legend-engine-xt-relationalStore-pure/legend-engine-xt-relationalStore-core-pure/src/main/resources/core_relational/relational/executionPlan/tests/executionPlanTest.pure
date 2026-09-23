@@ -2198,7 +2198,9 @@ function <<test.Test>> meta::pure::executionPlan::tests::testModelConnectionDeep
    let expected =
       'Relational\n'+
       '(\n'+
-      '  type = TDS[(firstName, String, VARCHAR(8192), ""), (lastName, String, VARCHAR(8192), "")]\n'+
+      '  type = Class[impls=(meta::pure::mapping::modelToModel::test::shared::src::_S_Person | relationalMapping.meta_pure_mapping_modelToModel_test_shared_src__S_Person)]\n'+
+      '         as meta::pure::mapping::modelToModel::test::shared::src::_S_Person\n'+
+      '  resultSizeRange = 1\n'+
       '  resultColumns = [("firstName", ""), ("lastName", "")]\n'+
       '  sql = select concat(substring("root".fullname, 0, locate(\' \', "root".fullname)), \'XX\') as "firstName", concat(substring("root".fullname, locate(\' \', "root".fullname) + 1, char_length("root".fullname)), \'ZZ\') as "lastName" from SPerson as "root"\n'+
       '  connection = TestDatabaseConnection(type = "H2")\n'+

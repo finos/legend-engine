@@ -2,13 +2,13 @@
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSpannerExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::and::testShortCircuitSimple_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'false' and ((1.0 * 12) / 0) > 0)'"
+    "expectedError" : "Execution error at ??, \"OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'false' and ((1.0 * 12) / 0) > 0)'\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::not::testNotInCollection_Function_1__Boolean_1_",
     "expectedError" : "\"->at(...) function is supported only after direct access of 1->MANY properties. Current expression: [false, false -> not()] -> at(1)\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::conjunctions::or::testShortCircuitSimple_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'true' or ((1.0 * 12) / 0) > 0)'"
+    "expectedError" : "Execution error at ??, \"OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: [ERROR] division by zero - Statement: 'select (Boolean'true' or ((1.0 * 12) / 0) > 0)'\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::eq::testEqDate_Function_1__Boolean_1_",
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
@@ -29,7 +29,7 @@
     "expectedError" : "\"Ensure the target system understands Year or Year-month semantic.\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualDate_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone - Statement: 'select Timestamp'2014-02-27 05:01:35.231' = Timestamp'2014-02-27 05:01:35.231''"
+    "expectedError" : "Execution error at ??, \"UNIMPLEMENTED: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: UNIMPLEMENTED: The Postgres Type is not supported: timestamp without time zone - Statement: 'select Timestamp'2014-02-27 05:01:35.231' = Timestamp'2014-02-27 05:01:35.231''\""
   }, {
     "test" : "meta::pure::functions::boolean::tests::equality::equal::testEqualEnum_Function_1__Boolean_1_",
     "expectedError" : "\"Assert failed\""
@@ -71,7 +71,7 @@
     "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
+    "expectedError" : "\nexpected: ['Smith', 'Doe', 'Branche']\nactual:   ['Doe', 'Smith', 'Branche']"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
@@ -137,7 +137,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType"
+    "expectedError" : "Type missing: meta::pure::functions::lang::tests::model::LA_Person"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""
@@ -158,19 +158,19 @@
     "expectedError" : "\"\nexpected: -4.0D\nactual:   -4.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testLargeMinus_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: -9223372036854775718 - 132 - Statement: 'select (-9223372036854775718 - 132)'"
+    "expectedError" : "Execution error at ??, \"OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: -9223372036854775718 - 132 - Statement: 'select (-9223372036854775718 - 132)'\""
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinusType_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Statement must produce at least one output column - Statement: 'select --1'"
+    "expectedError" : "Execution error at ??, \"INVALID_ARGUMENT: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: INVALID_ARGUMENT: Statement must produce at least one output column - Statement: 'select --1'\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 6.0D\nactual:   6.0\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testLargePlus_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 9223372036854775807 + 3 - Statement: 'select (9223372036854775807 + 3 + (4 + 5) + 7)'"
+    "expectedError" : "Execution error at ??, \"OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 9223372036854775807 + 3 - Statement: 'select (9223372036854775807 + 3 + (4 + 5) + 7)'\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testSinglePlusType_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
@@ -179,13 +179,13 @@
     "expectedError" : "\"\nexpected: 353791.470D\nactual:   353791.47\""
   }, {
     "test" : "meta::pure::functions::math::tests::times::testLargeTimes_Function_1__Boolean_1_",
-    "expectedError" : "org.finos.legend.engine.spanner.jdbc.shaded.com.google.cloud.spanner.jdbc.JdbcSqlExceptionFactory$JdbcSqlExceptionImpl: OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 2 * 9223372036854775807 - Statement: 'select (2 * 9223372036854775807)'"
+    "expectedError" : "Execution error at ??, \"OUT_OF_RANGE: org.finos.legend.engine.spanner.jdbc.shaded.io.grpc.StatusRuntimeException: OUT_OF_RANGE: int64 overflow: 2 * 9223372036854775807 - Statement: 'select (2 * 9223372036854775807)'\""
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithFunctionExpressions_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toString' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"
+    "expectedError" : "\nexpected: 'Hoboken, NJ; Jersey City, NJ'\nactual:   'Hoboken, NJ; Hoboken, NJ'"
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki.\""

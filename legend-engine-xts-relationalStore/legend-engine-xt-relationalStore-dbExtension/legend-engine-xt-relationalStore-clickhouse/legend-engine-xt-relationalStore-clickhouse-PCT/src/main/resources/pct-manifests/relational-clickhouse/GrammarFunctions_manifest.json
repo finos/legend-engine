@@ -62,7 +62,7 @@
     "expectedError" : "Cast exception: InstanceValue cannot be cast to StoreMappingRoutedValueSpecification"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType"
+    "expectedError" : "Error while executing: Create Table leSchema.M_Person"
   }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
@@ -74,7 +74,7 @@
     "expectedError" : "Error during dynamic reactivation: Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
     "test" : "meta::pure::functions::collection::tests::range::testRangeStepError_Function_1__Boolean_1_",
-    "expectedError" : "Unexpected error executing function with params [Anonymous_Lambda]"
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Code: 69. DB::Exception: A call to function range underflows, the 3rd argument step can't be less or equal to zero: In scope SELECT range(0, 5, 0). (ARGUMENT_OUT_OF_BOUND) (version 25.1.1.4165 (official build)) \"\nwhere the expected message was:\"range step must not be 0\""
   }, {
     "test" : "meta::pure::functions::collection::tests::size::testSizeEmpty_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'array_size' (state: [Select, false]) is not supported yet\""
@@ -110,7 +110,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'."
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType"
+    "expectedError" : "Type missing: meta::pure::functions::lang::tests::model::LA_Person"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'."
@@ -131,7 +131,7 @@
     "expectedError" : "No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 62. DB::Exception: Syntax error: failed at position 11 (end of query): . Expected one of: ALL, DISTINCT ON, DISTINCT, TOP, not empty list of expressions, list of expressions, list of elements, expression with optional alias, element of expression with optional alias, lambda expression."
+    "expectedError" : "Execution error at ??, \"Code: 62. DB::Exception: Syntax error: failed at position 11 (end of query): . Expected one of: ALL, DISTINCT ON, DISTINCT, TOP, not empty list of expressions, list of expressions, list of elements, expression with optional alias, element of expression with optional alias, lambda expression. (SYNTAX_ERROR) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 6.0D\nactual:   6.0\""
@@ -149,7 +149,7 @@
     "expectedError" : "For input string: \"18446744073709551614\""
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
-    "expectedError" : "type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType"
+    "expectedError" : "Error while executing: Create Table leSchema.P_Location"
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'."

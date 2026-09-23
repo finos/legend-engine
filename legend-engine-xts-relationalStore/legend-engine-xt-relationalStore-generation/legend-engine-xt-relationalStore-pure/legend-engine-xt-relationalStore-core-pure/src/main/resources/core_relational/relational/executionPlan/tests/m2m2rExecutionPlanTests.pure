@@ -50,7 +50,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
     '     InMemoryRootGraphFetch\n' +
     '     (\n' +
     '       type = PartialClass[impls=[(meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith | ModelToModelMapping.meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith)], propertiesWithParameters = [isPeterSmith()]]\n' +
-    '       graphFetchTree = [meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith]{[/isPeterSmith()]}\n' +
+    '       graphFetchTree = [meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith]{[meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/isPeterSmith()]}\n' +
     '       nodeIndex = 0\n' +
     '       batchSize = 1\n' +
     '       checked = false\n' +
@@ -208,7 +208,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::executionPlan::m2m2r::t
     '     InMemoryRootGraphFetch\n' +
     '     (\n' +
     '       type = PartialClass[impls=[(meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith | ModelToModelMapping.meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith)], propertiesWithParameters = [isPeterSmith()]]\n' +
-    '       graphFetchTree = [meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith]{[/isPeterSmith()]}\n' +
+    '       graphFetchTree = [meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/meta::pure::executionPlan::m2m2r::tests::PersonPeterSmith]{[meta_pure_executionPlan_m2m2r_tests_PersonPeterSmith/isPeterSmith()]}\n' +
     '       nodeIndex = 0\n' +
     '       batchSize = 1\n' +
     '       checked = false\n' +

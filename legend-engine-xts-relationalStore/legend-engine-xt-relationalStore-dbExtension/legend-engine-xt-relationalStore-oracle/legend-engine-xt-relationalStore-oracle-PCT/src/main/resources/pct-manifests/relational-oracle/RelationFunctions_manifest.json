@@ -92,7 +92,7 @@
     "expectedError" : "\"pivot is not supported\""
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_MoreThanOneRow_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"Unexpected error executing function with params [Anonymous_Lambda]\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"ORA-01427: single-row subquery returns more than one row\n\nhttps://docs.oracle.com/error-help/db/ora-01427/\"\nwhere the expected message was:\"a scalar subquery returned more than one row\""
   }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInAnd_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger and expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y"
@@ -101,34 +101,34 @@
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+    "expectedError" : "Execution error at ??, \"ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
+    "expectedError" : "Execution error at ??, \"ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testVariantColumn_filter_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'toVariant' (state: [Select, false]) is not supported yet\""
@@ -260,10 +260,10 @@
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+    "expectedError" : "Execution error at ??, \"ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+    "expectedError" : "Execution error at ??, \"ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
@@ -380,10 +380,10 @@
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Oracle\""
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+    "expectedError" : "Execution error at ??, \"ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/\""
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/"
+    "expectedError" : "Execution error at ??, \"ORA-30485: missing ORDER BY expression in the window specification\n\nhttps://docs.oracle.com/error-help/db/ora-30485/\""
   }, {
     "test" : "meta::pure::functions::relation::variant::tests::flatten::testFlatten_LateralJoin_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Lateral operation not supported for Database Type: Oracle\""

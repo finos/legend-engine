@@ -16,12 +16,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "Too few arguments to function 'greatest'"
   }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInIsEmpty_Function_1__Boolean_1_",
-    "expectedError" : "NullPointer exception"
-  }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-01-10 15:25:30'"
   }, {

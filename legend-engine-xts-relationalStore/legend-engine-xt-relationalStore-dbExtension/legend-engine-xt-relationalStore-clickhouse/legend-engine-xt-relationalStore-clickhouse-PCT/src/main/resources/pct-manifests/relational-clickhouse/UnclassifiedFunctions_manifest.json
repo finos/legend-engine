@@ -2,7 +2,7 @@
   "adapter" : "meta::relational::tests::pct::clickhouse::testAdapterForRelationalWithClickHouseExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: Code: 117. DB::Exception: Failed to base64Decode input 'SGVsbG8sIFdvcmxkIQ': In scope SELECT base64Decode('SGVsbG8sIFdvcmxkIQ')."
+    "expectedError" : "Execution error at ??, \"Code: 117. DB::Exception: Failed to base64Decode input 'SGVsbG8sIFdvcmxkIQ': In scope SELECT base64Decode('SGVsbG8sIFdvcmxkIQ'). (INCORRECT_DATA) (version 25.1.1.4165 (official build)) \""
   }, {
     "test" : "meta::pure::functions::string::tests::lpad::testLpadEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 'abcd'\nactual:   '      abcd'\""

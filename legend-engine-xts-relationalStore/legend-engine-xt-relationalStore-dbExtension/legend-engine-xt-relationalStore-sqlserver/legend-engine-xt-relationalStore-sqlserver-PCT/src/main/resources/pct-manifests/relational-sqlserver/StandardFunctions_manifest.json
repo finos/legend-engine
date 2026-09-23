@@ -5,70 +5,64 @@
     "expectedError" : "Assert failed"
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Date_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Empty_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Float_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Integer_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_StrictDate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_String_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'greatest' is not a recognized built-in function name."
-  }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInNonPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "\"Parameter to IN operation isn't a literal!\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::in::testInPrimitive_Function_1__Boolean_1_",
-    "expectedError" : "Execution error at ??, \"Failed to execute plan - RuntimeException - com.microsoft.sqlserver.jdbc.SQLServerException: Conversion failed when converting the varchar value 'c' to data type int.\""
+    "expectedError" : "Execution error at ??, \"'greatest' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Boolean_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Date_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Empty_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Float_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Integer_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_StrictDate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_String_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'least' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'least' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::collection::tests::max::testMax_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
@@ -80,10 +74,10 @@
     "expectedError" : "Error while executing: insert into leSchema"
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for max operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for max operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for max operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for max operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
@@ -92,22 +86,22 @@
     "expectedError" : "Invalid date string: '2025-02-10 20:10:20'"
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for max operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for max operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::min::testExtendMinDate_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: insert into leSchema"
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for min operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for min operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for min operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for min operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_",
     "expectedError" : "Invalid date string: '2025-01-10 15:25:30'"
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for min operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for min operator.\""
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
@@ -212,19 +206,19 @@
     "expectedError" : "\"Unused format args. [4] arguments provided to expression \"CORR(%s, %s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::corr::testSimpleWindowCorr_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'CORR' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'CORR' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testSimpleWindowCovarPopulation_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'COVAR_POP' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'COVAR_POP' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'COVAR_SAMP' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'COVAR_SAMP' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::covarSample::testSimpleWindowCovarSample_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'COVAR_SAMP' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'COVAR_SAMP' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
@@ -233,7 +227,7 @@
     "expectedError" : "[unsupported-api] The function 'array_max' (state: [Select, false]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for max operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for max operator.\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
@@ -248,28 +242,28 @@
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Floats_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Integers_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Integers_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'median' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'median' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_FloatsArray_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet"
@@ -278,7 +272,7 @@
     "expectedError" : "\"[unsupported-api] The function 'array_min' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for min operator."
+    "expectedError" : "Execution error at ??, \"Operand data type NULL is invalid for min operator.\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
@@ -290,100 +284,100 @@
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Float_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Floats_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Integer_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'mode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'mode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] relational lambda processing not supported for Database Type:"
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Relation_Aggregate_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: The function 'percentile_disc' must have an OVER clause."
+    "expectedError" : "Execution error at ??, \"The function 'percentile_disc' must have an OVER clause.\""
   }, {
     "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   id,val,newCol\\n   1,1.0,1.8\\n   1,2.0,1.8\\n   1,3.0,1.8\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4\\n   3,1.5,1.4\\n   3,2.0,1.4\\n#'\nactual:   '#TDS\\n   id,val,newCol\\n   1,1.0,1.7999999999999998\\n   1,2.0,1.7999999999999998\\n   1,3.0,1.7999999999999998\\n   2,1.5,2.3\\n   2,2.5,2.3\\n   2,3.5,2.3\\n   3,1.0,1.4\\n   3,1.5,1.4\\n   3,2.0,1.4\\n#'"
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testFloatStdDev_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testIntStdDev_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testMixedStdDev_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testNegativeNumberStdDev_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'cosh' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'cosh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'cosh' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'cosh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'cosh' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'cosh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'cosh' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'cosh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'cosh' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'cosh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'sinh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'sinh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'sinh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'sinh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'sinh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'sinh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Identities_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'sinh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'sinh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Integers_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'sinh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'sinh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'tanh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'tanh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'tanh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'tanh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'tanh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'tanh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'tanh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'tanh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Integers_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'tanh' is not a recognized built-in function name"
+    "expectedError" : "Execution error at ??, \"'tanh' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"varp(%s)\"\""
@@ -392,10 +386,10 @@
     "expectedError" : "\"Unused format args. [3] arguments provided to expression \"var(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Population_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariance_Sample_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'var_pop' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'var_pop' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::tests::date::testDayOfWeek_Relation_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: insert into leSchema.tb_"

@@ -67,9 +67,6 @@
     "test" : "meta::pure::functions::collection::tests::isEmpty::testIsNotEmptySingle_Function_1__Boolean_1_",
     "expectedError" : "Assert failed"
   }, {
-    "test" : "meta::pure::functions::collection::tests::map::testMapInstance_Function_1__Boolean_1_",
-    "expectedError" : "\"type not supported: meta::pure::functions::collection::tests::map::model::M_GeographicEntityType\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::map::testMapRelationshipFromManyToMany_Function_1__Boolean_1_",
     "expectedError" : "Error dynamically evaluating value specification (from /platform/pure/grammar/functions/collection/iteration/map.pure"
   }, {
@@ -134,7 +131,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'compare_T_1__T_1__Integer_1_'"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testAssignNewInstance_Function_1__Boolean_1_",
-    "expectedError" : "\"type not supported: meta::pure::functions::lang::tests::model::LA_GeographicEntityType\""
+    "expectedError" : "Type missing: meta::pure::functions::lang::tests::model::LA_Person"
   }, {
     "test" : "meta::pure::functions::lang::tests::letFn::testLetAsLastStatement_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'"
@@ -158,7 +155,7 @@
     "expectedError" : "\"No SQL translation exists for the PURE function 'genericType_Any_MANY__GenericType_1_'"
   }, {
     "test" : "meta::pure::functions::math::tests::minus::testSingleMinus_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/"
+    "expectedError" : "Execution error at ??, \"ORA-00936: missing expression\n\nhttps://docs.oracle.com/error-help/db/ora-00936/\""
   }, {
     "test" : "meta::pure::functions::math::tests::plus::testDecimalPlus_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 6.0D\nactual:   6D\""
@@ -176,7 +173,7 @@
     "expectedError" : "For input string: \"18446744073709551614\""
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testMultiPlusWithPropertyExpressions_Function_1__Boolean_1_",
-    "expectedError" : "\"type not supported: meta::pure::functions::string::tests::plus::model::P_GeographicEntityType\""
+    "expectedError" : "\nexpected: 'Hoboken, NJ; Jersey City, NJ'\nactual:   'Hoboken, NJ; Hoboken, NJ'"
   }, {
     "test" : "meta::pure::functions::string::tests::plus::testPlusInCollect_Function_1__Boolean_1_",
     "expectedError" : "\"No SQL translation exists for the PURE function 'at_T_MANY__Integer_1__T_1_'"

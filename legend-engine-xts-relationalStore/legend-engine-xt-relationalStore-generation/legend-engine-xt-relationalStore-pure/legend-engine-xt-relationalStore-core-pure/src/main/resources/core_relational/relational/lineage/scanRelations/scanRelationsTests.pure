@@ -318,11 +318,11 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanRelations:
    let relationTreeFromPureToSQL = meta::pure::lineage::scanRelations::scanRelations($query, $mapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions());
    let expected1 ='root\n' +
                   '  ------> (t) FirmSet1 [ID, name]\n' +
-                  '    ------> (t) PersonSet1 [FirmID, ID, firstName_s1, lastName_s1]\n' +
-                  '    ------> (t) PersonSet2 [FirmID, ID, firstName_s2, lastName_s2]\n' +
+                  '    ------> (t) PersonSet1 [FirmID, firstName_s1, lastName_s1]\n' +
+                  '    ------> (t) PersonSet2 [FirmID, firstName_s2, lastName_s2]\n' +
                   '  ------> (t) FirmSet2 [ID, name]\n' +
-                  '    ------> (t) PersonSet1 [FirmID, ID, firstName_s1, lastName_s1]\n' +
-                  '    ------> (t) PersonSet2 [FirmID, ID, firstName_s2, lastName_s2]\n';
+                  '    ------> (t) PersonSet1 [FirmID, firstName_s1, lastName_s1]\n' +
+                  '    ------> (t) PersonSet2 [FirmID, firstName_s2, lastName_s2]\n';
    assertEquals($expected1, $relationTreeFromPureToSQL-> relationTreeAsString(false));
 }
 

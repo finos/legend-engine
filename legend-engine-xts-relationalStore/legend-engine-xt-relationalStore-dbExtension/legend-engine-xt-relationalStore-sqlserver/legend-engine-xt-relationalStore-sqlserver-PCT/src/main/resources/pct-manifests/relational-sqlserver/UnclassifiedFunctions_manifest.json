@@ -2,34 +2,34 @@
   "adapter" : "meta::relational::tests::pct::testAdapterForRelationalWithSqlServerExecution_Function_1__X_o_",
   "exclusions" : [ {
     "test" : "meta::pure::functions::flow::test::coalesce::coalesce2_AllEmpty_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: At least one of the arguments to COALESCE must be an expression that is not the NULL constant."
+    "expectedError" : "Execution error at ??, \"At least one of the arguments to COALESCE must be an expression that is not the NULL constant.\""
   }, {
     "test" : "meta::pure::functions::flow::test::coalesce::coalesce3_AllEmpty_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: At least one of the arguments to COALESCE must be an expression that is not the NULL constant."
+    "expectedError" : "Execution error at ??, \"At least one of the arguments to COALESCE must be an expression that is not the NULL constant.\""
   }, {
     "test" : "meta::pure::functions::flow::test::coalesce::coalesce_AllEmpty_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: At least one of the arguments to COALESCE must be an expression that is not the NULL constant."
+    "expectedError" : "Execution error at ??, \"At least one of the arguments to COALESCE must be an expression that is not the NULL constant.\""
   }, {
     "test" : "meta::pure::functions::runtime::currentUserId::testCurrentUserId_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near ')'."
+    "expectedError" : "Execution error at ??, \"Incorrect syntax near ')'.\""
   }, {
     "test" : "meta::pure::functions::string::tests::ascii::testAsciiEmptyChar_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: [0]\nactual:   []\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64NoPadding_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_decode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'base64_decode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64RoundTrip_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_encode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'base64_encode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_decode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'base64_decode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_decode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'base64_decode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_encode' is not a recognized built-in function name."
+    "expectedError" : "Execution error at ??, \"'base64_encode' is not a recognized built-in function name.\""
   }, {
     "test" : "meta::pure::functions::string::tests::jaroWinklerSimilarity::testJaroWinklerSimilarityEqual_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'jaroWinklerSimilarity' (state: [Select, false]) is not supported yet\""
@@ -119,18 +119,18 @@
     "expectedError" : "\"\nexpected: ['abc']\nactual:   []\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
+    "expectedError" : "Execution error at ??, \"Procedure or function string_split has too many arguments specified.\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
+    "expectedError" : "Execution error at ??, \"Procedure or function string_split has too many arguments specified.\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartTypicalToken_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
+    "expectedError" : "Execution error at ??, \"Procedure or function string_split has too many arguments specified.\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
+    "expectedError" : "Execution error at ??, \"Procedure or function string_split has too many arguments specified.\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
+    "expectedError" : "Execution error at ??, \"Procedure or function string_split has too many arguments specified.\""
   } ]
 }
