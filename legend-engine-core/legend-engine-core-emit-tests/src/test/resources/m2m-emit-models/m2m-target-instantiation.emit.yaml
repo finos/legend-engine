@@ -14,6 +14,14 @@ description: |
   `Constrained`, which the `new`-generated `_pure.internal.*_Impl` did not
   implement.
 
+  The mapping additionally declares a sibling class mapping for `Details` from an unrelated
+  `~src`. The `details` property names no target id and its transform already returns
+  `Details`, so it is a pass-through needing no target mapping -- but the sibling makes
+  `Details` resolvable by class. Resolving a target for it would compare `Details` against
+  `S_Details` and reject a valid model. The sibling is never executed; the assertion below
+  still reads the value built by `makeDetails()`, so it doubles as proof the pass-through
+  still routes correctly.
+
 modelSources:
   model:
     root: m2m-target-instantiation
@@ -24,6 +32,7 @@ modelSources:
 features:
   - execution:test-data
   - grammar:function
+  - mapping:m2m-complex-property-passthrough
   - mapping:m2m-target-instantiation
   - mapping:mapping
   - scaffolding:class
