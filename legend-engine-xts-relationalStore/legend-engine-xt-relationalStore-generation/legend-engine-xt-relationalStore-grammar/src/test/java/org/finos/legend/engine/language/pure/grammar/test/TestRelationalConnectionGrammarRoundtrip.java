@@ -14,10 +14,21 @@
 
 package org.finos.legend.engine.language.pure.grammar.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
     @Test
     public void testRelationalDatabaseConnection()
     {
@@ -437,5 +448,61 @@ public class TestRelationalConnectionGrammarRoundtrip extends TestGrammarRoundtr
                 "  };\n" +
                 "  auth: DefaultH2;\n" +
                 "}\n");
+    }
+
+    /**
+     * Before the parser stripped the grammar's quotes from a zone id, they were kept in the protocol, so JSON written
+     * then carries 'US/Arizona' quotes and all. Reading that JSON drops the quotes, leaving what the parser writes now.
+     */
+    @Test
+    public void testTimezoneQuotedByOldParserIsUnquotedWhenRead() throws Exception
+    {
+        Assert.assertEquals("US/Arizona", readTimeZone("'US/Arizona'"));
+        Assert.assertEquals("UTC", readTimeZone("'UTC'"));
+        Assert.assertEquals("GMT+05:00", readTimeZone("'GMT+05:00'"));
+        Assert.assertEquals("US/Arizona", readTimeZone("US/Arizona"));
+        Assert.assertEquals("-0500", readTimeZone("-0500"));
+        Assert.assertNull(readTimeZone(null));
+    }
+
+    @Test
+    public void testTimezoneQuotedByOldParserComposes() throws Exception
+    {
+        String expected = "###Connection\n" +
+                "RelationalDatabaseConnection simple::H2Connection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: H2;\n" +
+                "  timezone: 'US/Arizona';\n" +
+                "  specification: LocalH2\n" +
+                "  {\n" +
+                "  };\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n";
+        testComposedGrammar(connectionJson("'US/Arizona'"), expected);
+        testComposedGrammar(connectionJson("US/Arizona"), expected);
+    }
+
+    private static String readTimeZone(String timeZone) throws Exception
+    {
+        PureModelContextData data = OBJECT_MAPPER.readValue(connectionJson(timeZone), PureModelContextData.class);
+        PackageableConnection connection = data.getElementsOfType(PackageableConnection.class).get(0);
+        return ((RelationalDatabaseConnection) connection.connectionValue).timeZone;
+    }
+
+    private static String connectionJson(String timeZone) throws Exception
+    {
+        RelationalDatabaseConnection connectionValue = new RelationalDatabaseConnection(new LocalH2DatasourceSpecification(), new DefaultH2AuthenticationStrategy(), DatabaseType.H2);
+        connectionValue.element = "apps::pure::studio::relational::tests::dbInc";
+        connectionValue.type = DatabaseType.H2;
+        // Assigned to the field, not through the setter, so a quoted zone id is written out as the old parser left it
+        connectionValue.timeZone = timeZone;
+
+        PackageableConnection connection = new PackageableConnection();
+        connection._package = "simple";
+        connection.name = "H2Connection";
+        connection.connectionValue = connectionValue;
+
+        return OBJECT_MAPPER.writeValueAsString(PureModelContextData.newBuilder().withElement(connection).build());
     }
 }
