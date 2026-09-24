@@ -143,6 +143,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Module Reference](reference/modules.md) | Every module group and sub-module with entry-point classes — look up any module here |
 | [Technology Stack](reference/tech-stack.md) | Third-party library catalogue: versions, rationale, upgrade instructions |
 | [TDS & Relation Function Reference](reference/tds-and-relation.md) | Complete function catalogue for `TabularDataSet` and `Relation<T>` APIs |
+| [Boolean Predicate Emission](reference/boolean-predicate-emission.md) | How dialects without a boolean literal coerce predicates and values, per-dialect emission table, known defects, and the dialects deliberately left alone |
 | [Module README Template](templates/module-readme-template.md) | Standard template for per-module README files |
 
 ---

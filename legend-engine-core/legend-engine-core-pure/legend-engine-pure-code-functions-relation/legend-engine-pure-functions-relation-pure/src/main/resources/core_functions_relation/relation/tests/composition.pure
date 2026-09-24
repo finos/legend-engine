@@ -869,6 +869,85 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
 }
 
 '''
+A boolean-valued `if` used as a filter predicate stays a predicate. Nested under an `&&` because only
+the operands of `and`/`or` are coerced.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterWithBooleanIfPredicate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, grp, name
+              1, A, AOne
+              2, B, BTwo
+              3, A, AThree
+              4, B, BFour
+            #;
+
+  let expr = {|
+    $tds->filter(x | $x.id > 0 && if($x.grp == 'A', |$x.id > 1, |$x.id > 3))
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,grp,name\n'+
+                '   3,A,AThree\n'+
+                '   4,B,BFour\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+'''
+A whole filter predicate that is a boolean *value* rather than a comparison, so the WHERE root itself
+has to be coerced.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterOnBooleanValuedExpression<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, grp, name
+              1, A, AOne
+              2, B, BTwo
+              3, A, AThree
+            #;
+
+  let expr = {|
+    $tds->filter(x | if($x.grp == 'A', |true, |false))
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,grp,name\n'+
+                '   1,A,AOne\n'+
+                '   3,A,AThree\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+'''
+An `if` mixing a predicate arm with a boolean literal arm; the two arms have to agree on a
+representation.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterWithMixedPredicateAndLiteralIf<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, grp, name
+              1, A, AOne
+              2, B, BTwo
+              3, A, AThree
+              4, B, BFour
+            #;
+
+  let expr = {|
+    $tds->filter(x | if($x.grp == 'A', |$x.id > 1, |false))
+  };
+
+  let res = $f->eval($expr);
+
+  assertEquals( '#TDS\n'+
+                '   id,grp,name\n'+
+                '   3,A,AThree\n'+
+                '#', $res->sort(~name->ascending())->toString());
+}
+
+'''
 Projecting `==` into a column yields `true` or `false` on every row, never an empty value.
 '''
 function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testProjectEqualityOnNullableColumns<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
