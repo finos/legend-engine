@@ -202,7 +202,12 @@ public class PureModel implements IPureModel
         try
         {
             ConsoleCompiled console = new ConsoleCompiled();
-            console.disable();
+            // INSTRUMENTATION: keep the Pure console enabled when -Dlegend.pure.console.enabled=true so that
+            // println(...) instrumentation in the Java-generation Pure code is surfaced to stdout.
+            if (!Boolean.getBoolean("legend.pure.console.enabled"))
+            {
+                console.disable();
+            }
             this.executionSupport = new CompiledExecutionSupport(
                     new JavaCompilerState(null, classLoader),
                     new CompiledProcessorSupport(classLoader, metaData == null ? new MetadataWrapper(this.root, METADATA_LAZY, this) : metaData, Sets.mutable.empty()),
