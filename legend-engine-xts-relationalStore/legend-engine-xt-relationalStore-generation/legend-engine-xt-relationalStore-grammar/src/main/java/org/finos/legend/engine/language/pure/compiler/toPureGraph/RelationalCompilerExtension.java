@@ -545,12 +545,13 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
     @Override
     public List<Function2<Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
-        return Lists.mutable.with(
+        return Collections.singletonList(
                 (connectionValue, context) ->
                 {
                     if (connectionValue instanceof RelationalDatabaseConnection)
                     {
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
+                        HelperRelationalDatabaseConnectionBuilder.validateTimeZone(relationalDatabaseConnection);
 
                         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
                         HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.queryTimeOutInSeconds, relationalDatabaseConnection.quoteIdentifiers, context);

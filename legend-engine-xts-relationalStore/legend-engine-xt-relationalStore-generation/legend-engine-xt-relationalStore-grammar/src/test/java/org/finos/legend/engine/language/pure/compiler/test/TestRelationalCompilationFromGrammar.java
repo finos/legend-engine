@@ -15,10 +15,10 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRelationalBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.Warning;
@@ -4939,5 +4939,96 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "    N: array_size(array_filter(T.NAME, d | extractFromSemiStructured($d, 'headcount', 'INTEGER')))\n" +
                 "  )\n" +
                 ")\n", "COMPILATION error at [13:19-97]: An array lambda operates on semi-structured data, but column 'NAME' is not declared SEMISTRUCTURED");
+    }
+
+    private static final String TIME_ZONE_STORE =
+            "###Relational\n" +
+            "Database test::store::FirmDB\n" +
+            "(\n" +
+            "  Table FIRM_TABLE\n" +
+            "  (\n" +
+            "    ID INTEGER PRIMARY KEY,\n" +
+            "    NAME VARCHAR(200)\n" +
+            "  )\n" +
+            ")\n" +
+            "\n";
+
+    @Test
+    public void testRelationalDatabaseConnectionWithTimeZone()
+    {
+        test(relationalDatabaseConnectionWithTimeZone("'America/New_York'"));
+        test(relationalDatabaseConnectionWithTimeZone("'EST'"));
+        test(relationalDatabaseConnectionWithTimeZone("-0500"));
+    }
+
+    @Test
+    public void testRelationalDatabaseConnectionWithUnknownTimeZone()
+    {
+        test(relationalDatabaseConnectionWithTimeZone("'America/NewYork'"), "COMPILATION error at [12:1-19:1]: Unknown time zone: America/NewYork");
+    }
+
+    // The grammar reads any sign and four digits as an offset, so +3000 parses; but no offset is thirty hours.
+    @Test
+    public void testRelationalDatabaseConnectionWithOutOfRangeTimeZoneOffset()
+    {
+        test(relationalDatabaseConnectionWithTimeZone("+3000"), "COMPILATION error at [12:1-19:1]: Unknown time zone: +3000");
+    }
+
+    // An empty zone names no zone. A connection that means to name none leaves the time zone out.
+    @Test
+    public void testRelationalDatabaseConnectionWithEmptyTimeZone()
+    {
+        test(relationalDatabaseConnectionWithTimeZone("''"), "COMPILATION error at [12:1-19:1]: Unknown time zone: ");
+    }
+
+    @Test
+    public void testEmbeddedRelationalDatabaseConnectionWithTimeZone()
+    {
+        test(runtimeWithEmbeddedRelationalDatabaseConnectionWithTimeZone("'America/New_York'"));
+        test(runtimeWithEmbeddedRelationalDatabaseConnectionWithTimeZone("'America/NewYork'"), "COMPILATION error at [25:9-31:9]: Unknown time zone: America/NewYork");
+    }
+
+    private static String relationalDatabaseConnectionWithTimeZone(String timeZone)
+    {
+        return TIME_ZONE_STORE +
+                "###Connection\n" +
+                "RelationalDatabaseConnection test::runtime::FirmConnection\n" +
+                "{\n" +
+                "  store: test::store::FirmDB;\n" +
+                "  type: H2;\n" +
+                "  timezone: " + timeZone + ";\n" +
+                "  specification: LocalH2 {};\n" +
+                "  auth: DefaultH2;\n" +
+                "}\n";
+    }
+
+    private static String runtimeWithEmbeddedRelationalDatabaseConnectionWithTimeZone(String timeZone)
+    {
+        return TIME_ZONE_STORE +
+                "###Mapping\n" +
+                "Mapping test::mapping::FirmMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime test::runtime::FirmRuntime\n" +
+                "{\n" +
+                "  mappings: [test::mapping::FirmMapping];\n" +
+                "  connections:\n" +
+                "  [\n" +
+                "    test::store::FirmDB:\n" +
+                "    [\n" +
+                "      connection_1: #{\n" +
+                "        RelationalDatabaseConnection\n" +
+                "        {\n" +
+                "          type: H2;\n" +
+                "          timezone: " + timeZone + ";\n" +
+                "          specification: LocalH2 {};\n" +
+                "          auth: DefaultH2;\n" +
+                "        }\n" +
+                "      }#\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n";
     }
 }
