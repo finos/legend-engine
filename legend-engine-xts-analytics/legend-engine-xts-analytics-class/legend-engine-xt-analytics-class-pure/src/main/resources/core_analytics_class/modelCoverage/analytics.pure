@@ -69,7 +69,7 @@ function meta::analytics::class::modelCoverage::getClassModelCoverage(_classes: 
     stereotypes = $e->cast(@AnnotatedElement).stereotypes->filter(s | acceptedStereotypes($s)),
     taggedValues = $e->cast(@AnnotatedElement).taggedValues->filter(tv| acceptedTaggedValues($tv)),
     values = if(meta::pure::functions::meta::enumValues($e)->isEmpty(),
-              |$e.values,
+              |[],
               |meta::pure::functions::meta::enumValues($e)->map(v|^$v(
                 stereotypes = [],
                 taggedValues = []
