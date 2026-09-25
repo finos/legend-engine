@@ -1,0 +1,93 @@
+{
+  "serializer": {
+    "name": "pure",
+    "version": "vX_X_X"
+  },
+  "templateFunctions": [],
+  "rootExecutionNode": {
+    "_type": "sequence",
+    "resultType": {
+      "_type": "dataType",
+      "dataType": "meta::pure::metamodel::type::Any"
+    },
+    "executionNodes": [
+      {
+        "_type": "createAndPopulateTempTable",
+        "inputVarNames": ["ids"],
+        "tempTableName": "tempTableForIds",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "type": "H2",
+          "timeZone": "'US/Arizona'",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          }
+        },
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "meta::pure::metamodel::type::Any"
+        }
+      },
+      {
+        "_type": "sql",
+        "sqlQuery": "select ID, TIME from tradeTable",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "type": "H2",
+          "timeZone": "'US/Arizona'",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          }
+        },
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "meta::pure::metamodel::type::Any"
+        }
+      },
+      {
+        "_type": "relationalSave",
+        "sqlQuery": "insert into tradeTable (ID, TIME) values (1, '2020-06-01 05:00:00')",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "type": "H2",
+          "timeZone": "'US/Arizona'",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          }
+        },
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "meta::pure::metamodel::type::Any"
+        }
+      },
+      {
+        "_type": "relational",
+        "sqlQuery": "select ID, TIME from tradeTable",
+        "connection": {
+          "_type": "RelationalDatabaseConnection",
+          "type": "H2",
+          "timeZone": "'US/Arizona'",
+          "datasourceSpecification": {
+            "_type": "h2Local"
+          },
+          "authenticationStrategy": {
+            "_type": "h2Default"
+          }
+        },
+        "resultType": {
+          "_type": "dataType",
+          "dataType": "meta::pure::metamodel::type::Any"
+        }
+      }
+    ]
+  }
+}
