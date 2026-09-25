@@ -108,8 +108,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='position(%s, %s)')), 
     dynaFnToSql('jaroWinklerSimilarity',  $allStates,            ^ToSql(format='jaroWinklerSimilarity(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='concatWithSeparator(%s, %s)')),
-    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
-    dynaFnToSql('lead',                   $allStates,            ^ToSql(format='leadInFrame(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
+    // Past the frame edge *InFrame returns the column type's default (0, ''), not NULL, unless the column is Nullable.
+    dynaFnToSql('lag',                    $allStates,            ^ToSql(format='lagInFrame(%s)', transform={p:String[*]|'toNullable(' + $p->at(0) + ')' + $p->tail()->map(x|', ' + $x)->joinStrings('')})),
+    dynaFnToSql('lead',                   $allStates,            ^ToSql(format='leadInFrame(%s)', transform={p:String[*]|'toNullable(' + $p->at(0) + ')' + $p->tail()->map(x|', ' + $x)->joinStrings('')})),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('levenshteinDistance',    $allStates,            ^ToSql(format='damerauLevenshteinDistance(%s, %s)')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='log(%s)')), 
