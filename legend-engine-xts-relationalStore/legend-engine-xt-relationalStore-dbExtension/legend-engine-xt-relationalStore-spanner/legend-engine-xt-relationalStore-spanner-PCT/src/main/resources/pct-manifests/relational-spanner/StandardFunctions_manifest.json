@@ -234,10 +234,7 @@
     "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2D\nactual:   2.0\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
@@ -288,10 +285,7 @@
     "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] Window Columns not supported for Database Type: Spanner\""

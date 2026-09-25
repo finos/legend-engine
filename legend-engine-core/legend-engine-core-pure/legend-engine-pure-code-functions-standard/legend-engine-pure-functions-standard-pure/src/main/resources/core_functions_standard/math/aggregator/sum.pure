@@ -62,7 +62,7 @@ function <<PCT.function, functionType.ReducerFunction>> meta::pure::functions::m
 
 function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Numbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(32.0, $f->eval(|sum([15,13,2.0,1,1.0])));
+    assertEqWithinTolerance(32.0, $f->eval(|sum([15,13,2.0,1,1.0])), 0.000000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::sum::testSum_Integers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]

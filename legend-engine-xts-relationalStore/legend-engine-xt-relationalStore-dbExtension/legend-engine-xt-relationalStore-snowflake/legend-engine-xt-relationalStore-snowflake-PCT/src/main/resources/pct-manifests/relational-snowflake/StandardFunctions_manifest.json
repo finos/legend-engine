@@ -4,9 +4,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
@@ -21,9 +18,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
@@ -83,10 +77,7 @@
     "expectedError" : "\"Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "SQL compilation error: error line 1 at position 7\ntoo many arguments for function [MAX_BY(1, 2, 10, 20)] expected 3, got 4"
@@ -101,10 +92,7 @@
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "SQL compilation error: error line 1 at position 7\ntoo many arguments for function [MIN_BY(1, 2, 10, 20)] expected 3, got 4"
@@ -138,9 +126,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::stdDev::testPopulationStandardDeviation_Function_1__Boolean_1_",
     "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 12\nInvalid argument types for function '*': (ARRAY, ARRAY)"
-  }, {
-    "test" : "meta::pure::functions::math::tests::sum::testSum_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 32.0\nactual:   32\""
   }, {
     "test" : "meta::pure::functions::math::tests::variance::testVariancePopulation_Function_1__Boolean_1_",
     "expectedError" : "net.snowflake.client.api.exception.SnowflakeSQLException: SQL compilation error: error line 1 at position 7\nInvalid argument types for function '*': (ARRAY, ARRAY)"

@@ -235,9 +235,6 @@
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for max operator."
   }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
-  }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""
   }, {
@@ -279,9 +276,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Operand data type NULL is invalid for min operator."
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
