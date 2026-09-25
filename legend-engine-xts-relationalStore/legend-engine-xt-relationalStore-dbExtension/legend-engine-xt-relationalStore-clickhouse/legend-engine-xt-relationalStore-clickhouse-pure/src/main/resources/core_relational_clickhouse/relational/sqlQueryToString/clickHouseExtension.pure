@@ -207,7 +207,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::click
                                              offsetFrom = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.PRECEDING),
                                              offsetTo   = ^meta::relational::metamodel::UnboundedFrameValue(direction = meta::relational::metamodel::FrameValueDirection.FOLLOWING))));,
         | $w);
-   $effectiveWindow->processWindowColumn($sgc);
+   let window = $effectiveWindow.window;
+   // NULL order keys are peers only of each other, but a ClickHouse RANGE offset frame reaches across them.
+   let separateNullKeys = $window.frame->match([
+        f:meta::relational::metamodel::Frame[1] | ($window.sortBy->size() == 1) && ($f.frameType == meta::relational::metamodel::FrameType.RANGE)
+                                                  && ![$f.offsetFrom, $f.offsetTo]->exists(v | $v->instanceOf(meta::relational::metamodel::UnboundedFrameValue)),
+        f:meta::relational::metamodel::Frame[0] | false
+   ]);
+   if($separateNullKeys,
+      | ^$effectiveWindow(window = ^$window(partition = $window.partition->concatenate(^meta::relational::metamodel::DynaFunction(name = 'isNull', parameters = $window.sortBy->toOne().sortByElement)))),
+      | $effectiveWindow
+   )->processWindowColumn($sgc);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::clickhouse::hasNullableJoinInTree(data:RelationalTreeNode[0..1]):Boolean[1]
