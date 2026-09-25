@@ -110,6 +110,11 @@ public class Identity
         return credentials.isEmpty() || credentials.stream().allMatch(Credential::isValid);
     }
 
+    public boolean isAnonymous()
+    {
+        return getCredential(AnonymousCredential.class).isPresent();
+    }
+
     public static Identity makeUnknownIdentity()
     {
         return new Identity("_UNKNOWN_");

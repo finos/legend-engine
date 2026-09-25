@@ -62,8 +62,12 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
 
     private String deployStub;
 
-    private String enrichDeploymentLocation(String deploymentLocation, String appName)
+    static String enrichDeploymentLocation(String deploymentLocation, String deployStub, String appName)
     {
+        if (deploymentLocation == null || deploymentLocation.isEmpty())
+        {
+            return deploymentLocation;
+        }
         return deploymentLocation + String.format(deployStub, appName);
     }
 
@@ -115,7 +119,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
-            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(artifact.deployedLocation, appName));
+            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(artifact.deployedLocation, deployStub, appName));
         }
         catch (Exception e)
         {

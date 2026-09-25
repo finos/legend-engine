@@ -16,14 +16,21 @@ package org.finos.legend.engine.language.snowflakeApp.generator.test;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.snowflake.generator.extension.test.FakeLakehouseDatasourceSpecification;
+import org.finos.legend.engine.language.snowflake.generator.extension.test.FakeThrowingLakehouseDatasourceSpecification;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppContent;
+import org.finos.legend.engine.protocol.snowflake.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -68,8 +75,20 @@ public class TestSnowflakeAppGenerator
 
     private SnowflakeAppArtifact generateForActivator(String activatorPath, PureModel pureModel)
     {
+        return generateForActivator(activatorPath, pureModel, Identity.getAnonymousIdentity());
+    }
+
+    private SnowflakeAppArtifact generateForActivator(String activatorPath, PureModel pureModel, Identity identity)
+    {
         Root_meta_external_function_activator_snowflakeApp_SnowflakeApp app = (Root_meta_external_function_activator_snowflakeApp_SnowflakeApp) Root_meta_pure_functions_meta_pathToElement_String_1__PackageableElement_1_(activatorPath, pureModel.getExecutionSupport());
-        return SnowflakeAppGenerator.generateArtifact(pureModel, app, this.contextData, routerExtensions);
+        return SnowflakeAppGenerator.generateArtifact(pureModel, app, this.contextData, routerExtensions, identity);
+    }
+
+    private RelationalDatabaseConnection deploymentConnection()
+    {
+        return (RelationalDatabaseConnection) Lists.mutable.withAll(this.contextData.getElementsOfType(PackageableConnection.class))
+                .select(c -> c.getPath().equals("demo::connections::DeploymentConnection"))
+                .getFirst().connectionValue;
     }
 
     @Test
@@ -107,5 +126,48 @@ public class TestSnowflakeAppGenerator
         String expected = "CREATE OR REPLACE SECURE FUNCTION ${catalogSchemaName}.My_Deployment_Schema.UDTFWITHDEPLOYMENTSCHEMA(\"nameLength\" INTEGER,\"nameStart\" VARCHAR) RETURNS TABLE (\"APP NAME\" VARCHAR,\"QUERY\" VARCHAR,\"OWNER\" VARCHAR,\"VERSION\" VARCHAR,\"DOC\" VARCHAR) LANGUAGE SQL AS $$ select \"root\".APP_NAME as \"App Name\", \"root\".SQL_FRAGMENT as \"Query\", \"root\".OWNER as \"Owner\", \"root\".VERSION_NUMBER as \"Version\", \"root\".DESCRIPTION as \"Doc\" from LEGEND_GOVERNANCE.BUSINESS_OBJECTS as \"root\" where (length(\"root\".APP_NAME) > nameLength and startswith(\"root\".APP_NAME,nameStart)) $$;";
         Assert.assertEquals(expected, ((SnowflakeAppContent)artifact.content).createStatement);
         Assert.assertNull(((SnowflakeAppContent) artifact.content).grantStatement);
+    }
+
+    @Test
+    public void testForeignDatasourceSpecificationResolvedViaExtension()
+    {
+        FakeLakehouseDatasourceSpecification fakeSpec = new FakeLakehouseDatasourceSpecification();
+        fakeSpec.environment = "fake-region";
+        fakeSpec.warehouse = "fake-account";
+        fakeSpec.database = "fake-database";
+        this.deploymentConnection().datasourceSpecification = fakeSpec;
+
+        SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::App1", this.pureModel);
+        String expectedDeployedLocation = "https://app.fake-region.privatelink.snowflakecomputing.com/fake-region/fake-account:Anonymous/data/databases/FAKE-DATABASE";
+        Assert.assertEquals(expectedDeployedLocation, artifact.deployedLocation);
+    }
+
+    @Test
+    public void testGenerationSucceedsWhenDatasourceResolutionThrows()
+    {
+        this.deploymentConnection().datasourceSpecification = new FakeThrowingLakehouseDatasourceSpecification();
+
+        SnowflakeAppArtifact artifact = generateForActivator("demo::activators::snowflakeApp::App1", this.pureModel);
+        Assert.assertEquals("", artifact.deployedLocation);
+        Assert.assertEquals(this.deploymentConnection(), ((SnowflakeAppDeploymentConfiguration) artifact.deploymentConfiguration).connection);
+    }
+
+    @Test
+    public void testGenerationPropagatesDatasourceResolutionFailureForNonAnonymousIdentity()
+    {
+        this.deploymentConnection().datasourceSpecification = new FakeThrowingLakehouseDatasourceSpecification();
+        Identity nonAnonymousIdentity = new Identity("someRealUser", new Credential()
+        {
+        });
+
+        try
+        {
+            generateForActivator("demo::activators::snowflakeApp::App1", this.pureModel, nonAnonymousIdentity);
+            Assert.fail("Expected an exception to be thrown for a non-anonymous identity");
+        }
+        catch (RuntimeException e)
+        {
+            Assert.assertEquals("Simulated failure resolving a live/authenticated datasource specification.", e.getMessage());
+        }
     }
 }
