@@ -104,6 +104,10 @@ public class Project extends Shared
                 {
                     colRes = vals.toArray(new Object[0]);
                 }
+                if (functionType._returnType()._rawType() == _Package.getByUserPath(M3Paths.Boolean, processorSupport))
+                {
+                    colRes = vals.toArray(new Object[0]);
+                }
 
                 TestTDS resTDS = tds.addColumn(names.get(i++), functionType._returnType(), functionType._returnMultiplicity(), colRes);
                 if (vals.isEmpty())
@@ -138,6 +142,10 @@ public class Project extends Shared
         else if (type == _Package.getByUserPath("Float", processorSupport))
         {
             val = PrimitiveUtilities::getFloatValue;
+        }
+        else if (type == _Package.getByUserPath("Boolean", processorSupport))
+        {
+            val = PrimitiveUtilities::getBooleanValue;
         }
         else
         {
