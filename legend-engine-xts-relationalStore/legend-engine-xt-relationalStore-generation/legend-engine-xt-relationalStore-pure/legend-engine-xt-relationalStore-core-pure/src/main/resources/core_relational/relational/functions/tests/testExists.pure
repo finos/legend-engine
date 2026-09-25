@@ -520,7 +520,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::filter
    assertSameSQL('select "root".FIRSTNAME as "firstName" from personTable as "root" left outer join (select distinct "othernamestable_1".PERSON_ID from otherNamesTable as "othernamestable_1" where "othernamestable_1".OTHER_NAME = \'abc\') as "othernamestable_0" on ("root".ID = "othernamestable_0".PERSON_ID) where "othernamestable_0".PERSON_ID is not null', $result);
 }
 
-function <<test.ToFix>> meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::filter::exists::testMultipleExistsOnSameProperty():Boolean[1]
 {
    let result1 = execute(
       |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter'))->project(col(x|$x.legalName, 'name')),
@@ -539,4 +539,10 @@ function <<test.ToFix>> meta::relational::tests::query::filter::exists::testMult
       simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertEquals('name\nFirm X\nFirm C\n', $result3.values->meta::relational::tests::csv::toCSV());
+
+   let result4 = execute(
+      |Firm.all()->filter(f|$f.employees->exists(e|$e.firstName == 'Peter') && $f.employees->exists(e|$e.lastName == 'Smith'))->project(col(x|$x.legalName, 'name')),
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
+   );
+   assertEquals('name\nFirm X\n', $result4.values->meta::relational::tests::csv::toCSV());
 }
