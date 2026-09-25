@@ -1,0 +1,57 @@
+name: relational-service-dates
+title: "Dates in Relational Service Queries"
+description: |
+  Services that select rows by date, each asked twice: once with its dates
+  written into the query and once with them given as parameters, since a
+  literal reaches the SQL when the plan is generated and a parameter only when
+  it runs. The dates go to all() on a business temporal class with DATE
+  columns, a processing temporal class with TIMESTAMP columns, and a bitemporal
+  class with TIMESTAMP columns for both dimensions; to milestoned properties
+  navigated from a class that is not milestoned; and to filters on plain DATE
+  and TIMESTAMP columns.
+
+  Every version boundary in the data falls where a wrong reading of the date
+  changes the answer, and each parameterized service has a second test whose
+  value moves it. The bitemporal data splits the two dimensions at different
+  moments, so swapping the dates or dropping either one reads another grade.
+  The connection names no time zone; relational-service-dates-time-zone asks
+  the same questions of the same rows through one that does.
+
+modelSources:
+  model:
+    root: relational-service-dates
+    files:
+      - data/testData.pure
+      - runtime/runtime.pure
+      - service/asOfServices.pure
+      - service/filterServices.pure
+  dependencies:
+    - source: relational-shared-dates.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - execution:test-data
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - service-test
+  - parameters
+  - milestoning
+  - bitemporal
+  - date-time
