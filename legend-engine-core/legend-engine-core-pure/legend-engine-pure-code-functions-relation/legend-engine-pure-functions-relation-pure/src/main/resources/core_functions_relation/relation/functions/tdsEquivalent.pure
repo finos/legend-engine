@@ -64,7 +64,7 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
           $acc && 
           if ([
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
-                    |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && (abs($a.first.values->toOne()->cast(@Number) - $a.second.values->toOne()->cast(@Number)) <= abs($delta))))),
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && (abs($a.first.values->toOne()->cast(@Number)->toDecimal() - $a.second.values->toOne()->cast(@Number)->toDecimal()) <= abs($delta->toDecimal()))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
                     |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && (abs(dateDiff($a.first.values->toOne()->cast(@Date), $a.second.values->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant),
@@ -269,6 +269,37 @@ function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::te
         3, 3, c, 2026-01-07T00:02:00.000+0000
       #,
       0,
+      0
+  )
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testNumberDifferenceEqualToDelta():Boolean[1]
+{
+  assertTdsEquivalent(
+      #TDS
+        id:Integer[1], val:Float[1]
+        1, 101.16667
+      #,
+      #TDS
+        id:Integer[1], val:Float[1]
+        1, 101.16666
+      #,
+      0.00001
+  )
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testNumberDifferenceOverDelta():Boolean[1]
+{
+  assertNotEquivalent(
+      #TDS
+        id:Integer[1], val:Float[1]
+        1, 101.16667
+      #,
+      #TDS
+        id:Integer[1], val:Float[1]
+        1, 101.16665
+      #,
+      0.00001,
       0
   )
 }
