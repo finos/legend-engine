@@ -349,13 +349,17 @@ Service demo::m2m::dates::service::TradesExecutedBeforeWrittenWithAnOffset
 
 // Trade is not milestoned, so the date reaches Product only through the
 // milestoned property the graph fetch names. The feed carries every version
-// of each product, and the date selects the one recorded for it: Widget Mk2
-// for the Widget trades, and none for the Gadget trades, whose product has no
-// version on 2025-07-02.
-Service demo::m2m::dates::service::TradeProductsAsOf
+// of each product, and the date selects the one recorded for it: on
+// 2025-07-02, Widget Mk2 for the Widget trades and none for the Gadget
+// trades, whose product has no version that day.
+//
+// A graph fetch names each field when the plan is generated, from the text of
+// the query, so a date written in names the field for that date, and a date
+// given as a parameter names it product($businessDate) whatever the date is.
+Service demo::m2m::dates::service::TradeProductsAsOfLiteral
 {
   pattern: '/api/m2m/dates/trades/products';
-  documentation: 'Trades with their product as of a business date.';
+  documentation: 'Trades with their product as of a business date, written into the query.';
   autoActivateUpdates: true;
   execution: Single
   {
@@ -393,6 +397,159 @@ Service demo::m2m::dates::service::TradeProductsAsOf
                   #{
                     contentType: 'application/json';
                     data: '[{"id":1,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":2,"product(2025-07-02)":null},{"id":3,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":4,"product(2025-07-02)":null},{"id":5,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::service::TradeProductsAsOfParameter
+{
+  pattern: '/api/m2m/dates/trades/products/{businessDate}';
+  documentation: 'Trades with their product as of a business date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::m2m::dates::Trade.all()->graphFetch(#{demo::m2m::dates::Trade{id, product($businessDate){name, businessDate}}}#)->serialize(#{demo::m2m::dates::Trade{id, product($businessDate){name, businessDate}}}#)};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            businessDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReadTheVersionOnThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"product($businessDate)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":2,"product($businessDate)":null},{"id":3,"product($businessDate)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":4,"product($businessDate)":null},{"id":5,"product($businessDate)":{"name":"Widget Mk2","businessDate":"2025-07-02"}}]';
+                  }#;
+              }#
+          ]
+        },
+        firstOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            businessDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldReadTheVersionOnThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"product($businessDate)":{"name":"Widget","businessDate":"2025-07-01"}},{"id":2,"product($businessDate)":{"name":"Gadget","businessDate":"2025-07-01"}},{"id":3,"product($businessDate)":{"name":"Widget","businessDate":"2025-07-01"}},{"id":4,"product($businessDate)":{"name":"Gadget","businessDate":"2025-07-01"}},{"id":5,"product($businessDate)":{"name":"Widget","businessDate":"2025-07-01"}}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The date given as a parameter, with the field given a name of its own in
+// the graph fetch, so that its name does not depend on how the query spells
+// the date.
+Service demo::m2m::dates::service::TradeProductsAsOfParameterAliased
+{
+  pattern: '/api/m2m/dates/trades/products/aliased/{businessDate}';
+  documentation: 'Trades with their product as of a business date given as a parameter, under a field name of its own.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::m2m::dates::Trade.all()->graphFetch(#{demo::m2m::dates::Trade{id, 'productOnDate':product($businessDate){name, businessDate}}}#)->serialize(#{demo::m2m::dates::Trade{id, 'productOnDate':product($businessDate){name, businessDate}}}#)};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            businessDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReadTheVersionOnThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"productOnDate":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":2,"productOnDate":null},{"id":3,"productOnDate":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":4,"productOnDate":null},{"id":5,"productOnDate":{"name":"Widget Mk2","businessDate":"2025-07-02"}}]';
+                  }#;
+              }#
+          ]
+        },
+        firstOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            businessDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldReadTheVersionOnThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"productOnDate":{"name":"Widget","businessDate":"2025-07-01"}},{"id":2,"productOnDate":{"name":"Gadget","businessDate":"2025-07-01"}},{"id":3,"productOnDate":{"name":"Widget","businessDate":"2025-07-01"}},{"id":4,"productOnDate":{"name":"Gadget","businessDate":"2025-07-01"}},{"id":5,"productOnDate":{"name":"Widget","businessDate":"2025-07-01"}}]';
                   }#;
               }#
           ]

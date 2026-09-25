@@ -8,6 +8,12 @@ description: |
   graph fetch, which selects the version of each trade's product recorded on
   that date, or none.
 
+  A graph fetch names each field when the plan is generated, from the text of
+  the query, so a milestoned property given its date as a parameter writes its
+  field as product($businessDate), whatever the date. One service pins that name;
+  another gives the field an alias, which is how a service would usually avoid
+  it.
+
   Some date-times are written with an offset: one in the feed, one in a
   literal, and one in a parameter value. An offset is resolved to UTC when the
   literal is compiled or the value read, so these are other spellings of the
