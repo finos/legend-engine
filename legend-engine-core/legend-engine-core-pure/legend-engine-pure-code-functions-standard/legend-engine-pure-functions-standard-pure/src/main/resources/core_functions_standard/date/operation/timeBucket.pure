@@ -210,9 +210,6 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate
   assertEquals(%2024-01-24, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.DAYS)));
   assertEquals(%2024-01-30, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.DAYS)));
   assertEquals(%2024-01-18, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.DAYS)));
-  assertEquals(%2024-01-30, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.DAYS)));
-  assertEquals(%2024-01-28, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.DAYS)));
-  assertEquals(%2024-01-24, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.DAYS)));
   assertEquals(%1951-10-20, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.DAYS)));
   assertEquals(%2124-08-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.DAYS)));
 }
@@ -225,9 +222,6 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate
   assertEquals(%2023-10-23, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.WEEKS)));
   assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.WEEKS)));
   assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.WEEKS)));
-  assertEquals(%2024-01-29, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.WEEKS)));
-  assertEquals(%2024-01-15, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.WEEKS)));
-  assertEquals(%2023-10-23, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.WEEKS)));
   assertEquals(%1951-10-08, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.WEEKS)));
   assertEquals(%2124-01-31, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.WEEKS)));
 }
@@ -240,9 +234,6 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate
   assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.MONTHS)));
   assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.MONTHS)));
   assertEquals(%2022-07-01, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.MONTHS)));
-  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.MONTHS)));
-  assertEquals(%2023-05-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.MONTHS)));
-  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.MONTHS)));
   assertEquals(%1951-10-01, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.MONTHS)));
   assertEquals(%2122-07-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.MONTHS)));
 }
@@ -255,9 +246,6 @@ function <<PCT.test>> meta::pure::functions::date::tests::timeBucket::strictDate
   assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.YEARS)));
   assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(3, DurationUnit.YEARS)));
   assertEquals(%2000-01-01, $f->eval(|%2024-01-31->timeBucket(30, DurationUnit.YEARS)));
-  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(2, DurationUnit.YEARS)));
-  assertEquals(%2020-01-01, $f->eval(|%2024-01-31->timeBucket(10, DurationUnit.YEARS)));
-  assertEquals(%2024-01-01, $f->eval(|%2024-01-31->timeBucket(18, DurationUnit.YEARS)));
   assertEquals(%1949-01-01, $f->eval(|%1951-10-21->timeBucket(3, DurationUnit.YEARS)));
   assertEquals(%2120-01-01, $f->eval(|%2124-08-21->timeBucket(30, DurationUnit.YEARS)));
 }
