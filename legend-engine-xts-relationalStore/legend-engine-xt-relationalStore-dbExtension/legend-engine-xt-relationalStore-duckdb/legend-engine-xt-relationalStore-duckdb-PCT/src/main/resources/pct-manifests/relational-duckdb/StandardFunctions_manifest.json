@@ -159,7 +159,7 @@
     },
     {
       "test": "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-      "expectedError": "\"Unused format args. [5] arguments provided to expression \"mode(%s)\"\""
+      "expectedError": "Unused format args. [3] arguments provided to expression \"mode(%s)\""
     },
     {
       "test" : "meta::pure::functions::math::tests::percentile::testPercentile_Function_1__Boolean_1_",

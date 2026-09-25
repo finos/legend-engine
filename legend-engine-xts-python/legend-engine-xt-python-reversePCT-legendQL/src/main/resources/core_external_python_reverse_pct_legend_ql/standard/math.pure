@@ -955,7 +955,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
 
       meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_->testRev(
         [
-          noRev('|5->meta::pure::functions::math::mode()'),
+          noRev('|[5, 2.0, 5]->meta::pure::functions::math::mode()'),
           noRev('|[3, 3.0, 3, 2, 2]->meta::pure::functions::math::mode()'),
           noRev('|[3, 2, 3.0, 7.0, 2, 2, 3, 2.0, 2.0]->meta::pure::functions::math::mode()')
         ]

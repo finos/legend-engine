@@ -228,7 +228,7 @@
     "expectedError" : "Expected one of: token, Comma, FROM, PREWHERE, WHERE, GROUP BY, WITH, HAVING, WINDOW, QUALIFY, ORDER BY, LIMIT, OFFSET, FETCH, SETTINGS, UNION, EXCEPT, INTERSECT, INTO OUTFILE, FORMAT, ParallelWithClause, PARALLEL WITH, end of query."
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"topK(1)(%s)[1]\"\""
+    "expectedError" : "Unused format args. [3] arguments provided to expression \"topK(1)(%s)[1]\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "Expected one of: token, Comma, FROM, PREWHERE, WHERE, GROUP BY, WITH, HAVING, WINDOW, QUALIFY, ORDER BY, LIMIT, OFFSET, FETCH, SETTINGS, UNION, EXCEPT, INTERSECT, INTO OUTFILE, FORMAT, ParallelWithClause, PARALLEL WITH, end of query."

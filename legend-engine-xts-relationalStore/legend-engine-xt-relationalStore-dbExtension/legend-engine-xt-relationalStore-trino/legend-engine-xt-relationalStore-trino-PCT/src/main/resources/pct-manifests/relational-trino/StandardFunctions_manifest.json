@@ -254,7 +254,7 @@
     "expectedError" : "Function 'mode' not registered"
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "Function 'mode' not registered"
+    "expectedError" : "Unused format args. [3] arguments provided to expression \"mode(%s)\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
     "expectedError" : "Function 'mode' not registered"
