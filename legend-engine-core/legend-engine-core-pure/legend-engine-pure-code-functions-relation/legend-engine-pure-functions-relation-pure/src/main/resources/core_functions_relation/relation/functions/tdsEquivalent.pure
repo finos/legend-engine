@@ -59,18 +59,18 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
    let twoCol = $two->meta::pure::functions::relation::columns();
    $oneCol->size() == $twoCol->size() && $oneCol.name == $twoCol.name && $one->size() == $two->size() &&
    if($oneCol->zip($twoCol)->fold({cols, acc|
-          let oneVals = $one->map(x|$cols.first->eval($x));
-          let twoVals = $two->map(x|$cols.second->eval($x));
+          let oneVals = $one->map(x|list($cols.first->eval($x)));
+          let twoVals = $two->map(x|list($cols.second->eval($x)));
           $acc && 
           if ([
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
-                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta))))),
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && (abs($a.first.values->toOne()->cast(@Number) - $a.second.values->toOne()->cast(@Number)) <= abs($delta))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
-                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds))))),
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && (abs(dateDiff($a.first.values->toOne()->cast(@Date), $a.second.values->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant),
-                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->toOne()->toString() == $a.second->toOne()->toString())))
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first.values->isEmpty() && $a.second.values->isEmpty()) || ((!$a.first.values->isEmpty() && !$a.second.values->isEmpty()) && $a.first.values->toOne()->toString() == $a.second.values->toOne()->toString())))
               ],
-              |$oneVals == $twoVals
+              |$oneVals->zip($twoVals)->forAll(a| $a.first.values == $a.second.values)
           );
         },
         true
@@ -217,4 +217,58 @@ function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::te
       2, x
       3, c
     #->extend(~v:x|$x.s->toVariant())->select(~[id, v]), 0, 0);
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testNullAgainstValue():Boolean[1]
+{
+  let expected = #TDS
+      id:Integer[1], val:Integer[0..1], name:String[0..1]
+      1, 1, a
+      2, null, null
+      3, 3, c
+    #;
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Integer[0..1], name:String[0..1]
+      1, 1, a
+      2, 2, null
+      3, 3, c
+    #, 0, 0);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Integer[0..1], name:String[0..1]
+      1, 1, a
+      2, null, null
+      3, null, c
+    #, 0, 0);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Integer[0..1], name:String[0..1]
+      1, null, a
+      2, 1, null
+      3, 3, c
+    #, 0, 0);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Integer[0..1], name:String[0..1]
+      1, 1, a
+      2, null, c
+      3, 3, null
+    #, 0, 0);
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testNullsInSameRows():Boolean[1]
+{
+  assertTdsEquivalent(
+      #TDS
+        id:Integer[1], val:Integer[0..1], name:String[0..1], ts:DateTime[0..1]
+        1, 1, a, 2026-01-07T00:00:00.000+0000
+        2, null, null, null
+        3, 3, c, 2026-01-07T00:02:00.000+0000
+      #,
+      #TDS
+        id:Integer[1], val:Integer[0..1], name:String[0..1], ts:DateTime[0..1]
+        1, 1, a, 2026-01-07T00:00:00.000+0000
+        2, null, null, null
+        3, 3, c, 2026-01-07T00:02:00.000+0000
+      #,
+      0,
+      0
+  )
 }
