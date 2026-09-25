@@ -1,0 +1,37 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Each class is mapped over the whole of its table. The milestoning a table
+// declares is applied when a temporal class mapped over it is queried at a date.
+
+###Pure
+function demo::relation::dates::func::products(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.PRODUCT}#
+}
+
+function demo::relation::dates::func::accounts(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.ACCOUNT}#
+}
+
+function demo::relation::dates::func::ratings(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.RATING}#
+}
+
+function demo::relation::dates::func::trades(): meta::pure::metamodel::relation::Relation<Any>[1]
+{
+  #>{demo::relation::dates::store::TradingDB.TRADE}#
+}

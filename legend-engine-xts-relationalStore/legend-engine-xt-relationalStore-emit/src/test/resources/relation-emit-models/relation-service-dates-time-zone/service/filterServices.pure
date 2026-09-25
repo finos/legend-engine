@@ -1,0 +1,231 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Dates compared with plain DATE and TIMESTAMP columns rather than used for
+// milestoning.
+
+###Service
+// A calendar date compared with a DATE column, which the zone must leave
+// alone. Moving 2025-07-02 back to the evening of 2025-07-01 would
+// return trade 1 instead.
+Service demo::relation::dates::zoned::service::TradesOnDateLiteral
+{
+  pattern: '/api/relation/dates/zoned/trades/on';
+  documentation: 'Trades made on a date, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Trade.all()->filter(t|$t.tradeDate == %2025-07-02)->sortBy(t|$t.id)->project([t|$t.id, t|$t.tradeDate], ['Id', 'Trade Date']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":2,"Trade Date":"2025-07-02"},{"Id":3,"Trade Date":"2025-07-02"},{"Id":4,"Trade Date":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::TradesOnDateParameter
+{
+  pattern: '/api/relation/dates/zoned/trades/on/{tradeDate}';
+  documentation: 'Trades made on a date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {tradeDate: StrictDate[1]|demo::relation::dates::Trade.all()->filter(t|$t.tradeDate == $tradeDate)->sortBy(t|$t.id)->project([t|$t.id, t|$t.tradeDate], ['Id', 'Trade Date'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            tradeDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":2,"Trade Date":"2025-07-02"},{"Id":3,"Trade Date":"2025-07-02"},{"Id":4,"Trade Date":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        },
+        thirdOfJuly:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            tradeDate = %2025-07-03
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":5,"Trade Date":"2025-07-03"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The cutoff is converted to New York time before it meets EXECUTED_AT,
+// and each EXECUTED_AT read back is converted to UTC, so the comparison
+// and the values returned both move. 15:00 UTC is 11:00 in New York:
+// ignoring the zone would add trade 4, executed at 13:00, and using EST
+// would drop trade 3, executed at 10:45.
+Service demo::relation::dates::zoned::service::TradesExecutedBeforeLiteral
+{
+  pattern: '/api/relation/dates/zoned/trades/before';
+  documentation: 'Trades executed before a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Trade.all()->filter(t|$t.executedAt < %2025-07-02T15:00:00+0000)->sortBy(t|$t.id)->project([t|$t.id, t|$t.executedAt], ['Id', 'Executed At']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T20:00:00.000000000+0000"},{"Id":2,"Executed At":"2025-07-02T13:00:00.000000000+0000"},{"Id":3,"Executed At":"2025-07-02T14:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::TradesExecutedBeforeParameter
+{
+  pattern: '/api/relation/dates/zoned/trades/before/{cutoff}';
+  documentation: 'Trades executed before a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|demo::relation::dates::Trade.all()->filter(t|$t.executedAt < $cutoff)->sortBy(t|$t.id)->project([t|$t.id, t|$t.executedAt], ['Id', 'Executed At'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T20:00:00.000000000+0000"},{"Id":2,"Executed At":"2025-07-02T13:00:00.000000000+0000"},{"Id":3,"Executed At":"2025-07-02T14:45:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            cutoff = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Executed At":"2025-07-01T20:00:00.000000000+0000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
