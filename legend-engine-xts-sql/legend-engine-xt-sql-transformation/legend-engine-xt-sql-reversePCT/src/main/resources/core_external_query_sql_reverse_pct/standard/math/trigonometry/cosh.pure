@@ -65,29 +65,6 @@ function meta::external::query::sql::reversePCT::tests::standard::math::trigonom
                       ]
                  ),
                  revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::cosh(-3.14)',
-                            'select cosh(-3.14)'
-                        ),
-                        rev('|3.14->meta::pure::functions::math::cosh()',
-                            'select cosh(3.14)'
-                        ),
-                        rev('|meta::pure::functions::math::cosh(-0.7654321)',
-                            'select cosh(-0.7654321)'
-                        ),
-                        rev('|0.7654321->meta::pure::functions::math::cosh()',
-                            'select cosh(0.7654321)'
-                        ),
-                        rev('|11.573574828312076->meta::pure::functions::math::cosh()',
-                            'select cosh(11.573574828312076)'
-                        ),
-                        rev('|meta::pure::functions::math::cosh(-11.573574828312076)',
-                            'select cosh(-11.573574828312076)'
-                        )
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_',
                       [
                         noRev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)'),
@@ -109,6 +86,5 @@ function meta::external::query::sql::reversePCT::tests::standard::math::trigonom
    meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Identities(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    //meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

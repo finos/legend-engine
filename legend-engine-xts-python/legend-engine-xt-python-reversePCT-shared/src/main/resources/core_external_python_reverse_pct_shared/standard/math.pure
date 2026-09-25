@@ -47,16 +47,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesStandar
           rev('|meta::pure::functions::math::cosh(-11.573574828312076)', 'c(-11.573574828312076).cosh()')
         ]
       ),
-      meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_->testRev(
-        [
-          rev('|3.14->meta::pure::functions::math::cosh()', 'c(3.14).cosh()'),
-          rev('|meta::pure::functions::math::cosh(-3.14)', 'c(-3.14).cosh()'),
-          rev('|0.7654321->meta::pure::functions::math::cosh()', 'c(.7654321).cosh()'),
-          rev('|meta::pure::functions::math::cosh(-0.7654321)', 'c(-.7654321).cosh()'),
-          rev('|11.573574828312076->meta::pure::functions::math::cosh()', 'c(11.573574828312076).cosh()'),
-          rev('|meta::pure::functions::math::cosh(-11.573574828312076)', 'c(-11.573574828312076).cosh()')
-        ]
-      ),
       meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig_Function_1__Boolean_1_->testRev(
         [
           rev('|meta::pure::functions::math::cosh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)', 'c(0).cosh()'),
@@ -90,16 +80,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesStandar
         ]
       ),
       meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_->testRev(
-        [
-          rev('|3.14->meta::pure::functions::math::sinh()', 'c(3.14).sinh()'),
-          rev('|meta::pure::functions::math::sinh(-3.14)', 'c(-3.14).sinh()'),
-          rev('|0.7654321->meta::pure::functions::math::sinh()', 'c(.7654321).sinh()'),
-          rev('|meta::pure::functions::math::sinh(-0.7654321)', 'c(-.7654321).sinh()'),
-          rev('|11.573574828312076->meta::pure::functions::math::sinh()', 'c(11.573574828312076).sinh()'),
-          rev('|meta::pure::functions::math::sinh(-11.573574828312076)', 'c(-11.573574828312076).sinh()')
-        ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_->testRev(
         [
           rev('|3.14->meta::pure::functions::math::sinh()', 'c(3.14).sinh()'),
           rev('|meta::pure::functions::math::sinh(-3.14)', 'c(-3.14).sinh()'),
@@ -147,16 +127,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesStandar
         ]
       ),
       meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_->testRev(
-        [
-          rev('|3.14->meta::pure::functions::math::tanh()', 'c(3.14).tanh()'),
-          rev('|meta::pure::functions::math::tanh(-3.14)', 'c(-3.14).tanh()'),
-          rev('|0.7654321->meta::pure::functions::math::tanh()', 'c(.7654321).tanh()'),
-          rev('|meta::pure::functions::math::tanh(-0.7654321)', 'c(-.7654321).tanh()'),
-          rev('|11.573574828312076->meta::pure::functions::math::tanh()', 'c(11.573574828312076).tanh()'),
-          rev('|meta::pure::functions::math::tanh(-11.573574828312076)', 'c(-11.573574828312076).tanh()')
-        ]
-      ),
-      meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_->testRev(
         [
           rev('|3.14->meta::pure::functions::math::tanh()', 'c(3.14).tanh()'),
           rev('|meta::pure::functions::math::tanh(-3.14)', 'c(-3.14).tanh()'),

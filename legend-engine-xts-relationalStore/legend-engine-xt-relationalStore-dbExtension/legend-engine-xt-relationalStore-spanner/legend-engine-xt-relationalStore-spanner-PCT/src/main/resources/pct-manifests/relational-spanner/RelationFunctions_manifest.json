@@ -52,12 +52,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
@@ -203,9 +197,6 @@
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "[unsupported-api] Window Columns not supported for Database Type: Spanner"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",

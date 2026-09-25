@@ -199,14 +199,14 @@ handles a computed pivot column; the arithmetic is incidental.
 
 `over(~grp)` with **no sort** frames the whole partition, so the aggregate is the partition total and
 identical on every row of that partition — 16 for all three rows of group 1 in
-`testOLAPCastAggWithPartitionWindow`. Add an order and the default frame changes; that is a property
+`testOLAPAggCastWithPartitionWindow`. Add an order and the default frame changes; that is a property
 of `over` itself and is documented on `over.pure`.
 
 | Test | Pins down |
 |---|---|
 | `testWindowFunctionsAfterProject` | `lead`/`lag` over a projection built from class instances; the first and last row of each partition come back `null` |
 | `testGroupByCastBeforeAgg` / `testGroupByCastAfterAgg` | `cast` is a no-op whether applied to the values or the aggregate result |
-| `testOLAPCastAggWithPartitionWindow` and three siblings | The same no-op property in all four positions available in a windowed aggregate |
+| `testOLAPAggCastWithPartitionWindow` / `testOLAPCastExtractCastAggWithPartitionWindow` | The same no-op property in a windowed aggregate, with the cast on the collected values or on both the extracted value and the result |
 | `testProjectExtendNestedIfLeadAdjust` | `lead` inside a nested `if`, with `adjust` on dates |
 | `testExtendLeadAdjustDerivedOffset` | An `adjust` whose offset is itself read from the `lead` row |
 

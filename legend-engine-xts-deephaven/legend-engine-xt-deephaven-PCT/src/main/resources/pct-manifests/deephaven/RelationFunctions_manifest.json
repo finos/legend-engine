@@ -7,9 +7,6 @@
     "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyLastTwoArg_Function_1__Boolean_1_",
     "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n#'"
   }, {
-    "test" : "meta::pure::functions::relation::tests::sort::testSortEmptyLast_Function_1__Boolean_1_",
-    "expectedError" : "actual:   '#TDS\\n   id,name\\n   null,Neema\\n   null,Pierre\\n   1,Sachin\\n   2,George\\n   3,David\\n#'"
-  }, {
     "test" : "meta::pure::functions::relation::tests::sort::testSortMultipleColumnsMixedNullOrder_Function_1__Boolean_1_",
     "expectedError" : "actual:"
   }, {
@@ -101,12 +98,6 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testOLAPAggCastWithPartitionWindow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastAggWithPartitionWindow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastExtractAggWithPartitionWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testOLAPCastExtractCastAggWithPartitionWindow_Function_1__Boolean_1_",
@@ -432,9 +423,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
@@ -811,9 +799,6 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_RowFunction_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_Aggregate_Filtered_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::aggregate_Relation_1__FuncColSpec_1__Relation_1_"
   }, {
@@ -821,9 +806,6 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredChained_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredDescending_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredOnUnprojectedColumn_Function_1__Boolean_1_",
@@ -1472,9 +1454,6 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSize_GroupBy_FilteredEmptyGroup_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::size::testSize_GroupBy_Filtered_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__FuncColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testSize_Relation_Aggregate_Function_1__Boolean_1_",

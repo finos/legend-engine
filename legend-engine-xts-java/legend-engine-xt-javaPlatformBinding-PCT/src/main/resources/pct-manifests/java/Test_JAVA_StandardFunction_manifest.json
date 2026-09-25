@@ -442,10 +442,6 @@
       "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
     },
     {
-      "test": "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval_Function_1__Boolean_1_",
-      "expectedError": "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Floats_Function_1__Boolean_1_",
       "expectedError": "\"meta::pure::functions::math::cosh_Number_1__Float_1_ is not supported yet!\""
     },
@@ -462,10 +458,6 @@
       "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
     },
     {
-      "test": "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval_Function_1__Boolean_1_",
-      "expectedError": "\"meta::pure::functions::math::sinh_Number_1__Float_1_ is not supported yet!\""
-    },
-    {
       "test": "meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Floats_Function_1__Boolean_1_",
       "expectedError": "\"meta::pure::functions::math::sinh_Number_1__Float_1_ is not supported yet!\""
     },
@@ -480,10 +472,6 @@
     {
       "test": "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_",
       "expectedError": "\"eval_Function_1__T_n__V_m_ is prohibited!\""
-    },
-    {
-      "test": "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_",
-      "expectedError": "\"meta::pure::functions::math::tanh_Number_1__Float_1_ is not supported yet!\""
     },
     {
       "test": "meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats_Function_1__Boolean_1_",
