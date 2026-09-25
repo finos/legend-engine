@@ -475,100 +475,10 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_StringPivotValue_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_CurrentRow_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: insert into leSchema.tb_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "Window function with range frame using interval is not supported for this database type: SqlServer"
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_ExplicitOffsets_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NFollowing_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
@@ -577,46 +487,7 @@
     "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
     "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
   }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithNullValues_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_NPreceding_UnboundedFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithNullValues_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NFollowing_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_UnboundedPreceding_NPreceding_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "RANGE is only supported with UNBOUNDED and CURRENT ROW window frame delimiters."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_CurrentRow_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "Incorrect syntax near '2.1'."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "Incorrect syntax near '0.5'."
-  }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithMultiplePartitions_WithoutOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "Window frame with ROWS or RANGE must have an ORDER BY clause."
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRows_UnboundedPreceding_UnboundedFollowing_WithSinglePartition_WithoutOrderBy_Function_1__Boolean_1_",
     "expectedError" : "Window frame with ROWS or RANGE must have an ORDER BY clause."
   }, {
     "test" : "meta::pure::functions::relation::tests::size::testGroupBySize_Function_1__Boolean_1_",
