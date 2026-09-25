@@ -898,6 +898,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::getColumnType
 {
     $type->match([
        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT',
+       b : meta::relational::metamodel::datatype::Bit[1] | 'BOOLEAN',
        a : meta::relational::metamodel::datatype::DataType[1] | $a->getColumnTypeSqlTextDefault()
     ]);
 }

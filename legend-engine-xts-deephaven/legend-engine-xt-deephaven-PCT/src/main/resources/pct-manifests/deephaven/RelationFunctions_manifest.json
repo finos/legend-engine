@@ -61,6 +61,30 @@
     "test" : "meta::pure::functions::relation::tests::composition::testExtendWindowFilter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanColumnAsIfCondition_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanPropertyAsIfCondition_Function_1__Boolean_1_",
+    "expectedError" : "Unexpected token"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanProperty_Function_1__Boolean_1_",
+    "expectedError" : "Unexpected token"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumnDirectly_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: flag\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithMixedPredicateAndLiteralIf_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithBooleanIfPredicate_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumn_Function_1__Boolean_1_",
+    "expectedError" : "NOT_FOUND: Could not resolve 'sourceId: variable"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterOnBooleanValuedExpression_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::lang::if_Boolean_1__Function_1__Function_1__T_m_\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testFilterArithmeticComparisonExpression_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::boolean::lessThan_Number_1__Number_1__Boolean_1_"
   }, {

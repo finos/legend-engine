@@ -406,6 +406,7 @@ function <<access.private>> meta::relational::functions::toPostgresModel::getDyn
     pair('convertDate',               {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_date', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD')), | $p))}),
     pair('convertDateTime',           {p:meta::external::query::sql::metamodel::Expression[*]| functionCall('to_timestamp', if($p->size() == 1, | $p->concatenate(literal('YYYY-MM-DD HH24:MI:SS')), | $p))}),
     pair('group',                     {p:meta::external::query::sql::metamodel::Expression[*]| $p->toOne()}),
+    pair('booleanColumn',             {p:meta::external::query::sql::metamodel::Expression[*]| $p->toOne()}),
     pair('repeatString',              functionCall('repeat')),
     pair('replace',                   functionCall('replace')),
     pair('indexOf',                   functionCall('strpos')),

@@ -1126,6 +1126,11 @@ function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseEn
    assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), ^Literal(value = ^SQLNull())])->boolOpTestIsBool());
 }
 
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testBooleanColumnRendersAsTheColumnByDefault():Boolean[1]
+{
+   assertEquals('amt', ^DynaFunction(name = 'booleanColumn', parameters = ^ColumnName(name = 'amt'))->processOperation(DatabaseType.H2, meta::relational::extension::relationalExtensions()));
+}
+
 function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseWithoutResultsIsNotBooleanOperation():Boolean[1]
 {
    assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate()])->boolOpTestIsBool());
@@ -1481,6 +1486,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   bitShiftRight,
   bitXor,
   booland,
+  booleanColumn,
   boolor,
   average,
   averageRank,

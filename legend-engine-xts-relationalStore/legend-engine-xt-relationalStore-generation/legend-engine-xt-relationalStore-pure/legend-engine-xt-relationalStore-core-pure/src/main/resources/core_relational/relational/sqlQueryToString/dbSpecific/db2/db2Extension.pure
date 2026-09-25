@@ -117,6 +117,7 @@ function meta::relational::functions::sqlQueryToString::db2::dataTypeToSqlTextFo
     d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(%s, %s)'->format(cappedPrecisionAndScaleForDB2($d.precision, $d.scale)),
     n : meta::relational::metamodel::datatype::Numeric[1] | 'NUMERIC(%s, %s)'->format(cappedPrecisionAndScaleForDB2($n.precision, $n.scale)),
     t : meta::relational::metamodel::datatype::TinyInt[1] | 'SMALLINT',
+    b : meta::relational::metamodel::datatype::Bit[1] | 'BOOLEAN',
     a : Any[1] | $dt->getColumnTypeSqlTextDefault()
   ]);
 }

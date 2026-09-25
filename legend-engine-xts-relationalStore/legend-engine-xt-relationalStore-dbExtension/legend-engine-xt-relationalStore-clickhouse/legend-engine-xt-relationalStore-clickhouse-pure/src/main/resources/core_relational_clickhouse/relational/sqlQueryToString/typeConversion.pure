@@ -49,6 +49,7 @@ function {doc.doc='Given the platform (ie DB agnostic) data types, convert to DB
 {
     $type->match([
         b : meta::relational::metamodel::datatype::Boolean[1] | 'Boolean',
+        b : meta::relational::metamodel::datatype::Bit[1] | 'Boolean',
         i : meta::relational::metamodel::datatype::Integer[1] | 'Int32',
         f : meta::relational::metamodel::datatype::Float[1] | 'Float32',
         v : meta::relational::metamodel::datatype::Varchar[1] | 'String',

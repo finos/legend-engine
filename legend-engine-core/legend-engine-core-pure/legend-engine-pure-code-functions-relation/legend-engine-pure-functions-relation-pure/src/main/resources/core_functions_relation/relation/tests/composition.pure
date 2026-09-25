@@ -41,6 +41,12 @@ Class meta::pure::functions::relation::tests::composition::OptionalPersonTypeFor
   lastName  : String[0..1];
 }
 
+Class meta::pure::functions::relation::tests::composition::FlagTypeForCompositionTests
+{
+  id : Integer[1];
+  enabled : Boolean[1];
+}
+
 Class meta::pure::functions::relation::tests::composition::SimpleNumbersTypeForCompositionTests
 {
   id : Integer[1];
@@ -945,6 +951,160 @@ function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::rela
                 '   id,grp,name\n'+
                 '   3,A,AThree\n'+
                 '#', $res->sort(~name->ascending())->toString());
+}
+
+'''
+A stored boolean column compared, negated and null-checked. Pins the representation a dialect reads a boolean
+column in: a store whose boolean literal is a string has to convert the 0/1 column before comparing it.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumn<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, flag
+              1, true
+              2, false
+              3, true
+              4, null
+            #;
+
+  let isTrue = {|$tds->filter(x | $x.flag == true)};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   1,true\n'+
+                '   3,true\n'+
+                '#', $f->eval($isTrue)->sort(~id->ascending())->toString());
+
+  let isFalse = {|$tds->filter(x | $x.flag == false)};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   2,false\n'+
+                '#', $f->eval($isFalse)->sort(~id->ascending())->toString());
+
+  let isNotTrue = {|$tds->filter(x | !($x.flag == true))};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   2,false\n'+
+                '   4,null\n'+
+                '#', $f->eval($isNotTrue)->sort(~id->ascending())->toString());
+
+  let isMissing = {|$tds->filter(x | $x.flag->isEmpty() || $x.id == 1)};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   1,true\n'+
+                '   4,null\n'+
+                '#', $f->eval($isMissing)->sort(~id->ascending())->toString());
+
+}
+
+'''
+The reported shape with a stored boolean column as the condition.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanColumnAsIfCondition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id, flag
+              1, true
+              2, false
+              3, true
+              4, null
+            #;
+
+  let expr = {|$tds->filter(x | if($x.flag == true, |$x.id > 1, |$x.id > 3))};
+
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   3,true\n'+
+                '   4,null\n'+
+                '#', $f->eval($expr)->sort(~id->ascending())->toString());
+}
+
+'''
+The bare column as the whole predicate, which the relation `filter` accepts once the column is declared `[1]`.
+'''
+function <<PCT.test, PCTRelationQualifier.relation>> meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumnDirectly<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let tds = #TDS
+              id:Integer[1], flag:Boolean[1]
+              1, true
+              2, false
+              3, true
+            #;
+
+  let bare = {|$tds->filter(x | $x.flag)};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   1,true\n'+
+                '   3,true\n'+
+                '#', $f->eval($bare)->sort(~id->ascending())->toString());
+
+  let negated = {|$tds->filter(x | !$x.flag)};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   2,false\n'+
+                '#', $f->eval($negated)->sort(~id->ascending())->toString());
+
+  let composed = {|$tds->filter(x | $x.flag && ($x.id > 1))};
+  assertEquals( '#TDS\n'+
+                '   id,flag\n'+
+                '   3,true\n'+
+                '#', $f->eval($composed)->sort(~id->ascending())->toString());
+}
+
+'''
+The same shapes through a class mapping: the adapter stores the instances in a table and maps the
+Boolean property straight to its column.
+'''
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanProperty<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let flags = [
+    ^FlagTypeForCompositionTests(id = 1, enabled = true),
+    ^FlagTypeForCompositionTests(id = 2, enabled = false),
+    ^FlagTypeForCompositionTests(id = 3, enabled = true),
+    ^FlagTypeForCompositionTests(id = 4, enabled = false)
+  ];
+
+  let bare = {|$flags->filter(x | $x.enabled)->project(~[id : x | $x.id, enabled : x | $x.enabled])};
+  assertEquals( '#TDS\n'+
+                '   id,enabled\n'+
+                '   1,true\n'+
+                '   3,true\n'+
+                '#', $f->eval($bare)->sort(~id->ascending())->toString());
+
+  let isFalse = {|$flags->filter(x | $x.enabled == false)->project(~[id : x | $x.id, enabled : x | $x.enabled])};
+  assertEquals( '#TDS\n'+
+                '   id,enabled\n'+
+                '   2,false\n'+
+                '   4,false\n'+
+                '#', $f->eval($isFalse)->sort(~id->ascending())->toString());
+
+  let negated = {|$flags->filter(x | !$x.enabled)->project(~[id : x | $x.id, enabled : x | $x.enabled])};
+  assertEquals( '#TDS\n'+
+                '   id,enabled\n'+
+                '   2,false\n'+
+                '   4,false\n'+
+                '#', $f->eval($negated)->sort(~id->ascending())->toString());
+
+}
+
+'''
+The reported shape with a stored boolean property as the condition, through a class mapping.
+'''
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanPropertyAsIfCondition<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+  let flags = [
+    ^FlagTypeForCompositionTests(id = 1, enabled = true),
+    ^FlagTypeForCompositionTests(id = 2, enabled = false),
+    ^FlagTypeForCompositionTests(id = 3, enabled = true),
+    ^FlagTypeForCompositionTests(id = 4, enabled = false)
+  ];
+
+  let expr = {|$flags->filter(x | if($x.enabled, |$x.id > 1, |$x.id > 3))->project(~[id : x | $x.id, enabled : x | $x.enabled])};
+
+  assertEquals( '#TDS\n'+
+                '   id,enabled\n'+
+                '   3,true\n'+
+                '   4,false\n'+
+                '#', $f->eval($expr)->sort(~id->ascending())->toString());
 }
 
 '''

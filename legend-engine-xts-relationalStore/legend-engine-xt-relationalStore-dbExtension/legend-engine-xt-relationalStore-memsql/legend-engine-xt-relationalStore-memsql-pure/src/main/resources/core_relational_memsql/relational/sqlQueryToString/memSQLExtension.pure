@@ -126,6 +126,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('atan2',                     $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('booland',                   $allStates,            ^ToSql(format='min(%s)')),
     dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('booleanColumn',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->booleanColumnAsString()})),
     dynaFnToSql('char',                      $allStates,            ^ToSql(format='cast(char(%s) as char)')),
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s <=> %s')),

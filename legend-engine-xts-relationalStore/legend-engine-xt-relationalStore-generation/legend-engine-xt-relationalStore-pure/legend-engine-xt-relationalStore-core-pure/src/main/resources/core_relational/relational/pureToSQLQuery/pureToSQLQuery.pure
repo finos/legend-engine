@@ -758,7 +758,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationStoreAccess
             (
               select = ^TdsSelectSqlQuery
               (
-                columns = $relation.columns->map(c | ^Alias(name = $c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias = $tableAlias, column = $c->cast(@Column)))),
+                columns = $relation.columns->map(c | ^Alias(name = $c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias = $tableAlias, column = $c->cast(@Column))->readStoredBooleanColumn())),
                 data = $node
               )
             );
@@ -935,7 +935,8 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
 
   let checkedColAlias = if($outerColumn->isNotEmpty(), |assertOuterColumnNotShadowed($colAlias, $colFuncName, $leftSelect), |$colAlias);
 
-  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$checkedColAlias),|^$leftSelect(columns=$checkedColAlias));
+  let column = $checkedColAlias->readStoredBooleanColumn();
+  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$column),|^$leftSelect(columns=$column));
 
   let paths = $operation.select->filter(s | $s->instanceOf(TdsSelectSqlQuery))->cast(@TdsSelectSqlQuery).paths;
   let name = $fe.func.name->toOne();
@@ -2269,11 +2270,42 @@ function meta::relational::functions::pureToSqlQuery::processRelationalOperation
               );
   let sel = $res.select;
   if ($state.inFilter,
-      | ^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));,
-      | ^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)));
+      | ^$res(select = ^$sel(filteringOperation = $sel.filteringOperation->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)->readStoredBooleanColumn()));,
+      | ^$res(select = ^$sel(filteringOperation = [], columns = $sel.columns->at(0)->usePropertyName($property, $relationalPropertyMappings, $state, $extensions)->readStoredBooleanColumn()));
       );
 
  }
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::readStoredBooleanColumn(element:RelationalOperationElement[1]):RelationalOperationElement[1]
+{
+  if ($element->instanceOf(TableAliasColumn) && $element->cast(@TableAliasColumn).column.type->isBooleanStoreType(),
+      | ^DynaFunction(name = 'booleanColumn', parameters = $element),
+      | $element);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isBooleanStoreType(type:meta::relational::metamodel::datatype::DataType[1]):Boolean[1]
+{
+  $type->instanceOf(meta::relational::metamodel::datatype::Bit) || $type->instanceOf(meta::relational::metamodel::datatype::Boolean);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::storedColumn(type:meta::relational::metamodel::datatype::DataType[1]):TableAliasColumn[1]
+{
+  ^TableAliasColumn(alias = ^TableAlias(name = 't', relationalElement = ^Table(name = 'T', schema = ^Schema(name = 'default', database = ^Database(name = 'db')))), column = ^Column(name = 'FLAG', type = $type));
+}
+
+function <<test.Test>> meta::relational::functions::pureToSqlQuery::testBooleanStoreColumnsAreReadThroughBooleanColumn():Boolean[1]
+{
+  assertEquals('booleanColumn', storedColumn(^meta::relational::metamodel::datatype::Bit())->readStoredBooleanColumn()->cast(@DynaFunction).name);
+  assertEquals('booleanColumn', storedColumn(^meta::relational::metamodel::datatype::Boolean())->readStoredBooleanColumn()->cast(@DynaFunction).name);
+}
+
+function <<test.Test>> meta::relational::functions::pureToSqlQuery::testOtherColumnsAndExpressionsAreReadAsTheyAre():Boolean[1]
+{
+  let integerColumn = storedColumn(^meta::relational::metamodel::datatype::Integer());
+  assertEquals($integerColumn, $integerColumn->readStoredBooleanColumn());
+  let expression = ^DynaFunction(name = 'equal', parameters = [storedColumn(^meta::relational::metamodel::datatype::Bit()), ^Literal(value = true)]);
+  assertEquals($expression, $expression->readStoredBooleanColumn());
+}
 
 // Result of evaluating the RHS of a RelationFunctionPropertyMapping's `valueFn` lambda
 // against the materialised RF cursor. `relop` is the resolved relational operation element

@@ -31,6 +31,12 @@
     "test" : "meta::pure::functions::relation::tests::composition::testFilterWithBooleanIfPredicate_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."
   }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanColumnAsIfCondition_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near the keyword 'is'."
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanPropertyAsIfCondition_Function_1__Boolean_1_",
+    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Incorrect syntax near '>'."
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   A,2,8,3\\n#'\nactual:   '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   D,1,10,1\\n   A,2,8,3\\n   B,2,8,2\\n#'"
   }, {
