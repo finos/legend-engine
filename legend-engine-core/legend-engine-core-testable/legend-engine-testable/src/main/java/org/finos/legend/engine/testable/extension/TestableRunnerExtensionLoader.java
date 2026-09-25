@@ -58,7 +58,7 @@ public class TestableRunnerExtensionLoader
     public static Boolean isTestableEmpty(PackageableElement element)
     {
         TestableRunnerExtension extension = getExtensionsForElement(element, getCurrentThreadClassLoader());
-        return extension != null && extension.isTestableEmpty(element);
+        return extension == null || extension.isTestableEmpty(element);
     }
 
     public static Map<String, ? extends TestableRunnerExtension> getClassifierPathToTestableRunnerMap()
