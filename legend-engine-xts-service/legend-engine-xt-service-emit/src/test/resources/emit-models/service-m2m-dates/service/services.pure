@@ -1,0 +1,403 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Dates in the queries of services over a model-to-model mapping, written into
+// the query and given as parameters. No time zone is named anywhere, so every
+// date-time is read, compared, and written in UTC.
+
+###Service
+// A calendar date compared with a StrictDate property.
+Service demo::m2m::dates::service::TradesOnDateLiteral
+{
+  pattern: '/api/m2m/dates/trades/on';
+  documentation: 'Trades made on a date, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.tradeDate == %2025-07-02)->graphFetch(#{demo::m2m::dates::Trade{id, tradeDate}}#)->serialize(#{demo::m2m::dates::Trade{id, tradeDate}}#);
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":3,"tradeDate":"2025-07-02"},{"id":4,"tradeDate":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::service::TradesOnDateParameter
+{
+  pattern: '/api/m2m/dates/trades/on/{tradeDate}';
+  documentation: 'Trades made on a date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {tradeDate: StrictDate[1]|demo::m2m::dates::Trade.all()->filter(t|$t.tradeDate == $tradeDate)->graphFetch(#{demo::m2m::dates::Trade{id, tradeDate}}#)->serialize(#{demo::m2m::dates::Trade{id, tradeDate}}#)};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            tradeDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":3,"tradeDate":"2025-07-02"},{"id":4,"tradeDate":"2025-07-02"}]';
+                  }#;
+              }#
+          ]
+        },
+        firstOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            tradeDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldReturnThatDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"tradeDate":"2025-07-01"},{"id":2,"tradeDate":"2025-07-01"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// A date-time compared with a DateTime property. Trade 2 was executed at
+// 01:30 UTC on 2025-07-02, though its feed gives the time with a New York
+// offset; a cutoff of 01:00 UTC leaves it out only if that offset was
+// honored when the feed was read.
+Service demo::m2m::dates::service::TradesExecutedBeforeLiteral
+{
+  pattern: '/api/m2m/dates/trades/before';
+  documentation: 'Trades executed before a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.executedAt < %2025-07-02T15:00:00+0000)->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#);
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"},{"id":3,"executedAt":"2025-07-02T13:00:00.000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::service::TradesExecutedBeforeParameter
+{
+  pattern: '/api/m2m/dates/trades/before/{cutoff}';
+  documentation: 'Trades executed before a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|demo::m2m::dates::Trade.all()->filter(t|$t.executedAt < $cutoff)->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#)};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"},{"id":3,"executedAt":"2025-07-02T13:00:00.000"}]';
+                  }#;
+              }#
+          ]
+        },
+        justAfterMidnightUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T01:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":1,"executedAt":"2025-07-01T16:00:00.000"}';
+                  }#;
+              }#
+          ]
+        },
+        afternoonUtcWrittenWithAnOffset:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T11:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"},{"id":3,"executedAt":"2025-07-02T13:00:00.000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The cutoff of the TradesExecutedBefore services, written as 11:00 at an
+// offset of -0400. An offset is resolved when the literal is compiled, so
+// this is the same instant as 15:00 UTC and must select the same trades. It
+// is a second spelling of one moment, not a time zone.
+Service demo::m2m::dates::service::TradesExecutedBeforeWrittenWithAnOffset
+{
+  pattern: '/api/m2m/dates/trades/before/offset';
+  documentation: 'Trades executed before a moment written with an offset.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.executedAt < %2025-07-02T11:00:00-0400)->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#);
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReturnTradesExecutedEarlier:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"},{"id":3,"executedAt":"2025-07-02T13:00:00.000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// Trade is not milestoned, so the date reaches Product only through the
+// milestoned property the graph fetch names. The feed carries every version
+// of each product, and the date selects the one recorded for it: Widget Mk2
+// for the Widget trades, and none for the Gadget trades, whose product has no
+// version on 2025-07-02.
+Service demo::m2m::dates::service::TradeProductsAsOf
+{
+  pattern: '/api/m2m/dates/trades/products';
+  documentation: 'Trades with their product as of a business date.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->graphFetch(#{demo::m2m::dates::Trade{id, product(%2025-07-02){name, businessDate}}}#)->serialize(#{demo::m2m::dates::Trade{id, product(%2025-07-02){name, businessDate}}}#);
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReadTheVersionOnThatDate:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":2,"product(2025-07-02)":null},{"id":3,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}},{"id":4,"product(2025-07-02)":null},{"id":5,"product(2025-07-02)":{"name":"Widget Mk2","businessDate":"2025-07-02"}}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

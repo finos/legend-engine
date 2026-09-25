@@ -1,0 +1,51 @@
+name: service-m2m-dates
+title: "Dates in Model-to-Model Service Queries"
+description: |
+  Services over a model-to-model mapping that select trades by date, with the
+  dates written into the query and given as parameters: a calendar date
+  compared with a StrictDate property, a date-time compared with a DateTime
+  property, and a business date given to a milestoned property named in the
+  graph fetch, which selects the version of each trade's product recorded on
+  that date, or none.
+
+  Some date-times are written with an offset: one in the feed, one in a
+  literal, and one in a parameter value. An offset is resolved to UTC when the
+  literal is compiled or the value read, so these are other spellings of the
+  same instants, and must select the same trades.
+
+  A date given to all() on a milestoned class is not covered. A model-to-model
+  query accepts it and returns every version regardless, which is taken to be a
+  defect rather than pinned here. Nor is a milestoned class mapped from a source
+  that is not milestoned, whose business date is written as null.
+
+modelSources:
+  model:
+    root: service-m2m-dates
+    files:
+      - service/services.pure
+  dependencies:
+    - source: service-m2m-shared-dates.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - execution:test-data
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-connection
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - graph-fetch
+  - service-test
+  - parameters
+  - milestoning
+  - date-time
