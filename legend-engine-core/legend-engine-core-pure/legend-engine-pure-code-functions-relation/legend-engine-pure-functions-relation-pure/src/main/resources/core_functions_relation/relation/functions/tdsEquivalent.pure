@@ -16,6 +16,7 @@ import meta::pure::functions::variant::convert::*;
 import meta::pure::metamodel::variant::*;
 import meta::pure::metamodel::relation::*;
 import meta::pure::test::pct::*;
+import meta::pure::functions::relation::tests::tdsEquivalent::*;
 
 '''
 Asserts two relations match, comparing numbers within a tolerance.
@@ -63,11 +64,11 @@ function <<PCT.function, PCT.platformOnly>> meta::pure::functions::relation::ass
           $acc && 
           if ([
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Number),
-                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta)))}, true)),
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs($a.first->toOne()->cast(@Number) - $a.second->toOne()->cast(@Number)) <= abs($delta))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Date),
-                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds)))}, true)),
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && (abs(dateDiff($a.first->toOne()->cast(@Date), $a.second->toOne()->cast(@Date), DurationUnit.SECONDS)) <= abs($timeDeltaInSeconds))))),
                 pair(|$cols.first.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant) && $cols.second.classifierGenericType.typeArguments->at(1).rawType->toOne()->subTypeOf(Variant),
-                    |$oneVals->zip($twoVals)->fold({a,b| $b && ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->toOne()->toString() == $a.second->toOne()->toString())}, true))
+                    |$oneVals->zip($twoVals)->forAll(a| ($a.first->isEmpty() && $a.second->isEmpty()) || ((!$a.first->isEmpty() && !$a.second->isEmpty()) && $a.first->toOne()->toString() == $a.second->toOne()->toString())))
               ],
               |$oneVals == $twoVals
           );
@@ -145,4 +146,75 @@ function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::te
       2,
       1
   )
+}
+
+function meta::pure::functions::relation::tests::tdsEquivalent::assertNotEquivalent(one:Relation<Any>[1], two:Relation<Any>[1], delta:Number[1], timeDeltaInSeconds:Number[1]):Boolean[1]
+{
+  assertError(|assertTdsEquivalent($one, $two, $delta, $timeDeltaInSeconds), {msg, si | assert($msg->contains(' is not equivalent to:'))})
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testNumberMismatchBeforeLastRow():Boolean[1]
+{
+  let expected = #TDS
+      id:Integer[1], val:Float[1]
+      1, 1.0
+      2, 2.0
+      3, 3.0
+    #;
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Float[1]
+      1, 9.0
+      2, 2.0
+      3, 3.0
+    #, 0.001, 0);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], val:Float[1]
+      1, 1.0
+      2, 9.0
+      3, 3.0
+    #, 0.001, 0);
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testDateMismatchBeforeLastRow():Boolean[1]
+{
+  let expected = #TDS
+      id:Integer[1], ts:DateTime[1]
+      1, 2026-01-07T00:00:00.000+0000
+      2, 2026-01-07T00:01:00.000+0000
+      3, 2026-01-07T00:02:00.000+0000
+    #;
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], ts:DateTime[1]
+      1, 2026-01-07T01:00:00.000+0000
+      2, 2026-01-07T00:01:00.000+0000
+      3, 2026-01-07T00:02:00.000+0000
+    #, 0, 1);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], ts:DateTime[1]
+      1, 2026-01-07T00:00:00.000+0000
+      2, 2026-01-07T01:01:00.000+0000
+      3, 2026-01-07T00:02:00.000+0000
+    #, 0, 1);
+}
+
+function <<test.Test>> meta::pure::functions::relation::tests::tdsEquivalent::testVariantMismatchBeforeLastRow():Boolean[1]
+{
+  let expected = #TDS
+      id:Integer[1], s:String[1]
+      1, a
+      2, b
+      3, c
+    #->extend(~v:x|$x.s->toVariant())->select(~[id, v]);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], s:String[1]
+      1, x
+      2, b
+      3, c
+    #->extend(~v:x|$x.s->toVariant())->select(~[id, v]), 0, 0);
+  assertNotEquivalent($expected, #TDS
+      id:Integer[1], s:String[1]
+      1, a
+      2, x
+      3, c
+    #->extend(~v:x|$x.s->toVariant())->select(~[id, v]), 0, 0);
 }
