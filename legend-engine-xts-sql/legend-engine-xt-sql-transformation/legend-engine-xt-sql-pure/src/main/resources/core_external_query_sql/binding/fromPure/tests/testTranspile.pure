@@ -3973,7 +3973,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'ntile(2) OVER (PARTITION BY String ORDER BY Integer ASC) AS "NTILE", ' +
     'percent_rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "PERCENT_RANK", ' +
     'cume_dist() OVER (PARTITION BY String ORDER BY Integer ASC) AS "CUME_DIST", ' +
-    'string_agg(CASE WHEN String = \'A\' THEN String END, \',\') OVER (PARTITION BY String ORDER BY Integer ASC) AS "AGG_WITH_EXPRESSION" ' +
+    'string_agg(CASE WHEN String = \'A\' THEN String END, \',\') OVER (PARTITION BY String ORDER BY Integer ASC) AS "AGG_WITH_EXPRESSION", ' +
+    'count(*) OVER (PARTITION BY String ORDER BY Integer ASC) AS "CT" ' +
     'FROM service."/service/service1"',
 
     [
@@ -3997,7 +3998,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->extend(over(~[String], [~Integer->ascending()]), ~[PERCENT_RANK:{p,w,r| $p->percentRank($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[CUME_DIST:{p,w,r| $p->cumulativeDistribution($w, $r)}])
               ->extend(over(~[String], [~Integer->ascending()]), ~[AGG_WITH_EXPRESSION:{p,w,r|if ($r.String == 'A', | $r.String, | [])}:y|$y->joinStrings(',')])
-              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, LEAD3, NTH, NTILE, PERCENT_RANK, CUME_DIST, AGG_WITH_EXPRESSION])
+              ->extend(over(~[String], [~Integer->ascending()]), ~[CT:{p,w,r| $r}:y|$y->count()])
+              ->select(~[string, Integer, LAST, FIRST, LAG, LAG2, LEAD, LEAD2, LEAD3, NTH, NTILE, PERCENT_RANK, CUME_DIST, AGG_WITH_EXPRESSION, CT])
       }, true, false)
     ]
   )

@@ -1380,7 +1380,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         |
             let over = createOver($partitions, $sorts, $frame, $window);
 
-            let mapExpression = $extacted.map->toOne()->processExpression($expContext, $context);
+            let mapExpression = $extacted.map->processMapFunctionArgument($expContext, $context);
 
             let functionType = functionType([var('p'), var('w'), var('r')], $mapExpression.genericType, ZeroOne);
 
@@ -1516,11 +1516,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunctionArgument(e:meta::external::query::sql::metamodel::Expression[0..1], context: SqlTransformContext[1]):ValueSpecification[1]
 {
+  $e->processMapFunctionArgument(rowExpressionContext($context), $context);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processMapFunctionArgument(e:meta::external::query::sql::metamodel::Expression[0..1], expContext:SqlTransformExpressionContext[1], context: SqlTransformContext[1]):ValueSpecification[1]
+{
   $e->match([
-    q:QualifiedNameReference[1] | processExpression($q, rowExpressionContext($context), $context),
-    e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, rowExpressionContext($context), $context),
+    q:QualifiedNameReference[1] | processExpression($q, $expContext, $context),
+    e:meta::external::query::sql::metamodel::Expression[1] | processExpression($e, $expContext, $context),
     //NOTE * params come through as empty, investigate whether parser should handle this better
-    a:meta::external::query::sql::metamodel::Expression[0] | rowExpressionContext($context).var('map function arg')
+    a:meta::external::query::sql::metamodel::Expression[0] | $expContext.var('map function arg')
   ])->evaluateAndDeactivate();
 }
 
