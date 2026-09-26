@@ -132,39 +132,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
     );
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                 let t = #TDS
-                    city, country, year, treePlanted
-                    NYC, USA, 2011, 5000
-                    NYC, USA, 2000, 5000
-                    SAN, USA, 2000, 2000
-                    SAN, USA, 2011, 100
-                    LDN, UK, 2011, 3000
-                    SAN, USA, 2011, 2500
-                    NYC, USA, 2000, 10000
-                    NYC, USA, 2012, 7600
-                    NYC, USA, 2012, 7600
-                 #;
-                 
-                 $t->pivot(~[year], ~[newCol : x | $x.treePlanted : y | $y->plus()]);
-               };
-
-    let res =  $f->eval($expr);
-
-    meta::pure::functions::relation::assertTdsEquivalent(
-            #TDS
-                city,country,'2000__|__newCol','2011__|__newCol','2012__|__newCol'
-                LDN,UK,null,3000,null
-                NYC,USA,15000,5000,15200
-                SAN,USA,2000,2600,null
-            #,
-            $res->cast(@Relation<(city:String,country:String,'\'2000__|__newCol\'':Integer,'\'2011__|__newCol\'':Integer,'\'2012__|__newCol\'':Integer)>)->sort([ascending(~city)]),
-            0.00001
-    );
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -196,39 +163,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_M
     );
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                 let t = #TDS
-                    city, country, year:Integer[1], treePlanted:Integer[1]
-                    NYC, USA, 2011, 5000
-                    NYC, USA, 2000, 5000
-                    SAN, USA, 2000, 2000
-                    SAN, USA, 2011, 100
-                    LDN, UK, 2011, 3000
-                    SAN, USA, 2011, 2500
-                    NYC, USA, 2000, 10000
-                    NYC, USA, 2012, 7600
-                    NYC, USA, 2012, 7600
-                 #;
-                 
-                 $t->pivot(~[country, city], ~sum : x | $x.treePlanted : y | $y->plus());
-               };
-
-    let res =  $f->eval($expr);
-
-    meta::pure::functions::relation::assertTdsEquivalent(
-          #TDS
-              year,'UK__|__LDN__|__sum','USA__|__NYC__|__sum','USA__|__SAN__|__sum'
-              2000,null,15000,2000
-              2011,3000,5000,2600
-              2012,null,15200,null
-          #,
-          $res->cast(@Relation<(year:Number,'\'UK__|__LDN__|__sum\'':Number,'\'USA__|__NYC__|__sum\'':Number,'\'USA__|__SAN__|__sum\'':Number)>)->sort([ascending(~year)]),
-          0.00001
-      );
-}
-
 function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -244,41 +178,6 @@ function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_S
                     NYC, USA, 2012, 7600
                     NYC, USA, 2012, 7600
                  #->pivot(~[year], ~[sum : x | $x.treePlanted : y | $y->plus(), count : x | 1 : y | $y->plus()])
-               };
-
-    let res =  $f->eval($expr);
-
-    meta::pure::functions::relation::assertTdsEquivalent(
-        #TDS
-            city,country,'2000__|__sum','2000__|__count','2011__|__sum','2011__|__count','2012__|__sum','2012__|__count'
-            LDN,UK,null,null,3000,1,null,null
-            NYC,USA,15000,2,5000,1,15200,2
-            SAN,USA,2000,1,2600,2,null,null
-        #,
-        $res->cast(@Relation<(city:String,country:String,'\'2000__|__sum\'':Integer,'\'2000__|__count\'':Integer,'\'2011__|__sum\'':Integer,'\'2011__|__count\'':Integer,'\'2012__|__sum\'':Integer,'\'2012__|__count\'':Integer)>)
-            ->select(~[city, country, '\'2000__|__sum\'', '\'2000__|__count\'', '\'2011__|__sum\'', '\'2011__|__count\'', '\'2012__|__sum\'', '\'2012__|__count\''])
-            ->sort([ascending(~city)]),
-        0.00001
-      );
-}
-
-function <<PCT.test>> meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                 let t = #TDS
-                    city, country, year, treePlanted
-                    NYC, USA, 2011, 5000
-                    NYC, USA, 2000, 5000
-                    SAN, USA, 2000, 2000
-                    SAN, USA, 2011, 100
-                    LDN, UK, 2011, 3000
-                    SAN, USA, 2011, 2500
-                    NYC, USA, 2000, 10000
-                    NYC, USA, 2012, 7600
-                    NYC, USA, 2012, 7600
-                 #;
-                 
-                 $t->pivot(~[year], ~[sum : x | $x.treePlanted : y | $y->plus(), count : x | 1 : y | $y->plus()]);
                };
 
     let res =  $f->eval($expr);

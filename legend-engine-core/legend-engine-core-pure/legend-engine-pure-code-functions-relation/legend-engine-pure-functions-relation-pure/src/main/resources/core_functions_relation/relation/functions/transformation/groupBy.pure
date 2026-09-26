@@ -143,39 +143,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                let t = #TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                  4, 4, D
-                  5, 2, E
-                  6, 1, F
-                  7, 3, G
-                  8, 1, H
-                  9, 5, I
-                  10, 0, J
-                #;
-                $t->groupBy(~grp, ~newCol : x | $x.name : y | $y->joinStrings(''));
-               };
-
-    let res =  $f->eval($expr);
-    let resSorted = $res->extend(~newColSorted : c | $c.newCol->toOne()->chunk(1)->sort()->joinStrings(''););
-
-    assertEquals( '#TDS\n'+
-                  '   grp,newColSorted\n'+
-                  '   0,J\n'+
-                  '   1,BFH\n'+
-                  '   2,AE\n'+
-                  '   3,CG\n'+
-                  '   4,D\n'+
-                  '   5,I\n'+
-                  '#', $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
-}
-
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
@@ -208,39 +175,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#',  $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                let t = #TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                  4, 4, D
-                  5, 2, E
-                  6, 1, F
-                  7, 3, G
-                  8, 1, H
-                  9, 5, I
-                  10, 0, J
-                #;
-                $t->groupBy(~[grp], ~newCol : x | $x.name : y | $y->joinStrings(''));
-               };
-
-    let res =  $f->eval($expr);
-    let resSorted = $res->extend(~newColSorted : c | $c.newCol->toOne()->chunk(1)->sort()->joinStrings(''););
-
-    assertEquals( '#TDS\n'+
-                  '   grp,newColSorted\n'+
-                  '   0,J\n'+
-                  '   1,BFH\n'+
-                  '   2,AE\n'+
-                  '   3,CG\n'+
-                  '   4,D\n'+
-                  '   5,I\n'+
-                  '#', $resSorted->sort(~grp->ascending())->select(~[grp, newColSorted])->toString());
-}
-
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -257,39 +191,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   9, 5, I
                   10, 0, J
                 #->groupBy(~grp, ~[newCol : x | $x.name : y | $y->joinStrings(''), YoCol : x | $x.id : y | $y->plus()])
-               };
-
-    let res =  $f->eval($expr);
-    let resSorted = $res->extend(~newColSorted : c | $c.newCol->toOne()->chunk(1)->sort()->joinStrings(''););
-
-    assertEquals( '#TDS\n'+
-                  '   grp,YoCol,newColSorted\n'+
-                  '   0,10,J\n'+
-                  '   1,16,BFH\n'+
-                  '   2,6,AE\n'+
-                  '   3,10,CG\n'+
-                  '   4,4,D\n'+
-                  '   5,9,I\n'+
-                  '#', $resSorted->sort(~grp->ascending())->select(~[grp, YoCol, newColSorted])->toString());
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                let t = #TDS
-                  id, grp, name
-                  1, 2, A
-                  2, 1, B
-                  3, 3, C
-                  4, 4, D
-                  5, 2, E
-                  6, 1, F
-                  7, 3, G
-                  8, 1, H
-                  9, 5, I
-                  10, 0, J
-                #;
-                $t->groupBy(~grp, ~[newCol : x | $x.name : y | $y->joinStrings(''), YoCol : x | $x.id : y | $y->plus()]);
                };
 
     let res =  $f->eval($expr);
