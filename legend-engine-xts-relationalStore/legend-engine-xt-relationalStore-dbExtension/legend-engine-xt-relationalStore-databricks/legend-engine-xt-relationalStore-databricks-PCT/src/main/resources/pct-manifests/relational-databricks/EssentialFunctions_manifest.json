@@ -152,25 +152,13 @@
     "expectedError" : "[INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] Error parsing ' 9600000000 MONTH' to interval"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByMonths_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: %2015-03\nactual:   %2015-03-01"
+    "expectedError" : "Databricks cannot represent the Year or Year-Month precision of Date literal 2012-03 in a native DATE/TIMESTAMP column; adjust() would silently lose that precision."
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByWeeksBigNumber_Function_1__Boolean_1_",
     "expectedError" : "[INVALID_INTERVAL_FORMAT.ARITHMETIC_EXCEPTION] Error parsing ' 12345678912 WEEK' to interval"
   }, {
     "test" : "meta::pure::functions::date::tests::testAdjustByYears_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: %2016\nactual:   %2016-01-01"
-  }, {
-    "test" : "meta::pure::functions::date::tests::testDateDiffHours_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 2\nactual:   3"
-  }, {
-    "test" : "meta::pure::functions::date::tests::testDateDiffMinutes_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 0\nactual:   1"
-  }, {
-    "test" : "meta::pure::functions::date::tests::testDateDiffMonths_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 0\nactual:   1"
-  }, {
-    "test" : "meta::pure::functions::date::tests::testDateDiffWeeks_Function_1__Boolean_1_",
-    "expectedError" : "The DurationUnit 'WEEKS' is not supported yet for date_diff"
+    "expectedError" : "Databricks cannot represent the Year or Year-Month precision of Date literal 2015 in a native DATE/TIMESTAMP column; adjust() would silently lose that precision."
   }, {
     "test" : "meta::pure::functions::date::tests::testDateFromHour_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Integer_1__Integer_1__DateTime_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -191,13 +179,13 @@
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Date_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::date::tests::testDatePartYearMonthOnly_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: %1973-11\nactual:   %1973-11-01"
+    "expectedError" : "Databricks cannot represent the Year or Year-Month precision of Date literal 1973-11 in a native DATE/TIMESTAMP column; datePart() would silently lose that precision."
   }, {
     "test" : "meta::pure::functions::date::tests::testDatePartYearOnly_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: %1973\nactual:   %1973-01-01"
+    "expectedError" : "Databricks cannot represent the Year or Year-Month precision of Date literal 1973 in a native DATE/TIMESTAMP column; datePart() would silently lose that precision."
   }, {
     "test" : "meta::pure::functions::date::tests::testDayOfMonthError_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get day of month for 2017\""
+    "expectedError" : "Execution error line mismatch. Actual: 26 where expected: 53"
   }, {
     "test" : "meta::pure::functions::date::tests::testHasDay_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'hasDay_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
@@ -221,19 +209,19 @@
     "expectedError" : "No SQL translation exists for the PURE function 'hasSubsecond_Date_1__Boolean_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
     "test" : "meta::pure::functions::date::tests::testHourError_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get hour for 2017\""
+    "expectedError" : "Execution error line mismatch. Actual: 26 where expected: 50"
   }, {
     "test" : "meta::pure::functions::date::tests::testHour_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 17\nactual:   0"
   }, {
     "test" : "meta::pure::functions::date::tests::testMinuteError_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get minute for 2017\""
+    "expectedError" : "Execution error line mismatch. Actual: 26 where expected: 49"
   }, {
     "test" : "meta::pure::functions::date::tests::testNewDateError_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'date_Integer_1__Integer_1__Date_1_'"
   }, {
     "test" : "meta::pure::functions::date::tests::testSecondError_Function_1__Boolean_1_",
-    "expectedError" : "Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Cannot get second for 2017\""
+    "expectedError" : "Execution error line mismatch. Actual: 26 where expected: 48"
   }, {
     "test" : "meta::pure::functions::lang::tests::match::testMatchManyWithMany_Function_1__Boolean_1_",
     "expectedError" : "\"Match only supports operands with multiplicity [1]..! Current operand : ['w', 'w', 'w']\""

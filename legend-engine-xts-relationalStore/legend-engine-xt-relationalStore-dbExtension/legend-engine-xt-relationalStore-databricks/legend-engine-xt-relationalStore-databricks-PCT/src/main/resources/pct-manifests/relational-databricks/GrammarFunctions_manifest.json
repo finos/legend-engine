@@ -94,12 +94,6 @@
     "test" : "meta::pure::functions::lang::tests::letFn::testLetWithParam_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'letFunction_String_1__T_m__T_m_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
   }, {
-    "test" : "meta::pure::functions::math::tests::divide::testDecimalDivide_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 0.5238095238095238\nactual:   0.52381\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::divide::testDivideWithNonTerminatingExpansion_Function_1__Boolean_1_",
-    "expectedError" : "\nexpected: 0.010416666666666666\nactual:   0.010417"
-  }, {
     "test" : "meta::pure::functions::math::tests::minus::testDecimalMinus_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: -4.0D\nactual:   -4.0"
   }, {
