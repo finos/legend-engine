@@ -258,60 +258,24 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> 
                   7.0, 1, H
                   9.0, 5, I
                   10.0, 0, J
-                #->extend(over(~grp), ~newCol:{p,w,r|$r.id}:y|$y->average())
+                #->extend(over(~grp), ~[newCol:{p,w,r|$r.id}:y|$y->average(), numberCol:{p,w,r|$r.id->cast(@Number)}:y|$y->average()])
                };
 
 
     let res =  $f->eval($expr);
 
     assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
-                  '   10.0,0,J,10.0\n'+
-                  '   2.0,1,B,5.0\n'+
-                  '   6.0,1,F,5.0\n'+
-                  '   7.0,1,H,5.0\n'+
-                  '   1.0,2,A,3.0\n'+
-                  '   5.0,2,E,3.0\n'+
-                  '   3.0,3,C,5.0\n'+
-                  '   7.0,3,G,5.0\n'+
-                  '   4.0,4,D,4.0\n'+
-                  '   9.0,5,I,9.0\n'+
-                  '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.olap>> meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                | #TDS
-                  id, grp, name
-                  1.0, 2, A
-                  2.0, 1, B
-                  3.0, 3, C
-                  4.0, 4, D
-                  5.0, 2, E
-                  6.0, 1, F
-                  7.0, 3, G
-                  7.0, 1, H
-                  9.0, 5, I
-                  10.0, 0, J
-                #->extend(over(~grp), ~newCol:{p,w,r|$r.id->cast(@Number)}:y|$y->average())
-               };
-
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   id,grp,name,newCol\n'+
-                  '   10.0,0,J,10.0\n'+
-                  '   2.0,1,B,5.0\n'+
-                  '   6.0,1,F,5.0\n'+
-                  '   7.0,1,H,5.0\n'+
-                  '   1.0,2,A,3.0\n'+
-                  '   5.0,2,E,3.0\n'+
-                  '   3.0,3,C,5.0\n'+
-                  '   7.0,3,G,5.0\n'+
-                  '   4.0,4,D,4.0\n'+
-                  '   9.0,5,I,9.0\n'+
+                  '   id,grp,name,newCol,numberCol\n'+
+                  '   10.0,0,J,10.0,10.0\n'+
+                  '   2.0,1,B,5.0,5.0\n'+
+                  '   6.0,1,F,5.0,5.0\n'+
+                  '   7.0,1,H,5.0,5.0\n'+
+                  '   1.0,2,A,3.0,3.0\n'+
+                  '   5.0,2,E,3.0,3.0\n'+
+                  '   3.0,3,C,5.0,5.0\n'+
+                  '   7.0,3,G,5.0,5.0\n'+
+                  '   4.0,4,D,4.0,4.0\n'+
+                  '   9.0,5,I,9.0,9.0\n'+
                   '#', $res->sort([~grp->ascending(), ~id->ascending()])->toString());
 }
 

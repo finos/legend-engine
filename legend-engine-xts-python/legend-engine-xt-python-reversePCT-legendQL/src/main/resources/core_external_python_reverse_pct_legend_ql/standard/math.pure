@@ -210,33 +210,13 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.0,3,G\n'+
                 '7.0,1,H\n'+
                 '9.0,5,I\n'+
-                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average())',
+                '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::average()])',
                '(lambda frame: frame.window_extend(' +
-                'frame.window("grp", []), [("newCol",lambda p,w,r: r.id , lambda c : c.average())])'+
+                'frame.window("grp", []), [("newCol",lambda p,w,r: r.id , lambda c : c.average()), ("numberCol",lambda p,w,r: r.id , lambda c : c.average())])'+
                ')(csv_frame("id,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
         ]
       ),
 
-      meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
-          [
-            rev('|#TDS{\n'+
-                              'id,grp,name\n'+
-                              '1.0,2,A\n'+
-                              '2.0,1,B\n'+
-                              '3.0,3,C\n'+
-                              '4.0,4,D\n'+
-                              '5.0,2,E\n'+
-                              '6.0,1,F\n'+
-                              '7.0,3,G\n'+
-                              '7.0,1,H\n'+
-                              '9.0,5,I\n'+
-                              '10.0,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::average())', 
-                '(lambda frame: frame.window_extend(' +
-                'frame.window("grp", []), [("newCol",lambda p,w,r: r.id , lambda c : c.average())])'+
-                ')(csv_frame("\\nid,grp,name\\n1.0,2,A\\n2.0,1,B\\n3.0,3,C\\n4.0,4,D\\n5.0,2,E\\n6.0,1,F\\n7.0,3,G\\n7.0,1,H\\n9.0,5,I\\n10.0,0,J"))')
-          ]
-        ),
-      
       meta::pure::functions::math::tests::average::testAverage_Round_Integers_Relation_Window_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -332,29 +312,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.7,3,G\n'+
                 '8.8,1,H\n'+
                 '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::max())',
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::max(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::max()])',
                '(lambda frame: frame.window_extend(' +
-               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max())])'+
-               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'id,grp,name\n'+
-                  '1.1,2,A\n'+
-                  '2.2,1,B\n'+
-                  '3.3,3,C\n'+
-                  '4.4,4,D\n'+
-                  '5.5,2,E\n'+
-                  '6.6,1,F\n'+
-                  '7.7,3,G\n'+
-                  '8.8,1,H\n'+
-                  '9.9,5,I\n'+
-                  '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::max())',
-               '(lambda frame: frame.window_extend(' +
-               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max())])'+
+               'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.max()), ("numberCol",lambda p , w, r : r.id , lambda c : c.max())])'+
                ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
         ]
       ),
@@ -474,29 +434,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                 '7.7,3,G\n'+
                 '8.8,1,H\n'+
                 '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min())',
+                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::min(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min()])',
               '(lambda frame: frame.window_extend(' +
-              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min())])'+
-              ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::math::tests::min::testMin_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                'id,grp,name\n'+
-                '1.1,2,A\n'+
-                '2.2,1,B\n'+
-                '3.3,3,C\n'+
-                '4.4,4,D\n'+
-                '5.5,2,E\n'+
-                '6.6,1,F\n'+
-                '7.7,3,G\n'+
-                '8.8,1,H\n'+
-                '9.9,5,I\n'+
-                '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::min())',
-              '(lambda frame: frame.window_extend(' +
-              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min())])'+
+              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.min()), ("numberCol",lambda p , w, r : r.id , lambda c : c.min())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
         ]
       )
@@ -597,29 +537,9 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesSta
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum())',
+                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum()])',
               '(lambda frame: frame.window_extend(' +
-              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
-              ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                            'id,grp,name\n'+
-                            '1.1,2,A\n'+
-                            '2.2,1,B\n'+
-                            '3.3,3,C\n'+
-                            '4.4,4,D\n'+
-                            '5.5,2,E\n'+
-                            '6.6,1,F\n'+
-                            '7.7,3,G\n'+
-                            '8.8,1,H\n'+
-                            '9.9,5,I\n'+
-                            '10.10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum())',
-              '(lambda frame: frame.window_extend(' +
-              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
+              'frame.window("grp", []), [("newCol",lambda p , w, r : r.id , lambda c : c.sum()), ("numberCol",lambda p , w, r : r.id , lambda c : c.sum())])'+
               ')(csv_frame("id,grp,name\\n1.1,2,A\\n2.2,1,B\\n3.3,3,C\\n4.4,4,D\\n5.5,2,E\\n6.6,1,F\\n7.7,3,G\\n8.8,1,H\\n9.9,5,I\\n10.10,0,J"))')
         ]
       )

@@ -133,27 +133,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7.7,3,G\n'+
                             '8.8,1,H\n'+
                             '9.9,5,I\n'+
-                            '10.1,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum())',
-                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
-                        )
-                      ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window_Function_1__Boolean_1_',
-                      [
-                        rev('|#TDS{\n'+
-                            'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n'+
-                            '1.1,2,A\n'+
-                            '2.2,1,B\n'+
-                            '3.3,3,C\n'+
-                            '4.4,4,D\n'+
-                            '5.5,2,E\n'+
-                            '6.6,1,F\n'+
-                            '7.7,3,G\n'+
-                            '8.8,1,H\n'+
-                            '9.9,5,I\n'+
-                            '10.1,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum())',
-                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol" from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
+                            '10.1,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::sum(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::sum()])',
+                            'select "table0_0".id as "id", "table0_0".grp as "grp", "table0_0".name as "name", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "newCol", sum("table0_0".id) OVER (Partition By "table0_0".grp) as "numberCol" from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.1,2,A\n2.2,1,B\n3.3,3,C\n4.4,4,D\n5.5,2,E\n6.6,1,F\n7.7,3,G\n8.8,1,H\n9.9,5,I\n10.10,0,J\') as "table0_0"'
                         )
                       ]
                  )
@@ -171,5 +152,4 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
    meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::sum::testSum_Integers_Relation_Window(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::sum::testSum_Floats_Relation_Window(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::sum::testSum_Numbers_Relation_Window(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }
