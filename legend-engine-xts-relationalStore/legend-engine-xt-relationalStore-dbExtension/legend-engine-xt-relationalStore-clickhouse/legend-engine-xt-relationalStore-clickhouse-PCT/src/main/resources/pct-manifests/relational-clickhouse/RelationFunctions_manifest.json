@@ -409,9 +409,6 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported for ClickHouse"
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
-    "expectedError" : "pivot is not supported for ClickHouse"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported for ClickHouse"
   }, {
@@ -429,9 +426,6 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
     "expectedError" : "Error while executing: Create Table leSchema"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_",
-    "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_CurrentRow_NFollowing_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: ClickHouse\""

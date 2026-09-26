@@ -1129,9 +1129,6 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_"
   }, {
@@ -1148,9 +1145,6 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::project::testSimpleRelationProjectLiterals_Function_1__Boolean_1_",

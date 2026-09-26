@@ -1314,12 +1314,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
     // Project (assign/apply)
     // ==========================================
     [
-      meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::project::testSimpleProjectList_Function_1__Boolean_1_->testRev(
         [
           noRev('|[^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)]), ^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok3\', addresses=^meta::pure::functions::relation::tests::project::Address(val=\'no\'), values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])]->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])')

@@ -688,9 +688,6 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
-    "expectedError" : "pivot is not supported"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
     "expectedError" : "pivot is not supported"
   }, {
