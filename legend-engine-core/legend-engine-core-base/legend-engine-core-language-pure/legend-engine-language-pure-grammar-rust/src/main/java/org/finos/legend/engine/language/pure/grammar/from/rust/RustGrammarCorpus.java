@@ -65,7 +65,7 @@ public final class RustGrammarCorpus
         {
             Section section = RustPureSectionParser.parseWithJava(new SectionSourceCode(code.code, code.sectionType, code.sourceInformation, withPositions), withPositions, elements::add, context);
             List<String> imports = (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : Collections.emptyList();
-            expected.set("elements", RustSectionResult.MAPPER.valueToTree(elements));
+            expected.set("elements", RustSectionResult.MAPPER.valueToTree(RustSectionResult.roundTrip(elements)));
             expected.set("imports", RustSectionResult.MAPPER.valueToTree(imports));
         }
         catch (RuntimeException e)

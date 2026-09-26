@@ -105,6 +105,28 @@ final class RustSectionResult
         }
     }
 
+    /**
+     * The elements after a round trip through the protocol mapper. Deserialization applies the engine's protocol
+     * converters (e.g. {@code new} of {@code BasicColumnSpecification} becomes {@code col}); the Rust result always
+     * goes through it, so the Java parser's result must too before the two are compared or recorded.
+     */
+    static List<PackageableElement> roundTrip(List<PackageableElement> elements)
+    {
+        List<PackageableElement> result = new ArrayList<>(elements.size());
+        try
+        {
+            for (PackageableElement element : elements)
+            {
+                result.add(MAPPER.treeToValue(MAPPER.valueToTree(element), PackageableElement.class));
+            }
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("the engine protocol does not round-trip its own element", e);
+        }
+        return result;
+    }
+
     private static RustSectionResult internalError(String message)
     {
         return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), INTERNAL_ERROR, message, null);

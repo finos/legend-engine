@@ -140,7 +140,7 @@ public final class RustGrammarParity
             return;
         }
         List<String> javaImports = (javaSection instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) javaSection).imports : Collections.emptyList();
-        JsonNode java = render(javaElements, javaImports);
+        JsonNode java = render(RustSectionResult.roundTrip(javaElements), javaImports);
         if (rust.isError())
         {
             mismatch(code, returnSourceInfo, "Java parsed the section; Rust reported " + rust.errorKind + ": " + rust.errorMessage, java, null);
