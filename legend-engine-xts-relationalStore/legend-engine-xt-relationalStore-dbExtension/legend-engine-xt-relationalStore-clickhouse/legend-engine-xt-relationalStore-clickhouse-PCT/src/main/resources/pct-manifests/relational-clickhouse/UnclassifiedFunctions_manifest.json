@@ -43,6 +43,9 @@
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
   }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Conjunction_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, "
+  }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
   }, {

@@ -47,31 +47,34 @@
     "expectedError" : "\"[unsupported-api] The function 'regexpIndexOf' (state: [Select, false]) is not supported yet\""
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseInsensitive_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
+  }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Conjunction_Function_1__Boolean_1_",
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Multiline_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_NonNewlineSensitive_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'regexpLike' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "[unsupported-api] The function 'regexpLike' (state: [Select, true]) is not supported yet"
   }, {
     "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplaceAll_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'regexpReplace' (state: [Select, false]) is not supported yet\""
