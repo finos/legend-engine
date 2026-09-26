@@ -15,7 +15,7 @@
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
+    "expectedError" : "There is no supertype for types"
   }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
@@ -183,10 +183,10 @@
     "expectedError" : "\"\nexpected: []\nactual:   [0]\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
+    "expectedError" : "There is no supertype for types"
   }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLException: Code: 42. DB::Exception: Aggregate function argMax requires two arguments."
@@ -207,10 +207,7 @@
     "expectedError" : "\"\nexpected: []\nactual:   [0]\""
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLException: Code: 42. DB::Exception: Aggregate function argMin requires two arguments."
@@ -228,7 +225,7 @@
     "expectedError" : "Expected one of: token, Comma, FROM, PREWHERE, WHERE, GROUP BY, WITH, HAVING, WINDOW, QUALIFY, ORDER BY, LIMIT, OFFSET, FETCH, SETTINGS, UNION, EXCEPT, INTERSECT, INTO OUTFILE, FORMAT, ParallelWithClause, PARALLEL WITH, end of query."
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"topK(1)(%s)[1]\"\""
+    "expectedError" : "Unused format args. [3] arguments provided to expression \"topK(1)(%s)[1]\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "Expected one of: token, Comma, FROM, PREWHERE, WHERE, GROUP BY, WITH, HAVING, WINDOW, QUALIFY, ORDER BY, LIMIT, OFFSET, FETCH, SETTINGS, UNION, EXCEPT, INTERSECT, INTO OUTFILE, FORMAT, ParallelWithClause, PARALLEL WITH, end of query."
