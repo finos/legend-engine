@@ -112,20 +112,14 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                  revsForTest(
                       'meta::pure::functions::math::tests::max::testMax_IntegersArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Integer)->meta::pure::functions::math::max()',
+                            'select null'
                         ),
-                        revError('|1->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1->meta::pure::functions::math::max()',
+                            'select 1'
                         ),
-                        revError('|[4, 7, 1, 3, 4]->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4, 7, 1, 3, 4]->meta::pure::functions::math::max()',
+                            'select greatest(4, 7, 1, 3, 4)'
                         )
                       ]
                  ),
@@ -162,20 +156,14 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                  revsForTest(
                       'meta::pure::functions::math::tests::max::testMax_FloatsArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Float)->meta::pure::functions::math::max()',
+                            'select null'
                         ),
-                        revError('|1.0->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1.0->meta::pure::functions::math::max()',
+                            'select 1.0'
                         ),
-                        revError('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23, 7.345, 1.0, 3.678, 4.6]->meta::pure::functions::math::max()',
+                            'select greatest(4.23, 7.345, 1.0, 3.678, 4.6)'
                         )
                       ]
                  ),
@@ -196,25 +184,17 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                  revsForTest(
                       'meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_',
                       [
-                        revError('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[]->meta::pure::functions::lang::cast(@Number)->meta::pure::functions::math::max()',
+                            'select null'
                         ),
-                        revError('|1.0D->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|1.0D->meta::pure::functions::math::max()',
+                            'select cast(1.0 as DECIMAL(32, 16))'
                         ),
-                        revError('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23, 7.345, 1.0, 3, 4]->meta::pure::functions::math::max()',
+                            'select greatest(4.23, 7.345, 1.0, 3, 4)'
                         ),
-                        revError('|[4.23, 7.345D, 1.0, 3, 4]->meta::pure::functions::math::max()',
-                                 '',
-                                 'Unexpected token',
-                                 'Arrays not supported yet'
+                        rev('|[4.23, 7.345D, 1.0, 3, 4]->meta::pure::functions::math::max()',
+                            'select greatest(4.23, cast(7.345 as DECIMAL(32, 16)), 1.0, 3, 4)'
                         )
                       ]
                  ),
@@ -263,11 +243,11 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
 function meta::external::query::sql::reversePCT::tests::standard::math::aggregator::max::exec():Boolean[1]
 {
    meta::pure::functions::math::tests::max::testMax_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::max::testMax_IntegersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::max::testMax_IntegersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::max::testMax_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::max::testMax_FloatsArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::max::testMax_FloatsArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::max::testMax_Numbers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   //meta::pure::functions::math::tests::max::testMax_NumbersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
+   meta::pure::functions::math::tests::max::testMax_NumbersArray(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::max::testMax_Integers_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::max::testMax_Floats_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::max::testMax_Numbers_Relation_Aggregate(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);

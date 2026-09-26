@@ -31,29 +31,17 @@
     "test" : "meta::pure::functions::collection::tests::min::testMin_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
   }, {
-    "test" : "meta::pure::functions::date::tests::max::testMax_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
-  }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateTimeArray_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
     "test" : "meta::pure::functions::date::tests::max::testMax_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
-    "test" : "meta::pure::functions::date::tests::max::testMax_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"max(%s)\"\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::min::testMin_DateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
-  }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTimeArray_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
     "test" : "meta::pure::functions::date::tests::min::testMin_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
@@ -160,9 +148,6 @@
     "test" : "meta::pure::functions::math::tests::covarSample::testCovarSample_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\"\""
   }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""
-  }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""
   }, {
@@ -195,9 +180,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Numbers_Relation_Window_Function_1__Boolean_1_",
     "expectedError" : "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
