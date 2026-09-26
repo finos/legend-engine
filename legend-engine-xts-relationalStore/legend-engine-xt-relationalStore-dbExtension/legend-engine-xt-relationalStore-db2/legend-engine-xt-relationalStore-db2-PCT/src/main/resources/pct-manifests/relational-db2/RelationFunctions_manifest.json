@@ -34,6 +34,14 @@
       "expectedError" : "Error while executing: Create Table leSchema.FirmTypeForCompositionTests"
     },
     {
+      "test" : "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanPropertyAsIfCondition_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.FlagTypeForCompositionTests"
+    },
+    {
+      "test" : "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanProperty_Function_1__Boolean_1_",
+      "expectedError" : "Error while executing: Create Table leSchema.FlagTypeForCompositionTests"
+    },
+    {
       "test" : "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
       "expectedError" : "\nexpected: '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   A,2,8,3\\n#'\nactual:   '#TDS\\n   grp,rank,sumId,sumRank\\n   A,1,9,3\\n   D,1,10,1\\n   A,2,8,3\\n   B,2,8,2\\n#'"
     },

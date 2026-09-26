@@ -1083,10 +1083,6 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                     ._values(Lists.immutable.with(((org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Numeric) c)._scale()))),
                     compileContext);
         }
-        else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Bit)
-        {
-            return convertTypes("meta::pure::precisePrimitives::TinyInt", compileContext);
-        }
         else if (c instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Real)
         {
             return convertTypes("meta::pure::precisePrimitives::Double", compileContext);

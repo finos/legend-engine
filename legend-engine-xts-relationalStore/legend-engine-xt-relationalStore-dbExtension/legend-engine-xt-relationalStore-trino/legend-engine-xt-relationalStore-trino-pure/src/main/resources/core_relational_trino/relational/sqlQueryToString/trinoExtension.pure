@@ -281,6 +281,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
    $columnType->match([
       s : meta::relational::metamodel::datatype::Timestamp[1] | 'TIMESTAMP',
       f : meta::relational::metamodel::datatype::Float[1] | 'DOUBLE',
+      b : meta::relational::metamodel::datatype::Bit[1] | 'BOOLEAN',
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }

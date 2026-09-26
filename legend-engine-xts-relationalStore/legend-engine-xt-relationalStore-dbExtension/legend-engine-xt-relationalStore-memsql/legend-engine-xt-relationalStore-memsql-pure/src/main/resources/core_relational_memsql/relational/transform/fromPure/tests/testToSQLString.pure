@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::*;
+import meta::relational::metamodel::operation::*;
+import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
@@ -212,4 +215,27 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 
    let memSql = toSQLString($func, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertSameSQL('select `root`.LEGALNAME as `LegalName`, case when (count(distinct(`personTable_d#4_d_m1`.FIRSTNAME)) = count(`personTable_d#4_d_m1`.FIRSTNAME)) then \'true\' else \'false\' end as `IsDistinctFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `LegalName`', $memSql);
+}
+
+function <<access.private>> meta::relational::memsql::tests::functions::sqlstring::columnEquals(column:String[1], value:Any[1]):meta::relational::metamodel::RelationalOperationElement[1]
+{
+   ^DynaFunction(name = 'equal', parameters = [^ColumnName(name = $column), ^Literal(value = $value)]);
+}
+
+function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testBooleanIfPredicateStaysAPredicate_MemSQL():Boolean[1]
+{
+   let ifWithPredicateArms = ^DynaFunction(name = 'if', parameters = [meta::relational::memsql::tests::functions::sqlstring::columnEquals('FIRSTNAME', 'John'), meta::relational::memsql::tests::functions::sqlstring::columnEquals('LASTNAME', 'Smith'), meta::relational::memsql::tests::functions::sqlstring::columnEquals('LASTNAME', 'Doe')]);
+   let composed = ^DynaFunction(name = 'and', parameters = [^DynaFunction(name = 'greaterThan', parameters = [^ColumnName(name = 'AGE'), ^Literal(value = 0)]), $ifWithPredicateArms]);
+   assertEquals('AGE > 0 and case when FIRSTNAME = \'John\' then LASTNAME = \'Smith\' else LASTNAME = \'Doe\' end',
+                $composed->processOperation(DatabaseType.MemSQL, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testStoredBooleanColumnIsReadAsString_MemSQL():Boolean[1]
+{
+   let ext = meta::relational::extension::relationalExtensions();
+   let column = ^DynaFunction(name = 'booleanColumn', parameters = ^ColumnName(name = 'ON_FLAG'));
+   let asString = 'case when ON_FLAG is null then null when ON_FLAG = 1 then \'true\' else \'false\' end';
+   assertEquals($asString, $column->processOperation(DatabaseType.MemSQL, $ext));
+   assertEquals($asString + ' = \'true\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = true)])->processOperation(DatabaseType.MemSQL, $ext));
+   assertEquals($asString + ' = \'false\'', ^DynaFunction(name = 'equal', parameters = [$column, ^Literal(value = false)])->processOperation(DatabaseType.MemSQL, $ext));
 }

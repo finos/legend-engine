@@ -126,6 +126,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('atan2',                     $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('booland',                   $allStates,            ^ToSql(format='min(%s)')),
     dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('booleanColumn',             $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->booleanColumnAsString()})),
     dynaFnToSql('char',                      $allStates,            ^ToSql(format='cast(char(%s) as char)')),
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s <=> %s')),
@@ -386,8 +387,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 {
   assertEmpty($sq.qualifyOperation, 'QUALIFY grammar is not supported');
   let s = if($sq.fromRow->isNotEmpty() && $sq.toRow->isEmpty(), |$sq->rewriteSliceAsWindowFunction(), |$sq);
-  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
   let joinOrder = [JoinType.INNER, JoinType.LEFT_OUTER, JoinType.RIGHT_OUTER];
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +

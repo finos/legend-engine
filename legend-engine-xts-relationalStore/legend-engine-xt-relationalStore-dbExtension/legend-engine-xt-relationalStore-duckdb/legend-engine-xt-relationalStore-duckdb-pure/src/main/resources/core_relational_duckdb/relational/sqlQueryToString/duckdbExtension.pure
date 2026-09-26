@@ -203,7 +203,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
-    dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),

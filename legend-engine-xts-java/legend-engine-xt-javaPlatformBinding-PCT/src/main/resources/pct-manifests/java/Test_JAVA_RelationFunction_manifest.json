@@ -94,6 +94,38 @@
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     },
     {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterOnBooleanValuedExpression_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterWithBooleanIfPredicate_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterWithMixedPredicateAndLiteralIf_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumn_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanColumnAsIfCondition_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterWithStoredBooleanPropertyAsIfCondition_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanProperty_Function_1__Boolean_1_",
+      "expectedError": "\"meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_ is not supported yet!\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::composition::testFilterOnStoredBooleanColumnDirectly_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
       "test": "meta::pure::functions::relation::tests::composition::testFilterNotEqualOnNullableColumns_Function_1__Boolean_1_",
       "expectedError": "Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated"
     },

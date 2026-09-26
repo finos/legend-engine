@@ -117,6 +117,7 @@ function meta::relational::functions::sqlQueryToString::db2::dataTypeToSqlTextFo
     d : meta::relational::metamodel::datatype::Decimal[1] | 'DECIMAL(%s, %s)'->format(cappedPrecisionAndScaleForDB2($d.precision, $d.scale)),
     n : meta::relational::metamodel::datatype::Numeric[1] | 'NUMERIC(%s, %s)'->format(cappedPrecisionAndScaleForDB2($n.precision, $n.scale)),
     t : meta::relational::metamodel::datatype::TinyInt[1] | 'SMALLINT',
+    b : meta::relational::metamodel::datatype::Bit[1] | 'BOOLEAN',
     a : Any[1] | $dt->getColumnTypeSqlTextDefault()
   ]);
 }
@@ -331,7 +332,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::db2::
 {
   assertEmpty($s.pivot, 'pivot is not supported');
   let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumns($s.columns, $dbConfig, $format->indent(), false, $extensions) +

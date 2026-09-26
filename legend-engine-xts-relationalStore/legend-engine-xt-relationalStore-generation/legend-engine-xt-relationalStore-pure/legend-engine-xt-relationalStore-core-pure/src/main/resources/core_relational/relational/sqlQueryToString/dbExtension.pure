@@ -985,15 +985,156 @@ function meta::relational::functions::sqlQueryToString::wrapAsBooleanCaseOperati
    if ($e->isBooleanOperation($extensions), | ^DynaFunction(name='case', parameters = [$e, ^Literal(value=true), ^Literal(value=false)]), | $e);
 }
 
+// The `then` values of a case/if plus its trailing `else`, indexed the way processCase reads them.
+function <<access.private>> meta::relational::functions::sqlQueryToString::caseResultOperands(func:DynaFunction[1]):RelationalOperationElement[*]
+{
+   let params = $func.parameters;
+   let size = ($params->size()-1)/2;
+   range(0, $size->floor()*2, 2)->map(o | $params->at($o+1))->concatenate($params->last()->toOne());
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::returnsPredicate(dynaFunctionName:String[1]):Boolean[1]
+{
+   meta::relational::functions::sqlQueryToString::DynaFunctionRegistry->extractEnumValue($dynaFunctionName)
+      ->hasStereotype('predicate', meta::relational::functions::sqlQueryToString::DynaFunctionReturn);
+}
+
 function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:Extension[*]):Boolean[1]
 {
    $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
-      d:DynaFunction[1] | $d.name->in(['or', 'and', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual', 'equal', 'notEqual', 'notEqualAnsi', 'nullSafeEqual', 'nullSafeNotEqual', 'startsWith', 'endsWith', 'contains', 'isEmpty', 'isNotEmpty', 'isNull', 'isNotNull','isAlphaNumeric', 'exists', 'not', 'in', 'isNumeric', 'matches', 'isDistinct'])
-                                       || ($d.name == 'group' && $d.parameters->toOne()->isBooleanOperation($extensions));,
-      f:FreeMarkerOperationHolder[1] | $f.name->in(['optionalVarPlaceHolderOpSelector']);,
+      d:DynaFunction[1] | $d.name->returnsPredicate()
+                                       || ($d.name == 'group' && ($d.parameters->size() == 1) && $d.parameters->toOne()->isBooleanOperation($extensions))
+                                       || ($d.name->in(['case', 'if']) && ($d.parameters->size() >= 3) && $d->caseResultOperands()->forAll(p | $p->isBooleanOperation($extensions)));,
+      f:FreeMarkerOperationHolder[1] | $f.name->in(['optionalVarPlaceHolderOpSelector', 'equalEnumOpSelector']);,
       a:Any[1] | false
    ])->toOneMany()
    )
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::boolOpTestPredicate():RelationalOperationElement[1]
+{
+   ^DynaFunction(name = 'equal', parameters = [^ColumnName(name = 'amt'), ^Literal(value = 10)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::boolOpTestValue():RelationalOperationElement[1]
+{
+   ^DynaFunction(name = 'plus', parameters = [^ColumnName(name = 'amt'), ^Literal(value = 10)]);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::boolOpTestIsBool(e:RelationalOperationElement[1]):Boolean[1]
+{
+   $e->isBooleanOperation(meta::relational::extension::relationalExtensions());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testComparisonIsBooleanOperation():Boolean[1]
+{
+   assertEquals(true, boolOpTestPredicate()->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testArithmeticIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, boolOpTestValue()->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testLiteralIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^Literal(value = 10)->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testGroupTakesTheVerdictOfItsOperand():Boolean[1]
+{
+   assertEquals(true, ^DynaFunction(name = 'group', parameters = boolOpTestPredicate())->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'group', parameters = boolOpTestValue())->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testGroupWithoutExactlyOneOperandIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'group', parameters = [])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'group', parameters = [boolOpTestPredicate(), boolOpTestPredicate()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testRegexpLikeIsBooleanOperation():Boolean[1]
+{
+   assertEquals(true, ^DynaFunction(name = 'regexpLike', parameters = [^ColumnName(name = 'name'), ^Literal(value = 'A.*')])->boolOpTestIsBool());
+}
+
+// These render as the strings 'true'/'false', not as a condition.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testBooleanValuedFunctionsAreNotBooleanOperations():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'booland', parameters = boolOpTestPredicate())->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'boolor', parameters = boolOpTestPredicate())->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'sqlTrue', parameters = [])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'sqlFalse', parameters = [])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testOnlyKnownFreeMarkerHoldersAreBooleanOperations():Boolean[1]
+{
+   assertEquals(true, ^FreeMarkerOperationHolder(name = 'optionalVarPlaceHolderOpSelector', parameters = [])->boolOpTestIsBool());
+   assertEquals(true, ^FreeMarkerOperationHolder(name = 'equalEnumOpSelector', parameters = [])->boolOpTestIsBool());
+   assertEquals(false, ^FreeMarkerOperationHolder(name = 'variableCollectionSize', parameters = [])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseWithPredicateResultsIsBooleanOperation():Boolean[1]
+{
+   assertEquals(true, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate()])->boolOpTestIsBool());
+   assertEquals(true, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseIsJudgedOnResultsNotOnItsCondition():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestValue(), boolOpTestValue()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseWithOneNonPredicateResultIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestValue()])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestValue(), boolOpTestPredicate()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseMixingAPredicateWithABooleanLiteralIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), ^Literal(value = false)])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), ^Literal(value = true), boolOpTestPredicate()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testMultiBranchCaseChecksEveryResult():Boolean[1]
+{
+   assertEquals(true, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate()])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestValue(), boolOpTestPredicate()])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testNestedCaseChainIsBooleanOperation():Boolean[1]
+{
+   let innerBoolean = ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestPredicate()]);
+   assertEquals(true, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), $innerBoolean])->boolOpTestIsBool());
+
+   let innerValued = ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), boolOpTestValue()]);
+   assertEquals(false, ^DynaFunction(name = 'if', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), $innerValued])->boolOpTestIsBool());
+}
+
+// The shape pureToSQLQuery builds for a boolean property; sqlTrue/sqlFalse render as strings.
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testBooleanPropertyCaseIsNotBooleanOperation():Boolean[1]
+{
+   let booleanProperty = ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(),
+                                                                    ^DynaFunction(name = 'sqlTrue', parameters = []),
+                                                                    ^DynaFunction(name = 'sqlFalse', parameters = [])]);
+   assertEquals(false, $booleanProperty->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseEndingInNullIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate(), ^Literal(value = ^SQLNull())])->boolOpTestIsBool());
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testBooleanColumnRendersAsTheColumnByDefault():Boolean[1]
+{
+   assertEquals('amt', ^DynaFunction(name = 'booleanColumn', parameters = ^ColumnName(name = 'amt'))->processOperation(DatabaseType.H2, meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::relational::functions::sqlQueryToString::testCaseWithoutResultsIsNotBooleanOperation():Boolean[1]
+{
+   assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate()])->boolOpTestIsBool());
+   assertEquals(false, ^DynaFunction(name = 'case', parameters = [boolOpTestPredicate(), boolOpTestPredicate()])->boolOpTestIsBool());
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::extractSemiStructuredDotPathAccess(jsonPath: String[1], startIndex: Integer[1]): String[1]
@@ -1129,7 +1270,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
    let sgcNoConfig = ^$sgc(config=^Config());
    let generationState = $sgc.generationState;
    let sgcWithinWhen = ^$sgcNoConfig(generationState=^$generationState(withinWhenClause = true));
-   'case '+ $range->map(o| $sgc.format.separator + 'when '+$params->at($o)->processOperation($sgcWithinWhen)+ ' ' + $sgc.format.separator + 'then '+$params->at($o+1)->processOperation($sgcNoConfig))->makeString(' ')+ ' ' + $sgc.format.separator + 'else '+$params->at($params->size()-1)->processOperation($sgcNoConfig)+' end';
+   // Mixed arms - `if(c, |a == b, |false)` - would emit 1/0 from one and the string 'false' from the
+   // other, and no single outer coercion reads both.
+   let asValue = !$func->isBooleanOperation($sgc.extensions);
+   let result = {o:Integer[1] | let p = $params->at($o); if($asValue, |$p->maybeWrapAsBooleanCaseOperation($sgc), |$p);};
+   'case '+ $range->map(o| $sgc.format.separator + 'when '+$params->at($o)->processOperation($sgcWithinWhen)+ ' ' + $sgc.format.separator + 'then '+$result->eval($o+1)->processOperation($sgcNoConfig))->makeString(' ')+ ' ' + $sgc.format.separator + 'else '+$result->eval($params->size()-1)->processOperation($sgcNoConfig)+' end';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::isEqualsFromFilter(func:DynaFunction[1], config: Config[1]):Boolean[1]
@@ -1280,12 +1425,14 @@ Class meta::relational::functions::sqlQueryToString::ToSql
 
 // What a dyna function returns, where the router has to know. 'collection' marks the ones that
 // yield an array rather than a scalar, so binding one to a to-many property means the array has to
-// be fanned out to rows rather than handed back whole. Declared on the registry entry so there is
+// be fanned out to rows rather than handed back whole. 'predicate' marks the ones that render as a
+// SQL condition rather than a value, which decides whether a dialect without a boolean literal has
+// to coerce them with `= true`. Declared on the registry entry so there is
 // one place to state it - adding an array function and forgetting to classify it is then a visible
 // omission on the enum rather than a silent mismatch with a list kept somewhere else.
 Profile meta::relational::functions::sqlQueryToString::DynaFunctionReturn
 {
-  stereotypes: [collection];
+  stereotypes: [collection, predicate];
 }
 
 // Where an aggregate's ORDER BY goes. Independent of how its filter is rendered, so both aggregate processors
@@ -1304,7 +1451,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   acos,
   add,
   adjust,
-  and,
+  <<DynaFunctionReturn.predicate>> and,
   allOf,
   anyOf,
   array_first,
@@ -1339,6 +1486,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   bitShiftRight,
   bitXor,
   booland,
+  booleanColumn,
   boolor,
   average,
   averageRank,
@@ -1350,7 +1498,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   char,
   coalesce,
   concat,
-  contains,
+  <<DynaFunctionReturn.predicate>> contains,
   convertDate,
   convertDateTime,
   convertVarchar128,
@@ -1378,9 +1526,9 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   divide,
   divideRound,
   encodeBase64,
-  endsWith,
-  equal,
-  exists,
+  <<DynaFunctionReturn.predicate>> endsWith,
+  <<DynaFunctionReturn.predicate>> equal,
+  <<DynaFunctionReturn.predicate>> exists,
   exp,
   explodeSemiStructured,  
   extractFromSemiStructured,  
@@ -1398,23 +1546,23 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   firstMillisecondOfSecond,
   floor,
   generateGuid,
-  greaterThan,
-  greaterThanEqual,
+  <<DynaFunctionReturn.predicate>> greaterThan,
+  <<DynaFunctionReturn.predicate>> greaterThanEqual,
   greatest,
   group,
   hour,
   hashAgg,
   hashCode,
   if,
-  in,
+  <<DynaFunctionReturn.predicate>> in,
   indexOf,
-  isAlphaNumeric,
-  isDistinct,
-  isEmpty,
-  isNotEmpty,
-  isNotNull,
-  isNull,
-  isNumeric,
+  <<DynaFunctionReturn.predicate>> isAlphaNumeric,
+  <<DynaFunctionReturn.predicate>> isDistinct,
+  <<DynaFunctionReturn.predicate>> isEmpty,
+  <<DynaFunctionReturn.predicate>> isNotEmpty,
+  <<DynaFunctionReturn.predicate>> isNotNull,
+  <<DynaFunctionReturn.predicate>> isNull,
+  <<DynaFunctionReturn.predicate>> isNumeric,
   joinStrings,
   jaroWinklerSimilarity,
   keys,
@@ -1425,14 +1573,14 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   least,
   left,
   length,
-  lessThan,
-  lessThanEqual,
+  <<DynaFunctionReturn.predicate>> lessThan,
+  <<DynaFunctionReturn.predicate>> lessThanEqual,
   log,
   log10,
   lpad,
   ltrim,
   mapConcatenate,
-  matches,
+  <<DynaFunctionReturn.predicate>> matches,
   max,
   maxBy,
   md5,
@@ -1447,16 +1595,16 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   monthName,
   monthNumber,
   mostRecentDayOfWeek,
-  not,
-  notEqual,
-  notEqualAnsi,
+  <<DynaFunctionReturn.predicate>> not,
+  <<DynaFunctionReturn.predicate>> notEqual,
+  <<DynaFunctionReturn.predicate>> notEqualAnsi,
   now,
   nth,
   ntile,
-  nullSafeEqual,
-  nullSafeNotEqual,
+  <<DynaFunctionReturn.predicate>> nullSafeEqual,
+  <<DynaFunctionReturn.predicate>> nullSafeNotEqual,
   objectReferenceIn,
-  or,
+  <<DynaFunctionReturn.predicate>> or,
   parseDate,
   parseDecimal,
   parseFloat,
@@ -1476,7 +1624,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   regexpCount,
   regexpExtract,
   regexpIndexOf,
-  regexpLike,
+  <<DynaFunctionReturn.predicate>> regexpLike,
   regexpReplace,
   rem,
   repeatString,
@@ -1500,7 +1648,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   sqlNull,
   sqlTrue,
   sqrt,
-  startsWith,
+  <<DynaFunctionReturn.predicate>> startsWith,
   stdDevPopulation,
   stdDevSample,
   sub,
