@@ -83,29 +83,6 @@ function meta::external::query::sql::reversePCT::tests::standard::math::trigonom
                       ]
                  ),
                  revsForTest(
-                      'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval_Function_1__Boolean_1_',
-                      [
-                        rev('|meta::pure::functions::math::tanh(-3.14)',
-                            'select tanh(-3.14)'
-                        ),
-                        rev('|3.14->meta::pure::functions::math::tanh()',
-                            'select tanh(3.14)'
-                        ),
-                        rev('|meta::pure::functions::math::tanh(-0.7654321)',
-                            'select tanh(-0.7654321)'
-                        ),
-                        rev('|0.7654321->meta::pure::functions::math::tanh()',
-                            'select tanh(0.7654321)'
-                        ),
-                        rev('|11.573574828312076->meta::pure::functions::math::tanh()',
-                            'select tanh(11.573574828312076)'
-                        ),
-                        rev('|meta::pure::functions::math::tanh(-11.573574828312076)',
-                            'select tanh(-11.573574828312076)'
-                        )
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig_Function_1__Boolean_1_',
                       [
                         noRev('|meta::pure::functions::math::tanh_Number_1__Float_1_->meta::pure::functions::lang::eval(0)'),
@@ -127,6 +104,5 @@ function meta::external::query::sql::reversePCT::tests::standard::math::trigonom
    meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Identities(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Integers(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Floats(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    //meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

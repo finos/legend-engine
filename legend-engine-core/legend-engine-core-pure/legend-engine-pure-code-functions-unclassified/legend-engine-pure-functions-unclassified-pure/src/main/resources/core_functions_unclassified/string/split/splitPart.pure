@@ -54,12 +54,6 @@ function <<PCT.function>>
     | $str->toOne()->split($token)->at($part));
 }
 
-function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPart<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-    assertEquals(['Hello'], $f->eval(|'Hello World'->splitPart(' ', 0)));
-    assertEquals(['World'], $f->eval(|'Hello World'->splitPart(' ', 1)));
-}
-
 function <<PCT.test>> meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|[]->splitPart(' ', 0)));

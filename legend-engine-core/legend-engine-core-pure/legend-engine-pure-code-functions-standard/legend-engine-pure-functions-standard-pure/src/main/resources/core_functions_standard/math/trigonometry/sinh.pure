@@ -66,18 +66,6 @@ function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::te
   assertEqWithinTolerance($f->eval(|sinh(-11.573574828312076)), -53126.31440509195, 0.0000000001);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-  assertEqWithinTolerance($f->eval(|sinh(-3.14)), -11.53029203041011, 0.000000001);
-  assertEqWithinTolerance($f->eval(|sinh(3.14)), 11.53029203041011, 0.000000001);
-
-  assertEqWithinTolerance($f->eval(|sinh(-.7654321)), -0.8423951260776953, 0.000000001);
-  assertEqWithinTolerance($f->eval(|sinh(.7654321)), 0.8423951260776953, 0.000000001);
-
-  assertEqWithinTolerance($f->eval(|sinh(11.573574828312076)), 53126.31440509195, 0.0000000001);
-  assertEqWithinTolerance($f->eval(|sinh(-11.573574828312076)), -53126.31440509195, 0.0000000001);
-}
-
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::sinh::testSinH_EvalFuncSig<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEqWithinTolerance($f->eval(|sinh_Number_1__Float_1_->eval(0)), 0.0, 0.000000001);

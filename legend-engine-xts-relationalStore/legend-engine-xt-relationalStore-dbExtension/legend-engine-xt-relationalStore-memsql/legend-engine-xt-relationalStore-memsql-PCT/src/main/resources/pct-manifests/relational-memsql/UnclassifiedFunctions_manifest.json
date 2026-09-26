@@ -72,8 +72,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
     "expectedError" : "Function 'for_testing.split_part' is not defined"
-  }, {
-    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
-    "expectedError" : "Function 'for_testing.split_part' is not defined"
   } ]
 }

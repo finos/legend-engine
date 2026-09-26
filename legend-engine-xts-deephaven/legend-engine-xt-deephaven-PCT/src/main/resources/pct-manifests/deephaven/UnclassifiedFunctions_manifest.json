@@ -43,9 +43,6 @@
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::decodeBase64_String_1__String_1_\""
   }, {
-    "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::encodeBase64_String_1__String_1_\""
-  }, {
     "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::encodeBase64_String_1__String_1_\""
   }, {
@@ -200,9 +197,6 @@
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_\""
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "\"function not supported yet: meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_\""
-  }, {
-    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_\""
   }, {
     "test" : "meta::pure::functions::string::tests::tolowerfirstcharacter::TestToLowerFirstCharacterSingleCharacter_Function_1__Boolean_1_",

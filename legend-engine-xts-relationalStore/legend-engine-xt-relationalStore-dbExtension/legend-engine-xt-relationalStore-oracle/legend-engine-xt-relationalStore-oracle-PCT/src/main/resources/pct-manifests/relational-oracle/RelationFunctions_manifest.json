@@ -109,9 +109,6 @@
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NegatedBuriedInOr_Function_1__Boolean_1_",
     "expectedError" : "Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger or expression is not supported on relational stores. Negate the comparison on its own instead, for example replace !($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderASCUnboundedWindow_Function_1__Boolean_1_",
-    "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLException: ORA-30487: ORDER BY not allowed here\n\nhttps://docs.oracle.com/error-help/db/ora-30487/"
   }, {
