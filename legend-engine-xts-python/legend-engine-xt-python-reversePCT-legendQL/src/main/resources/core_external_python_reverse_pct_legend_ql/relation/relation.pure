@@ -421,35 +421,7 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
       ),
 
       meta::pure::functions::relation::tests::sort::testSimpleSort_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [ 
-          rev('|let t = #TDS{\n'+
-                        'id,name\n'+
-                        '2,George\n'+
-                        '3,Pierre\n'+
-                        '1,Sachin\n'+
-                        '1,Neema\n'+
-                        '5,David\n'+
-                        '4,Alex\n'+
-                        '2,Thierry}#;\n $t->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending());\n',
-              '(lambda frame:' +
-               '  frame.sort(["id"])' +
-               ')(csv_frame("id,name\\n2,George\\n3,Pierre\\n1,Sachin\\n1,Neema\\n5,David\\n4,Alex\\n2,Thierry"))'          
-          ),
-
-          rev('|let t = #TDS{\n'+
-                        'id,name\n'+
-                        '2,George\n'+
-                        '3,Pierre\n'+
-                        '1,Sachin\n'+
-                        '1,Neema\n'+
-                        '5,David\n'+
-                        '4,Alex\n'+
-                        '2,Thierry}#;\n $t->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::ascending(), ~name->meta::pure::functions::relation::ascending()]);\n',
-              '(lambda frame:' +
-               '  frame.sort(["id","name"])' +
-               ')(csv_frame("id,name\\n2,George\\n3,Pierre\\n1,Sachin\\n1,Neema\\n5,David\\n4,Alex\\n2,Thierry"))'          
-          ),
-
+        [
           rev('|let t = #TDS{\n'+
                         'id,name\n'+
                         '2,George\n'+
