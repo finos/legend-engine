@@ -192,7 +192,7 @@ public final class RustGrammarParity
     private static JsonNode render(List<PackageableElement> elements, List<String> imports)
     {
         ObjectNode node = RustSectionResult.MAPPER.createObjectNode();
-        node.set("elements", RustSectionResult.MAPPER.valueToTree(elements));
+        node.set("elements", RustSectionResult.toJson(elements));
         node.set("imports", RustSectionResult.MAPPER.valueToTree(imports));
         return node;
     }

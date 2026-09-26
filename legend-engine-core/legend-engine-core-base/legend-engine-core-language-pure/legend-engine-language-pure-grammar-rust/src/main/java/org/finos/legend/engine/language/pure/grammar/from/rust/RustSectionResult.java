@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -108,7 +109,8 @@ final class RustSectionResult
     /**
      * The elements after a round trip through the protocol mapper. Deserialization applies the engine's protocol
      * converters (e.g. {@code new} of {@code BasicColumnSpecification} becomes {@code col}); the Rust result always
-     * goes through it, so the Java parser's result must too before the two are compared or recorded.
+     * goes through it, so the Java parser's result must too before the two are compared or recorded. The trip goes
+     * through JSON text, as protocol travels: a JSON tree would drop trailing zeros from decimals.
      */
     static List<PackageableElement> roundTrip(List<PackageableElement> elements)
     {
@@ -117,7 +119,7 @@ final class RustSectionResult
         {
             for (PackageableElement element : elements)
             {
-                result.add(MAPPER.treeToValue(MAPPER.valueToTree(element), PackageableElement.class));
+                result.add(MAPPER.readValue(MAPPER.writeValueAsString(element), PackageableElement.class));
             }
         }
         catch (JsonProcessingException e)
@@ -125,6 +127,20 @@ final class RustSectionResult
             throw new IllegalStateException("the engine protocol does not round-trip its own element", e);
         }
         return result;
+    }
+
+    /**
+     * The elements as protocol JSON, each with its {@code _type}. Serializing the list itself would drop the type ids:
+     * Jackson can't see the element type of a root-level list.
+     */
+    static ArrayNode toJson(List<PackageableElement> elements)
+    {
+        ArrayNode array = MAPPER.createArrayNode();
+        for (PackageableElement element : elements)
+        {
+            array.add(MAPPER.<JsonNode>valueToTree(element));
+        }
+        return array;
     }
 
     private static RustSectionResult internalError(String message)

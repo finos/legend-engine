@@ -59,24 +59,25 @@ public final class RustGrammarCorpus
             return;
         }
         ParseTreeWalkerSourceInformation withPositions = new ParseTreeWalkerSourceInformation.Builder(code.walkerSourceInformation).withReturnSourceInfo(true).build();
-        ObjectNode expected = RustSectionResult.MAPPER.createObjectNode();
+        Object expected;
         List<PackageableElement> elements = new ArrayList<>();
         try
         {
             Section section = RustPureSectionParser.parseWithJava(new SectionSourceCode(code.code, code.sectionType, code.sourceInformation, withPositions), withPositions, elements::add, context);
             List<String> imports = (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : Collections.emptyList();
-            expected.set("elements", RustSectionResult.MAPPER.valueToTree(RustSectionResult.roundTrip(elements)));
-            expected.set("imports", RustSectionResult.MAPPER.valueToTree(imports));
+            expected = new Parsed(RustSectionResult.roundTrip(elements), imports);
         }
         catch (RuntimeException e)
         {
             EngineException engineException = EngineException.findException(e);
-            ObjectNode error = expected.putObject("error");
+            ObjectNode failed = RustSectionResult.MAPPER.createObjectNode();
+            ObjectNode error = failed.putObject("error");
             error.put("message", (engineException == null) ? String.valueOf(e.getMessage()) : engineException.getMessage());
             if (engineException != null && engineException.getSourceInformation() != null)
             {
                 error.set("sourceInformation", RustSectionResult.MAPPER.valueToTree(engineException.getSourceInformation()));
             }
+            expected = failed;
         }
 
         ObjectNode meta = RustSectionResult.MAPPER.createObjectNode();
@@ -100,6 +101,23 @@ public final class RustGrammarCorpus
         catch (IOException e)
         {
             throw new UncheckedIOException(e);
+        }
+    }
+
+    /**
+     * A parsed section as the corpus records it: the element list is declared as such, so each element is written
+     * with its {@code _type}, and written directly rather than through a JSON tree, which would drop trailing zeros
+     * from decimals.
+     */
+    static final class Parsed
+    {
+        public final List<PackageableElement> elements;
+        public final List<String> imports;
+
+        Parsed(List<PackageableElement> elements, List<String> imports)
+        {
+            this.elements = elements;
+            this.imports = imports;
         }
     }
 }

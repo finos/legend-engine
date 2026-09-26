@@ -46,8 +46,9 @@ import org.junit.runners.Suite;
 /**
  * The core grammar module's own parser and roundtrip suites, run with the Rust parser in shadow mode (the surefire
  * default here): every {@code ###Pure} section they parse is also parsed by the Rust parser and compared, and with
- * {@code legend.grammar.rust.failOnMismatch=true} (the default here) a mismatch fails the test that parsed it.
- * Skipped when the native library is not available.
+ * {@code -Dlegend.grammar.rust.failOnMismatch=true} a mismatch fails the test that parsed it. In {@code off} mode
+ * the suites run on the Java parser alone, e.g. to dump the golden corpus ({@link RustGrammarCorpus}); every other
+ * mode is skipped when the native library is not available.
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -80,6 +81,6 @@ public class TestRustParityCoreGrammar
     @BeforeClass
     public static void requireNativeLibrary()
     {
-        Assume.assumeTrue("Rust parser not available: " + NativeGrammarParser.getLoadFailure(), NativeGrammarParser.isAvailable());
+        Assume.assumeTrue("Rust parser not available: " + NativeGrammarParser.getLoadFailure(), RustGrammarMode.current() == RustGrammarMode.OFF || NativeGrammarParser.isAvailable());
     }
 }
