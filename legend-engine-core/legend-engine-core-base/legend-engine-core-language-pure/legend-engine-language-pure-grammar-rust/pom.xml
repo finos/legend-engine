@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Copyright 2026 Goldman Sachs
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.finos.legend.engine</groupId>
+        <artifactId>legend-engine-core-language-pure</artifactId>
+        <version>${revision}</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>legend-engine-language-pure-grammar-rust</artifactId>
+    <name>Legend Engine - Language Pure - Grammar - Rust</name>
+    <description>
+        Parses ###Pure sections with the Rust grammar parser (legend-pure's legend-pure-rust-parser, via JNI).
+        Mode is chosen per parse with -Dlegend.grammar.rust.mode=off|shadow|on (default off: the Java parser).
+        Only built in the rust-parser profile, activated by -Dlegend.pure.rust.parser.lib=/abs/path/to/library.
+    </description>
+
+    <properties>
+        <!-- The JNI binding comes from a legend-pure build of the rust-parser branch, installed locally. -->
+        <legend.pure.rust.parser.version>5.105.1-SNAPSHOT</legend.pure.rust.parser.version>
+        <!-- Parity-test defaults; override on the command line. Mismatches are counted and reported (see
+             -Dlegend.grammar.rust.reportDir) rather than failing tests while known gaps are being closed; pass
+             -Dlegend.grammar.rust.failOnMismatch=true for a strict run. -->
+        <legend.grammar.rust.mode>shadow</legend.grammar.rust.mode>
+        <legend.grammar.rust.failOnMismatch>false</legend.grammar.rust.failOnMismatch>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <legend.grammar.rust.mode>${legend.grammar.rust.mode}</legend.grammar.rust.mode>
+                        <legend.grammar.rust.failOnMismatch>${legend.grammar.rust.failOnMismatch}</legend.grammar.rust.failOnMismatch>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Engine -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
+        </dependency>
+        <!-- Engine -->
+
+        <!-- Legend Pure: JNI binding for the Rust parser -->
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-rust-parser</artifactId>
+            <version>${legend.pure.rust.parser.version}</version>
+        </dependency>
+        <!-- Legend Pure -->
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
+
+        <!-- TEST -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Used by the grammar test-jar's GrammarParseTestUtils -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+    </dependencies>
+</project>
