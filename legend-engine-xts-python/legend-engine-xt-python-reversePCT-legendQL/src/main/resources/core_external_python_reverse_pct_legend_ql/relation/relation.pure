@@ -2307,33 +2307,13 @@ function meta::external::python::reversePCT::legendQL::pythonLegendQLReversesEss
                                   '7,3\n'+
                                   '8,1\n'+
                                   '9,5\n'+
-                                  '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|+($x->meta::pure::functions::lang::cast(@Integer)))', 
+                                  '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~[castBefore:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|+($x->meta::pure::functions::lang::cast(@Integer)),castAfter:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|meta::pure::functions::lang::cast($x->plus(), @Integer)])', 
                      '(lambda frame:' +
-                       'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
+                       'frame.group_by(["grp"], [("castBefore", lambda x: x.id, lambda c: c.sum()), ("castAfter", lambda x: x.id, lambda c: c.sum())])' + 
                     ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
               ]
             ),
       
-        meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg_Function_1__Boolean_1_->testRev(
-          [
-            rev('|#TDS{\n'+
-                              'id,grp\n'+
-                              '1,2\n'+
-                              '2,1\n'+
-                              '3,3\n'+
-                              '4,4\n'+
-                              '5,2\n'+
-                              '6,1\n'+
-                              '7,3\n'+
-                              '8,1\n'+
-                              '9,5\n'+
-                              '10,0}#->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1])[1]|$x.id:x: Integer[*]|meta::pure::functions::lang::cast($x->plus(), @Integer))', 
-                  '(lambda frame:' +
-                    'frame.group_by(["grp"], [("newCol", lambda x: x.id, lambda c: c.sum())])' + 
-                ')(csv_frame("\\nid,grp\\n1,2\\n2,1\\n3,3\\n4,4\\n5,2\\n6,1\\n7,3\\n8,1\\n9,5\\n10,0"))')
-          ]
-        ),
-
         meta::pure::functions::relation::tests::composition::testNestedJoinArithmeticComparisonExpression_Function_1__Boolean_1_->testRev(
         [
           rev('|$tds->meta::pure::functions::relation::project(~[id:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.id,val1:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val1,factor:x: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|2])->meta::pure::functions::relation::join($tds->meta::pure::functions::relation::project(~[id2:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.id,val2:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.val2,order:y: (id:Integer[0..1], val1:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$y.order]), meta::pure::functions::relation::JoinKind.LEFT, {r1: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1])[1], r2: (id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|($r1.id == $r2.id2) && ($r2.val2 >= (($r1.val1->meta::pure::functions::multiplicity::toOne() + 8 + 9) * $r1.factor))})->meta::pure::functions::relation::project(~[id:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.id,val1:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val1,val2:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.val2,order:x: (id:Integer[0..1], val1:Integer[0..1], factor:Integer[1], id2:Integer[0..1], val2:Integer[0..1], order:Integer[0..1])[1]|$x.order])', 

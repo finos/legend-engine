@@ -328,9 +328,6 @@
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
     "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
-  }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
     "expectedError" : "ALL subqueries with operators other than <>/!= are not supported"
   }, {
@@ -365,9 +362,6 @@
     "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "ANY/SOME subqueries with non-equality operators are not supported"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",

@@ -503,52 +503,19 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                 8, 1
                 9, 5
                 10, 0
-              #->groupBy(~grp, ~newCol:x|$x.id:x|$x->cast(@Integer)->plus())
+              #->groupBy(~grp, ~[castBefore:x|$x.id:x|$x->cast(@Integer)->plus(), castAfter:x|$x.id:x|$x->plus()->cast(@Integer)])
               };
 
   let res = $f->eval($expr);
 
   assertEquals( '#TDS\n'+
-                '   grp,newCol\n'+
-                '   0,10\n'+
-                '   1,16\n'+
-                '   2,6\n'+
-                '   3,10\n'+
-                '   4,4\n'+
-                '   5,9\n'+
-                '#', $res->sort(~grp->ascending())->toString());
-}
-
-'''
-Casting the aggregate's result is a no-op — the sums match the uncast form.
-'''
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]{
-  let expr = {
-              | #TDS
-                id, grp
-                1, 2
-                2, 1
-                3, 3
-                4, 4
-                5, 2
-                6, 1
-                7, 3
-                8, 1
-                9, 5
-                10, 0
-              #->groupBy(~grp, ~newCol:x|$x.id:x|$x->plus()->cast(@Integer))
-              };
-
-  let res = $f->eval($expr);
-
-  assertEquals( '#TDS\n'+
-                '   grp,newCol\n'+
-                '   0,10\n'+
-                '   1,16\n'+
-                '   2,6\n'+
-                '   3,10\n'+
-                '   4,4\n'+
-                '   5,9\n'+
+                '   grp,castBefore,castAfter\n'+
+                '   0,10,10\n'+
+                '   1,16,16\n'+
+                '   2,6,6\n'+
+                '   3,10,10\n'+
+                '   4,4,4\n'+
+                '   5,9,9\n'+
                 '#', $res->sort(~grp->ascending())->toString());
 }
 
@@ -1405,36 +1372,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> m
 }
 
 '''
-A computed projection column can be narrowed to `Integer[1]` with a `cast`.
-'''
-function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                  val, val2
-                  1, 2
-                  3, 5
-                  4, 9
-                  5, 14
-                  6, 20
-                #->project(~[
-                  val3:c|$c.val->toOne() + $c.val2->toOne()
-                ])->cast(@Relation<(val3:Integer[1])>)
-              };
-
-    let res =  $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   val3\n'+
-                  '   3\n'+
-                  '   8\n'+
-                  '   13\n'+
-                  '   19\n'+
-                  '   26\n'+
-                  '#', $res->sort([~val3->ascending()])->toString());
-}
-
-'''
 `contains` is false for a variant holding JSON `null`.
 '''
 function <<PCT.test, PCTRelationQualifier.relation, PCTCoreQualifier.variant>> meta::pure::functions::relation::tests::composition::testVariantColumn_contains<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
@@ -1793,7 +1730,7 @@ function <<PCTRelationQualifier.relation, PCT.test>> meta::pure::functions::rela
                   plus:c|$c.val->toOne() + $c.val2->toOne(),
                   times:c|$c.val->toOne() * $c.val2->toOne(),
                   minus:c|$c.val->toOne() - $c.val2->toOne()
-                ])
+                ])->cast(@Relation<(plus:Integer[1], times:Integer[1], minus:Integer[1])>)
               };
 
     let res =  $f->eval($expr);

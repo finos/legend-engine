@@ -64,11 +64,8 @@
     "test" : "meta::pure::functions::relation::tests::composition::testFilterPostProject_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testGroupByCastAfterAgg_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testGroupByCastBeforeAgg_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_"
+    "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testGroupByFilterExtendFilter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
@@ -121,9 +118,6 @@
     "test" : "meta::pure::functions::relation::tests::composition::testProjectNumbersPlusTimesMinus_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::composition::testProjectOfComputedColumn_withCast_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testStaticPivot_AfterConcatenate_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -131,7 +125,7 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testTDSPlusTimesMinus_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::project_Relation_1__FuncColSpecArray_1__Relation_1_"
+    "expectedError" : "function not supported yet: meta::pure::functions::lang::cast_Any_m__T_1__T_m_"
   }, {
     "test" : "meta::pure::functions::relation::tests::composition::testVariantArrayColumn_joinStrings_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
@@ -349,12 +343,6 @@
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
-    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValueAgainstEmptyRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValueAgainstNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::equalTo::testEqualTo_NullValue_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -550,12 +538,6 @@
     "test" : "meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValueAgainstEmptyRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValueAgainstNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::greaterThan::testGreaterThan_NullValue_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -590,9 +572,6 @@
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAll::testGreaterThanAll_NullValue_Function_1__Boolean_1_",
@@ -631,9 +610,6 @@
     "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValueAndNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanAny::testGreaterThanAny_NullValue_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -659,12 +635,6 @@
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanEqual::testGreaterThanEqual_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanEqual::testGreaterThanEqual_NullValueAgainstEmptyRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::greaterThanEqual::testGreaterThanEqual_NullValueAgainstNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::greaterThanEqual::testGreaterThanEqual_NullValue_Function_1__Boolean_1_",
@@ -844,12 +814,6 @@
     "test" : "meta::pure::functions::relation::tests::lessThan::testLessThan_NullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
-    "test" : "meta::pure::functions::relation::tests::lessThan::testLessThan_NullValueAgainstEmptyRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lessThan::testLessThan_NullValueAgainstNullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::lessThan::testLessThan_NullValue_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
@@ -899,12 +863,6 @@
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullInRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullValueAgainstEmptyRelation_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullValueAgainstNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullValue_Function_1__Boolean_1_",
