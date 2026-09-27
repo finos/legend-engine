@@ -32,6 +32,7 @@ import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestMappingG
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestMultiLineStringRoundtrip;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestRuntimeGrammarRoundtrip;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestSectionRoundtrip;
+import org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.TestExtendableEmbedded;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.valueSpecification.TestPrimitives;
 import org.finos.legend.engine.language.pure.grammar.test.to.TestDomainGrammarTo;
 import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
@@ -68,6 +69,7 @@ import org.junit.runners.Suite;
         TestMultiLineStringRoundtrip.class,
         TestRuntimeGrammarRoundtrip.class,
         TestSectionRoundtrip.class,
+        TestExtendableEmbedded.class,
         TestPrimitives.class,
         TestDomainGrammarTo.class,
         TestMappingGrammarTo.class
