@@ -223,30 +223,59 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 | Phase | Deliverable | Exit criteria |
 |---|---|---|
 | P0 Scaffold | Module family; `prevalNative` and `preevalImplementation` natives with compiled/interpreted shells; `PrevalHooks`; `PrevalResult`; the `PURE`/`JAVA`/`SHADOW` switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
-| P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` |
+| P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` — done |
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
 | P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
 
+### P1 status (2026-09-28)
+
+`Test_Pure_Preeval_Java` is green under both `JAVA` and `SHADOW` for all 26 P1 target tests (52/52,
+the two implementations times 26 tests). `DEFERRED_TO_P2` is empty: no P1 target test needed a P2
+rule. The shared harness (`AbstractTestPrevalNative`) is green in both compiled and interpreted mode,
+8/8, covering folding, substitution, multi-value re-activation, open variables, the
+`AggColSpec`/`AggColSpecArray` lambda-holder paths, call-site errors and identity/non-mutation.
+`Test_Pure_Core` (1192/1192) and `Test_Pure_Preeval` (111/111) pass unchanged under the default
+`PURE`. Full exit-verification run: `Test_Pure_Core`/`Test_Pure_Preeval`/`Test_Pure_Preeval_Java`
+together, 1355/1355, 0 failures/errors. Checkstyle: 0 violations across the four preeval modules and
+compiled-core.
+
+Known gaps carried into P2/P3, recorded honestly rather than closed:
+- Interpreted mode has harness coverage only; the full `tests.pure` interpreted runner
+  (`Test_Interpreted_Preeval`) is P3 scope.
+- The interpreted `BasicColumnSpecification`/`AggregateValue` lambda-holder paths are untested — the
+  platform-only shared harness cannot construct those engine types.
+- The `Cast(@X)` multiplicity-identity quirk path is not exercised in P1; it belongs to the P2 cast
+  rules.
+
 ### P1 requirements carried from P0 review
 
 - `SHADOW` comparison must also include `genericType` and multiplicity (at least top-level; ideally
   every node) so type-level rules (the `eval`-on-`Column` `RelationType` fix, the `Cast` multiplicity
-  quirk, `GenericTypeRule`) are gated by parity, not just the value.
+  quirk, `GenericTypeRule`) are gated by parity, not just the value. — **Done.** `SHADOW` compares type
+  and multiplicity at the top level.
 - Java must never mutate its input nodes: `SHADOW` returns Pure's result after running Java on the
   same inputs, so a Java-side mutation would be invisible to the comparison unless this is enforced
-  separately.
+  separately. — **Done.** Every change goes through a `PrevalRuntime.with…` copy; the harness asserts
+  non-mutation directly.
 - `prevalJava` must either assert `inScopeTypeParams`, `path` and `depth` are empty, or the native
-  signature must carry them, before release.
-- The compiled native should pass call-site source information (§3.6).
+  signature must carry them, before release. — **Done.** `prevalJava` asserts all three are empty.
+- The compiled native should pass call-site source information (§3.6). — **Done.** The compiled
+  native carries the `prevalNative` call site's source information into every error.
 - Result/instance construction behind `PrevalRuntime` should use anonymous/ephemeral instances
-  (interpreted) and direct generated-class construction (compiled); exercise non-empty `openVars`.
+  (interpreted) and direct generated-class construction (compiled); exercise non-empty `openVars`. —
+  **Done, with a noted fallback.** Interpreted uses ephemeral instances as designed. Compiled uses
+  `processorSupport.newCoreInstance` plus reflective typed setters, not direct generated-class
+  construction: the preeval module's own generated `Root_*` classes are not available at compile time
+  (the native compiles before its own Pure sources are code-generated), so the adapter falls back to
+  the generic construction path. Non-empty `openVars` are exercised by the harness.
 - Validate `legend.engine.preeval.implementation` once and cache it, surfacing a clear error for an
-  unrecognised value.
+  unrecognised value. — **Done.** The switch is parsed once per property value.
 - TDD RED for new modules: run with `-Dmdep.analyze.skip=true` so the test (not the dependency
-  analyzer) demonstrates the failure; direct Surefire invocations need `-DargLine=`.
+  analyzer) demonstrates the failure; direct Surefire invocations need `-DargLine=`. — **Done.** Every
+  P1 task's RED ran with `-Dmdep.analyze.skip=true`; direct Surefire runs used `-DargLine=`.
 
 ## 6. Cutover criteria
 
