@@ -30,7 +30,7 @@ import org.junit.Test;
 public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreCompiled
 {
     private static final String HOOKS = "^PrevalHooks("
-            + "stopPreeval = {a:Any[*] | false}, "
+            + "stopPreeval = {a:Any[*] | !$a->exists(x | $x->instanceOf(meta::pure::metamodel::valuespecification::FunctionExpression))}, "
             + "shouldInline = {f:Function<Any>[1] | false}, "
             + "isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, "
             + "isGetAllFunction = {f:Function<Any>[1] | false}, "

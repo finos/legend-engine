@@ -17,10 +17,11 @@ package org.finos.legend.engine.pure.preeval.interpreted.natives;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
-import org.finos.legend.engine.pure.preeval.Preevaluator;
-import org.finos.legend.engine.pure.preeval.PrevalResults;
+import org.finos.legend.engine.pure.preeval.PrevalResult;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
+import org.finos.legend.pure.m3.navigation.Instance;
+import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
@@ -37,6 +38,8 @@ import java.util.Stack;
 
 public class PrevalNative extends NativeFunction
 {
+    private static final String PREVAL_RESULT = "meta::pure::functions::preeval::PrevalResult";
+
     public PrevalNative(FunctionExecutionInterpreted functionExecution, ModelRepository repository)
     {
     }
@@ -45,7 +48,17 @@ public class PrevalNative extends NativeFunction
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
         CoreInstance item = params.get(0).getValueForMetaPropertyToOne(M3Properties.values);
-        CoreInstance result = PrevalResults.toPure(Preevaluator.preval(item), processorSupport);
-        return ValueSpecificationBootstrap.wrapValueSpecification(result, false, processorSupport);
+        PrevalResult result = PrevalResult.unmodified(item);
+        CoreInstance pureResult = processorSupport.newEphemeralAnonymousCoreInstance(PREVAL_RESULT);
+        Instance.setValueForProperty(pureResult, "value", (CoreInstance) result.getValue(), processorSupport);
+        Instance.setValueForProperty(pureResult, "canPreval", newBoolean(result.canPreval(), processorSupport), processorSupport);
+        Instance.setValuesForProperty(pureResult, "openVars", result.getOpenVars().collect(name -> processorSupport.newCoreInstance(name, M3Paths.String, null)), processorSupport);
+        Instance.setValueForProperty(pureResult, "modified", newBoolean(result.isModified(), processorSupport), processorSupport);
+        return ValueSpecificationBootstrap.wrapValueSpecification(pureResult, false, processorSupport);
+    }
+
+    private static CoreInstance newBoolean(boolean value, ProcessorSupport processorSupport)
+    {
+        return processorSupport.newCoreInstance(Boolean.toString(value), M3Paths.Boolean, null);
     }
 }
