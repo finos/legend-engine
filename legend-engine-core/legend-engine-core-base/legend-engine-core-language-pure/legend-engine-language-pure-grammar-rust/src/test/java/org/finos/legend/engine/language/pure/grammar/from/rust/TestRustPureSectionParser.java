@@ -127,13 +127,13 @@ public class TestRustPureSectionParser
         System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
         try
         {
-            PureGrammarParser.newInstance().parseModel("function f(): Any[*]\n{\n  #Unknown{x}#\n}\n");
+            PureGrammarParser.newInstance().parseModel("function f(): Any[*]\n{\n  #GQL{x}#\n}\n");
             Assert.fail("expected a parser error");
         }
         catch (EngineException e)
         {
             Assert.assertEquals(EngineErrorType.PARSER, e.getErrorType());
-            Assert.assertTrue(e.getMessage(), e.getMessage().contains("no island grammar is linked for '#Unknown{…}#'; the linked ones are: "));
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("no island grammar is linked for '#GQL{…}#'; the linked ones are: "));
         }
     }
 }

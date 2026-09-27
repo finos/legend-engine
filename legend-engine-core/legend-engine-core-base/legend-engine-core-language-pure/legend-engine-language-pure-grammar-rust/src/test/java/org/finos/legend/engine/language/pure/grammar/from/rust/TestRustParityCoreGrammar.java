@@ -20,7 +20,6 @@ import org.finos.legend.engine.language.pure.grammar.test.parser.TestConnectionG
 import org.finos.legend.engine.language.pure.grammar.test.parser.TestDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.test.parser.TestDocumentationParsing;
 import org.finos.legend.engine.language.pure.grammar.test.parser.TestDomainGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.test.parser.TestEmbeddedPureExtension;
 import org.finos.legend.engine.language.pure.grammar.test.parser.TestMappingGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.test.parser.TestRuntimeGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestConnectionGrammarRoundtrip;
@@ -33,7 +32,6 @@ import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestMappingG
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestMultiLineStringRoundtrip;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestRuntimeGrammarRoundtrip;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.TestSectionRoundtrip;
-import org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.TestExtendableEmbedded;
 import org.finos.legend.engine.language.pure.grammar.test.roundtrip.valueSpecification.TestPrimitives;
 import org.finos.legend.engine.language.pure.grammar.test.to.TestDomainGrammarTo;
 import org.finos.legend.engine.language.pure.grammar.test.to.TestMappingGrammarTo;
@@ -58,7 +56,6 @@ import org.junit.runners.Suite;
         TestDataGrammarParser.class,
         TestDocumentationParsing.class,
         TestDomainGrammarParser.class,
-        TestEmbeddedPureExtension.class,
         TestMappingGrammarParser.class,
         TestRuntimeGrammarParser.class,
         TestConnectionGrammarRoundtrip.class,
@@ -71,7 +68,6 @@ import org.junit.runners.Suite;
         TestMultiLineStringRoundtrip.class,
         TestRuntimeGrammarRoundtrip.class,
         TestSectionRoundtrip.class,
-        TestExtendableEmbedded.class,
         TestPrimitives.class,
         TestDomainGrammarTo.class,
         TestMappingGrammarTo.class
