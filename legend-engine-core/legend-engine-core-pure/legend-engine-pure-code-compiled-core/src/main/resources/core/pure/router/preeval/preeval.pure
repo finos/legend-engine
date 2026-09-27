@@ -154,6 +154,7 @@ function meta::pure::router::preeval::prevalWithImplementation(item:Any[1], stat
 
 function <<access.private>> meta::pure::router::preeval::prevalJava(item:Any[1], state:State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
 {
+  assert($state.inScopeTypeParams->keys()->isEmpty() && $state.path->isEmpty() && $state.depth->isEmpty(), | 'The Java preeval implementation requires a State with no type parameters, path or depth');
   let r = meta::pure::functions::preeval::prevalNative($item, $state.inScopeVars, $state.rollingInScopeVars, $state->toPrevalHooks($extensions), $state.debug);
   ^PrevalWrapper<Any>(value = $r.value, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified);
 }
@@ -183,7 +184,12 @@ function <<access.private>> meta::pure::router::preeval::describePrevalResult(r:
     vs:ValueSpecification[1]      | $vs->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], $inScopeVars, $extensions)->meta::json::toJSON(50000),
     a:Any[1]                      | $a->toString()
   ]);
-  'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']') + ', value=' + $value;
+  let type = $r.value->match([
+    fd:FunctionDefinition<Any>[1] | $fd->functionReturnType()->meta::pure::metamodel::serialization::grammar::printGenericType() + $fd->functionReturnMultiplicity()->meta::pure::metamodel::serialization::grammar::printMultiplicity(),
+    vs:ValueSpecification[1]      | $vs.genericType->meta::pure::metamodel::serialization::grammar::printGenericType() + $vs.multiplicity->meta::pure::metamodel::serialization::grammar::printMultiplicity(),
+    a:Any[1]                      | ''
+  ]);
+  'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']') + ', type=' + $type + ', value=' + $value;
 }
 
 // ====================================================================================================================================================================

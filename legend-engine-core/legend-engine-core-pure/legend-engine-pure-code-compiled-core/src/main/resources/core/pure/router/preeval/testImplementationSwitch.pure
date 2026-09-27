@@ -101,3 +101,41 @@ function <<access.private>> meta::pure::router::preeval::tests::implementationSw
   let state = getPreevalStateWithAdditionalStopInlineFunc($inScopeVars, [], []);
   prevalWithImplementation($f->evaluateAndDeactivate(), $state, [], $implementation);
 }
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypes():Boolean[1]
+{
+  let integerOne = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1);
+  let numberOne = ^InstanceValue(genericType = ^GenericType(rawType = Number), multiplicity = PureOne, values = 1);
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $integerOne, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $numberOne, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentMultiplicities():Boolean[1]
+{
+  let one = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1);
+  let zeroMany = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany, values = 1);
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $one, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $zeroMany, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testJavaImplementationRejectsStateWithDepth():Boolean[1]
+{
+  let f = {p:Integer[1] | $p};
+  let state = getPreevalStateWithAdditionalStopInlineFunc($f->openVariableValues(), [], []);
+  assertError(
+    | prevalWithImplementation($f->evaluateAndDeactivate(), ^$state(depth = 1), [], 'JAVA'),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->contains('requires a State with no type parameters, path or depth'), |$message)}
+  );
+}
