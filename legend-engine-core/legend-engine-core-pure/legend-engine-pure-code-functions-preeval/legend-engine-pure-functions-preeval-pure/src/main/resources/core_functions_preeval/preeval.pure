@@ -1,0 +1,34 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+Class meta::pure::functions::preeval::PrevalResult
+{
+  value     : Any[1];
+  canPreval : Boolean[1];
+  openVars  : String[*];
+  modified  : Boolean[1];
+}
+
+Class meta::pure::functions::preeval::PrevalHooks
+{
+  stopPreeval                    : Function<{Any[*]->Boolean[1]}>[1];
+  shouldInline                   : Function<{Function<Any>[1]->Boolean[1]}>[1];
+  isGeneratedMilestoningProperty : Function<{Function<Any>[1]->Boolean[1]}>[1];
+  isGetAllFunction               : Function<{Function<Any>[1]->Boolean[1]}>[1];
+  resolveTdsSchema               : Function<{ValueSpecification[1], Map<String, List<Any>>[1]->Any[*]}>[1];
+}
+
+native function meta::pure::functions::preeval::prevalNative(item:Any[1], inScopeVars:Map<String, List<Any>>[1], rollingInScopeVars:Map<String, List<Any>>[1], hooks:meta::pure::functions::preeval::PrevalHooks[1], debug:meta::pure::tools::DebugContext[1]):meta::pure::functions::preeval::PrevalResult[1];
+
+native function meta::pure::functions::preeval::preevalImplementation():String[1];
