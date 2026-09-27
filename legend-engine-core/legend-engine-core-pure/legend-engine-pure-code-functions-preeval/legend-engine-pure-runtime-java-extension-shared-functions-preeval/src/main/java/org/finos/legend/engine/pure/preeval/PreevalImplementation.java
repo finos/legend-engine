@@ -16,6 +16,7 @@ package org.finos.legend.engine.pure.preeval;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public enum PreevalImplementation
@@ -26,9 +27,18 @@ public enum PreevalImplementation
 
     public static final String SYSTEM_PROPERTY = "legend.engine.preeval.implementation";
 
+    private static volatile Resolved resolved = new Resolved(null, PURE);
+
     public static PreevalImplementation current()
     {
-        return parse(System.getProperty(SYSTEM_PROPERTY));
+        String raw = System.getProperty(SYSTEM_PROPERTY);
+        Resolved cached = resolved;
+        if (!Objects.equals(cached.raw, raw))
+        {
+            cached = new Resolved(raw, parse(raw));
+            resolved = cached;
+        }
+        return cached.implementation;
     }
 
     public static PreevalImplementation parse(String value)
@@ -45,6 +55,18 @@ public enum PreevalImplementation
         {
             String expected = Arrays.stream(values()).map(Enum::name).collect(Collectors.joining(", "));
             throw new IllegalArgumentException("Invalid value '" + value + "' for system property " + SYSTEM_PROPERTY + "; expected one of " + expected, e);
+        }
+    }
+
+    private static final class Resolved
+    {
+        private final String raw;
+        private final PreevalImplementation implementation;
+
+        private Resolved(String raw, PreevalImplementation implementation)
+        {
+            this.raw = raw;
+            this.implementation = implementation;
         }
     }
 }

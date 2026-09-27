@@ -44,4 +44,50 @@ public class TestPreevalImplementation
         IllegalArgumentException e = Assertions.assertThrows(IllegalArgumentException.class, () -> PreevalImplementation.parse("FAST"));
         Assertions.assertEquals("Invalid value 'FAST' for system property legend.engine.preeval.implementation; expected one of PURE, JAVA, SHADOW", e.getMessage());
     }
+
+    @Test
+    public void testCurrentFollowsSystemProperty()
+    {
+        withProperty("java", () -> Assertions.assertEquals(PreevalImplementation.JAVA, PreevalImplementation.current()));
+        withProperty(null, () -> Assertions.assertEquals(PreevalImplementation.PURE, PreevalImplementation.current()));
+        withProperty("SHADOW", () -> Assertions.assertEquals(PreevalImplementation.SHADOW, PreevalImplementation.current()));
+    }
+
+    @Test
+    public void testCurrentRejectsUnknownValueEveryTime()
+    {
+        withProperty("FAST", () ->
+        {
+            Assertions.assertThrows(IllegalArgumentException.class, PreevalImplementation::current);
+            Assertions.assertThrows(IllegalArgumentException.class, PreevalImplementation::current);
+        });
+    }
+
+    private static void withProperty(String value, Runnable body)
+    {
+        String previous = System.getProperty(PreevalImplementation.SYSTEM_PROPERTY);
+        try
+        {
+            if (value == null)
+            {
+                System.clearProperty(PreevalImplementation.SYSTEM_PROPERTY);
+            }
+            else
+            {
+                System.setProperty(PreevalImplementation.SYSTEM_PROPERTY, value);
+            }
+            body.run();
+        }
+        finally
+        {
+            if (previous == null)
+            {
+                System.clearProperty(PreevalImplementation.SYSTEM_PROPERTY);
+            }
+            else
+            {
+                System.setProperty(PreevalImplementation.SYSTEM_PROPERTY, previous);
+            }
+        }
+    }
 }
