@@ -52,41 +52,14 @@
     "test" : "meta::pure::functions::date::tests::min::testMin_StrictDateArray_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [2] arguments provided to expression \"min(%s)\"\""
   }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketDays_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketHours_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "The DurationUnit 'HOUR' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMinutes_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketMonths_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "The DurationUnit 'MINUTE' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketSeconds_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketWeeks_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::dateTime::testTimeBucketYears_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketDays_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketMonths_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketWeeks_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::date::tests::timeBucket::strictDate::testTimeBucketYears_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'timeBucket' (state: [Select, false]) is not supported yet\""
-  }, {
-    "test" : "meta::pure::functions::math::hashCode::tests::testHashCodeAggregate_Function_1__Boolean_1_",
-    "expectedError" : "\"[unsupported-api] The function 'hashAgg' (state: [Select, false]) is not supported yet\""
+    "expectedError" : "The DurationUnit 'SECOND' is not supported yet for timeBucket"
   }, {
     "test" : "meta::pure::functions::math::tests::covarPopulation::testCovarPopulation_Function_1__Boolean_1_",
     "expectedError" : "Unused format args. [4] arguments provided to expression \"COVAR_POP(%s, %s)\""
@@ -99,9 +72,6 @@
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 2\nactual:   2.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
-    "expectedError" : "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `max_by` requires [2, 3] parameters but the actual number is 4."
   }, {
     "test" : "meta::pure::functions::math::tests::median::testMedian_Floats_Function_1__Boolean_1_",
     "expectedError" : "\"Unused format args. [5] arguments provided to expression \"median(%s)\"\""
@@ -117,8 +87,5 @@
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
-    "expectedError" : "[WRONG_NUM_ARGS.WITHOUT_SUGGESTION] The `min_by` requires [2, 3] parameters but the actual number is 4."
   } ]
 }

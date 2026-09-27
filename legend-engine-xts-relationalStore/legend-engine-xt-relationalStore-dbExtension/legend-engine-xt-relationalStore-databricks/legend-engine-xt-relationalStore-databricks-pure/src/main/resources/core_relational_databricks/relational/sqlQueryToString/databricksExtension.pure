@@ -166,6 +166,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('hashCode',               $allStates,            ^ToSql(format='hash(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    // hashCode() used inside a groupBy aggregate column (e.g. ~hashValue: x | $x.col : y | $y->hashCode())
+    // routes, on every dialect identically, to a DynaFunction literally named 'hashAgg' (shared
+    // pureToSqlQuery.pure processAggFn) - Snowflake has a native single-call HASH_AGG(col) aggregate;
+    // Spark has no equivalent. sum(...) is a natural order-independent per-group combiner (addition is
+    // commutative/associative, so row-shuffle order across the distributed engine can't affect the
+    // result) over the per-row scalar hash(%s) this file already registers above for plain hashCode() -
+    // reusing the same per-row hash function rather than inventing a second one. The stdlib's own
+    // documented hashCode() semantics never require bit-compatibility with another dialect's algorithm
+    // (testHashCodeAggregate only asserts structural properties - non-empty, and that DIFFERENT
+    // per-group value sets hash to DIFFERENT combined values - never a specific fixed number), so this
+    // Databricks-original formula only needs to be a good, collision-resistant combiner, not a port of
+    // any other dialect's.
+    dynaFnToSql('hashAgg',                $allStates,            ^ToSql(format='cast(sum(hash(%s)) as int)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format='%s', transform={p:String[1]|$p->transformAlphaNumericParamsDatabricks()})),
@@ -177,8 +190,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('regexpIndexOf',          $allStates,            ^ToSql(format='%s', transform={p:String[4]|$p->transformRegexpIndexOfDatabricks()})),
     dynaFnToSql('regexpLike',             $allStates,            ^ToSql(format='%s', transform={p:String[3]|$p->transformRegexpLikeDatabricks()})),
     dynaFnToSql('regexpReplace',          $allStates,            ^ToSql(format='%s', transform={p:String[5]|$p->transformRegexpReplaceDatabricks()})),
-    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='MAX_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
-    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='MIN_BY(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
+    // maxBy/minBy's 2-arg overload (col_to_return, col_containing_maximum) and 3-arg top-N overload
+    // (..., n) both route, via the SAME shared processAggregation dispatch, to a single 'maxBy'/'minBy'
+    // DynaFunction. Over REAL table columns (the groupBy/rowMapper shape), col_to_return/
+    // col_containing_maximum each render as exactly one column reference regardless of row count, so
+    // $p never exceeds 3 rendered args (value, order, optional literal n) - Spark's own native
+    // max_by(col, ord[, n]) already accepts exactly that 2- or 3-argument shape, so the original
+    // 'MAX_BY(%s)'/joinStrings rendering (the 'else' branch below) is untouched and still correct for
+    // this case. A FULLY LITERAL call (every stdlib PCT test of this function) has no real row source at
+    // all, so mergeSQLQueryData flattens BOTH input collections independently, in order, into $p (the
+    // same per-literal-element explosion already documented on corrDatabricksHelper/
+    // variancePopulationOrSampleDatabricks below) - always more than 3 args for the k>=2-element arrays
+    // every stdlib test uses, and unambiguously identifiable as the literal case for exactly that reason
+    // (a real column-backed call can never render more than 3 args). There is no native max_by/min_by
+    // call shape that can reconstruct which of these flattened scalars paired with which, so this is
+    // computed directly in Pure instead - see maxByOrMinByLiteralDatabricksHelper.
+    dynaFnToSql('maxBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [if($p->size() > 3, | maxByOrMinByLiteralDatabricksHelper(true, $p), | 'MAX_BY(' + $p->joinStrings(', ') + ')')]
+    })),
+    dynaFnToSql('minBy',                  $allStates,            ^ToSql(format='%s', transform={p:String[*] |
+        [if($p->size() > 3, | maxByOrMinByLiteralDatabricksHelper(false, $p), | 'MIN_BY(' + $p->joinStrings(', ') + ')')]
+    })),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
@@ -517,7 +549,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::dynaFuncDispatchForDatabricksNonQuantified(func:DynaFunction[1], sgc:SqlGenerationContext[1], baseDispatch:meta::pure::metamodel::function::Function<{DynaFunction[1], SqlGenerationContext[1]->DynaFunctionToSql[1]}>[1]):DynaFunctionToSql[1]
 {
- if($func->isGreatestOrLeastSingleForDatabricks(),
+ if($func.name == 'timeBucket' && $func.parameters->size() == 3,
+    | $func->timeBucketDynaFunctionToSqlForDatabricks(),
+    | if($func->isGreatestOrLeastSingleForDatabricks(),
     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s')),
     | if($func->isDateFieldExtractionMissingForDatabricks(),
          | fail($func->dateFieldExtractionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
@@ -611,7 +645,72 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
  );
    )
    )
+ )
  );
+}
+
+// timeBucket has no registration in the flat name-keyed dynaFnToSql table because the SQL it needs
+// depends on the DATE-vs-DATETIME return type (see below) - a decision only reachable from the
+// DynaFunction node's own operand type, not from the rendered args a ToSql transform receives - so it
+// is intercepted here instead, the same AST-aware hook Groups 3/4/7/9 already use.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketDynaFunctionToSqlForDatabricks(func:DynaFunction[1]):DynaFunctionToSql[1]
+{
+   // timeBucket(DateTime[1],...):DateTime[1] and timeBucket(StrictDate[1],...):StrictDate[1] both lower
+   // to the SAME 'timeBucket' DynaFunction name - the only way to tell which overload this call is (and
+   // so whether the rendered SQL must come back as a DATE or a TIMESTAMP) is to infer the first
+   // operand's own relational type, the same technique array_position/percentile already use above for
+   // an analogous type-dependent rendering decision.
+   let inferred = meta::relational::functions::typeInference::inferRelationalType($func.parameters->at(0), false);
+   let isDateOnly = $inferred->isNotEmpty() && $inferred->toOne()->instanceOf(meta::relational::metamodel::datatype::Date);
+   ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = '%s', transform = {p:String[3] | [$p->timeBucketSqlForDatabricks($isDateOnly)]}));
+}
+
+// timeBucket(date, quantity, unit) rounds down to the start of the quantity-unit-wide bucket
+// containing date, buckets measured from the Unix epoch (1970-01-01T00:00:00 UTC) - see timeBucket.pure's
+// own doc comment. Spark's date_trunc/trunc only understand a single calendar unit at a time (no
+// arbitrary bucket WIDTH), so each unit is hand-built from epoch arithmetic instead:
+//  - DAY: a day index (whole days since epoch, via floor(unix_timestamp/86400.0) - floor, not integer
+//    truncation, so this stays correct for pre-epoch/negative-offset dates too, the same reasoning
+//    dateDiffDatabricks's own WEEKS branch already documents) is bucketed by floor(dayIndex/quantity)*
+//    quantity, then converted back to a timestamp.
+//  - WEEK: buckets are Monday-aligned (confirmed by hand against every testTimeBucketWeeks assertion,
+//    NOT the Sunday-aligned convention dateDiffDatabricks's own WEEKS branch uses for a different
+//    function - the two are independently documented and must not be assumed to share a convention).
+//    1970-01-01 (day index 0) was a Thursday, 3 days after the preceding Monday, so shifting the day
+//    index by +3 before dividing by 7 re-bases week indexing onto a Monday-start grid.
+//  - MONTH/YEAR: calendar units have variable width, so these use year(...)/month(...) extraction and
+//    add_months() (which is itself always correct for any integer offset, including negative) rather
+//    than fixed-size epoch-second arithmetic; the month/year index is still counted from 1970 (not
+//    year 0), which matters whenever `quantity` doesn't evenly divide 1970's own index in the other
+//    reference frame (hand-validated: every one of testTimeBucketMonths/testTimeBucketYears's own
+//    assertions was reproduced correctly only once the index was anchored at 1970, not year/month 0).
+// All four formulas, and the StrictDate overload's bucket-boundary values, were validated by hand
+// (a standalone Python script reproducing the exact epoch/calendar arithmetic below) against every
+// assertion in testTimeBucketDays/Weeks/Months/Years (both the dateTime and strictDate FQNs) before
+// this was implemented in SQL.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::timeBucketSqlForDatabricks(p:String[3], isDateOnly:Boolean[1]):String[1]
+{
+   let d = $p->at(0);
+   let q = $p->at(1);
+   let unit = $p->at(2)->meta::relational::functions::sqlQueryToString::default::mapToDBUnitType();
+   let dayIdx = 'floor(unix_timestamp(cast(' + $d + ' as timestamp)) / 86400.0)';
+   let dayBucketExpr = 'timestamp_seconds(cast(floor(floor(' + $dayIdx + ') / ' + $q + ') * ' + $q + ' * 86400 as bigint))';
+   let weekIdx = 'floor((floor(' + $dayIdx + ') + 3) / 7.0)';
+   let weekBucketDayExpr = '(floor(' + $weekIdx + ' / ' + $q + ') * ' + $q + ' * 7 - 3)';
+   let weekBucketExpr = 'timestamp_seconds(cast((' + $weekBucketDayExpr + ') * 86400 as bigint))';
+   let monthIdx = '((year(' + $d + ') - 1970) * 12 + (month(' + $d + ') - 1))';
+   let monthBucketExpr = 'add_months(DATE \'1970-01-01\', cast(floor(' + $monthIdx + ' / ' + $q + ') * ' + $q + ' as int))';
+   let yearIdx = '(year(' + $d + ') - 1970)';
+   let yearBucketExpr = 'add_months(DATE \'1970-01-01\', cast(floor(' + $yearIdx + ' / ' + $q + ') * ' + $q + ' * 12 as int))';
+   let bucketExpr =
+      if($unit == 'DAY', | $dayBucketExpr,
+      | if($unit == 'WEEK', | $weekBucketExpr,
+      | if($unit == 'MONTH', | $monthBucketExpr,
+      | if($unit == 'YEAR', | $yearBucketExpr,
+      | ''
+      ))));
+   if ($bucketExpr == '', | fail('The DurationUnit \'' + $unit + '\' is not supported yet for timeBucket'), | '');
+   if($isDateOnly, | 'cast(' + $bucketExpr + ' as date)', | 'cast(' + $bucketExpr + ' as timestamp)');
 }
 
 // The shared extensionDefaults.pure registration for greatest/least
@@ -998,6 +1097,33 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
         );
      }, ^ModeAccumulator(numMax = '', maxCount = 0, prevValue = 0.0, prevCount = 0));
    $result.numMax;
+}
+
+// Reproduces maxBy/minBy's own documented algorithm (maxBy.pure/minBy.pure: zip the two collections,
+// stable-sort by the order value - descending for maxBy, ascending for minBy, ties keep original
+// relative order, matching Pure's own sortBy stability already relied on by modeDatabricksHelper above
+// - take the first n) directly over the N already-rendered literal strings, mirroring
+// corrDatabricksHelper/modeDatabricksHelper's own "evaluate directly, no SQL aggregate needed"
+// approach. The combined rendered-argument list is [col_to_return[0..k-1], col_containing_maximum/
+// minimum[0..k-1]] for the 2-arg overload (2k args, always even - the two input collections are
+// documented as always equal length), or that same 2k-argument list plus one trailing literal `n` for
+// the 3-arg top-N overload (2k+1 args, always odd) - so parity alone (checked by the caller via
+// $p->size() > 3, which only the literal case can reach) tells the two overloads apart. Returns either
+// the single winning already-rendered value string (2-arg overload, n implied 1) or a literal SQL array
+// of the winning n value strings (3-arg overload) - col_to_return's own elements are never parsed or
+// reinterpreted, only reordered/selected, so this works for any T, not just the Number case the stdlib
+// tests happen to use; only the order column is parsed (as a Float, via parseFloat(), the same
+// technique modeDatabricksHelper already uses) since it must be compared numerically.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::maxByOrMinByLiteralDatabricksHelper(isMax:Boolean[1], values:String[*]):String[1]
+{
+   let isEven = (2 * (($values->size() / 2)->floor())) == $values->size();
+   let n = if($isEven, | 1, | $values->last()->toOne()->parseInteger());
+   let pairs = if($isEven, | $values, | $values->init());
+   let half = ($pairs->size() / 2)->floor();
+   let paired = range($half)->map(i | pair($pairs->at($i), $pairs->at($half + $i)->parseFloat()));
+   let sorted = if($isMax, | $paired->sortBy(pr | 0.0 - $pr.second), | $paired->sortBy(pr | $pr.second));
+   let top = $sorted->take($n)->map(p | $p.first);
+   if($n == 1, | $top->at(0), | 'array(' + $top->joinStrings(', ') + ')');
 }
 
 function meta::relational::functions::sqlQueryToString::databricks::loadValuesToDbTableForDatabricks(l:LoadTableSQL[1], dbConfig: DbConfig[1]): String[*]
