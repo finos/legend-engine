@@ -54,7 +54,7 @@ public class PrevalNative extends NativeFunction
     @Override
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        InterpretedPrevalRuntime runtime = new InterpretedPrevalRuntime(this.functionExecution, this.repository, processorSupport, resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
+        InterpretedPrevalRuntime runtime = new InterpretedPrevalRuntime(this.functionExecution, this.repository, processorSupport, resolvedTypeParameters, resolvedMultiplicityParameters, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
         CoreInstance item = params.get(0).getValueForMetaPropertyToOne(M3Properties.values);
         CoreInstance hooks = Instance.getValueForMetaPropertyToOneResolved(params.get(3), M3Properties.values, processorSupport);
         CoreInstance debug = Instance.getValueForMetaPropertyToOneResolved(params.get(4), M3Properties.values, processorSupport);

@@ -17,6 +17,8 @@ package org.finos.legend.engine.pure.code.core;
 import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.eclipse.collections.api.bag.MutableBag;
+import org.eclipse.collections.api.factory.Bags;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
@@ -33,7 +35,10 @@ public class Test_Pure_Preeval_Java
             "testPrerouting5", "testFilterNoSimplification", "testToOneManyElimination2", "testToOneElimination2",
             "testFromWith", "testFromStopFunctions", "testPreroutingRemoveUnnecessaryStatements", "testLambdaParamOverride",
             "testPrerouting_parameterAssignedToVariable", "testPrerouting9", "testLambdaParamOverride2");
-    static final ImmutableSet<String> REACTIVATION = Sets.immutable.empty();
+    static final ImmutableSet<String> REACTIVATION = Sets.immutable.with(
+            "testPrerouting1", "testPrerouting2", "testPrerouting3", "testPrerouting4",
+            "testPrerouting39", "testPrerouting_PropertyValue", "testSchemaStateUnfurl", "testToOneManyElimination1",
+            "testToOneElimination1", "testPrerouting36", "testFilterFalseSimplificationAll", "testPrerouting27a");
     static final ImmutableSet<String> LAMBDA_HOLDERS = Sets.immutable.empty();
     static final ImmutableSet<String> DEFERRED_TO_P2 = Sets.immutable.empty();
 
@@ -55,7 +60,23 @@ public class Test_Pure_Preeval_Java
     private static TestSuite targets(CompiledExecutionSupport executionSupport)
     {
         ImmutableSet<String> enabled = enabledTargets();
-        return PureTestBuilderCompiled.buildSuite(TestCollection.collectTests("meta::pure::router::preeval::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci -> enabled.contains(((Function<?>) ci)._functionName()) && PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport())), executionSupport);
+        MutableBag<String> matched = Bags.mutable.empty();
+        TestCollection tests = TestCollection.collectTests("meta::pure::router::preeval::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci ->
+        {
+            String name = ((Function<?>) ci)._functionName();
+            boolean selected = enabled.contains(name) && PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport());
+            if (selected)
+            {
+                matched.add(name);
+            }
+            return selected;
+        });
+        ImmutableSet<String> unmatched = enabled.reject(name -> matched.occurrencesOf(name) == 1);
+        if (unmatched.notEmpty())
+        {
+            throw new IllegalStateException("Enabled preeval targets that do not match exactly one collected test: " + unmatched.toSortedList().makeString(", "));
+        }
+        return PureTestBuilderCompiled.buildSuite(tests, executionSupport);
     }
 
     private static Test withImplementation(String implementation, Test tests)

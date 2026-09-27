@@ -48,6 +48,7 @@ import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 final class CompiledPrevalRuntime implements PrevalRuntime
 {
@@ -243,7 +244,9 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     @Override
     public ImmutableList<Object> reactivate(ValueSpecification valueSpecification, ImmutableMap<String, ImmutableList<Object>> inScopeVars)
     {
-        throw new UnsupportedOperationException("P1 Task 6");
+        PureMap vars = new PureMap(Maps.mutable.empty());
+        inScopeVars.forEachKeyValue((name, values) -> vars.getMap().put(name, CoreGen.bridge.buildList()._valuesAddAll(values)));
+        return Lists.immutable.withAll(CompiledSupport.toPureCollection(Pure.reactivate(valueSpecification, vars, CoreGen.bridge, this.executionSupport)));
     }
 
     @Override

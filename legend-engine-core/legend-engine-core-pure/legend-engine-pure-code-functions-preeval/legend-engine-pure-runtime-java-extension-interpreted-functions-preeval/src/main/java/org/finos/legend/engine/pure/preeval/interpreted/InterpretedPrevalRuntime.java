@@ -75,20 +75,18 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     private final ProcessorSupport processorSupport;
     private final Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters;
     private final Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters;
-    private final VariableContext variableContext;
     private final MutableStack<CoreInstance> functionExpressionCallStack;
     private final Profiler profiler;
     private final InstantiationContext instantiationContext;
     private final ExecutionSupport executionSupport;
 
-    public InterpretedPrevalRuntime(FunctionExecutionInterpreted functionExecution, ModelRepository repository, ProcessorSupport processorSupport, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport)
+    public InterpretedPrevalRuntime(FunctionExecutionInterpreted functionExecution, ModelRepository repository, ProcessorSupport processorSupport, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport)
     {
         this.functionExecution = functionExecution;
         this.repository = repository;
         this.processorSupport = processorSupport;
         this.resolvedTypeParameters = resolvedTypeParameters;
         this.resolvedMultiplicityParameters = resolvedMultiplicityParameters;
-        this.variableContext = variableContext;
         this.functionExpressionCallStack = functionExpressionCallStack;
         this.profiler = profiler;
         this.instantiationContext = instantiationContext;
@@ -297,7 +295,22 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     @Override
     public ImmutableList<Object> reactivate(ValueSpecification valueSpecification, ImmutableMap<String, ImmutableList<Object>> inScopeVars)
     {
-        throw new UnsupportedOperationException("P1 Task 6");
+        VariableContext context = VariableContext.newVariableContext();
+        inScopeVars.forEachKeyValue((name, values) ->
+        {
+            CoreInstance value = this.processorSupport.newEphemeralAnonymousCoreInstance(M3Paths.InstanceValue);
+            Instance.setValuesForProperty(value, M3Properties.values, toCoreInstances(values), this.processorSupport);
+            try
+            {
+                context.registerValue(name, value);
+            }
+            catch (VariableContext.VariableNameConflictException e)
+            {
+                throw error(e.getMessage());
+            }
+        });
+        CoreInstance result = this.functionExecution.executeValueSpecification(valueSpecification, this.resolvedTypeParameters, this.resolvedMultiplicityParameters, this.functionExpressionCallStack, context, this.profiler, this.instantiationContext, this.executionSupport);
+        return Lists.immutable.withAll(InstanceValueCoreInstanceWrapper.toInstanceValue(result)._values());
     }
 
     @Override

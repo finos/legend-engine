@@ -216,7 +216,16 @@ public final class Preevaluator
         {
             return new PrevalResult(newExpression, PrevalResult.allCanPreval(results), openVars, modified);
         }
-        return new PrevalResult(newExpression, PrevalResult.allCanPreval(results), openVars, modified);
+        ImmutableList<Object> reactivated = this.runtime.reactivate(newExpression, state.getInScopeVars());
+        PrevalState emptyScope = state.withInScopeTypeParams(Maps.immutable.empty()).withInScopeVars(Maps.immutable.empty());
+        ImmutableList<Object> values = reactivated.collect(v -> isReactivatedLambdaHolder(v) ? prevalInternal(v, emptyScope).getValue() : v);
+        Object value = isSingle(values, InstanceValue.class) ? values.getOnly() : this.runtime.newInstanceValue(newExpression._genericType(), this.runtime.exactly(values.size()), values);
+        return new PrevalResult(value, true, Lists.immutable.empty(), true);
+    }
+
+    private boolean isReactivatedLambdaHolder(Object value)
+    {
+        return isAnyOf(value, MetamodelPaths.BASIC_COLUMN_SPECIFICATION, MetamodelPaths.COLLECTION_AGGREGATE_VALUE, MetamodelPaths.TDS_AGGREGATE_VALUE, MetamodelPaths.AGG_COL_SPEC_ARRAY, MetamodelPaths.AGG_COL_SPEC);
     }
 
     private int parameterNameCount(Object function)
