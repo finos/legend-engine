@@ -39,6 +39,7 @@ public final class Preevaluator
     private final PrevalHooks hooks;
     private final Scope scope;
     private final GenericTypes genericTypes;
+    private final LambdaHolders lambdaHolders;
 
     public Preevaluator(PrevalRuntime runtime, PrevalHooks hooks)
     {
@@ -46,6 +47,7 @@ public final class Preevaluator
         this.hooks = hooks;
         this.scope = new Scope(v -> v instanceof VariableExpression ? ((VariableExpression) v)._name() : null);
         this.genericTypes = new GenericTypes(runtime);
+        this.lambdaHolders = new LambdaHolders(runtime, this::prevalInternal);
     }
 
     public PrevalResult preval(Object item, PrevalState state)
@@ -88,6 +90,11 @@ public final class Preevaluator
         {
             return prevalKeyExpression((KeyExpression) item, state);
         }
+        PrevalResult holder = this.lambdaHolders.prevalHolder(item, state);
+        if (holder != null)
+        {
+            return holder;
+        }
         if (isAnyOf(item, MetamodelPaths.SCHEMA_STATE, MetamodelPaths.ROOT_GRAPH_FETCH_TREE, MetamodelPaths.BINDING, MetamodelPaths.STORE))
         {
             return PrevalResult.unmodified(item);
@@ -96,7 +103,7 @@ public final class Preevaluator
         {
             return PrevalResult.unmodified(item, false);
         }
-        if (isAnyOf(item, MetamodelPaths.AGG_COL_SPEC, MetamodelPaths.FUNC_COL_SPEC, MetamodelPaths.TEST_PARAMETERS))
+        if (isAnyOf(item, MetamodelPaths.FUNC_COL_SPEC, MetamodelPaths.TEST_PARAMETERS))
         {
             return PrevalResult.unmodified(item);
         }

@@ -310,25 +310,25 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
             }
         });
         CoreInstance result = this.functionExecution.executeValueSpecification(valueSpecification, this.resolvedTypeParameters, this.resolvedMultiplicityParameters, this.functionExpressionCallStack, context, this.profiler, this.instantiationContext, this.executionSupport);
-        return Lists.immutable.withAll(InstanceValueCoreInstanceWrapper.toInstanceValue(result)._values());
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(result, M3Properties.values, this.processorSupport));
     }
 
     @Override
     public Object getPropertyValue(Object instance, String property)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        return Instance.getValueForMetaPropertyToOneResolved(toCoreInstance(instance), property, this.processorSupport);
     }
 
     @Override
     public ImmutableList<Object> getPropertyValues(Object instance, String property)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(toCoreInstance(instance), property, this.processorSupport));
     }
 
     @Override
     public Object withPropertyValues(Object instance, String property, ListIterable<?> values)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        return copy(toCoreInstance(instance), Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(property, toCoreInstances(values)));
     }
 
     @Override

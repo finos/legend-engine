@@ -39,7 +39,7 @@ public class Test_Pure_Preeval_Java
             "testPrerouting1", "testPrerouting2", "testPrerouting3", "testPrerouting4",
             "testPrerouting39", "testPrerouting_PropertyValue", "testSchemaStateUnfurl", "testToOneManyElimination1",
             "testToOneElimination1", "testPrerouting36", "testFilterFalseSimplificationAll", "testPrerouting27a");
-    static final ImmutableSet<String> LAMBDA_HOLDERS = Sets.immutable.empty();
+    static final ImmutableSet<String> LAMBDA_HOLDERS = Sets.immutable.with("testRelationAggregation", "testPrerouting_constantInAgg", "testPrerouting_mappedModelAgg");
     static final ImmutableSet<String> DEFERRED_TO_P2 = Sets.immutable.empty();
 
     public static TestSuite suite()

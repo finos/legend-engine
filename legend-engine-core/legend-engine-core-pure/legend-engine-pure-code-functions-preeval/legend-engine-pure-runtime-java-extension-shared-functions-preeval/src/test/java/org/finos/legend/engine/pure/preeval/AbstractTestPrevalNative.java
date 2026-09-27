@@ -35,6 +35,7 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
             + "isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, "
             + "isGetAllFunction = {f:Function<Any>[1] | false}, "
             + "resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []})";
+    private static final String AGG_COL_SPEC = "^meta::pure::metamodel::relation::AggColSpec<{Integer[1]->Integer[1]}, {Integer[*]->Integer[1]}, Any>";
 
     @After
     public void deleteTestSource()
@@ -51,9 +52,12 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "let f = {|1 + 1};",
                 "let r = prevalNative($f, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
                 "assert($r.modified, |'expected modified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');",
                 "let body = $r.value->cast(@LambdaFunction<Any>).expressionSequence->at(0);",
                 "assert($body->instanceOf(InstanceValue), |'expected an instance value');",
                 "assert($body->cast(@InstanceValue).values->toOne() == 2, |'expected 2');",
+                "assert($body.multiplicity == PureOne, |'expected multiplicity PureOne');",
                 "assert($f->evaluateAndDeactivate().expressionSequence->at(0)->instanceOf(FunctionExpression), |'the input lambda must not be mutated');");
     }
 
@@ -70,15 +74,53 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
-    public void testPrevalNativeReturnsFunctionExpressionUnmodified()
+    public void testPrevalNativeReactivatesToSeveralValues()
     {
         executeTestFunction(
                 "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
-                "let fe = {p:Integer[1] | $p + 1}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let fe = {|'a,b,c'->split(',')}->evaluateAndDeactivate().expressionSequence->at(0);",
                 "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
-                "assert(!$r.modified, |'expected unmodified');",
+                "assert($r.modified, |'expected modified');",
                 "assert($r.canPreval, |'expected canPreval');",
-                "assert($r.value == $fe, |'expected the same function expression back');");
+                "let iv = $r.value->cast(@InstanceValue);",
+                "assert($iv.values->size() == 3, |'expected 3 values');",
+                "assert(($iv.values->at(0) == 'a') && ($iv.values->at(1) == 'b') && ($iv.values->at(2) == 'c'), |'expected a, b, c');",
+                "assert(($iv.multiplicity.lowerBound.value == 3) && ($iv.multiplicity.upperBound.value == 3), |'expected multiplicity [3]');");
+    }
+
+    @Test
+    public void testPrevalNativeFoldsAggColSpecFunctions()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let spec = " + AGG_COL_SPEC + "(name = 'a', map = {x:Integer[1] | 1 + 1}, reduce = {y:Integer[*] | $y->plus()});",
+                "let r = prevalNative($spec, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');",
+                "let newSpec = $r.value->cast(@meta::pure::metamodel::relation::AggColSpec<Any, Any, Any>);",
+                "assert($newSpec.name == 'a', |'expected name a');",
+                "assert($newSpec.map->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->toOne() == 2, |'expected map folded to 2');",
+                "assert($newSpec.reduce == $spec.reduce, |'expected reduce unchanged');",
+                "assert($spec.map->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->at(0)->instanceOf(FunctionExpression), |'the input spec must not be mutated');");
+    }
+
+    @Test
+    public void testPrevalNativeFoldsAggColSpecArrayElements()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let folding = " + AGG_COL_SPEC + "(name = 'a', map = {x:Integer[1] | 1 + 1}, reduce = {y:Integer[*] | $y->plus()});",
+                "let unchanged = " + AGG_COL_SPEC + "(name = 'b', map = {x:Integer[1] | $x}, reduce = {y:Integer[*] | $y->plus()});",
+                "let array = ^meta::pure::metamodel::relation::AggColSpecArray<{Integer[1]->Integer[1]}, {Integer[*]->Integer[1]}, Any>(aggSpecs = [$folding, $unchanged]);",
+                "let r = prevalNative($array, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "let specs = $r.value->cast(@meta::pure::metamodel::relation::AggColSpecArray<Any, Any, Any>).aggSpecs;",
+                "assert($specs->size() == 2, |'expected 2 specs');",
+                "assert($specs->at(0).map->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->toOne() == 2, |'expected first map folded to 2');",
+                "assert($specs->at(1) == $unchanged, |'expected second spec unchanged');",
+                "assert($array.aggSpecs->at(0) == $folding, |'the input array must not be mutated');");
     }
 
     @Test
@@ -89,6 +131,7 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "let fe = {p:Integer[1] | $p + 1}->evaluateAndDeactivate().expressionSequence->at(0);",
                 "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
                 "assert(!$r.modified, |'expected unmodified');",
+                "assert($r.canPreval, |'expected canPreval');",
                 "assert($r.value == $fe, |'expected the same function expression back');",
                 "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'p', |'expected open variable p');");
     }

@@ -50,6 +50,9 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 final class CompiledPrevalRuntime implements PrevalRuntime
 {
     private static final String PACKAGEABLE_MULTIPLICITY = "meta::pure::metamodel::multiplicity::PackageableMultiplicity";
@@ -252,19 +255,60 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     @Override
     public Object getPropertyValue(Object instance, String property)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        return ((CoreInstance) instance).getValueForMetaPropertyToOne(property);
     }
 
     @Override
     public ImmutableList<Object> getPropertyValues(Object instance, String property)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        return Lists.immutable.withAll(((CoreInstance) instance).getValueForMetaPropertyToMany(property));
     }
 
     @Override
     public Object withPropertyValues(Object instance, String property, ListIterable<?> values)
     {
-        throw new UnsupportedOperationException("P1 Task 7");
+        Object copy = CompiledSupport.copy(instance);
+        Method toOneSetter = null;
+        Method toManySetter = null;
+        for (Method method : copy.getClass().getMethods())
+        {
+            if (method.getName().equals("_" + property) && method.getParameterCount() == 1)
+            {
+                Class<?> parameterType = method.getParameterTypes()[0];
+                if (RichIterable.class.isAssignableFrom(parameterType))
+                {
+                    toManySetter = method;
+                }
+                else if (!parameterType.isPrimitive())
+                {
+                    toOneSetter = method;
+                }
+            }
+        }
+        if (toOneSetter == null && toManySetter == null)
+        {
+            throw new IllegalStateException("No setter for property " + property + " on " + copy.getClass().getName());
+        }
+        try
+        {
+            if (toOneSetter != null)
+            {
+                toOneSetter.invoke(copy, values.getOnly());
+            }
+            else
+            {
+                toManySetter.invoke(copy, Lists.mutable.withAll(values));
+            }
+        }
+        catch (IllegalAccessException e)
+        {
+            throw new IllegalStateException("Cannot set property " + property + " on " + copy.getClass().getName(), e);
+        }
+        catch (InvocationTargetException e)
+        {
+            throw new IllegalStateException("Failed to set property " + property + " on " + copy.getClass().getName(), e.getCause());
+        }
+        return copy;
     }
 
     @Override
