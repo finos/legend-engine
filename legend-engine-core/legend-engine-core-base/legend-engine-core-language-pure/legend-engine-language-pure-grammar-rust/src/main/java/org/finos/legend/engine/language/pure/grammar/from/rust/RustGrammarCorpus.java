@@ -33,19 +33,26 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
- * Dumps every section parsed to a golden corpus for the Rust parser's own tests, when {@value #CORPUS_DIR_PROPERTY}
- * is set: {@code <hash>.pure} (the section body), {@code <hash>.meta.json} (type, source id, offsets) and
- * {@code <hash>.java.json} (the Java parser's result with source information: elements and imports, or the error).
- * Needs no native library.
+ * Dumps what is parsed to golden corpora for the Rust parser's own tests: every section, when
+ * {@value #CORPUS_DIR_PROPERTY} is set, and every standalone expression, when {@value #EXPRESSION_CORPUS_DIR_PROPERTY}
+ * is. Each entry is {@code <hash>.pure} (the text), {@code <hash>.meta.json} (section type or expression kind, source
+ * id, offsets) and {@code <hash>.java.json}, the Java parser's result with source information: a section's elements
+ * and imports, an expression's {@code value}, or the {@code error}. Needs no native library.
  */
 public final class RustGrammarCorpus
 {
     /**
-     * System property: directory to write the corpus to.
+     * System property: directory to write the section corpus to.
      */
     public static final String CORPUS_DIR_PROPERTY = "legend.grammar.rust.corpusDir";
+
+    /**
+     * System property: directory to write the standalone expression corpus to.
+     */
+    public static final String EXPRESSION_CORPUS_DIR_PROPERTY = "legend.grammar.rust.expressionCorpusDir";
 
     private RustGrammarCorpus()
     {
@@ -58,44 +65,94 @@ public final class RustGrammarCorpus
         {
             return;
         }
-        Object expected;
-        List<PackageableElement> elements = new ArrayList<>();
+        byte[] expected;
         try
         {
+            List<PackageableElement> elements = new ArrayList<>();
             Section section = RustSectionParser.parseWithPositions(javaParser, code, elements::add, context);
             List<String> imports = (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : Collections.emptyList();
-            expected = new Parsed(RustSectionResult.roundTrip(elements), imports);
+            expected = render(new Parsed(RustSectionResult.roundTrip(elements), imports));
         }
         catch (RuntimeException e)
         {
-            EngineException engineException = EngineException.findException(e);
-            ObjectNode failed = RustSectionResult.MAPPER.createObjectNode();
-            ObjectNode error = failed.putObject("error");
-            error.put("message", (engineException == null) ? String.valueOf(e.getMessage()) : engineException.getMessage());
-            if (engineException != null && engineException.getSourceInformation() != null)
-            {
-                error.set("sourceInformation", RustSectionResult.MAPPER.valueToTree(engineException.getSourceInformation()));
-            }
-            expected = failed;
+            expected = render(error(e));
         }
-
         ObjectNode meta = RustSectionResult.MAPPER.createObjectNode();
         meta.put("sectionType", code.sectionType);
         meta.put("sourceId", code.walkerSourceInformation.getSourceId());
         meta.put("lineOffset", code.walkerSourceInformation.getLineOffset());
         meta.put("columnOffset", code.walkerSourceInformation.getColumnOffset());
+        write(dir, RustGrammarParity.hash(code), code.code, meta, expected);
+    }
 
-        String name = RustGrammarParity.hash(code);
+    /**
+     * Records a standalone expression; {@code java} parses it, with or without source information.
+     */
+    static <T> void recordExpression(RustExpression<T> expression, Function<Boolean, T> java)
+    {
+        String dir = System.getProperty(EXPRESSION_CORPUS_DIR_PROPERTY);
+        if (dir == null || dir.isEmpty())
+        {
+            return;
+        }
+        byte[] expected;
         try
         {
-            Path folder = Files.createDirectories(Paths.get(dir));
-            Files.write(folder.resolve(name + ".pure"), code.code.getBytes(StandardCharsets.UTF_8));
-            Files.write(folder.resolve(name + ".meta.json"), RustSectionResult.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(meta));
-            Files.write(folder.resolve(name + ".java.json"), RustSectionResult.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(expected));
+            T value = RustGrammarParity.roundTrip(java.apply(true), expression.type);
+            // The value is written with its own type, which a field of type Object would lose, and as text: a JSON
+            // tree would drop trailing zeros from decimals.
+            String json = RustSectionResult.MAPPER.writerFor(expression.type).withDefaultPrettyPrinter().writeValueAsString(value);
+            expected = ("{\n\"value\" : " + json + "\n}").getBytes(StandardCharsets.UTF_8);
         }
         catch (JsonProcessingException e)
         {
-            throw new IllegalStateException("cannot render the corpus entry for section " + name, e);
+            throw new IllegalStateException("cannot render the corpus entry for expression " + expression.hash(), e);
+        }
+        catch (RuntimeException e)
+        {
+            expected = render(error(e));
+        }
+        ObjectNode meta = RustSectionResult.MAPPER.createObjectNode();
+        meta.put("kind", expression.kind);
+        meta.put("sourceId", expression.sourceId);
+        meta.put("lineOffset", expression.lineOffset);
+        meta.put("columnOffset", expression.columnOffset);
+        write(dir, expression.hash(), expression.code, meta, expected);
+    }
+
+    private static ObjectNode error(RuntimeException e)
+    {
+        EngineException engineException = EngineException.findException(e);
+        ObjectNode failed = RustSectionResult.MAPPER.createObjectNode();
+        ObjectNode error = failed.putObject("error");
+        error.put("message", (engineException == null) ? String.valueOf(e.getMessage()) : engineException.getMessage());
+        if (engineException != null && engineException.getSourceInformation() != null)
+        {
+            error.set("sourceInformation", RustSectionResult.MAPPER.valueToTree(engineException.getSourceInformation()));
+        }
+        return failed;
+    }
+
+    private static byte[] render(Object value)
+    {
+        try
+        {
+            return RustSectionResult.MAPPER.writerWithDefaultPrettyPrinter().writeValueAsBytes(value);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("cannot render a corpus entry", e);
+        }
+    }
+
+    private static void write(String dir, String name, String code, ObjectNode meta, byte[] expected)
+    {
+        try
+        {
+            Path folder = Files.createDirectories(Paths.get(dir));
+            Files.write(folder.resolve(name + ".pure"), code.getBytes(StandardCharsets.UTF_8));
+            Files.write(folder.resolve(name + ".meta.json"), render(meta));
+            Files.write(folder.resolve(name + ".java.json"), expected);
         }
         catch (IOException e)
         {

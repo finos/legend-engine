@@ -129,7 +129,7 @@ final class RustSectionResult
      * The first class instance type in {@code node} that no protocol extension on this classpath maps, if any. Islands
      * such as {@code #TDS{…}#} belong to engine extensions: the Rust library may parse one this engine can't.
      */
-    private static String absentClassInstanceType(JsonNode node)
+    static String absentClassInstanceType(JsonNode node)
     {
         if ("classInstance".equals(node.path("_type").asText()) && !CLASS_INSTANCE_TYPES.contains(node.path("type").asText()))
         {

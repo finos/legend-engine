@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
@@ -25,8 +26,9 @@ import java.util.Arrays;
 
 /**
  * Takes over section types with Rust-backed parsers ({@link RustSectionParser}), each keeping the Java parser it
- * replaces, whether the engine's own or another extension's. In the default mode ({@code off}) sections parse exactly
- * as without this extension. The section types are fixed when the extension loads; the mode is read on every parse
+ * replaces, whether the engine's own or another extension's, and standalone expressions likewise
+ * ({@link RustExpressionParser}). In the default mode ({@code off}) everything parses exactly as without this
+ * extension. The section types are fixed when the extension loads; the mode is read on every parse
  * (see {@link RustGrammarMode}).
  */
 public class RustGrammarParserExtension implements PureGrammarParserExtension
@@ -65,6 +67,12 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
     public Iterable<? extends SectionParserOverride> getSectionParserOverrides()
     {
         return this.sectionTypes.collect(RustGrammarParserExtension::override);
+    }
+
+    @Override
+    public Iterable<? extends ExpressionParserOverride> getExpressionParserOverrides()
+    {
+        return Lists.immutable.with(RustExpressionParser::new);
     }
 
     private static SectionParserOverride override(String sectionType)

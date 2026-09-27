@@ -31,8 +31,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
@@ -41,7 +39,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Shadow-mode comparison of the Java and Rust parsers' results for one section.
+ * Shadow-mode comparison of the Java and Rust parsers' results for one section or standalone expression.
  *
  * <p>Both results are compared as protocol objects: the Rust JSON is deserialized into the engine's protocol classes
  * and both sides are serialized with the same mapper, so field order, omitted empty lists and nulls don't matter.
@@ -127,65 +125,132 @@ public final class RustGrammarParity
             COUNTS.get(Outcome.UNAVAILABLE).incrementAndGet();
             return;
         }
+        Input input = Input.of(code);
         RustSectionResult rust = RustSectionResult.parse(code, returnSourceInfo);
         if (rust.isUnsupported())
         {
-            COUNTS.get(Outcome.UNSUPPORTED).incrementAndGet();
-            report("unsupported", code, returnSourceInfo, rust.errorMessage, null, null);
+            unsupported(input, returnSourceInfo, rust.errorMessage);
             return;
         }
+        JsonNode rustResult = rust.isError() ? null : render(rust.elements, rust.imports);
         if (javaError != null)
         {
-            compareErrors(code, returnSourceInfo, javaError, rust);
+            compareErrors(input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
             return;
         }
         List<String> javaImports = (javaSection instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) javaSection).imports : Collections.emptyList();
-        JsonNode java = render(RustSectionResult.roundTrip(javaElements), javaImports);
-        if (rust.isError())
+        compareResults(input, returnSourceInfo, render(RustSectionResult.roundTrip(javaElements), javaImports), rust.errorKind, rust.errorMessage, rustResult);
+    }
+
+    static <T> void compareExpression(RustExpression<T> expression, boolean returnSourceInfo, T javaValue, RuntimeException javaError)
+    {
+        if (!NativeGrammarParser.isAvailable())
         {
-            mismatch(code, returnSourceInfo, "Java parsed the section; Rust reported " + rust.errorKind + ": " + rust.errorMessage, java, null);
+            COUNTS.get(Outcome.UNAVAILABLE).incrementAndGet();
             return;
         }
-        JsonNode rustResult = render(rust.elements, rust.imports);
-        if (java.equals(rustResult))
+        Input input = Input.of(expression);
+        RustExpressionResult<T> rust = RustExpressionResult.parse(expression, returnSourceInfo);
+        if (rust.isUnsupported())
+        {
+            unsupported(input, returnSourceInfo, rust.errorMessage);
+            return;
+        }
+        JsonNode rustResult = rust.isError() ? null : render(rust.value, expression.type);
+        if (javaError != null)
+        {
+            compareErrors(input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
+            return;
+        }
+        compareResults(input, returnSourceInfo, render(roundTrip(javaValue, expression.type), expression.type), rust.errorKind, rust.errorMessage, rustResult);
+    }
+
+    private static void unsupported(Input input, boolean returnSourceInfo, String message)
+    {
+        COUNTS.get(Outcome.UNSUPPORTED).incrementAndGet();
+        report("unsupported", input, returnSourceInfo, message, null, null);
+    }
+
+    /**
+     * Compares the rendered results when Java parsed the input: Rust must have too ({@code rust} is null when it
+     * reported an error), with the same result.
+     */
+    private static void compareResults(Input input, boolean returnSourceInfo, JsonNode java, String rustErrorKind, String rustErrorMessage, JsonNode rust)
+    {
+        if (rust == null)
+        {
+            mismatch(input, returnSourceInfo, "Java parsed the input; Rust reported " + rustErrorKind + ": " + rustErrorMessage, java, null);
+        }
+        else if (java.equals(rust))
         {
             COUNTS.get(Outcome.MATCH).incrementAndGet();
         }
         else
         {
-            mismatch(code, returnSourceInfo, "results differ at " + firstDifference(java, rustResult, ""), java, rustResult);
+            mismatch(input, returnSourceInfo, "results differ at " + firstDifference(java, rust, ""), java, rust);
         }
     }
 
-    private static void compareErrors(SectionSourceCode code, boolean returnSourceInfo, RuntimeException javaError, RustSectionResult rust)
+    /**
+     * Compares the errors when Java rejected the input: Rust must report a parser error ({@code rust} is its result
+     * when it parsed the input), at the same start position.
+     */
+    private static void compareErrors(Input input, boolean returnSourceInfo, RuntimeException javaError, String rustErrorKind, String rustErrorMessage, SourceInformation rustPosition, JsonNode rust)
     {
         EngineException engineException = EngineException.findException(javaError);
         String javaMessage = (engineException == null) ? String.valueOf(javaError.getMessage()) : engineException.getMessage();
-        if (!RustSectionResult.PARSER_ERROR.equals(rust.errorKind))
+        if (!RustSectionResult.PARSER_ERROR.equals(rustErrorKind))
         {
-            String rustOutcome = rust.isError() ? (rust.errorKind + ": " + rust.errorMessage) : ("parsed " + rust.elements.size() + " element(s)");
-            mismatch(code, returnSourceInfo, "Java rejected the section (" + javaMessage + "); Rust " + rustOutcome, null, rust.isError() ? null : render(rust.elements, rust.imports));
+            String rustOutcome = (rust == null) ? (rustErrorKind + ": " + rustErrorMessage) : "parsed it";
+            mismatch(input, returnSourceInfo, "Java rejected the input (" + javaMessage + "); Rust " + rustOutcome, null, rust);
             return;
         }
         SourceInformation javaPosition = (engineException == null) ? null : engineException.getSourceInformation();
-        SourceInformation rustPosition = rust.errorSourceInformation;
         if (returnSourceInfo && javaPosition != null && (rustPosition == null || javaPosition.startLine != rustPosition.startLine || javaPosition.startColumn != rustPosition.startColumn))
         {
-            mismatch(code, returnSourceInfo, "error position differs: Java " + position(javaPosition) + " (" + javaMessage + "), Rust " + position(rustPosition) + " (" + rust.errorMessage + ")", null, null);
+            mismatch(input, returnSourceInfo, "error position differs: Java " + position(javaPosition) + " (" + javaMessage + "), Rust " + position(rustPosition) + " (" + rustErrorMessage + ")", null, null);
             return;
         }
         COUNTS.get(Outcome.ERROR_MATCH).incrementAndGet();
     }
 
-    private static void mismatch(SectionSourceCode code, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
+    private static void mismatch(Input input, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
     {
         COUNTS.get(Outcome.MISMATCH).incrementAndGet();
-        Path file = report("mismatch", code, returnSourceInfo, reason, java, rust);
+        Path file = report("mismatch", input, returnSourceInfo, reason, java, rust);
         if (Boolean.getBoolean(FAIL_ON_MISMATCH_PROPERTY))
         {
             throw new AssertionError("Rust parser mismatch (returnSourceInfo=" + returnSourceInfo + "): " + reason
                     + ((file == null) ? "" : ("\nreport: " + file))
-                    + "\n--- section ---\n" + code.code);
+                    + "\n--- input ---\n" + input.code);
+        }
+    }
+
+    /**
+     * {@code value} after a round trip through protocol JSON, as the Rust result makes one: deserialization applies the
+     * engine's protocol converters. Through JSON text, which keeps decimals' trailing zeros.
+     */
+    static <T> T roundTrip(T value, Class<T> type)
+    {
+        try
+        {
+            return RustSectionResult.MAPPER.readValue(RustSectionResult.MAPPER.writerFor(type).writeValueAsString(value), type);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("the engine protocol does not round-trip its own " + type.getSimpleName(), e);
+        }
+    }
+
+    private static <T> JsonNode render(T value, Class<T> type)
+    {
+        try
+        {
+            return RustSectionResult.MAPPER.readTree(RustSectionResult.MAPPER.writerFor(type).writeValueAsString(value));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("cannot render a " + type.getSimpleName(), e);
         }
     }
 
@@ -258,7 +323,7 @@ public final class RustGrammarParity
         return (si == null) ? "(none)" : (si.startLine + ":" + si.startColumn);
     }
 
-    private static Path report(String kind, SectionSourceCode code, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
+    private static Path report(String kind, Input input, boolean returnSourceInfo, String reason, JsonNode java, JsonNode rust)
     {
         String dir = System.getProperty(REPORT_DIR_PROPERTY);
         if (dir == null || dir.isEmpty())
@@ -268,11 +333,12 @@ public final class RustGrammarParity
         try
         {
             Path folder = Files.createDirectories(Paths.get(dir, kind));
-            Path file = folder.resolve(hash(code) + (returnSourceInfo ? "-positions" : "") + ".txt");
+            Path file = folder.resolve(input.name + (returnSourceInfo ? "-positions" : "") + ".txt");
             String text = "reason: " + reason + "\nreturnSourceInfo: " + returnSourceInfo
-                    + "\nsourceId: " + code.walkerSourceInformation.getSourceId()
-                    + "\nlineOffset: " + code.walkerSourceInformation.getLineOffset()
-                    + "\n--- section ---\n" + code.code
+                    + "\ninput: " + input.type
+                    + "\nsourceId: " + input.sourceId
+                    + "\nlineOffset: " + input.lineOffset
+                    + "\n--- input ---\n" + input.code
                     + "\n--- java ---\n" + pretty(java)
                     + "\n--- rust ---\n" + pretty(rust) + "\n";
             Files.write(file, text.getBytes(StandardCharsets.UTF_8));
@@ -305,21 +371,37 @@ public final class RustGrammarParity
      */
     static String hash(SectionSourceCode code)
     {
-        try
+        return RustExpression.hash(code.sectionType, code.walkerSourceInformation.getLineOffset(), code.walkerSourceInformation.getColumnOffset(), code.code);
+    }
+
+    /**
+     * What was parsed, as the reports name and show it.
+     */
+    private static final class Input
+    {
+        final String name;
+        final String type;
+        final String sourceId;
+        final int lineOffset;
+        final String code;
+
+        private Input(String name, String type, String sourceId, int lineOffset, String code)
         {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            String key = code.sectionType + "\n" + code.walkerSourceInformation.getLineOffset() + "\n" + code.walkerSourceInformation.getColumnOffset() + "\n" + code.code;
-            byte[] bytes = digest.digest(key.getBytes(StandardCharsets.UTF_8));
-            StringBuilder hex = new StringBuilder();
-            for (int i = 0; i < 8; i++)
-            {
-                hex.append(String.format("%02x", bytes[i]));
-            }
-            return hex.toString();
+            this.name = name;
+            this.type = type;
+            this.sourceId = sourceId;
+            this.lineOffset = lineOffset;
+            this.code = code;
         }
-        catch (NoSuchAlgorithmException e)
+
+        static Input of(SectionSourceCode code)
         {
-            throw new IllegalStateException(e);
+            return new Input(hash(code), "section " + code.sectionType, code.walkerSourceInformation.getSourceId(), code.walkerSourceInformation.getLineOffset(), code.code);
+        }
+
+        static Input of(RustExpression<?> expression)
+        {
+            return new Input(expression.hash(), "expression " + expression.kind, expression.sourceId, expression.lineOffset, expression.code);
         }
     }
 
