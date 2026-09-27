@@ -70,8 +70,8 @@ following the `functions-unclassified` pattern:
 |---|---|
 | `legend-engine-pure-functions-preeval-pure` | Repo `core_functions_preeval`: `native function meta::pure::functions::preeval::prevalNative(...)`, `Class PrevalHooks`, PCT/extension wiring as required by the repo definition. |
 | `legend-engine-pure-runtime-java-extension-shared-functions-preeval` | The mode-agnostic Java core, package `org.finos.legend.engine.pure.preeval`. |
-| `legend-engine-pure-runtime-java-extension-compiled-functions-preeval` | `CompiledPrevalRuntime`; native shell via `AbstractNativeFunctionGeneric` pointing at a static entry method; `CompiledExtension` registration. |
-| `legend-engine-pure-runtime-java-extension-interpreted-functions-preeval` | `InterpretedPrevalRuntime`; `NativeFunction` shell; `InterpretedExtension` registration. |
+| `legend-engine-pure-runtime-java-extension-compiled-functions-preeval` | Native shell (`PrevalNative`) via `AbstractNativeFunctionGeneric` pointing at the static entry method `CompiledPreeval.preval`; `CompiledExtension` registration. `CompiledPrevalRuntime` is added in P1. |
+| `legend-engine-pure-runtime-java-extension-interpreted-functions-preeval` | Native shell (`PrevalNative`), a `NativeFunction`; `InterpretedExtension` registration. `InterpretedPrevalRuntime` is added in P1. |
 
 `core.definition.json` gains a `core_functions_preeval` dependency. Compiled-core's pom gains the
 `-pure` and `-compiled` modules, mirroring `functions-unclassified`. The PureIDE light server gains the
@@ -95,7 +95,7 @@ following the `functions-unclassified` pattern:
   - `isGetAllFunction: Function<{Function<Any>[1]->Boolean[1]}>` — wraps `routing::isGetAllFunction`.
 - **Unchanged:** the public overloads A–F keep their exact signatures. Overload E builds the hooks
   from its `State`; the others build a default `State` as today.
-- **Switch:** `meta::pure::router::preeval::preevalImplementation()` returns `PURE`, `JAVA` or
+- **Switch:** `meta::pure::functions::preeval::preevalImplementation()` returns `PURE`, `JAVA` or
   `SHADOW`. The existing Pure implementation stays as `prevalInternal`; overloads E and F dispatch
   through `prevalWithImplementation(item, state, extensions, implementation)`. The default is `PURE`
   until cutover (§6).
@@ -222,13 +222,31 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 
 | Phase | Deliverable | Exit criteria |
 |---|---|---|
-| P0 Scaffold | Module family; `prevalNative` plus shells in both modes; `PrevalRuntime` and both adapters; `PrevalHooks`; switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
-| P1 Core traversal | State, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` |
+| P0 Scaffold | Module family; `prevalNative` and `preevalImplementation` natives with compiled/interpreted shells; `PrevalHooks`; `PrevalResult`; the `PURE`/`JAVA`/`SHADOW` switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
+| P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` |
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
-| P6 Cleanup (after one release) | Delete `prevalPure` and the switch; rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
+| P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
+
+### P1 requirements carried from P0 review
+
+- `SHADOW` comparison must also include `genericType` and multiplicity (at least top-level; ideally
+  every node) so type-level rules (the `eval`-on-`Column` `RelationType` fix, the `Cast` multiplicity
+  quirk, `GenericTypeRule`) are gated by parity, not just the value.
+- Java must never mutate its input nodes: `SHADOW` returns Pure's result after running Java on the
+  same inputs, so a Java-side mutation would be invisible to the comparison unless this is enforced
+  separately.
+- `prevalJava` must either assert `inScopeTypeParams`, `path` and `depth` are empty, or the native
+  signature must carry them, before release.
+- The compiled native should pass call-site source information (§3.6).
+- Result/instance construction behind `PrevalRuntime` should use anonymous/ephemeral instances
+  (interpreted) and direct generated-class construction (compiled); exercise non-empty `openVars`.
+- Validate `legend.engine.preeval.implementation` once and cache it, surfacing a clear error for an
+  unrecognised value.
+- TDD RED for new modules: run with `-Dmdep.analyze.skip=true` so the test (not the dependency
+  analyzer) demonstrates the failure; direct Surefire invocations need `-DargLine=`.
 
 ## 6. Cutover criteria
 
