@@ -23,6 +23,8 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.CodeParserGramm
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ExpressionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
@@ -50,6 +52,30 @@ public class PureGrammarParser
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureGrammarParser.class);
     private static final String DEFAULT_SECTION_BEGIN = "\n###" + DomainParser.name + "\n";
+
+    /**
+     * The engine's own parser for standalone expressions.
+     */
+    private static final ExpressionParser DOMAIN_EXPRESSION_PARSER = new ExpressionParser()
+    {
+        @Override
+        public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+
+        @Override
+        public ValueSpecification parseValueSpecification(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseValueSpecification(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+
+        @Override
+        public RootGraphFetchTree parseGraphFetch(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
+        {
+            return new DomainParser().parseGraphFetch(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        }
+    };
 
     private final DEPRECATED_PureGrammarParserLibrary parsers;
     private final PureGrammarParserExtensions extensions;
@@ -98,7 +124,7 @@ public class PureGrammarParser
 
     public LambdaFunction parseLambda(String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseLambda(code, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public LambdaFunction parseLambda(String code, String sourceId, boolean returnSourceInfo)
@@ -204,11 +230,21 @@ public class PureGrammarParser
 
     public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseGraphFetch(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
     }
 
     public ValueSpecification parseValueSpecification(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
     {
-        return new DomainParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+        return this.getExpressionParser().parseValueSpecification(input, sourceId, lineOffset, columnOffset, returnSourceInfo);
+    }
+
+    /**
+     * The parser for standalone expressions: the engine's own, unless an extension overrides it (see
+     * {@link ExpressionParserOverride}).
+     */
+    private ExpressionParser getExpressionParser()
+    {
+        ExpressionParserOverride override = this.extensions.getExpressionParserOverride();
+        return (override == null) ? DOMAIN_EXPRESSION_PARSER : override.override(DOMAIN_EXPRESSION_PARSER);
     }
 }
