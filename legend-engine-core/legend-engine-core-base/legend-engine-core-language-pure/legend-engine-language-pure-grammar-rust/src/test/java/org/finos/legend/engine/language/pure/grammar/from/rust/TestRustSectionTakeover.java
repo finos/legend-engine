@@ -62,24 +62,56 @@ public class TestRustSectionTakeover
     private static final PureGrammarParser TAKEN_OVER = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), new RustGrammarParserExtension("Pure", "Data", "Mapping")));
 
     private String previousMode;
+    private String previousFallback;
+    private String previousCorpusSections;
 
     @Before
-    public void rememberMode()
+    public void rememberProperties()
     {
         this.previousMode = System.getProperty(RustGrammarMode.PROPERTY);
+        this.previousFallback = System.getProperty(RustGrammarMode.FALLBACK_PROPERTY);
+        this.previousCorpusSections = System.getProperty(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY);
     }
 
     @After
-    public void restoreMode()
+    public void restoreProperties()
     {
-        if (this.previousMode == null)
+        restore(RustGrammarMode.PROPERTY, this.previousMode);
+        restore(RustGrammarMode.FALLBACK_PROPERTY, this.previousFallback);
+        restore(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY, this.previousCorpusSections);
+    }
+
+    private static void restore(String property, String value)
+    {
+        if (value == null)
         {
-            System.clearProperty(RustGrammarMode.PROPERTY);
+            System.clearProperty(property);
         }
         else
         {
-            System.setProperty(RustGrammarMode.PROPERTY, this.previousMode);
+            System.setProperty(property, value);
         }
+    }
+
+    @Test
+    public void testTakesOverTheSectionsTheLibraryParses() throws JsonProcessingException
+    {
+        Assume.assumeTrue("Rust parser not available: " + NativeGrammarParser.getLoadFailure(), NativeGrammarParser.isAvailable());
+        // Without the fallback, a section the Rust library can't parse would fail: Mapping must be left to Java.
+        System.setProperty(RustGrammarMode.PROPERTY, "on");
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        RustGrammarParserExtension extension = new RustGrammarParserExtension();
+        Assert.assertTrue(extension.getSectionTypes().toString(), extension.getSectionTypes().containsAllArguments("Pure", "Data"));
+        Assert.assertFalse(extension.getSectionTypes().toString(), extension.getSectionTypes().contains("Mapping"));
+        PureGrammarParser parser = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), extension));
+        Assert.assertEquals(RustSectionResult.MAPPER.writeValueAsString(JAVA.parseModel(MODEL)), RustSectionResult.MAPPER.writeValueAsString(parser.parseModel(MODEL)));
+    }
+
+    @Test
+    public void testCorpusDumpsTakeOverMore()
+    {
+        System.setProperty(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY, "Mapping, Runtime");
+        Assert.assertTrue(new RustGrammarParserExtension().getSectionTypes().containsAllArguments("Pure", "Mapping", "Runtime"));
     }
 
     @Test
