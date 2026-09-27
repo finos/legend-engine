@@ -58,6 +58,30 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
   );
 }
 
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentFunctionExpressionValues():Boolean[1]
+{
+  let value1 = {|1 + 1}->evaluateAndDeactivate().expressionSequence->at(0);
+  let value2 = {|1 + 2}->evaluateAndDeactivate().expressionSequence->at(0);
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $value1, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $value2, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsMatchingFunctionExpressionValues():Boolean[1]
+{
+  let value = {|1 + 1}->evaluateAndDeactivate().expressionSequence->at(0);
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = $value, canPreval = true, openVars = [], modified = false),
+      ^PrevalWrapper<Any>(value = $value, canPreval = true, openVars = [], modified = false),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
 function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testUnknownImplementationIsRejected():Boolean[1]
 {
   assertError(
