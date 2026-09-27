@@ -35,6 +35,7 @@ public class PureGrammarParserExtensions
 
     private final ImmutableList<PureGrammarParserExtension> extensions;
     private final MapIterable<String, SectionParser> sectionParsers;
+    private final MapIterable<String, SectionParserOverride> sectionParserOverrides;
     private final MapIterable<String, ConnectionValueParser> connectionParsers;
     private final MapIterable<String, MappingElementParser> mappingElementParsers;
     private final MapIterable<String, MappingTestInputDataParser> mappingTestInputDataParsers;
@@ -48,6 +49,7 @@ public class PureGrammarParserExtensions
     {
         this.extensions = Lists.immutable.withAll(extensions);
         this.sectionParsers = indexExtraSectionParsers(this.extensions);
+        this.sectionParserOverrides = indexSectionParserOverrides(this.extensions);
         this.connectionParsers = indexExtraConnectionValueParsers(this.extensions);
         this.mappingElementParsers = indexExtraMappingElementParsers(this.extensions);
         this.mappingTestInputDataParsers = indexExtraMappingTestInputDataParsers(this.extensions);
@@ -65,6 +67,17 @@ public class PureGrammarParserExtensions
     public SectionParser getExtraSectionParser(String type)
     {
         return this.sectionParsers.get(type);
+    }
+
+    /**
+     * The override taking over a section type, if an extension has one.
+     *
+     * @param type the section type
+     * @return the override, or {@code null}
+     */
+    public SectionParserOverride getSectionParserOverride(String type)
+    {
+        return this.sectionParserOverrides.get(type);
     }
 
     public ConnectionValueParser getConnectionValueParser(String type)
@@ -136,6 +149,13 @@ public class PureGrammarParserExtensions
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraSectionParsers),
                 SectionParser::getSectionTypeName,
                 "Conflicting parsers for section type");
+    }
+
+    private static MapIterable<String, SectionParserOverride> indexSectionParserOverrides(Iterable<? extends PureGrammarParserExtension> extensions)
+    {
+        return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getSectionParserOverrides),
+                SectionParserOverride::getSectionTypeName,
+                "Conflicting overrides for section type");
     }
 
     private static MapIterable<String, ConnectionValueParser> indexExtraConnectionValueParsers(Iterable<? extends PureGrammarParserExtension> extensions)

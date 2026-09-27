@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionP
 import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
@@ -150,21 +151,7 @@ public class PureGrammarParser
                     codeBuilder.append(tn.getText());
                 }
                 SectionSourceCode codeSection = new SectionSourceCode(codeBuilder.toString(), parserName, sectionSourceInformation, sectionWalkerSourceInformation);
-                SectionParser sectionParser = this.extensions.getExtraSectionParser(parserName);
-                Section section;
-                if (sectionParser == null)
-                {
-                    DEPRECATED_SectionGrammarParser legacyParser = parserLibrary.getParser(parserName, parserNameSourceInformation);
-                    if (legacyParser == null)
-                    {
-                        throw new EngineException("'" + parserName + "' is not a known section parser", parserNameSourceInformation, EngineErrorType.PARSER);
-                    }
-                    section = legacyParser.parse(legacyParser.getParserInfo(codeSection.code, codeSection.sourceInformation, codeSection.walkerSourceInformation), elementConsumer, parserContext);
-                }
-                else
-                {
-                    section = sectionParser.parse(codeSection, elementConsumer, parserContext);
-                }
+                Section section = this.getSectionParser(parserName, parserLibrary, parserNameSourceInformation).parse(codeSection, elementConsumer, parserContext);
 
                 // remove duplicates in imports and content of the section
                 section.elements = ListIterate.distinct(section.elements);
@@ -193,6 +180,26 @@ public class PureGrammarParser
         section.parserName = parserName;
         section.sourceInformation = sectionSourceInformation;
         return section;
+    }
+
+    /**
+     * The parser for a section type: an extension's, or else the built-in one, unless an extension overrides it (see
+     * {@link SectionParserOverride}).
+     */
+    private SectionParser getSectionParser(String parserName, DEPRECATED_PureGrammarParserLibrary parserLibrary, SourceInformation parserNameSourceInformation)
+    {
+        SectionParser sectionParser = this.extensions.getExtraSectionParser(parserName);
+        if (sectionParser == null)
+        {
+            DEPRECATED_SectionGrammarParser legacyParser = parserLibrary.getParser(parserName, parserNameSourceInformation);
+            if (legacyParser == null)
+            {
+                throw new EngineException("'" + parserName + "' is not a known section parser", parserNameSourceInformation, EngineErrorType.PARSER);
+            }
+            sectionParser = SectionParser.newParser(parserName, (code, elementConsumer, parserContext) -> legacyParser.parse(legacyParser.getParserInfo(code.code, code.sourceInformation, code.walkerSourceInformation), elementConsumer, parserContext));
+        }
+        SectionParserOverride override = this.extensions.getSectionParserOverride(parserName);
+        return (override == null) ? sectionParser : override.override(sectionParser);
     }
 
     public RootGraphFetchTree parseGraphFetch(String input, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)
