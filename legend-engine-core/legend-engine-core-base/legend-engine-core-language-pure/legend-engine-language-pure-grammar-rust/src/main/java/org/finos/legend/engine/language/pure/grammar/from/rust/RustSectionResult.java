@@ -26,6 +26,9 @@ import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
@@ -60,6 +63,10 @@ final class RustSectionResult
     static final String INTERNAL_ERROR = "internal";
 
     final List<PackageableElement> elements;
+    /**
+     * The section's imports, or null when its grammar has none: the section is then a {@link DefaultCodeSection},
+     * not an {@link ImportAwareCodeSection}.
+     */
     final List<String> imports;
     final String errorKind;
     final String errorMessage;
@@ -115,8 +122,15 @@ final class RustSectionResult
             {
                 elements.add(MAPPER.treeToValue(element, PackageableElement.class));
             }
-            List<String> imports = new ArrayList<>();
-            root.path("imports").forEach(i -> imports.add(i.asText()));
+            List<String> imports = null;
+            if (root.has("imports"))
+            {
+                imports = new ArrayList<>();
+                for (JsonNode i : root.get("imports"))
+                {
+                    imports.add(i.asText());
+                }
+            }
             return new RustSectionResult(elements, imports, null, null, null);
         }
         catch (InvalidTypeIdException e)
@@ -150,6 +164,14 @@ final class RustSectionResult
             }
         }
         return null;
+    }
+
+    /**
+     * The imports of a section the Java parser returned, or null when it is not an {@link ImportAwareCodeSection}.
+     */
+    static List<String> imports(Section section)
+    {
+        return (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : null;
     }
 
     /**

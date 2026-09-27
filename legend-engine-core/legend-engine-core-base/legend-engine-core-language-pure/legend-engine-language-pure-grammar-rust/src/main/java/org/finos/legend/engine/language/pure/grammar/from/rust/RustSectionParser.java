@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -129,12 +130,20 @@ public class RustSectionParser implements SectionParser
             throw new EngineException(message, result.errorSourceInformation, EngineErrorType.PARSER);
         }
         result.elements.forEach(elementConsumer);
-        // TODO: a section type without imports (`Data`) has a `DefaultCodeSection` in Java: the Rust result should say
-        //  whether its grammar has imports once such a type is ported.
-        ImportAwareCodeSection section = new ImportAwareCodeSection();
+        // A grammar without imports (`Data`) makes a `DefaultCodeSection`, as in Java.
+        Section section;
+        if (result.imports == null)
+        {
+            section = new DefaultCodeSection();
+        }
+        else
+        {
+            ImportAwareCodeSection importAware = new ImportAwareCodeSection();
+            importAware.imports = new ArrayList<>(result.imports);
+            section = importAware;
+        }
         section.parserName = this.sectionType;
         section.sourceInformation = code.sourceInformation;
-        section.imports = new ArrayList<>(result.imports);
         result.elements.forEach(e -> section.elements.add(e.getPath()));
         return section;
     }

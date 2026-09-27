@@ -70,7 +70,7 @@ public final class RustGrammarParity
     public enum Outcome
     {
         /**
-         * Same elements and imports.
+         * Same elements, imports and section class.
          */
         MATCH,
         /**
@@ -138,8 +138,7 @@ public final class RustGrammarParity
             compareErrors(input, returnSourceInfo, javaError, rust.errorKind, rust.errorMessage, rust.errorSourceInformation, rustResult);
             return;
         }
-        List<String> javaImports = (javaSection instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) javaSection).imports : Collections.emptyList();
-        compareResults(input, returnSourceInfo, render(RustSectionResult.roundTrip(javaElements), javaImports), rust.errorKind, rust.errorMessage, rustResult);
+        compareResults(input, returnSourceInfo, render(RustSectionResult.roundTrip(javaElements), RustSectionResult.imports(javaSection)), rust.errorKind, rust.errorMessage, rustResult);
     }
 
     static <T> void compareExpression(RustExpression<T> expression, boolean returnSourceInfo, T javaValue, RuntimeException javaError)
@@ -254,11 +253,18 @@ public final class RustGrammarParity
         }
     }
 
+    /**
+     * A section's elements, and its imports if it is an {@link ImportAwareCodeSection} ({@code imports} not null), so
+     * that the section class is compared too.
+     */
     private static JsonNode render(List<PackageableElement> elements, List<String> imports)
     {
         ObjectNode node = RustSectionResult.MAPPER.createObjectNode();
         node.set("elements", RustSectionResult.toJson(elements));
-        node.set("imports", RustSectionResult.MAPPER.valueToTree(imports));
+        if (imports != null)
+        {
+            node.set("imports", RustSectionResult.MAPPER.valueToTree(imports));
+        }
         return node;
     }
 

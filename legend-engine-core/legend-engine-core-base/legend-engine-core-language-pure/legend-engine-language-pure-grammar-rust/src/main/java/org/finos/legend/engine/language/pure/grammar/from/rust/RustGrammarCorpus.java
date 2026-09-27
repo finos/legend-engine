@@ -31,7 +31,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -70,8 +69,7 @@ public final class RustGrammarCorpus
         {
             List<PackageableElement> elements = new ArrayList<>();
             Section section = RustSectionParser.parseWithPositions(javaParser, code, elements::add, context);
-            List<String> imports = (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : Collections.emptyList();
-            expected = render(new Parsed(RustSectionResult.roundTrip(elements), imports));
+            expected = render(new Parsed(RustSectionResult.roundTrip(elements), RustSectionResult.imports(section)));
         }
         catch (RuntimeException e)
         {
@@ -163,7 +161,7 @@ public final class RustGrammarCorpus
     /**
      * A parsed section as the corpus records it: the element list is declared as such, so each element is written
      * with its {@code _type}, and written directly rather than through a JSON tree, which would drop trailing zeros
-     * from decimals.
+     * from decimals. {@code imports} is null, so absent, for a section that is not an {@link ImportAwareCodeSection}.
      */
     static final class Parsed
     {
