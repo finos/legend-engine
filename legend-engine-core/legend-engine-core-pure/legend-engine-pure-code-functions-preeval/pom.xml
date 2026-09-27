@@ -29,5 +29,6 @@
     <modules>
         <module>legend-engine-pure-functions-preeval-pure</module>
         <module>legend-engine-pure-runtime-java-extension-shared-functions-preeval</module>
+        <module>legend-engine-pure-runtime-java-extension-compiled-functions-preeval</module>
     </modules>
 </project>

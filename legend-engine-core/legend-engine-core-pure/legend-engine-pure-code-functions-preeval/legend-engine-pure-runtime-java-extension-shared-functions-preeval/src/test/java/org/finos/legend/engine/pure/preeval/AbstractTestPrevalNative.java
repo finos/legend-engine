@@ -58,7 +58,9 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     @Test
     public void testPreevalImplementationIsAKnownValue()
     {
-        executeTestFunction("assert(preevalImplementation()->in(['PURE', 'JAVA', 'SHADOW']), |'unexpected: ' + preevalImplementation());");
+        executeTestFunction(
+                "let implementation = preevalImplementation();",
+                "assert(($implementation == 'PURE') || ($implementation == 'JAVA') || ($implementation == 'SHADOW'), |'unexpected: ' + $implementation);");
     }
 
     private void executeTestFunction(String... lines)
