@@ -181,9 +181,9 @@ public final class Preevaluator
             ListIterable<String> openVariables = null;
             if (function instanceof LambdaFunction)
             {
-                ImmutableList<String> resultOpen = results.flatCollect(PrevalResult::getOpenVars).collect(v -> this.scope.resolveVariable(v, origState.getInScopeVars())).toImmutable();
+                ImmutableList<String> resultOpen = results.flatCollect(PrevalResult::getOpenVars).collect(v -> resolveVariable(v, origState.getInScopeVars())).toImmutable();
                 openVariables = Lists.mutable.withAll(((LambdaFunction<?>) function)._openVariables())
-                        .collect(v -> this.scope.resolveVariable(v, origState.getInScopeVars()))
+                        .collect(v -> resolveVariable(v, origState.getInScopeVars()))
                         .distinct()
                         .select(resultOpen::contains);
             }
@@ -344,6 +344,18 @@ public final class Preevaluator
             return false;
         }
         throw this.runtime.error("Unexpected value in isInstanceValue: " + this.runtime.typeDescription(value));
+    }
+
+    private String resolveVariable(String name, ImmutableMap<String, ImmutableList<Object>> inScopeVars)
+    {
+        try
+        {
+            return this.scope.resolveVariable(name, inScopeVars);
+        }
+        catch (IllegalStateException e)
+        {
+            throw this.runtime.error(e.getMessage());
+        }
     }
 
     private boolean isLet(Object value)

@@ -27,8 +27,9 @@ public class PrevalNative extends AbstractNativeFunctionGeneric
                         "org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap",
                         "org.finos.legend.pure.m4.coreinstance.CoreInstance",
                         "org.finos.legend.pure.m4.coreinstance.CoreInstance",
+                        "org.finos.legend.pure.m4.coreinstance.SourceInformation",
                         "ExecutionSupport"},
-                false, true, true,
+                true, true, true,
                 "prevalNative_Any_1__Map_1__Map_1__PrevalHooks_1__DebugContext_1__PrevalResult_1_");
     }
 }

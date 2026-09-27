@@ -28,6 +28,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_tools_DebugContext;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
@@ -41,9 +42,9 @@ public final class CompiledPreeval
     {
     }
 
-    public static CoreInstance preval(Object item, PureMap inScopeVars, PureMap rollingInScopeVars, CoreInstance hooks, CoreInstance debug, ExecutionSupport executionSupport)
+    public static CoreInstance preval(Object item, PureMap inScopeVars, PureMap rollingInScopeVars, CoreInstance hooks, CoreInstance debug, SourceInformation sourceInformation, ExecutionSupport executionSupport)
     {
-        CompiledPrevalRuntime runtime = new CompiledPrevalRuntime(executionSupport);
+        CompiledPrevalRuntime runtime = new CompiledPrevalRuntime(sourceInformation, executionSupport);
         PrevalState state = PrevalState.initial(toVars(inScopeVars), toVars(rollingInScopeVars), ((Root_meta_pure_tools_DebugContext) debug)._debug());
         PrevalResult result = new Preevaluator(runtime, new CompiledPrevalHooks(hooks, executionSupport)).preval(item, state);
         CoreInstance pureResult = ((CompiledExecutionSupport) executionSupport).getProcessorSupport().newCoreInstance(null, PREVAL_RESULT, null);

@@ -120,7 +120,8 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "assert($specs->size() == 2, |'expected 2 specs');",
                 "assert($specs->at(0).map->cast(@LambdaFunction<Any>).expressionSequence->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->toOne() == 2, |'expected first map folded to 2');",
                 "assert($specs->at(1) == $unchanged, |'expected second spec unchanged');",
-                "assert($array.aggSpecs->at(0) == $folding, |'the input array must not be mutated');");
+                "assert($array.aggSpecs->at(0) == $folding, |'the input array must not be mutated');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');");
     }
 
     @Test
@@ -134,6 +135,28 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "assert($r.canPreval, |'expected canPreval');",
                 "assert($r.value == $fe, |'expected the same function expression back');",
                 "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'p', |'expected open variable p');");
+    }
+
+    @Test
+    public void testUnsupportedValueIsReportedAtTheCallSite()
+    {
+        compileTestSource("unsupported.pure", "Class test::preeval::Opaque {}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let v = ^test::preeval::Opaque();",
+                    "let hooks = ^PrevalHooks(stopPreeval = {a:Any[*] | !$a->forAll(x | $x->instanceOf(test::preeval::Opaque))}, shouldInline = {f:Function<Any>[1] | false}, isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, isGetAllFunction = {f:Function<Any>[1] | false}, resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []});",
+                    "let vars = newMap(pair('v', list($v)));",
+                    "let fe = {|$v}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "assertError(|prevalNative($fe, $vars, $vars, $hooks, noDebug()), {m:String[1], s:SourceInformation[0..1] | assert($m->contains('Unsupported type: test::preeval::Opaque') && $s->isNotEmpty(), |$m)});");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("unsupported.pure");
+            runtime.compile();
+        }
     }
 
     @Test

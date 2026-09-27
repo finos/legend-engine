@@ -64,11 +64,11 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     private Multiplicity pureOne;
     private Multiplicity pureZero;
 
-    CompiledPrevalRuntime(ExecutionSupport executionSupport)
+    CompiledPrevalRuntime(SourceInformation sourceInformation, ExecutionSupport executionSupport)
     {
         this.executionSupport = (CompiledExecutionSupport) executionSupport;
         this.processorSupport = this.executionSupport.getProcessorSupport();
-        this.sourceInformation = null;
+        this.sourceInformation = sourceInformation;
     }
 
     @Override
