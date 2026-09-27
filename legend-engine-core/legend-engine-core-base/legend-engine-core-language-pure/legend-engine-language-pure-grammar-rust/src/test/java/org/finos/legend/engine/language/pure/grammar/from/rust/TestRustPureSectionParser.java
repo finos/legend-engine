@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.type.Class;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
@@ -77,6 +78,22 @@ public class TestRustPureSectionParser
         catch (EngineException e)
         {
             Assert.assertEquals(3, e.getSourceInformation().startLine);
+        }
+    }
+
+    @Test
+    public void testIslandOfAnAbsentExtensionIsLeftToJava()
+    {
+        // The Rust library parses `#TDS{…}#`, but this classpath has no TDS extension: the Java parser reports it.
+        try
+        {
+            PureGrammarParser.newInstance().parseModel("function f(): Any[*]\n{\n  #TDS{a\n1}#\n}\n");
+            Assert.fail("expected a parser error");
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals(EngineErrorType.PARSER, e.getErrorType());
+            Assert.assertTrue(e.getMessage(), e.getMessage().startsWith("Can't find an embedded Pure parser for the type 'TDS'"));
         }
     }
 }

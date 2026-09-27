@@ -22,12 +22,14 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The Rust parser's result for one section, read from the JSON {@link NativeGrammarParser#parseSection} returns and
@@ -40,6 +42,11 @@ final class RustSectionResult
      * omitted.
      */
     static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+    /**
+     * The class instance types the protocol extensions on this classpath map to protocol classes.
+     */
+    private static final Set<String> CLASS_INSTANCE_TYPES = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings().keySet();
 
     static final String PARSER_ERROR = "parser";
     static final String UNSUPPORTED = "unsupported";
@@ -90,6 +97,12 @@ final class RustSectionResult
                 JsonNode si = error.get("sourceInformation");
                 return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), error.path("kind").asText(INTERNAL_ERROR), error.path("message").asText(""), (si == null) ? null : MAPPER.treeToValue(si, SourceInformation.class));
             }
+            String absentType = absentClassInstanceType(root.path("elements"));
+            if (absentType != null)
+            {
+                // An island whose engine extension is not on this classpath: the Java parser reports that.
+                return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
+            }
             List<PackageableElement> elements = new ArrayList<>();
             for (JsonNode element : root.path("elements"))
             {
@@ -104,6 +117,27 @@ final class RustSectionResult
             // The Rust JSON does not deserialize into the engine's protocol classes: a protocol divergence.
             return internalError("Rust protocol JSON does not match the engine protocol: " + e.getOriginalMessage());
         }
+    }
+
+    /**
+     * The first class instance type in {@code node} that no protocol extension on this classpath maps, if any. Islands
+     * such as {@code #TDS{…}#} belong to engine extensions: the Rust library may parse one this engine can't.
+     */
+    private static String absentClassInstanceType(JsonNode node)
+    {
+        if ("classInstance".equals(node.path("_type").asText()) && !CLASS_INSTANCE_TYPES.contains(node.path("type").asText()))
+        {
+            return node.path("type").asText();
+        }
+        for (JsonNode child : node)
+        {
+            String type = absentClassInstanceType(child);
+            if (type != null)
+            {
+                return type;
+            }
+        }
+        return null;
     }
 
     /**
