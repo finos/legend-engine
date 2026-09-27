@@ -18,6 +18,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
@@ -26,6 +28,8 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.math.BigDecimal;
 
 /**
  * Standalone expressions in {@code on} mode: the Rust parser's results reach the engine.
@@ -83,6 +87,19 @@ public class TestRustExpressionParser
     }
 
     @Test
+    public void testDecimalsKeepTheirDigitsAndScale()
+    {
+        // Read from the Rust parser's JSON exactly as the Java parser builds them, beyond what a double holds.
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        for (String decimal : new String[]{"30000.00", "3.14159265358979323846264338327950288", "1", "0.00001"})
+        {
+            String lambda = "|" + decimal + "D";
+            Assert.assertEquals(lambda, new BigDecimal(decimal), decimalValue(RUST.parseLambda(lambda, "", 0, 0, true)));
+            Assert.assertEquals(lambda, decimalValue(JAVA.parseLambda(lambda, "", 0, 0, true)), decimalValue(RUST.parseLambda(lambda, "", 0, 0, true)));
+        }
+    }
+
+    @Test
     public void testSyntaxErrorFallsBackToJava()
     {
         EngineException java = parseError(JAVA);
@@ -102,6 +119,11 @@ public class TestRustExpressionParser
     private static EngineException parseError(PureGrammarParser parser)
     {
         return Assert.assertThrows(EngineException.class, () -> parser.parseLambda("x|$x +", "query", 0, 0, true));
+    }
+
+    private static BigDecimal decimalValue(LambdaFunction lambda)
+    {
+        return ((CDecimal) lambda.body.get(0)).value;
     }
 
     private static String json(Object value) throws JsonProcessingException

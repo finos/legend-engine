@@ -15,10 +15,12 @@
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
@@ -39,10 +41,14 @@ import java.util.Set;
 final class RustSectionResult
 {
     /**
-     * Reads and writes protocol JSON the way the engine does: protocol subtypes registered, properties sorted, nulls
-     * omitted.
+     * Reads and writes protocol JSON the way the engine does (protocol subtypes registered, properties sorted, nulls
+     * omitted), but reads decimals exactly, digits and scale, as the Java parser builds them: the standard mapper reads
+     * them through doubles ({@code 30000.00} becomes {@code 30000.0}). As a result, floats read into untyped
+     * ({@code Object}) protocol fields become {@code BigDecimal}s rather than {@code Double}s.
      */
-    static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
+            .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
+            .setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
 
     /**
      * The class instance types the protocol extensions on this classpath map to protocol classes.
