@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
@@ -111,6 +112,11 @@ final class RustSectionResult
             List<String> imports = new ArrayList<>();
             root.path("imports").forEach(i -> imports.add(i.asText()));
             return new RustSectionResult(elements, imports, null, null, null);
+        }
+        catch (InvalidTypeIdException e)
+        {
+            // A type an engine extension defines, such as embedded data, and that extension is not on this classpath.
+            return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, "no protocol extension for type '" + e.getTypeId() + "'", null);
         }
         catch (JsonProcessingException e)
         {

@@ -33,25 +33,33 @@ import org.junit.Test;
 public class TestRustPureSectionParser
 {
     private String previousMode;
+    private String previousFallback;
 
     @Before
     public void useRustParser()
     {
         Assume.assumeTrue("Rust parser not available: " + NativeGrammarParser.getLoadFailure(), NativeGrammarParser.isAvailable());
         this.previousMode = System.getProperty(RustGrammarMode.PROPERTY);
+        this.previousFallback = System.getProperty(RustGrammarMode.FALLBACK_PROPERTY);
         System.setProperty(RustGrammarMode.PROPERTY, "on");
     }
 
     @After
     public void restoreMode()
     {
-        if (this.previousMode == null)
+        restore(RustGrammarMode.PROPERTY, this.previousMode);
+        restore(RustGrammarMode.FALLBACK_PROPERTY, this.previousFallback);
+    }
+
+    private static void restore(String property, String value)
+    {
+        if (value == null)
         {
-            System.clearProperty(RustGrammarMode.PROPERTY);
+            System.clearProperty(property);
         }
         else
         {
-            System.setProperty(RustGrammarMode.PROPERTY, this.previousMode);
+            System.setProperty(property, value);
         }
     }
 
@@ -94,6 +102,38 @@ public class TestRustPureSectionParser
         {
             Assert.assertEquals(EngineErrorType.PARSER, e.getErrorType());
             Assert.assertTrue(e.getMessage(), e.getMessage().startsWith("Can't find an embedded Pure parser for the type 'TDS'"));
+        }
+    }
+
+    @Test
+    public void testEmbeddedDataOfAnAbsentExtensionIsLeftToJava()
+    {
+        // The Rust library parses `Relational #{…}#`, but this classpath has no relational store extension.
+        try
+        {
+            PureGrammarParser.newInstance().parseModel("function my::f(): Any[*]\n{\n  1\n}\n{\n  store::DB: Relational #{ default.T: 'a'; }#;\n  t | f() => 1;\n}\n");
+            Assert.fail("expected a parser error");
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals(EngineErrorType.PARSER, e.getErrorType());
+            Assert.assertTrue(e.getMessage(), e.getMessage().startsWith("Unknown embedded data type: Relational"));
+        }
+    }
+
+    @Test
+    public void testWithoutFallbackTheRustErrorIsReported()
+    {
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        try
+        {
+            PureGrammarParser.newInstance().parseModel("function f(): Any[*]\n{\n  #Unknown{x}#\n}\n");
+            Assert.fail("expected a parser error");
+        }
+        catch (EngineException e)
+        {
+            Assert.assertEquals(EngineErrorType.PARSER, e.getErrorType());
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("no island grammar is linked for '#Unknown{…}#'; the linked ones are: "));
         }
     }
 }

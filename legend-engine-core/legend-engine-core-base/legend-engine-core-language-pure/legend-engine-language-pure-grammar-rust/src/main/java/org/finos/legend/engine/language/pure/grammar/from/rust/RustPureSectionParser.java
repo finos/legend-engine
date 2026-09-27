@@ -37,7 +37,8 @@ import java.util.function.Consumer;
  *     <li>{@code off}: the Java {@link DomainParser}, exactly as the built-in path parses {@code ###Pure};</li>
  *     <li>{@code shadow}: the Java parser's result, after comparing it with the Rust parser's
  *     (see {@link RustGrammarParity});</li>
- *     <li>{@code on}: the Rust parser's result; input it reports as unsupported falls back to the Java parser.</li>
+ *     <li>{@code on}: the Rust parser's result; when it fails, the Java parser's, unless
+ *     {@value RustGrammarMode#FALLBACK_PROPERTY} is {@code false} (see {@link RustGrammarMode#fallback()}).</li>
  * </ul>
  */
 public class RustPureSectionParser implements SectionParser
@@ -90,13 +91,27 @@ public class RustPureSectionParser implements SectionParser
         {
             throw new IllegalStateException(RustGrammarMode.PROPERTY + "=on, but the Rust parser is not available: " + NativeGrammarParser.getLoadFailure());
         }
-        RustSectionResult result = RustSectionResult.parse(code, code.walkerSourceInformation.getReturnSourceInfo());
-        if (result.isUnsupported())
+        RustSectionResult result;
+        try
         {
-            return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+            result = RustSectionResult.parse(code, code.walkerSourceInformation.getReturnSourceInfo());
+        }
+        catch (RuntimeException e)
+        {
+            if (RustGrammarMode.fallback())
+            {
+                return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+            }
+            throw e;
         }
         if (result.isError())
         {
+            // Unsupported input, a syntax error or a result this engine can't read: the Java parser decides, even if
+            // that means parsing twice.
+            if (RustGrammarMode.fallback())
+            {
+                return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+            }
             String message = RustSectionResult.PARSER_ERROR.equals(result.errorKind) ? result.errorMessage : ("Rust parser " + result.errorKind + " error: " + result.errorMessage);
             throw new EngineException(message, result.errorSourceInformation, EngineErrorType.PARSER);
         }
