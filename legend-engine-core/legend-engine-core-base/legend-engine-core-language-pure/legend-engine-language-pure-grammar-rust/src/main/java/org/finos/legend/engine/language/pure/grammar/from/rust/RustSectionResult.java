@@ -14,11 +14,18 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.NumberDeserializers;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
@@ -32,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,12 +54,17 @@ final class RustSectionResult
     /**
      * Reads and writes protocol JSON the way the engine does (protocol subtypes registered, properties sorted, nulls
      * omitted), but reads decimals exactly, digits and scale, as the Java parser builds them: the standard mapper reads
-     * them through doubles ({@code 30000.00} becomes {@code 30000.0}). As a result, floats read into untyped
-     * ({@code Object}) protocol fields become {@code BigDecimal}s rather than {@code Double}s.
+     * them through doubles ({@code 30000.00} becomes {@code 30000.0}). Other floats, in untyped ({@code Object}) or
+     * {@code Number} fields such as a relational literal's value, are read as the standard mapper reads them, as
+     * {@code Double}s: the Java parser builds doubles there, and reading every float exactly would make them
+     * {@code BigDecimal}s.
      */
     static final ObjectMapper MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports()
             .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-            .setNodeFactory(JsonNodeFactory.withExactBigDecimals(true));
+            .setNodeFactory(JsonNodeFactory.withExactBigDecimals(true))
+            .registerModule(new SimpleModule("rustParserFloats")
+                    .addDeserializer(Object.class, new UntypedFloatsAsDoubles())
+                    .addDeserializer(Number.class, new NumberFloatsAsDoubles()));
 
     /**
      * The class instance types the protocol extensions on this classpath map to protocol classes.
@@ -209,6 +222,40 @@ final class RustSectionResult
             array.add(MAPPER.<JsonNode>valueToTree(element));
         }
         return array;
+    }
+
+    /**
+     * Untyped values, with floats as doubles, in nested maps and lists too.
+     */
+    private static final class UntypedFloatsAsDoubles extends UntypedObjectDeserializer
+    {
+        private UntypedFloatsAsDoubles()
+        {
+            super(null, null);
+        }
+
+        @Override
+        public Object deserialize(JsonParser parser, DeserializationContext context) throws IOException
+        {
+            return parser.hasToken(JsonToken.VALUE_NUMBER_FLOAT) ? (Object) parser.getDoubleValue() : super.deserialize(parser, context);
+        }
+    }
+
+    /**
+     * {@code Number} values, with floats as doubles.
+     */
+    private static final class NumberFloatsAsDoubles extends StdDeserializer<Number>
+    {
+        private NumberFloatsAsDoubles()
+        {
+            super(Number.class);
+        }
+
+        @Override
+        public Number deserialize(JsonParser parser, DeserializationContext context) throws IOException
+        {
+            return parser.hasToken(JsonToken.VALUE_NUMBER_FLOAT) ? (Number) parser.getDoubleValue() : (Number) NumberDeserializers.NumberDeserializer.instance.deserialize(parser, context);
+        }
     }
 
     private static RustSectionResult internalError(String message)
