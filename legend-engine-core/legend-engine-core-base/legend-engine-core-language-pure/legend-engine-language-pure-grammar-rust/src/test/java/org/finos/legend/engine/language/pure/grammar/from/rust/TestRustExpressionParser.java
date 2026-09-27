@@ -19,6 +19,9 @@ import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.m3.function.LambdaFunction;
+import org.finos.legend.engine.protocol.pure.m3.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.ClassInstance;
+import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.m3.valuespecification.constant.datatype.primitive.CDecimal;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -100,6 +103,15 @@ public class TestRustExpressionParser
     }
 
     @Test
+    public void testColumnSpecificationsKeepTheirMultiplicity()
+    {
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        String lambda = "|~[a:Integer[0..1]]";
+        Assert.assertEquals(Multiplicity.ZERO_ONE, columnMultiplicity(RUST.parseLambda(lambda, "", 0, 0, true)));
+        Assert.assertEquals(columnMultiplicity(JAVA.parseLambda(lambda, "", 0, 0, true)), columnMultiplicity(RUST.parseLambda(lambda, "", 0, 0, true)));
+    }
+
+    @Test
     public void testSyntaxErrorFallsBackToJava()
     {
         EngineException java = parseError(JAVA);
@@ -124,6 +136,11 @@ public class TestRustExpressionParser
     private static BigDecimal decimalValue(LambdaFunction lambda)
     {
         return ((CDecimal) lambda.body.get(0)).value;
+    }
+
+    private static Multiplicity columnMultiplicity(LambdaFunction lambda)
+    {
+        return ((ColSpecArray) ((ClassInstance) lambda.body.get(0)).value).colSpecs.get(0).multiplicity;
     }
 
     private static String json(Object value) throws JsonProcessingException
