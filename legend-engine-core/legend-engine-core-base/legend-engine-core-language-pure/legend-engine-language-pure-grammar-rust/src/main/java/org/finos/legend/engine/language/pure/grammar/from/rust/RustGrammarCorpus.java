@@ -16,9 +16,9 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
@@ -51,19 +51,18 @@ public final class RustGrammarCorpus
     {
     }
 
-    static void record(SectionSourceCode code, PureGrammarParserContext context)
+    static void record(SectionSourceCode code, PureGrammarParserContext context, SectionParser javaParser)
     {
         String dir = System.getProperty(CORPUS_DIR_PROPERTY);
         if (dir == null || dir.isEmpty())
         {
             return;
         }
-        ParseTreeWalkerSourceInformation withPositions = new ParseTreeWalkerSourceInformation.Builder(code.walkerSourceInformation).withReturnSourceInfo(true).build();
         Object expected;
         List<PackageableElement> elements = new ArrayList<>();
         try
         {
-            Section section = RustPureSectionParser.parseWithJava(new SectionSourceCode(code.code, code.sectionType, code.sourceInformation, withPositions), withPositions, elements::add, context);
+            Section section = RustSectionParser.parseWithPositions(javaParser, code, elements::add, context);
             List<String> imports = (section instanceof ImportAwareCodeSection) ? ((ImportAwareCodeSection) section).imports : Collections.emptyList();
             expected = new Parsed(RustSectionResult.roundTrip(elements), imports);
         }

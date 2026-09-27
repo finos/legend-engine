@@ -15,18 +15,46 @@
 package org.finos.legend.engine.language.pure.grammar.from.rust;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParserOverride;
+
+import java.util.Arrays;
 
 /**
- * Registers the Rust-backed {@code ###Pure} section parser. {@code PureGrammarParser} consults extension section
- * parsers before its built-in ones, so this takes over {@code ###Pure}; in the default mode ({@code off}) it parses
- * exactly as the built-in parser does. The mode is read on every parse (see {@link RustGrammarMode}), because the
- * extensions themselves are loaded once.
+ * Takes over section types with Rust-backed parsers ({@link RustSectionParser}), each keeping the Java parser it
+ * replaces, whether the engine's own or another extension's. In the default mode ({@code off}) sections parse exactly
+ * as without this extension. The section types are fixed when the extension loads; the mode is read on every parse
+ * (see {@link RustGrammarMode}).
  */
 public class RustGrammarParserExtension implements PureGrammarParserExtension
 {
+    /**
+     * System property: the section types taken over, comma-separated; {@code Pure} by default. Read when the
+     * extensions load.
+     */
+    public static final String SECTIONS_PROPERTY = "legend.grammar.rust.sections";
+
+    private final ImmutableList<String> sectionTypes;
+
+    /**
+     * Takes over the section types {@value #SECTIONS_PROPERTY} lists.
+     */
+    public RustGrammarParserExtension()
+    {
+        this(System.getProperty(SECTIONS_PROPERTY, "Pure").split(","));
+    }
+
+    /**
+     * @param sectionTypes the section types to take over
+     */
+    public RustGrammarParserExtension(String... sectionTypes)
+    {
+        this.sectionTypes = Lists.immutable.withAll(Arrays.asList(sectionTypes)).collect(String::trim).select(type -> !type.isEmpty()).distinct();
+    }
+
     @Override
     public MutableList<String> group()
     {
@@ -34,8 +62,26 @@ public class RustGrammarParserExtension implements PureGrammarParserExtension
     }
 
     @Override
-    public Iterable<? extends SectionParser> getExtraSectionParsers()
+    public Iterable<? extends SectionParserOverride> getSectionParserOverrides()
     {
-        return Lists.immutable.with(new RustPureSectionParser());
+        return this.sectionTypes.collect(RustGrammarParserExtension::override);
+    }
+
+    private static SectionParserOverride override(String sectionType)
+    {
+        return new SectionParserOverride()
+        {
+            @Override
+            public String getSectionTypeName()
+            {
+                return sectionType;
+            }
+
+            @Override
+            public SectionParser override(SectionParser replaced)
+            {
+                return new RustSectionParser(sectionType, replaced);
+            }
+        };
     }
 }

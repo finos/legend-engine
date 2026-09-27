@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
-import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.protocol.pure.m3.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -31,33 +30,42 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * The {@code ###Pure} section parser, backed by the Rust parser according to {@link RustGrammarMode}.
+ * A section type's parser backed by the Rust parser according to {@link RustGrammarMode}, taking over from the Java
+ * parser the engine would otherwise use (see {@link RustGrammarParserExtension}), which it keeps:
  *
  * <ul>
- *     <li>{@code off}: the Java {@link DomainParser}, exactly as the built-in path parses {@code ###Pure};</li>
+ *     <li>{@code off}: the Java parser's result, exactly as without this parser;</li>
  *     <li>{@code shadow}: the Java parser's result, after comparing it with the Rust parser's
  *     (see {@link RustGrammarParity});</li>
  *     <li>{@code on}: the Rust parser's result; when it fails, the Java parser's, unless
  *     {@value RustGrammarMode#FALLBACK_PROPERTY} is {@code false} (see {@link RustGrammarMode#fallback()}).</li>
  * </ul>
  */
-public class RustPureSectionParser implements SectionParser
+public class RustSectionParser implements SectionParser
 {
+    private final String sectionType;
+    private final SectionParser javaParser;
+
     /**
-     * The section type this parser handles.
+     * @param sectionType the section type parsed
+     * @param javaParser  the Java parser for that section type
      */
-    public static final String SECTION_TYPE = "Pure";
+    public RustSectionParser(String sectionType, SectionParser javaParser)
+    {
+        this.sectionType = sectionType;
+        this.javaParser = javaParser;
+    }
 
     @Override
     public String getSectionTypeName()
     {
-        return SECTION_TYPE;
+        return this.sectionType;
     }
 
     @Override
     public Section parse(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
     {
-        RustGrammarCorpus.record(code, context);
+        RustGrammarCorpus.record(code, context, this.javaParser);
         switch (RustGrammarMode.current())
         {
             case ON:
@@ -71,21 +79,26 @@ public class RustPureSectionParser implements SectionParser
             case OFF:
             default:
             {
-                return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+                return this.javaParser.parse(code, elementConsumer, context);
             }
         }
     }
 
     /**
-     * The built-in {@code ###Pure} parse, with the given walker source information.
+     * The Java parser's parse of a section, with source information whatever the section's walker asks.
      */
-    static Section parseWithJava(SectionSourceCode code, ParseTreeWalkerSourceInformation walker, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
+    static Section parseWithPositions(SectionParser javaParser, SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
     {
-        DomainParser parser = new DomainParser();
-        return parser.parse(parser.getParserInfo(code.code, code.sourceInformation, walker), elementConsumer, context);
+        return javaParser.parse(withPositions(code), elementConsumer, context);
     }
 
-    private static Section parseWithRust(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
+    private static SectionSourceCode withPositions(SectionSourceCode code)
+    {
+        ParseTreeWalkerSourceInformation walker = new ParseTreeWalkerSourceInformation.Builder(code.walkerSourceInformation).withReturnSourceInfo(true).build();
+        return new SectionSourceCode(code.code, code.sectionType, code.sourceInformation, walker);
+    }
+
+    private Section parseWithRust(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
     {
         if (!NativeGrammarParser.isAvailable())
         {
@@ -100,7 +113,7 @@ public class RustPureSectionParser implements SectionParser
         {
             if (RustGrammarMode.fallback())
             {
-                return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+                return this.javaParser.parse(code, elementConsumer, context);
             }
             throw e;
         }
@@ -110,37 +123,38 @@ public class RustPureSectionParser implements SectionParser
             // that means parsing twice.
             if (RustGrammarMode.fallback())
             {
-                return parseWithJava(code, code.walkerSourceInformation, elementConsumer, context);
+                return this.javaParser.parse(code, elementConsumer, context);
             }
             String message = RustSectionResult.PARSER_ERROR.equals(result.errorKind) ? result.errorMessage : ("Rust parser " + result.errorKind + " error: " + result.errorMessage);
             throw new EngineException(message, result.errorSourceInformation, EngineErrorType.PARSER);
         }
         result.elements.forEach(elementConsumer);
+        // TODO: a section type without imports (`Data`) has a `DefaultCodeSection` in Java: the Rust result should say
+        //  whether its grammar has imports once such a type is ported.
         ImportAwareCodeSection section = new ImportAwareCodeSection();
-        section.parserName = SECTION_TYPE;
+        section.parserName = this.sectionType;
         section.sourceInformation = code.sourceInformation;
         section.imports = new ArrayList<>(result.imports);
         result.elements.forEach(e -> section.elements.add(e.getPath()));
         return section;
     }
 
-    private static Section parseInShadow(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
+    private Section parseInShadow(SectionSourceCode code, Consumer<PackageableElement> elementConsumer, PureGrammarParserContext context)
     {
-        ParseTreeWalkerSourceInformation walker = code.walkerSourceInformation;
         // Collect privately: the consumer must see Java's elements exactly once, after the comparison.
         List<PackageableElement> javaElements = new ArrayList<>();
         Section javaSection = null;
         RuntimeException javaError = null;
         try
         {
-            javaSection = parseWithJava(code, walker, javaElements::add, context);
+            javaSection = this.javaParser.parse(code, javaElements::add, context);
         }
         catch (RuntimeException e)
         {
             javaError = e;
         }
-        RustGrammarParity.compare(code, walker.getReturnSourceInfo(), javaElements, javaSection, javaError);
-        if (!walker.getReturnSourceInfo())
+        RustGrammarParity.compare(code, code.walkerSourceInformation.getReturnSourceInfo(), javaElements, javaSection, javaError);
+        if (!code.walkerSourceInformation.getReturnSourceInfo())
         {
             // The roundtrip suites parse without source information; compare positions too.
             compareWithPositions(code, context);
@@ -153,16 +167,15 @@ public class RustPureSectionParser implements SectionParser
         return javaSection;
     }
 
-    private static void compareWithPositions(SectionSourceCode code, PureGrammarParserContext context)
+    private void compareWithPositions(SectionSourceCode code, PureGrammarParserContext context)
     {
-        ParseTreeWalkerSourceInformation withPositions = new ParseTreeWalkerSourceInformation.Builder(code.walkerSourceInformation).withReturnSourceInfo(true).build();
-        SectionSourceCode positioned = new SectionSourceCode(code.code, code.sectionType, code.sourceInformation, withPositions);
+        SectionSourceCode positioned = withPositions(code);
         List<PackageableElement> javaElements = new ArrayList<>();
         Section javaSection = null;
         RuntimeException javaError = null;
         try
         {
-            javaSection = parseWithJava(positioned, withPositions, javaElements::add, context);
+            javaSection = this.javaParser.parse(positioned, javaElements::add, context);
         }
         catch (RuntimeException e)
         {
