@@ -48,11 +48,26 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     {
         executeTestFunction(
                 "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
-                "let r = prevalNative({|1 + 1}, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "let f = {|1 + 1};",
+                "let r = prevalNative($f, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
                 "assert(!$r.modified, |'expected unmodified');",
                 "assert($r.canPreval, |'expected canPreval');",
                 "assert($r.openVars->isEmpty(), |'expected no open variables');",
-                "assert($r.value->instanceOf(LambdaFunction), |'expected the input lambda back');");
+                "assert($r.value->instanceOf(LambdaFunction), |'expected the input lambda back');",
+                "assert($r.value == $f, |'expected the same lambda back');");
+    }
+
+    @Test
+    public void testPrevalNativeReturnsFunctionExpressionUnmodified()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|1 + 1}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert(!$r.modified, |'expected unmodified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');",
+                "assert($r.value == $fe, |'expected the same function expression back');");
     }
 
     @Test
