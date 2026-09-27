@@ -92,17 +92,20 @@ following the `functions-unclassified` pattern:
   - `isGeneratedMilestoningProperty: Function<{Function<Any>[1]->Boolean[1]}>`.
   - `resolveTdsSchema: Function<{ValueSpecification[1], Map<String,List<Any>>[1]->Any[*]}>` — wraps
     `meta::pure::tds::schema::resolveSchema` with the extensions closed over.
-  - `isGetAll: Function<{Function<Any>[1]->Boolean[1]}>` — wraps `routing::isGetAllFunction`.
+  - `isGetAllFunction: Function<{Function<Any>[1]->Boolean[1]}>` — wraps `routing::isGetAllFunction`.
 - **Unchanged:** the public overloads A–F keep their exact signatures. Overload E builds the hooks
   from its `State`; the others build a default `State` as today.
 - **Switch:** `meta::pure::router::preeval::preevalImplementation()` returns `PURE`, `JAVA` or
-  `SHADOW`. The existing body is renamed `prevalPure`. The default is `PURE` until cutover (§6).
+  `SHADOW`. The existing Pure implementation stays as `prevalInternal`; overloads E and F dispatch
+  through `prevalWithImplementation(item, state, extensions, implementation)`. The default is `PURE`
+  until cutover (§6).
   `preevalImplementation()` is a small native in `core_functions_preeval` that reads the system
   property `legend.engine.preeval.implementation`, which defaults to `PURE`. Tests and CI jobs select
   an implementation with `-Dlegend.engine.preeval.implementation=JAVA|SHADOW`.
 - `SHADOW` runs both implementations and compares results through the normalisation used by
   `assertRoundTrip`: vX_X_X protocol JSON of the value, plus the `canPreval`, `openVars` and
-  `modified` flags. Any difference fails with both results printed as Pure grammar.
+  `modified` flags. Any difference fails with a `preeval SHADOW mismatch` message showing both
+  normalised results.
 
 ### 3.4 Java core (`org.finos.legend.engine.pure.preeval`)
 
@@ -119,8 +122,8 @@ following the `functions-unclassified` pattern:
 | `Leaves` | Types returned unchanged (`SchemaState`, `RootGraphFetchTree`, `Binding`, `Store`, `FuncColSpec`, `TestParameters`) and those marked non-prevalable (`RelationStoreAccessor`, `RelationElementAccessor`), by path. |
 | `GenericTypes` | `resolveGenericType` / `resolveFunctionType` against `inScopeTypeParams`. |
 | `Scope` | `addToScope` (with self-reference dropping), `resolveVariable` (circularity assert), `areAllInScope`, `openVars`, `isInstanceValue`. |
-| `PrevalHooks` | Java view of the Pure hooks: `stopPreeval(Object)`, `shouldInline(Function)`, `isGeneratedMilestoningProperty(Function)`, `resolveTdsSchema(ValueSpecification, Map)`, `isGetAll(Function)`. Implemented by each adapter over the Pure functions. |
-| `PrevalRuntime` | Port for everything mode-specific: `reactivate(vs, vars)`, `evaluate(fn, args…)`, `newInstanceValue(genericType, multiplicity, values)`, `newGenericType`/`newMultiplicity`, `copy(node)`, `rebuildLambda(original, newExpressionSequence, openVariables)`, `openVariableValues(lambda)`, `instanceOf(obj, path)`, `getProperty`/`setProperty` for lambda holders. |
+| `PrevalHooks` | Java view of the Pure hooks: `stopPreeval(Object)`, `shouldInline(Function)`, `isGeneratedMilestoningProperty(Function)`, `resolveTdsSchema(ValueSpecification, Map)`, `isGetAllFunction(Function)`. Implemented by each adapter over the Pure functions. |
+| `PrevalRuntime` | Port for everything mode-specific: `reactivate(vs, vars)`, `evaluate(fn, args…)`, `newInstanceValue(genericType, multiplicity, values)`, `newGenericType`/`newMultiplicity`, `copy(node)`, `rebuildLambda(original, newExpressionSequence, openVariables)`, `openVariableValues(lambda)`, `instanceOf(obj, path)`, `getProperty`/`setProperty` for lambda holders. Introduced in P1 with its first callers; P0 needs only `ProcessorSupport`. |
 | `DebugTrace` | Depth-indented trace through SLF4J, gated by `DebugContext.debug`, with the same messages as today. |
 
 **Rule order** (matches today's first-match semantics):
