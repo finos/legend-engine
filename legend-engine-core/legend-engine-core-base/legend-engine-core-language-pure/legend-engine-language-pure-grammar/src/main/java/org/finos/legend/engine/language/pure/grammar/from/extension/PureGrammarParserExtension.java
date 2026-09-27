@@ -43,6 +43,15 @@ public interface PureGrammarParserExtension extends LegendLanguageExtension
         return Collections.emptyList();
     }
 
+    /**
+     * The parser this extension takes the parsing of standalone expressions over with (see
+     * {@link ExpressionParserOverride}); at most one across all extensions.
+     */
+    default Iterable<? extends ExpressionParserOverride> getExpressionParserOverrides()
+    {
+        return Collections.emptyList();
+    }
+
     default Iterable<? extends ConnectionValueParser> getExtraConnectionParsers()
     {
         return Collections.emptyList();
