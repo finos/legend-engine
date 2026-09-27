@@ -55,6 +55,7 @@
                                 </dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-functions-unclassified-pure
                                 </dependency>
+                                <dependency>org.finos.legend.engine:legend-engine-pure-functions-preeval-pure</dependency>
                                 <dependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-path-java
                                 </dependency>
                                 <dependency>org.finos.legend.pure:legend-pure-runtime-java-extension-compiled-dsl-mapping</dependency>
@@ -245,6 +246,19 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-relation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-functions-preeval-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-compiled-functions-preeval</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-runtime-java-extension-interpreted-functions-preeval</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>

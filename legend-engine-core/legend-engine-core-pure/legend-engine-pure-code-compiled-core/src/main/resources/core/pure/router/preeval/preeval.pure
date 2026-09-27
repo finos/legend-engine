@@ -81,7 +81,7 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
   meta::pure::functions::tracing::traceSpan({|
     let startTime = now();
 
-    let r = prevalInternal($f->evaluateAndDeactivate(), $state, $extensions)->toOne()->cast(@PrevalWrapper<FunctionDefinition<Any>>);
+    let r = prevalWithImplementation($f->evaluateAndDeactivate(), $state, $extensions, meta::pure::functions::preeval::preevalImplementation())->cast(@PrevalWrapper<FunctionDefinition<Any>>);
 
     let endTime = now();
 
@@ -115,7 +115,7 @@ function <<access.public>> meta::pure::router::preeval::preval(fe : FunctionExpr
 
     let startTime = now();
 
-    let r = prevalInternal($fe, $state, $extensions);
+    let r = prevalWithImplementation($fe, $state, $extensions, meta::pure::functions::preeval::preevalImplementation());
 
     let endTime = now();
 
@@ -131,6 +131,59 @@ function <<access.public>> meta::pure::router::preeval::preval(fe : FunctionExpr
 
     $r.value->cast(@ValueSpecification);  
   }, 'preval')
+}
+
+// ====================================================================================================================================================================
+// Implementation Switch
+// ====================================================================================================================================================================
+
+function meta::pure::router::preeval::prevalWithImplementation(item:Any[1], state:State[1], extensions:Extension[*], implementation:String[1]):PrevalWrapper<Any>[1]
+{
+  if($implementation == 'PURE',
+    | prevalInternal($item, $state, $extensions),
+    | if($implementation == 'JAVA',
+        | prevalJava($item, $state, $extensions),
+        | assert($implementation == 'SHADOW', | 'Unknown preeval implementation: ' + $implementation);
+          let pure = prevalInternal($item, $state, $extensions);
+          let java = prevalJava($item, $state, $extensions);
+          assertSamePrevalResult($pure, $java, $state.inScopeVars, $extensions);
+          $pure;
+      )
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::prevalJava(item:Any[1], state:State[1], extensions:Extension[*]):PrevalWrapper<Any>[1]
+{
+  let r = meta::pure::functions::preeval::prevalNative($item, $state.inScopeVars, $state.rollingInScopeVars, $state->toPrevalHooks($extensions), $state.debug);
+  ^PrevalWrapper<Any>(value = $r.value, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified);
+}
+
+function meta::pure::router::preeval::toPrevalHooks(state:State[1], extensions:Extension[*]):meta::pure::functions::preeval::PrevalHooks[1]
+{
+  ^meta::pure::functions::preeval::PrevalHooks(
+    stopPreeval                    = $state.stopPreeval,
+    shouldInline                   = $state.shouldInlineFxn,
+    isGeneratedMilestoningProperty = {f:Function<Any>[1] | $f->instanceOf(AbstractProperty) && $f->cast(@AbstractProperty<Any>)->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype()},
+    isGetAllFunction               = {f:Function<Any>[1] | meta::pure::router::routing::isGetAllFunction($f)},
+    resolveTdsSchema               = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | meta::pure::tds::schema::resolveSchema($vs, $vars, $extensions)}
+  );
+}
+
+function meta::pure::router::preeval::assertSamePrevalResult(pure:PrevalWrapper<Any>[1], java:PrevalWrapper<Any>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*]):Boolean[1]
+{
+  let pureDescription = $pure->describePrevalResult($inScopeVars, $extensions);
+  let javaDescription = $java->describePrevalResult($inScopeVars, $extensions);
+  assert($pureDescription == $javaDescription, | 'preeval SHADOW mismatch\nPURE: ' + $pureDescription + '\nJAVA: ' + $javaDescription);
+}
+
+function <<access.private>> meta::pure::router::preeval::describePrevalResult(r:PrevalWrapper<Any>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*]):String[1]
+{
+  let value = $r.value->match([
+    fd:FunctionDefinition<Any>[1] | $fd->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000),
+    vs:ValueSpecification[1]      | $vs->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification([], $inScopeVars, $extensions)->meta::json::toJSON(50000),
+    a:Any[1]                      | $a->toString()
+  ]);
+  'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']') + ', value=' + $value;
 }
 
 // ====================================================================================================================================================================
