@@ -71,6 +71,18 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testPrevalNativeReportsOpenVariablesOfFunctionExpression()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[1] | $p + 1}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert(!$r.modified, |'expected unmodified');",
+                "assert($r.value == $fe, |'expected the same function expression back');",
+                "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'p', |'expected open variable p');");
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(
