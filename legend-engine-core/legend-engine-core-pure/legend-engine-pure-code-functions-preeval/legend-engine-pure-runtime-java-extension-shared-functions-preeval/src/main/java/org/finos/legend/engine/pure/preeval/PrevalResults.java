@@ -30,7 +30,7 @@ public final class PrevalResults
     public static CoreInstance toPure(PrevalResult result, ProcessorSupport processorSupport)
     {
         CoreInstance pureResult = processorSupport.newCoreInstance(null, PREVAL_RESULT, null);
-        Instance.setValueForProperty(pureResult, "value", result.getValue(), processorSupport);
+        Instance.setValueForProperty(pureResult, "value", (CoreInstance) result.getValue(), processorSupport);
         Instance.setValueForProperty(pureResult, "canPreval", newBoolean(result.canPreval(), processorSupport), processorSupport);
         Instance.setValuesForProperty(pureResult, "openVars", result.getOpenVars().collect(name -> processorSupport.newCoreInstance(name, M3Paths.String, null)), processorSupport);
         Instance.setValueForProperty(pureResult, "modified", newBoolean(result.isModified(), processorSupport), processorSupport);

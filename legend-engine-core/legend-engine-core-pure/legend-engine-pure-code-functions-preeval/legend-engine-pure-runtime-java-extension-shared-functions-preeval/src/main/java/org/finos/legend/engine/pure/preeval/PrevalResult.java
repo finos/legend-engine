@@ -16,16 +16,16 @@ package org.finos.legend.engine.pure.preeval;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.eclipse.collections.impl.utility.Iterate;
 
 public final class PrevalResult
 {
-    private final CoreInstance value;
+    private final Object value;
     private final boolean canPreval;
     private final ImmutableList<String> openVars;
     private final boolean modified;
 
-    public PrevalResult(CoreInstance value, boolean canPreval, ImmutableList<String> openVars, boolean modified)
+    public PrevalResult(Object value, boolean canPreval, ImmutableList<String> openVars, boolean modified)
     {
         this.value = value;
         this.canPreval = canPreval;
@@ -33,12 +33,27 @@ public final class PrevalResult
         this.modified = modified;
     }
 
-    public static PrevalResult unmodified(CoreInstance value)
+    public static PrevalResult unmodified(Object value)
     {
-        return new PrevalResult(value, true, Lists.immutable.empty(), false);
+        return unmodified(value, true);
     }
 
-    public CoreInstance getValue()
+    public static PrevalResult unmodified(Object value, boolean canPreval)
+    {
+        return new PrevalResult(value, canPreval, Lists.immutable.empty(), false);
+    }
+
+    public static boolean anyModified(Iterable<PrevalResult> results)
+    {
+        return Iterate.anySatisfy(results, PrevalResult::isModified);
+    }
+
+    public static boolean allCanPreval(Iterable<PrevalResult> results)
+    {
+        return Iterate.allSatisfy(results, PrevalResult::canPreval);
+    }
+
+    public Object getValue()
     {
         return this.value;
     }
@@ -56,5 +71,10 @@ public final class PrevalResult
     public boolean isModified()
     {
         return this.modified;
+    }
+
+    public PrevalResult markModified()
+    {
+        return this.modified ? this : new PrevalResult(this.value, this.canPreval, this.openVars, true);
     }
 }
