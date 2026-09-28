@@ -309,6 +309,16 @@ function meta::relational::functions::database::findTablesInDbHierarchy(d:Databa
 
 function meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv(str : String[*], types : Any[*]):String[1]
 {
+   meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($str, $types, {s:String[1] | $s});
+}
+
+function meta::relational::functions::database::testDataSQLgeneration::bitAsNumber(s:String[1]):String[1]
+{
+   if($s->trim()->toLower()->in(['true', '1', 'y']), |'1', |'0');
+}
+
+function meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv(str : String[*], types : Any[*], bit:meta::pure::metamodel::function::Function<{String[1]->String[1]}>[1]):String[1]
+{
    // the split function is not working properly: csv records of the form x,,x,,e are not split with empty Strings
    // Therefor we insert ---null--- for now instead of empty set.
    // $value == '---null---' needs to be removed when split is fixed
@@ -318,6 +328,7 @@ function meta::relational::functions::database::testDataSQLgeneration::convertVa
                  s:meta::relational::metamodel::datatype::Char[*] | '\'' + $str->at($x)->replace('\'', '\'\'') + '\'',
                  d:meta::relational::metamodel::datatype::Date[*] |  '\'' + $str->at($x) + '\'',
                  t:meta::relational::metamodel::datatype::Timestamp[*] |  '\'' + if($str->at($x)->length() > 10, |$str->at($x), |$str->at($x)) + '\'',
+                 b:meta::relational::metamodel::datatype::Bit[*] | $bit->eval($str->at($x)),
                  a:Any[*] | $str->at($x)
                  ]))})->joinStrings(',');
 }
