@@ -225,7 +225,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 | P0 Scaffold | Module family; `prevalNative` and `preevalImplementation` natives with compiled/interpreted shells; `PrevalHooks`; `PrevalResult`; the `PURE`/`JAVA`/`SHADOW` switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
 | P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` — done |
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** (relational: `testPrerouting42`, the file's only `<<test.Test>>`; its two `<<test.ToFix>>` tests, `testPrerouting41` and `testPrerouting_Store`, are excluded) |
-| P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode |
+| P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode — **done** (336/336 under `PURE`, `JAVA` and `SHADOW`) |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
 | P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
@@ -389,6 +389,52 @@ compiled-core were rebuilt clean before every run reported above.
   dedicated unit test.
 - `// parity:` markers get follow-up issue links (§3.4) once issues are filed — **Still pending.** 13
   markers exist (10 shared, 2 compiled, 1 interpreted), none linked to a filed issue.
+
+### P3 status (2026-09-28)
+
+`Test_Interpreted_Preeval` is green: 336/336 (112 tests collected from `meta::pure::router::preeval::tests`
+in interpreted mode, run once each under `PURE`, `JAVA` and `SHADOW`). `KNOWN_INTERPRETED_FAILURES` is
+empty. Full exit-verification run: `Test_Pure_Core` (1192/1192), `Test_Pure_Preeval`/`Test_Pure_Preeval_Java`
+(333/333) and `Test_Interpreted_Preeval` (336/336) together, 1861/1861, 0 failures/errors, under the default
+`PURE`. Checkstyle: 0 violations on compiled-core and on
+`legend-engine-pure-runtime-java-extension-interpreted-functions-preeval`. compiled-core's test run now
+takes about 2 minutes longer for the interpreted suite (measured: `Test_Interpreted_Preeval` alone, 135.7 s
+Surefire-reported / ~140 s wall).
+
+**`prevalJava` typed-wrapper bug, found by P3.** The spike that opened P3 (see Global Constraints
+background) found `prevalJava` always built `^PrevalWrapper<Any>` instead of the typed wrapper PURE
+builds for function definitions (`^PrevalWrapper<FunctionDefinition<Any>>`). Compiled mode never saw
+it — type erasure means the compiled JVM does not check the type argument — and `SHADOW` never saw it
+either, because SHADOW returns the PURE-side wrapper. Only interpreted `cast`, which does check type
+arguments, surfaced it (99 of 101 interpreted `JAVA` failures in the spike). This argues for keeping
+interpreted runs in CI going forward, not just as a one-off P3 gate.
+
+**Task 3 was a consistency fix, not a bug fix.** `InterpretedPrevalRuntime`'s `toVars`/lambda-context
+variable-map reads used `getValueForMetaPropertyToMany` (raw, unresolved) instead of
+`Instance.getValueForMetaPropertyToManyResolved`. No platform-only scenario made the unresolved read
+observable: the interpreter resolves stubs before values reach `toVars`/`openVariableValues` in the
+paths the suite exercises, so nothing failed before the fix. It is fixed for consistency with the rest
+of the adapter, which resolves stubs everywhere else.
+
+**P2 known gaps closed by P3:**
+- Interpreted-mode coverage of the TDS/`Relation` preeval paths (including the
+  `BasicColumnSpecification`/`AggregateValue` lambda-holder paths) is no longer harness-only —
+  `Test_Interpreted_Preeval` now exercises the full `tests.pure` suite in interpreted mode.
+- The unresolved-getter item (P1 known gap: interpreted variable-map reads not resolving stubs) is
+  done — see Task 3 above.
+
+**Known gaps (carried forward, not closed by P3):**
+- Interpreted coverage of the relational `testPrerouting42` is still pending: it needs relational
+  interpreted natives on `legend-engine-xt-relationalStore-core-pure`'s interpreted classpath, which
+  `Test_Interpreted_Preeval` (compiled-core only) does not have. P4 item.
+- `preeval.pure` builds nested `^InstanceValue` values without `evaluateAndDeactivate` (around lines
+  457 and 724). In interpreted mode such a hand-built `InstanceValue` has no `genericType`, so if
+  either ever became a top-level preeval result, SHADOW's `describePrevalResult` would NPE in
+  `printGenericType`. Latent today — no test drives it into that position — P4 should either route them
+  through `evaluateAndDeactivate` or make `describe` robust to a missing `genericType`.
+- `Test_Interpreted_Preeval` reuses one `TestSuite` under `PURE`, `JAVA` and `SHADOW`, so the Surefire
+  XML lists each test three times with identical names. Pass/fail counts are accurate, but CI triage
+  needs the log, not just the XML, to tell which implementation failed. P4 item.
 
 ## 6. Cutover criteria
 
