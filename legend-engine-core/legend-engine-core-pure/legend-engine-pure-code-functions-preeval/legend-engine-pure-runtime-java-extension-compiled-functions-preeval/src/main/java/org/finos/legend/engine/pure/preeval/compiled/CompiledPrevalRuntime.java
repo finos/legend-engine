@@ -25,6 +25,7 @@ import org.finos.legend.engine.pure.preeval.PrevalRuntime;
 import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.ElementWithStereotypes;
@@ -227,6 +228,12 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     public ImmutableList<Object> values(InstanceValue instanceValue)
     {
         return Lists.immutable.withAll(instanceValue._values());
+    }
+
+    @Override
+    public GenericType genericTypeOf(String typePath)
+    {
+        return new Root_meta_pure_metamodel_type_generics_GenericType_Impl("Anonymous_NoCounter")._rawType((Type) element(typePath));
     }
 
     @Override

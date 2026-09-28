@@ -284,10 +284,11 @@ public final class Preevaluator implements PrevalServices
         Prologue reasoned = prologue.withNotPrevalReason(notPrevalReason(rewritten, prologue.parameters(), state));
         if (reasoned.notPrevalReason() != null)
         {
-            ExpressionRule handler = Rules.NOT_PREVALLED.detect(r -> r.matches(reasoned, this));
-            if (handler != null)
+            // parity: Pure filters every handler predicate before taking the first, so a later predicate that throws still throws
+            ImmutableList<ExpressionRule> handlers = Rules.NOT_PREVALLED.select(r -> r.matches(reasoned, this));
+            if (handlers.notEmpty())
             {
-                return handler.apply(reasoned, this);
+                return handlers.getFirst().apply(reasoned, this);
             }
             trace(state, "Not prevalling (" + reasoned.notPrevalReason() + ")");
             return reasoned.notPrevalled();

@@ -61,11 +61,13 @@ public class PrevalNative extends NativeFunction
         CoreInstance stopPreeval = Instance.getValueForMetaPropertyToOneResolved(hooks, "stopPreeval", processorSupport);
         CoreInstance shouldInline = Instance.getValueForMetaPropertyToOneResolved(hooks, "shouldInline", processorSupport);
         CoreInstance isGeneratedMilestoningProperty = Instance.getValueForMetaPropertyToOneResolved(hooks, "isGeneratedMilestoningProperty", processorSupport);
+        CoreInstance isGetAllFunction = Instance.getValueForMetaPropertyToOneResolved(hooks, "isGetAllFunction", processorSupport);
         PrevalState state = PrevalState.initial(runtime.toVars(params.get(1)), runtime.toVars(params.get(2)), PrimitiveUtilities.getBooleanValue(debug.getValueForMetaPropertyToOne("debug")));
         PrevalResult result = new Preevaluator(runtime, new InterpretedPrevalHooks(runtime,
                 stopPreeval, getParentOrEmptyVariableContextForLambda(variableContext, stopPreeval),
                 shouldInline, getParentOrEmptyVariableContextForLambda(variableContext, shouldInline),
-                isGeneratedMilestoningProperty, getParentOrEmptyVariableContextForLambda(variableContext, isGeneratedMilestoningProperty))).preval(item, state);
+                isGeneratedMilestoningProperty, getParentOrEmptyVariableContextForLambda(variableContext, isGeneratedMilestoningProperty),
+                isGetAllFunction, getParentOrEmptyVariableContextForLambda(variableContext, isGetAllFunction))).preval(item, state);
         return ValueSpecificationBootstrap.wrapValueSpecification(runtime.toPureResult(result), false, processorSupport);
     }
 }

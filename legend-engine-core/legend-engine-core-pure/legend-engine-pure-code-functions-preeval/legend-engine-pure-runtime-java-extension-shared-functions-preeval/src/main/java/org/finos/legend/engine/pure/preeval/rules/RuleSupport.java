@@ -16,11 +16,17 @@ package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.pure.preeval.MetamodelPaths;
 import org.finos.legend.engine.pure.preeval.PrevalResult;
+import org.finos.legend.engine.pure.preeval.PrevalRuntime;
 import org.finos.legend.engine.pure.preeval.PrevalServices;
 import org.finos.legend.engine.pure.preeval.PrevalState;
+import org.finos.legend.engine.pure.preeval.Prologue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
@@ -50,5 +56,50 @@ final class RuleSupport
         ValueSpecification body = Lists.immutable.<ValueSpecification>withAll(function._expressionSequence()).getOnly();
         ValueSpecification typed = services.runtime().withGenericType(body, (GenericType) services.genericTypes().resolveGenericType(body._genericType(), state).getValue());
         return services.preval(typed, state);
+    }
+
+    static boolean isFilterReturningConstant(Prologue prologue, PrevalServices services, boolean expected)
+    {
+        PrevalRuntime runtime = services.runtime();
+        if (!runtime.isFunction(prologue.rewritten()._func(), MetamodelPaths.FILTER_FUNCTION))
+        {
+            return false;
+        }
+        // parity: Pure casts the predicate to an InstanceValue of LambdaFunctions, so any other predicate fails here
+        ValueSpecification predicate = prologue.rewrittenParameters().getLast();
+        if (!(predicate instanceof InstanceValue))
+        {
+            throw runtime.error("Cast exception: " + runtime.typeDescription(predicate) + " cannot be cast to InstanceValue");
+        }
+        MutableList<ValueSpecification> expressions = Lists.mutable.empty();
+        runtime.values((InstanceValue) predicate).forEach(value ->
+        {
+            if (!(value instanceof LambdaFunction))
+            {
+                throw runtime.error("Cast exception: " + runtime.typeDescription(value) + " cannot be cast to LambdaFunction");
+            }
+            expressions.addAllIterable(((LambdaFunction<?>) value)._expressionSequence());
+        });
+        if (expressions.isEmpty())
+        {
+            throw runtime.error("Cannot cast a collection of size 0 to multiplicity [1]");
+        }
+        ValueSpecification lastExpression = expressions.getLast();
+        return lastExpression instanceof InstanceValue && singleBooleanEquals(services, lastExpression, expected);
+    }
+
+    static boolean isGetAll(Object value, PrevalServices services)
+    {
+        if (!(value instanceof FunctionExpression))
+        {
+            return false;
+        }
+        FunctionExpression expression = (FunctionExpression) value;
+        if (services.hooks().isGetAllFunction(expression._func()))
+        {
+            return true;
+        }
+        ImmutableList<ValueSpecification> parameters = Lists.immutable.withAll(expression._parametersValues());
+        return parameters.notEmpty() && isGetAll(parameters.getFirst(), services);
     }
 }

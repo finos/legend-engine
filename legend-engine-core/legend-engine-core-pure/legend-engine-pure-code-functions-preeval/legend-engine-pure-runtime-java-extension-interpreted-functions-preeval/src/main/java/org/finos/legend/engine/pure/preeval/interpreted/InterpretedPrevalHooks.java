@@ -29,8 +29,10 @@ public final class InterpretedPrevalHooks implements PrevalHooks
     private final VariableContext shouldInlineContext;
     private final CoreInstance isGeneratedMilestoningProperty;
     private final VariableContext isGeneratedMilestoningPropertyContext;
+    private final CoreInstance isGetAllFunction;
+    private final VariableContext isGetAllFunctionContext;
 
-    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext stopPreevalContext, CoreInstance shouldInline, VariableContext shouldInlineContext, CoreInstance isGeneratedMilestoningProperty, VariableContext isGeneratedMilestoningPropertyContext)
+    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext stopPreevalContext, CoreInstance shouldInline, VariableContext shouldInlineContext, CoreInstance isGeneratedMilestoningProperty, VariableContext isGeneratedMilestoningPropertyContext, CoreInstance isGetAllFunction, VariableContext isGetAllFunctionContext)
     {
         this.runtime = runtime;
         this.stopPreeval = stopPreeval;
@@ -39,6 +41,8 @@ public final class InterpretedPrevalHooks implements PrevalHooks
         this.shouldInlineContext = shouldInlineContext;
         this.isGeneratedMilestoningProperty = isGeneratedMilestoningProperty;
         this.isGeneratedMilestoningPropertyContext = isGeneratedMilestoningPropertyContext;
+        this.isGetAllFunction = isGetAllFunction;
+        this.isGetAllFunctionContext = isGetAllFunctionContext;
     }
 
     @Override
@@ -57,5 +61,11 @@ public final class InterpretedPrevalHooks implements PrevalHooks
     public boolean isGeneratedMilestoningProperty(Object function)
     {
         return this.runtime.evaluateBoolean(this.isGeneratedMilestoningProperty, this.isGeneratedMilestoningPropertyContext, Lists.immutable.with(function));
+    }
+
+    @Override
+    public boolean isGetAllFunction(Object function)
+    {
+        return this.runtime.evaluateBoolean(this.isGetAllFunction, this.isGetAllFunctionContext, Lists.immutable.with(function));
     }
 }

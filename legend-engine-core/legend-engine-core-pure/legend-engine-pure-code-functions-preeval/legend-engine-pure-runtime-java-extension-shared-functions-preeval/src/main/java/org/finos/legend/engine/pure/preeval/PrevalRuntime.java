@@ -72,6 +72,8 @@ public interface PrevalRuntime
 
     ImmutableList<Object> values(InstanceValue instanceValue);
 
+    GenericType genericTypeOf(String typePath);
+
     InstanceValue newInstanceValue(GenericType genericType, Multiplicity multiplicity, ListIterable<?> values);
 
     FunctionDefinition<?> withExpressionSequence(FunctionDefinition<?> function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables);

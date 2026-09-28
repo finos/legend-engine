@@ -40,6 +40,11 @@ public final class MetamodelPaths
             "meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_");
     public static final String FOLD_FUNCTION = "meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_";
     public static final String CONCATENATE_FUNCTION = "meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_";
+    public static final String FILTER_FUNCTION = "meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_";
+    public static final String TO_ONE_FUNCTION = "meta::pure::functions::multiplicity::toOne_T_MANY__T_1_";
+    public static final String TO_ONE_MANY_FUNCTION = "meta::pure::functions::multiplicity::toOneMany_T_MANY__T_$1_MANY$_";
+    public static final String GENERIC_TYPE_FUNCTION = "meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_";
+    public static final String NIL = "meta::pure::metamodel::type::Nil";
     public static final String TDS_ROW = "meta::pure::tds::TDSRow";
     public static final String FUNCTION_TYPE_PROFILE = "meta::pure::profiles::functionType";
     public static final String TDS = "meta::pure::metamodel::relation::TDS";

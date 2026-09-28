@@ -23,4 +23,6 @@ public interface PrevalHooks
     boolean shouldInline(Object function);
 
     boolean isGeneratedMilestoningProperty(Object function);
+
+    boolean isGetAllFunction(Object function);
 }

@@ -311,6 +311,14 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public GenericType genericTypeOf(String typePath)
+    {
+        CoreInstance genericType = this.processorSupport.newEphemeralAnonymousCoreInstance(M3Paths.GenericType);
+        Instance.setValueForProperty(genericType, M3Properties.rawType, element(typePath), this.processorSupport);
+        return GenericTypeCoreInstanceWrapper.toGenericType(genericType);
+    }
+
+    @Override
     public InstanceValue newInstanceValue(GenericType genericType, Multiplicity multiplicity, ListIterable<?> values)
     {
         CoreInstance instanceValue = this.processorSupport.newEphemeralAnonymousCoreInstance(M3Paths.InstanceValue);

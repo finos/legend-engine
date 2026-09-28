@@ -35,7 +35,7 @@ public class TestRules
     @Test
     public void testNotPrevalledRuleOrder()
     {
-        Assertions.assertEquals(Lists.immutable.with("MapUnrollRule", "FoldUnrollRule", "ConcatenateRule"), Rules.NOT_PREVALLED.collect(r -> r.getClass().getSimpleName()));
+        Assertions.assertEquals(Lists.immutable.with("MapUnrollRule", "FoldUnrollRule", "ConcatenateRule", "EmptyCastRule", "FilterFalseRule", "FilterTrueRule", "ToOneManyRule", "ToOneRule", "GenericTypeRule"), Rules.NOT_PREVALLED.collect(r -> r.getClass().getSimpleName()));
     }
 
     @Test

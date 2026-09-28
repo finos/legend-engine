@@ -24,14 +24,14 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testEvalWithArgs3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testEvalWithArgs4` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testEvalWithArgs5` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myTestFunc2ThatDoesSomethingViaEval_P_1__Boolean_1_" | inlining/eval expansion — **resolved by Task 5** |
-| `testFilterFalseConstantSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterFalseSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterFalseSimplification2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterFalseSimplificationReturnType` | SHADOW | Assert failure at (resource:/core/pure/router/preeval/preeval.pure line:177 column:3), "preeval SHADOW mismatch | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterTrueConstantSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterTrueSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testFilterTrueSimplification2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testGetGenericType` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
+| `testFilterFalseConstantSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterFalseSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterFalseSimplification2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterFalseSimplificationReturnType` | SHADOW | Assert failure at (resource:/core/pure/router/preeval/preeval.pure line:177 column:3), "preeval SHADOW mismatch | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterTrueConstantSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterTrueSimplification` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testFilterTrueSimplification2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testGetGenericType` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
 | `testInline` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myTestFuncThatDoesEval_P_1__Boolean_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting12` | both | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), "Instance of type 'String' can't be translated" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting19` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
@@ -53,10 +53,10 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting33` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for filterToStringColumns_TabularDataSet_1__TabularDataSet_1_" | TDS columns / eval-on-Column |
 | `testPrerouting34` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for extendColumns_TabularDataSet_1__String_MANY__TabularDataSet_1_" | TDS columns / eval-on-Column |
 | `testPrerouting37` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for otherFunc2_Integer_MANY__FunctionDefinition_1__Integer_MANY__Integer_MANY_" | inlining/eval expansion — **resolved by Task 5** |
-| `testPrerouting40b` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myToOne_T_1__T_1_" | cast-empty/filter/toOne(Many)/genericType |
+| `testPrerouting40b` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myToOne_T_1__T_1_" | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
 | `testPrerouting_OptionalLimit1` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for optionalLimit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting_OptionalLimit2` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for optionalLimit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_" | inlining/eval expansion — **resolved by Task 5** |
-| `testPrerouting_castEmptyCollection` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
+| `testPrerouting_castEmptyCollection` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
 | `testPrerouting_concatenateInstanceValuesExpanded_Basic` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting_concatenateInstanceValuesExpanded_Complex` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting_foldOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
@@ -64,8 +64,8 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting_mapOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testProjectWithInferredParameterType` | both | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), "Instance of type 'meta::pure::tds::TabularDataSet' can't be translated" | inlining/eval expansion — **resolved by Task 5** |
 | `testRecursiveSimpleConcreteFunctionDefinition` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
-| `testToOneElimination3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testToOneManyElimination3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
+| `testToOneElimination3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
+| `testToOneManyElimination3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
 
 "Fails under: both" means both the `JAVA` and `SHADOW` runs failed (the `JAVA` result diverges from the expected Pure result, and — separately — the internal `assertSamePrevalResult` shadow comparison also fails, since it fires only under `SHADOW`). "JAVA" means only the direct `JAVA` implementation run failed against the expected result while the `SHADOW` comparison of the same divergence happened to still agree (rare; see `testFilterFalseSimplificationReturnType`, where `SHADOW` alone fails because the wrapper's `modified` flag disagrees even though the final `JAVA` value passed the outer assertion).
 
@@ -126,3 +126,15 @@ After implementing `MapUnrollRule`, `FoldUnrollRule` and `ConcatenateRule` (`Rul
 Still failing, owned by later tasks: the filter/cast/toOne/genericType family (Task 7) and TDS columns / eval-on-Column (Task 8).
 
 `KNOWN_DIVERGENT` now holds 16 names.
+
+## Task 7 update (cast-of-empty, filter `false`/`true`, `toOneMany`, `toOne`, `genericType`)
+
+After implementing `EmptyCastRule`, `FilterFalseRule`, `FilterTrueRule`, `ToOneManyRule`, `ToOneRule` and `GenericTypeRule` (appended to `Rules.NOT_PREVALLED` in that order), the `isGetAllFunction` hook, `PrevalRuntime.genericTypeOf`, and Pure's evaluate-every-predicate handler selection, RUNNER-ALL was re-run. Of the 16 `KNOWN_DIVERGENT` names, 12 now pass under both `JAVA` and `SHADOW`:
+
+`testFilterFalseConstantSimplification`, `testFilterFalseSimplification`, `testFilterFalseSimplification2`, `testFilterFalseSimplificationReturnType`, `testFilterTrueConstantSimplification`, `testFilterTrueSimplification`, `testFilterTrueSimplification2`, `testGetGenericType`, `testPrerouting40b`, `testPrerouting_castEmptyCollection`, `testToOneElimination3`, `testToOneManyElimination3`.
+
+This is exactly the family's expected list. No other name changed state, and no unexpected failure appeared.
+
+Still failing, owned by Task 8: `tesColumnEvalOnRelation`, `tesColumnEvalOnRelationWithCast`, `testPrerouting33`, `testPrerouting34`.
+
+`KNOWN_DIVERGENT` now holds 4 names.

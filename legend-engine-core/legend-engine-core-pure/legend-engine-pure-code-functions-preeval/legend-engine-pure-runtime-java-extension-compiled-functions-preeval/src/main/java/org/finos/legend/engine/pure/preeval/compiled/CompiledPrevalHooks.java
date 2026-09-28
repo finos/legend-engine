@@ -28,6 +28,7 @@ final class CompiledPrevalHooks implements PrevalHooks
     private final Function<?> stopPreeval;
     private final Function<?> shouldInline;
     private final Function<?> isGeneratedMilestoningProperty;
+    private final Function<?> isGetAllFunction;
     private final ExecutionSupport executionSupport;
 
     CompiledPrevalHooks(CoreInstance hooks, ExecutionSupport executionSupport)
@@ -35,6 +36,7 @@ final class CompiledPrevalHooks implements PrevalHooks
         this.stopPreeval = (Function<?>) hooks.getValueForMetaPropertyToOne("stopPreeval");
         this.shouldInline = (Function<?>) hooks.getValueForMetaPropertyToOne("shouldInline");
         this.isGeneratedMilestoningProperty = (Function<?>) hooks.getValueForMetaPropertyToOne("isGeneratedMilestoningProperty");
+        this.isGetAllFunction = (Function<?>) hooks.getValueForMetaPropertyToOne("isGetAllFunction");
         this.executionSupport = executionSupport;
     }
 
@@ -54,5 +56,11 @@ final class CompiledPrevalHooks implements PrevalHooks
     public boolean isGeneratedMilestoningProperty(Object function)
     {
         return (Boolean) Pure.evaluate(this.executionSupport, this.isGeneratedMilestoningProperty, CoreGen.bridge, function);
+    }
+
+    @Override
+    public boolean isGetAllFunction(Object function)
+    {
+        return (Boolean) Pure.evaluate(this.executionSupport, this.isGetAllFunction, CoreGen.bridge, function);
     }
 }

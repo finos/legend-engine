@@ -399,6 +399,117 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testSimplifiesCastOfEmptyCollection()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|[]->cast(@String)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                "assert($r.value->cast(@InstanceValue).values->isEmpty(), |'expected no values');",
+                "assert($r.value->cast(@InstanceValue).genericType.rawType == String, |'expected String');");
+    }
+
+    @Test
+    public void testSimplifiesFilterReturningFalse()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[*] | $p->filter(x | false)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.canPreval, |'expected canPreval');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');",
+                "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                "let iv = $r.value->cast(@InstanceValue);",
+                "assert($iv.values->isEmpty(), |'expected no values');",
+                "assert($iv.genericType.rawType == Nil, |'expected Nil');",
+                "assert($iv.multiplicity == PureZero, |'expected PureZero');");
+    }
+
+    @Test
+    public void testKeepsFilterReturningFalseOverGetAll()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let hooks = ^PrevalHooks(stopPreeval = {a:Any[*] | !$a->exists(x | $x->instanceOf(meta::pure::metamodel::valuespecification::FunctionExpression))}, shouldInline = {f:Function<Any>[1] | false}, isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, isGetAllFunction = {f:Function<Any>[1] | $f.functionName == 'reverse'}, resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []});",
+                "let fe = {p:Integer[*] | $p->reverse()->sort()->filter(x | false)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, $hooks, noDebug());",
+                "assert(!$r.modified, |'expected unmodified');",
+                "assert($r.value == $fe, |'expected the filter to remain');",
+                "let plain = {p:Integer[*] | $p->reverse()->sort()->filter(x | false)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let s = prevalNative($plain, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($s.modified && $s.value->instanceOf(InstanceValue), |'expected the filter to be simplified without getAll');");
+    }
+
+    @Test
+    public void testSimplifiesFilterReturningTrue()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[*] | $p->filter(x | true)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(VariableExpression), |'expected a variable expression');",
+                "assert($r.value->cast(@VariableExpression).name == 'p', |'expected variable p');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');");
+    }
+
+    @Test
+    public void testFilterWithNonLiteralPredicateFailsAsInPure()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[*], f:Function<{Integer[1]->Boolean[1]}>[1] | $p->filter($f)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "assertError(|prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug()), {m:String[1], s:SourceInformation[0..1] | assert($m->contains('cannot be cast to InstanceValue'), |$m)});");
+    }
+
+    @Test
+    public void testEliminatesToOneManyOfNonEmptyParameter()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[1..*] | $p->toOneMany()}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(VariableExpression) && ($r.value->cast(@VariableExpression).name == 'p'), |'expected variable p');",
+                "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'p', |'expected open variable p');",
+                "let many = {p:Integer[*] | $p->toOneMany()}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let m = prevalNative($many, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert(!$m.modified && ($m.value == $many), |'expected toOneMany of a possibly empty parameter to remain');");
+    }
+
+    @Test
+    public void testEliminatesToOneOfToOneVariable()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[1] | $p->toOne()}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(VariableExpression) && ($r.value->cast(@VariableExpression).name == 'p'), |'expected variable p');",
+                "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'p', |'expected open variable p');",
+                "let many = {p:Integer[*] | $p->toOne()}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let m = prevalNative($many, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert(!$m.modified && ($m.value == $many), |'expected toOne of a to-many variable to remain');");
+    }
+
+    @Test
+    public void testFoldsGenericTypeOfConcreteParameter()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {p:Integer[1] | $p->genericType()}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.openVars->isEmpty(), |'expected no open variables');",
+                "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                "assert($r.value->cast(@InstanceValue).values->toOne()->cast(@GenericType).rawType == Integer, |'expected Integer');");
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(
