@@ -103,7 +103,7 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     {
         MapCoreInstance map = (MapCoreInstance) Instance.getValueForMetaPropertyToManyResolved(mapArgument, M3Properties.values, this.processorSupport).getFirst();
         MutableMap<String, ImmutableList<Object>> vars = Maps.mutable.empty();
-        map.getMap().forEachKeyValue((key, list) -> vars.put(key.getName(), Lists.immutable.withAll(list.getValueForMetaPropertyToMany(M3Properties.values))));
+        map.getMap().forEachKeyValue((key, list) -> vars.put(key.getName(), Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(list, M3Properties.values, this.processorSupport))));
         return vars.toImmutable();
     }
 
@@ -386,7 +386,7 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
                 CoreInstance instanceValue = lambdaContext.getValue(name);
                 if (instanceValue != null)
                 {
-                    values.put(name, Lists.immutable.withAll(instanceValue.getValueForMetaPropertyToMany(M3Properties.values)));
+                    values.put(name, Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(instanceValue, M3Properties.values, this.processorSupport)));
                 }
             });
         }
