@@ -242,6 +242,19 @@ rule. The shared harness (`AbstractTestPrevalNative`) is green in both compiled 
 together, 1355/1355, 0 failures/errors. Checkstyle: 0 violations across the four preeval modules and
 compiled-core.
 
+#### P1 structure vs §3.4/§3.5
+
+- P1 implemented dispatch, the expression-sequence/let sequencer, leaf handling, `isInstanceValue` and
+  re-activation inline in `Preevaluator` (plus `Scope`, `GenericTypes`, `LambdaHolders`, `DebugTrace`),
+  not as the separate `NodeDispatcher`, `FunctionDefinitionSequencer`, `rules/FunctionExpressionRule` +
+  ordered `Rules`, `Leaves` units of §3.4; `Scope.addToScope` and `PrevalRuntime.evaluate` do not exist
+  yet; `PrevalHooks` exposes only `stopPreeval`.
+- The interpreted adapter copies a `LambdaWithContext` to a plain lambda (parity with interpreted
+  Pure's `^$lf(...)`), rather than §3.5's "rewritten lambdas become `LambdaWithContext`".
+- The compiled adapter builds results/hooks reflectively (the module's own generated classes are
+  unavailable at compile time).
+- P2 Task 1 extracts the rule structure (see below) before adding rules.
+
 Known gaps carried into P2/P3, recorded honestly rather than closed:
 - Interpreted mode has harness coverage only; the full `tests.pure` interpreted runner
   (`Test_Interpreted_Preeval`) is P3 scope.
@@ -249,6 +262,17 @@ Known gaps carried into P2/P3, recorded honestly rather than closed:
   platform-only shared harness cannot construct those engine types.
 - The `Cast(@X)` multiplicity-identity quirk path is not exercised in P1; it belongs to the P2 cast
   rules.
+- Interpreted `InstanceValue._values()` unwraps primitives (`AnyHelper.UNWRAP_PRIMITIVES`: Float
+  `BigDecimal` → `double`, re-wrapped via `BigDecimal.valueOf`, losing precision/scale) and does not
+  resolve stubs (enum stubs could hit the stop assertion) — needs a `PrevalRuntime.values(InstanceValue)`
+  port method; must be fixed before P3.
+- The `Cast(@X)` multiplicity quirk compares with `runtime.pureOne()` by identity; interpreted
+  `pureOne()` returns a fresh wrapper per call, so identity is unverified — needs
+  `PrevalRuntime.isPureOne(Multiplicity)`; covered by P2's cast rules.
+- Error text differs from Pure for primitives/non-packageable classifiers (`typeDescription`),
+  contrary to §3.6 "identical message text".
+- Unported P2 constructs fall through to generic processing in JAVA mode (semantically valid but not
+  Pure-identical); only SHADOW detects it; no baseline of divergence across the full `tests.pure` yet.
 
 ### P1 requirements carried from P0 review
 
@@ -276,6 +300,30 @@ Known gaps carried into P2/P3, recorded honestly rather than closed:
 - TDD RED for new modules: run with `-Dmdep.analyze.skip=true` so the test (not the dependency
   analyzer) demonstrates the failure; direct Surefire invocations need `-DargLine=`. — **Done.** Every
   P1 task's RED ran with `-Dmdep.analyze.skip=true`; direct Surefire runs used `-DargLine=`.
+
+### P2 requirements carried from P1 review
+
+- P2 Task 1 is a behaviour-preserving refactor guarded by `Test_Pure_Preeval_Java` and the harness:
+  extract `FunctionExpressionRule` (`matches`/`apply` over a context holding the original expression,
+  the rewritten expression, parameter results, generic-type result, modified flag and state) and one
+  ordered `Rules` list with an order-pinning test; move re-activation into `ReactivateRule`; add a
+  pre-parameter hook point for `IfRule`/`AndOrRule` (they must run before parameters are pre-evaluated);
+  add `PrevalRuntime.values(InstanceValue)` and `PrevalRuntime.isPureOne(Multiplicity)` and route all
+  call sites through them.
+- Widen the ports: `PrevalHooks` gains `shouldInline`, `isGeneratedMilestoningProperty`,
+  `isGetAllFunction`, `resolveTdsSchema`; `PrevalRuntime` gains what the rules need (resolved type
+  parameters of an expression, func+parameters rewrite, genericType+multiplicity rewrite, function
+  return type/multiplicity, multiplicity bounds/concreteness, property-owner checks, a `Nil` generic
+  type).
+- Add `Scope.addToScope` (with self-reference dropping) and exercise `inScopeTypeParams` and the
+  inlining `path` cycle check.
+- Before implementing rules, run all `tests.pure` tests under `SHADOW` and commit the failing list as
+  a baseline manifest; each rule task turns named entries green.
+- Error-text parity (`typeDescription`) and the `DebugTrace` "Performing preval"/"Not prevalling"
+  messages land with the rules.
+- JUnit 5 tests for `GenericTypes` (incl. the `FunctionType` always-modified quirk) and the rule-order
+  pin test (§4 item 3).
+- `// parity:` markers get follow-up issue links (§3.4) once issues are filed.
 
 ## 6. Cutover criteria
 
