@@ -104,8 +104,8 @@ function <<access.private>> meta::pure::router::preeval::tests::implementationSw
 
 function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypes():Boolean[1]
 {
-  let integerOne = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1);
-  let numberOne = ^InstanceValue(genericType = ^GenericType(rawType = Number), multiplicity = PureOne, values = 1);
+  let integerOne = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  let numberOne = ^$integerOne(genericType = ^GenericType(rawType = Number));
   assertError(
     | assertSamePrevalResult(
         ^PrevalWrapper<Any>(value = $integerOne, canPreval = true, openVars = [], modified = false),
@@ -118,8 +118,8 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
 
 function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentMultiplicities():Boolean[1]
 {
-  let one = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1);
-  let zeroMany = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = ZeroMany, values = 1);
+  let one = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  let zeroMany = ^$one(multiplicity = ZeroMany);
   assertError(
     | assertSamePrevalResult(
         ^PrevalWrapper<Any>(value = $one, canPreval = true, openVars = [], modified = false),

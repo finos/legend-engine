@@ -30,7 +30,7 @@ public class Test_Interpreted_Preeval
     private static final String PROPERTY = "legend.engine.preeval.implementation";
     private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
 
-    static final ImmutableSet<String> KNOWN_INTERPRETED_FAILURES = Sets.immutable.with("testShadowRejectsDifferentTypes", "testShadowRejectsDifferentMultiplicities");
+    static final ImmutableSet<String> KNOWN_INTERPRETED_FAILURES = Sets.immutable.empty();
 
     public static TestSuite suite()
     {
