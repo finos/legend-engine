@@ -1,0 +1,144 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::lineage::scanProperties::*;
+import meta::pure::lineage::scanProperties::test::constructed::*;
+
+Class meta::pure::lineage::scanProperties::test::constructed::Data
+{
+  a : String[1];
+  b : String[1];
+  child : Data[0..1];
+}
+
+Class meta::pure::lineage::scanProperties::test::constructed::Inner
+{
+  x : String[1];
+}
+
+Class meta::pure::lineage::scanProperties::test::constructed::Opt
+{
+  x : String[0..1];
+}
+
+Class meta::pure::lineage::scanProperties::test::constructed::Box
+{
+  a : String[1];
+  b : String[0..1];
+  inner : Inner[0..1];
+  data : Data[0..1];
+  aTwice() { $this.a + $this.a } : String[1];
+  heldData() { $this.data } : Data[0..1];
+}
+
+function meta::pure::lineage::scanProperties::test::constructed::resolvingConfig():ScanConfig[1]
+{
+  ^ScanConfig(scanClasses=false, explodeMilestonedProperties=true, resolveConstructedInstances=true);
+}
+
+function meta::pure::lineage::scanProperties::test::constructed::scanResolving(f:FunctionDefinition<Any>[1]):ScanPropertiesState[1]
+{
+  $f.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties(resolvingConfig())->toOne();
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testKeyExpressionSourcesAreRecordedAndInstanceIsNotExposed():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | ^Box(a=$d.a))});
+  assertEquals('Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testReadingAssignedPropertyResolvesToItsSource():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | ^Box(a=$d.a))->map(b | $b.a)});
+  assertEquals('Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('Data->a', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testNestedConstructionResolvesThroughEachLevel():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a='k', inner=^Inner(x=$d.b)).inner.x});
+  assertEquals('Data->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testLetBoundInstanceResolves():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | let box = ^Box(a=$d.a); $box.a;)});
+  assertEquals('Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('Data->a', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testAssignedObjectIsNavigatedFurther():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a='k', data=$d.child).data.a});
+  assertEquals('Data->child\nData->child, Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->a', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testUnassignedPropertyKeepsClassRootedPath():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a=$d.a).b});
+  assertEquals('Box->b\nData->a', $res.result->printPropertyNodeLists());
+  assertEquals('Box->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testInstanceWithoutKeysKeepsClassRootedPath():Boolean[1]
+{
+  let res = scanResolving({| ^Opt().x});
+  assertEquals('Opt->x', $res.result->printPropertyNodeLists());
+  assertEquals('Opt->x', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyOverrideResolvesToNewValue():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(a=$d.b).a)});
+  assertEquals('Data->b\nData->child', $res.result->printPropertyNodeLists());
+  assertEquals('Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyUnassignedPropertyResolvesThroughCopiedObject():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(a='k').b)});
+  assertEquals('Data->child\nData->child, Data->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testReadAfterConditionalConstructionRecordsBothSources():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | if($d.a == 'x', |^Box(a=$d.a), |^Box(a=$d.b)).a});
+  assertEquals('Data->a\nData->b', $res.result->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testReadAcrossCollectionOfConstructedInstancesRecordsBothSources():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | [^Box(a=$d.a), ^Box(a=$d.b)]->map(b | $b.a)});
+  assertEquals('Data->a\nData->b', $res.result->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testConditionalTerminalsNeverExposeConstructedInstance():Boolean[1]
+{
+  let config = ^ScanConfig(scanClasses=false, explodeMilestonedProperties=true, captureConditionalTerminals=true, resolveConstructedInstances=true);
+  let res = {d:Data[1] | if($d.a == 'x', |^Box(a=$d.a), |^Box(a=$d.b))}.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties($config)->toOne();
+  assert($res.conditionalTerminalPaths->isNotEmpty());
+  assert($res.conditionalTerminalPaths.paths->forAll(p | $p.values->isEmpty()));
+  assert($res.current.values->isEmpty());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testDefaultConfigLeavesConstructedInstancesUnresolved():Boolean[1]
+{
+  let res = {data:Data[*] | $data->map(d | ^Box(a=$d.a))->map(b | $b.a)}.expressionSequence->at(0)->evaluateAndDeactivate()->scanProperties()->toOne();
+  assertEquals('Box->a\nData->a', $res.result->printPropertyNodeLists());
+  assertEquals('Box->a', $res.current->printPropertyNodeLists());
+}
