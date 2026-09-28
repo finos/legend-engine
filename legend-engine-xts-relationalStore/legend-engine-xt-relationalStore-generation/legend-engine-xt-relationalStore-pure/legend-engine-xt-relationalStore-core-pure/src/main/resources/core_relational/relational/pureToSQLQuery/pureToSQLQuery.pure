@@ -787,16 +787,15 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::buildTa
 {
    let tfFqn = $tf.schema.database->elementToPath() + '.' + $tf.schema.name + '.' + $tf.name;
 
-   assertEquals($tf.parameters->size(), $r.arguments->size(), | 'incorrect number or arguments supplied to relation store accessor for table function ' + $tf.name);
+   assertEquals($tf.parameters->size(), $r.arguments->size(),
+                | 'incorrect number or arguments supplied to relation store accessor for table function ' + $tf.name);
 
-   
-  let arguments = $tf.parameters->zip($r.arguments)->map(pair | 
-    let value = lowerAccessorArgumentValue($pair.second, $operation, $state,
-                                                      buildNodeId($nodeId, '_tfa_' + $pair.first.name),
-                                                      $context, $extensions, $tfFqn);
-
+   let arguments = $tf.parameters->zip($r.arguments)->map(pair |
+      let value = lowerAccessorArgumentValue($pair.second, $operation, $state,
+                                             buildNodeId($nodeId, '_tfa_' + $pair.first.name),
+                                             $context, $extensions, $tfFqn);
       ^meta::relational::metamodel::relation::TabularFunctionCallArgument(parameter = $pair.first, value = $value);
-  );
+   );
 
    ^meta::relational::metamodel::relation::TabularFunctionCall(function = $tf, arguments = $arguments);
 }
@@ -815,17 +814,29 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::lowerAc
    tfFqn:String[1]
 ):RelationalOperationElement[1]
 {
+  // Lower the ValueSpecification through the normal pipeline. A single-valued result unwraps
+  // directly to its RelationalOperationElement (as before). A multi-valued result (e.g. the
+  // literal list [1, 2, 3] bound to an Array-typed parameter) is supported only when every
+  // lowered element is a Literal; the elements are folded into a single LiteralList so the
+  // argument still fits the [1] contract. Collections containing non-literal expressions
+  // (e.g. [1 + 1, 2, 3]) are not yet supported and fail with a clear error.
   let processed = processValueSpecification($vs, [], $operation, ^Map<VariableExpression, ValueSpecification>(), $state, JoinType.INNER, $nodeId, ^List<ColumnGroup>(), $context, $extensions);
-  
-  assert($processed->size() == 1, | 'Expected exactly one lowered element for TabularFunction ' + $tfFqn + ' argument');
 
-  $processed->toOne()->match([
-    swc:SelectWithCursor[1] | $swc.select.columns->toOne()->match([
-                                  a:Alias[1] | $a.relationalElement,
-                                  x:RelationalOperationElement[1] | $x
-                              ]),
+  let unwrapped = $processed->map(e | $e->match([
+    swc:SelectWithCursor[1] | $swc.select.columns->map(col | $col->match([
+                                       a:Alias[1] | $a.relationalElement,
+                                       x:RelationalOperationElement[1] | $x
+                                    ])),
     r:RelationalOperationElement[1] | $r
-  ]);
+  ]));
+
+  if($unwrapped->size() == 1,
+     | $unwrapped->toOne(),
+     |
+       assert($unwrapped->forAll(e | $e->instanceOf(Literal)),
+              | 'Expected a literal list for TabularFunction ' + $tfFqn + ' argument');
+       ^LiteralList(values = $unwrapped->cast(@Literal));
+  );
 }
 function meta::relational::functions::pureToSqlQuery::processFunctionExpression(functionExpression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[*]
 {

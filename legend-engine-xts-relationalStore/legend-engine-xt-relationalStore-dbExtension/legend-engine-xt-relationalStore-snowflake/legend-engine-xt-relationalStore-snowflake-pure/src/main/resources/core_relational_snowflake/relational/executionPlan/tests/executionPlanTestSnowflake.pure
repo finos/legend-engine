@@ -433,6 +433,13 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutio
   meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionParameterized(DatabaseType.Snowflake, $expected);
 }
 
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionManyParam():Boolean[1]
+{
+  let expected = 'RelationalBlockExecutionNode(type=TDS[(col1,String,VARCHAR(1024),""),(col2,Integer,INT,"")](SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=DatabaseConnection(type="Snowflake"))Relational(type=TDS[(col1,String,VARCHAR(1024),""),(col2,Integer,INT,"")]resultColumns=[("col1",VARCHAR(200)),("col2",ARRAY)]sql=select"tb_0".col1as"col1","tb_0".col2as"col2"fromtable(schema1.tb(trim(\'a\'),ARRAY_CONSTRUCT(\'a\',\'b\',\'c\')))as"tb_0"connection=DatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=DatabaseConnection(type="Snowflake"))))';
+
+  meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionManyParam(DatabaseType.Snowflake, $expected);
+}
+
 
 function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testExecutionPlanForTabularFunctionWithSchemaMapper():Boolean[1]
 {
