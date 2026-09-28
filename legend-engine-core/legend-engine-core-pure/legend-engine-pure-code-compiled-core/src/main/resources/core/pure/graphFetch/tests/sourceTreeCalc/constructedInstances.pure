@@ -1,0 +1,117 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::pure::graphFetch::*;
+import meta::pure::graphFetch::tests::sourceTreeCalc::constructed::*;
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::SrcRoot
+{
+  x : String[1];
+  next : SrcRoot[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Foreign
+{
+  y : String[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Wrap
+{
+  foreign : Foreign[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Holder
+{
+  src : SrcRoot[1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Tgt
+{
+  z : String[1];
+}
+
+function meta::pure::lineage::scanProperties::test::constructedSourceTree::wrap(s:SrcRoot[1]):Wrap[1]
+{
+  ^Wrap(foreign=^Foreign(y=$s.x))
+}
+
+function meta::pure::lineage::scanProperties::test::constructedSourceTree::hold(s:SrcRoot[1]):Holder[1]
+{
+  ^Holder(src=$s)
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testReadThroughInstanceBuiltInCalledFunction():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, functionWrapMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {x}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testReadThroughInstanceBuiltInTransform():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, inlineWrapMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {x}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testReadThroughHeldSourceNavigatesFromOwner():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, holderMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {next {x}}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testReadOfRebuiltSourceInstanceFetchesOnlyAssignedSource():Boolean[1]
+{
+  let actual = calculateSourceTree(#{Tgt {z}}#, rebuiltSourceMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {next {x}}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+###Mapping
+import meta::pure::graphFetch::tests::sourceTreeCalc::constructed::*;
+import meta::pure::lineage::scanProperties::test::constructedSourceTree::*;
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::functionWrapMapping
+(
+  *Tgt: Pure
+  {
+    ~src SrcRoot
+    z: $src->wrap().foreign.y
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::inlineWrapMapping
+(
+  *Tgt: Pure
+  {
+    ~src SrcRoot
+    z: ^Wrap(foreign=^Foreign(y=$src.x)).foreign.y
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::holderMapping
+(
+  *Tgt: Pure
+  {
+    ~src SrcRoot
+    z: $src->hold().src.next.x->toOne()
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::rebuiltSourceMapping
+(
+  *Tgt: Pure
+  {
+    ~src SrcRoot
+    z: ^SrcRoot(x=$src.next.x->toOne()).x
+  }
+)
