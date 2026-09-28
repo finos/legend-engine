@@ -34,7 +34,7 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testGetGenericType` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
 | `testInline` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myTestFuncThatDoesEval_P_1__Boolean_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting12` | both | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), "Instance of type 'String' can't be translated" | inlining/eval expansion — **resolved by Task 5** |
-| `testPrerouting19` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
+| `testPrerouting19` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting23a` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
 | `testPrerouting23b` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
 | `testPrerouting24a` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
@@ -45,10 +45,10 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting24f` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or — **resolved by Task 4** |
 | `testPrerouting25a` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting26` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
-| `testPrerouting29a` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting29b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
+| `testPrerouting29a` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
+| `testPrerouting29b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting2b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
-| `testPrerouting30` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
+| `testPrerouting30` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting32b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5) | inlining/eval expansion — **resolved by Task 5 (fix round 1)** |
 | `testPrerouting33` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for filterToStringColumns_TabularDataSet_1__TabularDataSet_1_" | TDS columns / eval-on-Column |
 | `testPrerouting34` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for extendColumns_TabularDataSet_1__String_MANY__TabularDataSet_1_" | TDS columns / eval-on-Column |
@@ -57,11 +57,11 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting_OptionalLimit1` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for optionalLimit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting_OptionalLimit2` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for optionalLimit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting_castEmptyCollection` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
-| `testPrerouting_concatenateInstanceValuesExpanded_Basic` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting_concatenateInstanceValuesExpanded_Complex` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting_foldOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting_foldOnInstanceValuesExpanded2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting_mapOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
+| `testPrerouting_concatenateInstanceValuesExpanded_Basic` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
+| `testPrerouting_concatenateInstanceValuesExpanded_Complex` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
+| `testPrerouting_foldOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
+| `testPrerouting_foldOnInstanceValuesExpanded2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
+| `testPrerouting_mapOnInstanceValuesExpanded` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testProjectWithInferredParameterType` | both | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), "Instance of type 'meta::pure::tds::TabularDataSet' can't be translated" | inlining/eval expansion — **resolved by Task 5** |
 | `testRecursiveSimpleConcreteFunctionDefinition` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testToOneElimination3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | cast-empty/filter/toOne(Many)/genericType |
@@ -73,7 +73,7 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 
 These stay out of `KNOWN_DIVERGENT`; no rule work is needed for them (already correct, apparently by a different existing code path or coincidental re-activation equivalence):
 
-`testDecimalType`, `testEvalWithArgs1`, `testLetOnlyStatement`, `testPrerouting10`, `testPrerouting11`, `testPrerouting13`, `testPrerouting14`, `testPrerouting15`, `testPrerouting16`, `testPrerouting17`, `testPrerouting18`, `testPrerouting20`, `testPrerouting21` (re-entered `KNOWN_DIVERGENT` in Task 5, see below), `testPrerouting25b`, `testPrerouting25c`, `testPrerouting27b`, `testPrerouting28`, `testPrerouting31b`, `testPrerouting35`, `testPrerouting38`, `testPrerouting40a`, `testPrerouting6`, `testPrerouting7`, `testPrerouting_mappedTdsAgg` (24 tests).
+`testDecimalType`, `testEvalWithArgs1`, `testLetOnlyStatement`, `testPrerouting10`, `testPrerouting11`, `testPrerouting13`, `testPrerouting14`, `testPrerouting15`, `testPrerouting16`, `testPrerouting17`, `testPrerouting18`, `testPrerouting20`, `testPrerouting21` (re-entered `KNOWN_DIVERGENT` in Task 5, resolved by Task 6, see below), `testPrerouting25b`, `testPrerouting25c`, `testPrerouting27b`, `testPrerouting28`, `testPrerouting31b`, `testPrerouting35`, `testPrerouting38`, `testPrerouting40a`, `testPrerouting6`, `testPrerouting7`, `testPrerouting_mappedTdsAgg` (24 tests).
 
 ## Verification
 
@@ -115,3 +115,14 @@ Still failing, owned by later tasks: the map/fold/concatenate family (Task 6), f
 
 `KNOWN_DIVERGENT` now holds 26 names. RUNNER: `Test_Pure_Preeval_Java` 170/170 (85 collected × 2), `Test_Pure_Preeval` 111/111.
 
+## Task 6 update (`map`/`fold` unroll, `concatenate`)
+
+After implementing `MapUnrollRule`, `FoldUnrollRule` and `ConcatenateRule` (`Rules.NOT_PREVALLED`, in that order), plus `PrevalRuntime.lowerBound`/`upperBound`/`isMultiplicityConcrete` and the `Multiplicities` helpers, RUNNER-ALL was re-run. Of the 26 `KNOWN_DIVERGENT` names, 10 now pass under both `JAVA` and `SHADOW`:
+
+`testPrerouting19`, `testPrerouting21`, `testPrerouting29a`, `testPrerouting29b`, `testPrerouting30`, `testPrerouting_concatenateInstanceValuesExpanded_Basic`, `testPrerouting_concatenateInstanceValuesExpanded_Complex`, `testPrerouting_foldOnInstanceValuesExpanded`, `testPrerouting_foldOnInstanceValuesExpanded2`, `testPrerouting_mapOnInstanceValuesExpanded`.
+
+`testPrerouting21`, re-entered in Task 5, passes again: the inlined `range(0, 3, 1)->map(index|$p)` is now unrolled by `MapUnrollRule` instead of being left to compiled reactivation. `testPrerouting31b` (statically attributed to this family) already passed at baseline. No other name changed state, and no unexpected failure appeared.
+
+Still failing, owned by later tasks: the filter/cast/toOne/genericType family (Task 7) and TDS columns / eval-on-Column (Task 8).
+
+`KNOWN_DIVERGENT` now holds 16 names.

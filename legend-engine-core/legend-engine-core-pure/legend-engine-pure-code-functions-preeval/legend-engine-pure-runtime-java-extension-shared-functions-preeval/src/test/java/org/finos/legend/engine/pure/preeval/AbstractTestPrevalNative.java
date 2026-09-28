@@ -342,6 +342,63 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testUnrollsMapOverInstanceValues()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|[1, 2]->map(x | $x + 1)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "let iv = $r.value->cast(@InstanceValue);",
+                "assert(($iv.values->size() == 2) && ($iv.values->at(0) == 2) && ($iv.values->at(1) == 3), |'expected 2, 3');",
+                "assert(($iv.multiplicity.lowerBound.value == 2) && ($iv.multiplicity.upperBound.value == 2), |'expected multiplicity [2]');",
+                "let open = {y:Integer[1] | [1, 2]->map(x | $x + $y)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let o = prevalNative($open, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($o.modified, |'expected open map modified');",
+                "assert($o.value->instanceOf(InstanceValue), |'expected the map to be unrolled');",
+                "let bodies = $o.value->cast(@InstanceValue);",
+                "assert(($bodies.values->size() == 2) && $bodies.values->forAll(v | $v->instanceOf(FunctionExpression) && ($v->cast(@FunctionExpression).func.functionName == 'plus')), |'expected two unrolled bodies');",
+                "assert(($bodies.multiplicity.lowerBound.value == 2) && ($bodies.multiplicity.upperBound.value == 2), |'expected open multiplicity [2]');",
+                "assert($o.openVars->size() == 1 && $o.openVars->at(0) == 'y', |'expected open variable y');");
+    }
+
+    @Test
+    public void testUnrollsFoldOverInstanceValues()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|[1, 2, 3]->fold({x, a | $a + $x}, 0)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->cast(@InstanceValue).values->toOne() == 6, |'expected 6');",
+                "let open = {y:Integer[1] | [1, 2]->fold({x, a | $a + $x + $y}, 0)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let o = prevalNative($open, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($o.modified, |'expected open fold modified');",
+                "assert($o.value->instanceOf(FunctionExpression) && ($o.value->cast(@FunctionExpression).func.functionName == 'plus'), |'expected the fold to be unrolled');",
+                "assert($o.openVars->size() == 1 && $o.openVars->at(0) == 'y', |'expected open variable y');");
+    }
+
+    @Test
+    public void testConcatenatesExactMultiplicityParameters()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|[1, 2]->concatenate([3])}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "let iv = $r.value->cast(@InstanceValue);",
+                "assert(($iv.values->size() == 3) && ($iv.values->at(0) == 1) && ($iv.values->at(1) == 2) && ($iv.values->at(2) == 3), |'expected 1, 2, 3');",
+                "let open = {y:Integer[1] | [1, 2]->concatenate($y)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let o = prevalNative($open, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($o.modified, |'expected open concatenate modified');",
+                "assert($o.value->instanceOf(InstanceValue), |'expected the concatenation to be expanded');",
+                "let values = $o.value->cast(@InstanceValue).values;",
+                "assert(($values->size() == 3) && ($values->at(0) == 1) && ($values->at(1) == 2) && $values->at(2)->instanceOf(VariableExpression), |'expected 1, 2, $y');",
+                "assert(($o.value->cast(@InstanceValue).multiplicity.lowerBound.value == 3) && ($o.value->cast(@InstanceValue).multiplicity.upperBound.value == 3), |'expected multiplicity [3]');",
+                "assert($o.openVars->size() == 1 && $o.openVars->at(0) == 'y', |'expected open variable y');");
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(

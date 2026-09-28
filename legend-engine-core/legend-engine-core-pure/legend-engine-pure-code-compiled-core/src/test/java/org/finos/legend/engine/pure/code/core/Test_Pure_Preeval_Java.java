@@ -37,11 +37,8 @@ public class Test_Pure_Preeval_Java
             "tesColumnEvalOnRelation", "tesColumnEvalOnRelationWithCast", "testFilterFalseConstantSimplification",
             "testFilterFalseSimplification", "testFilterFalseSimplification2", "testFilterFalseSimplificationReturnType",
             "testFilterTrueConstantSimplification", "testFilterTrueSimplification", "testFilterTrueSimplification2", "testGetGenericType",
-            "testPrerouting19", "testPrerouting21", "testPrerouting29a", "testPrerouting29b", "testPrerouting30",
             "testPrerouting33", "testPrerouting34", "testPrerouting40b", "testPrerouting_castEmptyCollection",
-            "testPrerouting_concatenateInstanceValuesExpanded_Basic", "testPrerouting_concatenateInstanceValuesExpanded_Complex",
-            "testPrerouting_foldOnInstanceValuesExpanded", "testPrerouting_foldOnInstanceValuesExpanded2",
-            "testPrerouting_mapOnInstanceValuesExpanded", "testToOneElimination3", "testToOneManyElimination3");
+            "testToOneElimination3", "testToOneManyElimination3");
 
     public static TestSuite suite()
     {

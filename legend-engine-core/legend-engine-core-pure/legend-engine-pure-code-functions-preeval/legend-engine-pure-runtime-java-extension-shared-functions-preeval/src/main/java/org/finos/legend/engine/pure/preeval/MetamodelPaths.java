@@ -34,6 +34,12 @@ public final class MetamodelPaths
             "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__X_r__Y_s__V_m_",
             "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__X_r__Y_s__Z_t__V_m_",
             "meta::pure::functions::lang::eval_Function_1__S_n__T_o__U_p__W_q__X_r__Y_s__Z_t__V_m_");
+    public static final ImmutableList<String> MAP_FUNCTIONS = Lists.immutable.with(
+            "meta::pure::functions::collection::map_T_m__Function_1__V_m_",
+            "meta::pure::functions::collection::map_T_$0_1$__Function_1__V_$0_1$_",
+            "meta::pure::functions::collection::map_T_MANY__Function_1__V_MANY_");
+    public static final String FOLD_FUNCTION = "meta::pure::functions::collection::fold_T_MANY__Function_1__V_m__V_m_";
+    public static final String CONCATENATE_FUNCTION = "meta::pure::functions::collection::concatenate_T_MANY__T_MANY__T_MANY_";
     public static final String TDS_ROW = "meta::pure::tds::TDSRow";
     public static final String FUNCTION_TYPE_PROFILE = "meta::pure::profiles::functionType";
     public static final String TDS = "meta::pure::metamodel::relation::TDS";

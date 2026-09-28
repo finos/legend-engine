@@ -62,6 +62,12 @@ public interface PrevalRuntime
 
     Multiplicity exactly(int size);
 
+    Long lowerBound(Multiplicity multiplicity);
+
+    Long upperBound(Multiplicity multiplicity);
+
+    boolean isMultiplicityConcrete(Multiplicity multiplicity);
+
     ImmutableMap<String, ImmutableList<Object>> openVariableValues(LambdaFunction<?> lambda);
 
     ImmutableList<Object> values(InstanceValue instanceValue);

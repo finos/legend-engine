@@ -246,6 +246,31 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public Long lowerBound(Multiplicity multiplicity)
+    {
+        return boundValue(multiplicity, M3Properties.lowerBound);
+    }
+
+    @Override
+    public Long upperBound(Multiplicity multiplicity)
+    {
+        return boundValue(multiplicity, M3Properties.upperBound);
+    }
+
+    private Long boundValue(Multiplicity multiplicity, String bound)
+    {
+        CoreInstance multiplicityValue = Instance.getValueForMetaPropertyToOneResolved(multiplicity, bound, this.processorSupport);
+        CoreInstance value = multiplicityValue == null ? null : Instance.getValueForMetaPropertyToOneResolved(multiplicityValue, M3Properties.value, this.processorSupport);
+        return value == null ? null : PrimitiveUtilities.getIntegerValue(value).longValue();
+    }
+
+    @Override
+    public boolean isMultiplicityConcrete(Multiplicity multiplicity)
+    {
+        return Instance.getValueForMetaPropertyToOneResolved(multiplicity, M3Properties.multiplicityParameter, this.processorSupport) == null;
+    }
+
+    @Override
     public Multiplicity exactly(int size)
     {
         if (size == 0)

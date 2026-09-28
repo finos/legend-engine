@@ -182,6 +182,24 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public Long lowerBound(Multiplicity multiplicity)
+    {
+        return multiplicity._lowerBound() == null ? null : multiplicity._lowerBound()._value();
+    }
+
+    @Override
+    public Long upperBound(Multiplicity multiplicity)
+    {
+        return multiplicity._upperBound() == null ? null : multiplicity._upperBound()._value();
+    }
+
+    @Override
+    public boolean isMultiplicityConcrete(Multiplicity multiplicity)
+    {
+        return multiplicity._multiplicityParameter() == null;
+    }
+
+    @Override
     public Multiplicity exactly(int size)
     {
         if (size == 0)
