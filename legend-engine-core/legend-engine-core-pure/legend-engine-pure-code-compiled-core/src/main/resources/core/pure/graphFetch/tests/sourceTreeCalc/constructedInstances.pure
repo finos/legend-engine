@@ -42,6 +42,16 @@ Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::Tgt
   z : String[1];
 }
 
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::TgtWithChild
+{
+  child : TgtChild[0..1];
+}
+
+Class meta::pure::graphFetch::tests::sourceTreeCalc::constructed::TgtChild
+{
+  name : String[1];
+}
+
 function meta::pure::lineage::scanProperties::test::constructedSourceTree::wrap(s:SrcRoot[1]):Wrap[1]
 {
   ^Wrap(foreign=^Foreign(y=$s.x))
@@ -74,6 +84,12 @@ function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructe
 {
   let actual = calculateSourceTree(#{Tgt {z}}#, rebuiltSourceMapping, meta::pure::extension::defaultExtensions());
   assertEquals(#{SrcRoot {next {x}}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
+}
+
+function <<test.Test>> meta::pure::graphFetch::tests::sourceTreeCalc::constructed::testChildSourcedFromConditionalKeepsNavigatedBranch():Boolean[1]
+{
+  let actual = calculateSourceTree(#{TgtWithChild {child {name}}}#, conditionalChildMapping, meta::pure::extension::defaultExtensions());
+  assertEquals(#{SrcRoot {x, next {x}}}#->sortTree()->treeToString(), $actual->sortTree()->treeToString());
 }
 
 ###Mapping
@@ -113,5 +129,20 @@ Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::rebuiltSourc
   {
     ~src SrcRoot
     z: ^SrcRoot(x=$src.next.x->toOne()).x
+  }
+)
+
+Mapping meta::pure::graphFetch::tests::sourceTreeCalc::constructed::conditionalChildMapping
+(
+  *TgtWithChild: Pure
+  {
+    ~src SrcRoot
+    child[c]: if($src.x == 'k', |^SrcRoot(x='lit'), |$src.next)->toOne()
+  }
+
+  TgtChild[c]: Pure
+  {
+    ~src SrcRoot
+    name: $src.x
   }
 )

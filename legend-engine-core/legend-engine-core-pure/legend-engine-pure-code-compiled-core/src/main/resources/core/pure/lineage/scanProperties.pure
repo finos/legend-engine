@@ -337,7 +337,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                print(if($debug.debug,|$debug.space+'  - param 2\n',|''));
                                                                                let elsePath = $params->at(2)->findFunction()->processFunction([], $vars, $processed,  $config, $thenPath.visitedFunctions, ^$debug(space=$debug.space+'    '));
                                                                                makeScanPropertiesState(
-                                                                                  $thenPath.current->concatenate($elsePath.current)->removeEmptyPaths()->first()->orElseEmptyPath(),  // TODO handle when both paths are relevant 
+                                                                                  $thenPath.current->concatenate($elsePath.current)->firstMeaningfulCurrent(),  // TODO handle when both paths are relevant 
                                                                                   // Keep legacy current unchanged and expose all terminals separately only to opted-in consumers.
                                                                                   if($config.captureConditionalTerminals->orElse(false),
                                                                                     |^ConditionalTerminalPaths(paths=$thenPath->conditionalTerminalPathsOrCurrent()->concatenate($elsePath->conditionalTerminalPathsOrCurrent())->removeDuplicates()),
@@ -363,7 +363,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                 let matchLambdas= $params->at(1)->findFunctions();
                                                                                 let funcResults = $matchLambdas->fold({f, r| 
                                                                                                                             let res = $f->processFunction($inputPath, $vars, $processed, $config, $r.visitedFunctions, ^$debug(space=$debug.space+'    '+'    '), $addMatchConditionClasses);
-                                                                                                                            makeScanPropertiesState($r.current->concatenate($res.current)->removeEmptyPaths()->first()->orElseEmptyPath(),
+                                                                                                                            makeScanPropertiesState($r.current->concatenate($res.current)->firstMeaningfulCurrent(),
                                                                                                                                                     $r.result->concatenate($res.result),
                                                                                                                                                     $res.visitedFunctions
                                                                                                                                                    );
@@ -445,7 +445,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                print(if($debug.debug,|$debug.space+'  - param 1\n',|''));
                                                                                let col2 = $params->at(1)->internal_scanProperties($processed, $vars, $config,  $col1.visitedFunctions, ^$debug(space=$debug.space+'    '))->orElseEmptyPath();
                                                                                makeScanPropertiesState(
-                                                                                  $col1.current->concatenate($col2.current)->removeEmptyPaths()->first()->orElseEmptyPath(),  // TODO handle when both paths are relevant 
+                                                                                  $col1.current->concatenate($col2.current)->firstMeaningfulCurrent(),  // TODO handle when both paths are relevant 
                                                                                   $col1.result->concatenate($col2.result),
                                                                                   $col2.visitedFunctions
                                                                                );
@@ -483,7 +483,7 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                           a: Any[1]                                                            | print(if($debug.debug,|$debug.space+'  Unknown\n',|''));[];
                                     ]));
                                     makeScanPropertiesState(
-                                       $instanceRes.current->removeEmptyPaths()->first()->orElseEmptyPath(), 
+                                       $instanceRes.current->firstMeaningfulCurrent(), 
                                        $instanceRes.result,
                                        $visitedFunctions
                                     );,
@@ -567,7 +567,19 @@ function <<access.private>> meta::pure::lineage::scanProperties::scanConstructed
                         assignments = $scanned.first.values,
                         base        = if($isCopy, |$baseState.current->orElseEmptyPath(), |[])
                      );
-   makeScanPropertiesState(list($constructed->cast(@PropertyPathNode)), $scanned.second.result, $scanned.second.visitedFunctions);
+   let copiedValuesRead = if($isCopy,
+                             | $scanned.first.values->filter(a | $a.add)->map(a | $constructedClass->allProperties()->filter(p | $p->instanceOf(Property) && ($p.name == $a.propertyName))->first()
+                                                                                    ->map(p | list($baseState.current->orElseEmptyPath().values->concatenate(^PropertyPathNode(class = $constructedClass, property = $p)))->resolveConstructedNavigation())),
+                             | []
+                          );
+   makeScanPropertiesState(list($constructed->cast(@PropertyPathNode)), $scanned.second.result->concatenate($copiedValuesRead), $scanned.second.visitedFunctions);
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::firstMeaningfulCurrent(paths:List<PropertyPathNode>[*]):List<PropertyPathNode>[1]
+{
+   let nonEmpty    = $paths->removeEmptyPaths();
+   let sourcePaths = $nonEmpty->filter(p | !$p->holdsConstructedInstance());
+   if($sourcePaths->isEmpty(), |$nonEmpty->first(), |$sourcePaths->first())->orElseEmptyPath();
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::processFunction(fn:Function<Any>[0..1], paramPaths:ScanPropertiesState[*], vars:Map<String,List<PropertyPathNode>>[1], processed:Function<Any>[*], config:ScanConfig[1], visitedFunctions:Map<String,ScanPropertiesState>[1], debug:DebugContext[1]):ScanPropertiesState[1]

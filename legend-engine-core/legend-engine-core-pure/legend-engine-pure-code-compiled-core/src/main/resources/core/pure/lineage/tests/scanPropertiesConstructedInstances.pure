@@ -20,6 +20,7 @@ Class meta::pure::lineage::scanProperties::test::constructed::Data
   a : String[1];
   b : String[1];
   child : Data[0..1];
+  tags : String[*];
 }
 
 Class meta::pure::lineage::scanProperties::test::constructed::Inner
@@ -198,3 +199,31 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
   let res = scanResolving({d:Data[1] | ^Box(a=$d.a)->aTwiceOf()});
   assertEquals('Box->aTwice\nData->a', $res.result->printPropertyNodeLists());
 }
+
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testConditionalPrefersSourcePathOverConstructedInstance():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | if($d.a == 'x', |^Data(a='k', b='k'), |$d.child->toOne())});
+  assertEquals('Data->child', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCollectionPrefersSourcePathOverConstructedInstance():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | [^Data(a='k', b='k'), $d.child->toOne()]->toOne()});
+  assertEquals('Data->child', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyAddRecordsCopiedObjectsExistingValues():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(tags += $d.a).tags)});
+  assertEquals('Data->a\nData->child\nData->child, Data->tags', $res.result->printPropertyNodeLists());
+  assertEquals('Data->a', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCopyAddOfLiteralResolvesThroughCopiedObject():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->map(c | ^$c(tags += 'k').tags)});
+  assertEquals('Data->child\nData->child, Data->tags', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->tags', $res.current->printPropertyNodeLists());
+}
+
