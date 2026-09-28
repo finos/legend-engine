@@ -46,9 +46,15 @@ public interface PrevalRuntime
 
     Multiplicity pureZero();
 
+    boolean isPureOne(Multiplicity multiplicity);
+
+    boolean isPureZero(Multiplicity multiplicity);
+
     Multiplicity exactly(int size);
 
     ImmutableMap<String, ImmutableList<Object>> openVariableValues(LambdaFunction<?> lambda);
+
+    ImmutableList<Object> values(InstanceValue instanceValue);
 
     InstanceValue newInstanceValue(GenericType genericType, Multiplicity multiplicity, ListIterable<?> values);
 

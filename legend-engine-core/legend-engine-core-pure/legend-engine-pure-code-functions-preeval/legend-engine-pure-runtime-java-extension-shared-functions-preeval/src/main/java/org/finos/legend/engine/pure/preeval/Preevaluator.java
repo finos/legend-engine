@@ -187,9 +187,9 @@ public final class Preevaluator implements PrevalServices
             }
             FunctionExpression let = (FunctionExpression) r.getValue();
             ListIterable<? extends ValueSpecification> letParameters = Lists.mutable.withAll(let._parametersValues());
-            String varName = this.runtime.stringValue(((InstanceValue) letParameters.get(0))._values().getOnly());
+            String varName = this.runtime.stringValue(this.runtime.values((InstanceValue) letParameters.get(0)).getOnly());
             ImmutableList<Object> varValue = letParameters.get(1) instanceof InstanceValue
-                    ? Lists.immutable.withAll(((InstanceValue) letParameters.get(1))._values())
+                    ? this.runtime.values((InstanceValue) letParameters.get(1))
                     : Lists.immutable.with(letParameters.get(1));
             boolean shouldInlineVariable = isSingle(varValue, VariableExpression.class)
                     || (r.canPreval() && this.scope.areAllInScope(r.getOpenVars(), state.getInScopeVars()) && !isSingle(varValue, LambdaFunction.class));
@@ -311,7 +311,7 @@ public final class Preevaluator implements PrevalServices
             return "open variables not in scope";
         }
         if (this.runtime.isFunction(expression._func(), MetamodelPaths.CAST_FUNCTION) && results.notEmpty()
-                && results.get(0).getValue() instanceof InstanceValue && ((InstanceValue) results.get(0).getValue())._values().isEmpty())
+                && results.get(0).getValue() instanceof InstanceValue && this.runtime.values((InstanceValue) results.get(0).getValue()).isEmpty())
         {
             return "cast of empty collection";
         }
@@ -353,7 +353,7 @@ public final class Preevaluator implements PrevalServices
 
     private PrevalResult prevalInstanceValue(InstanceValue instanceValue, PrevalState state)
     {
-        ListIterable<PrevalResult> values = Lists.mutable.withAll(instanceValue._values()).collect(v -> prevalInternal(v, state));
+        ListIterable<PrevalResult> values = this.runtime.values(instanceValue).collect(v -> prevalInternal(v, state));
         ImmutableList<String> openVars = this.scope.openVars(values.flatCollect(PrevalResult::getOpenVars), state.getInScopeVars());
         if (!PrevalResult.anyModified(values))
         {
@@ -363,9 +363,10 @@ public final class Preevaluator implements PrevalServices
         values.forEach(r ->
         {
             Object v = r.getValue();
-            if (v instanceof InstanceValue && ((InstanceValue) v)._values().size() == 1)
+            ImmutableList<Object> nested = v instanceof InstanceValue ? this.runtime.values((InstanceValue) v) : null;
+            if (nested != null && nested.size() == 1)
             {
-                cleanValues.addAllIterable(((InstanceValue) v)._values());
+                cleanValues.addAllIterable(nested);
             }
             else
             {
@@ -374,7 +375,7 @@ public final class Preevaluator implements PrevalServices
         });
         GenericType genericType = (GenericType) this.genericTypes.resolveGenericType(instanceValue._genericType(), state).getValue();
         // parity: Cast(@X) produces an empty InstanceValue with multiplicity PureOne, which Pure preserves
-        Multiplicity multiplicity = instanceValue._multiplicity() == this.runtime.pureOne() && cleanValues.isEmpty() ? instanceValue._multiplicity() : this.runtime.exactly(cleanValues.size());
+        Multiplicity multiplicity = this.runtime.isPureOne(instanceValue._multiplicity()) && cleanValues.isEmpty() ? instanceValue._multiplicity() : this.runtime.exactly(cleanValues.size());
         return new PrevalResult(this.runtime.withValues(instanceValue, cleanValues, genericType, multiplicity), PrevalResult.allCanPreval(values), openVars, true);
     }
 
@@ -390,7 +391,7 @@ public final class Preevaluator implements PrevalServices
     {
         if (value instanceof InstanceValue)
         {
-            return Lists.mutable.withAll(((InstanceValue) value)._values()).allSatisfy(v -> (v instanceof ValueSpecification) ? isInstanceValue(v, inScopeVars) : !this.runtime.isInstanceOf(v, MetamodelPaths.TDS));
+            return this.runtime.values((InstanceValue) value).allSatisfy(v -> (v instanceof ValueSpecification) ? isInstanceValue(v, inScopeVars) : !this.runtime.isInstanceOf(v, MetamodelPaths.TDS));
         }
         if (value instanceof VariableExpression)
         {

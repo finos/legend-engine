@@ -81,15 +81,10 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     @Override
     public String typeDescription(Object value)
     {
-        if (value instanceof CoreInstance)
-        {
-            CoreInstance classifier = this.processorSupport.getClassifier((CoreInstance) value);
-            if (classifier instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement)
-            {
-                return PackageableElement.getUserPathForPackageableElement(classifier);
-            }
-        }
-        return value.getClass().getSimpleName();
+        Type type = CoreGen.safeGetGenericType(value, this.executionSupport)._rawType();
+        return type instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement
+                ? PackageableElement.getUserPathForPackageableElement(type)
+                : CompiledSupport.pureToString(type, this.executionSupport);
     }
 
     @Override
@@ -139,6 +134,18 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public boolean isPureOne(Multiplicity multiplicity)
+    {
+        return multiplicity == pureOne();
+    }
+
+    @Override
+    public boolean isPureZero(Multiplicity multiplicity)
+    {
+        return multiplicity == pureZero();
+    }
+
+    @Override
     public Multiplicity exactly(int size)
     {
         if (size == 0)
@@ -160,6 +167,12 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         MutableMap<String, ImmutableList<Object>> values = Maps.mutable.empty();
         Pure.getOpenVariables(lambda, CoreGen.bridge).getMap().forEachKeyValue((name, value) -> values.put((String) name, toValues(value)));
         return values.toImmutable();
+    }
+
+    @Override
+    public ImmutableList<Object> values(InstanceValue instanceValue)
+    {
+        return Lists.immutable.withAll(instanceValue._values());
     }
 
     @Override

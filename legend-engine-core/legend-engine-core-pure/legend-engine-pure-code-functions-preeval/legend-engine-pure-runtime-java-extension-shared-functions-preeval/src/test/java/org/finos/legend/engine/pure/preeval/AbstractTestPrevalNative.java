@@ -160,6 +160,29 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testFloatPrecisionSurvivesInstanceValueRebuild()
+    {
+        executeTestFunction(
+                "let vars = newMap(pair('x', list(2)));",
+                "let x = 0;",
+                "let iv = {|[1.1234567890123456789012, $x]}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($iv, $vars, $vars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->cast(@InstanceValue).values->at(0) == 1.1234567890123456789012, |'expected exact Float');");
+    }
+
+    @Test
+    public void testUnsupportedTypeNamesThePureType()
+    {
+        executeTestFunction(
+                "let v = 3;",
+                "let hooks = ^PrevalHooks(stopPreeval = {a:Any[*] | $a->forAll(x | !$x->instanceOf(Integer))}, shouldInline = {f:Function<Any>[1] | false}, isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, isGetAllFunction = {f:Function<Any>[1] | false}, resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []});",
+                "let vars = newMap(pair('v', list($v)));",
+                "let fe = {|$v}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "assertError(|prevalNative($fe, $vars, $vars, $hooks, noDebug()), {m:String[1], s:SourceInformation[0..1] | assert($m->contains('Unsupported type: Integer'), |$m)});");
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(

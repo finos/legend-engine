@@ -55,6 +55,7 @@ import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
+import org.finos.legend.pure.m4.coreinstance.AbstractCoreInstanceWrapper;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
@@ -128,7 +129,10 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     @Override
     public String typeDescription(Object value)
     {
-        return PackageableElement.getUserPathForPackageableElement(this.processorSupport.getClassifier(toCoreInstance(value)));
+        CoreInstance type = this.processorSupport.getClassifier(toCoreInstance(value));
+        return Instance.instanceOf(type, M3Paths.PackageableElement, this.processorSupport)
+                ? PackageableElement.getUserPathForPackageableElement(type)
+                : type.getName();
     }
 
     @Override
@@ -176,6 +180,24 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public boolean isPureOne(Multiplicity multiplicity)
+    {
+        return isPackagedMultiplicity(multiplicity, M3Paths.PureOne);
+    }
+
+    @Override
+    public boolean isPureZero(Multiplicity multiplicity)
+    {
+        return isPackagedMultiplicity(multiplicity, M3Paths.PureZero);
+    }
+
+    private boolean isPackagedMultiplicity(Multiplicity multiplicity, String path)
+    {
+        CoreInstance packaged = this.processorSupport.package_getByUserPath(path);
+        return multiplicity == packaged || (multiplicity instanceof AbstractCoreInstanceWrapper && multiplicity.equals(packaged));
+    }
+
+    @Override
     public Multiplicity exactly(int size)
     {
         if (size == 0)
@@ -207,6 +229,12 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
             });
         }
         return values.toImmutable();
+    }
+
+    @Override
+    public ImmutableList<Object> values(InstanceValue instanceValue)
+    {
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(instanceValue, M3Properties.values, this.processorSupport));
     }
 
     @Override
