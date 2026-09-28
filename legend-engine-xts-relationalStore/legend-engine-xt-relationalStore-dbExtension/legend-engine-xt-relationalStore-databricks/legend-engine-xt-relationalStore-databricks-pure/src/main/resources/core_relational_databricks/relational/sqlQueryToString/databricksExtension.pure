@@ -557,7 +557,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
          | fail($func->dateFieldExtractionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
          | if($func->isCoarseDatePrecisionOperandForDatabricks(),
               | fail($func->coarseDatePrecisionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
-              | if($func->isLiteralDateToStringForDatabricks(),
+              | if($func->isDomainViolatingMathFunctionForDatabricks(),
+                   | fail($func->domainViolationErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
+                   | if($func->isLiteralDateToStringForDatabricks(),
     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
     | if($func->isFullyLiteralInForDatabricks(),
          | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderFullyLiteralInForDatabricks(), transform = {p:String[*] | []})),
@@ -643,6 +645,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    );
       )
  );
+   )
    )
    )
  )
@@ -797,6 +800,63 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    'Databricks cannot represent the Year or Year-Month precision of Date literal ' +
       $func.parameters->at(0)->cast(@Literal).value->toString() +
       ' in a native DATE/TIMESTAMP column; ' + $func.name + '() would silently lose that precision.';
+}
+
+// Spark's native acos/asin/sqrt silently return NULL for an out-of-domain argument (e.g.
+// asin(2.0), sqrt(-1.0)) instead of raising - unlike H2/DuckDB/Postgres, which each raise their own
+// (differently-worded) domain error - so the stdlib's own testArcCosineError/testArcSineError/
+// testSquareRootError observe "No error was thrown" on Databricks today. All three tests use the
+// 2-argument assertError(f, message) form (no source-location check - see
+// meta::pure::functions::asserts::assertError; contrast with the 4-argument form's unrelated
+// line/column wall affecting dayOfMonth/hour/minute/second above), so reproducing the stdlib's own
+// exact message at plan-generation time - the operand is a compile-time Literal here, exactly the
+// same shape isDateFieldExtractionMissingForDatabricks already relies on - is a genuine, achievable
+// PCT pass, not merely a corrected passing-expectation. Only a literal operand is guarded: a
+// runtime-valued (column) argument can't be range-checked before execution, and no test here
+// exercises that shape.
+//
+// A negative literal (e.g. sqrt(-1.0)) is NOT a single Literal carrying a negative value - Pure
+// parses it as a 'minus' DynaFunction wrapping a positive Literal (the same shape
+// isFullyLiteralInForDatabricks/processLiteralOrMinusDynaFunction already handle for 'in') - so the
+// operand must be unwrapped one level for that shape. testSquareRootError's own '-1.0' argument
+// exercises exactly this: sqrt(2.0) alone would have been caught by the plain-Literal case only.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isNumericLiteralOrNegatedNumericLiteralForDatabricks(op:RelationalOperationElement[1]):Boolean[1]
+{
+   ($op->instanceOf(Literal) && $op->cast(@Literal).value->instanceOf(Number))
+      || ($op->instanceOf(DynaFunction) && $op->cast(@DynaFunction).name == 'minus'
+           && $op->cast(@DynaFunction).parameters->size() == 1
+           && $op->cast(@DynaFunction).parameters->at(0)->instanceOf(Literal)
+           && $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->instanceOf(Number));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralOrNegatedNumericLiteralValueForDatabricks(op:RelationalOperationElement[1]):Number[1]
+{
+   if($op->instanceOf(Literal),
+      | $op->cast(@Literal).value->cast(@Number),
+      | 0 - $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->cast(@Number));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks(op:RelationalOperationElement[1]):String[1]
+{
+   if($op->instanceOf(Literal),
+      | $op->cast(@Literal).value->toString(),
+      | '-' + $op->cast(@DynaFunction).parameters->at(0)->cast(@Literal).value->toString());
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isDomainViolatingMathFunctionForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name->in(['asin', 'acos', 'sqrt'])
+      && $func.parameters->size() == 1
+      && $func.parameters->at(0)->isNumericLiteralOrNegatedNumericLiteralForDatabricks()
+      && if($func.name == 'sqrt',
+            | $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralValueForDatabricks() < 0,
+            | $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralValueForDatabricks()->abs() > 1
+           );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::domainViolationErrorMessageForDatabricks(func:DynaFunction[1]):String[1]
+{
+   'Unable to compute ' + $func.name + ' of ' + $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks();
 }
 
 // True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a

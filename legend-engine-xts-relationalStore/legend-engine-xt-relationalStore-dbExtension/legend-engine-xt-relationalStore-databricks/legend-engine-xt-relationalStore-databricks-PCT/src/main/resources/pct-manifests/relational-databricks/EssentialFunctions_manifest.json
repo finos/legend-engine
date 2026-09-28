@@ -280,20 +280,11 @@
     "test" : "meta::pure::functions::math::tests::round::testPositiveFloatRoundHalfEvenDown_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 16\nactual:   17"
   }, {
-    "test" : "meta::pure::functions::math::tests::testSquareRootError_Function_1__Boolean_1_",
-    "expectedError" : "No error was thrown"
-  }, {
     "test" : "meta::pure::functions::math::tests::toDecimal::testDecimalToDecimal_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 3.8D\nactual:   4D"
   }, {
     "test" : "meta::pure::functions::math::tests::toDecimal::testDoubleToDecimal_Function_1__Boolean_1_",
     "expectedError" : "\nexpected: 3.8D\nactual:   4D"
-  }, {
-    "test" : "meta::pure::functions::math::tests::trigonometry::testArcCosineError_Function_1__Boolean_1_",
-    "expectedError" : "No error was thrown"
-  }, {
-    "test" : "meta::pure::functions::math::tests::trigonometry::testArcSineError_Function_1__Boolean_1_",
-    "expectedError" : "No error was thrown"
   }, {
     "test" : "meta::pure::functions::string::tests::format::testFormatBoolean_Function_1__Boolean_1_",
     "expectedError" : "No SQL translation exists for the PURE function 'format_String_1__Any_MANY__String_1_'. \nIf you would like to add a SQL translation for the function then follow the step-by-step guide on the PURE wiki."
