@@ -1162,3 +1162,12 @@ tests:
     category: "column_resolution_corpus"
     expected_tds_status: ERROR
     expected_rel_status: PASS
+  # Aggregate + window over a join: exercises the alias-repair path in both
+  # processGroupBy and processOlapGroupBy simultaneously, plus the projected
+  # post-group context handed to processOlapGroupBy on the Relation flow.
+  - id: crcs_g2_agg_win_over_join
+    sql: "SELECT p.dept_id AS dept_id, d.name AS dept_name, SUM(p.salary) AS s, RANK() OVER (PARTITION BY p.dept_id ORDER BY p.dept_id) AS r FROM persons p INNER JOIN departments d ON p.dept_id = d.id WHERE p.salary IS NOT NULL GROUP BY p.dept_id, d.name ORDER BY 1"
+    feature: "aggregate + window over a join"
+    category: "column_resolution_corpus"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
