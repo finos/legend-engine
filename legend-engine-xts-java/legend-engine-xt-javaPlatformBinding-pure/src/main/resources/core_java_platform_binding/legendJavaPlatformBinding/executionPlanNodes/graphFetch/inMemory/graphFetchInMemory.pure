@@ -707,6 +707,109 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    generatePropertyMappingTransform($setImpl, $property, $propertyMapping, $src, $conventions, $extensions, false, $debug)
 }
 
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::isSourceQualifiedProperty(f: Function<Any>[1]): Boolean[1]
+{
+  if (!$f->instanceOf(QualifiedProperty),
+    | false,
+    | let qp = $f->cast(@QualifiedProperty<Any>);
+      !$qp->hasGeneratedMilestoningPropertyStereotype() &&
+        !($qp.owner == TDSRow ||
+          $qp->functionType().parameters->evaluateAndDeactivate()->at(0).genericType.rawType == TDSRow);
+  );
+}
+
+function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::inlineSourceQualifiedProperties(
+  vs: ValueSpecification[1],
+  vars: Map<VariableExpression, ValueSpecification>[1],
+  openVars: Map<String, List<Any>>[1],
+  oldVar: Pair<String, GenericType>[0..1],
+  extensions: meta::pure::extension::Extension[*]
+): ValueSpecification[1]
+{
+  $vs->match([
+    fe: FunctionExpression[1] |
+      if ($fe.func->evaluateAndDeactivate()->isSourceQualifiedProperty(),
+        | let newParams = $fe.parametersValues->evaluateAndDeactivate()
+            ->map(x | $x->inlineSourceQualifiedProperties($vars, $openVars, $oldVar, $extensions));
+          let bodyStmts = $fe.func->evaluateAndDeactivate()
+            ->cast(@FunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate();
+          let feParams = $fe.func->evaluateAndDeactivate()
+            ->cast(@FunctionDefinition<Any>)->functionType().parameters->evaluateAndDeactivate();
+          let new_feParams = if ($oldVar->isNotEmpty(),
+            | $feParams->map(fep |
+                if ($fep->cast(@VariableExpression).genericType.rawType == $oldVar.second.rawType,
+                  | ^$fep(name = $oldVar->toOne().first),
+                  | $fep
+                )
+              ),
+            | $feParams
+          );
+          let keyProp = VariableExpression->classPropertyByName('name')
+            ->cast(@Property<VariableExpression, String|1>);
+          let paramPairs = $new_feParams->size()->range()
+            ->map(p | pair($new_feParams->at($p), $newParams->at($p)));
+          let templateVar = $new_feParams->at(0)->cast(@VariableExpression);
+          let letPairs = $bodyStmts->take($bodyStmts->size() - 1)->fold(
+            {stmt, accPairs |
+              let s = $stmt->evaluateAndDeactivate();
+              if ($s->instanceOf(FunctionExpression)
+                    && $s->cast(@FunctionExpression).func == meta::pure::functions::lang::letFunction_String_1__T_m__T_m_,
+                | let letName = $s->cast(@FunctionExpression).parametersValues
+                    ->evaluateAndDeactivate()->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
+                  let letValue = $s->cast(@FunctionExpression).parametersValues
+                    ->evaluateAndDeactivate()->at(1)->evaluateAndDeactivate();
+                  let curMap = newMap($paramPairs->concatenate($accPairs), $keyProp);
+                  let inlinedVal = $letValue->inlineSourceQualifiedProperties(
+                    $curMap, $openVars, $oldVar, $extensions
+                  );
+                  let letKey = ^$templateVar(
+                    name = $letName,
+                    genericType = $letValue.genericType,
+                    multiplicity = $letValue.multiplicity
+                  );
+                  $accPairs->concatenate(pair($letKey, $inlinedVal));,
+                | $accPairs
+              );
+            },
+            []
+          );
+          let bodyVars = newMap($paramPairs->concatenate($letPairs), $keyProp);
+          $bodyStmts->last()->toOne()
+            ->inlineSourceQualifiedProperties($bodyVars, $openVars, $oldVar, $extensions);,
+        | ^$fe(
+            parametersValues = $fe.parametersValues->evaluateAndDeactivate()
+              ->map(x | $x->inlineSourceQualifiedProperties($vars, $openVars, $oldVar, $extensions))
+          )
+      ),
+    iv: InstanceValue[1] |
+      ^$iv(
+        values = $iv.values->evaluateAndDeactivate()->map(val | $val->match([
+          l: LambdaFunction<Any>[1] |
+            ^$l(
+              expressionSequence = $l.expressionSequence->evaluateAndDeactivate()->map(e |
+                $e->inlineSourceQualifiedProperties(
+                  $vars->putAll(
+                    $l->functionType().parameters->evaluateAndDeactivate()->map(x | pair($x, $x))
+                  ),
+                  $openVars, $oldVar, $extensions
+                )
+              )
+            );,
+          v: ValueSpecification[1] |
+            $v->inlineSourceQualifiedProperties($vars, $openVars, $oldVar, $extensions),
+          a: Any[1] | $a
+        ]))
+      ),
+    ve: VariableExpression[1] |
+      let resolved = $ve->resolve($vars, $openVars);
+      if ($resolved->isEmpty(), | $ve, | $resolved->toOne());,
+    srv: meta::pure::router::store::metamodel::StoreMappingRoutedValueSpecification[1] |
+      let value = $srv.value->inlineSourceQualifiedProperties($vars, $openVars, $oldVar, $extensions);
+      ^$srv(value = $value);,
+    v: ValueSpecification[1] | $v
+  ]);
+}
+
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::generatePropertyMappingTransform(setImpl: InstanceSetImplementation[1], property: Property<Nil,Any|*>[1], propertyMapping: PropertyMapping[0..1], src: Code[1], conventions: Conventions[1], extensions: Extension[*], explodeProperty: Boolean[1], debug: DebugContext[1]): Code[0..1]
 {
    print(if($debug.debug,|$debug.space+'generatePropertyMappingTransform: \''+$property.name->toOne()+'\'\n', |''));
@@ -739,7 +842,20 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
                     let inMemoryAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaInMemoryGraphFetchExtension);
                     let transformFunction = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.mappingTransformExtractors->toOneMany());
                     let transformType     = $conventions->pureTypeToJavaType(if($transformFunction->functionReturnType().rawType == Nil, | $property->functionReturnType(), | $transformFunction->functionReturnType()), if ($explodeProperty, | ZeroMany, | $property->functionReturnMultiplicity()));
-                    let javaExpression    = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
+                    let transformExpr = $transformFunction.expressionSequence->at(0)->evaluateAndDeactivate();
+                    let hasSourceQualifiedProperty = $transformExpr
+                      ->meta::pure::functions::meta::findPropertiesInValueSpecification()
+                      ->exists(p | $p->instanceOf(QualifiedProperty));
+                    let inlinedTransformExpr = if ($hasSourceQualifiedProperty,
+                      | $transformExpr->inlineSourceQualifiedProperties(
+                          ^Map<VariableExpression, ValueSpecification>(),
+                          $transformFunction->openVariableValues(),
+                          [],
+                          $extensions
+                        ),
+                      | $transformExpr
+                    );
+                    let javaExpression = $inlinedTransformExpr->generateJava($conventions, $debug->indent());
                     let valueTransformer  = $propertyMapping->toOne()->match($inMemoryAdhocExtensions.valueTransformerExtractors->toOneMany());
                     let code              = if ($valueTransformer->isEmpty(), | $javaExpression, | $javaExpression->applyTransformer($valueTransformer->toOne(), $conventions, $explodeProperty, $debug->indent()));
                     let returnType        = if ($valueTransformer->isEmpty(), | $transformType,  | if($transformType->isJavaList(), | $conventions->enumerationType($valueTransformer->toOne())->javaList(), | $conventions->enumerationType($valueTransformer->toOne())));
