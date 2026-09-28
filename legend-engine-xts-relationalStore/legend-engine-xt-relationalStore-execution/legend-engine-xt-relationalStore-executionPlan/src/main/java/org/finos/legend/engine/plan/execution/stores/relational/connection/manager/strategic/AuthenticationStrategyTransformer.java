@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPServiceAccountKeyAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
@@ -87,6 +88,13 @@ public class AuthenticationStrategyTransformer implements AuthenticationStrategy
             return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPWorkloadIdentityFederationAuthenticationStrategy(
                     gcpWorkloadIdentityFederationAuthenticationStrategy.serviceAccountEmail,
                     gcpWorkloadIdentityFederationAuthenticationStrategy.additionalGcpScopes
+            );
+        }
+        else if (authenticationStrategy instanceof GCPServiceAccountKeyAuthenticationStrategy)
+        {
+            GCPServiceAccountKeyAuthenticationStrategy gcpServiceAccountKeyAuthenticationStrategy = (GCPServiceAccountKeyAuthenticationStrategy) authenticationStrategy;
+            return new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.GCPServiceAccountKeyAuthenticationStrategy(
+                    gcpServiceAccountKeyAuthenticationStrategy.serviceAccountKeyVaultReference
             );
         }
         return null;

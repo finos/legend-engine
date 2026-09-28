@@ -65,6 +65,7 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
                                                             pair('apiToken', 'ApiTokenAuthenticationStrategy'),
                                                             pair('gcpWorkloadIdentityFederation','GCPWorkloadIdentityFederationAuthenticationStrategy'),
+                                                            pair('gcpServiceAccountKey','GCPServiceAccountKeyAuthenticationStrategy'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
@@ -141,6 +142,10 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             // _type = 'gcpWorkloadIdentityFederationWithAWS',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
+         ),
+      b:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::GCPServiceAccountKeyAuthenticationStrategy(
+            serviceAccountKeyVaultReference = $b.serviceAccountKeyVaultReference
          ),
       o:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::OAuthAuthenticationStrategy[1] |
          ^meta::pure::alloy::connections::alloy::authentication::OAuthAuthenticationStrategy(
