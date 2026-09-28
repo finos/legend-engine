@@ -14,7 +14,10 @@
 
 package org.finos.legend.engine.pure.preeval;
 
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.map.ImmutableMap;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 public interface PrevalHooks
 {
@@ -25,4 +28,6 @@ public interface PrevalHooks
     boolean isGeneratedMilestoningProperty(Object function);
 
     boolean isGetAllFunction(Object function);
+
+    ImmutableList<Object> resolveTdsSchema(ValueSpecification value, ImmutableMap<String, ImmutableList<Object>> rollingInScopeVars);
 }

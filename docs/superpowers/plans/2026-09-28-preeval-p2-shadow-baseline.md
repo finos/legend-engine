@@ -17,8 +17,8 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 
 | Test | Fails under | First error line | Expected rule family |
 |---|---|---|---|
-| `tesColumnEvalOnRelation` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | TDS columns / eval-on-Column |
-| `tesColumnEvalOnRelationWithCast` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | TDS columns / eval-on-Column |
+| `tesColumnEvalOnRelation` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | TDS columns / eval-on-Column — **resolved by Task 8** |
+| `tesColumnEvalOnRelationWithCast` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | TDS columns / eval-on-Column — **resolved by Task 8** |
 | `testAdditionalStopFunction` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myStopFunction_Integer_1__Integer_1_" | inlining/eval expansion — **resolved by Task 5** |
 | `testEvalWithArgs2` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testEvalWithArgs3` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
@@ -50,8 +50,8 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting2b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting30` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate — **resolved by Task 6** |
 | `testPrerouting32b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5) | inlining/eval expansion — **resolved by Task 5 (fix round 1)** |
-| `testPrerouting33` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for filterToStringColumns_TabularDataSet_1__TabularDataSet_1_" | TDS columns / eval-on-Column |
-| `testPrerouting34` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for extendColumns_TabularDataSet_1__String_MANY__TabularDataSet_1_" | TDS columns / eval-on-Column |
+| `testPrerouting33` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for filterToStringColumns_TabularDataSet_1__TabularDataSet_1_" | TDS columns / eval-on-Column — **resolved by Task 8** |
+| `testPrerouting34` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for extendColumns_TabularDataSet_1__String_MANY__TabularDataSet_1_" | TDS columns / eval-on-Column — **resolved by Task 8** |
 | `testPrerouting37` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for otherFunc2_Integer_MANY__FunctionDefinition_1__Integer_MANY__Integer_MANY_" | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting40b` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myToOne_T_1__T_1_" | cast-empty/filter/toOne(Many)/genericType — **resolved by Task 7** |
 | `testPrerouting_OptionalLimit1` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for optionalLimit_TabularDataSet_1__Integer_$0_1$__TabularDataSet_1_" | inlining/eval expansion — **resolved by Task 5** |
@@ -138,3 +138,11 @@ This is exactly the family's expected list. No other name changed state, and no 
 Still failing, owned by Task 8: `tesColumnEvalOnRelation`, `tesColumnEvalOnRelationWithCast`, `testPrerouting33`, `testPrerouting34`.
 
 `KNOWN_DIVERGENT` now holds 4 names.
+
+## Task 8 update (TDS `columns`, eval-on-Column)
+
+After implementing `TdsColumnsRule` and `EvalOnColumnRule` (prepended to `Rules.NOT_PREVALLED`, which now matches Pure's full handler order), the `resolveTdsSchema` hook, and `PrevalRuntime.isPropertyOf` / `functionReturnType` / `functionReturnMultiplicity` / `withGenericTypeAndMultiplicity`, RUNNER-ALL was re-run. All 4 remaining `KNOWN_DIVERGENT` names now pass under both `JAVA` and `SHADOW`:
+
+`tesColumnEvalOnRelation`, `tesColumnEvalOnRelationWithCast`, `testPrerouting33`, `testPrerouting34`.
+
+No other name changed state. `KNOWN_DIVERGENT` is now empty; RUNNER is green with `Test_Pure_Preeval_Java` 222/222 (111 × 2) and `Test_Pure_Preeval` 111/111.

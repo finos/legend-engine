@@ -50,6 +50,12 @@ public interface PrevalRuntime
 
     boolean isQualifiedPropertyOf(Object function, String ownerPath);
 
+    boolean isPropertyOf(Object function, String propertyName, String ownerPath);
+
+    GenericType functionReturnType(Object function);
+
+    Multiplicity functionReturnMultiplicity(Object function);
+
     String stringValue(Object primitive);
 
     Multiplicity pureOne();
@@ -83,6 +89,8 @@ public interface PrevalRuntime
     FunctionExpression withFuncAndParameters(FunctionExpression expression, Object func, ListIterable<? extends ValueSpecification> parameters);
 
     <T extends ValueSpecification> T withGenericType(T valueSpecification, GenericType genericType);
+
+    <T extends ValueSpecification> T withGenericTypeAndMultiplicity(T valueSpecification, GenericType genericType, Multiplicity multiplicity);
 
     InstanceValue withValues(InstanceValue instanceValue, ListIterable<?> values, GenericType genericType, Multiplicity multiplicity);
 

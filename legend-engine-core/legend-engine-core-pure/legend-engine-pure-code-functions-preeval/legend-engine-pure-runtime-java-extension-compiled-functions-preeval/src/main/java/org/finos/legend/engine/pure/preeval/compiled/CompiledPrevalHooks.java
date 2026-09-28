@@ -15,13 +15,19 @@
 package org.finos.legend.engine.pure.preeval.compiled;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.pure.preeval.PrevalHooks;
 import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.CompiledSupport;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 final class CompiledPrevalHooks implements PrevalHooks
 {
@@ -29,6 +35,7 @@ final class CompiledPrevalHooks implements PrevalHooks
     private final Function<?> shouldInline;
     private final Function<?> isGeneratedMilestoningProperty;
     private final Function<?> isGetAllFunction;
+    private final Function<?> resolveTdsSchema;
     private final ExecutionSupport executionSupport;
 
     CompiledPrevalHooks(CoreInstance hooks, ExecutionSupport executionSupport)
@@ -37,6 +44,7 @@ final class CompiledPrevalHooks implements PrevalHooks
         this.shouldInline = (Function<?>) hooks.getValueForMetaPropertyToOne("shouldInline");
         this.isGeneratedMilestoningProperty = (Function<?>) hooks.getValueForMetaPropertyToOne("isGeneratedMilestoningProperty");
         this.isGetAllFunction = (Function<?>) hooks.getValueForMetaPropertyToOne("isGetAllFunction");
+        this.resolveTdsSchema = (Function<?>) hooks.getValueForMetaPropertyToOne("resolveTdsSchema");
         this.executionSupport = executionSupport;
     }
 
@@ -62,5 +70,13 @@ final class CompiledPrevalHooks implements PrevalHooks
     public boolean isGetAllFunction(Object function)
     {
         return (Boolean) Pure.evaluate(this.executionSupport, this.isGetAllFunction, CoreGen.bridge, function);
+    }
+
+    @Override
+    public ImmutableList<Object> resolveTdsSchema(ValueSpecification value, ImmutableMap<String, ImmutableList<Object>> rollingInScopeVars)
+    {
+        PureMap vars = new PureMap(Maps.mutable.empty());
+        rollingInScopeVars.forEachKeyValue((name, values) -> vars.getMap().put(name, CoreGen.bridge.buildList()._valuesAddAll(values)));
+        return Lists.immutable.withAll(CompiledSupport.toPureCollection(Pure.evaluate(this.executionSupport, this.resolveTdsSchema, CoreGen.bridge, value, vars)));
     }
 }

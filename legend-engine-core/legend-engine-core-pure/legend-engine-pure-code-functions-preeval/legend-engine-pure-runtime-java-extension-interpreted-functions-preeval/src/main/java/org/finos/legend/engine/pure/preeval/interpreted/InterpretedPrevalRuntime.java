@@ -22,6 +22,7 @@ import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MapIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
+import org.finos.legend.engine.pure.preeval.MetamodelPaths;
 import org.finos.legend.engine.pure.preeval.PrevalResult;
 import org.finos.legend.engine.pure.preeval.PrevalRuntime;
 import org.finos.legend.pure.m3.coreinstance.helper.AnyHelper;
@@ -54,9 +55,11 @@ import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
 import org.finos.legend.pure.m3.navigation.PrimitiveUtilities;
 import org.finos.legend.pure.m3.navigation.ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
+import org.finos.legend.pure.m3.navigation.type.Type;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.AbstractCoreInstanceWrapper;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.BooleanCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
@@ -116,10 +119,40 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
 
     public boolean evaluateBoolean(CoreInstance function, VariableContext context, ListIterable<?> values)
     {
+        return PrimitiveUtilities.getBooleanValue((CoreInstance) evaluate(function, context, Lists.immutable.with(values)).getOnly());
+    }
+
+    public ImmutableList<Object> evaluate(CoreInstance function, VariableContext context, ListIterable<? extends ListIterable<?>> arguments)
+    {
         CoreInstance result = this.functionExecution.executeFunction(false, FunctionCoreInstanceWrapper.toFunction(function),
-                Lists.immutable.with(ValueSpecificationBootstrap.wrapValueSpecification(toCoreInstances(values), false, this.processorSupport)),
+                arguments.collect(values -> ValueSpecificationBootstrap.wrapValueSpecification(toCoreInstances(values), false, this.processorSupport)),
                 this.resolvedTypeParameters, this.resolvedMultiplicityParameters, context, this.functionExpressionCallStack, this.profiler, this.instantiationContext, this.executionSupport);
-        return PrimitiveUtilities.getBooleanValue(Instance.getValueForMetaPropertyToOneResolved(result, M3Properties.values, this.processorSupport));
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(result, M3Properties.values, this.processorSupport));
+    }
+
+    public CoreInstance newVarsMap(ImmutableMap<String, ImmutableList<Object>> vars)
+    {
+        CoreInstance mapRawType = this.processorSupport.package_getByUserPath(M3Paths.Map);
+        MapCoreInstance map = new MapCoreInstance(Lists.immutable.empty(), "", sourceInformation(), mapRawType, -1, this.repository, false, this.processorSupport);
+        CoreInstance classifierGenericType = Type.wrapGenericType(mapRawType, this.processorSupport);
+        Instance.addValueToProperty(classifierGenericType, M3Properties.typeArguments, Type.wrapGenericType(this.processorSupport.package_getByUserPath(M3Paths.String), this.processorSupport), this.processorSupport);
+        Instance.addValueToProperty(classifierGenericType, M3Properties.typeArguments, listOfAnyGenericType(), this.processorSupport);
+        Instance.addValueToProperty(map, M3Properties.classifierGenericType, classifierGenericType, this.processorSupport);
+        vars.forEachKeyValue((name, values) ->
+        {
+            CoreInstance list = this.repository.newEphemeralAnonymousCoreInstance(null, this.processorSupport.package_getByUserPath(M3Paths.List));
+            Instance.setValuesForProperty(list, M3Properties.values, toCoreInstances(values), this.processorSupport);
+            Instance.setValueForProperty(list, M3Properties.classifierGenericType, listOfAnyGenericType(), this.processorSupport);
+            map.getMap().put(this.repository.newStringCoreInstance(name), list);
+        });
+        return map;
+    }
+
+    private CoreInstance listOfAnyGenericType()
+    {
+        CoreInstance listGenericType = Type.wrapGenericType(this.processorSupport.package_getByUserPath(M3Paths.List), this.processorSupport);
+        Instance.addValueToProperty(listGenericType, M3Properties.typeArguments, Type.wrapGenericType(this.processorSupport.package_getByUserPath(M3Paths.Any), this.processorSupport), this.processorSupport);
+        return listGenericType;
     }
 
     @Override
@@ -207,6 +240,62 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
         }
         CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.owner, this.processorSupport);
         return owner != null && Instance.instanceOf(owner, M3Paths.PackageableElement, this.processorSupport) && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(owner));
+    }
+
+    @Override
+    public boolean isPropertyOf(Object function, String propertyName, String ownerPath)
+    {
+        CoreInstance instance = toCoreInstance(function);
+        if (!Instance.instanceOf(instance, M3Paths.AbstractProperty, this.processorSupport)
+                || !propertyName.equals(PrimitiveUtilities.getStringValue(instance.getValueForMetaPropertyToOne(M3Properties.name))))
+        {
+            return false;
+        }
+        CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.owner, this.processorSupport);
+        return owner != null && Instance.instanceOf(owner, M3Paths.PackageableElement, this.processorSupport) && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(owner));
+    }
+
+    @Override
+    public GenericType functionReturnType(Object function)
+    {
+        CoreInstance instance = toCoreInstance(function);
+        if (Instance.instanceOf(instance, M3Paths.AbstractProperty, this.processorSupport))
+        {
+            return GenericTypeCoreInstanceWrapper.toGenericType(Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.genericType, this.processorSupport));
+        }
+        if (isInstanceOf(instance, MetamodelPaths.PATH) || isInstanceOf(instance, MetamodelPaths.COLUMN))
+        {
+            return GenericTypeCoreInstanceWrapper.toGenericType(Instance.getValueForMetaPropertyToManyResolved(classifierGenericType(instance), M3Properties.typeArguments, this.processorSupport).get(1));
+        }
+        if (Instance.instanceOf(instance, M3Paths.NativeFunction, this.processorSupport) || Instance.instanceOf(instance, M3Paths.FunctionDefinition, this.processorSupport))
+        {
+            return GenericTypeCoreInstanceWrapper.toGenericType(Instance.getValueForMetaPropertyToOneResolved(this.processorSupport.function_getFunctionType(instance), M3Properties.returnType, this.processorSupport));
+        }
+        throw error("functionReturnType not supported yet for the type " + typeDescription(function));
+    }
+
+    @Override
+    public Multiplicity functionReturnMultiplicity(Object function)
+    {
+        CoreInstance instance = toCoreInstance(function);
+        if (Instance.instanceOf(instance, M3Paths.AbstractProperty, this.processorSupport))
+        {
+            return MultiplicityCoreInstanceWrapper.toMultiplicity(Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.multiplicity, this.processorSupport));
+        }
+        if (isInstanceOf(instance, MetamodelPaths.PATH) || isInstanceOf(instance, MetamodelPaths.COLUMN))
+        {
+            return MultiplicityCoreInstanceWrapper.toMultiplicity(Instance.getValueForMetaPropertyToManyResolved(classifierGenericType(instance), M3Properties.multiplicityArguments, this.processorSupport).get(0));
+        }
+        if (Instance.instanceOf(instance, M3Paths.NativeFunction, this.processorSupport) || Instance.instanceOf(instance, M3Paths.FunctionDefinition, this.processorSupport))
+        {
+            return MultiplicityCoreInstanceWrapper.toMultiplicity(Instance.getValueForMetaPropertyToOneResolved(this.processorSupport.function_getFunctionType(instance), M3Properties.returnMultiplicity, this.processorSupport));
+        }
+        throw error("functionReturnMultiplicity not supported yet for the type " + typeDescription(function));
+    }
+
+    private CoreInstance classifierGenericType(CoreInstance instance)
+    {
+        return Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.classifierGenericType, this.processorSupport);
     }
 
     @Override
@@ -356,10 +445,22 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T extends ValueSpecification> T withGenericType(T valueSpecification, GenericType genericType)
     {
-        CoreInstance copy = copy(valueSpecification, Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(M3Properties.genericType, one(genericType)));
+        return wrapLike(valueSpecification, copy(valueSpecification, Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(M3Properties.genericType, one(genericType))));
+    }
+
+    @Override
+    public <T extends ValueSpecification> T withGenericTypeAndMultiplicity(T valueSpecification, GenericType genericType, Multiplicity multiplicity)
+    {
+        return wrapLike(valueSpecification, copy(valueSpecification, Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(
+                M3Properties.genericType, one(genericType),
+                M3Properties.multiplicity, one(multiplicity))));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends ValueSpecification> T wrapLike(T valueSpecification, CoreInstance copy)
+    {
         if (valueSpecification instanceof FunctionExpression)
         {
             return (T) FunctionExpressionCoreInstanceWrapper.toFunctionExpression(copy);
@@ -450,7 +551,12 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     @Override
     public RuntimeException error(String message)
     {
-        return new PureExecutionException(this.functionExpressionCallStack.isEmpty() ? null : this.functionExpressionCallStack.peek().getSourceInformation(), message);
+        return new PureExecutionException(sourceInformation(), message);
+    }
+
+    private SourceInformation sourceInformation()
+    {
+        return this.functionExpressionCallStack.isEmpty() ? null : this.functionExpressionCallStack.peek().getSourceInformation();
     }
 
     private CoreInstance element(String path)

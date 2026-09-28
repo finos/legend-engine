@@ -33,8 +33,7 @@ public class Test_Pure_Preeval_Java
 
     private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
 
-    static final ImmutableSet<String> KNOWN_DIVERGENT = Sets.immutable.with(
-            "tesColumnEvalOnRelation", "tesColumnEvalOnRelationWithCast", "testPrerouting33", "testPrerouting34");
+    static final ImmutableSet<String> KNOWN_DIVERGENT = Sets.immutable.empty();
 
     public static TestSuite suite()
     {

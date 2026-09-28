@@ -46,6 +46,10 @@ public final class MetamodelPaths
     public static final String GENERIC_TYPE_FUNCTION = "meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_";
     public static final String NIL = "meta::pure::metamodel::type::Nil";
     public static final String TDS_ROW = "meta::pure::tds::TDSRow";
+    public static final String TABULAR_DATA_SET = "meta::pure::tds::TabularDataSet";
+    public static final String RELATION_TYPE = "meta::pure::metamodel::relation::RelationType";
+    public static final String COLUMN = "meta::pure::metamodel::relation::Column";
+    public static final String PATH = "meta::pure::metamodel::path::Path";
     public static final String FUNCTION_TYPE_PROFILE = "meta::pure::profiles::functionType";
     public static final String TDS = "meta::pure::metamodel::relation::TDS";
     public static final String COLUMN_SPECIFICATION = "meta::pure::tds::ColumnSpecification";

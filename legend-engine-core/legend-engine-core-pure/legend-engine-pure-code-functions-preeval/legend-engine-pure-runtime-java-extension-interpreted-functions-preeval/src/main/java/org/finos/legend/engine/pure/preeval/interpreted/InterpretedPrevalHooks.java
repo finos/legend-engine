@@ -15,8 +15,11 @@
 package org.finos.legend.engine.pure.preeval.interpreted;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.pure.preeval.PrevalHooks;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 
@@ -31,8 +34,10 @@ public final class InterpretedPrevalHooks implements PrevalHooks
     private final VariableContext isGeneratedMilestoningPropertyContext;
     private final CoreInstance isGetAllFunction;
     private final VariableContext isGetAllFunctionContext;
+    private final CoreInstance resolveTdsSchema;
+    private final VariableContext resolveTdsSchemaContext;
 
-    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext stopPreevalContext, CoreInstance shouldInline, VariableContext shouldInlineContext, CoreInstance isGeneratedMilestoningProperty, VariableContext isGeneratedMilestoningPropertyContext, CoreInstance isGetAllFunction, VariableContext isGetAllFunctionContext)
+    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext stopPreevalContext, CoreInstance shouldInline, VariableContext shouldInlineContext, CoreInstance isGeneratedMilestoningProperty, VariableContext isGeneratedMilestoningPropertyContext, CoreInstance isGetAllFunction, VariableContext isGetAllFunctionContext, CoreInstance resolveTdsSchema, VariableContext resolveTdsSchemaContext)
     {
         this.runtime = runtime;
         this.stopPreeval = stopPreeval;
@@ -43,6 +48,8 @@ public final class InterpretedPrevalHooks implements PrevalHooks
         this.isGeneratedMilestoningPropertyContext = isGeneratedMilestoningPropertyContext;
         this.isGetAllFunction = isGetAllFunction;
         this.isGetAllFunctionContext = isGetAllFunctionContext;
+        this.resolveTdsSchema = resolveTdsSchema;
+        this.resolveTdsSchemaContext = resolveTdsSchemaContext;
     }
 
     @Override
@@ -67,5 +74,11 @@ public final class InterpretedPrevalHooks implements PrevalHooks
     public boolean isGetAllFunction(Object function)
     {
         return this.runtime.evaluateBoolean(this.isGetAllFunction, this.isGetAllFunctionContext, Lists.immutable.with(function));
+    }
+
+    @Override
+    public ImmutableList<Object> resolveTdsSchema(ValueSpecification value, ImmutableMap<String, ImmutableList<Object>> rollingInScopeVars)
+    {
+        return this.runtime.evaluate(this.resolveTdsSchema, this.resolveTdsSchemaContext, Lists.immutable.with(Lists.immutable.with(value), Lists.immutable.with(this.runtime.newVarsMap(rollingInScopeVars))));
     }
 }

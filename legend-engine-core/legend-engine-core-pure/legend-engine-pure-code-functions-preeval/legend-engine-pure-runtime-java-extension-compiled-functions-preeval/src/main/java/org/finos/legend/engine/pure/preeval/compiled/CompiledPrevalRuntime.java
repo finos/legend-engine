@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
+import org.finos.legend.engine.pure.preeval.MetamodelPaths;
 import org.finos.legend.engine.pure.preeval.PrevalRuntime;
 import org.finos.legend.pure.generated.CoreGen;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
@@ -33,6 +34,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.KeyExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.NativeFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
@@ -142,6 +145,56 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         return function instanceof QualifiedProperty
                 && ((QualifiedProperty<?>) function)._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement
                 && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(((QualifiedProperty<?>) function)._owner()));
+    }
+
+    @Override
+    public boolean isPropertyOf(Object function, String propertyName, String ownerPath)
+    {
+        return function instanceof AbstractProperty
+                && propertyName.equals(((AbstractProperty<?>) function)._name())
+                && ((AbstractProperty<?>) function)._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement
+                && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(((AbstractProperty<?>) function)._owner()));
+    }
+
+    @Override
+    public GenericType functionReturnType(Object function)
+    {
+        if (function instanceof AbstractProperty)
+        {
+            return ((AbstractProperty<?>) function)._genericType();
+        }
+        if (isInstanceOf(function, MetamodelPaths.PATH) || isInstanceOf(function, MetamodelPaths.COLUMN))
+        {
+            return Lists.immutable.<GenericType>withAll(classifierGenericType(function)._typeArguments()).get(1);
+        }
+        if (function instanceof NativeFunction || function instanceof FunctionDefinition)
+        {
+            return ((FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function))._returnType();
+        }
+        throw error("functionReturnType not supported yet for the type " + typeDescription(function));
+    }
+
+    @Override
+    public Multiplicity functionReturnMultiplicity(Object function)
+    {
+        if (function instanceof AbstractProperty)
+        {
+            return ((AbstractProperty<?>) function)._multiplicity();
+        }
+        if (isInstanceOf(function, MetamodelPaths.PATH) || isInstanceOf(function, MetamodelPaths.COLUMN))
+        {
+            return Lists.immutable.<Multiplicity>withAll(classifierGenericType(function)._multiplicityArguments()).get(0);
+        }
+        if (function instanceof NativeFunction || function instanceof FunctionDefinition)
+        {
+            return ((FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function))._returnMultiplicity();
+        }
+        throw error("functionReturnMultiplicity not supported yet for the type " + typeDescription(function));
+    }
+
+    private static GenericType classifierGenericType(Object instance)
+    {
+        return (GenericType) ((CoreInstance) instance).getValueForMetaPropertyToOne("classifierGenericType");
     }
 
     @Override
@@ -277,6 +330,15 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     {
         T copy = CompiledSupport.copy(valueSpecification);
         copy._genericType(genericType);
+        return copy;
+    }
+
+    @Override
+    public <T extends ValueSpecification> T withGenericTypeAndMultiplicity(T valueSpecification, GenericType genericType, Multiplicity multiplicity)
+    {
+        T copy = CompiledSupport.copy(valueSpecification);
+        copy._genericType(genericType);
+        copy._multiplicity(multiplicity);
         return copy;
     }
 

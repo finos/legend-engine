@@ -20,6 +20,7 @@ import org.finos.legend.engine.pure.preeval.rules.AndOrRule;
 import org.finos.legend.engine.pure.preeval.rules.ConcatenateRule;
 import org.finos.legend.engine.pure.preeval.rules.EmptyCastRule;
 import org.finos.legend.engine.pure.preeval.rules.EvalExpansionRule;
+import org.finos.legend.engine.pure.preeval.rules.EvalOnColumnRule;
 import org.finos.legend.engine.pure.preeval.rules.FilterFalseRule;
 import org.finos.legend.engine.pure.preeval.rules.FilterTrueRule;
 import org.finos.legend.engine.pure.preeval.rules.FoldUnrollRule;
@@ -28,6 +29,7 @@ import org.finos.legend.engine.pure.preeval.rules.IfRule;
 import org.finos.legend.engine.pure.preeval.rules.InlineRule;
 import org.finos.legend.engine.pure.preeval.rules.MapUnrollRule;
 import org.finos.legend.engine.pure.preeval.rules.ReactivateRule;
+import org.finos.legend.engine.pure.preeval.rules.TdsColumnsRule;
 import org.finos.legend.engine.pure.preeval.rules.ToOneManyRule;
 import org.finos.legend.engine.pure.preeval.rules.ToOneRule;
 
@@ -36,6 +38,8 @@ public final class Rules
     public static final ImmutableList<PreParameterRule> PRE_PARAMETER = Lists.immutable.with(new IfRule(), new AndOrRule());
     public static final ImmutableList<ExpressionRule> EXPANSION = Lists.immutable.with(new InlineRule(), new EvalExpansionRule());
     public static final ImmutableList<ExpressionRule> NOT_PREVALLED = Lists.immutable.with(
+            new TdsColumnsRule(),
+            new EvalOnColumnRule(),
             new MapUnrollRule(),
             new FoldUnrollRule(),
             new ConcatenateRule(),
