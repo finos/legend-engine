@@ -43,8 +43,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_TableNam
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_TableNameMapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalMapper;
 import org.finos.legend.pure.generated.core_relational_relational_runtime_relationalRuntimeExtension;
-import org.finos.legend.pure.m4.tools.time.TimeZones;
 
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,11 +101,11 @@ public class HelperRelationalDatabaseConnectionBuilder
         {
             try
             {
-                TimeZones.parse(databaseConnection.timeZone);
+                ZoneId.of(databaseConnection.timeZone, ZoneId.SHORT_IDS);
             }
-            catch (IllegalArgumentException e)
+            catch (DateTimeException e)
             {
-                throw new EngineException(e.getMessage(), databaseConnection.sourceInformation, EngineErrorType.COMPILATION, e);
+                throw new EngineException("Unknown time zone: " + databaseConnection.timeZone, databaseConnection.sourceInformation, EngineErrorType.COMPILATION, e);
             }
         }
     }
