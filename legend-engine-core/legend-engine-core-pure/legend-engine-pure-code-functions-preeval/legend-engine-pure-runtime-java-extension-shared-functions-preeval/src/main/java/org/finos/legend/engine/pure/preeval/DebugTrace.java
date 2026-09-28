@@ -40,4 +40,12 @@ final class DebugTrace
             LOGGER.info("[{}] Returning {} modified={} canPreval={} openVars={}", state.getDepth(), result.getValue() == null ? "null" : result.getValue().getClass().getSimpleName(), result.isModified(), result.canPreval(), result.getOpenVars());
         }
     }
+
+    static void message(PrevalState state, String text)
+    {
+        if (state.isDebug())
+        {
+            LOGGER.info("[{}] {}", state.getDepth(), text);
+        }
+    }
 }

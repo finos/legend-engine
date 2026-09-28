@@ -33,7 +33,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
-public final class Preevaluator
+public final class Preevaluator implements PrevalServices
 {
     private final PrevalRuntime runtime;
     private final PrevalHooks hooks;
@@ -50,9 +50,46 @@ public final class Preevaluator
         this.lambdaHolders = new LambdaHolders(runtime, this::prevalInternal);
     }
 
+    @Override
     public PrevalResult preval(Object item, PrevalState state)
     {
         return prevalInternal(item, state);
+    }
+
+    @Override
+    public PrevalRuntime runtime()
+    {
+        return this.runtime;
+    }
+
+    @Override
+    public PrevalHooks hooks()
+    {
+        return this.hooks;
+    }
+
+    @Override
+    public Scope scope()
+    {
+        return this.scope;
+    }
+
+    @Override
+    public GenericTypes genericTypes()
+    {
+        return this.genericTypes;
+    }
+
+    @Override
+    public ImmutableList<String> openVars(Iterable<PrevalResult> results, PrevalState state)
+    {
+        return this.scope.openVars(Lists.mutable.withAll(results).flatCollect(PrevalResult::getOpenVars), state.getInScopeVars());
+    }
+
+    @Override
+    public void trace(PrevalState state, String message)
+    {
+        DebugTrace.message(state, message);
     }
 
     PrevalResult prevalInternal(Object item, PrevalState origState)
@@ -195,44 +232,63 @@ public final class Preevaluator
 
     private PrevalResult prevalFunctionExpression(FunctionExpression expression, PrevalState state)
     {
+        PreParameterRule preParameterRule = Rules.PRE_PARAMETER.detect(r -> r.matches(expression, this));
+        if (preParameterRule != null)
+        {
+            PrevalResult handled = preParameterRule.apply(expression, state, this);
+            if (handled != null)
+            {
+                return handled;
+            }
+        }
+        Prologue prologue = prologue(expression, state);
+        FunctionExpression rewritten = prologue.rewritten();
+        boolean canPrevalFunction = !(this.runtime.hasStereotype(rewritten._func(), MetamodelPaths.FUNCTION_TYPE_PROFILE, "SideEffectFunction")
+                || this.runtime.hasStereotype(rewritten._func(), MetamodelPaths.FUNCTION_TYPE_PROFILE, "NotImplementedFunction")
+                || this.hooks.stopPreeval(Lists.immutable.with(rewritten)));
+        if (!canPrevalFunction)
+        {
+            trace(state, "Unable to perform preval: " + this.runtime.typeDescription(rewritten._func()));
+            boolean canPreval = this.runtime.isFunction(rewritten._func(), MetamodelPaths.LET_FUNCTION) && PrevalResult.allCanPreval(prologue.parameters());
+            return new PrevalResult(rewritten, canPreval, prologue.openVars(), prologue.modified());
+        }
+        ExpressionRule expansion = Rules.EXPANSION.detect(r -> r.matches(prologue, this));
+        if (expansion != null)
+        {
+            return expansion.apply(prologue, this);
+        }
+        Prologue reasoned = prologue.withNotPrevalReason(notPrevalReason(rewritten, prologue.parameters(), state));
+        if (reasoned.notPrevalReason() != null)
+        {
+            ExpressionRule handler = Rules.NOT_PREVALLED.detect(r -> r.matches(reasoned, this));
+            if (handler != null)
+            {
+                return handler.apply(reasoned, this);
+            }
+            trace(state, "Not prevalling (" + reasoned.notPrevalReason() + ")");
+            return reasoned.notPrevalled();
+        }
+        trace(state, "Performing preval");
+        return Rules.REACTIVATE.apply(reasoned, this);
+    }
+
+    private Prologue prologue(FunctionExpression expression, PrevalState state)
+    {
         MutableList<? extends ValueSpecification> parameters = Lists.mutable.withAll(expression._parametersValues());
         // parity: Pure zips parameter names with values, so surplus values are dropped
         int parameterCount = parameters.isEmpty() ? 0 : Math.min(parameters.size(), parameterNameCount(expression._func()));
-        ListIterable<PrevalResult> results = parameters.subList(0, parameterCount).collect(p -> prevalInternal(p, state));
+        ImmutableList<PrevalResult> results = parameters.subList(0, parameterCount).collect(p -> prevalInternal(p, state)).toImmutable();
         PrevalResult genericType = this.genericTypes.resolveGenericType(expression._genericType(), state);
         boolean modified = PrevalResult.anyModified(results) || genericType.isModified();
-        FunctionExpression newExpression = expression;
+        FunctionExpression rewritten = expression;
         if (modified)
         {
             ListIterable<? extends ValueSpecification> newParameters = PrevalResult.anyModified(results)
                     ? results.collect(r -> this.runtime.withGenericType((ValueSpecification) r.getValue(), (GenericType) this.genericTypes.resolveGenericType(((ValueSpecification) r.getValue())._genericType(), state).getValue()))
                     : parameters;
-            newExpression = this.runtime.withParametersAndGenericType(expression, newParameters, (GenericType) genericType.getValue());
+            rewritten = this.runtime.withParametersAndGenericType(expression, newParameters, (GenericType) genericType.getValue());
         }
-        ImmutableList<String> openVars = this.scope.openVars(results.flatCollect(PrevalResult::getOpenVars), state.getInScopeVars());
-        boolean canPrevalFunction = !(this.runtime.hasStereotype(newExpression._func(), MetamodelPaths.FUNCTION_TYPE_PROFILE, "SideEffectFunction")
-                || this.runtime.hasStereotype(newExpression._func(), MetamodelPaths.FUNCTION_TYPE_PROFILE, "NotImplementedFunction")
-                || this.hooks.stopPreeval(Lists.immutable.with(newExpression)));
-        if (!canPrevalFunction)
-        {
-            boolean canPreval = this.runtime.isFunction(newExpression._func(), MetamodelPaths.LET_FUNCTION) && PrevalResult.allCanPreval(results);
-            return new PrevalResult(newExpression, canPreval, openVars, modified);
-        }
-        String notPrevalReason = notPrevalReason(newExpression, results, state);
-        if (notPrevalReason != null)
-        {
-            return new PrevalResult(newExpression, PrevalResult.allCanPreval(results), openVars, modified);
-        }
-        ImmutableList<Object> reactivated = this.runtime.reactivate(newExpression, state.getInScopeVars());
-        PrevalState emptyScope = state.withInScopeTypeParams(Maps.immutable.empty()).withInScopeVars(Maps.immutable.empty());
-        ImmutableList<Object> values = reactivated.collect(v -> isReactivatedLambdaHolder(v) ? prevalInternal(v, emptyScope).getValue() : v);
-        Object value = isSingle(values, InstanceValue.class) ? values.getOnly() : this.runtime.newInstanceValue(newExpression._genericType(), this.runtime.exactly(values.size()), values);
-        return new PrevalResult(value, true, Lists.immutable.empty(), true);
-    }
-
-    private boolean isReactivatedLambdaHolder(Object value)
-    {
-        return isAnyOf(value, MetamodelPaths.BASIC_COLUMN_SPECIFICATION, MetamodelPaths.COLLECTION_AGGREGATE_VALUE, MetamodelPaths.TDS_AGGREGATE_VALUE, MetamodelPaths.AGG_COL_SPEC_ARRAY, MetamodelPaths.AGG_COL_SPEC);
+        return new Prologue(expression, rewritten, results, modified, openVars(results, state), state, null);
     }
 
     private int parameterNameCount(Object function)
@@ -329,7 +385,8 @@ public final class Preevaluator
         return new PrevalResult(value, expression.canPreval(), this.scope.openVars(expression.getOpenVars(), state.getInScopeVars()), expression.isModified());
     }
 
-    private boolean isInstanceValue(Object value, ImmutableMap<String, ImmutableList<Object>> inScopeVars)
+    @Override
+    public boolean isInstanceValue(Object value, ImmutableMap<String, ImmutableList<Object>> inScopeVars)
     {
         if (value instanceof InstanceValue)
         {
