@@ -467,6 +467,28 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testBooleanConditionResolvingToAnInScopeVariableFailsAsInPure()
+    {
+        compileTestSource("inline.pure", "function test::preeval::pick(p:Boolean[1], q:Boolean[1]):Integer[1]\n{\n    if($p, |1, |2)\n}\n"
+                + "function test::preeval::both(p:Boolean[1], q:Boolean[1]):Boolean[1]\n{\n    $p && $q\n}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let pick = {p:Boolean[1], q:Boolean[1] | test::preeval::pick($q, $p)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "assertError(|prevalNative($pick, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug()), {m:String[1], s:SourceInformation[0..1] | assert($m->contains('VariableExpression cannot be cast to InstanceValue'), |$m)});",
+                    "let both = {p:Boolean[1], q:Boolean[1] | test::preeval::both($q, $p)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "assertError(|prevalNative($both, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug()), {m:String[1], s:SourceInformation[0..1] | assert($m->contains('VariableExpression cannot be cast to InstanceValue'), |$m)});");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("inline.pure");
+            runtime.compile();
+        }
+    }
+
+    @Test
     public void testEliminatesToOneManyOfNonEmptyParameter()
     {
         executeTestFunction(

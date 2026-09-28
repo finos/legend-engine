@@ -37,6 +37,7 @@ public final class AndOrRule implements PreParameterRule
     {
         boolean shortcut = !services.runtime().isFunction(expression._func(), MetamodelPaths.AND_FUNCTION);
         ImmutableList<ValueSpecification> parameters = Lists.immutable.withAll(expression._parametersValues());
+        // parity: Pure casts an instance-value operand to an InstanceValue, so an in-scope VariableExpression operand fails here
         PrevalResult first = services.preval(parameters.get(0), state);
         if (services.isInstanceValue(first.getValue(), state.getInScopeVars()))
         {

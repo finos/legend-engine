@@ -41,6 +41,7 @@ public final class IfRule implements PreParameterRule
         {
             return null;
         }
+        // parity: Pure casts the condition to an InstanceValue, so an in-scope VariableExpression condition fails here
         ValueSpecification branch = RuleSupport.singleBooleanEquals(services, condition.getValue(), true) ? parameters.get(1) : parameters.get(2);
         FunctionExpression evaluation = services.runtime().withFuncAndParameters(expression, services.runtime().function(MetamodelPaths.EVAL_FUNCTION), Lists.immutable.with(branch));
         return services.preval(evaluation, state).markModified();

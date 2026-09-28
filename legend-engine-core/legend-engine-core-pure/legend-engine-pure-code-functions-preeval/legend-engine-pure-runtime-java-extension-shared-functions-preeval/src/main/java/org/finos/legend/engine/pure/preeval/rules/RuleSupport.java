@@ -38,11 +38,7 @@ final class RuleSupport
 
     static boolean singleBooleanEquals(PrevalServices services, Object instanceValue, boolean expected)
     {
-        if (!(instanceValue instanceof InstanceValue))
-        {
-            return false;
-        }
-        ImmutableList<Object> values = services.runtime().values((InstanceValue) instanceValue);
+        ImmutableList<Object> values = services.runtime().values(castToInstanceValue(services.runtime(), instanceValue));
         if (values.size() != 1)
         {
             return false;
@@ -67,12 +63,8 @@ final class RuleSupport
         }
         // parity: Pure casts the predicate to an InstanceValue of LambdaFunctions, so any other predicate fails here
         ValueSpecification predicate = prologue.rewrittenParameters().getLast();
-        if (!(predicate instanceof InstanceValue))
-        {
-            throw runtime.error("Cast exception: " + runtime.typeDescription(predicate) + " cannot be cast to InstanceValue");
-        }
         MutableList<ValueSpecification> expressions = Lists.mutable.empty();
-        runtime.values((InstanceValue) predicate).forEach(value ->
+        runtime.values(castToInstanceValue(runtime, predicate)).forEach(value ->
         {
             if (!(value instanceof LambdaFunction))
             {
@@ -86,6 +78,15 @@ final class RuleSupport
         }
         ValueSpecification lastExpression = expressions.getLast();
         return lastExpression instanceof InstanceValue && singleBooleanEquals(services, lastExpression, expected);
+    }
+
+    static InstanceValue castToInstanceValue(PrevalRuntime runtime, Object value)
+    {
+        if (!(value instanceof InstanceValue))
+        {
+            throw runtime.error("Cast exception: " + runtime.typeDescription(value) + " cannot be cast to InstanceValue");
+        }
+        return (InstanceValue) value;
     }
 
     static boolean isGetAll(Object value, PrevalServices services)
