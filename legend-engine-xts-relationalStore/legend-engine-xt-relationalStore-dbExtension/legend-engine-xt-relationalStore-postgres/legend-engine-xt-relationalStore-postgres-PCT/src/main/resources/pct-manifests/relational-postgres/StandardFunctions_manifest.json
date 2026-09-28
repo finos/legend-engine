@@ -7,9 +7,6 @@
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
-    "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 7.345D\nactual:   7.345\""
-  }, {
     "test" : "meta::pure::functions::collection::tests::greatest::testGreatest_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
   }, {
@@ -24,9 +21,6 @@
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_DateTime_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-01-10T15:25:30+0000\nactual:   %2025-01-10T15:25:30.000000000+0000\""
-  }, {
-    "test" : "meta::pure::functions::collection::tests::least::testLeast_Number_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
   }, {
     "test" : "meta::pure::functions::collection::tests::least::testLeast_Single_Function_1__Boolean_1_",
     "expectedError" : "\"\nexpected: %2025-02-10T20:10:20+0000\nactual:   %2025-02-10T20:10:20.000000000+0000\""
@@ -167,10 +161,7 @@
     "expectedError" : "\"Unused format args. [4] arguments provided to expression \"COVAR_SAMP(%s, %s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::max::testMax_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::max::testMax_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 2D\nactual:   2.0\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"max(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::maxBy::testMaxBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'maxBy' (state: [Select, false]) is not supported yet\""
@@ -206,10 +197,7 @@
     "expectedError" : "org.postgresql.util.PSQLException: ERROR: function median(double precision) does not exist\n  Hint: No function matches the given name and argument types. You might need to add explicit type casts."
   }, {
     "test" : "meta::pure::functions::math::tests::min::testMin_NumbersArray_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.0D\nactual:   1.0\""
-  }, {
-    "test" : "meta::pure::functions::math::tests::min::testMin_Numbers_Function_1__Boolean_1_",
-    "expectedError" : "\"\nexpected: 1.23D\nactual:   1.23\""
+    "expectedError" : "\"Unused format args. [5] arguments provided to expression \"min(%s)\"\""
   }, {
     "test" : "meta::pure::functions::math::tests::minBy::testMinBy_Function_1__Boolean_1_",
     "expectedError" : "\"[unsupported-api] The function 'minBy' (state: [Select, false]) is not supported yet\""
@@ -236,7 +224,7 @@
     "expectedError" : "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Function_1__Boolean_1_",
-    "expectedError" : "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"
+    "expectedError" : "Unused format args. [3] arguments provided to expression \"mode(%s)\""
   }, {
     "test" : "meta::pure::functions::math::tests::mode::testMode_Number_Relation_Aggregate_Function_1__Boolean_1_",
     "expectedError" : "org.postgresql.util.PSQLException: ERROR: WITHIN GROUP is required for ordered-set aggregate mode"

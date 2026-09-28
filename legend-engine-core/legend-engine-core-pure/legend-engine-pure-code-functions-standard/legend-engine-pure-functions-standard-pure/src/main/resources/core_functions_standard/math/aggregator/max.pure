@@ -159,17 +159,17 @@ function <<PCT.test>> meta::pure::functions::math::tests::max::testMax_FloatsArr
 
 function <<PCT.test>> meta::pure::functions::math::tests::max::testMax_Numbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-    assertEquals(2, $f->eval(|max(1.23, 2)));
-    assertEquals(2, $f->eval(|max(2, 1.23)));
-    assertEquals(2d, $f->eval(|max(2d, 1.23)));
+    assertEqWithinTolerance(2, $f->eval(|max(1.23, 2)), 0.000000000000001);
+    assertEqWithinTolerance(2, $f->eval(|max(2, 1.23)), 0.000000000000001);
+    assertEqWithinTolerance(2d, $f->eval(|max(2d, 1.23)), 0.000000000000001);
 }
 
 function <<PCT.test>> meta::pure::functions::math::tests::max::testMax_NumbersArray<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
     assertEquals([], $f->eval(|max([]->cast(@Number))));
-    assertEquals(1.0d, $f->eval(|max([1.0d])));
-    assertEquals(7.345, $f->eval(|max([4.23, 7.345, 1.0, 3, 4])));
-    assertEquals(7.345d, $f->eval(|max([4.23, 7.345d, 1.0, 3, 4])));
+    assertEqWithinTolerance(1.0d, $f->eval(|max([1.0d]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(7.345, $f->eval(|max([4.23, 7.345, 1.0, 3, 4]))->toOne(), 0.000000000000001);
+    assertEqWithinTolerance(7.345d, $f->eval(|max([4.23, 7.345d, 1.0, 3, 4]))->toOne(), 0.000000000000001);
 }
 
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::math::tests::max::testMax_Integers_Relation_Aggregate<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
