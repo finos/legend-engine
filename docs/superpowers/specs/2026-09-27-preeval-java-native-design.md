@@ -224,7 +224,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 |---|---|---|
 | P0 Scaffold | Module family; `prevalNative` and `preevalImplementation` natives with compiled/interpreted shells; `PrevalHooks`; `PrevalResult`; the `PURE`/`JAVA`/`SHADOW` switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
 | P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` — done |
-| P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` |
+| P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
@@ -244,16 +244,12 @@ compiled-core.
 
 #### P1 structure vs §3.4/§3.5
 
-- P1 implemented dispatch, the expression-sequence/let sequencer, leaf handling, `isInstanceValue` and
-  re-activation inline in `Preevaluator` (plus `Scope`, `GenericTypes`, `LambdaHolders`, `DebugTrace`),
-  not as the separate `NodeDispatcher`, `FunctionDefinitionSequencer`, `rules/FunctionExpressionRule` +
-  ordered `Rules`, `Leaves` units of §3.4; `Scope.addToScope` and `PrevalRuntime.evaluate` do not exist
-  yet; `PrevalHooks` exposes only `stopPreeval`.
-- The interpreted adapter copies a `LambdaWithContext` to a plain lambda (parity with interpreted
-  Pure's `^$lf(...)`), rather than §3.5's "rewritten lambdas become `LambdaWithContext`".
-- The compiled adapter builds results/hooks reflectively (the module's own generated classes are
-  unavailable at compile time).
-- P2 Task 1 extracts the rule structure (see below) before adding rules.
+P2 Task 1 extracted the rule structure out of the inline P1 traversal: `rules/ExpressionRule` (the
+generic-path `matches`/`apply` contract) and `PreParameterRule` (the `if`/`and`/`or` pre-parameter
+hook point), collected into `Rules.PRE_PARAMETER`, `Rules.EXPANSION`, `Rules.NOT_PREVALLED` and
+`Rules.REACTIVATE`, with `TestRules` pinning the order. `ReactivateRule` now owns re-activation,
+including re-prevalling lambda holders. The interpreted adapter's `LambdaWithContext`-to-plain-lambda
+copy and the compiled adapter's reflective result/hook construction (both noted in P1) are unchanged.
 
 Known gaps carried into P2/P3, recorded honestly rather than closed:
 - Interpreted mode has harness coverage only; the full `tests.pure` interpreted runner
@@ -301,29 +297,75 @@ Known gaps carried into P2/P3, recorded honestly rather than closed:
   analyzer) demonstrates the failure; direct Surefire invocations need `-DargLine=`. — **Done.** Every
   P1 task's RED ran with `-Dmdep.analyze.skip=true`; direct Surefire runs used `-DargLine=`.
 
+### P2 status (2026-09-28)
+
+`Test_Pure_Preeval_Java` is green under both `JAVA` and `SHADOW` for all 111 collected
+`meta::pure::router::preeval::tests` (222/222). `KNOWN_DIVERGENT` is empty: the 49-name baseline
+(`docs/superpowers/plans/2026-09-28-preeval-p2-shadow-baseline.md`) was closed across Tasks 4–8, with
+no unexpected failures at any step. Relational `testPrerouting42`
+(`legend-engine-xt-relationalStore-core-pure`'s `Test_Pure_Relational_Preeval_Java`, selected by name
+out of the same `meta::pure::router::preeval::tests` package — the core jar's ~111 tests are on that
+module's classpath too — with an exactly-one-match guard) is green under both `JAVA` and `SHADOW`
+(2/2). `TestRules` pins the full Pure handler order (`Rules.PRE_PARAMETER`, `Rules.EXPANSION`,
+`Rules.NOT_PREVALLED`, `Rules.REACTIVATE`). Full exit-verification run: `Test_Pure_Core` (1192/1192),
+`Test_Pure_Preeval` (111/111) and `Test_Pure_Preeval_Java` (222/222) together, 1525/1525, 0
+failures/errors, under the default `PURE`. Checkstyle: 0 violations across the four preeval modules,
+compiled-core and relational core-pure.
+
+**RelationType eval-on-Column probe.** A temporary `System.err` marker was added to
+`EvalOnColumnRule.apply`'s `isInstanceOf(rawType, RELATION_TYPE)` branch (the compiled return-type
+fix-up) and the full 222-execution `Test_Pure_Preeval_Java` run was repeated with it in place (output
+capture verified working via the SLF4J warnings that appear in the same log). The marker fired zero
+times: neither `tesColumnEvalOnRelation` nor `tesColumnEvalOnRelationWithCast` reaches that branch —
+both tests' `eval`-on-`Column` targets resolve to a scalar `String` return type, not a `RelationType`,
+so the fix-up condition never holds. The branch exists and is reachable in principle but is untested
+by the current suite (see known gaps below). The probe was removed and the four preeval modules plus
+compiled-core were rebuilt clean before every run reported above.
+
+**Known gaps (carried forward, not closed by P2):**
+- Interpreted-mode coverage of the TDS/`Relation` preeval paths — including `EvalOnColumnRule`'s
+  `RelationType` fix-up and the `BasicColumnSpecification`/`AggregateValue` lambda-holder paths noted
+  in P1 — is harness-only; the full `tests.pure` interpreted runner (`Test_Interpreted_Preeval`) is P3
+  scope.
+- The `EvalOnColumnRule` `RelationType` return-type fix-up (§3.4) has no test in either `tests.pure` or
+  the relational suite that drives a `Column`-typed `eval` target whose own return type is a
+  `RelationType`; confirmed unreached by the probe above.
+- `// parity:` markers (10 across the shared preeval module) have no filed follow-up issue links yet
+  (§3.4).
+
 ### P2 requirements carried from P1 review
 
-- P2 Task 1 is a behaviour-preserving refactor guarded by `Test_Pure_Preeval_Java` and the harness:
-  extract `FunctionExpressionRule` (`matches`/`apply` over a context holding the original expression,
-  the rewritten expression, parameter results, generic-type result, modified flag and state) and one
-  ordered `Rules` list with an order-pinning test; move re-activation into `ReactivateRule`; add a
-  pre-parameter hook point for `IfRule`/`AndOrRule` (they must run before parameters are pre-evaluated);
-  add `PrevalRuntime.values(InstanceValue)` and `PrevalRuntime.isPureOne(Multiplicity)` and route all
-  call sites through them.
-- Widen the ports: `PrevalHooks` gains `shouldInline`, `isGeneratedMilestoningProperty`,
-  `isGetAllFunction`, `resolveTdsSchema`; `PrevalRuntime` gains what the rules need (resolved type
-  parameters of an expression, func+parameters rewrite, genericType+multiplicity rewrite, function
-  return type/multiplicity, multiplicity bounds/concreteness, property-owner checks, a `Nil` generic
-  type).
+- P2 Task 1 refactor (extract `ExpressionRule`/`PreParameterRule`, one ordered `Rules` list with an
+  order-pinning test, `ReactivateRule`, route `InstanceValue`/`Multiplicity` reads through the
+  runtime) — **Done.** `Rules.java` holds `PRE_PARAMETER`, `EXPANSION`, `NOT_PREVALLED`, `REACTIVATE`;
+  `TestRules` pins the order; `PrevalRuntime.values(InstanceValue)` and
+  `PrevalRuntime.isPureOne(Multiplicity)` exist and are used at all read sites.
+- Widen the ports (`PrevalHooks` gains `shouldInline`, `isGeneratedMilestoningProperty`,
+  `isGetAllFunction`, `resolveTdsSchema`; `PrevalRuntime` gains the type/rewrite/multiplicity helpers
+  the rules need) — **Done.**
 - Add `Scope.addToScope` (with self-reference dropping) and exercise `inScopeTypeParams` and the
-  inlining `path` cycle check.
-- Before implementing rules, run all `tests.pure` tests under `SHADOW` and commit the failing list as
-  a baseline manifest; each rule task turns named entries green.
-- Error-text parity (`typeDescription`) and the `DebugTrace` "Performing preval"/"Not prevalling"
-  messages land with the rules.
-- JUnit 5 tests for `GenericTypes` (incl. the `FunctionType` always-modified quirk) and the rule-order
-  pin test (§4 item 3).
-- `// parity:` markers get follow-up issue links (§3.4) once issues are filed.
+  inlining `path` cycle check — **Done.**
+- Run all `tests.pure` tests under `SHADOW` before implementing rules and commit the failing list as a
+  baseline manifest — **Done.** Task 3's baseline (49 names) is recorded in
+  `docs/superpowers/plans/2026-09-28-preeval-p2-shadow-baseline.md`; every rule task closed its
+  expected subset with no unexpected failures.
+- Error-text parity (`typeDescription`) — **Done, in Task 2**, ahead of the rule tasks.
+- `DebugTrace` "Performing preval"/"Not prevalling" messages — **Partially done.** The per-rule
+  "Handling …"/"Inlining: …"/"Expanding …" messages (`InlineRule`, `EvalExpansionRule`,
+  `EmptyCastRule`, `FilterFalseRule`, `FilterTrueRule`, `ToOneRule`, `ToOneManyRule`, `GenericTypeRule`,
+  `MapUnrollRule`, `FoldUnrollRule`, `ConcatenateRule`) match Pure's text. Not ported: the sequencer
+  messages ("Dropping non-variable assignement…", "adding variable … to rolling scope…", "Processing
+  parameter: …"/"Completed processing parameter: …", "Function expression has been modified …"), the
+  stop-check message ("Unable to perform preval: …"), the final decision messages themselves
+  ("Performing preval: … (can reactivate dynamically: …)" / "Not prevalling: … (reason)"), and the
+  `addToScope` scope-addition messages ("Adding variables to scope: …" / "Adding type params to
+  scope: …") — none of these have a Java `DebugTrace`/`trace(...)` call site.
+- JUnit 5 tests for `GenericTypes` (incl. the `FunctionType` always-modified quirk) — **Not added.**
+  No `TestGenericTypes` exists; only `TestScope` and `TestRules` were added alongside the rule work.
+  `GenericTypes` is exercised indirectly through `Test_Pure_Preeval_Java` and the harness, not by a
+  dedicated unit test.
+- `// parity:` markers get follow-up issue links (§3.4) once issues are filed — **Still pending.** 10
+  markers exist, none linked to a filed issue.
 
 ## 6. Cutover criteria
 
