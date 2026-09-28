@@ -3406,6 +3406,77 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ]);
 }
 
+// SQL's NOT IN (subquery) is three-valued: a null value, or a null anywhere in the subquery's column,
+// makes the predicate UNKNOWN and the row is dropped. relation::in is Boolean[1] and cannot carry
+// UNKNOWN, so the three-valued answer is spelled out:
+//
+//   (value is not null or <rel is empty>) and <no null in rel.col> and <no row where rel.col = value>
+//
+// Only the last conjunct is correlated, and it is a plain equality, so it decorrelates into an
+// anti-join; the other two are uncorrelated and evaluated once. Folding all three into a single
+// exists() over an or-ed predicate reads more naturally but buries the outer column in a disjunct
+// inside the subquery, which cannot be turned into an anti-join at all.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processNotInSubquery(i:InPredicate[1], subquery:SubqueryExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug(|'processNotInSubquery', $context.debug);
+  assertRelation($context.relation, 'not in (subquery)');
+
+  let value = $i.value->processExpression($expContext, $context);
+
+  let relContext = processSubRelation($subquery.query, $expContext, $context);
+  let rel = $relContext.expression->toOne();
+
+  //unlike the positive form, this needs the column's actual name, so an unresolved-schema source
+  //(a table function, say) is rejected here rather than left to the compiler
+  let columns = $rel->resolveRelationColumns();
+  assert($columns->size() == 1, | 'not in (subquery) requires the subquery to return exactly one column with a resolvable schema, got ' + $columns->size()->toString());
+  let colName = $columns->toOne().name->toOne();
+
+  let valueIsKnown = sfe(not_Boolean_1__Boolean_1_, sfe(isEmpty_Any_$0_1$__Boolean_1_, $value));
+  let relationIsEmpty = buildNotExists($rel, alwaysTrueLambda($relContext.rowVarName));
+  let noNullInColumn = buildNotExists($rel, createColumnIsNullLambda($colName, $relContext));
+  let noMatchingRow = buildNotExists($rel, createColumnMatchesLambda($colName, $value, $relContext));
+
+  sfe(and_Boolean_1__Boolean_1__Boolean_1_, [
+    sfe(or_Boolean_1__Boolean_1__Boolean_1_, [$valueIsKnown, $relationIsEmpty]),
+    sfe(and_Boolean_1__Boolean_1__Boolean_1_, [$noNullInColumn, $noMatchingRow])
+  ]);
+}
+
+// not exists (select 1 from <rel> where <predicate>)
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::buildNotExists(rel:ValueSpecification[1], predicate:LambdaFunction<Any>[1]):ValueSpecification[1]
+{
+  sfe(not_Boolean_1__Boolean_1_, sfe(exists_Relation_1__Function_1__Boolean_1_, [$rel, iv($predicate)]));
+}
+
+// row | <col> is null
+//
+// The column reference is synthesized through the ordinary resolution path rather than by hand-building
+// the property access, so a renamed or correlated sub-relation column resolves like any other reference.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createColumnIsNullLambda(colName:String[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $relContext.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate();
+  let expContext = expressionContext($var, $relContext.lateralOuterAliases->newMap(), $relContext.relation->isTrue());
+  let colRef = ^QualifiedNameReference(name = ^QualifiedName(parts = $colName));
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)),
+         sfe(isEmpty_Any_$0_1$__Boolean_1_, $colRef->processExpression($expContext, $relContext)));
+}
+
+// row | <col> = value
+//
+// value is already resolved against the outer context, so this closes over it and the lambda becomes
+// the correlated half of the anti-join.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createColumnMatchesLambda(colName:String[1], value:ValueSpecification[1], relContext:SqlTransformContext[1]):LambdaFunction<Any>[1]
+{
+  let var = ^VariableExpression(genericType = ^InferredGenericType(), name = $relContext.rowVarName, multiplicity = PureOne)->evaluateAndDeactivate();
+  let expContext = expressionContext($var, $relContext.lateralOuterAliases->newMap(), $relContext.relation->isTrue());
+  let colRef = ^QualifiedNameReference(name = ^QualifiedName(parts = $colName));
+
+  lambda(^FunctionType(parameters = $var, returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean)),
+         sfe(equal_Any_MANY__Any_MANY__Boolean_1_, [$colRef->processExpression($expContext, $relContext), $value]));
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processInListExpression(i:InListExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
 {
   debug(|'processInListExpression', $context.debug);
@@ -4361,15 +4432,19 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug(|'processNotExpression', $context.debug);
 
-  //a quantified comparison builds its own negation, since negating its two-valued result would keep the
-  //rows SQL leaves unknown. A scalar subquery comparison is the same: negating the guarded predicate it would
-  //otherwise produce is not the negation SQL asks for, and both forms compile
+  //quantified comparisons, scalar subquery comparisons and NOT IN (subquery) each build their own
+  //negation: negating the two-valued positive form would keep the rows SQL leaves unknown. A
+  //literal-list IN has no subquery and is negated directly.
   $n.value->match([
     q:QuantifiedComparisonExpression[1] | processQuantifiedComparisonExpression($q, true, $expContext, $context),
     c:ComparisonExpression[1] |
       if ($c->hasScalarSubqueryOperand(),
         | processScalarSubqueryComparison($c, true, $expContext, $context),
         | nullOrSfe(not_Boolean_1__Boolean_1_, $c->processExpression($expContext, $context)));,
+    i:InPredicate[1] |
+      if ($i.valueList->instanceOf(SubqueryExpression),
+        | processNotInSubquery($i, $i.valueList->cast(@SubqueryExpression), $expContext, $context),
+        | nullOrSfe(not_Boolean_1__Boolean_1_, $i->processExpression($expContext, $context)));,
     e:meta::external::query::sql::metamodel::Expression[1] | nullOrSfe(not_Boolean_1__Boolean_1_, $e->processExpression($expContext, $context))
   ]);
 }

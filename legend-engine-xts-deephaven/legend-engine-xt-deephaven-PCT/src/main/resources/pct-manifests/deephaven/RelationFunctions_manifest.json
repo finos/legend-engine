@@ -225,7 +225,7 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::filter::testVariantColumn_filterOnIsNotEmptyOfKeyExtraction_Function_1__Boolean_1_",
     "expectedError" : "Cannot cast a collection of size 0 to multiplicity [1]"
-  },{
+  }, {
     "test" : "meta::pure::functions::relation::tests::composition::testWindowFunctionsAfterProject_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
@@ -1547,6 +1547,54 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::recurse_Relation_1__Function_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::recurse::testOrgHierarchy_multiStatement_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_ThreeValued_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NoNulls_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_InExtend_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::composition::testNotInPattern_String_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_And_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_MixedWithScalarComparison_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_EmptyRelation_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_InExtend_NullValueAndNullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValue_Function_1__Boolean_1_",
+    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   } ]
 }

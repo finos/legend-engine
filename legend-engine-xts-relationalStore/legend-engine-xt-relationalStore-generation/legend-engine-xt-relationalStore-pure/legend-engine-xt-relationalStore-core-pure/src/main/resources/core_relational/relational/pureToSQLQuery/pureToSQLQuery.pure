@@ -3558,25 +3558,114 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
 function meta::relational::functions::pureToSqlQuery::processNot(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   assert(!$f.parametersValues->at(0)->negatesRelationIn(),
-          | 'Negating in(value, Relation) is not supported on relational stores. Use not exists instead, for example replace !$d.departmentId->in($employees->select(~department)) with $d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)');
+   if($f.parametersValues->at(0)->negatesRelationIn(),
+      | $operation->attachPredicate(processNegatedRelationExpression($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions), $state),
+      | let buriedConnective = $f.parametersValues->at(0)->buriedRelationScalarComparisonConnective();
+        assert($buriedConnective->isEmpty(),
+               | 'Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger ' + $buriedConnective->toOne() + ' expression is not supported on relational stores. Negate the comparison on its own instead, for example replace ' +
+                 if($buriedConnective->toOne() == 'and',
+                    | '!($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y',
+                    | '!($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y'));
 
-   let buriedConnective = $f.parametersValues->at(0)->buriedRelationScalarComparisonConnective();
-   assert($buriedConnective->isEmpty(),
-          | 'Negating equalTo/greaterThan/greaterThanEqual/lessThan/lessThanEqual(value, Relation) inside a larger ' + $buriedConnective->toOne() + ' expression is not supported on relational stores. Negate the comparison on its own instead, for example replace ' +
-            if($buriedConnective->toOne() == 'and',
-               | '!($x->equalTo($rel) && $y) with !$x->equalTo($rel) || !$y',
-               | '!($x->equalTo($rel) || $y) with !$x->equalTo($rel) && !$y'));
+        $f.parametersValues->at(0)->match([
+           inner:SimpleFunctionExpression[1] |
+              let scalarComparisonName = $inner->scalarComparisonNameForNegation();
+              if($scalarComparisonName->isNotEmpty(),
+                 | processNegatedRelationScalarComparison($scalarComparisonName->toOne(), $inner, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                 | processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions));,
+           other:ValueSpecification[1] |
+              processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions)
+        ]);
+   );
+}
 
-   $f.parametersValues->at(0)->match([
-      inner:SimpleFunctionExpression[1] |
-         let scalarComparisonName = $inner->scalarComparisonNameForNegation();
-         if($scalarComparisonName->isNotEmpty(),
-            | processNegatedRelationScalarComparison($scalarComparisonName->toOne(), $inner, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
-            | processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions));,
-      other:ValueSpecification[1] |
-         processUnary($f, $currentPropertyMapping, $operation, {a|^DynaFunction(name = 'not', parameters = $a)}, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)->cast(@SelectWithCursor)->moveExtraFilterToFilter($extensions)
+// Pushes a negation down through and/or/not until it reaches a leaf that can answer it directly:
+//
+//   !$v->in($rel)           ->  not exists (select 1 from rel where ...)
+//   !($v->in($rel) || $a)   ->  not exists (...) and not (a)
+//   !!$v->in($rel)          ->  the two negations cancel, leaving the positive form
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationExpression(v:ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   $v->match([
+      f:SimpleFunctionExpression[1] |
+        if($f.func == meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_,
+           | processNegatedRelationIn($f, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+           | let scalarComparisonName = $f->scalarComparisonNameForNegation();
+             if($scalarComparisonName->isNotEmpty(),
+                | buildNegatedRelationScalarComparisonPredicate($scalarComparisonName->toOne(), $f, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                | if($f.func == meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_,
+                     | processNegatedRelationAnd($f, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                     | if($f.func == meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_,
+                          | processNegatedRelationConnective('and', $f, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                          | if($f.func == meta::pure::functions::boolean::not_Boolean_1__Boolean_1_,
+                               | $f.parametersValues->at(0)->processRelationNegationOperandPredicate($currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                               | $v->processGenericRelationNegation($currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)))));),
+      other:ValueSpecification[1] | $v->processGenericRelationNegation($currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)
    ]);
+}
+
+// !($a && $v->in($rel)) folds the sibling into the subquery rather than splitting into a disjunction:
+//
+//   not exists (select 1 from rel where a and v is not null and rel.col = v)
+//
+// Valid because a only references the outer row, so A and EXISTS(P) == EXISTS(A and P). Keeping it as
+// one conjunction-only subquery leaves an anti-join a dialect can decorrelate; a subquery inside a
+// disjunct is not. Two in()s under one and cannot fold and take the plain De Morgan form.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationAnd(f:SimpleFunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let relationIns = $f.parametersValues->filter(p | $p->isRelationIn());
+   let others = $f.parametersValues->filter(p | !$p->isRelationIn());
+
+   if($relationIns->size() == 1 && !$others->exists(p | $p->negatesRelationIn()),
+      | let extraPredicates = $others->size()->range()->zip($others)
+                                ->map(p | $p.second->processRelationNegationOperandPredicate($currentPropertyMapping, $operation, $vars, $state, buildNodeId($nodeId, '_na' + $p.first->toString()), $aggFromMap, $context, $extensions));
+        processNegatedRelationIn($relationIns->toOne()->cast(@FunctionExpression), $extraPredicates, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);,
+      | processNegatedRelationConnective('or', $f, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions)
+   );
+}
+
+// True for a null check on the given operand in either spelling: isNotNull(v) and isNotEmpty(v) are
+// distinct DynaFunctions that both render as `v is not null`.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isNotNullCheckOn(p:RelationalOperationElement[1], valueKey:String[1], extensions:Extension[*]):Boolean[1]
+{
+   $p->match([
+              d:DynaFunction[1] | $d.name->in(['isNotNull', 'isNotEmpty'])
+                                    && $d.parameters->size() == 1
+                                    && $d.parameters->toOne()->buildUniqueName(false, $extensions) == $valueKey,
+              r:RelationalOperationElement[1] | false
+             ]);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::isRelationIn(v:ValueSpecification[1]):Boolean[1]
+{
+   $v->match([
+              f:SimpleFunctionExpression[1] | $f.func == meta::pure::functions::relation::in_U_$0_1$__Relation_1__Boolean_1_,
+              a:ValueSpecification[1] | false
+             ]);
+}
+
+// !($a || $b) -> !a and !b, and the mirror for and. Each operand gets its own nodeId so two in() calls
+// under one connective produce distinct subquery aliases.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationConnective(connective:String[1], f:SimpleFunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   ^DynaFunction(name = $connective,
+                 parameters = $f.parametersValues->size()->range()->zip($f.parametersValues)
+                                ->map(p | $p.second->processNegatedRelationExpression($currentPropertyMapping, $operation, $vars, $state, buildNodeId($nodeId, '_ng' + $p.first->toString()), $aggFromMap, $context, $extensions)));
+}
+
+// Yields an operand as a bare predicate -- `d.id = 1` rather than the SelectWithCursor
+// processValueSpecification returns -- so the caller can nest it inside another DynaFunction.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processRelationNegationOperandPredicate(v:ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let cursor = processValueSpecification($v, $currentPropertyMapping, $operation, $vars, ^$state(inFilter = true), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context, $extensions)
+                  ->toOne()->cast(@SelectWithCursor);
+   $cursor.select.filteringOperation->toOne();
+}
+
+// Negates an ordinary predicate sitting alongside an in():  $a  ->  not (a)
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processGenericRelationNegation(v:ValueSpecification[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   ^DynaFunction(name = 'not', parameters = $v->processRelationNegationOperandPredicate($currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions));
 }
 
 
@@ -7335,10 +7424,60 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationScalarComparison(comparison:String[1], expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
+   $operation->attachPredicate(buildNegatedRelationScalarComparisonPredicate($comparison, $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions),
+                               $state);
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::buildNegatedRelationScalarComparisonPredicate(comparison:String[1], expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
    let comparisonOp = buildRelationScalarComparisonOp($comparison, $expression, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions).second;
    let decided = ^DynaFunction(name = 'case', parameters = [$comparisonOp, ^DynaFunction(name = 'sqlTrue', parameters = []), ^DynaFunction(name = 'sqlFalse', parameters = [])]);
-   $operation->attachPredicate(^DynaFunction(name = 'equal', parameters = [$decided, ^DynaFunction(name = 'sqlFalse', parameters = [])]),
-                               $state);
+   ^DynaFunction(name = 'equal', parameters = [$decided, ^DynaFunction(name = 'sqlFalse', parameters = [])]);
+}
+
+// !$v->in($rel) as one NOT EXISTS:
+//
+//   not exists (select 1 from rel where <rel's own filter> and v is not null and rel.col = v)
+//
+// in() is two-valued, and the null guard that makes it so lives inside the subquery rather than as an
+// IS NULL test or-ed around it. NOT EXISTS is never itself UNKNOWN, so nothing outside needs
+// compensating -- no excludeNullsFromSearchedColumn equivalent, and no subquery under an or.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationIn(expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   processNegatedRelationIn($expression, [], $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+}
+
+// extraPredicates are outer-row conditions folded in by processNegatedRelationAnd; they never
+// reference the inner relation, so conjoining them inside the subquery is equivalent to outside.
+function <<access.private>> meta::relational::functions::pureToSqlQuery::processNegatedRelationIn(expression:FunctionExpression[1], extraPredicates:RelationalOperationElement[*], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   let valueCursor = processValueSpecification($expression.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, ^$state(inFilter = true), JoinType.LEFT_OUTER, buildNodeId($nodeId, '_v'), $aggFromMap, $context, $extensions)
+                       ->toOne()->cast(@SelectWithCursor);
+   let value = $valueCursor.select.filteringOperation->toOne();
+
+   let subSelect = buildRelationSubSelect($expression, 1, $currentPropertyMapping, $operation, $vars, $state, $nodeId, $aggFromMap, $context, $extensions);
+   assert($subSelect.columns->size() == 1, | 'in(..., Relation) expects a single-column relation, got ' + $subSelect.columns->size()->toString());
+
+   let column = $subSelect.columns->toOne()->match([a:Alias[1] | $a.relationalElement, r:RelationalOperationElement[1] | $r]);
+
+   // equal becomes nullSafeEqual inside a filter, so without this guard a null value would match a
+   // null column; in() answers false there.
+   let isValueKnown = ^DynaFunction(name = 'isNotNull', parameters = $value);
+   let matchesValue = ^DynaFunction(name = 'equal', parameters = [$column, $value]);
+
+   // A folded-in sibling can be this same null check in its other spelling, which would emit
+   // `v is not null` twice. Keyed without alias names: the two are resolved under different nodeIds
+   // and so carry different alias instances for the same column.
+   let valueKey = $value->buildUniqueName(false, $extensions);
+   let distinctExtras = $extraPredicates->filter(p | !$p->isNotNullCheckOn($valueKey, $extensions));
+
+   let matchSelect = ^$subSelect(columns = [^Literal(value = 1)],
+                                  filteringOperation = $subSelect.filteringOperation
+                                                         ->concatenate($distinctExtras)
+                                                         ->concatenate([$isValueKnown, $matchesValue])
+                                                         ->andFilters($extensions));
+
+   ^DynaFunction(name = 'not', parameters = ^DynaFunction(name = 'exists', parameters = $matchSelect));
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processRelationQuantifiedComparison(comparison:String[1], quantifier:String[1], expression:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]

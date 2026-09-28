@@ -5465,6 +5465,40 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   );
 }
 
+// NOT IN (subquery) parses as a NotExpression wrapping the same InPredicate as the positive form, and
+// is special-cased rather than negated generically: SQL's NOT IN is three-valued and relation::in's
+// Boolean[1] result cannot carry UNKNOWN. The expected lambda below is that three-valued answer --
+// (value is not null or rel is empty) and no null in the column and no matching row.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNotInSubqueryUncorrelated():Boolean[1]
+{
+  test(
+    'SELECT table1."Boolean" FROM service."/service/service1" table1 WHERE table1."Integer" NOT IN (SELECT t2."Integer" FROM service."/service/service2" t2)',
+
+    [
+      c({|
+        meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project(~[Boolean : x | $x.booleanIn, Integer : x | $x.integerIn, Float : x | $x.floatIn, Decimal : x | $x.decimalIn, StrictDate : x | $x.strictDateIn, DateTime : x | $x.dateTimeIn, String : x | $x.stringIn])
+          ->filter(x |
+              (!$x.Integer->isEmpty() ||
+                 !meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                    ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                    ->select(~[Integer])
+                    ->exists(e | true))
+              && (!meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                     ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                     ->select(~[Integer])
+                     ->exists(e | $e.Integer->isEmpty())
+                  && !meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+                        ->project(~[ID : x | $x.idIn, Integer : x | $x.integerIn, String : x | $x.stringIn])
+                        ->select(~[Integer])
+                        ->exists(e | $e.Integer == $x.Integer))
+          )
+          ->select(~[Boolean])
+      })
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testQuantifiedComparisonAnyUncorrelated():Boolean[1]
 {
   test(

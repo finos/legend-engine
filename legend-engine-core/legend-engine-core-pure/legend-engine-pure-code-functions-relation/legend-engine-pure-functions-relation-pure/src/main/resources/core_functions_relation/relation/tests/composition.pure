@@ -2697,6 +2697,220 @@ function <<PCT.test>> meta::pure::functions::relation::tests::composition::testC
                  '#', $res->sort(~accountId->ascending())->toString());
 }
 
+// These do not call in() at all. They combine exists()/isEmpty()/== by hand into the pattern
+// processNotInSubquery builds for SQL's NOT IN (subquery), and pin its three-valued null semantics:
+//
+//   (value is not null OR the relation is empty) AND no null in the column AND no matching row
+//
+// A different question from !in(value, rel), which is two-valued; see in.pure for that one.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_ThreeValued<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #->select(~department);
+                  $departments->filter(d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  );
+               };
+
+    let res = $f->eval($expr);
+
+    //a null in the column poisons every row - SQL's NOT-IN-with-nulls trap - so nothing survives
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// No nulls anywhere, so the three-valued and two-valued answers coincide.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_NoNulls<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 1
+                                    103, 3
+                                  #->select(~department);
+                  $departments->filter(d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  );
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// x NOT IN (<no rows>) is true for any x, including null, so both rows survive.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #->filter(e | $e.employeeId > 1000)->select(~department);
+                  $departments->filter(d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  );
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   null,Support\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Only the value is null: that row drops whatever the relation holds.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 3
+                                  #->select(~department);
+                  $departments->filter(d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  );
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Nulls on both sides; the relation-side null still poisons every row.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #->select(~department);
+                  $departments->filter(d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  )->select(~departmentName);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentName\n'+
+                 '\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Projection position: a computed boolean column rather than a WHERE.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_InExtend<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    103, 3
+                                  #->select(~department);
+                  $departments->extend(~notAMember : d |
+                      ($d.departmentId->isNotEmpty() || !$employees->meta::pure::functions::relation::exists(e | true))
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department->isEmpty())
+                          && !$employees->meta::pure::functions::relation::exists(e | $e.department == $d.departmentId)
+                  )->select(~[departmentName, notAMember]);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentName,notAMember\n'+
+                 '   Engineering,false\n'+
+                 '   Sales,false\n'+
+                 '   Support,true\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// String-typed column rather than Integer.
+function <<PCT.test>> meta::pure::functions::relation::tests::composition::testNotInPattern_String<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let active = #TDS
+                                 name
+                                 Engineering
+                                 Sales
+                               #->select(~name);
+                  $departments->filter(d |
+                      ($d.departmentName->isNotEmpty() || !$active->meta::pure::functions::relation::exists(a | true))
+                          && !$active->meta::pure::functions::relation::exists(a | $a.name->isEmpty())
+                          && !$active->meta::pure::functions::relation::exists(a | $a.name == $d.departmentName)
+                  );
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
 '''
 `lateral` with `flatten` over the keys of a `Map<String, Variant>`, multiplying each source row by
 its key count.
