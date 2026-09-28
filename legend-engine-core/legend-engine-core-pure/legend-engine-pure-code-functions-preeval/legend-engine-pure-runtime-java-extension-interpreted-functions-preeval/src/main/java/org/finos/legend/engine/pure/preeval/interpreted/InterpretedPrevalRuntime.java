@@ -57,6 +57,7 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.AbstractCoreInstanceWrapper;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
+import org.finos.legend.pure.m4.coreinstance.primitive.BooleanCoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
 import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.LambdaWithContext;
@@ -80,6 +81,7 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     private final Profiler profiler;
     private final InstantiationContext instantiationContext;
     private final ExecutionSupport executionSupport;
+    private final MutableMap<String, CoreInstance> elementsByPath = Maps.mutable.empty();
 
     public InterpretedPrevalRuntime(FunctionExecutionInterpreted functionExecution, ModelRepository repository, ProcessorSupport processorSupport, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, MutableStack<CoreInstance> functionExpressionCallStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport)
     {
@@ -140,6 +142,25 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     {
         CoreInstance element = this.processorSupport.package_getByUserPath(functionPath);
         return element != null && element == function;
+    }
+
+    @Override
+    public Boolean booleanValue(Object value)
+    {
+        if (!(value instanceof CoreInstance))
+        {
+            return null;
+        }
+        CoreInstance instance = (CoreInstance) value;
+        return (instance instanceof BooleanCoreInstance) || Instance.instanceOf(instance, M3Paths.Boolean, this.processorSupport)
+                ? PrimitiveUtilities.getBooleanValue(instance)
+                : null;
+    }
+
+    @Override
+    public Object function(String functionPath)
+    {
+        return element(functionPath);
     }
 
     @Override
@@ -268,6 +289,14 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public FunctionExpression withFuncAndParameters(FunctionExpression expression, Object func, ListIterable<? extends ValueSpecification> parameters)
+    {
+        return FunctionExpressionCoreInstanceWrapper.toFunctionExpression(copy(expression, Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(
+                M3Properties.func, one((CoreInstance) func),
+                M3Properties.parametersValues, parameters)));
+    }
+
+    @Override
     @SuppressWarnings("unchecked")
     public <T extends ValueSpecification> T withGenericType(T valueSpecification, GenericType genericType)
     {
@@ -363,6 +392,15 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     public RuntimeException error(String message)
     {
         return new PureExecutionException(this.functionExpressionCallStack.isEmpty() ? null : this.functionExpressionCallStack.peek().getSourceInformation(), message);
+    }
+
+    private CoreInstance element(String path)
+    {
+        if (!this.elementsByPath.containsKey(path))
+        {
+            this.elementsByPath.put(path, this.processorSupport.package_getByUserPath(path));
+        }
+        return this.elementsByPath.get(path);
     }
 
     private CoreInstance copy(CoreInstance source, MapIterable<String, ? extends ListIterable<? extends CoreInstance>> overrides)

@@ -23,7 +23,7 @@ public class TestRules
     @Test
     public void testPreParameterRuleOrder()
     {
-        Assertions.assertEquals(Lists.immutable.empty(), Rules.PRE_PARAMETER.collect(r -> r.getClass().getSimpleName()));
+        Assertions.assertEquals(Lists.immutable.with("IfRule", "AndOrRule"), Rules.PRE_PARAMETER.collect(r -> r.getClass().getSimpleName()));
     }
 
     @Test

@@ -36,6 +36,10 @@ public interface PrevalRuntime
 
     boolean isFunction(Object function, String functionPath);
 
+    Boolean booleanValue(Object value);
+
+    Object function(String functionPath);
+
     boolean hasStereotype(Object function, String profilePath, String stereotype);
 
     ImmutableList<String> parameterNames(Object function);
@@ -61,6 +65,8 @@ public interface PrevalRuntime
     <T extends FunctionDefinition<?>> T withExpressionSequence(T function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables);
 
     FunctionExpression withParametersAndGenericType(FunctionExpression expression, ListIterable<? extends ValueSpecification> parameters, GenericType genericType);
+
+    FunctionExpression withFuncAndParameters(FunctionExpression expression, Object func, ListIterable<? extends ValueSpecification> parameters);
 
     <T extends ValueSpecification> T withGenericType(T valueSpecification, GenericType genericType);
 

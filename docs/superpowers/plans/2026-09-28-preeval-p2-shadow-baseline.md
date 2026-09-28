@@ -35,14 +35,14 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testInline` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for myTestFuncThatDoesEval_P_1__Boolean_1_" | inlining/eval expansion |
 | `testPrerouting12` | both | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:26 column:5), "Instance of type 'String' can't be translated" | inlining/eval expansion |
 | `testPrerouting19` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting23a` | both | » PureExecution Execution error at ??... | if/and-or |
-| `testPrerouting23b` | both | » PureExecution Execution error at ??... | if/and-or |
-| `testPrerouting24a` | both | » PureExecution Execution error at ??... | if/and-or |
-| `testPrerouting24b` | both | » PureExecution Execution error at ??... | inlining/eval expansion |
-| `testPrerouting24c` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or |
-| `testPrerouting24d` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or |
-| `testPrerouting24e` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or |
-| `testPrerouting24f` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or |
+| `testPrerouting23a` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
+| `testPrerouting23b` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
+| `testPrerouting24a` | both | » PureExecution Execution error at ??... | if/and-or — **resolved by Task 4** |
+| `testPrerouting24b` | both | » PureExecution Execution error at ??... | inlining/eval expansion — **resolved by Task 4** (re-activation now converges once `if`/`and`/`or` short-circuit) |
+| `testPrerouting24c` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or — **resolved by Task 4** |
+| `testPrerouting24d` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or — **resolved by Task 4** |
+| `testPrerouting24e` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or — **resolved by Task 4** |
+| `testPrerouting24f` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | if/and-or — **resolved by Task 4** |
 | `testPrerouting25a` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion |
 | `testPrerouting26` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion |
 | `testPrerouting29a` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
@@ -82,3 +82,13 @@ These stay out of `KNOWN_DIVERGENT`; no rule work is needed for them (already co
 - After populating `KNOWN_DIVERGENT` with the 49 names above and rebuilding: RUNNER is green — `Test_Pure_Preeval_Java` 124/124 (62 collected × 2 implementations), `Test_Pure_Preeval` 111/111.
 - None of the 26 P1 target tests appear among the 49 failing names.
 - Every failing name is listed in the plan's expected-rule-coverage table; there are no `unexpected` failures.
+
+## Task 4 update (`if`, `and`/`or`)
+
+After implementing `IfRule` and `AndOrRule` (`rules/IfRule.java`, `rules/AndOrRule.java`, `rules/RuleSupport.java`), RUNNER-ALL was re-run (`-Dlegend.engine.preeval.test.includeKnownDivergent=true`). Of the 49 `KNOWN_DIVERGENT` names, exactly 8 now pass under both `JAVA` and `SHADOW` and no longer appear in any failure output:
+
+`testPrerouting23a`, `testPrerouting23b`, `testPrerouting24a`, `testPrerouting24b`, `testPrerouting24c`, `testPrerouting24d`, `testPrerouting24e`, `testPrerouting24f`.
+
+This matches the plan's expected removals for Task 4 (`testPrerouting23a/b, 24a, 24c–f`) plus one bonus name, `testPrerouting24b` (originally attributed to the inlining/eval-expansion family in Task 5), which now passes because re-activation converges once the `if`/`and`/`or` short-circuits are in place — exactly the "some may already pass... because re-activation happens to give the same result" case the plan calls out. All remaining 41 `KNOWN_DIVERGENT` names were re-verified still failing in the same run; no new (unexpected) failures appeared, and no P1/harness test regressed.
+
+`KNOWN_DIVERGENT` in `Test_Pure_Preeval_Java` now holds 41 names (49 − 8). RUNNER (no `includeKnownDivergent`) is green: `Test_Pure_Preeval_Java` 140/140 (70 collected × 2 implementations), `Test_Pure_Preeval` 111/111.

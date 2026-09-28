@@ -28,6 +28,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Mul
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.List;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.ElementWithStereotypes;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.KeyExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -92,6 +93,18 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     {
         CoreInstance element = element(functionPath);
         return element != null && element == function;
+    }
+
+    @Override
+    public Boolean booleanValue(Object value)
+    {
+        return value instanceof Boolean ? (Boolean) value : null;
+    }
+
+    @Override
+    public Object function(String functionPath)
+    {
+        return element(functionPath);
     }
 
     @Override
@@ -203,6 +216,15 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         FunctionExpression copy = CompiledSupport.copy(expression);
         copy._parametersValues(Lists.mutable.withAll(parameters));
         copy._genericType(genericType);
+        return copy;
+    }
+
+    @Override
+    public FunctionExpression withFuncAndParameters(FunctionExpression expression, Object func, ListIterable<? extends ValueSpecification> parameters)
+    {
+        FunctionExpression copy = CompiledSupport.copy(expression);
+        copy._func((Function<?>) func);
+        copy._parametersValues(Lists.mutable.withAll(parameters));
         return copy;
     }
 

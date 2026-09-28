@@ -183,6 +183,44 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testPrevalNativeShortCircuitsIfWithConstantCondition()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let f = {|if(true, |'a', |[]->toOne())};",
+                "let r = prevalNative($f, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "let body = $r.value->cast(@LambdaFunction<Any>).expressionSequence->at(0);",
+                "assert($body->instanceOf(InstanceValue), |'expected an instance value');",
+                "assert($body->cast(@InstanceValue).values->toOne() == 'a', |'expected a');");
+    }
+
+    @Test
+    public void testPrevalNativeAndKeepsOpenSecondOperandWhenFirstIsTrue()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {b:Boolean[1] | true && $b}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(VariableExpression), |'expected a variable expression');",
+                "assert($r.value->cast(@VariableExpression).name == 'b', |'expected variable b');",
+                "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'b', |'expected open variable b');");
+    }
+
+    @Test
+    public void testPrevalNativeOrShortCircuitsWhenSecondIsTrue()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {b:Boolean[1] | $b || true}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                "assert($r.value->cast(@InstanceValue).values->toOne() == true, |'expected true');");
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(

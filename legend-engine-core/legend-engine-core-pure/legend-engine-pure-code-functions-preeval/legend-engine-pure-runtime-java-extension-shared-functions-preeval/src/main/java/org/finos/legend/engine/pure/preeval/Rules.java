@@ -16,11 +16,13 @@ package org.finos.legend.engine.pure.preeval;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.pure.preeval.rules.AndOrRule;
+import org.finos.legend.engine.pure.preeval.rules.IfRule;
 import org.finos.legend.engine.pure.preeval.rules.ReactivateRule;
 
 public final class Rules
 {
-    public static final ImmutableList<PreParameterRule> PRE_PARAMETER = Lists.immutable.empty();
+    public static final ImmutableList<PreParameterRule> PRE_PARAMETER = Lists.immutable.with(new IfRule(), new AndOrRule());
     public static final ImmutableList<ExpressionRule> EXPANSION = Lists.immutable.empty();
     public static final ImmutableList<ExpressionRule> NOT_PREVALLED = Lists.immutable.empty();
     public static final ExpressionRule REACTIVATE = new ReactivateRule();
