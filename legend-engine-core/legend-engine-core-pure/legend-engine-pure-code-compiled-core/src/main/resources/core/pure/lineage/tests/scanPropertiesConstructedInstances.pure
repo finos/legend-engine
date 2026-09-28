@@ -173,3 +173,28 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
   assertEquals('Data->a', $res.result->printPropertyNodeLists());
   assertEquals('Data->a', $res.current->printPropertyNodeLists());
 }
+
+function meta::pure::lineage::scanProperties::test::constructed::aTwiceOf(b:Box[1]):String[1]
+{
+  $b.aTwice()
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testQualifierOnConstructedInstanceIsInlined():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a=$d.a).aTwice()});
+  assertEquals('Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testQualifierReturningAssignedObjectResolves():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a='k', data=$d.child).heldData().b});
+  assertEquals('Data->child\nData->child, Data->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testQualifierInCalledFunctionOnConstructedArgumentFallsBackToClassRootedNode():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a=$d.a)->aTwiceOf()});
+  assertEquals('Box->aTwice\nData->a', $res.result->printPropertyNodeLists());
+}

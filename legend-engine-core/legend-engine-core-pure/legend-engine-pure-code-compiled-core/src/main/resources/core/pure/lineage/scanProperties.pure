@@ -261,8 +261,11 @@ function <<access.private>> meta::pure::lineage::scanProperties::internal_scanPr
                                                                                         let leftSide = $params->at(0)->map(v|$v->internal_scanProperties($processed->concatenate($q), $vars, $config, $visitedFunctions, ^$debug(space=$debug.space+'    ')));
                                                                                         if(!$processed->contains($q),
                                                                                            {|
-                                                                                              let nlist = $q->processQualifier($srcClass, $params->tail(), $leftSide.current->orElseEmptyPath(), $processed, $vars, true, $config, $leftSide->getVisitedFunctions(), $debug);
-                                                                                              makeScanPropertiesState($nlist, $nlist, $leftSide->getVisitedFunctions());
+                                                                                              if($leftSide.current->orElseEmptyPath()->holdsConstructedInstance(),
+                                                                                                 | $q->inlineQualifierOnConstructedInstance($leftSide->toOne(), $params->tail(), $processed, $vars, $config, $debug),
+                                                                                                 | let nlist = $q->processQualifier($srcClass, $params->tail(), $leftSide.current->orElseEmptyPath(), $processed, $vars, true, $config, $leftSide->getVisitedFunctions(), $debug);
+                                                                                                   makeScanPropertiesState($nlist, $nlist, $leftSide->getVisitedFunctions());
+                                                                                              );
                                                                                            },
                                                                                            | makeScanPropertiesState(emptyPath(), [], $leftSide->getVisitedFunctions())
                                                                                         );,
@@ -778,6 +781,14 @@ function <<access.private>> meta::pure::lineage::scanProperties::processQualifie
                             );
      );
    if($append,|^$list(values = $list.values->concatenate($property)),|^$list(values = $property->concatenate($list.values)));
+}
+
+function <<access.private>> meta::pure::lineage::scanProperties::inlineQualifierOnConstructedInstance(q:QualifiedProperty<Any>[1], leftSide:ScanPropertiesState[1], parameters:ValueSpecification[*], processed:Function<Any>[*], vars:Map<String,List<PropertyPathNode>>[1], config:ScanConfig[1], debug:DebugContext[1]):ScanPropertiesState[1]
+{
+   let paramStates   = $parameters->map(v | $v->internal_scanProperties($processed, $vars, $config, $leftSide.visitedFunctions, $debug)->orElseEmptyPath());
+   let qualifierVars = $q->functionType().parameters.name->zip($leftSide.current->concatenate($paramStates.current))->newMap();
+   let body          = $q.expressionSequence->processExpressionSequence($qualifierVars, $processed->concatenate($q), $config, $leftSide.visitedFunctions, $debug);
+   makeScanPropertiesState($body.current, $leftSide.result->concatenate($paramStates.result)->concatenate($body.result), $body.visitedFunctions);
 }
 
 function <<access.private>> meta::pure::lineage::scanProperties::hasSufficientValuesForPropertyParameters(q:QualifiedProperty<Any>[1], parameters:ValueSpecification[*]):Boolean[1]
