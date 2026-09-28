@@ -224,7 +224,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 |---|---|---|
 | P0 Scaffold | Module family; `prevalNative` and `preevalImplementation` natives with compiled/interpreted shells; `PrevalHooks`; `PrevalResult`; the `PURE`/`JAVA`/`SHADOW` switch; identity native | Build green; native callable from Pure in compiled and interpreted modes |
 | P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` — done |
-| P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** |
+| P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** (relational: `testPrerouting42`, the file's only `<<test.Test>>`; its two `<<test.ToFix>>` tests, `testPrerouting41` and `testPrerouting_Store`, are excluded) |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode |
 | P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
@@ -330,8 +330,20 @@ compiled-core were rebuilt clean before every run reported above.
 - The `EvalOnColumnRule` `RelationType` return-type fix-up (§3.4) has no test in either `tests.pure` or
   the relational suite that drives a `Column`-typed `eval` target whose own return type is a
   `RelationType`; confirmed unreached by the probe above.
-- `// parity:` markers (10 across the shared preeval module) have no filed follow-up issue links yet
-  (§3.4).
+- `// parity:` markers (13: 10 in the shared preeval module, 2 in the compiled adapter, 1 in the
+  interpreted adapter) have no filed follow-up issue links yet (§3.4).
+- **Compiled copies keep the original source information (deliberate deviation).** Compiled
+  `FunctionExpression`/`InstanceValue`/`KeyExpression`/`GenericType` rewrites use the single-argument
+  `CompiledSupport.copy` (`CompiledPrevalRuntime`), so the copy keeps the original node's source
+  information. Pure's generated `^$x(...)` stamps `preeval.pure`'s source information on the copy
+  instead. Lambdas are aligned with Pure (Task 5 fix, needed so the compiled body lookup behaves the
+  same). The deviation is kept because errors then point at user code rather than at `preeval.pure`,
+  and `SHADOW` does not compare source information. Decide before P4 whether to align it.
+- **`SHADOW` does not gate nested types.** `describePrevalResult` compares the protocol JSON of the
+  value plus the top-level `genericType`/multiplicity only. The protocol JSON does not carry the
+  `genericType` or multiplicity of nested `FunctionExpression`s, so a divergence there passes
+  `SHADOW`. P4 should add a structural per-node comparator (value, `genericType`, multiplicity at
+  every node) before the shadow estate is treated as a parity gate.
 
 ### P2 requirements carried from P1 review
 
@@ -349,23 +361,34 @@ compiled-core were rebuilt clean before every run reported above.
   baseline manifest — **Done.** Task 3's baseline (49 names) is recorded in
   `docs/superpowers/plans/2026-09-28-preeval-p2-shadow-baseline.md`; every rule task closed its
   expected subset with no unexpected failures.
-- Error-text parity (`typeDescription`) — **Done, in Task 2**, ahead of the rule tasks.
-- `DebugTrace` "Performing preval"/"Not prevalling" messages — **Partially done.** The per-rule
-  "Handling …"/"Inlining: …"/"Expanding …" messages (`InlineRule`, `EvalExpansionRule`,
-  `EmptyCastRule`, `FilterFalseRule`, `FilterTrueRule`, `ToOneRule`, `ToOneManyRule`, `GenericTypeRule`,
-  `MapUnrollRule`, `FoldUnrollRule`, `ConcatenateRule`) match Pure's text. Not ported: the sequencer
-  messages ("Dropping non-variable assignement…", "adding variable … to rolling scope…", "Processing
-  parameter: …"/"Completed processing parameter: …", "Function expression has been modified …"), the
-  stop-check message ("Unable to perform preval: …"), the final decision messages themselves
-  ("Performing preval: … (can reactivate dynamically: …)" / "Not prevalling: … (reason)"), and the
-  `addToScope` scope-addition messages ("Adding variables to scope: …" / "Adding type params to
-  scope: …") — none of these have a Java `DebugTrace`/`trace(...)` call site.
+- Error-text parity (`typeDescription`) — **Done, in Task 2**, ahead of the rule tasks, for
+  `PackageableElement` types. For a non-`PackageableElement` type the interpreted adapter prints
+  `type.getName()` where Pure prints `$type->makeString()`, so that text may still differ.
+- `DebugTrace` messages — **Not at parity.** Trace text is diagnostic only and differs from Pure's:
+  - Output goes through SLF4J (`DebugTrace`, `[depth] message`), not Pure's `printDebugWithDepth`
+    prefix and indentation.
+  - The per-rule messages (`InlineRule`, `EmptyCastRule`, `FilterFalseRule`, `FilterTrueRule`,
+    `MapUnrollRule`, `FoldUnrollRule`, `ConcatenateRule`) name the function with
+    `typeDescription(func)`, which prints its classifier's path; Pure prints
+    `$newSfe.func->elementToPath()`. Java's "Expanding eval" carries no path; Pure's is
+    "Expanding eval: <path>". Only the fixed strings
+    ("Handling toOne", "Handling toOneMany", "Handling genericType") match Pure's wording.
+  - The stop-check and final-decision messages do have Java call sites (`Preevaluator`), with
+    different text: "Unable to perform preval: <classifier path>", "Not prevalling (<reason>)" and
+    "Performing preval", against Pure's "Unable to perform preval: <path> (<is native>)", "Not
+    prevalling: <path> (<reason>)" and "Performing preval: <path> (can recativate dynamically: …)".
+  - Not ported at all: the sequencer messages ("Dropping non-variable assignement…", "adding variable
+    … to rolling scope…", "Processing parameter: …"/"Completed processing parameter: …", "Function
+    expression has been modified …") and the `addToScope` messages ("Adding variables to scope: …" /
+    "Adding type params to scope: …").
+  - Messages are built lazily (`PrevalServices.trace` takes a `Supplier<String>`), so no text is
+    built when debug is off.
 - JUnit 5 tests for `GenericTypes` (incl. the `FunctionType` always-modified quirk) — **Not added.**
   No `TestGenericTypes` exists; only `TestScope` and `TestRules` were added alongside the rule work.
   `GenericTypes` is exercised indirectly through `Test_Pure_Preeval_Java` and the harness, not by a
   dedicated unit test.
-- `// parity:` markers get follow-up issue links (§3.4) once issues are filed — **Still pending.** 10
-  markers exist, none linked to a filed issue.
+- `// parity:` markers get follow-up issue links (§3.4) once issues are filed — **Still pending.** 13
+  markers exist (10 shared, 2 compiled, 1 interpreted), none linked to a filed issue.
 
 ## 6. Cutover criteria
 
