@@ -67,18 +67,6 @@ function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::te
   assertEqWithinTolerance($f->eval(|cosh(-11.573574828312076)), 53126.3144145034, 0.0000000001);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-  assertEqWithinTolerance($f->eval(|cosh(-3.14)), 11.573574828312076, 0.0000000001);
-  assertEqWithinTolerance($f->eval(|cosh(3.14)), 11.573574828312076, 0.0000000001);
-
-  assertEqWithinTolerance($f->eval(|cosh(-.7654321)), 1.307528029695523, 0.0000000001);
-  assertEqWithinTolerance($f->eval(|cosh(.7654321)), 1.307528029695523, 0.0000000001);
-
-  assertEqWithinTolerance($f->eval(|cosh(11.573574828312076)), 53126.3144145034, 0.0000000001);
-  assertEqWithinTolerance($f->eval(|cosh(-11.573574828312076)), 53126.3144145034, 0.0000000001);
-}
-
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::cosh::testCosH_EvalFuncSig<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEqWithinTolerance($f->eval(|cosh_Number_1__Float_1_->eval(0)), 1.0, 0.0000000001);

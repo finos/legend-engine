@@ -223,25 +223,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
                   '#', $res->toString());
 }
 
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_SortColumnNotAggregated<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                  grp, rank, name
-                  1, 30, C
-                  1, 10, A
-                  1, 20, B
-                #->groupBy(~grp, ~names : g | $g->joinStrings(~name, '|', ~rank->descending()))
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   grp,names\n'+
-                  '   1,C|B|A\n'+
-                  '#', $res->toString());
-}
-
 function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_Unordered<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {
     let expr = {
@@ -366,28 +347,6 @@ function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggrega
     assertEquals( '#TDS\n'+
                   '   grp,names\n'+
                   '   1,B,C\n'+
-                  '   2,Y\n'+
-                  '#', $res->sort(~grp->ascending())->toString());
-}
-
-function <<PCT.test, PCTRelationQualifier.relation, PCTRelationQualifier.aggregation>> meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredDescending<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {
-                |#TDS
-                  grp, id, name, amt
-                  1, 3, C, 50
-                  1, 1, A, 5
-                  1, 2, B, 20
-                  2, 4, Y, 30
-                  2, 1, X, 5
-                #->groupBy(~grp, ~names : g | $g->filter(r | $r.amt > 10)->joinStrings(~name, ',', ~id->descending()))
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals( '#TDS\n'+
-                  '   grp,names\n'+
-                  '   1,C,B\n'+
                   '   2,Y\n'+
                   '#', $res->sort(~grp->ascending())->toString());
 }

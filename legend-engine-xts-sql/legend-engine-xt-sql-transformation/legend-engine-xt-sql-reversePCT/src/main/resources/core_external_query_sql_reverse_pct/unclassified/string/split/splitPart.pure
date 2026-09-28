@@ -19,17 +19,6 @@ function meta::external::query::sql::reversePCT::tests::unclassified::string::sp
     source = '/core_functions_unclassified/string/split/splitPart.pure',
     reverses = [
                  revsForTest(
-                      'meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_',
-                      [
-                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)',
-                            'select split_part(Text\'Hello World\', Text\' \', 1)'
-                        ),
-                        rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)',
-                            'select split_part(Text\'Hello World\', Text\' \', 2)'
-                        )
-                      ]
-                 ),
-                 revsForTest(
                       'meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString_Function_1__Boolean_1_',
                       [
                         rev('|[]->meta::pure::functions::string::splitPart(\' \', 0)',
@@ -79,7 +68,6 @@ function meta::external::query::sql::reversePCT::tests::unclassified::string::sp
 
 function meta::external::query::sql::reversePCT::tests::unclassified::string::split::splitPart::exec():Boolean[1]
 {
-   meta::pure::functions::string::tests::splitPart::testSplitPart(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::string::tests::splitPart::testSplitPartEmptyString(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
    meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);

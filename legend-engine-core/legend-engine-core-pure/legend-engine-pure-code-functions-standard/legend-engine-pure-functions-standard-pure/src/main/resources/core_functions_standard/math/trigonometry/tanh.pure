@@ -69,18 +69,6 @@ function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::te
   assertEqWithinTolerance($f->eval(|tanh(-11.573574828312076)), -0.9999999998228462, 0.0000000001);
 }
 
-function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_Eval<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
-{
-  assertEqWithinTolerance($f->eval(|tanh(-3.14)), -0.9962602049458319, 0.000000001);
-  assertEqWithinTolerance($f->eval(|tanh(3.14)), 0.9962602049458319, 0.000000001);
-
-  assertEqWithinTolerance($f->eval(|tanh(-.7654321)), -0.6442654436049523, 0.000000001);
-  assertEqWithinTolerance($f->eval(|tanh(.7654321)), 0.6442654436049523, 0.000000001);
-
-  assertEqWithinTolerance($f->eval(|tanh(11.573574828312076)), 0.9999999998228462, 0.0000000001);
-  assertEqWithinTolerance($f->eval(|tanh(-11.573574828312076)), -0.9999999998228462, 0.0000000001);
-}
-
 function <<PCT.test>> meta::pure::functions::math::tests::trigonometry::tanh::testTanH_EvalFuncSig<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
   assertEqWithinTolerance($f->eval(|tanh_Number_1__Float_1_->eval(0)), 0.0, 0.000000001);

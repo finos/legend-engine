@@ -25,9 +25,6 @@
     "test" : "meta::pure::functions::string::tests::base64::testDecodeBase64_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_decode' is not a recognized built-in function name."
   }, {
-    "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_decode' is not a recognized built-in function name."
-  }, {
     "test" : "meta::pure::functions::string::tests::base64::testEncodeBase64_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: 'base64_encode' is not a recognized built-in function name."
   }, {
@@ -131,9 +128,6 @@
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
   }, {
     "test" : "meta::pure::functions::string::tests::splitPart::testSplitPartWithNoSplit_Function_1__Boolean_1_",
-    "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
-  }, {
-    "test" : "meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_",
     "expectedError" : "com.microsoft.sqlserver.jdbc.SQLServerException: Procedure or function string_split has too many arguments specified."
   } ]
 }

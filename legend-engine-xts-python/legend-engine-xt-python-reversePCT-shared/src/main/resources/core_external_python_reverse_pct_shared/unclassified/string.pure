@@ -112,11 +112,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesUnclass
         [
           rev('|\'Hello, World!\'->meta::pure::functions::string::encodeBase64()', 'c("Hello, World!").b64encode()')
         ]
-      ),
-      meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_->testRev(
-        [
-          rev('|$testString->meta::pure::functions::string::decodeBase64()->meta::pure::functions::string::encodeBase64()', 'c("SGVsbG8sIFdvcmxkIQ==").b64decode().b64encode()')
-        ]
       )
     ]->combine(),
      // Padding ----------------------------------------------------------
@@ -231,12 +226,6 @@ function meta::external::python::reversePCT::shared::pythonSharedReversesUnclass
     ]->combine(),
      // Split ----------------------------------------------------------
     [ // splitPart
-      meta::pure::functions::string::tests::splitPart::testSplitPart_Function_1__Boolean_1_->testRev(
-        [
-          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 0)', 'c("Hello World").split_part(" ", 0)'),
-          rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\' \', 1)', 'c("Hello World").split_part(" ", 1)')
-        ]
-      ),
       meta::pure::functions::string::tests::splitPart::testSplitPartEmptyToken_Function_1__Boolean_1_->testRev(
         [
           rev('|\'Hello World\'->meta::pure::functions::string::splitPart(\'\', 0)', 'c("Hello World").split_part("", 0)')

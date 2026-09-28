@@ -42,7 +42,6 @@ meta::pure::functions::math::bitAnd(arg1:Integer[1], arg2:Integer[1]):Integer[1]
 
 function <<PCT.test>> meta::pure::functions::math::tests::bitAnd::testBitAnd_SmallNumbers<Z|y>(f:Function<{Function<{->Z[y]}>[1]->Z[y]}>[1]):Boolean[1]
 {
-  assertEquals($f->eval(|bitAnd(1, 0)),0);
   assertEquals($f->eval(|bitAnd(1, 0)), 0);
   assertEquals($f->eval(|bitAnd(0, 0)), 0);
   assertEquals($f->eval(|bitAnd(5, 6)), 4);

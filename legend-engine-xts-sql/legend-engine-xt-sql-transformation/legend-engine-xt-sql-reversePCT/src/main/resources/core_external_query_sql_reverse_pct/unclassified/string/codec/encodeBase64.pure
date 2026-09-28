@@ -25,14 +25,6 @@ function meta::external::query::sql::reversePCT::tests::unclassified::string::co
                             'select encode(Text\'Hello, World!\', \'base64\')'
                         )
                       ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip_Function_1__Boolean_1_',
-                      [
-                        rev('|$testString->meta::pure::functions::string::decodeBase64()->meta::pure::functions::string::encodeBase64()',
-                            'select encode(decode(Text\'SGVsbG8sIFdvcmxkIQ==\', \'base64\'), \'base64\')'
-                        )
-                      ]
                  )
                ]
   )
@@ -41,5 +33,4 @@ function meta::external::query::sql::reversePCT::tests::unclassified::string::co
 function meta::external::query::sql::reversePCT::tests::unclassified::string::codec::encodeBase64::exec():Boolean[1]
 {
    meta::pure::functions::string::tests::base64::testEncodeBase64(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
-   meta::pure::functions::string::tests::base64::testEncodeBase64RoundTrip(meta::external::query::sql::reversePCT::framework::sql_Function_1__X_o_);
 }

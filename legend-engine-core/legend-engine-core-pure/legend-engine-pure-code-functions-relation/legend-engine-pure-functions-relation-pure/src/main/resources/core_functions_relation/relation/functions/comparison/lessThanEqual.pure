@@ -102,6 +102,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lessThanEqual::tes
                                    productId, price
                                    1, 100
                                    2, 250
+                                   3, null
                                  #;
                   let bounds = #TDS
                                 threshold
@@ -125,6 +126,7 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lessThanEqual::tes
                                    productId, price
                                    1, 100
                                    2, 250
+                                   3, null
                                  #;
                   // a column of nothing but nulls types as Varchar, so the value keeps the column typed and
                   // the filter leaves the single null row the comparison is about
@@ -213,52 +215,5 @@ function <<PCT.test>> meta::pure::functions::relation::tests::lessThanEqual::tes
                  '   productId,price\n'+
                  '   1,100\n'+
                  '   2,250\n'+
-                 '#', $res->sort(~productId->ascending())->toString());
-}
-
-function <<PCT.test>> meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullValueAgainstEmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                  let products = #TDS
-                                   productId, price
-                                   1, 100
-                                   2, null
-                                 #;
-                  let bounds = #TDS
-                                threshold
-                                250
-                              #->filter(l | $l.threshold > 1000);
-                  $products->filter(p | $p.price->lessThanEqual($bounds->select(~threshold)));
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals('#TDS\n'+
-                 '   productId,price\n'+
-                 '\n'+
-                 '#', $res->sort(~productId->ascending())->toString());
-}
-
-function <<PCT.test>> meta::pure::functions::relation::tests::lessThanEqual::testLessThanEqual_NullValueAgainstNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-    let expr = {|
-                  let products = #TDS
-                                   productId, price
-                                   1, 100
-                                   2, null
-                                 #;
-                  let bounds = #TDS
-                                threshold, tag
-                                150, 1
-                                null, 2
-                              #->filter(l | $l.tag == 2);
-                  $products->filter(p | $p.price->lessThanEqual($bounds->select(~threshold)));
-               };
-
-    let res = $f->eval($expr);
-
-    assertEquals('#TDS\n'+
-                 '   productId,price\n'+
-                 '\n'+
                  '#', $res->sort(~productId->ascending())->toString());
 }

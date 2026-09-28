@@ -54,7 +54,6 @@ function <<PCT.test>> meta::pure::functions::math::tests::bitNot::testBitNot_Neg
   assertEquals($f->eval(|bitNot(-1)), 0);
   assertEquals($f->eval(|bitNot(-5)), 4);
   assertEquals($f->eval(|bitNot(-105)), 104);
-  assertEquals($f->eval(|bitNot(-5)), 4);
   assertEquals($f->eval(|bitNot(-25)), 24);
 }
 
