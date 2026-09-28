@@ -559,7 +559,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
               | fail($func->coarseDatePrecisionErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
               | if($func->isDomainViolatingMathFunctionForDatabricks(),
                    | fail($func->domainViolationErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
-                   | if($func->isLiteralDateToStringForDatabricks(),
+                   | if($func->isRemByZeroForDatabricks(),
+                        | fail($func->remByZeroErrorMessageForDatabricks()); ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = ''));,
+                        | if($func->isLiteralDateToStringForDatabricks(),
     | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderLiteralDateToStringForDatabricks(), transform = {p:String[*] | []})),
     | if($func->isFullyLiteralInForDatabricks(),
          | ^DynaFunctionToSql(funcName = $func.name, stateMatch = [], toSql = ^ToSql(format = $func->renderFullyLiteralInForDatabricks(), transform = {p:String[*] | []})),
@@ -645,6 +647,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    );
       )
  );
+   )
    )
    )
    )
@@ -857,6 +860,27 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::domainViolationErrorMessageForDatabricks(func:DynaFunction[1]):String[1]
 {
    'Unable to compute ' + $func.name + ' of ' + $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks();
+}
+
+// rem(dividend, 0) is registered (extensionDefaults.pure) as a bare mod(%s,%s), and Spark's native
+// mod()/% throws its own [REMAINDER_BY_ZERO] for a zero divisor - unlike the stdlib's own rem.pure,
+// which fails with 'Cannot divide <dividend> by zero' (see testRemError). Same guard shape as
+// isDomainViolatingMathFunctionForDatabricks above: only a compile-time-literal divisor can be
+// checked before execution (a runtime-valued/column divisor falls through to Spark's own native
+// error, unchanged - no test here exercises that shape), and the dividend must also be a literal so
+// its exact display text can be reproduced in the failure message.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isRemByZeroForDatabricks(func:DynaFunction[1]):Boolean[1]
+{
+   $func.name == 'rem'
+      && $func.parameters->size() == 2
+      && $func.parameters->at(0)->isNumericLiteralOrNegatedNumericLiteralForDatabricks()
+      && $func.parameters->at(1)->isNumericLiteralOrNegatedNumericLiteralForDatabricks()
+      && $func.parameters->at(1)->numericLiteralOrNegatedNumericLiteralValueForDatabricks() == 0;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::remByZeroErrorMessageForDatabricks(func:DynaFunction[1]):String[1]
+{
+   'Cannot divide ' + $func.parameters->at(0)->numericLiteralOrNegatedNumericLiteralDisplayStringForDatabricks() + ' by zero';
 }
 
 // True when the operand's inferred relational type is Integer-like (Integer, BigInt, or a
@@ -1420,18 +1444,67 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
    ]);
 }
 
+// Spark requires both RANGE frame bounds' interval literals to share the same unit (e.g. both
+// SECOND, or both DAY) - 'RANGE BETWEEN INTERVAL 1 SECOND FOLLOWING AND INTERVAL 1 DAY FOLLOWING'
+// fails with DATATYPE_MISMATCH.SPECIFIED_WINDOW_FRAME_DIFF_TYPES. That restriction is about literal
+// syntax, not about the underlying calendar semantics: MICROSECONDS through WEEKS are all members
+// of Spark's single fixed-duration ("day-time interval") family - INTERVAL 1 DAY and INTERVAL 86400
+// SECOND denote the exact same duration - freely interconvertible by a plain multiplication, unlike
+// YEARS/MONTHS, which are calendar-variable (a MONTH has no fixed length) and have no such
+// conversion. A mismatched pair drawn entirely from that fixed-duration family can therefore be
+// rewritten, at plan-generation time, into a matching pair - both expressed in whichever of the two
+// original units is the finer (smaller) one - sidestepping Spark's restriction entirely. A pair
+// involving YEARS/MONTHS keeps the original "not supported" behavior, since there is genuinely no
+// fixed-length equivalent to convert to/from.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::isFixedDurationRangeIntervalUnitForDatabricks(unit:DurationUnit[1]):Boolean[1]
+{
+   $unit != DurationUnit.YEARS && $unit != DurationUnit.MONTHS;
+}
+
+// Microseconds-per-unit for the seven units isFixedDurationRangeIntervalUnitForDatabricks accepts.
+// Each is an exact multiple of the previous one (x1000, x1000, x60, x60, x24, x7), so converting
+// between any two of them via multiplication only (never division) is always exact.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(unit:DurationUnit[1]):Integer[1]
+{
+   if($unit == DurationUnit.MICROSECONDS, | 1,
+   | if($unit == DurationUnit.MILLISECONDS, | 1000,
+   | if($unit == DurationUnit.SECONDS, | 1000000,
+   | if($unit == DurationUnit.MINUTES, | 60000000,
+   | if($unit == DurationUnit.HOURS, | 3600000000,
+   | if($unit == DurationUnit.DAYS, | 86400000000,
+   | if($unit == DurationUnit.WEEKS, | 604800000000,
+   | fail('Unsupported DurationUnit for range-frame unit normalization: ' + $unit->toString()); -1;
+   )))))));
+}
+
+// Rebuilds one RANGE frame bound in commonUnit: the offset value (always a compile-time Literal -
+// processFrameIntervalValue, pureToSQLQuery.pure, builds every FrameIntervalValue that way
+// regardless of dialect) is rescaled by the exact (never fractional - see
+// fixedDurationRangeIntervalUnitMicrosecondsForDatabricks) ratio between the bound's original unit
+// and commonUnit.
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::normalizeFrameIntervalValueUnitForDatabricks(i:meta::relational::metamodel::FrameIntervalValue[1], commonUnit:DurationUnit[1]):meta::relational::metamodel::FrameIntervalValue[1]
+{
+   let ratio = ($i.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks() / $commonUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks())->floor();
+   ^$i(value = ^Literal(value = $i.value->cast(@Literal).value->cast(@Integer) * $ratio), durationUnit = $commonUnit);
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processWindowFrameForDatabricks(frame:meta::relational::metamodel::Frame[1], sgc:SqlGenerationContext[1]):String[1]
 {
    let frameType = if($frame.frameType == meta::relational::metamodel::FrameType.ROWS, | 'ROWS BETWEEN', | 'RANGE BETWEEN');
-   // Spark requires both RANGE frame bounds to be the same interval type (e.g. both SECOND, or
-   // both DAY) - 'RANGE BETWEEN INTERVAL 1 SECOND FOLLOWING AND INTERVAL 1 DAY FOLLOWING' fails
-   // with DATATYPE_MISMATCH.SPECIFIED_WINDOW_FRAME_DIFF_TYPES. There is no single-unit rewrite that
-   // preserves both bounds' distinct calendar semantics (a DAY offset isn't a fixed number of
-   // SECONDs), so mixed-unit interval frames keep the original "not supported" behavior.
    if($frame.offsetFrom->instanceOf(meta::relational::metamodel::FrameIntervalValue)
         && $frame.offsetTo->instanceOf(meta::relational::metamodel::FrameIntervalValue)
         && $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit != $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue).durationUnit,
-      | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString()); '';
+      | let from = $frame.offsetFrom->cast(@meta::relational::metamodel::FrameIntervalValue);
+        let to = $frame.offsetTo->cast(@meta::relational::metamodel::FrameIntervalValue);
+        if($from.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks() && $to.durationUnit->isFixedDurationRangeIntervalUnitForDatabricks(),
+           | let commonUnit = if($from.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks() < $to.durationUnit->fixedDurationRangeIntervalUnitMicrosecondsForDatabricks(), | $from.durationUnit, | $to.durationUnit);
+             $frameType + ' '
+                + $from->normalizeFrameIntervalValueUnitForDatabricks($commonUnit)->processFrameValueForDatabricks($sgc)
+                + ' AND '
+                + $to->normalizeFrameIntervalValueUnitForDatabricks($commonUnit)->processFrameValueForDatabricks($sgc);
+           ,
+           | fail('Window function with range frame using interval is not supported for this database type: ' + $sgc.dbConfig.dbType->toString()); '';
+          );
       ,
       | $frameType + ' ' + $frame.offsetFrom->processFrameValueForDatabricks($sgc) + ' AND ' + $frame.offsetTo->processFrameValueForDatabricks($sgc);
    );
@@ -1641,11 +1714,32 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 }
 
 // Spark's regexp_replace always replaces every occurrence; its fourth argument is a start position,
-// not an occurrence count, so replaceFirst has no direct equivalent.
+// not an occurrence count, so replaceFirst has no direct equivalent. A compile-time-literal
+// replaceAll=false is instead rewritten via split(str, pattern, 2): Spark's 3-arg split with limit=2
+// returns exactly [textBeforeFirstMatch, textAfterFirstMatch] when the pattern matches at least once
+// (the second element still contains any later occurrences of the pattern, untouched - i.e. exactly
+// the first-occurrence-only cut point regexpReplace(...,false) needs), or the single-element
+// [originalString] when the pattern never matches at all. This only reproduces a literal
+// replacement's own text - a $1-style backreference in the replacement (which Spark's native
+// regexp_replace does support) can't be resolved this way, since the matched text is discarded
+// rather than captured - but no PCT test here exercises that shape.
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::transformRegexpReplaceDatabricks(params: String[5]):String[1]
 {
-   assert($params->at(3) == 'true', | 'regexpReplace with replaceAll=false is not supported on Databricks: regexp_replace always replaces every occurrence');
-   'regexp_replace(' + $params->at(0) + ', ' + $params->at(1)->applyInlineFlagsDatabricks($params->at(4)) + ', ' + $params->at(2) + ')';
+   let pattern = $params->at(1)->applyInlineFlagsDatabricks($params->at(4));
+   if($params->at(3) == 'true',
+      | 'regexp_replace(' + $params->at(0) + ', ' + $pattern + ', ' + $params->at(2) + ')',
+      | if($params->at(3) == 'false',
+           | $params->firstOccurrenceRegexpReplaceDatabricks($pattern),
+           | assert(false, | 'regexpReplace with a non-literal replaceAll flag is not supported on Databricks: regexp_replace always replaces every occurrence'); '';
+         )
+     );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::firstOccurrenceRegexpReplaceDatabricks(params: String[5], pattern:String[1]):String[1]
+{
+   let splitExpr = 'split(' + $params->at(0) + ', ' + $pattern + ', 2)';
+   'case when size(' + $splitExpr + ') = 1 then ' + $params->at(0)
+      + ' else concat(element_at(' + $splitExpr + ', 1), ' + $params->at(2) + ', element_at(' + $splitExpr + ', 2)) end';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::schemaNameToIdentifierForDatabricks(schemaName: String[1], dbConfig: DbConfig[1]): String[1]

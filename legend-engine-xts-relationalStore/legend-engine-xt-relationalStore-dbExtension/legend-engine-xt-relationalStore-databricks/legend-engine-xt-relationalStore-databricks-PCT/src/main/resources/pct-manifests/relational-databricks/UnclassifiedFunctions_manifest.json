@@ -9,8 +9,5 @@
   }, {
     "test" : "meta::pure::functions::string::tests::regexpIndexOf::testRegexpIndexOf_GroupNumber_Function_1__Boolean_1_",
     "expectedError" : "regexpIndexOf with a capture group is not supported on Databricks: regexp_instr takes no group argument"
-  }, {
-    "test" : "meta::pure::functions::string::tests::regexpReplace::testregexpReplace_Function_1__Boolean_1_",
-    "expectedError" : "regexpReplace with replaceAll=false is not supported on Databricks: regexp_replace always replaces every occurrence"
   } ]
 }

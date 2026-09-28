@@ -76,12 +76,6 @@
     "test" : "meta::pure::functions::relation::tests::joinStrings::testJoinStrings_GroupBy_FilteredOnUnprojectedColumn_Function_1__Boolean_1_",
     "expectedError" : "The function `array_join` does not support WITHIN GROUP (ORDER BY ...)"
   }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
   }, {
@@ -111,11 +105,5 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "\"pivot is not supported\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   } ]
 }
