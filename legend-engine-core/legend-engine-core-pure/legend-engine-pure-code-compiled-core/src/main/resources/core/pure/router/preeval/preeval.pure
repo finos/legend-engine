@@ -156,7 +156,10 @@ function <<access.private>> meta::pure::router::preeval::prevalJava(item:Any[1],
 {
   assert($state.inScopeTypeParams->keys()->isEmpty() && $state.path->isEmpty() && $state.depth->isEmpty(), | 'The Java preeval implementation requires a State with no type parameters, path or depth');
   let r = meta::pure::functions::preeval::prevalNative($item, $state.inScopeVars, $state.rollingInScopeVars, $state->toPrevalHooks($extensions), $state.debug);
-  ^PrevalWrapper<Any>(value = $r.value, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified);
+  $r.value->match([
+    fd:FunctionDefinition<Any>[1] | ^PrevalWrapper<FunctionDefinition<Any>>(value = $fd, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified),
+    a:Any[1] | ^PrevalWrapper<Any>(value = $a, canPreval = $r.canPreval, openVars = $r.openVars, modified = $r.modified)
+  ]);
 }
 
 function meta::pure::router::preeval::toPrevalHooks(state:State[1], extensions:Extension[*]):meta::pure::functions::preeval::PrevalHooks[1]

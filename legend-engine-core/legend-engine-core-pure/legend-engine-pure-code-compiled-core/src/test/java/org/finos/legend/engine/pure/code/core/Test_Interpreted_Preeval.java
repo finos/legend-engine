@@ -1,0 +1,102 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package org.finos.legend.engine.pure.code.core;
+
+import junit.extensions.TestSetup;
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.set.ImmutableSet;
+import org.eclipse.collections.api.set.MutableSet;
+import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilderInterpreted;
+
+import java.util.Enumeration;
+
+public class Test_Interpreted_Preeval
+{
+    private static final String PROPERTY = "legend.engine.preeval.implementation";
+    private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
+
+    static final ImmutableSet<String> KNOWN_INTERPRETED_FAILURES = Sets.immutable.with("testShadowRejectsDifferentTypes", "testShadowRejectsDifferentMultiplicities");
+
+    public static TestSuite suite()
+    {
+        TestSuite all = PureTestBuilderInterpreted.buildSuite("meta::pure::router::preeval::tests");
+        MutableSet<String> seen = Sets.mutable.empty();
+        TestSuite selected = filter(all, Boolean.getBoolean(INCLUDE_KNOWN_DIVERGENT), seen);
+        ImmutableSet<String> unmatched = KNOWN_INTERPRETED_FAILURES.reject(seen::contains);
+        if (unmatched.notEmpty())
+        {
+            throw new IllegalStateException("KNOWN_INTERPRETED_FAILURES names that match no collected preeval test: " + unmatched.toSortedList().makeString(", "));
+        }
+        TestSuite suite = new TestSuite();
+        suite.addTest(withImplementation("PURE", selected));
+        suite.addTest(withImplementation("JAVA", selected));
+        suite.addTest(withImplementation("SHADOW", selected));
+        return suite;
+    }
+
+    private static TestSuite filter(TestSuite source, boolean includeKnown, MutableSet<String> seen)
+    {
+        TestSuite result = new TestSuite(source.getName());
+        for (Enumeration<Test> tests = source.tests(); tests.hasMoreElements(); )
+        {
+            Test test = tests.nextElement();
+            if (test instanceof TestSuite)
+            {
+                result.addTest(filter((TestSuite) test, includeKnown, seen));
+            }
+            else
+            {
+                String name = ((TestCase) test).getName();
+                seen.add(name);
+                if (includeKnown || !KNOWN_INTERPRETED_FAILURES.contains(name))
+                {
+                    result.addTest(test);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Test withImplementation(String implementation, Test tests)
+    {
+        return new TestSetup(tests)
+        {
+            private String previous;
+
+            @Override
+            protected void setUp()
+            {
+                this.previous = System.getProperty(PROPERTY);
+                System.setProperty(PROPERTY, implementation);
+            }
+
+            @Override
+            protected void tearDown()
+            {
+                if (this.previous == null)
+                {
+                    System.clearProperty(PROPERTY);
+                }
+                else
+                {
+                    System.setProperty(PROPERTY, this.previous);
+                }
+            }
+        };
+    }
+}
