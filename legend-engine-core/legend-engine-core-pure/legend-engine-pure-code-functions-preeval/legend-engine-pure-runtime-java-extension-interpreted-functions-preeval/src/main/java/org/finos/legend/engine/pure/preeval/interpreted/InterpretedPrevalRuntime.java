@@ -296,8 +296,7 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends FunctionDefinition<?>> T withExpressionSequence(T function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables)
+    public FunctionDefinition<?> withExpressionSequence(FunctionDefinition<?> function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables)
     {
         MutableMap<String, ListIterable<? extends CoreInstance>> overrides = Maps.mutable.<String, ListIterable<? extends CoreInstance>>with(M3Properties.expressionSequence, expressionSequence);
         if (openVariables != null)
@@ -306,7 +305,7 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
         }
         // parity: a LambdaWithContext copies to a plain lambda, as interpreted Pure's ^$lf(...) does
         CoreInstance copy = copy(function, overrides);
-        return (T) (function instanceof LambdaFunction ? LambdaFunctionCoreInstanceWrapper.toLambdaFunction(copy) : FunctionDefinitionCoreInstanceWrapper.toFunctionDefinition(copy));
+        return (function instanceof LambdaFunction ? LambdaFunctionCoreInstanceWrapper.toLambdaFunction(copy) : FunctionDefinitionCoreInstanceWrapper.toFunctionDefinition(copy));
     }
 
     @Override

@@ -19,7 +19,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.pure.preeval.PrevalRuntime;
@@ -223,15 +222,11 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     }
 
     @Override
-    public <T extends FunctionDefinition<?>> T withExpressionSequence(T function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables)
+    public FunctionDefinition<?> withExpressionSequence(FunctionDefinition<?> function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables)
     {
-        T copy = CompiledSupport.copy(function);
-        copy._expressionSequence(Lists.mutable.withAll(expressionSequence));
-        if (openVariables != null)
-        {
-            ((LambdaFunction<?>) copy)._openVariables(Lists.mutable.withAll(openVariables));
-        }
-        return copy;
+        // parity: compiled Pure uses the setter's return value, which unwraps a PureCompiledLambda, and its second ^ copy gives the lambda the call site's source information, so the original precompiled body is not found and reused
+        FunctionDefinition<?> copy = CompiledSupport.copy(function, this.sourceInformation)._expressionSequence(Lists.mutable.withAll(expressionSequence));
+        return openVariables == null ? copy : CompiledSupport.copy((LambdaFunction<?>) copy, this.sourceInformation)._openVariables(Lists.mutable.withAll(openVariables));
     }
 
     @Override
@@ -308,20 +303,9 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     {
         PureMap vars = new PureMap(Maps.mutable.empty());
         inScopeVars.forEachKeyValue((name, values) -> vars.getMap().put(name, CoreGen.bridge.buildList()._valuesAddAll(values)));
-        MutableList<Object> values = Lists.mutable.empty();
-        // parity: compiled reactivation can nest a collection inside the result, which Pure's result handling flattens
-        CompiledSupport.toPureCollection(Pure.reactivate(valueSpecification, vars, CoreGen.bridge, this.executionSupport)).forEach(v ->
-        {
-            if (v instanceof Iterable)
-            {
-                values.addAllIterable((Iterable<?>) v);
-            }
-            else
-            {
-                values.add(v);
-            }
-        });
-        return values.toImmutable();
+        // parity: Pure's result match makes a single-element nested collection one value; other nested collections are left as they are
+        return Lists.immutable.withAll(CompiledSupport.toPureCollection(Pure.reactivate(valueSpecification, vars, CoreGen.bridge, this.executionSupport)))
+                .collect(CompiledPrevalRuntime::unwrapSingleton);
     }
 
     @Override
@@ -396,6 +380,16 @@ final class CompiledPrevalRuntime implements PrevalRuntime
             this.elementsByPath.put(path, this.processorSupport.package_getByUserPath(path));
         }
         return this.elementsByPath.get(path);
+    }
+
+    private static Object unwrapSingleton(Object value)
+    {
+        if (value instanceof Iterable)
+        {
+            ImmutableList<Object> nested = Lists.immutable.withAll((Iterable<?>) value);
+            return nested.size() == 1 ? nested.getOnly() : value;
+        }
+        return value;
     }
 
     private static ImmutableList<Object> toValues(Object value)

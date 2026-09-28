@@ -49,7 +49,7 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 | `testPrerouting29b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
 | `testPrerouting2b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | inlining/eval expansion — **resolved by Task 5** |
 | `testPrerouting30` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5), "Mismatch between expected and actual result content." | map/fold unroll, concatenate |
-| `testPrerouting32b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5) | inlining/eval expansion |
+| `testPrerouting32b` | JAVA | Assert failure at (resource:/platform/pure/essential/tests/assert.pure line:21 column:5) | inlining/eval expansion — **resolved by Task 5 (fix round 1)** |
 | `testPrerouting33` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for filterToStringColumns_TabularDataSet_1__TabularDataSet_1_" | TDS columns / eval-on-Column |
 | `testPrerouting34` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for extendColumns_TabularDataSet_1__String_MANY__TabularDataSet_1_" | TDS columns / eval-on-Column |
 | `testPrerouting37` | both | Assert failure at (resource:/platform/pure/essential/tests/assertFalse.pure line:29 column:5), "Failed to find match for otherFunc2_Integer_MANY__FunctionDefinition_1__Integer_MANY__Integer_MANY_" | inlining/eval expansion — **resolved by Task 5** |
@@ -73,7 +73,7 @@ None of the 26 P1 target tests regressed. Every failing test's name is present i
 
 These stay out of `KNOWN_DIVERGENT`; no rule work is needed for them (already correct, apparently by a different existing code path or coincidental re-activation equivalence):
 
-`testDecimalType`, `testEvalWithArgs1`, `testLetOnlyStatement`, `testPrerouting10`, `testPrerouting11`, `testPrerouting13`, `testPrerouting14`, `testPrerouting15`, `testPrerouting16`, `testPrerouting17`, `testPrerouting18`, `testPrerouting20`, `testPrerouting21`, `testPrerouting25b`, `testPrerouting25c`, `testPrerouting27b`, `testPrerouting28`, `testPrerouting31b`, `testPrerouting35`, `testPrerouting38`, `testPrerouting40a`, `testPrerouting6`, `testPrerouting7`, `testPrerouting_mappedTdsAgg` (24 tests).
+`testDecimalType`, `testEvalWithArgs1`, `testLetOnlyStatement`, `testPrerouting10`, `testPrerouting11`, `testPrerouting13`, `testPrerouting14`, `testPrerouting15`, `testPrerouting16`, `testPrerouting17`, `testPrerouting18`, `testPrerouting20`, `testPrerouting21` (re-entered `KNOWN_DIVERGENT` in Task 5, see below), `testPrerouting25b`, `testPrerouting25c`, `testPrerouting27b`, `testPrerouting28`, `testPrerouting31b`, `testPrerouting35`, `testPrerouting38`, `testPrerouting40a`, `testPrerouting6`, `testPrerouting7`, `testPrerouting_mappedTdsAgg` (24 tests).
 
 ## Verification
 
@@ -103,8 +103,15 @@ After implementing `InlineRule` and `EvalExpansionRule` (plus `addToScope`, the 
 
 **Re-entered `KNOWN_DIVERGENT`: `testPrerouting21`** (map/fold unroll, Task 6). It passed at baseline only because nothing was inlined. Once `myExpandableFunc2` is inlined, `range(0, 3, 1)->map(index|$p)` is left for compiled reactivation, which yields `[a]|[a]|[a]` instead of `a|a|a`. A hand-written, never-prevalled copy of the same expression reactivates to the same wrong value, so this is compiled-reactivation behaviour rather than an inlining bug; Pure avoids it through its `map`-over-InstanceValue unroll handler, which Task 6 ports.
 
-**Still divergent, expected for Task 5: `testPrerouting32b`** (fails under `JAVA` only). The preval result itself matches Pure (the column lambda prints as `$row.getInteger('age')->toString()` under both), but evaluating the `JAVA` result lambda produces the original column lambda (`'ag' + $x`). The copied compiled lambda appears to execute its original precompiled body. Stamping the copy with the call site's source information did not change the outcome; left for follow-up.
+**Still divergent at the initial Task 5 commit, expected for Task 5: `testPrerouting32b`** (resolved in fix round 1, below) (fails under `JAVA` only). The preval result itself matches Pure (the column lambda prints as `$row.getInteger('age')->toString()` under both), but evaluating the `JAVA` result lambda produces the original column lambda (`'ag' + $x`). The copied compiled lambda appears to execute its original precompiled body. Stamping the copy with the call site's source information did not change the outcome; left for follow-up.
 
 Still failing, owned by later tasks: the map/fold/concatenate family (Task 6), filter/cast/toOne/genericType family (Task 7), TDS columns / eval-on-Column (Task 8).
 
 `KNOWN_DIVERGENT` now holds 27 names (41 − 15 + 1). RUNNER is green: `Test_Pure_Preeval_Java` 168/168 (84 collected × 2 implementations), `Test_Pure_Preeval` 111/111.
+
+### Task 5 fix round 1
+
+`testPrerouting32b` now passes under both `JAVA` and `SHADOW`. `CompiledPrevalRuntime.withExpressionSequence` returned the copied `PureCompiledLambda` wrapper, whose `pureFunction()` is the original precompiled body, so evaluating the rewritten lambda ran the original body. It now mirrors preeval.pure's generated code: it keeps the setter's return value (which unwraps the `PureCompiledLambda`), and for lambdas makes the second `^$lf(openVariables = ...)` copy with the call site's source information, so the precompiled-lambda lookup misses and the new body is reactivated. The compiled reactivation flattening was narrowed to single-element nested collections (Pure's result `match`); re-checked with the unwrap fix in place, it is still required (`testReactivatedNestedCollectionIsFlattened` fails in compiled mode without it).
+
+`KNOWN_DIVERGENT` now holds 26 names. RUNNER: `Test_Pure_Preeval_Java` 170/170 (85 collected × 2), `Test_Pure_Preeval` 111/111.
+

@@ -317,6 +317,31 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
     }
 
     @Test
+    public void testRewrittenLambdaEvaluatesItsNewBody()
+    {
+        compileTestSource("lambda.pure", "function test::preeval::suffixer():LambdaFunction<{->LambdaFunction<{->String[1]}>[1]}>[1]\n{\n    {|let x = 'e'; {|'ag' + $x};}\n}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let hooks = ^PrevalHooks(stopPreeval = {a:Any[*] | !$a->exists(x | $x->instanceOf(meta::pure::metamodel::valuespecification::FunctionExpression) && ($x->cast(@meta::pure::metamodel::valuespecification::FunctionExpression).func.functionName != 'letFunction'))}, shouldInline = {f:Function<Any>[1] | false}, isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, isGetAllFunction = {f:Function<Any>[1] | false}, resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []});",
+                    "let r = prevalNative(test::preeval::suffixer(), $emptyVars, $emptyVars, $hooks, noDebug());",
+                    "assert($r.modified, |'expected modified');",
+                    "let rewritten = $r.value->cast(@LambdaFunction<{->LambdaFunction<{->String[1]}>[1]}>);",
+                    "assert($rewritten.expressionSequence->size() == 1, |'expected the let to be inlined');",
+                    "let nested = $rewritten->eval();",
+                    "assert($nested.expressionSequence->at(0)->instanceOf(InstanceValue), |'expected evaluation to return the rewritten nested lambda');",
+                    "assert($nested->eval() == 'age', |'expected age');");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("lambda.pure");
+            runtime.compile();
+        }
+    }
+
+    @Test
     public void testPreevalImplementationIsAKnownValue()
     {
         executeTestFunction(

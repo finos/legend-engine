@@ -68,7 +68,7 @@ public interface PrevalRuntime
 
     InstanceValue newInstanceValue(GenericType genericType, Multiplicity multiplicity, ListIterable<?> values);
 
-    <T extends FunctionDefinition<?>> T withExpressionSequence(T function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables);
+    FunctionDefinition<?> withExpressionSequence(FunctionDefinition<?> function, ListIterable<? extends ValueSpecification> expressionSequence, ListIterable<String> openVariables);
 
     FunctionExpression withParametersAndGenericType(FunctionExpression expression, ListIterable<? extends ValueSpecification> parameters, GenericType genericType);
 
