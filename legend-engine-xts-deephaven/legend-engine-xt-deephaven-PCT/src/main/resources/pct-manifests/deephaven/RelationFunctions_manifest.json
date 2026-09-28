@@ -448,9 +448,6 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1__AggColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggNoWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1__AggColSpec_1__Relation_1_"
   }, {
@@ -463,14 +460,8 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndUnboundedWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
@@ -484,26 +475,14 @@
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithNullableOrderEmptyLast_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpecArray_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
@@ -748,20 +727,11 @@
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::in::testIn_CorrelatedSubQuery_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
@@ -1144,22 +1114,7 @@
     "test" : "meta::pure::functions::relation::tests::over::testRange_WithNumbers_NFollowing_NFollowing_WithoutPartition_WithSingleOrderBy_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_CurrentRow_CurrentRow_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_CurrentRow_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_CurrentRow_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_NFollowing_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_NFollowing_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_NPreceding_CurrentRow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_NPreceding_NFollowing_Function_1__Boolean_1_",
@@ -1168,19 +1123,10 @@
     "test" : "meta::pure::functions::relation::tests::over::testRows_NPreceding_NPreceding_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_NPreceding_UnboundedFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_CurrentRow_WithMultiplePartitions_WithSingleOrderBy_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NFollowing_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NPreceding_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::extend_Relation_1___Window_1__AggColSpec_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_Function_1__Boolean_1_",
@@ -1207,23 +1153,11 @@
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_"
   }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
-  }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
-    "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
   }, {
     "test" : "meta::pure::functions::relation::tests::pivot::testStaticPivot_SingleSingle_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::pivot_Relation_1__ColSpec_1__Any_$1_MANY$__AggColSpec_1__Relation_1_"
@@ -1235,9 +1169,6 @@
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
-    "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
-  }, {
-    "test" : "meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::project_C_MANY__FuncColSpecArray_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::project::testSimpleRelationProjectLiterals_Function_1__Boolean_1_",

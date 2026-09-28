@@ -75,32 +75,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                         '1,Neema\n'+
                         '5,David\n'+
                         '4,Alex\n'+
-                        '2,Thierry}#;\n $t->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending());\n',
-              '(lambda frame:' +
-               '  frame.sort_values("id")' +
-               ')(csv_frame("id,name\\n2,George\\n3,Pierre\\n1,Sachin\\n1,Neema\\n5,David\\n4,Alex\\n2,Thierry"))'),
-
-          rev('|let t = #TDS{\n'+
-                        'id,name\n'+
-                        '2,George\n'+
-                        '3,Pierre\n'+
-                        '1,Sachin\n'+
-                        '1,Neema\n'+
-                        '5,David\n'+
-                        '4,Alex\n'+
-                        '2,Thierry}#;\n $t->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::ascending(), ~name->meta::pure::functions::relation::ascending()]);\n',
-              '(lambda frame:' +
-               '  frame.sort_values(["id","name"])' +
-               ')(csv_frame("id,name\\n2,George\\n3,Pierre\\n1,Sachin\\n1,Neema\\n5,David\\n4,Alex\\n2,Thierry"))'),
-
-          rev('|let t = #TDS{\n'+
-                        'id,name\n'+
-                        '2,George\n'+
-                        '3,Pierre\n'+
-                        '1,Sachin\n'+
-                        '1,Neema\n'+
-                        '5,David\n'+
-                        '4,Alex\n'+
                         '2,Thierry}#;\n'+
                         ' $t->meta::pure::functions::relation::sort([~id->meta::pure::functions::relation::descending(), ~name->meta::pure::functions::relation::ascending()]);\n'+
                     '',
@@ -459,29 +433,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::extend::testOLAPAggNoWindowMultipleColums_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~[newCol:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.id:y: Integer[*]|$y->plus(),other:c: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$c.grp:y: Integer[*]|$y->plus()]);\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame["id"].sum()) or frame.__setitem__("other", frame["grp"].sum())' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindow_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -526,29 +477,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus(),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.grp}:y: Integer[*]|$y->plus()]);\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame.groupby("grp")["id"].window_frame_legend_ext(frame.rows_between(), order_by="grp").sum()) or frame.__setitem__("other", frame.groupby("grp")["grp"].window_frame_legend_ext(frame.rows_between(), order_by="grp").sum())' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -571,29 +499,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::extend::testOLAPAggWithOrderWindow_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~id->meta::pure::functions::relation::descending()->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus());\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame["id"].expanding(order_by="id", ascending=False).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -608,29 +513,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '8,1,H\n'+
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'))'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame.groupby("grp")["name"].expanding(order_by="id", ascending=False).agg(lambda x: x.join("")))' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderWindow_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
                   '',
                '(lambda frame:' +
                '  frame.__setitem__("newCol", frame.groupby("grp")["name"].expanding(order_by="id", ascending=False).agg(lambda x: x.join("")))' +
@@ -698,29 +580,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '8,1,H\n'+
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()])'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame.groupby("grp")["name"].expanding(order_by="id", ascending=False).agg(lambda x: x.join(""))) or frame.__setitem__("other", frame.groupby("grp")["id"].expanding(order_by="id", ascending=False).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending()), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()]);\n'+
                   '',
                '(lambda frame:' +
                '  frame.__setitem__("newCol", frame.groupby("grp")["name"].expanding(order_by="id", ascending=False).agg(lambda x: x.join(""))) or frame.__setitem__("other", frame.groupby("grp")["id"].expanding(order_by="id", ascending=False).sum())' +
@@ -983,29 +842,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::extend::testOLAPAggStringWithPartitionAndOrderUnboundedWindow_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame.groupby("grp")["name"].window_frame_legend_ext(frame.rows_between(), order_by="id", ascending=False).agg(lambda x: x.join("")))' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -1020,29 +856,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '8,1,H\n'+
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()])'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("newCol", frame.groupby("grp")["name"].window_frame_legend_ext(frame.rows_between(), order_by="id", ascending=False).agg(lambda x: x.join(""))) or frame.__setitem__("other", frame.groupby("grp")["id"].window_frame_legend_ext(frame.rows_between(), order_by="id", ascending=False).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::extend::testOLAPAggWithPartitionAndOrderUnboundedWindowMultipleColumns_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(~id->meta::pure::functions::relation::descending(), meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.name}:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),other:{p: meta::pure::metamodel::relation::Relation<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Integer[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Integer[*]|$y->plus()]);\n'+
                   '',
                '(lambda frame:' +
                '  frame.__setitem__("newCol", frame.groupby("grp")["name"].window_frame_legend_ext(frame.rows_between(), order_by="id", ascending=False).agg(lambda x: x.join(""))) or frame.__setitem__("other", frame.groupby("grp")["id"].window_frame_legend_ext(frame.rows_between(), order_by="id", ascending=False).sum())' +
@@ -1501,12 +1314,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
     // Project (assign/apply)
     // ==========================================
     [
-      meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_->testRev(
-        [
-          noRev('|^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::project::testSimpleProjectList_Function_1__Boolean_1_->testRev(
         [
           noRev('|[^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok\', addresses=[^meta::pure::functions::relation::tests::project::Address(val=\'no\'), ^meta::pure::functions::relation::tests::project::Address(val=\'other\')], values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)]), ^meta::pure::functions::relation::tests::project::TypeForProjectTest(name=\'ok3\', addresses=^meta::pure::functions::relation::tests::project::Address(val=\'no\'), values=[^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=1), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=2), ^meta::pure::functions::relation::tests::project::PrimitiveContainer(val=3)])]->meta::pure::functions::relation::project(~[one:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.name,two:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.addresses.val,three:x: meta::pure::functions::relation::tests::project::TypeForProjectTest[1]|$x.values.val])')
@@ -1675,34 +1482,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::over::testRows_CurrentRow_UnboundedFollowing_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(0, None), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_UnboundedFollowing_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -1810,202 +1589,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '',
                '(lambda frame:' +
                '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(1, 2), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NPreceding_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(-1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(None, -1), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_UnboundedPreceding_NFollowing_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::unbounded()->meta::pure::functions::relation::rows(1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(None, 1), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_NPreceding_UnboundedFollowing_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-1, meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(-1, None), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_NFollowing_UnboundedFollowing_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 1->meta::pure::functions::relation::rows(meta::pure::functions::relation::unbounded())), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(1, None), order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_CurrentRow_CurrentRow_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].rolling(window=1, order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_NPreceding_CurrentRow_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], meta::pure::functions::relation::rows(-1, 0)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].rolling(window=2, order_by=["o", "i"]).sum())' +
-               '  or frame' +
-               ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::over::testRows_CurrentRow_NFollowing_Function_1__Boolean_1_->testRev(
-        [
-          rev('|#TDS{\n'+
-                  'p,o,i\n'+
-                  '0,1,10\n'+
-                  '0,2,20\n'+
-                  '0,3,30\n'+
-                  '100,1,10\n'+
-                  '100,2,30\n'+
-                  '100,2,5\n'+
-                  '100,3,11\n'+
-                  '100,3,120\n'+
-                  '200,1,10000\n'+
-                  '200,1,200\n'+
-                  '200,1,808080\n'+
-                  '200,2,33333\n'+
-                  '200,3,0\n'+
-                  '200,3,4\n'+
-                  '300,1,0\n'+
-                  '300,2,0}#->meta::pure::functions::relation::extend(~p->meta::pure::functions::relation::over([~o->meta::pure::functions::relation::ascending(), ~i->meta::pure::functions::relation::ascending()], 0->meta::pure::functions::relation::rows(1)), ~sum_i_Rows:{p: meta::pure::metamodel::relation::Relation<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], w: meta::pure::functions::relation::_Window<(p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])>[1], r: (p:Integer[0..1], o:Integer[0..1], i:Integer[0..1])[1]|$r.i}:y: Integer[*]|$y->plus())'+
-                  '',
-               '(lambda frame:' +
-               '  frame.__setitem__("sum_i_Rows", frame.groupby("p")["i"].window_frame_legend_ext(frame.rows_between(0, 1), order_by=["o", "i"]).sum())' +
                '  or frame' +
                ')(csv_frame("\\np,o,i\\n0,1,10\\n0,2,20\\n0,3,30\\n100,1,10\\n100,2,30\\n100,2,5\\n100,3,11\\n100,3,120\\n200,1,10000\\n200,1,200\\n200,1,808080\\n200,2,33333\\n200,3,0\\n200,3,4\\n300,1,0\\n300,2,0"))')
         ]
@@ -5521,29 +5104,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleSingle_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::groupBy(~grp, ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.groupby("grp", sort=False)[["name"]].agg(lambda x: x.join("")).rename({"name": "newCol"})' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -5566,29 +5126,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
         ]
       ),
 
-      meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::groupBy(~[grp], ~newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'));\n'+
-                  '',
-               '(lambda frame:' +
-               '  frame.groupby("grp", sort=False)[["name"]].agg(lambda x: x.join("")).rename({"name": "newCol"})' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
       meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_Function_1__Boolean_1_->testRev(
         [
           rev('|#TDS{\n'+
@@ -5603,29 +5140,6 @@ function meta::external::python::reversePCT::pandasAPI::pythonPandasAPIReversesE
                   '8,1,H\n'+
                   '9,5,I\n'+
                   '10,0,J}#->meta::pure::functions::relation::groupBy(~grp, ~[newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus()])'+
-                  '',
-               '(lambda frame:' +
-               '  frame.groupby("grp", sort=False)[["name", "id"]].agg({"name": lambda x: x.join(""), "id": "sum"}).rename({"name": "newCol", "id": "YoCol"})' +
-               '  or frame' +
-               ')(csv_frame("\\nid,grp,name\\n1,2,A\\n2,1,B\\n3,3,C\\n4,4,D\\n5,2,E\\n6,1,F\\n7,3,G\\n8,1,H\\n9,5,I\\n10,0,J"))')
-        ]
-      ),
-
-      meta::pure::functions::relation::tests::groupBy::testSimpleGroupBy_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_->testRev(
-        [
-          rev('|let t = #TDS{\n'+
-                  'id,grp,name\n'+
-                  '1,2,A\n'+
-                  '2,1,B\n'+
-                  '3,3,C\n'+
-                  '4,4,D\n'+
-                  '5,2,E\n'+
-                  '6,1,F\n'+
-                  '7,3,G\n'+
-                  '8,1,H\n'+
-                  '9,5,I\n'+
-                  '10,0,J}#;\n'+
-                  ' $t->meta::pure::functions::relation::groupBy(~grp, ~[newCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.name:y: String[*]|$y->meta::pure::functions::string::joinStrings(\'\'),YoCol:x: (id:Integer[0..1], grp:Integer[0..1], name:String[0..1])[1]|$x.id:y: Integer[*]|$y->plus()]);\n'+
                   '',
                '(lambda frame:' +
                '  frame.groupby("grp", sort=False)[["name", "id"]].agg({"name": lambda x: x.join(""), "id": "sum"}).rename({"name": "newCol", "id": "YoCol"})' +

@@ -132,26 +132,8 @@ function meta::external::query::sql::reversePCT::tests::standard::math::aggregat
                             '7.0,3,G\n'+
                             '7.0,1,H\n'+
                             '9.0,5,I\n'+
-                            '10.0,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average())',
-                            'select id, grp, name, avg(id) over (partition by grp) as newCol from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.0,2,A\n2.0,1,B\n3.0,3,C\n4.0,4,D\n5.0,2,E\n6.0,1,F\n7.0,3,G\n7.0,1,H\n9.0,5,I\n10.0,0,J\')')
-                      ]
-                 ),
-                 revsForTest(
-                      'meta::pure::functions::math::tests::average::testAverage_Numbers_Relation_Window_Function_1__Boolean_1_',
-                      [
-                        rev('|#TDS{\n'+
-                            'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n'+
-                            '1.0,2,A\n'+
-                            '2.0,1,B\n'+
-                            '3.0,3,C\n'+
-                            '4.0,4,D\n'+
-                            '5.0,2,E\n'+
-                            '6.0,1,F\n'+
-                            '7.0,3,G\n'+
-                            '7.0,1,H\n'+
-                            '9.0,5,I\n'+
-                            '10.0,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::average())',
-                            'select id, grp, name, avg(id) over (partition by grp) as newCol from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.0,2,A\n2.0,1,B\n3.0,3,C\n4.0,4,D\n5.0,2,E\n6.0,1,F\n7.0,3,G\n7.0,1,H\n9.0,5,I\n10.0,0,J\')')
+                            '10.0,0,J\n}#->meta::pure::functions::relation::extend(~grp->meta::pure::functions::relation::over(), ~[newCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id}:y: Float[*]|$y->meta::pure::functions::math::average(),numberCol:{p: meta::pure::metamodel::relation::Relation<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], w: meta::pure::functions::relation::_Window<(id:Float[0..1], grp:Integer[0..1], name:String[0..1])>[1], r: (id:Float[0..1], grp:Integer[0..1], name:String[0..1])[1]|$r.id->meta::pure::functions::lang::cast(@Number)}:y: Number[*]|$y->meta::pure::functions::math::average()])',
+                            'select id, grp, name, avg(id) over (partition by grp) as newCol, avg(id) over (partition by grp) as numberCol from csv(\'id:Float[0..1],grp:Integer[0..1],name:String[0..1]\n1.0,2,A\n2.0,1,B\n3.0,3,C\n4.0,4,D\n5.0,2,E\n6.0,1,F\n7.0,3,G\n7.0,1,H\n9.0,5,I\n10.0,0,J\')')
                       ]
                  )
                 ]

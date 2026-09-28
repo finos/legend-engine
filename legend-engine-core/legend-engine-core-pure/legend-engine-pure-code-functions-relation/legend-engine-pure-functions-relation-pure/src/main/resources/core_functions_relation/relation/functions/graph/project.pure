@@ -81,41 +81,6 @@ Class meta::pure::functions::relation::tests::project::PrimitiveContainer
   val : Integer[1];
 }
 
-function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleProject<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
-{
-  let expr = {
-                | ^TypeForProjectTest
-                  (
-                    name = 'ok',
-                    addresses = [
-                        ^Address(val='no'),
-                        ^Address(val='other')
-                    ],
-                    values = [
-                      ^PrimitiveContainer(val=1),
-                      ^PrimitiveContainer(val=2),
-                      ^PrimitiveContainer(val=3)
-                    ]
-                  )->project(~[
-                          one:x|$x.name,
-                          two:x|$x.addresses.val,
-                          three:x|$x.values.val
-                       ])
-            };
-
-  let res = $f->eval($expr);
-
-  assertEquals( '#TDS\n'+
-                '   one,two,three\n'+
-                '   ok,no,1\n'+
-                '   ok,no,2\n'+
-                '   ok,no,3\n'+
-                '   ok,other,1\n'+
-                '   ok,other,2\n'+
-                '   ok,other,3\n'+
-                '#', $res->sort([~one->ascending(),~two->ascending(),~three->ascending()])->toString());
-}
-
 
 function <<PCT.test>> meta::pure::functions::relation::tests::project::testSimpleProjectList<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
 {

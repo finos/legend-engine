@@ -342,27 +342,11 @@
       "expectedError" : "pivot is not supported"
     },
     {
-      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_MultipleSingle_MultipleExpressions_Function_1__Boolean_1_",
-      "expectedError" : "pivot is not supported"
-    },
-    {
-      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Dynamic_Aggregation_Function_1__Boolean_1_",
-      "expectedError" : "pivot is not supported"
-    },
-    {
       "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_Function_1__Boolean_1_",
       "expectedError" : "pivot is not supported"
     },
     {
-      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleMultiple_MultipleExpressions_Function_1__Boolean_1_",
-      "expectedError" : "pivot is not supported"
-    },
-    {
       "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_Function_1__Boolean_1_",
-      "expectedError" : "pivot is not supported"
-    },
-    {
-      "test" : "meta::pure::functions::relation::tests::pivot::testPivot_SingleSingle_MultipleExpressions_Function_1__Boolean_1_",
       "expectedError" : "pivot is not supported"
     },
     {
@@ -379,10 +363,6 @@
     },
     {
       "test" : "meta::pure::functions::relation::tests::project::testSimpleProjectWithEmpty_Function_1__Boolean_1_",
-      "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
-    },
-    {
-      "test" : "meta::pure::functions::relation::tests::project::testSimpleProject_Function_1__Boolean_1_",
       "expectedError" : "Error while executing: Create Table leSchema.TypeForProjectTest"
     },
     {
