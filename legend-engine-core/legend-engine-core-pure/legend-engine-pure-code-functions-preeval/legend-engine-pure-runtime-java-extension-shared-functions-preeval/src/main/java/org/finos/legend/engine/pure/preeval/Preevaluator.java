@@ -33,6 +33,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
+import java.util.function.Supplier;
+
 public final class Preevaluator implements PrevalServices
 {
     private final PrevalRuntime runtime;
@@ -87,7 +89,7 @@ public final class Preevaluator implements PrevalServices
     }
 
     @Override
-    public void trace(PrevalState state, String message)
+    public void trace(PrevalState state, Supplier<String> message)
     {
         DebugTrace.message(state, message);
     }
@@ -272,7 +274,7 @@ public final class Preevaluator implements PrevalServices
                 || this.hooks.stopPreeval(Lists.immutable.with(rewritten)));
         if (!canPrevalFunction)
         {
-            trace(state, "Unable to perform preval: " + this.runtime.typeDescription(rewritten._func()));
+            trace(state, () -> "Unable to perform preval: " + this.runtime.typeDescription(rewritten._func()));
             boolean canPreval = this.runtime.isFunction(rewritten._func(), MetamodelPaths.LET_FUNCTION) && PrevalResult.allCanPreval(prologue.parameters());
             return new PrevalResult(rewritten, canPreval, prologue.openVars(), prologue.modified());
         }
@@ -290,10 +292,10 @@ public final class Preevaluator implements PrevalServices
             {
                 return handlers.getFirst().apply(reasoned, this);
             }
-            trace(state, "Not prevalling (" + reasoned.notPrevalReason() + ")");
+            trace(state, () -> "Not prevalling (" + reasoned.notPrevalReason() + ")");
             return reasoned.notPrevalled();
         }
-        trace(state, "Performing preval");
+        trace(state, () -> "Performing preval");
         return Rules.REACTIVATE.apply(reasoned, this);
     }
 

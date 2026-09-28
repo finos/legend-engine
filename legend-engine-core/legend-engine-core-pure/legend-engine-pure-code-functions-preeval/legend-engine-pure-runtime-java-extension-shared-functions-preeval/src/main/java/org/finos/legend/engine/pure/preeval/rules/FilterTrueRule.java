@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -32,7 +31,7 @@ public final class FilterTrueRule implements ExpressionRule
     @Override
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
-        services.trace(prologue.state(), "Handling filter which returns true: " + services.runtime().typeDescription(prologue.rewritten()._func()));
+        services.trace(prologue.state(), () -> "Handling filter which returns true: " + services.runtime().typeDescription(prologue.rewritten()._func()));
         // parity: Pure reports no open variables even when the kept collection has some
         return new PrevalResult(prologue.rewrittenParameters().getFirst(), true, Lists.immutable.empty(), true);
     }

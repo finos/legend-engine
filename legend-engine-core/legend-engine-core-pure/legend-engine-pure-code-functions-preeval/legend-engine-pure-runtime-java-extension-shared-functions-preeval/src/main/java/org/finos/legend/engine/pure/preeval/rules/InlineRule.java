@@ -44,7 +44,7 @@ public final class InlineRule implements ExpressionRule
         FunctionExpression expression = prologue.rewritten();
         FunctionDefinition<?> function = (FunctionDefinition<?>) expression._func();
         PrevalState state = prologue.state();
-        services.trace(state, "Inlining: " + services.runtime().typeDescription(function));
+        services.trace(state, () -> "Inlining: " + services.runtime().typeDescription(function));
         PrevalState scoped = services.addToScope(state, function, services.runtime().resolvedTypeParameters(expression), prologue.rewrittenParameters(), true);
         PrevalState inlined = scoped.withPath(state.getPath().newWith(function));
         return RuleSupport.prevalBody(function, inlined, services).markModified();

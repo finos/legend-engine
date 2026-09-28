@@ -50,7 +50,7 @@ public final class ConcatenateRule implements ExpressionRule
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
         PrevalRuntime runtime = services.runtime();
-        services.trace(prologue.state(), "Handling expand: " + runtime.typeDescription(prologue.rewritten()._func()));
+        services.trace(prologue.state(), () -> "Handling expand: " + runtime.typeDescription(prologue.rewritten()._func()));
         ImmutableList<ValueSpecification> parameters = prologue.rewrittenParameters();
         Object value;
         if (runtime.isPureZero(parameters.get(0)._multiplicity()))

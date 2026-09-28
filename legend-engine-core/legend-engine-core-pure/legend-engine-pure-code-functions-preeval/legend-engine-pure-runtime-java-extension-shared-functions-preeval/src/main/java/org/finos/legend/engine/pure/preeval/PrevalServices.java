@@ -20,6 +20,8 @@ import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
+import java.util.function.Supplier;
+
 public interface PrevalServices
 {
     PrevalResult preval(Object item, PrevalState state);
@@ -36,7 +38,7 @@ public interface PrevalServices
 
     ImmutableList<String> openVars(Iterable<PrevalResult> results, PrevalState state);
 
-    void trace(PrevalState state, String message);
+    void trace(PrevalState state, Supplier<String> message);
 
     PrevalState addToScope(PrevalState state, Object function, ListIterable<? extends GenericType> resolvedTypeParameters, ListIterable<? extends ValueSpecification> parameters, boolean cleanUp);
 }

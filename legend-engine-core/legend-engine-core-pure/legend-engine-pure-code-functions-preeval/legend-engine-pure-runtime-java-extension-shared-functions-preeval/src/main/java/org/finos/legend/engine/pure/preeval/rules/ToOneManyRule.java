@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.list.ImmutableList;
@@ -48,7 +47,7 @@ public final class ToOneManyRule implements ExpressionRule
     @Override
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
-        services.trace(prologue.state(), "Handling toOneMany");
+        services.trace(prologue.state(), () -> "Handling toOneMany");
         return prologue.parameters().getOnly().markModified();
     }
 }

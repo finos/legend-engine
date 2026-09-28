@@ -71,6 +71,7 @@ final class UnrollSupport
     {
         PrevalState scoped = services.addToScope(state, lambda, Lists.immutable.empty(), arguments, false);
         ValueSpecification body = Lists.immutable.<ValueSpecification>withAll(lambda._expressionSequence()).getOnly();
+        // parity: Pure's map and fold handlers type the lambda body with the original map/fold expression's genericType, not the body's own
         ValueSpecification typed = services.runtime().withGenericType(body, (GenericType) services.genericTypes().resolveGenericType(original._genericType(), scoped).getValue());
         return services.preval(typed, scoped);
     }

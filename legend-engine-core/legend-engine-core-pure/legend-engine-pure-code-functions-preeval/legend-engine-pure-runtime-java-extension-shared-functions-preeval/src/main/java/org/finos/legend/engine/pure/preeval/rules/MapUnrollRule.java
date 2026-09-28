@@ -41,7 +41,7 @@ public final class MapUnrollRule implements ExpressionRule
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
         PrevalState state = prologue.state();
-        services.trace(state, "Expanding: " + services.runtime().typeDescription(prologue.rewritten()._func()));
+        services.trace(state, () -> "Expanding: " + services.runtime().typeDescription(prologue.rewritten()._func()));
         ImmutableList<ValueSpecification> parameters = prologue.rewrittenParameters();
         ImmutableList<ValueSpecification> inputs = UnrollSupport.inputs(parameters.get(0), state, services);
         FunctionDefinition<?> lambda = UnrollSupport.lambda(parameters.get(1), services);

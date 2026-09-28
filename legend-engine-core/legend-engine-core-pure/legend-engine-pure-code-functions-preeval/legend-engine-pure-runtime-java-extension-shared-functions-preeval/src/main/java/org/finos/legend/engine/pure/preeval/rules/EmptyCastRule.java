@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -42,7 +41,7 @@ public final class EmptyCastRule implements ExpressionRule
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
         FunctionExpression rewritten = prologue.rewritten();
-        services.trace(prologue.state(), "Handling cast of empty collection: " + services.runtime().typeDescription(rewritten._func()));
+        services.trace(prologue.state(), () -> "Handling cast of empty collection: " + services.runtime().typeDescription(rewritten._func()));
         GenericType genericType = (GenericType) services.genericTypes().resolveGenericType(rewritten._genericType(), prologue.state()).getValue();
         InstanceValue value = services.runtime().newInstanceValue(genericType, rewritten._multiplicity(), Lists.immutable.empty());
         return new PrevalResult(value, true, Lists.immutable.empty(), true);

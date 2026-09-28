@@ -47,7 +47,7 @@ public final class EvalExpansionRule implements ExpressionRule
         FunctionExpression expression = prologue.rewritten();
         FunctionDefinition<?> function = (FunctionDefinition<?>) firstParameter(prologue, services);
         PrevalState state = prologue.state();
-        services.trace(state, "Expanding eval");
+        services.trace(state, () -> "Expanding eval");
         ImmutableList<GenericType> typeParameters = services.runtime().resolvedTypeParameters(expression);
         ImmutableList<ValueSpecification> parameters = prologue.rewrittenParameters();
         PrevalState evalScope = services.addToScope(state, expression._func(), typeParameters, parameters, true);

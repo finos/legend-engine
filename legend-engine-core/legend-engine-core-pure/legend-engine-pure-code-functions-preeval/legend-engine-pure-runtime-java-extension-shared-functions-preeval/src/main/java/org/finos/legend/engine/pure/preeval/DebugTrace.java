@@ -17,6 +17,8 @@ package org.finos.legend.engine.pure.preeval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Supplier;
+
 final class DebugTrace
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(DebugTrace.class);
@@ -41,11 +43,11 @@ final class DebugTrace
         }
     }
 
-    static void message(PrevalState state, String text)
+    static void message(PrevalState state, Supplier<String> text)
     {
         if (state.isDebug())
         {
-            LOGGER.info("[{}] {}", state.getDepth(), text);
+            LOGGER.info("[{}] {}", state.getDepth(), text.get());
         }
     }
 }

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -35,7 +34,7 @@ public final class FilterFalseRule implements ExpressionRule
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
         PrevalRuntime runtime = services.runtime();
-        services.trace(prologue.state(), "Handling filter which returns false: " + runtime.typeDescription(prologue.rewritten()._func()));
+        services.trace(prologue.state(), () -> "Handling filter which returns false: " + runtime.typeDescription(prologue.rewritten()._func()));
         return new PrevalResult(runtime.newInstanceValue(runtime.genericTypeOf(MetamodelPaths.NIL), runtime.pureZero(), Lists.immutable.empty()), true, Lists.immutable.empty(), true);
     }
 }

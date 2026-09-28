@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.pure.preeval.rules;
 
 import org.eclipse.collections.api.factory.Lists;
@@ -37,7 +36,7 @@ public final class GenericTypeRule implements ExpressionRule
     public PrevalResult apply(Prologue prologue, PrevalServices services)
     {
         FunctionExpression rewritten = prologue.rewritten();
-        services.trace(prologue.state(), "Handling genericType");
+        services.trace(prologue.state(), () -> "Handling genericType");
         InstanceValue value = services.runtime().newInstanceValue(rewritten._genericType(), rewritten._multiplicity(), Lists.immutable.with(prologue.rewrittenParameters().getFirst()._genericType()));
         return new PrevalResult(value, true, Lists.immutable.empty(), true);
     }
