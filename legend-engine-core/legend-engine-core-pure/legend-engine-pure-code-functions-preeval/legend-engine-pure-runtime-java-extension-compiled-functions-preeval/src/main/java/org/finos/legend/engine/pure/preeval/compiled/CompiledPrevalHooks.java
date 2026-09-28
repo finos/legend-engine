@@ -26,11 +26,15 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 final class CompiledPrevalHooks implements PrevalHooks
 {
     private final Function<?> stopPreeval;
+    private final Function<?> shouldInline;
+    private final Function<?> isGeneratedMilestoningProperty;
     private final ExecutionSupport executionSupport;
 
     CompiledPrevalHooks(CoreInstance hooks, ExecutionSupport executionSupport)
     {
         this.stopPreeval = (Function<?>) hooks.getValueForMetaPropertyToOne("stopPreeval");
+        this.shouldInline = (Function<?>) hooks.getValueForMetaPropertyToOne("shouldInline");
+        this.isGeneratedMilestoningProperty = (Function<?>) hooks.getValueForMetaPropertyToOne("isGeneratedMilestoningProperty");
         this.executionSupport = executionSupport;
     }
 
@@ -38,5 +42,17 @@ final class CompiledPrevalHooks implements PrevalHooks
     public boolean stopPreeval(ListIterable<?> values)
     {
         return (Boolean) Pure.evaluate(this.executionSupport, this.stopPreeval, CoreGen.bridge, Lists.mutable.withAll(values));
+    }
+
+    @Override
+    public boolean shouldInline(Object function)
+    {
+        return (Boolean) Pure.evaluate(this.executionSupport, this.shouldInline, CoreGen.bridge, function);
+    }
+
+    @Override
+    public boolean isGeneratedMilestoningProperty(Object function)
+    {
+        return (Boolean) Pure.evaluate(this.executionSupport, this.isGeneratedMilestoningProperty, CoreGen.bridge, function);
     }
 }

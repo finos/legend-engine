@@ -44,6 +44,12 @@ public interface PrevalRuntime
 
     ImmutableList<String> parameterNames(Object function);
 
+    ImmutableList<String> typeParameterNames(Object function);
+
+    ImmutableList<GenericType> resolvedTypeParameters(FunctionExpression expression);
+
+    boolean isQualifiedPropertyOf(Object function, String ownerPath);
+
     String stringValue(Object primitive);
 
     Multiplicity pureOne();

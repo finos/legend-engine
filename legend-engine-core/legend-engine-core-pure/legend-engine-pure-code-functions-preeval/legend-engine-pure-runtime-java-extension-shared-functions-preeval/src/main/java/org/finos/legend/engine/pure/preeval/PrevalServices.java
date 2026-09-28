@@ -15,7 +15,10 @@
 package org.finos.legend.engine.pure.preeval;
 
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.ImmutableMap;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 public interface PrevalServices
 {
@@ -34,4 +37,6 @@ public interface PrevalServices
     ImmutableList<String> openVars(Iterable<PrevalResult> results, PrevalState state);
 
     void trace(PrevalState state, String message);
+
+    PrevalState addToScope(PrevalState state, Object function, ListIterable<? extends GenericType> resolvedTypeParameters, ListIterable<? extends ValueSpecification> parameters, boolean cleanUp);
 }

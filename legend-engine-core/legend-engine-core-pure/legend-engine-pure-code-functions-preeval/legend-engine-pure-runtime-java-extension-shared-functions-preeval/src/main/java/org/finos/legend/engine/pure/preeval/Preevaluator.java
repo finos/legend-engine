@@ -92,6 +92,30 @@ public final class Preevaluator implements PrevalServices
         DebugTrace.message(state, message);
     }
 
+    @Override
+    public PrevalState addToScope(PrevalState state, Object function, ListIterable<? extends GenericType> resolvedTypeParameters, ListIterable<? extends ValueSpecification> parameters, boolean cleanUp)
+    {
+        ImmutableList<String> typeParameterNames = this.runtime.typeParameterNames(function);
+        MutableMap<String, Object> typeParameters = Maps.mutable.empty();
+        for (int i = 0; i < Math.min(typeParameterNames.size(), resolvedTypeParameters.size()); i++)
+        {
+            typeParameters.put(typeParameterNames.get(i), this.genericTypes.resolveGenericType(resolvedTypeParameters.get(i), state).getValue());
+        }
+        ImmutableList<String> parameterNames = this.runtime.parameterNames(function);
+        MutableMap<String, ImmutableList<Object>> variables = Maps.mutable.empty();
+        for (int i = 0; i < Math.min(parameterNames.size(), parameters.size()); i++)
+        {
+            ValueSpecification value = parameters.get(i);
+            if (!(value instanceof VariableExpression && parameterNames.get(i).equals(((VariableExpression) value)._name())))
+            {
+                variables.put(parameterNames.get(i), Lists.immutable.with(value));
+            }
+        }
+        PrevalState base = cleanUp ? state.withInScopeVars(Maps.immutable.empty()).withInScopeTypeParams(Maps.immutable.empty()) : state;
+        return base.withInScopeVars(base.getInScopeVars().newWithAllKeyValues(variables.keyValuesView()))
+                .withInScopeTypeParams(base.getInScopeTypeParams().newWithAllKeyValues(typeParameters.keyValuesView()));
+    }
+
     PrevalResult prevalInternal(Object item, PrevalState origState)
     {
         PrevalState state = origState.deeper(item instanceof FunctionDefinition ? item : null);

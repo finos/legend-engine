@@ -19,6 +19,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.ListIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.pure.preeval.PrevalRuntime;
@@ -32,9 +33,11 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.KeyExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.TypeParameter;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -118,6 +121,27 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     {
         FunctionType functionType = (FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function);
         return Lists.immutable.<VariableExpression>withAll(functionType._parameters()).collect(VariableExpression::_name);
+    }
+
+    @Override
+    public ImmutableList<String> typeParameterNames(Object function)
+    {
+        FunctionType functionType = (FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function);
+        return Lists.immutable.<TypeParameter>withAll(functionType._typeParameters()).collect(TypeParameter::_name);
+    }
+
+    @Override
+    public ImmutableList<GenericType> resolvedTypeParameters(FunctionExpression expression)
+    {
+        return Lists.immutable.withAll(expression._resolvedTypeParameters());
+    }
+
+    @Override
+    public boolean isQualifiedPropertyOf(Object function, String ownerPath)
+    {
+        return function instanceof QualifiedProperty
+                && ((QualifiedProperty<?>) function)._owner() instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement
+                && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(((QualifiedProperty<?>) function)._owner()));
     }
 
     @Override
@@ -284,7 +308,20 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     {
         PureMap vars = new PureMap(Maps.mutable.empty());
         inScopeVars.forEachKeyValue((name, values) -> vars.getMap().put(name, CoreGen.bridge.buildList()._valuesAddAll(values)));
-        return Lists.immutable.withAll(CompiledSupport.toPureCollection(Pure.reactivate(valueSpecification, vars, CoreGen.bridge, this.executionSupport)));
+        MutableList<Object> values = Lists.mutable.empty();
+        // parity: compiled reactivation can nest a collection inside the result, which Pure's result handling flattens
+        CompiledSupport.toPureCollection(Pure.reactivate(valueSpecification, vars, CoreGen.bridge, this.executionSupport)).forEach(v ->
+        {
+            if (v instanceof Iterable)
+            {
+                values.addAllIterable((Iterable<?>) v);
+            }
+            else
+            {
+                values.add(v);
+            }
+        });
+        return values.toImmutable();
     }
 
     @Override

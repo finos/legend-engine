@@ -14,9 +14,15 @@
 
 package org.finos.legend.engine.pure.preeval.rules;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.finos.legend.engine.pure.preeval.PrevalResult;
 import org.finos.legend.engine.pure.preeval.PrevalServices;
+import org.finos.legend.engine.pure.preeval.PrevalState;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 
 final class RuleSupport
 {
@@ -37,5 +43,12 @@ final class RuleSupport
         }
         Boolean value = services.runtime().booleanValue(values.getOnly());
         return value != null && value == expected;
+    }
+
+    static PrevalResult prevalBody(FunctionDefinition<?> function, PrevalState state, PrevalServices services)
+    {
+        ValueSpecification body = Lists.immutable.<ValueSpecification>withAll(function._expressionSequence()).getOnly();
+        ValueSpecification typed = services.runtime().withGenericType(body, (GenericType) services.genericTypes().resolveGenericType(body._genericType(), state).getValue());
+        return services.preval(typed, state);
     }
 }

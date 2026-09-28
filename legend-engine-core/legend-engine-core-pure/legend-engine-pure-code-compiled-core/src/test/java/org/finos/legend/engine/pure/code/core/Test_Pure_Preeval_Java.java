@@ -34,17 +34,14 @@ public class Test_Pure_Preeval_Java
     private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
 
     static final ImmutableSet<String> KNOWN_DIVERGENT = Sets.immutable.with(
-            "tesColumnEvalOnRelation", "tesColumnEvalOnRelationWithCast", "testAdditionalStopFunction", "testEvalWithArgs2", "testEvalWithArgs3",
-            "testEvalWithArgs4", "testEvalWithArgs5", "testFilterFalseConstantSimplification", "testFilterFalseSimplification",
-            "testFilterFalseSimplification2", "testFilterFalseSimplificationReturnType", "testFilterTrueConstantSimplification",
-            "testFilterTrueSimplification", "testFilterTrueSimplification2", "testGetGenericType", "testInline", "testPrerouting12",
-            "testPrerouting19", "testPrerouting25a", "testPrerouting26", "testPrerouting29a",
-            "testPrerouting29b", "testPrerouting2b", "testPrerouting30", "testPrerouting32b", "testPrerouting33", "testPrerouting34",
-            "testPrerouting37", "testPrerouting40b", "testPrerouting_OptionalLimit1", "testPrerouting_OptionalLimit2",
-            "testPrerouting_castEmptyCollection", "testPrerouting_concatenateInstanceValuesExpanded_Basic",
-            "testPrerouting_concatenateInstanceValuesExpanded_Complex", "testPrerouting_foldOnInstanceValuesExpanded",
-            "testPrerouting_foldOnInstanceValuesExpanded2", "testPrerouting_mapOnInstanceValuesExpanded", "testProjectWithInferredParameterType",
-            "testRecursiveSimpleConcreteFunctionDefinition", "testToOneElimination3", "testToOneManyElimination3");
+            "tesColumnEvalOnRelation", "tesColumnEvalOnRelationWithCast", "testFilterFalseConstantSimplification",
+            "testFilterFalseSimplification", "testFilterFalseSimplification2", "testFilterFalseSimplificationReturnType",
+            "testFilterTrueConstantSimplification", "testFilterTrueSimplification", "testFilterTrueSimplification2", "testGetGenericType",
+            "testPrerouting19", "testPrerouting21", "testPrerouting29a", "testPrerouting29b", "testPrerouting30", "testPrerouting32b",
+            "testPrerouting33", "testPrerouting34", "testPrerouting40b", "testPrerouting_castEmptyCollection",
+            "testPrerouting_concatenateInstanceValuesExpanded_Basic", "testPrerouting_concatenateInstanceValuesExpanded_Complex",
+            "testPrerouting_foldOnInstanceValuesExpanded", "testPrerouting_foldOnInstanceValuesExpanded2",
+            "testPrerouting_mapOnInstanceValuesExpanded", "testToOneElimination3", "testToOneManyElimination3");
 
     public static TestSuite suite()
     {

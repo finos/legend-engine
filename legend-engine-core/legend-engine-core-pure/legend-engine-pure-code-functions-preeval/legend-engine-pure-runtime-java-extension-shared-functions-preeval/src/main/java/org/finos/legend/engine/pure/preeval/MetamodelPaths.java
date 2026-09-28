@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.pure.preeval;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.ImmutableList;
+
 public final class MetamodelPaths
 {
     public static final String LET_FUNCTION = "meta::pure::functions::lang::letFunction_String_1__T_m__T_m_";
@@ -22,6 +25,16 @@ public final class MetamodelPaths
     public static final String AND_FUNCTION = "meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_";
     public static final String OR_FUNCTION = "meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_";
     public static final String EVAL_FUNCTION = "meta::pure::functions::lang::eval_Function_1__V_m_";
+    public static final ImmutableList<String> EVAL_FUNCTIONS = Lists.immutable.with(
+            "meta::pure::functions::lang::eval_Function_1__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__U_p__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__X_r__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__X_r__Y_s__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__T_n__U_p__W_q__X_r__Y_s__Z_t__V_m_",
+            "meta::pure::functions::lang::eval_Function_1__S_n__T_o__U_p__W_q__X_r__Y_s__Z_t__V_m_");
+    public static final String TDS_ROW = "meta::pure::tds::TDSRow";
     public static final String FUNCTION_TYPE_PROFILE = "meta::pure::profiles::functionType";
     public static final String TDS = "meta::pure::metamodel::relation::TDS";
     public static final String COLUMN_SPECIFICATION = "meta::pure::tds::ColumnSpecification";

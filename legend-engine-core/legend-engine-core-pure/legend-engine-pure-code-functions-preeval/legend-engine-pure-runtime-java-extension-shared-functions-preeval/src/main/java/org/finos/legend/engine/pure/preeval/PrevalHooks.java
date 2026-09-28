@@ -19,4 +19,8 @@ import org.eclipse.collections.api.list.ListIterable;
 public interface PrevalHooks
 {
     boolean stopPreeval(ListIterable<?> values);
+
+    boolean shouldInline(Object function);
+
+    boolean isGeneratedMilestoningProperty(Object function);
 }

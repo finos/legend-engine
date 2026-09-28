@@ -183,6 +183,33 @@ public final class InterpretedPrevalRuntime implements PrevalRuntime
     }
 
     @Override
+    public ImmutableList<String> typeParameterNames(Object function)
+    {
+        CoreInstance functionType = this.processorSupport.function_getFunctionType((CoreInstance) function);
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(functionType, M3Properties.typeParameters, this.processorSupport))
+                .collect(p -> PrimitiveUtilities.getStringValue(p.getValueForMetaPropertyToOne(M3Properties.name)));
+    }
+
+    @Override
+    public ImmutableList<GenericType> resolvedTypeParameters(FunctionExpression expression)
+    {
+        return Lists.immutable.withAll(Instance.getValueForMetaPropertyToManyResolved(expression, M3Properties.resolvedTypeParameters, this.processorSupport))
+                .collect(GenericTypeCoreInstanceWrapper::toGenericType);
+    }
+
+    @Override
+    public boolean isQualifiedPropertyOf(Object function, String ownerPath)
+    {
+        CoreInstance instance = toCoreInstance(function);
+        if (!Instance.instanceOf(instance, M3Paths.QualifiedProperty, this.processorSupport))
+        {
+            return false;
+        }
+        CoreInstance owner = Instance.getValueForMetaPropertyToOneResolved(instance, M3Properties.owner, this.processorSupport);
+        return owner != null && Instance.instanceOf(owner, M3Paths.PackageableElement, this.processorSupport) && ownerPath.equals(PackageableElement.getUserPathForPackageableElement(owner));
+    }
+
+    @Override
     public String stringValue(Object primitive)
     {
         return primitive instanceof String ? (String) primitive : PrimitiveUtilities.getStringValue((CoreInstance) primitive);

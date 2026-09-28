@@ -35,6 +35,12 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
             + "isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, "
             + "isGetAllFunction = {f:Function<Any>[1] | false}, "
             + "resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []})";
+    private static final String INLINING_HOOKS = "^PrevalHooks("
+            + "stopPreeval = {a:Any[*] | !$a->exists(x | $x->instanceOf(meta::pure::metamodel::valuespecification::FunctionExpression))}, "
+            + "shouldInline = {f:Function<Any>[1] | $f->instanceOf(ConcreteFunctionDefinition)}, "
+            + "isGeneratedMilestoningProperty = {f:Function<Any>[1] | false}, "
+            + "isGetAllFunction = {f:Function<Any>[1] | false}, "
+            + "resolveTdsSchema = {vs:ValueSpecification[1], vars:Map<String, List<Any>>[1] | []})";
     private static final String AGG_COL_SPEC = "^meta::pure::metamodel::relation::AggColSpec<{Integer[1]->Integer[1]}, {Integer[*]->Integer[1]}, Any>";
 
     @After
@@ -218,6 +224,96 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "assert($r.modified, |'expected modified');",
                 "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
                 "assert($r.value->cast(@InstanceValue).values->toOne() == true, |'expected true');");
+    }
+
+    @Test
+    public void testInlinesSingleExpressionFunction()
+    {
+        compileTestSource("inline.pure", "function test::preeval::addOne(i:Integer[1]):Integer[1]\n{\n    $i + 1\n}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let fe = {|test::preeval::addOne(2)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "let r = prevalNative($fe, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug());",
+                    "assert($r.modified, |'expected modified');",
+                    "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                    "assert($r.value->cast(@InstanceValue).values->toOne() == 3, |'expected 3');",
+                    "let open = {j:Integer[1] | test::preeval::addOne($j)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "let o = prevalNative($open, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug());",
+                    "assert($o.modified, |'expected open call modified');",
+                    "assert($o.value->cast(@FunctionExpression).func.functionName == 'plus', |'expected the inlined body');",
+                    "assert($o.openVars->size() == 1 && $o.openVars->at(0) == 'j', |'expected open variable j');");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("inline.pure");
+            runtime.compile();
+        }
+    }
+
+    @Test
+    public void testDoesNotInlineRecursivePath()
+    {
+        compileTestSource("inline.pure", "function test::preeval::loop(i:Integer[1]):Integer[1]\n{\n    test::preeval::loop($i)\n}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let fe = {i:Integer[1] | test::preeval::loop($i)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                    "let r = prevalNative($fe, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug());",
+                    "assert($r.modified, |'expected modified');",
+                    "assert($r.value->instanceOf(FunctionExpression), |'expected a function expression');",
+                    "assert($r.value->cast(@FunctionExpression).func == test::preeval::loop_Integer_1__Integer_1_, |'expected the recursive call to remain');",
+                    "assert($r.openVars->size() == 1 && $r.openVars->at(0) == 'i', |'expected open variable i');");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("inline.pure");
+            runtime.compile();
+        }
+    }
+
+    @Test
+    public void testExpandsEvalOfLiteralLambda()
+    {
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "let fe = {|{x:Integer[1] | $x + 1}->eval(4)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let r = prevalNative($fe, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($r.modified, |'expected modified');",
+                "assert($r.value->instanceOf(InstanceValue), |'expected an instance value');",
+                "assert($r.value->cast(@InstanceValue).values->toOne() == 5, |'expected 5');",
+                "let open = {y:Integer[1] | {x:Integer[1] | $x + 1}->eval($y)}->evaluateAndDeactivate().expressionSequence->at(0);",
+                "let o = prevalNative($open, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());",
+                "assert($o.modified, |'expected open eval modified');",
+                "assert($o.value->cast(@FunctionExpression).func.functionName == 'plus', |'expected the lambda body');",
+                "assert($o.openVars->size() == 1 && $o.openVars->at(0) == 'y', |'expected open variable y');");
+    }
+
+    @Test
+    public void testReactivatedNestedCollectionIsFlattened()
+    {
+        compileTestSource("inline.pure", "function test::preeval::firstFive(s:String[1]):String[1]\n{\n    $s->map(k|$s->substring(0, 5))\n}\n");
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "let f = {|['hello']->map(a|$a->test::preeval::firstFive())};",
+                    "let r = prevalNative($f, $emptyVars, $emptyVars, " + INLINING_HOOKS + ", noDebug());",
+                    "let body = $r.value->cast(@LambdaFunction<Any>).expressionSequence->at(0)->cast(@InstanceValue);",
+                    "assert($body.values->size() == 1, |'expected one value');",
+                    "assert($body.values->toOne()->instanceOf(String), |'expected a String value, not a nested collection');",
+                    "assert($body.values->toOne() == 'hello', |'expected hello');");
+        }
+        finally
+        {
+            runtime.delete("fromString.pure");
+            runtime.delete("inline.pure");
+            runtime.compile();
+        }
     }
 
     @Test

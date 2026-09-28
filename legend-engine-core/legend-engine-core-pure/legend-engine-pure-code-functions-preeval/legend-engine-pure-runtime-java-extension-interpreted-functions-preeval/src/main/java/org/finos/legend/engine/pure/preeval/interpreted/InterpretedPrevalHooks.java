@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.pure.preeval.interpreted;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ListIterable;
 import org.finos.legend.engine.pure.preeval.PrevalHooks;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -23,18 +24,38 @@ public final class InterpretedPrevalHooks implements PrevalHooks
 {
     private final InterpretedPrevalRuntime runtime;
     private final CoreInstance stopPreeval;
-    private final VariableContext evaluationContext;
+    private final VariableContext stopPreevalContext;
+    private final CoreInstance shouldInline;
+    private final VariableContext shouldInlineContext;
+    private final CoreInstance isGeneratedMilestoningProperty;
+    private final VariableContext isGeneratedMilestoningPropertyContext;
 
-    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext evaluationContext)
+    public InterpretedPrevalHooks(InterpretedPrevalRuntime runtime, CoreInstance stopPreeval, VariableContext stopPreevalContext, CoreInstance shouldInline, VariableContext shouldInlineContext, CoreInstance isGeneratedMilestoningProperty, VariableContext isGeneratedMilestoningPropertyContext)
     {
         this.runtime = runtime;
         this.stopPreeval = stopPreeval;
-        this.evaluationContext = evaluationContext;
+        this.stopPreevalContext = stopPreevalContext;
+        this.shouldInline = shouldInline;
+        this.shouldInlineContext = shouldInlineContext;
+        this.isGeneratedMilestoningProperty = isGeneratedMilestoningProperty;
+        this.isGeneratedMilestoningPropertyContext = isGeneratedMilestoningPropertyContext;
     }
 
     @Override
     public boolean stopPreeval(ListIterable<?> values)
     {
-        return this.runtime.evaluateBoolean(this.stopPreeval, this.evaluationContext, values);
+        return this.runtime.evaluateBoolean(this.stopPreeval, this.stopPreevalContext, values);
+    }
+
+    @Override
+    public boolean shouldInline(Object function)
+    {
+        return this.runtime.evaluateBoolean(this.shouldInline, this.shouldInlineContext, Lists.immutable.with(function));
+    }
+
+    @Override
+    public boolean isGeneratedMilestoningProperty(Object function)
+    {
+        return this.runtime.evaluateBoolean(this.isGeneratedMilestoningProperty, this.isGeneratedMilestoningPropertyContext, Lists.immutable.with(function));
     }
 }

@@ -29,7 +29,7 @@ public class TestRules
     @Test
     public void testExpansionRuleOrder()
     {
-        Assertions.assertEquals(Lists.immutable.empty(), Rules.EXPANSION.collect(r -> r.getClass().getSimpleName()));
+        Assertions.assertEquals(Lists.immutable.with("InlineRule", "EvalExpansionRule"), Rules.EXPANSION.collect(r -> r.getClass().getSimpleName()));
     }
 
     @Test

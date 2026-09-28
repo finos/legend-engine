@@ -88,6 +88,11 @@ public final class PrevalState
         return new PrevalState(this.inScopeVars, this.rollingInScopeVars, typeParams, this.path, this.depth, this.debug);
     }
 
+    public PrevalState withPath(ImmutableList<Object> path)
+    {
+        return new PrevalState(this.inScopeVars, this.rollingInScopeVars, this.inScopeTypeParams, path, this.depth, this.debug);
+    }
+
     public PrevalState deeper(Object functionDefinition)
     {
         return new PrevalState(this.inScopeVars, this.rollingInScopeVars, this.inScopeTypeParams, functionDefinition == null ? this.path : this.path.newWith(functionDefinition), this.depth + 1, this.debug);
