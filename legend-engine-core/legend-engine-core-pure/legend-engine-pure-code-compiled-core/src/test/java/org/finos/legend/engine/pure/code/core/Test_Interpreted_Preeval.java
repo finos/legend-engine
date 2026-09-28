@@ -18,9 +18,10 @@ import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+import org.eclipse.collections.api.bag.MutableBag;
+import org.eclipse.collections.api.factory.Bags;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.set.ImmutableSet;
-import org.eclipse.collections.api.set.MutableSet;
 import org.finos.legend.pure.runtime.java.interpreted.testHelper.PureTestBuilderInterpreted;
 
 import java.util.Enumeration;
@@ -35,12 +36,12 @@ public class Test_Interpreted_Preeval
     public static TestSuite suite()
     {
         TestSuite all = PureTestBuilderInterpreted.buildSuite("meta::pure::router::preeval::tests");
-        MutableSet<String> seen = Sets.mutable.empty();
-        TestSuite selected = filter(all, Boolean.getBoolean(INCLUDE_KNOWN_DIVERGENT), seen);
-        ImmutableSet<String> unmatched = KNOWN_INTERPRETED_FAILURES.reject(seen::contains);
+        MutableBag<String> collected = Bags.mutable.empty();
+        TestSuite selected = filter(all, Boolean.getBoolean(INCLUDE_KNOWN_DIVERGENT), collected);
+        ImmutableSet<String> unmatched = KNOWN_INTERPRETED_FAILURES.reject(name -> collected.occurrencesOf(name) == 1);
         if (unmatched.notEmpty())
         {
-            throw new IllegalStateException("KNOWN_INTERPRETED_FAILURES names that match no collected preeval test: " + unmatched.toSortedList().makeString(", "));
+            throw new IllegalStateException("KNOWN_INTERPRETED_FAILURES names that do not match exactly one collected preeval test: " + unmatched.toSortedList().makeString(", "));
         }
         TestSuite suite = new TestSuite();
         suite.addTest(withImplementation("PURE", selected));
@@ -49,7 +50,7 @@ public class Test_Interpreted_Preeval
         return suite;
     }
 
-    private static TestSuite filter(TestSuite source, boolean includeKnown, MutableSet<String> seen)
+    private static TestSuite filter(TestSuite source, boolean includeKnown, MutableBag<String> collected)
     {
         TestSuite result = new TestSuite(source.getName());
         for (Enumeration<Test> tests = source.tests(); tests.hasMoreElements(); )
@@ -57,12 +58,12 @@ public class Test_Interpreted_Preeval
             Test test = tests.nextElement();
             if (test instanceof TestSuite)
             {
-                result.addTest(filter((TestSuite) test, includeKnown, seen));
+                result.addTest(filter((TestSuite) test, includeKnown, collected));
             }
             else
             {
                 String name = ((TestCase) test).getName();
-                seen.add(name);
+                collected.add(name);
                 if (includeKnown || !KNOWN_INTERPRETED_FAILURES.contains(name))
                 {
                     result.addTest(test);
