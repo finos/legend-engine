@@ -31,16 +31,21 @@ public class Test_Pure_Preeval_Java
 {
     private static final String PROPERTY = "legend.engine.preeval.implementation";
 
-    static final ImmutableSet<String> SKELETON = Sets.immutable.with(
-            "testPrerouting5", "testFilterNoSimplification", "testToOneManyElimination2", "testToOneElimination2",
-            "testFromWith", "testFromStopFunctions", "testPreroutingRemoveUnnecessaryStatements", "testLambdaParamOverride",
-            "testPrerouting_parameterAssignedToVariable", "testPrerouting9", "testLambdaParamOverride2");
-    static final ImmutableSet<String> REACTIVATION = Sets.immutable.with(
-            "testPrerouting1", "testPrerouting2", "testPrerouting3", "testPrerouting4",
-            "testPrerouting39", "testPrerouting_PropertyValue", "testSchemaStateUnfurl", "testToOneManyElimination1",
-            "testToOneElimination1", "testPrerouting36", "testFilterFalseSimplificationAll", "testPrerouting27a");
-    static final ImmutableSet<String> LAMBDA_HOLDERS = Sets.immutable.with("testRelationAggregation", "testPrerouting_constantInAgg", "testPrerouting_mappedModelAgg");
-    static final ImmutableSet<String> DEFERRED_TO_P2 = Sets.immutable.empty();
+    private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
+
+    static final ImmutableSet<String> KNOWN_DIVERGENT = Sets.immutable.with(
+            "tesColumnEvalOnRelation", "tesColumnEvalOnRelationWithCast", "testAdditionalStopFunction", "testEvalWithArgs2", "testEvalWithArgs3",
+            "testEvalWithArgs4", "testEvalWithArgs5", "testFilterFalseConstantSimplification", "testFilterFalseSimplification",
+            "testFilterFalseSimplification2", "testFilterFalseSimplificationReturnType", "testFilterTrueConstantSimplification",
+            "testFilterTrueSimplification", "testFilterTrueSimplification2", "testGetGenericType", "testInline", "testPrerouting12",
+            "testPrerouting19", "testPrerouting23a", "testPrerouting23b", "testPrerouting24a", "testPrerouting24b", "testPrerouting24c",
+            "testPrerouting24d", "testPrerouting24e", "testPrerouting24f", "testPrerouting25a", "testPrerouting26", "testPrerouting29a",
+            "testPrerouting29b", "testPrerouting2b", "testPrerouting30", "testPrerouting32b", "testPrerouting33", "testPrerouting34",
+            "testPrerouting37", "testPrerouting40b", "testPrerouting_OptionalLimit1", "testPrerouting_OptionalLimit2",
+            "testPrerouting_castEmptyCollection", "testPrerouting_concatenateInstanceValuesExpanded_Basic",
+            "testPrerouting_concatenateInstanceValuesExpanded_Complex", "testPrerouting_foldOnInstanceValuesExpanded",
+            "testPrerouting_foldOnInstanceValuesExpanded2", "testPrerouting_mapOnInstanceValuesExpanded", "testProjectWithInferredParameterType",
+            "testRecursiveSimpleConcreteFunctionDefinition", "testToOneElimination3", "testToOneManyElimination3");
 
     public static TestSuite suite()
     {
@@ -52,29 +57,24 @@ public class Test_Pure_Preeval_Java
         return suite;
     }
 
-    static ImmutableSet<String> enabledTargets()
-    {
-        return SKELETON.newWithAll(REACTIVATION).newWithAll(LAMBDA_HOLDERS).newWithoutAll(DEFERRED_TO_P2);
-    }
-
     private static TestSuite targets(CompiledExecutionSupport executionSupport)
     {
-        ImmutableSet<String> enabled = enabledTargets();
-        MutableBag<String> matched = Bags.mutable.empty();
+        boolean includeKnownDivergent = Boolean.getBoolean(INCLUDE_KNOWN_DIVERGENT);
+        MutableBag<String> collected = Bags.mutable.empty();
         TestCollection tests = TestCollection.collectTests("meta::pure::router::preeval::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), ci ->
         {
-            String name = ((Function<?>) ci)._functionName();
-            boolean selected = enabled.contains(name) && PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport());
-            if (selected)
+            if (!PureTestBuilder.satisfiesConditionsModular(ci, executionSupport.getProcessorSupport()))
             {
-                matched.add(name);
+                return false;
             }
-            return selected;
+            String name = ((Function<?>) ci)._functionName();
+            collected.add(name);
+            return includeKnownDivergent || !KNOWN_DIVERGENT.contains(name);
         });
-        ImmutableSet<String> unmatched = enabled.reject(name -> matched.occurrencesOf(name) == 1);
+        ImmutableSet<String> unmatched = KNOWN_DIVERGENT.reject(name -> collected.occurrencesOf(name) == 1);
         if (unmatched.notEmpty())
         {
-            throw new IllegalStateException("Enabled preeval targets that do not match exactly one collected test: " + unmatched.toSortedList().makeString(", "));
+            throw new IllegalStateException("KNOWN_DIVERGENT names that do not match exactly one collected preeval test: " + unmatched.toSortedList().makeString(", "));
         }
         return PureTestBuilderCompiled.buildSuite(tests, executionSupport);
     }
