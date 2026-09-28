@@ -641,15 +641,21 @@ function <<access.private>> meta::pure::lineage::scanProperties::replaceDummyNod
   );
 }
 
+function <<access.private>> meta::pure::lineage::scanProperties::substituteDummyNodes(path:List<PropertyPathNode>[1], paramPaths:ScanPropertiesState[*]):List<PropertyPathNode>[1]
+{
+   list($path.values->map(n | $n->match([
+      c    :ConstructedInstancePathNode[1] | ^$c(assignments = $c.assignments->map(a | ^$a(path = $a.path->substituteDummyNodes($paramPaths))),
+                                                 base        = $c.base->map(b | $b->substituteDummyNodes($paramPaths)))->cast(@PropertyPathNode),
+      other:PropertyPathNode[1]            | replaceDummyNodesWithParamsPropertyPathNodes($other, $paramPaths)
+   ])))->resolveConstructedNavigation();
+}
+
 function <<access.private>> meta::pure::lineage::scanProperties::resolveDummyNodes(dummyRes:ScanPropertiesState[1], paramPaths:ScanPropertiesState[*]):ScanPropertiesState[1]
 {
-    let currentPropertyPathNodes = $dummyRes.current.values;
-    let current = list(replaceDummyNodesWithParamsPropertyPathNodes($currentPropertyPathNodes->first(), $paramPaths)->concatenate($currentPropertyPathNodes->slice(1, $currentPropertyPathNodes->size())));
-    let result = $dummyRes.result->map(list | list(replaceDummyNodesWithParamsPropertyPathNodes($list.values->first(), $paramPaths)->concatenate($list.values->slice(1,$list.values->size()))););
+    let current = $dummyRes.current->substituteDummyNodes($paramPaths);
+    let result = $dummyRes.result->map(path | $path->substituteDummyNodes($paramPaths));
     let conditionalTerminalPaths = $dummyRes.conditionalTerminalPaths->map(terminals |
-      ^ConditionalTerminalPaths(paths=$terminals.paths->map(path |
-        list(replaceDummyNodesWithParamsPropertyPathNodes($path.values->first(), $paramPaths)->concatenate($path.values->slice(1, $path.values->size())))
-      ))
+      ^ConditionalTerminalPaths(paths=$terminals.paths->map(path | $path->substituteDummyNodes($paramPaths)))
     );
     makeScanPropertiesState($current, $conditionalTerminalPaths, $result, ^Map<String,ScanPropertiesState>());
 }

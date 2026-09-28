@@ -142,3 +142,34 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties
   assertEquals('Box->a\nData->a', $res.result->printPropertyNodeLists());
   assertEquals('Box->a', $res.current->printPropertyNodeLists());
 }
+
+function meta::pure::lineage::scanProperties::test::constructed::wrapData(d:Data[1]):Box[1]
+{
+  ^Box(a=$d.a, data=$d)
+}
+
+function meta::pure::lineage::scanProperties::test::constructed::readA(b:Box[1]):String[1]
+{
+  $b.a
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testInstanceBuiltInCalledFunctionResolvesAgainstArgument():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | $d.child->toOne()->wrapData().data.b});
+  assertEquals('Data->child\nData->child, Data->a\nData->child, Data->b', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->b', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testCachedFunctionResolvesAgainstEachCallSite():Boolean[1]
+{
+  let res = scanResolving({data:Data[*] | $data->map(d | let first = $d->wrapData().a; $d.child->toOne()->wrapData().a;)});
+  assertEquals('Data->a\nData->child\nData->child, Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('Data->child, Data->a', $res.current->printPropertyNodeLists());
+}
+
+function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanProperties::test::constructed::testPropertyReadInCalledFunctionResolvesThroughArgument():Boolean[1]
+{
+  let res = scanResolving({d:Data[1] | ^Box(a=$d.a)->readA()});
+  assertEquals('Data->a', $res.result->printPropertyNodeLists());
+  assertEquals('Data->a', $res.current->printPropertyNodeLists());
+}
