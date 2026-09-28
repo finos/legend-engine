@@ -114,8 +114,5 @@
   }, {
     "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByASC_Function_1__Boolean_1_",
     "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
-  }, {
-    "test" : "meta::pure::functions::relation::tests::reduce::testRangeInterval_NFollowing_NFollowing_WithDifferentDurationUnits_WithSinglePartition_WithOrderByDESC_Function_1__Boolean_1_",
-    "expectedError" : "\"Window function with range frame using interval is not supported for this database type: Databricks\""
   } ]
 }
