@@ -397,8 +397,8 @@ in interpreted mode, run once each under `PURE`, `JAVA` and `SHADOW`). `KNOWN_IN
 empty. Full-module verification run (`mvn clean install` with tests on, `-DargLine=-Xmx6g`, one Surefire
 fork covering every compiled-core test class, matching CI's lifecycle): `TestCoreCompiledStateIntegrity`
 34/34 (1 skipped), `TestIdBuilderCore` 3/3, `Test_Pure_Core` 1192/1192, `Test_Pure_Preeval` 111/111,
-`Test_Pure_Preeval_Java` 222/222, `Test_Interpreted_Preeval` 336/336 — 1899 tests total in the fork
-(including one pre-existing unrelated test class), 0 failures/errors, 1 skipped, under the default
+`Test_Pure_Preeval_Java` 222/222, `Test_Interpreted_Preeval` 336/336 — 1898 tests total,
+0 failures/errors, 1 skipped, under the default
 `PURE`. No OOM or heap-related warnings. Checkstyle: 0 violations on compiled-core and on
 `legend-engine-pure-runtime-java-extension-interpreted-functions-preeval`. compiled-core's test run now
 takes about 2 minutes longer for the interpreted suite (measured: `Test_Interpreted_Preeval` alone,
