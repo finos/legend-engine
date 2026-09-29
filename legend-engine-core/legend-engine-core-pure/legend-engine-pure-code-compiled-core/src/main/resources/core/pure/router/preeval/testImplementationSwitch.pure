@@ -310,3 +310,32 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
 {
   assertShadowRejects(chain(8, 0), chain(8, 1));
 }
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsSortWithAnEmptyOrder():Boolean[1]
+{
+  let r = {|#TDS
+              id, name
+              2, George
+              1, Sachin
+            #->meta::pure::functions::relation::sort(~id->meta::pure::functions::relation::ascending(meta::pure::functions::relation::EmptyOrder.FIRST))}->prevalWith('SHADOW');
+  assert($r.modified, |'expected the sort specification to be pre-evaluated');
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::valueTypedAsUnionWithoutARightOperand():InstanceValue[1]
+{
+  let incomplete = meta::pure::metamodel::relation::GenericTypeOperation->dynamicNew([
+      ^KeyValue(key = 'type', value = meta::pure::metamodel::relation::GenericTypeOperationType.Union),
+      ^KeyValue(key = 'left', value = ^GenericType(rawType = Integer))
+    ])->cast(@GenericType);
+  let iv = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  ^$iv(genericType = $incomplete);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsTypeOperationsWithoutARightOperand():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = valueTypedAsUnionWithoutARightOperand(), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = valueTypedAsUnionWithoutARightOperand(), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}

@@ -204,8 +204,59 @@ function <<access.private>> meta::pure::router::preeval::describeReturnTypeAndMu
 
 function <<access.private>> meta::pure::router::preeval::describeGenericTypeAndMultiplicity(genericType:GenericType[0..1], multiplicity:Multiplicity[0..1]):String[1]
 {
-  if($genericType->isEmpty(), |'<no genericType>', |$genericType->toOne()->meta::pure::metamodel::serialization::grammar::printGenericType())
-    + if($multiplicity->isEmpty(), |'<no multiplicity>', |$multiplicity->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity());
+  if($genericType->isEmpty(), |'<no genericType>', |$genericType->describeGenericType())
+    + if($multiplicity->isEmpty(), |'<no multiplicity>', |$multiplicity->describeMultiplicity());
+}
+
+function <<access.private>> meta::pure::router::preeval::describeMultiplicity(multiplicity:Multiplicity[0..1]):String[1]
+{
+  if($multiplicity->isEmpty(), |'?', |$multiplicity->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity());
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericType(genericType:GenericType[0..1]):String[1]
+{
+  if($genericType->isEmpty(),
+    | '?',
+    | $genericType->toOne()->match([
+        go:GenericTypeOperation[1] | '(' + $go.left->describeGenericType() + ' ' + if($go.type->isEmpty(), |'?', |$go.type->toOne()->toString()) + ' ' + $go.right->describeGenericType() + ')',
+        g:GenericType[1]           | $g->describeGenericTypeHead() + $g->describeGenericTypeArguments()
+      ])
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericTypeHead(genericType:GenericType[1]):String[1]
+{
+  if($genericType.rawType->isEmpty(),
+    | if($genericType.typeParameter->isEmpty(), |'?', |$genericType.typeParameter.name->toOne()),
+    | $genericType.rawType->toOne()->match([
+        f:FunctionType[1]         | '{' + $f.parameters->evaluateAndDeactivate()->map(p | $p.genericType->describeGenericType() + '[' + $p.multiplicity->describeMultiplicity() + ']')->joinStrings(', ')
+                                      + '->' + $f.returnType->describeGenericType() + '[' + $f.returnMultiplicity->describeMultiplicity() + ']}',
+        r:RelationType<Any>[1]    | '(' + $r.columns->map(c | $c->describeColumn())->joinStrings(', ') + ')',
+        t:Type[1]                 | $t->describeTypePath()
+      ])
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::describeColumn(column:Column<Nil,Any|*>[1]):String[1]
+{
+  let name = if($column.nameWildCard == true, |'?', |if($column.name->isEmpty(), |'<no name>', |$column.name->toOne()));
+  let columnType = $column.classifierGenericType;
+  let valueType = if($columnType->isEmpty() || ($columnType.typeArguments->size() < 2), |'?', |$columnType.typeArguments->at(1)->describeGenericType());
+  $name + ':' + $valueType + '[' + $columnType.multiplicityArguments->first()->describeMultiplicity() + ']';
+}
+
+function <<access.private>> meta::pure::router::preeval::describeGenericTypeArguments(genericType:GenericType[1]):String[1]
+{
+  let arguments = if($genericType.typeArguments->isEmpty() && $genericType.multiplicityArguments->isEmpty(),
+    | '',
+    | '<' + $genericType.typeArguments->map(a | $a->describeGenericType())->joinStrings(', ')
+        + '|' + $genericType.multiplicityArguments->map(m | $m->describeMultiplicity())->joinStrings(', ') + '>'
+  );
+  let values = if($genericType.typeVariableValues->isEmpty(),
+    | '',
+    | '(' + $genericType.typeVariableValues->evaluateAndDeactivate()->map(v | $v->describeNodes('', [])->joinStrings(' '))->joinStrings(', ') + ')'
+  );
+  $arguments + $values;
 }
 
 function <<access.private>> meta::pure::router::preeval::describeParameters(f:FunctionDefinition<Any>[1]):String[1]
@@ -292,11 +343,11 @@ function <<access.private>> meta::pure::router::preeval::describeInstance(instan
 function <<access.private>> meta::pure::router::preeval::describePath(path:Path<Nil,Any|*>[1], indent:String[1], ancestors:Any[*]):String[*]
 {
   let alias = if($path.name->isEmpty(), |'', |'!' + $path.name->toOne());
-  [($indent + 'path ' + $path.start->meta::pure::metamodel::serialization::grammar::printGenericType() + $alias)]
+  [($indent + 'path ' + $path.start->describeGenericType() + $alias)]
     ->concatenate($path.path->map(e | $e->match([
       p:PropertyPathElement[1] | [($indent + '  ' + $p.property->describeFunctionIdentity('?'))]
                                    ->concatenate($p.parameters->map(v | $v->describeNodes($indent + '    ', $ancestors))),
-      c:CastPathElement[1]     | $indent + '  cast ' + $c.type->meta::pure::metamodel::serialization::grammar::printGenericType(),
+      c:CastPathElement[1]     | $indent + '  cast ' + $c.type->describeGenericType(),
       a:Any[1]                 | $a->describeInstance($indent + '  ', $ancestors)
     ])));
 }
