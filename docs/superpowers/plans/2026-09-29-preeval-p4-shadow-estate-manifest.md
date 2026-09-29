@@ -20,13 +20,37 @@ None: the per-node comparator found no new differences.
 | H2 | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-h2/legend-engine-xt-relationalStore-h2-PCT` | `Test_Relational_H2_PCT` (1415), `Test_Relational_H2_Semistructured` (171), `Test_Relational_H2_NonRelationalToRelational` (1) | 1587 / 1 | 1587 / 263 | 262 |
 | DUCK | `legend-engine-xts-relationalStore/legend-engine-xt-relationalStore-dbExtension/legend-engine-xt-relationalStore-duckdb/legend-engine-xt-relationalStore-duckdb-PCT` | `Test_Relational_DuckDB_PCT` (1415), `Test_Relational_DuckDB_Semistructured` (171), `Test_Relational_DuckDB_NonRelationalToRelational` (1) | 1587 / 0 | 1587 / 262 | 262 |
 
+## Estate runs (Task 6.2, 2026-09-29, HEAD 2bad7ebc842)
+Re-run after the comparator fix (`e9f8d513037`) and its review fix-up (`2bad7ebc842`, paths and deep instances).
+| Suite | Control ran / failing | SHADOW ran / failing | SHADOW-only |
+|---|---|---|---|
+| SQL | 237 / 2 | 237 / 2 | 0 |
+| LIN | 591 / 0 | 591 / 0 | 0 |
+| RC | 2851 / 3 | 2851 / 3 | 0 |
+| H2 | 1587 / 1 | 1587 / 3 | 2 |
+| DUCK | 1587 / 0 | 1587 / 2 | 2 |
+
+RC ran 10 more tests than in Task 5 because `Test_Pure_Relational` also runs compiled-core's `testImplementationSwitch.pure` tests, 6 of which were added in `e9f8d513037` and 4 in `2bad7ebc842`.
+
+## Estate runs (Task 6.3, final, 2026-09-29, HEAD 637e96dd134)
+| Suite | Control ran / failing | SHADOW ran / failing | SHADOW-only |
+|---|---|---|---|
+| SQL | 237 / 2 | 237 / 2 | 0 |
+| LIN | 591 / 0 | 591 / 0 | 0 |
+| RC | 2853 / 3 | 2853 / 3 | 0 |
+| H2 | 1587 / 1 | 1587 / 1 | 0 |
+| DUCK | 1587 / 0 | 1587 / 0 | 0 |
+
+No `SHADOW-ONLY`, `CONTROL-ONLY` or differing-failure lines in any suite, compared test by test. The remaining failures are the six pre-existing NOT-SHADOW failures below, with identical messages in both modes. RC's 2 extra tests are the Task 6.3 switch tests.
+
 ## Estate findings
 | # | Root cause | Category | Smallest failing test | Other affected tests (count) | Status |
 |---|---|---|---|---|---|
-| 1 | `describePrevalResult` value step: `transformFunctionBody` → `transformAny` → `possiblyTransformNewFunction` fails with `Instance of type 'meta::pure::functions::relation::_Window' can't be translated`. The value is an `InstanceValue` holding the `_Window` that preeval produced by evaluating `over(...)`. | COMPARATOR | H2 PCT (`Test_Relational_H2_PCT`) `meta::pure::functions::relation::tests::size::testWindowSize` | H2 222, DUCK 223 (the same test set in both; 2 H2 tests and 1 DUCK test also hide an existing manifest exclusion) | fixed in Task 6.1 ("Describe preeval SHADOW values without the protocol") |
-| 2 | Same step as #1, but the `InstanceValue` holds a `SortInfo` that preeval produced from `ascending(~c)` / `descending(~c)`: `Instance of type 'meta::pure::functions::relation::SortInfo' can't be translated` | COMPARATOR | H2 PCT (`Test_Relational_H2_PCT`) `meta::pure::functions::relation::tests::sort::testSimpleSortShared` | H2 38, DUCK 39 (the same test set in both; 7 H2 tests also hide an existing manifest exclusion) | fixed in Task 6.1 ("Describe preeval SHADOW values without the protocol") |
-| 3 | Same step as #1, but the `InstanceValue` holds a relation `#TDS` literal that `sqlToPure` built from a `DynamicSQLSource` generation function: `Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated` | COMPARATOR | SQL (`Test_SQL_Pure`) `meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicWithNonDataTypeColumn` | 0 | fixed in Task 6.1 ("Describe preeval SHADOW values without the protocol") |
-| 4 | `describePrevalResult` value step: `transformAny` Runtime branch → `transformRuntime` → `transformConnection` fails with `TestDatabaseConnection Connection type not supported Yet!`. The `InstanceValue` holds the Runtime that preeval produced from `testRuntime()`. The lineage preval call passes `[] + lineagePreEvalExtension()`, which has no relational `SerializerExtension_vX_X_X`, so no handler matches the connection. | COMPARATOR | LIN (`Test_Analytics_Lineage`) `meta::analytics::lineage::tests::relation::testProject` | 0 | fixed in Task 6.1 ("Describe preeval SHADOW values without the protocol") |
+| 1 | `describePrevalResult` value step: `transformFunctionBody` → `transformAny` → `possiblyTransformNewFunction` fails with `Instance of type 'meta::pure::functions::relation::_Window' can't be translated`. The value is an `InstanceValue` holding the `_Window` that preeval produced by evaluating `over(...)`. | COMPARATOR | H2 PCT (`Test_Relational_H2_PCT`) `meta::pure::functions::relation::tests::size::testWindowSize` | H2 222, DUCK 223 (the same test set in both; 2 H2 tests and 1 DUCK test also hide an existing manifest exclusion) | fixed in e9f8d513037 |
+| 2 | Same step as #1, but the `InstanceValue` holds a `SortInfo` that preeval produced from `ascending(~c)` / `descending(~c)`: `Instance of type 'meta::pure::functions::relation::SortInfo' can't be translated` | COMPARATOR | H2 PCT (`Test_Relational_H2_PCT`) `meta::pure::functions::relation::tests::sort::testSimpleSortShared` | H2 38, DUCK 39 (the same test set in both; 7 H2 tests also hide an existing manifest exclusion) | fixed in e9f8d513037 |
+| 3 | Same step as #1, but the `InstanceValue` holds a relation `#TDS` literal that `sqlToPure` built from a `DynamicSQLSource` generation function: `Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated` | COMPARATOR | SQL (`Test_SQL_Pure`) `meta::external::query::sql::transformation::queryToPure::tests::dynamic::testDynamicWithNonDataTypeColumn` | 0 | fixed in e9f8d513037 |
+| 4 | `describePrevalResult` value step: `transformAny` Runtime branch → `transformRuntime` → `transformConnection` fails with `TestDatabaseConnection Connection type not supported Yet!`. The `InstanceValue` holds the Runtime that preeval produced from `testRuntime()`. The lineage preval call passes `[] + lineagePreEvalExtension()`, which has no relational `SerializerExtension_vX_X_X`, so no handler matches the connection. | COMPARATOR | LIN (`Test_Analytics_Lineage`) `meta::analytics::lineage::tests::relation::testProject` | 0 | fixed in e9f8d513037 |
+| 5 | `describePrevalResult` type step: the grammar `printGenericType` recurses into `GenericTypeOperation.right` without a guard and throws `NullPointerException` on an operation with no right operand, reached through `printRelationType` on a relation column's type. Found with a JFR exception recording, because PCT keeps only the message. JAVA mode passes both tests, so the Java result executes correctly. | COMPARATOR | H2 PCT `meta::pure::functions::relation::tests::sort::testSortEmptyFirstTwoArg` | H2 1 (`testSortEmptyLastTwoArg`), DUCK 2 (the same two tests) | fixed in 637e96dd134 |
 
 ## Pre-existing failures (NOT-SHADOW)
 | Suite | Test | Failure (first line) |

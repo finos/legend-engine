@@ -834,6 +834,30 @@ Re-run Task 5 Step 1 (build) and Step 2 (both modes, all five suites). Then re-d
   5. Commit the amendment with the message `Plan the remaining P4 estate fixes`.
   6. Execute them.
 
+#### Task 6.1 review fix-up (2026-09-29, `2bad7ebc842`)
+
+The Task 6.1 review returned two Important findings, fixed before the 6.2 re-run so the estate ran against the final comparator:
+- **Path values were opaque.** `Path` extends `Function`, so every path described as `function meta::pure::metamodel::path::Path`. `describePath` now records the start type, each property step with its parameters, casts, and the alias.
+- **The depth cap of 4 hid deep differences**, e.g. in graph-fetch trees. `describeInstance` now carries its ancestors, prints `<cycle>` when it revisits one (`is()`), and keeps a safety cap of 16.
+
+Tests: `testShadowAcceptsEqualPaths`, `testShadowRejectsPathsOverDifferentProperties`, `testShadowRejectsPathsWithDifferentAliases`, `testShadowRejectsInstancesDifferingDeepInsideTheValue`.
+
+#### Task 6.2 outcome (2026-09-29, HEAD `2bad7ebc842`)
+
+SQL, LIN and RC show no `SHADOW-ONLY` lines. H2 and DUCK each show the same 2, manifest finding #5 (COMPARATOR). No JAVA-BUG or PURE-QUIRK was found.
+
+### Task 6.3: Describe types the grammar printer cannot print
+
+**Files:** `preeval.pure` (`describeGenericTypeAndMultiplicity` and new helpers), `testImplementationSwitch.pure`, the manifest.
+
+**Ruling:** the comparator stops using the grammar `printGenericType` and gets its own guarded describer, because preeval values carry partially built types that the grammar printer assumes are complete. The describer covers type operations (left, operator, right), type parameters, function types, relation columns (name, value type, multiplicity), type and multiplicity arguments, and type variable values. Each missing part prints as `?`. Cost if wrong: a type distinction the grammar printer drew that the describer misses.
+
+1. **Reproduce.** `testShadowAcceptsTypeOperationsWithoutARightOperand` builds an `InstanceValue` typed as a `Union` with no right operand, and compares it with itself. It must fail with the estate's `NullPointerException` in every mode. `testShadowAcceptsSortWithAnEmptyOrder` is kept as a regression test: it passes before the fix, because the PCT adapter's reprocessing, not the sort itself, produces the incomplete type.
+2. **Fix** as ruled above; path starts and cast types use the same describer.
+3. **GREEN.** COMPILED 125/250, INTERP 378, `Test_Pure_Core` 1206, RC-TEST 2/3, Checkstyle on CC.
+4. **Estate.** Rebuild and re-run all five suites, because the change affects every description. Record the result as the final dated runs table. The exit condition is no `SHADOW-ONLY` lines in any suite.
+5. **Commit** with the message `Describe partially built types in preeval SHADOW`, then commit the manifest and this amendment.
+
 ---
 
 ### Task 7: Exit verification and spec
