@@ -477,6 +477,8 @@ Full-module verification at HEAD `b5b2465db3c` (compiled-core `mvn clean install
 
 That is 1999 tests in committed classes, with 0 failures or errors. Relational: `Test_Pure_Relational_Preeval_Java` 2/2 and `Test_Interpreted_Relational_Preeval` 3/3. Checkstyle is clean on compiled-core and relational core-pure. The compiled and interpreted known-failure lists are empty.
 
+The final P4 review added six comparator tests: cycle termination, a cycle against a long chain of equal values, and rejecting differences in relation column types, type operations, function types and type arguments. Each new reject test was checked by mutation: all fail with the cycle check disabled and every type printed as `?`. With them, `Test_Pure_Preeval` is 131, `Test_Pure_Preeval_Java` 262, `Test_Interpreted_Preeval` 396 and `Test_Pure_Core` 1212, all green.
+
 **The comparator.** `describePrevalResult` no longer uses the vX_X_X protocol. For `FunctionDefinition` and `ValueSpecification` results it records `canPreval`, `modified`, `openVars`, the top-level type, and a `nodes=` walk:
 - a `function (…)` line with the top-level parameter names, types and multiplicities;
 - every `FunctionExpression` (function or property identity), `InstanceValue`, `VariableExpression` and other `ValueSpecification` node, with its generic type and multiplicity;
@@ -513,6 +515,18 @@ The protocol could not describe values preeval legitimately evaluates: `_Window`
 - Opaque instances are described by classifier path only: native-backed values such as `Map`, and classes with no Pure properties. Two such values with different contents compare equal. They were uncomparable before P4.
 - Qualified properties and string escaping are not part of the description. In theory, a string value could mimic another description line.
 - `assertSamePrevalResult` keeps its `inScopeVars` and `extensions` parameters, which are now unused; drop them in P6 with the switch.
+- **Unexercised crash paths.** The estate ran in compiled mode only, so none of the following has been run:
+  - The instance walk reads every property. A computed relation (a compiled `TDSContainer`) has no `csv` accessor, so describing one could throw in compiled mode. It is reached only if preeval ever folds a relation function into a computed relation, which the estate never did.
+  - In interpreted mode, `ValueSpecification`s read through `$p->eval($instance)` and path parameters are not passed through `evaluateAndDeactivate`. That is the failure class fixed in `describeParameters`. `Test_Interpreted_Preeval` covers the test values but no estate value.
+  - Pure's hand-built, let-bound `InstanceValue`s can print `<no genericType>` in interpreted mode while Java's typed copies print a type, which would be a false-positive mismatch. It has not been observed, since no test drives such a value to the top level.
+
+  P5's interpreted CI job should run at least one estate suite under `SHADOW`.
+- **Comparator blind spots, accepted:**
+  - `KeyExpression.add` is not compared, so `p += v` and `p = v` describe the same.
+  - Nested instances print only their raw type: the classifier's type arguments are dropped with the `Any` properties.
+  - `Column` values held as values print only their name.
+  - Overloaded qualified properties share one identity line; the parameter lines usually differ.
+- **Cost:** the estate's wall-clock time under `SHADOW` was not measured separately. The paired runs of all five suites took about 13 minutes on the development machine, both modes included. P5 should measure `SHADOW` overhead as part of its benchmark.
 
 ## 6. Cutover criteria
 
