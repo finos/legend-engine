@@ -251,3 +251,62 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
     {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
   );
 }
+
+Class meta::pure::router::preeval::tests::implementationSwitch::ShadowPathProbe
+{
+  first : String[1];
+  last : String[1];
+}
+
+Class meta::pure::router::preeval::tests::implementationSwitch::ShadowChain
+{
+  value : Integer[1];
+  next : ShadowChain[0..1];
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::heldValue(value:Any[1]):InstanceValue[1]
+{
+  let iv = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  ^$iv(genericType = $value->genericType(), values = $value);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::chain(length:Integer[1], leaf:Integer[1]):ShadowChain[1]
+{
+  range(1, $length)->fold({i, c | ^ShadowChain(value = $i, next = $c)}, ^ShadowChain(value = $leaf));
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::assertShadowRejects(pure:Any[1], java:Any[1]):Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = heldValue($pure), canPreval = true, openVars = [], modified = true),
+        ^PrevalWrapper<Any>(value = heldValue($java), canPreval = true, openVars = [], modified = true),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualPaths():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = heldValue(#/ShadowPathProbe/first!a#), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = heldValue(#/ShadowPathProbe/first!a#), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsPathsOverDifferentProperties():Boolean[1]
+{
+  assertShadowRejects(#/ShadowPathProbe/first!a#, #/ShadowPathProbe/last!a#);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsPathsWithDifferentAliases():Boolean[1]
+{
+  assertShadowRejects(#/ShadowPathProbe/first!a#, #/ShadowPathProbe/first!b#);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsInstancesDifferingDeepInsideTheValue():Boolean[1]
+{
+  assertShadowRejects(chain(8, 0), chain(8, 1));
+}
