@@ -642,6 +642,198 @@ Each sub-task follows this shape:
 
 **Exit for Task 6:** every row in `## Estate findings` is `fixed`, and a final `SHADOW` rerun of all five suites shows no `SHADOW-ONLY` lines against the control. The controller runs it and records the result in the manifest's runs table as a second dated row per suite.
 
+#### Task 6 amendment (2026-09-29, after manifest `f4c04d260e9`)
+
+The manifest's four findings share one root cause, and all four are COMPARATOR. `describePrevalResult` renders the value through the vX_X_X protocol (`transformFunctionBody` / `transformValueSpecification`). That transform cannot translate some values preeval legitimately evaluates into an `InstanceValue`:
+- `_Window` (from `over`);
+- `SortInfo` (from `ascending` / `descending`);
+- a relation `#TDS` literal;
+- a Runtime whose connection has no serializer among the caller's extensions.
+
+In every case it throws on the **Pure** side, before the Java comparison is reached. So the 526 affected tests say nothing about Java parity yet, and they may hide real mismatches. Task 6.2 re-runs the estate once the comparator is fixed.
+
+**Ruling:** the comparison stops using the protocol for values. `describeNodes` becomes a complete, protocol-free structural description. It records:
+- function identity;
+- property identity;
+- literal values with their types;
+- variable and parameter names;
+- lambda signatures;
+- key expressions;
+- other class instances, by classifier path and their sorted property values, recursively.
+
+`value=` is removed for `FunctionDefinition` and `ValueSpecification` results, because `nodes=` now carries everything it did. Cost if wrong: a divergence the JSON would have caught but the walk misses. The tests below pin each distinction the JSON used to make.
+
+### Task 6.1: Protocol-free structural value description in `describePrevalResult`
+
+**Files:**
+- Modify: `CC/src/main/resources/core/pure/router/preeval/preeval.pure`: `describePrevalResult`, `describeNodes`, `describeInstanceValueElement`, plus new private helpers
+- Modify: `CC/src/main/resources/core/pure/router/preeval/testImplementationSwitch.pure`: a probe class and new tests
+- Modify: `docs/superpowers/plans/2026-09-29-preeval-p4-shadow-estate-manifest.md`: row status
+
+**Interfaces:**
+- `describePrevalResult` output becomes `canPreval=…, modified=…, openVars=[…], type=<t>, nodes=<lines>` for `FunctionDefinition` and `ValueSpecification` values.
+- For any other value, the old `value=<toString>` is kept, because top-level results that are neither are compared as before.
+- The `preeval SHADOW mismatch` prefix is unchanged.
+
+**Required description content** (each line keeps the existing `indent + kind + ' : ' + type/multiplicity` shape where a node has a type):
+- **Top-level `FunctionDefinition`:** a first line `function (<param>:<type><mult>, …)` giving each parameter's name and type, then its body nodes.
+- **`FunctionExpression`:**
+  - if `func` is a `PackageableElement`, `fe <elementToPath(func)>`;
+  - if `func` is an `AbstractProperty`, `fe property <owner path>.<name>`;
+  - otherwise `fe <functionName>`;
+
+  followed by the type/multiplicity and then the parameters.
+- **`VariableExpression`:** unchanged (`var <name> : …`).
+- **`InstanceValue` elements:**
+  - `ValueSpecification`, `LambdaFunction` and `KeyExpression`: as now.
+  - A primitive (`String`, `Boolean`, `Integer`, `Float`, `Decimal`, `Number`, `Date`, `StrictDate`, `DateTime`, `StrictTime`): `<type path> <toString>`. Strings are wrapped in single quotes.
+  - An `Enum`: `enum <enumeration path>.<name>`.
+  - A `PackageableElement`: `element <path>`.
+  - A function held as a value that is not a `LambdaFunction` (for example a property or a native): its identity, as for `fe`.
+  - Any other instance: `instance <classifier path>`, then one child line per property in sorted name order, `<name> = …`, each value described by the same element rules at `indent + '  '`.
+    - Recursion depth is capped at 4 below the instance. At the cap, print `instance <classifier path> …`.
+    - Cycles are bounded by the cap.
+- **Robustness:** every `printGenericType` / `printMultiplicity` call goes through `describeTypeAndMultiplicity` or an equivalent `isEmpty` guard, including the lambda return type (Task 1 deferred minor).
+
+- [ ] **Step 1: Write the failing tests**
+
+Add to `testImplementationSwitch.pure`:
+
+```pure
+Class meta::pure::router::preeval::tests::implementationSwitch::ShadowProbe
+{
+  name : String[1];
+  size : Integer[1];
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::probeValue(probe:ShadowProbe[1]):InstanceValue[1]
+{
+  let iv = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  ^$iv(genericType = ^GenericType(rawType = ShadowProbe), values = $probe);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualInstancesWithoutProtocolSupport():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentInstancesWithoutProtocolSupport():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+        ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 2)), canPreval = true, openVars = [], modified = true),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentFunctions():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {|[1, 2]->first()}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {|[1, 2]->last()}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentProperties():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {p:Pair<Integer, Integer>[1] | $p.first}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {p:Pair<Integer, Integer>[1] | $p.second}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentParameterNames():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {a:Integer[1] | 1}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {b:Integer[1] | 1}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypesInsideNestedLambdas():Boolean[1]
+{
+  let fe = {|[1]->map(x | $x)}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@SimpleFunctionExpression);
+  let lambdaHolder = $fe.parametersValues->at(1)->cast(@InstanceValue);
+  let lambda = $lambdaHolder.values->at(0)->cast(@LambdaFunction<Any>);
+  let body = $lambda.expressionSequence->at(0)->cast(@VariableExpression);
+  let widenedLambda = ^$lambda(expressionSequence = ^$body(genericType = ^GenericType(rawType = Number)));
+  let widened = ^$fe(parametersValues = [$fe.parametersValues->at(0), ^$lambdaHolder(values = $widenedLambda)]);
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $fe, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $widened, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+```
+
+`testShadowRejectsDifferentTypesInsideNestedLambdas` pins the Task 1 deferred minor. It may already pass, since Task 1's walk covers lambda bodies, but it must stay green.
+
+- [ ] **Step 2: RED**
+
+Run CORE-BUILD, then COMPILED and INTERP. Expected:
+- `testShadowAcceptsEqualInstancesWithoutProtocolSupport` and `testShadowRejectsDifferentInstancesWithoutProtocolSupport` fail in both modes. Today `transformValueSpecification` throws `... can't be translated` on the `ShadowProbe` value, so the first gets an unexpected error and the second gets a message that does not start with `preeval SHADOW mismatch`.
+- The function, property, parameter-name and nested-lambda tests pass today, because JSON or `nodes=` already distinguishes them. They are regression pins for the next step.
+
+If a probe test does not fail as described, stop and report. The probe then does not reproduce the estate's failure mode.
+
+- [ ] **Step 3: Implement** the Required description content above in `preeval.pure`.
+  - Remove the `value=` JSON segment for `FunctionDefinition` and `ValueSpecification` values; keep `$a->toString()` for other values.
+  - Remove any imports and calls that are no longer used.
+  - Use `Class.properties` (plus `propertiesFromAssociations` if needed) and evaluate each property on the instance, e.g. `$p->eval($instance)`. Check how `meta::pure::functions::meta` or other core code reads property values generically, and reuse that idiom.
+  - Report each compiler-forced adaptation.
+
+- [ ] **Step 4: GREEN**
+
+Run CORE-BUILD, then:
+- **COMPILED:** `Test_Pure_Preeval` 119 and `Test_Pure_Preeval_Java` 238, i.e. 6 more tests per collection.
+- **INTERP:** `Test_Interpreted_Preeval` 360, i.e. (114 + 6) × 3.
+- **Relational:** RC-BUILD, then RC-TEST `Test_Pure_Relational_Preeval_Java` 2 and `Test_Interpreted_Relational_Preeval` 3.
+
+Every existing `testImplementationSwitch` test stays green, including the Task 1 tests. Then run CC-TEST `Test_Pure_Core`, which must stay at 1192, and Checkstyle on CC.
+
+- [ ] **Step 5: Manifest and commit**
+
+Set rows 1–4 of `## Estate findings` to `fixed in <sha>`. Correct the triage note wording if the fix differs from its suggested direction. Then:
+```bash
+git add legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/router/preeval/preeval.pure legend-engine-core/legend-engine-core-pure/legend-engine-pure-code-compiled-core/src/main/resources/core/pure/router/preeval/testImplementationSwitch.pure docs/superpowers/plans/2026-09-29-preeval-p4-shadow-estate-manifest.md
+git commit -m "Describe preeval SHADOW values without the protocol"
+```
+
+### Task 6.2: Estate re-run after the comparator fix (controller)
+
+Re-run Task 5 Step 1 (build) and Step 2 (both modes, all five suites). Then re-diff each suite, with `$S/estate/run.sh` and `diff.py`.
+
+- **If there are no `SHADOW-ONLY` lines,** add a second dated row per suite to the manifest's runs table, and commit it with the message `Record the preeval shadow estate after the comparator fix`.
+- **If `SHADOW-ONLY` lines remain,** the relation and OLAP coverage the old comparator crash hid is now real:
+  1. Triage them as in Task 5 Step 4.
+  2. Append them to `## Estate findings` as rows 5 onward.
+  3. Commit the manifest.
+  4. Amend this plan with sub-tasks 6.3 onward, one per root cause, following the Task 6 shape.
+  5. Commit the amendment with the message `Plan the remaining P4 estate fixes`.
+  6. Execute them.
+
 ---
 
 ### Task 7: Exit verification and spec
