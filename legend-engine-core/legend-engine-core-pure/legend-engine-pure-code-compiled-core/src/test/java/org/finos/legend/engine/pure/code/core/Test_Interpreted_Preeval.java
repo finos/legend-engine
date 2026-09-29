@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -28,7 +27,6 @@ import java.util.Enumeration;
 
 public class Test_Interpreted_Preeval
 {
-    private static final String PROPERTY = "legend.engine.preeval.implementation";
     private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
 
     static final ImmutableSet<String> KNOWN_INTERPRETED_FAILURES = Sets.immutable.empty();
@@ -44,9 +42,9 @@ public class Test_Interpreted_Preeval
             throw new IllegalStateException("KNOWN_INTERPRETED_FAILURES names that do not match exactly one collected preeval test: " + unmatched.toSortedList().makeString(", "));
         }
         TestSuite suite = new TestSuite();
-        suite.addTest(withImplementation("PURE", selected));
-        suite.addTest(withImplementation("JAVA", selected));
-        suite.addTest(withImplementation("SHADOW", selected));
+        suite.addTest(PreevalImplementationTests.withImplementation("PURE", selected));
+        suite.addTest(PreevalImplementationTests.withImplementation("JAVA", selected));
+        suite.addTest(PreevalImplementationTests.withImplementation("SHADOW", selected));
         return suite;
     }
 
@@ -71,33 +69,5 @@ public class Test_Interpreted_Preeval
             }
         }
         return result;
-    }
-
-    private static Test withImplementation(String implementation, Test tests)
-    {
-        return new TestSetup(tests)
-        {
-            private String previous;
-
-            @Override
-            protected void setUp()
-            {
-                this.previous = System.getProperty(PROPERTY);
-                System.setProperty(PROPERTY, implementation);
-            }
-
-            @Override
-            protected void tearDown()
-            {
-                if (this.previous == null)
-                {
-                    System.clearProperty(PROPERTY);
-                }
-                else
-                {
-                    System.setProperty(PROPERTY, this.previous);
-                }
-            }
-        };
     }
 }

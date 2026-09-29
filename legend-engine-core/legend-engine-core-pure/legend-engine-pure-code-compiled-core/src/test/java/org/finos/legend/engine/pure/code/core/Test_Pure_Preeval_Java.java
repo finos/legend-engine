@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-import junit.extensions.TestSetup;
-import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.eclipse.collections.api.bag.MutableBag;
 import org.eclipse.collections.api.factory.Bags;
@@ -29,8 +27,6 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 
 public class Test_Pure_Preeval_Java
 {
-    private static final String PROPERTY = "legend.engine.preeval.implementation";
-
     private static final String INCLUDE_KNOWN_DIVERGENT = "legend.engine.preeval.test.includeKnownDivergent";
 
     static final ImmutableSet<String> KNOWN_DIVERGENT = Sets.immutable.empty();
@@ -40,8 +36,8 @@ public class Test_Pure_Preeval_Java
         CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
         executionSupport.getConsole().disable();
         TestSuite suite = new TestSuite();
-        suite.addTest(withImplementation("JAVA", targets(executionSupport)));
-        suite.addTest(withImplementation("SHADOW", targets(executionSupport)));
+        suite.addTest(PreevalImplementationTests.withImplementation("JAVA", targets(executionSupport)));
+        suite.addTest(PreevalImplementationTests.withImplementation("SHADOW", targets(executionSupport)));
         return suite;
     }
 
@@ -65,33 +61,5 @@ public class Test_Pure_Preeval_Java
             throw new IllegalStateException("KNOWN_DIVERGENT names that do not match exactly one collected preeval test: " + unmatched.toSortedList().makeString(", "));
         }
         return PureTestBuilderCompiled.buildSuite(tests, executionSupport);
-    }
-
-    private static Test withImplementation(String implementation, Test tests)
-    {
-        return new TestSetup(tests)
-        {
-            private String previous;
-
-            @Override
-            protected void setUp()
-            {
-                this.previous = System.getProperty(PROPERTY);
-                System.setProperty(PROPERTY, implementation);
-            }
-
-            @Override
-            protected void tearDown()
-            {
-                if (this.previous == null)
-                {
-                    System.clearProperty(PROPERTY);
-                }
-                else
-                {
-                    System.setProperty(PROPERTY, this.previous);
-                }
-            }
-        };
     }
 }
