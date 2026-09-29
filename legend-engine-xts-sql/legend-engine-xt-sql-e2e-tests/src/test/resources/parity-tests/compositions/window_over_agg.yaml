@@ -5,14 +5,14 @@ tests:
     feature: "RANK over GROUP BY aggregate"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   - id: window_over_agg_dense_rank
     sql: "SELECT dept_id, COUNT(*) AS cnt, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) AS cnt_rank FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
     feature: "RANK over GROUP BY aggregate"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # Cumulative percentage across groups
   - id: window_over_agg_cum_pct
@@ -51,7 +51,7 @@ tests:
     feature: "Top-N groups via window over aggregate"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # NTILE over groups
   - id: window_over_agg_ntile
@@ -59,7 +59,7 @@ tests:
     feature: "NTILE over GROUP BY aggregate"
     category: "compositions"
     expected_tds_status: ERROR
-    expected_rel_status: ERROR
+    expected_rel_status: PASS
 
   # MIN/MAX over grouped counts
   - id: window_over_agg_minmax
