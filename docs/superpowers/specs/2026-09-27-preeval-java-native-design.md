@@ -226,7 +226,7 @@ Each phase is one PR. P0–P4 do not change production behaviour, because the sw
 | P1 Core traversal | `PrevalRuntime` and both adapters; state, result, dispatcher, sequencer, `Scope`, `GenericTypes`, variables, `InstanceValue`/`KeyExpression`/lambda holders/leaves, `ReactivateRule` | Constant-folding and variable subset of `tests.pure` green under `JAVA` — done |
 | P2 Rules | All remaining rules | All of `tests.pure` and relational `testPreeval.pure` green under `JAVA` and `SHADOW` — **done** (relational: `testPrerouting42`, the file's only `<<test.Test>>`; its two `<<test.ToFix>>` tests, `testPrerouting41` and `testPrerouting_Store`, are excluded) |
 | P3 Interpreted | `Test_Interpreted_Preeval`; adapter fixes | Green in interpreted mode — **done** (336/336 under `PURE`, `JAVA` and `SHADOW`) |
-| P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences |
+| P4 Shadow estate | Downstream suites under `SHADOW` | Zero unexplained differences — **done** (five suites, zero `SHADOW`-only failures; see [the manifest](../plans/2026-09-29-preeval-p4-shadow-estate-manifest.md)) |
 | P5 Benchmark and cutover | Benchmark, baseline, default → `JAVA` | No regression; measured gain |
 | P6 Cleanup (after one release) | Delete `prevalInternal` and the switch (`prevalWithImplementation`); rewrite `docs/engineering/architecture/preeval.md`; publish a "Pure feature → Java native" template guide | — |
 
@@ -338,12 +338,12 @@ compiled-core were rebuilt clean before every run reported above.
   information. Pure's generated `^$x(...)` stamps `preeval.pure`'s source information on the copy
   instead. Lambdas are aligned with Pure (Task 5 fix, needed so the compiled body lookup behaves the
   same). The deviation is kept because errors then point at user code rather than at `preeval.pure`,
-  and `SHADOW` does not compare source information. Decide before P4 whether to align it.
+  and `SHADOW` does not compare source information. Kept as a deliberate deviation (user decision, 2026-09-29; see P4 status).
 - **`SHADOW` does not gate nested types.** `describePrevalResult` compares the protocol JSON of the
   value plus the top-level `genericType`/multiplicity only. The protocol JSON does not carry the
   `genericType` or multiplicity of nested `FunctionExpression`s, so a divergence there passes
   `SHADOW`. P4 should add a structural per-node comparator (value, `genericType`, multiplicity at
-  every node) before the shadow estate is treated as a parity gate.
+  every node) before the shadow estate is treated as a parity gate. **Closed by P4** (per-node comparator; see P4 status).
 
 ### P2 requirements carried from P1 review
 
@@ -438,18 +438,18 @@ of the adapter, which resolves stubs everywhere else.
 **Known gaps (carried forward, not closed by P3):**
 - Interpreted coverage of the relational `testPrerouting42` is still pending: it needs relational
   interpreted natives on `legend-engine-xt-relationalStore-core-pure`'s interpreted classpath, which
-  `Test_Interpreted_Preeval` (compiled-core only) does not have. P4 item.
+  `Test_Interpreted_Preeval` (compiled-core only) does not have. **Closed by P4** (`Test_Interpreted_Relational_Preeval`).
 - Two sites in `preeval.pure` build a hand-built `InstanceValue` that is let-bound and never
   `evaluateAndDeactivate`d: the trailing-let handling in `prevalFunctionDefinition`, and the
   collection-expansion rule in `prevalGenericFunctionExpression` (the `map`/`fold` unrolling pairs). In
   interpreted mode such a value can read back with an empty `genericType`, as diagnosed while building
-  the SHADOW rejection tests (`testShadowRejectsDifferentTypes`/`testShadowRejectsDifferentMultiplicities`).
+  the SHADOW rejection tests (`testShadowRejectsDifferentTypes`/`testShadowRejectsDifferentMultiplicities`). **Closed by P4:** `describe` is now robust to a missing `genericType`.
   If either ever became a top-level preeval result, SHADOW's `describePrevalResult` would NPE in
   `printGenericType`. Latent today — no test drives it into that position — P4 should either route them
   through `evaluateAndDeactivate` or make `describe` robust to a missing `genericType`.
 - `Test_Interpreted_Preeval` reuses one `TestSuite` under `PURE`, `JAVA` and `SHADOW`, so the Surefire
   XML lists each test three times with identical names. Pass/fail counts are accurate, but CI triage
-  needs the log, not just the XML, to tell which implementation failed. P4 item.
+  needs the log, not just the XML, to tell which implementation failed. **Closed by P4** (runner names carry the implementation).
 - JAVA-mode wrapper typing matches PURE only for function definitions. For a non-function-definition
   top-level result, PURE builds a narrower wrapper (`PrevalWrapper<FunctionExpression>`,
   `<InstanceValue>` or `<ValueSpecification>`, depending on the site), while JAVA always returns
@@ -457,7 +457,62 @@ of the adapter, which resolves stubs everywhere else.
   mode erases it, so this drift is invisible to SHADOW and to compiled callers today. It would only
   fail a future caller that casts the wrapper to its narrower type under interpreted JAVA. P4 item: the
   SHADOW comparator should compare wrapper type arguments (or equivalent) so this drift is caught in
-  compiled mode as well.
+  compiled mode as well. **Closed by P4 as outside the parity contract** (see P4 status).
+
+### P4 status (2026-09-30)
+
+`SHADOW` is now a real parity gate. The five downstream estate suites show zero `SHADOW`-only failures against a `PURE` control, compared test by test. The manifest, `docs/superpowers/plans/2026-09-29-preeval-p4-shadow-estate-manifest.md`, records every run and finding.
+
+Full-module verification at HEAD `b5b2465db3c` (compiled-core `mvn clean install` with tests on, `-DargLine=-Xmx6g`):
+
+| Class | Tests |
+|---|---|
+| `TestCoreCompiledStateIntegrity` | 34 (1 skipped) |
+| `TestIdBuilderCore` | 3 |
+| `TestPreevalImplementationTests` | 3 |
+| `Test_Pure_Core` | 1206 |
+| `Test_Pure_Preeval` | 125 |
+| `Test_Pure_Preeval_Java` | 250 |
+| `Test_Interpreted_Preeval` | 378 |
+
+That is 1999 tests in committed classes, with 0 failures or errors. Relational: `Test_Pure_Relational_Preeval_Java` 2/2 and `Test_Interpreted_Relational_Preeval` 3/3. Checkstyle is clean on compiled-core and relational core-pure. The compiled and interpreted known-failure lists are empty.
+
+**The comparator.** `describePrevalResult` no longer uses the vX_X_X protocol. For `FunctionDefinition` and `ValueSpecification` results it records `canPreval`, `modified`, `openVars`, the top-level type, and a `nodes=` walk:
+- a `function (…)` line with the top-level parameter names, types and multiplicities;
+- every `FunctionExpression` (function or property identity), `InstanceValue`, `VariableExpression` and other `ValueSpecification` node, with its generic type and multiplicity;
+- nested lambdas with their signature, and `KeyExpression`s;
+- instance-value elements:
+  - primitives with their type;
+  - enums;
+  - packageable elements by path;
+  - functions held as values, by identity (named functions are not expanded);
+  - paths, by start type, steps, casts and alias;
+  - any other instance, by classifier path and its properties in name order, recursively, with `<cycle>` on a revisit and a safety cap of 16 levels.
+
+The protocol could not describe values preeval legitimately evaluates: `_Window`, `SortInfo`, relation `#TDS` literals, and a Runtime whose connection the caller's extensions cannot serialise. That hid 526 estate tests behind a Pure-side crash, which is what forced the change. This closes the P2 gap "`SHADOW` does not gate nested types".
+
+**Robust type printing.** Types are described by a comparator-owned printer, not the grammar `printGenericType`. Missing parts print as `?`: a missing `genericType` or multiplicity, a type operation without an operand, or a relation column without a `classifierGenericType`. The grammar printer threw a `NullPointerException` on partially built types in the relational PCT flow (estate finding #5). This closes the P3 latent-NPE gap, and the two hand-built `InstanceValue` sites in `preeval.pure` need no change.
+
+**Source information: a deliberate deviation** (user decision, 2026-09-29). Compiled copies keep the original node's source information, so errors point at user code. `SHADOW` does not compare source information.
+
+**Wrapper type argument: outside the parity contract.** PURE's `PrevalWrapper<T>` type argument depends on which part of `preeval.pure` built the result, not on the kind of value, so Java cannot reproduce it from the value alone. The only cast of the wrapper in the repo is to `PrevalWrapper<FunctionDefinition<Any>>`, and `prevalJava` produces that. A future caller that casts to a narrower wrapper would fail under interpreted `JAVA` only, where `Test_Interpreted_Preeval` would catch it. This closes the P3 wrapper-typing gap.
+
+**Unique runner test names.** The compiled-core runners report `name[IMPLEMENTATION]` through the shared `PreevalImplementationTests` helper, which closes the P3 Surefire gap. The relational runners still wrap tests in `TestSetup` and cannot label the implementation; consolidation is a P6 item.
+
+**Interpreted relational: green.** `Test_Interpreted_Relational_Preeval` runs `testPrerouting42` interpreted under `PURE`, `JAVA` and `SHADOW` (3/3). RC core-pure gained the interpreted test dependencies.
+
+**The estate.** SQL (`Test_SQL_Pure`, 237), LIN (the three lineage classes, 591), RC (`Test_Pure_Relational`, 2853), H2 PCT and DuckDB PCT (1587 each). Each ran under `PURE` and under `SHADOW`.
+- **Findings:** 5, all COMPARATOR; none were JAVA-BUG or PURE-QUIRK.
+  - #1–#4: protocol-untranslatable values. Fixed by the protocol-free walk (`e9f8d513037`), plus its review fix-up for paths and deep instances (`2bad7ebc842`).
+  - #5: partially built types. Fixed by the comparator's own type printer (`637e96dd134`).
+- **Pre-existing failures:** 6 date-dependent failures fail identically in both modes (SQL `to_char`, RC day-of-week, H2 `DATEDIFF` weeks). They are unrelated to preeval.
+- **Not covered:** the `openapi` and `dataquality` `preval` callers, which are outside the estate list.
+- **Diagnostic note:** PCT keeps only an exception's message, so finding #5 was located with a JFR `jdk.JavaExceptionThrow` recording. That is the quickest route for any future message-only PCT failure.
+
+**Known gaps (carried forward):**
+- Opaque instances are described by classifier path only: native-backed values such as `Map`, and classes with no Pure properties. Two such values with different contents compare equal. They were uncomparable before P4.
+- Qualified properties and string escaping are not part of the description. In theory, a string value could mimic another description line.
+- `assertSamePrevalResult` keeps its `inScopeVars` and `extensions` parameters, which are now unused; drop them in P6 with the switch.
 
 ## 6. Cutover criteria
 
