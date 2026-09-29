@@ -1477,7 +1477,10 @@ function meta::relational::functions::sqlQueryToString::databricks::tabularFunct
 
 function meta::relational::functions::sqlQueryToString::databricks::tabularFunctionCallProcessorForDatabricks(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
 {
-   let renderedArgs = $args->map(a | $a.value->processOperation($sgc))->joinStrings(', ');
+   let renderedArgs = $args.value->map(v | $v->match([
+      ll:LiteralList[1] | 'array(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
+      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+   ]))->joinStrings(', ');
    let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
    $qualified + '(' + $renderedArgs + ')';
 }
