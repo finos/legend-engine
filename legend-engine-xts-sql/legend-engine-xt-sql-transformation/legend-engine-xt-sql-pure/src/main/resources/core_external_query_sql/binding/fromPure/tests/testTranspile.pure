@@ -6460,6 +6460,27 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// The window *argument* names a column that the same select list also projects under an alias. The
+// rename realigns the child context's aliases, so without realigning its columns too the child
+// claims 'String -> String' while still holding the join-suffixed 'String_t2', and the argument
+// (which resolves to a column object, unlike a key which resolves by name) fails to resolve.
+// Needs a non-aggregate window function: an aggregate argument goes via processAggregationLambda.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWindowArgumentOverJoinWithRenamedColumn():Boolean[1]
+{
+  test(
+    'SELECT "t2"."String" AS "String", ' +
+    'LAG("t2"."String") OVER (PARTITION BY "t1"."Integer" ORDER BY "t1"."Float") AS "prev" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service1" "t2" ON "t1"."Integer" = "t2"."Integer"',
+    [
+      // placeholder: never compared (assertLambda/assertJSON are false); present so
+      // TestConfig.relation() selects relationSources(). See the block comment above.
+      c({| FlatInput.all()->project(
+            ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+        }, false, false)
+    ]
+  )
+}
 // DISTINCT is deliberately excluded from materialisation: a helper column would
 // take part in the distinct and change which rows survive. A plain column key is
 // unaffected and must still work.

@@ -288,6 +288,20 @@ tests:
     expected_tds_status: PASS
     expected_rel_status: PASS
 
+  - id: colres_e2_window_argument_renamed_column
+    sql: "SELECT p.name AS name, LAG(p.name) OVER (ORDER BY p.id) AS prev_name FROM persons p INNER JOIN departments d ON p.dept_id = d.id ORDER BY 1, 2"
+    feature: "non-aggregate window argument naming a column the select list also renames"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
+  - id: colres_e2_window_argument_renamed_column_self_join
+    sql: "SELECT b.salary AS salary, LAG(b.salary) OVER (ORDER BY a.id) AS prev_salary FROM persons a INNER JOIN persons b ON a.dept_id = b.dept_id AND a.id < b.id ORDER BY 1, 2"
+    feature: "non-aggregate window argument over a self-join, both sides realiased"
+    category: "column_resolution"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+
   # ==========================================================================
   # WRONG-RESULTS GUARDS
   #
