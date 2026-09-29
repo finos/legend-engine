@@ -67,3 +67,47 @@ tests:
     category: "compositions"
     expected_tds_status: PASS
     expected_rel_status: PASS
+  # Aggregate + window in the same SELECT (Relation flow). See
+  # docs/engineering/findings/sql-aggregate-plus-window-plan.md.
+  - id: comp_agg_win_disjoint_keys
+    sql: "SELECT dept_id, SUM(salary) AS s, ROW_NUMBER() OVER (ORDER BY dept_id) AS rn FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Aggregate + window disjoint keys"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: comp_agg_win_partition_is_group_key
+    sql: "SELECT dept_id, SUM(salary) AS s, RANK() OVER (PARTITION BY dept_id ORDER BY dept_id) AS r FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Aggregate + window partition is group key"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: comp_agg_win_order_names_aggregate_output
+    sql: "SELECT dept_id, SUM(salary) AS s, RANK() OVER (ORDER BY SUM(salary) DESC) AS r FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Aggregate + window ORDER BY names aggregate output"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: comp_agg_win_implicit_aggregate
+    sql: "SELECT SUM(salary) AS s, AVG(salary) OVER () AS a FROM persons WHERE salary IS NOT NULL"
+    feature: "Implicit aggregate + window"
+    category: "compositions"
+    expected_tds_status: BUG
+    expected_rel_status: BUG
+  - id: comp_agg_win_with_having
+    sql: "SELECT dept_id, SUM(salary) AS s, RANK() OVER (ORDER BY dept_id) AS r FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id HAVING SUM(salary) > 100000 ORDER BY 1"
+    feature: "Aggregate + window + HAVING"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: PASS
+  - id: comp_agg_win_outer_expression
+    sql: "SELECT dept_id, SUM(salary) AS s, SUM(salary) - AVG(SUM(salary)) OVER () AS diff FROM persons WHERE dept_id IS NOT NULL AND salary IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Aggregate + window used in outer expression"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
+  - id: comp_agg_win_multi_key_order_relation_only
+    sql: "SELECT dept_id, SUM(salary) AS s, ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY MAX(hire_date) DESC NULLS LAST, dept_id ASC) AS rn FROM persons WHERE dept_id IS NOT NULL GROUP BY dept_id ORDER BY 1"
+    feature: "Aggregate + window multi-key ORDER BY with NULLS LAST"
+    category: "compositions"
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR

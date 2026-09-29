@@ -3958,6 +3958,30 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+//this is a separate test from above is because string concat does not work in tds flow with window funcs
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testFunctionWrappingWindowFunctionsStringConcatenate():Boolean[1]
+{
+  test(
+    'SELECT String, ' +
+    '\'-\' || rank() OVER (PARTITION BY String ORDER BY Integer ASC) || \'-\' AS "RANK" ' +
+    'FROM service."/service/service1"',
+
+    [
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn]
+              )
+              ->extend(over(~[String], [~Integer->ascending()]), ~[__sql_window_RANK_0:{p,w,r| $p->rank($w, $r)}])
+              ->extend(~[
+                RANK: x | '-' + $x.'__sql_window_RANK_0'->toString() + '-'
+              ])
+              ->select(~[String, RANK])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRelationWindowFunctions():Boolean[1]
 {
   test(
@@ -6920,6 +6944,112 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ->extend(~['CASE WHEN dept_name IS NULL THEN 0 ELSE 1 END' : x | $x.dept_name->isEmpty()->if(|0, |1)])
           ->sort([~'CASE WHEN dept_name IS NULL THEN 0 ELSE 1 END'->ascending(), ~name->ascending()])
           ->select(~[name, dept_name])})
+    ]
+  )
+}
+
+// Aggregate + window in the same SELECT (Relation flow). Covers shapes S1-S3 of
+// docs/engineering/findings/sql-aggregate-plus-window-plan.md in one query:
+//   - partition names a group key       : RANK() OVER (PARTITION BY "String" ...)
+//   - order names an aggregate output   : RANK() OVER (ORDER BY SUM("Integer") DESC)
+//   - nested window in outer expression : RANK() OVER (...) + 1 AS "r_part_plus"
+// (S4 -- implicit aggregate + window -- is parity-only; combining it here would be invalid
+// SQL because a windowed AVG over a non-group column post-GROUP BY is not resolvable.)
+// The nested-window column previously failed with 'no alias found' because processGroupBy
+// received the raw nested SingleColumn and its processSelect walked the embedded window
+// FunctionCall as an ordinary expression; the fix excludes nestedWindowItems from that
+// rename input. See docs/engineering/findings/sql-nested-window-with-groupby-no-alias-found.md.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testAggregateWindowCombinedOverSingleTable():Boolean[1]
+{
+  test(
+    'SELECT "String", SUM("Integer") AS "s", ' +
+    'RANK() OVER (PARTITION BY "String" ORDER BY "String") AS "r_part", ' +
+    'RANK() OVER (ORDER BY SUM("Integer") DESC) AS "r_agg", ' +
+    'RANK() OVER (PARTITION BY "String" ORDER BY "String") + 1 AS "r_part_plus" ' +
+    'FROM service."/service/service1" ' +
+    'GROUP BY "String"',
+    [
+      c({|
+          meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[
+              Boolean:x|$x.booleanIn,
+              Integer:x|$x.integerIn,
+              Float:x|$x.floatIn,
+              Decimal:x|$x.decimalIn,
+              StrictDate:x|$x.strictDateIn,
+              DateTime:x|$x.dateTimeIn,
+              String:x|$x.stringIn
+            ])
+            ->groupBy(~[String], ~[s:x|$x.Integer:y|$y->sum()])
+            ->extend(~[String]->over(~String->ascending()), ~[r_part:{p,w,r|$p->rank($w, $r)}])
+            ->extend(~s->descending()->over(), ~[r_agg:{p,w,r|$p->rank($w, $r)}])
+            ->extend(~[String]->over(~String->ascending()), ~[__sql_window_r_part_plus_0:{p,w,r|$p->rank($w, $r)}])
+            ->extend(~[r_part_plus:x|$x.__sql_window_r_part_plus_0 + 1])
+            ->select(~[String, s, r_part, r_agg, r_part_plus])
+        }, true, false)
+    ]
+  )
+}
+
+// Aggregate + window + join with alias repair (shape S6), plus a nested window whose
+// PARTITION BY qualifies its key against a join alias ("t1"."String"). The join forces
+// processDuplicateRenames to suffix every column with _t1 / _t2; processGroupBy then emits
+// rename(~String_t1, ~String) / rename(~ID_t2, ~ID) via realignAliasesToRenames so the
+// aggregate lambda reads the pre-rename column, and the projected post-group context handed
+// to processOlapGroupBy carries those output names for the window PARTITION BY / ORDER BY
+// to resolve against.
+//
+// The additional 'r_plus' select item exercises two things the recent fix enables:
+//   1. Nested window inside an outer expression combined with GROUP BY (fix 1) -
+//      previously tripped 'no alias found' at processQuerySpec's alias lookup.
+//   2. A qualified window PARTITION BY key over a join whose projected context has had
+//      its child contexts stripped (fix 2) - previously fell back to the bare last-part
+//      name, producing "column 'String' can't be found in the relation".
+// See docs/engineering/findings/sql-nested-window-with-groupby-no-alias-found.md.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testAggregateWindowCombinedOverJoinWithAliasRepair():Boolean[1]
+{
+  test(
+    'SELECT "t1"."String" AS "String", "t2"."ID" AS "ID", ' +
+    'SUM("t1"."Integer") AS "s", ' +
+    'RANK() OVER (PARTITION BY "String" ORDER BY SUM("t1"."Integer") DESC) AS "r", ' +
+    'RANK() OVER (PARTITION BY "t1"."String" ORDER BY SUM("t1"."Integer") DESC) + 1 AS "r_plus" ' +
+    'FROM service."/service/service1" "t1" ' +
+    'JOIN service."/service/service2" "t2" ON "t1"."Integer" = "t2"."Integer" ' +
+    'GROUP BY "t1"."String", "t2"."ID"',
+    [
+      c({|
+          meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+            ->project(~[
+              Boolean:x|$x.booleanIn,
+              Integer:x|$x.integerIn,
+              Float:x|$x.floatIn,
+              Decimal:x|$x.decimalIn,
+              StrictDate:x|$x.strictDateIn,
+              DateTime:x|$x.dateTimeIn,
+              String:x|$x.stringIn
+            ])
+            ->rename(~Boolean, ~Boolean_t1)
+            ->rename(~Integer, ~Integer_t1)
+            ->rename(~Float, ~Float_t1)
+            ->rename(~Decimal, ~Decimal_t1)
+            ->rename(~StrictDate, ~StrictDate_t1)
+            ->rename(~DateTime, ~DateTime_t1)
+            ->rename(~String, ~String_t1)
+            ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+              ->project(~[ID:x|$x.idIn, Integer:x|$x.integerIn, String:x|$x.stringIn])
+              ->rename(~ID, ~ID_t2)
+              ->rename(~Integer, ~Integer_t2)
+              ->rename(~String, ~String_t2),
+              meta::pure::functions::relation::JoinKind.INNER,
+              {row1, row2 | $row1.Integer_t1 == $row2.Integer_t2})
+            ->rename(~String_t1, ~String)
+            ->rename(~ID_t2, ~ID)
+            ->groupBy(~[String, ID], ~[s:x|$x.Integer_t1:y|$y->sum()])
+            ->extend(~[String]->over(~s->descending()), ~[r:{p,w,r|$p->rank($w, $r)}])
+            ->extend(~[String]->over(~s->descending()), ~[__sql_window_r_plus_0:{p,w,r|$p->rank($w, $r)}])
+            ->extend(~[r_plus:x|$x.__sql_window_r_plus_0 + 1])
+            ->select(~[String, ID, s, r, r_plus])
+        }, true, false)
     ]
   )
 }
