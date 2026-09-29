@@ -139,3 +139,28 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
     {message:String[1], source:SourceInformation[0..1] | assert($message->contains('requires a State with no type parameters, path or depth'), |$message)}
   );
 }
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentNestedTypes():Boolean[1]
+{
+  let fe = {|[1]->toOne()}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@SimpleFunctionExpression);
+  let param = $fe.parametersValues->at(0)->cast(@InstanceValue);
+  let widened = ^$fe(parametersValues = ^$param(genericType = ^GenericType(rawType = Number)));
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $fe, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $widened, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowDescribesHandBuiltInstanceValues():Boolean[1]
+{
+  let iv = ^InstanceValue(genericType = ^GenericType(rawType = Integer), multiplicity = PureOne, values = 1);
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = $iv, canPreval = true, openVars = [], modified = false),
+      ^PrevalWrapper<Any>(value = $iv, canPreval = true, openVars = [], modified = false),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}

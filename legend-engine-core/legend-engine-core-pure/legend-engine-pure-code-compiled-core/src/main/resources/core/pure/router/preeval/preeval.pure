@@ -189,10 +189,43 @@ function <<access.private>> meta::pure::router::preeval::describePrevalResult(r:
   ]);
   let type = $r.value->match([
     fd:FunctionDefinition<Any>[1] | $fd->functionReturnType()->meta::pure::metamodel::serialization::grammar::printGenericType() + $fd->functionReturnMultiplicity()->meta::pure::metamodel::serialization::grammar::printMultiplicity(),
-    vs:ValueSpecification[1]      | $vs.genericType->meta::pure::metamodel::serialization::grammar::printGenericType() + $vs.multiplicity->meta::pure::metamodel::serialization::grammar::printMultiplicity(),
+    vs:ValueSpecification[1]      | $vs->describeTypeAndMultiplicity(),
     a:Any[1]                      | ''
   ]);
-  'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']') + ', type=' + $type + ', value=' + $value;
+  'canPreval=' + $r.canPreval->toString() + ', modified=' + $r.modified->toString() + ', openVars=' + $r.openVars->sort()->joinStrings('[', ',', ']') + ', type=' + $type + ', value=' + $value + ', nodes=' + $r.value->describeNodes('')->joinStrings('\n', '\n', '');
+}
+
+function <<access.private>> meta::pure::router::preeval::describeTypeAndMultiplicity(vs:ValueSpecification[1]):String[1]
+{
+  if($vs.genericType->isEmpty(), |'<no genericType>', |$vs.genericType->toOne()->meta::pure::metamodel::serialization::grammar::printGenericType())
+    + if($vs.multiplicity->isEmpty(), |'<no multiplicity>', |$vs.multiplicity->toOne()->meta::pure::metamodel::serialization::grammar::printMultiplicity());
+}
+
+function <<access.private>> meta::pure::router::preeval::describeNodes(value:Any[1], indent:String[1]):String[*]
+{
+  $value->match([
+    fd:FunctionDefinition<Any>[1] | $fd.expressionSequence->evaluateAndDeactivate()->map(e | $e->describeNodes($indent)),
+    fe:FunctionExpression[1]      | [($indent + 'fe ' + if($fe.functionName->isEmpty(), |'?', |$fe.functionName->toOne()) + ' : ' + $fe->describeTypeAndMultiplicity())]
+                                      ->concatenate($fe.parametersValues->map(p | $p->describeNodes($indent + '  '))),
+    iv:InstanceValue[1]           | [($indent + 'iv : ' + $iv->describeTypeAndMultiplicity())]
+                                      ->concatenate($iv.values->map(v | $v->describeInstanceValueElement($indent + '  '))),
+    ve:VariableExpression[1]      | $indent + 'var ' + $ve.name + ' : ' + $ve->describeTypeAndMultiplicity(),
+    vs:ValueSpecification[1]      | $indent + $vs->class()->elementToPath() + ' : ' + $vs->describeTypeAndMultiplicity(),
+    a:Any[1]                      | []
+  ]);
+}
+
+function <<access.private>> meta::pure::router::preeval::describeInstanceValueElement(element:Any[1], indent:String[1]):String[*]
+{
+  $element->match([
+    l:LambdaFunction<Any>[1]  | [($indent + 'lambda (' + $l->functionType().parameters->map(p | $p.name + ':' + $p->describeTypeAndMultiplicity())->joinStrings(', ') + ') : '
+                                  + $l->functionReturnType()->meta::pure::metamodel::serialization::grammar::printGenericType() + $l->functionReturnMultiplicity()->meta::pure::metamodel::serialization::grammar::printMultiplicity())]
+                                  ->concatenate($l->describeNodes($indent + '  ')),
+    vs:ValueSpecification[1]  | $vs->describeNodes($indent),
+    k:KeyExpression[1]        | [($indent + 'key ' + $k.key.values->map(v | $v->toString())->joinStrings(','))]
+                                  ->concatenate($k.expression->describeNodes($indent + '  ')),
+    a:Any[1]                  | []
+  ]);
 }
 
 // ====================================================================================================================================================================
