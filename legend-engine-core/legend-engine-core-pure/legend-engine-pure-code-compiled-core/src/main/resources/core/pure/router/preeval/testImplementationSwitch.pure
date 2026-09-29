@@ -339,3 +339,90 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
       newMap([]->cast(@Pair<String, List<Any>>)),
       []);
 }
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::uniformChain(length:Integer[1]):ShadowChain[1]
+{
+  range(1, $length)->fold({i, c | ^ShadowChain(value = 1, next = $c)}, ^ShadowChain(value = 1));
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::selfReferencingChain():ShadowChain[1]
+{
+  let chain = ^ShadowChain(value = 1);
+  $chain->mutateAdd('next', $chain);
+  $chain;
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::retyped(value:Any[1], genericType:GenericType[1]):InstanceValue[1]
+{
+  let iv = heldValue($value);
+  ^$iv(genericType = $genericType);
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::assertShadowRejectsValues(pure:InstanceValue[1], java:InstanceValue[1]):Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $pure, canPreval = true, openVars = [], modified = true),
+        ^PrevalWrapper<Any>(value = $java, canPreval = true, openVars = [], modified = true),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::typeOperation(type:meta::pure::metamodel::relation::GenericTypeOperationType[1]):GenericType[1]
+{
+  meta::pure::metamodel::relation::GenericTypeOperation->dynamicNew([
+      ^KeyValue(key = 'type', value = $type),
+      ^KeyValue(key = 'left', value = ^GenericType(rawType = Integer)),
+      ^KeyValue(key = 'right', value = ^GenericType(rawType = String))
+    ])->cast(@GenericType);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualCyclicInstances():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = heldValue(selfReferencingChain()), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = heldValue(selfReferencingChain()), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsACycleAgainstALongChainOfEqualValues():Boolean[1]
+{
+  assertShadowRejects(selfReferencingChain(), uniformChain(20));
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentRelationColumnTypes():Boolean[1]
+{
+  let integers = {|#TDS
+                    id
+                    1
+                  #}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  let strings = {|#TDS
+                   id
+                   a
+                 #}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  assertShadowRejectsValues($integers, ^$integers(genericType = $strings.genericType));
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypeOperations():Boolean[1]
+{
+  assertShadowRejectsValues(
+    retyped(1, typeOperation(meta::pure::metamodel::relation::GenericTypeOperationType.Union)),
+    retyped(1, typeOperation(meta::pure::metamodel::relation::GenericTypeOperationType.Difference)));
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentFunctionTypes():Boolean[1]
+{
+  assertShadowRejectsValues(
+    retyped(1, {a:Integer[1] | 1}->genericType()),
+    retyped(1, {a:String[1] | 1}->genericType()));
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypeArguments():Boolean[1]
+{
+  assertShadowRejectsValues(
+    retyped(1, ^GenericType(rawType = List, typeArguments = ^GenericType(rawType = Integer))),
+    retyped(1, ^GenericType(rawType = List, typeArguments = ^GenericType(rawType = String))));
+}
