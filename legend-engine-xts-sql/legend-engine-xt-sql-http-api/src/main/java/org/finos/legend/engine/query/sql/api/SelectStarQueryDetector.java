@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.query.sql.api;
 
+import org.finos.legend.engine.protocol.sql.metamodel.AliasedRelation;
 import org.finos.legend.engine.protocol.sql.metamodel.AllColumns;
 import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Join;
@@ -51,6 +52,12 @@ public class SelectStarQueryDetector extends BaseNodeCollectorVisitor<Boolean>
             return false;
         }
         return new SelectStarQueryDetector().visit(query);
+    }
+
+    @Override
+    public Boolean visit(AliasedRelation aliasedRelation)
+    {
+        return (aliasedRelation.columnNames == null || aliasedRelation.columnNames.isEmpty()) && this.visit(aliasedRelation.relation);
     }
  
     @Override
