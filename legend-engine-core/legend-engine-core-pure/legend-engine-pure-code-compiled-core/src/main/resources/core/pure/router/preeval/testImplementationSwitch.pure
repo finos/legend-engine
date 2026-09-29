@@ -164,3 +164,90 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
       newMap([]->cast(@Pair<String, List<Any>>)),
       []);
 }
+
+Class meta::pure::router::preeval::tests::implementationSwitch::ShadowProbe
+{
+  name : String[1];
+  size : Integer[1];
+}
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::probeValue(probe:ShadowProbe[1]):InstanceValue[1]
+{
+  let iv = {|1}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@InstanceValue);
+  ^$iv(genericType = ^GenericType(rawType = ShadowProbe), values = $probe);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualInstancesWithoutProtocolSupport():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentInstancesWithoutProtocolSupport():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 1)), canPreval = true, openVars = [], modified = true),
+        ^PrevalWrapper<Any>(value = probeValue(^ShadowProbe(name = 'a', size = 2)), canPreval = true, openVars = [], modified = true),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentFunctions():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {|[1, 2]->first()}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {|[1, 2]->last()}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentProperties():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {p:Pair<Integer, Integer>[1] | $p.first}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {p:Pair<Integer, Integer>[1] | $p.second}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentParameterNames():Boolean[1]
+{
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = {a:Integer[1] | 1}, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = {b:Integer[1] | 1}, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsDifferentTypesInsideNestedLambdas():Boolean[1]
+{
+  let fe = {|[1]->map(x | $x)}->evaluateAndDeactivate().expressionSequence->at(0)->cast(@SimpleFunctionExpression);
+  let lambdaHolder = $fe.parametersValues->at(1)->cast(@InstanceValue);
+  let lambda = $lambdaHolder.values->at(0)->cast(@LambdaFunction<Any>);
+  let body = $lambda.expressionSequence->at(0)->cast(@VariableExpression);
+  let widenedLambda = ^$lambda(expressionSequence = ^$body(genericType = ^GenericType(rawType = Number)));
+  let widened = ^$fe(parametersValues = [$fe.parametersValues->at(0), ^$lambdaHolder(values = $widenedLambda)]);
+  assertError(
+    | assertSamePrevalResult(
+        ^PrevalWrapper<Any>(value = $fe, canPreval = true, openVars = [], modified = false),
+        ^PrevalWrapper<Any>(value = $widened, canPreval = true, openVars = [], modified = false),
+        newMap([]->cast(@Pair<String, List<Any>>)),
+        []),
+    {message:String[1], source:SourceInformation[0..1] | assert($message->startsWith('preeval SHADOW mismatch'), |$message)}
+  );
+}
