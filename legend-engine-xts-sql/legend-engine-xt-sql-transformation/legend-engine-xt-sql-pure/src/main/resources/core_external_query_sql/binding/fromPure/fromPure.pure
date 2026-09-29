@@ -1115,15 +1115,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   );
 }
 
-//Child contexts are realigned too: a qualified reference like 'b.risk_book' is resolved against the
-//child context named 'b' (columnByNameParts), so leaving those stale would defeat the whole repair.
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::realignColumns(columns:QueryColumn[*], renames:Pair<String, String>[*]):QueryColumn[*]
+{
+    $columns->map(c |
+        let renamed = $renames->filter(r | $r.first == $c.name)->first();
+        if ($renamed->isEmpty(), | $c, | ^$c(name = $renamed.second->toOne()));
+    );
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::realignAliasesToRenames(context: SqlTransformContext[1], renames:Pair<String, String>[*]): SqlTransformContext[1]
 {
   if ($renames->isEmpty(),
     | $context,
     | ^$context(
         aliases  = realignAliases($context.aliases, $renames),
-        contexts = $context.contexts->map(c | ^$c(aliases = realignAliases($c.aliases, $renames)))
+        contexts = $context.contexts->map(c | ^$c(aliases = realignAliases($c.aliases, $renames), columns = realignColumns($c.columns, $renames)))
       ));
 }
 
