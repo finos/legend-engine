@@ -112,6 +112,13 @@ public class TestRelationalGrammarParser extends TestGrammarParser.TestGrammarPa
         test("###Relational\nDatabase test::db\n(\nTable ORDERS (\n" +
                 "      clientId BIT(2,2)\n" +
                 ")\n)", "PARSER error at [5:16-23]: Column data type BIT does not expect any parameters in declaration");
+        // BOOLEAN
+        test("###Relational\nDatabase test::db\n(\nTable ORDERS (\n" +
+                "      clientId BOOLEAN\n" +
+                ")\n)");
+        test("###Relational\nDatabase test::db\n(\nTable ORDERS (\n" +
+                "      clientId BOOLEAN(1)\n" +
+                ")\n)", "PARSER error at [5:16-25]: Column data type BOOLEAN does not expect any parameters in declaration");
         // INT
         test("###Relational\nDatabase test::db\n(\nTable ORDERS (\n" +
                 "      clientId INT\n" +

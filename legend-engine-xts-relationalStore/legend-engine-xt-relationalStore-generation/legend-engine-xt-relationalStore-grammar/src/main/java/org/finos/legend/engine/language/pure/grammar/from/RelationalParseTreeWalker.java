@@ -338,11 +338,12 @@ public class RelationalParseTreeWalker
                 break;
             }
             case BIT:
+            case BOOLEAN:
             {
                 column.type = new Bit();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type BIT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type " + val.name() + " does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
