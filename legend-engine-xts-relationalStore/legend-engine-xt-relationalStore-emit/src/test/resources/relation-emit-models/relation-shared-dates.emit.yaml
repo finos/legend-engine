@@ -1,0 +1,42 @@
+name: relation-shared-dates
+title: "Shared Milestoned Trading Store for Relation Date EMIT Models"
+description: |
+  The bundle of relational-shared-dates, shaped for relation function
+  mappings: a business temporal Product with DATE milestoning columns, a
+  processing temporal Account and a bitemporal Rating with TIMESTAMP
+  milestoning columns, and a Trade that carries a plain date and a plain
+  date-time. Each class is mapped with ~func over the whole of its table. A
+  relation function mapping cannot map a property through a join, so Trade
+  carries the keys of its product and account and reaches them through
+  associations implemented with ModelJoin. The store is a copy of the relational
+  one, so neither suite depends on the other.
+
+  It holds no connection, runtime, or test data, and its own EMIT run parses and
+  compiles only. The milestoning and ModelJoin navigation it declares are
+  claimed by the models that execute them.
+
+modelSources:
+  model:
+    root: relation-shared-dates
+    files:
+      - model/model.pure
+      - mappingFunction/tables.pure
+      - store/db.pure
+      - mapping/mapping.pure
+
+features:
+  - grammar:association
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - relation
+  - shared-store
+  - shared-domain
+  - milestoning
+  - date-time

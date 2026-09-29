@@ -1,0 +1,35 @@
+name: relational-shared-dates
+title: "Shared Milestoned Trading Store for Date EMIT Models"
+description: |
+  A reusable bundle for the models that put dates into queries: a business
+  temporal Product with DATE milestoning columns, a processing temporal Account
+  and a bitemporal Rating with TIMESTAMP milestoning columns, and a Trade that
+  carries a plain date and a plain date-time and reaches Product and Account
+  through milestoned properties. It holds the domain, the store, and the mapping,
+  and no connection, runtime, or test data, so each consuming model decides which
+  time zone the database keeps its wall clocks in.
+
+  Its own EMIT run parses and compiles only. The milestoning it declares is
+  claimed by the models that execute it.
+
+modelSources:
+  model:
+    root: relational-shared-dates
+    files:
+      - model/model.pure
+      - store/db.pure
+      - mapping/mapping.pure
+
+features:
+  - scaffolding:class
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - shared-store
+  - shared-domain
+  - milestoning
+  - date-time

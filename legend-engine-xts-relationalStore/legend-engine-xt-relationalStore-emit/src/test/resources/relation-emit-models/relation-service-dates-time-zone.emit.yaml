@@ -1,0 +1,61 @@
+name: relation-service-dates-time-zone
+title: "Dates in Service Queries over Relation Function Mappings Through a Zoned Connection"
+description: |
+  The services of relation-service-dates, over the same rows, through a
+  connection that keeps its wall clocks in America/New_York. It asks what
+  relational-service-dates-time-zone asks of a table mapping, of relation
+  function mappings instead, and must give the same answers: a date-time in a
+  query, written in or given as a parameter, is converted to New York time
+  before it meets a TIMESTAMP column, a TIMESTAMP read back is converted to UTC,
+  and a calendar date is not converted at all. That holds through all(), through
+  milestoned properties navigated with ModelJoin, in filters, and in the queries
+  that return a Relation, whether through the mapping or of the table itself.
+
+  The rows ride on the connection rather than on the test suites, since a suite
+  that brings its own connection data has the connection rebuilt without its
+  time zone. So every service here runs on H2, including those whose twins in
+  relation-service-dates run on DuckDB.
+
+modelSources:
+  model:
+    root: relation-service-dates-time-zone
+    files:
+      - runtime/runtime.pure
+      - service/asOfServices.pure
+      - service/filterServices.pure
+      - service/relationServices.pure
+  dependencies:
+    - source: relation-shared-dates.emit.yaml
+
+features:
+  - execution:connection-time-zone
+  - execution:plan-generation
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - grammar:function
+  - mapping:relation-model-join
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - time-zone
+  - relation
+  - service-test
+  - parameters
+  - milestoning
+  - bitemporal
+  - modeljoin
+  - date-time

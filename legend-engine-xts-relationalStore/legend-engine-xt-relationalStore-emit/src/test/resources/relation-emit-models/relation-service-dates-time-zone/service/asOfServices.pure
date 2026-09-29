@@ -1,0 +1,474 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The same questions as relation-service-dates, of the same rows, through a
+// connection that keeps its wall clocks in New York time. July is chosen so
+// that New York is on EDT, four hours behind UTC, and an answer read with a
+// fixed EST offset would be an hour out. A zone behind UTC is chosen so that a
+// calendar date wrongly taken for midnight UTC would move to the previous day.
+
+###Service
+// A business date is a calendar date and FROM_Z/THRU_Z are DATE columns,
+// so the zone has nothing to convert. Taking 2025-07-02 for midnight UTC
+// and moving it to New York would land on the evening of 2025-07-01 and
+// read the old name, so these must answer exactly as the model with no
+// zone does.
+Service demo::relation::dates::zoned::service::ProductAsOfLiteral
+{
+  pattern: '/api/relation/dates/zoned/products';
+  documentation: 'Products as of a business date, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Product.all(%2025-07-02)->sortBy(p|$p.id)->project([p|$p.id, p|$p.name], ['Id', 'Name']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    productSuite:
+    {
+      tests:
+      [
+        onTheDayOfTheRename:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheNewName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget Mk2"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::ProductAsOfParameter
+{
+  pattern: '/api/relation/dates/zoned/products/{businessDate}';
+  documentation: 'Products as of a business date, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1]|demo::relation::dates::Product.all($businessDate)->sortBy(p|$p.id)->project([p|$p.id, p|$p.name], ['Id', 'Name'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    productSuite:
+    {
+      tests:
+      [
+        onTheDayOfTheRename:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldReadTheNewName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget Mk2"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        },
+        theDayBefore:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldReadTheOldName:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Name":"Widget"},{"Id":2,"Name":"Gadget"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// 15:00 UTC is 11:00 in New York, so it falls before account 1 was
+// frozen at noon and after account 2 opened at 10:30. Ignoring the zone
+// would read 15:00 and freeze account 1; using EST rather than the EDT in
+// force in July would read 10:00 and leave account 2 pending.
+Service demo::relation::dates::zoned::service::AccountAsOfLiteral
+{
+  pattern: '/api/relation/dates/zoned/accounts';
+  documentation: 'Accounts as recorded at a processing date-time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Account.all(%2025-07-02T15:00:00+0000)->sortBy(a|$a.id)->project([a|$a.id, a|$a.status], ['Id', 'Status']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"OPEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::AccountAsOfParameter
+{
+  pattern: '/api/relation/dates/zoned/accounts/{processingDate}';
+  documentation: 'Accounts as recorded at a processing date-time, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1]|demo::relation::dates::Account.all($processingDate)->sortBy(a|$a.id)->project([a|$a.id, a|$a.status], ['Id', 'Status'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    accountSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheStatusRecordedThen:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"OPEN"},{"Id":2,"Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlyMorningInNewYork:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldReadTheEarlierStatus:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Status":"OPEN"},{"Id":2,"Status":"PENDING"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// Both dimensions are TIMESTAMP columns, so the zone converts both
+// dates: 15:00 and 14:00 UTC become 11:00 and 10:00 in New York, which
+// put both before their noon splits. Converting only one of the two dates
+// would read AA or A- instead of A.
+Service demo::relation::dates::zoned::service::RatingAsOfLiteral
+{
+  pattern: '/api/relation/dates/zoned/ratings';
+  documentation: 'Ratings as recorded at a processing date-time for a business date-time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Rating.all(%2025-07-02T15:00:00+0000, %2025-07-01T14:00:00+0000)->project([r|$r.issuer, r|$r.grade], ['Issuer', 'Grade']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    ratingSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldReadTheGradeAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"A"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::RatingAsOfParameter
+{
+  pattern: '/api/relation/dates/zoned/ratings/{processingDate}/{businessDate}';
+  documentation: 'Ratings as recorded at a processing date-time for a business date-time, given as parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {processingDate: DateTime[1], businessDate: DateTime[1]|demo::relation::dates::Rating.all($processingDate, $businessDate)->project([r|$r.issuer, r|$r.grade], ['Issuer', 'Grade'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    ratingSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-02T15:00:00+0000,
+            businessDate = %2025-07-01T14:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheGradeAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"A"}]';
+                  }#;
+              }#
+          ]
+        },
+        laterProcessingEarlierBusiness:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-03T00:00:00+0000,
+            businessDate = %2025-06-30T12:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadTheRestatedEarlierGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"AA"}]';
+                  }#;
+              }#
+          ]
+        },
+        datesSwapped:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            processingDate = %2025-07-01T14:00:00+0000,
+            businessDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReadADifferentGrade:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Issuer":"Acme","Grade":"A-"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The date given to product() is a calendar date and is not moved; the
+// date-time given to account() is, which is why every account reads OPEN
+// here while the model with no zone reads account 1 as FROZEN.
+Service demo::relation::dates::zoned::service::TradeMilestonedPropertiesLiteral
+{
+  pattern: '/api/relation/dates/zoned/trades/as-of';
+  documentation: 'Trades with their product and account as of a date for each, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::relation::dates::Trade.all()->sortBy(t|$t.id)->project([t|$t.id, t|$t.product(%2025-07-02).name, t|$t.account(%2025-07-02T15:00:00+0000).status], ['Id', 'Product', 'Account Status']);
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          asserts:
+          [
+            shouldNavigateAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":2,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":3,"Product":"Gadget","Account Status":"OPEN"},{"Id":4,"Product":"Gadget","Account Status":"OPEN"},{"Id":5,"Product":"Widget Mk2","Account Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::relation::dates::zoned::service::TradeMilestonedPropertiesParameter
+{
+  pattern: '/api/relation/dates/zoned/trades/as-of/{businessDate}/{processingDate}';
+  documentation: 'Trades with their product and account as of a date for each, given as parameters.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {businessDate: StrictDate[1], processingDate: DateTime[1]|demo::relation::dates::Trade.all()->sortBy(t|$t.id)->project([t|$t.id, t|$t.product($businessDate).name, t|$t.account($processingDate).status], ['Id', 'Product', 'Account Status'])};
+    mapping: demo::relation::dates::TradingMapping;
+    runtime: demo::relation::dates::zoned::runtime::TradingRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-02,
+            processingDate = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldNavigateAtBothDates:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":2,"Product":"Widget Mk2","Account Status":"OPEN"},{"Id":3,"Product":"Gadget","Account Status":"OPEN"},{"Id":4,"Product":"Gadget","Account Status":"OPEN"},{"Id":5,"Product":"Widget Mk2","Account Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        },
+        earlierDates:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            businessDate = %2025-07-01,
+            processingDate = %2025-07-02T06:00:00-0400
+          ]
+          asserts:
+          [
+            shouldNavigateToEarlierVersions:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"Id":1,"Product":"Widget","Account Status":"OPEN"},{"Id":2,"Product":"Widget","Account Status":"PENDING"},{"Id":3,"Product":"Gadget","Account Status":"OPEN"},{"Id":4,"Product":"Gadget","Account Status":"PENDING"},{"Id":5,"Product":"Widget","Account Status":"OPEN"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
