@@ -484,11 +484,25 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-e2e-pure</artifactId>
             <version>${project.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.engine</groupId>
+                    <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-e2e-tests</artifactId>
             <version>${project.version}</version>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.engine</groupId>
+                    <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
