@@ -1,0 +1,28 @@
+name: service-m2m-match-variable-collision
+title: "M2M Service Whose Functions Reuse Names the Java Generator Picks for Its Own Lambdas"
+description: |
+  An M2M service whose mapping calls user functions that `match` or `and` while
+  a method parameter or a `let` shares a name with a lambda parameter the Java
+  generator introduces for its own adapters (`o`, `m`, `x`). Java forbids a
+  lambda parameter from redeclaring a local in scope, so the generated plan
+  only compiles when those names cannot collide. The service test executes the
+  plan over ModelStore JSON data.
+
+modelSources:
+  model:
+    root: service-m2m-match-variable-collision
+    files:
+      - model.pure
+
+features:
+  - execution:plan-generation
+  - execution:service
+  - execution:service-test
+  - execution:test-data
+  - mapping:mapping
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - java-generation
+  - service-test
