@@ -26,8 +26,8 @@ function meta::external::language::java::generation::essential::collection::regi
 {
    let library  = $conventions->className(Library);
 
-   let x = j_parameter(javaBoolean()->toBoxed(), 'x');
-   let y = j_parameter(javaBoolean()->toBoxed(), 'y');
+   let x = j_parameter(javaBoolean()->toBoxed(), '$x');
+   let y = j_parameter(javaBoolean()->toBoxed(), '$y');
 
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')

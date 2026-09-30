@@ -28,8 +28,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 {
    let library  = $conventions->className(Library);
 
-   let x = j_parameter(javaBoolean()->toBoxed(), 'x');
-   let y = j_parameter(javaBoolean()->toBoxed(), 'y');
+   let x = j_parameter(javaBoolean()->toBoxed(), '$x');
+   let y = j_parameter(javaBoolean()->toBoxed(), '$y');
 
    let lib = newConventionsLibrary()
       ->usesJavaPackage('java.util')
@@ -164,8 +164,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          $state->addDependencyProject($name, $project);
       }
    );
-   let p1 = j_parameter($javaClass, 'x');
-   let p2 = j_parameter($javaClass, 'y');
+   let p1 = j_parameter($javaClass, '$x');
+   let p2 = j_parameter($javaClass, '$y');
    let lambda = j_lambda([$p1,$p2],
                          j_invoke($cls, [], 'isEqualWithFetchTree', [$p1,$p2], javaBoolean())
                         ) ;
