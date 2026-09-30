@@ -33,12 +33,13 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
- * Section types the Rust parser takes over parse exactly as the Java parser alone parses them, in every mode: one it
- * has a grammar for (`Data`, a section without imports), and one it has none for yet (`Mapping`), which falls back.
+ * Section types the Rust parser takes over parse exactly as the Java parser alone parses them, in every mode: what it
+ * has a grammar for (`Data`, a section without imports, and `Mapping`), and a section holding grammar it has none for
+ * yet (a mapping's `Operation` element), which falls back.
  */
 public class TestRustSectionTakeover
 {
-    private static final String MODEL = "Class a::A\n" +
+    private static final String SUPPORTED = "Class a::A\n" +
             "{\n" +
             "  name: String[1];\n" +
             "}\n" +
@@ -56,6 +57,17 @@ public class TestRustSectionTakeover
             "###Mapping\n" +
             "Mapping a::M\n" +
             "(\n" +
+            ")\n";
+
+    private static final String MODEL = SUPPORTED +
+            "\n" +
+            "###Mapping\n" +
+            "Mapping a::N\n" +
+            "(\n" +
+            "  *a::A[a]: Operation\n" +
+            "  {\n" +
+            "    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a)\n" +
+            "  }\n" +
             ")\n";
 
     private static final PureGrammarParser JAVA = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser()));
@@ -97,21 +109,21 @@ public class TestRustSectionTakeover
     public void testTakesOverTheSectionsTheLibraryParses() throws JsonProcessingException
     {
         Assume.assumeTrue("Rust parser not available: " + NativeGrammarParser.getLoadFailure(), NativeGrammarParser.isAvailable());
-        // Without the fallback, a section the Rust library can't parse would fail: Mapping must be left to Java.
+        // Without the fallback, a section the Rust library can't parse would fail: Connection must be left to Java.
         System.setProperty(RustGrammarMode.PROPERTY, "on");
         System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
         RustGrammarParserExtension extension = new RustGrammarParserExtension();
-        Assert.assertTrue(extension.getSectionTypes().toString(), extension.getSectionTypes().containsAllArguments("Pure", "Data"));
-        Assert.assertFalse(extension.getSectionTypes().toString(), extension.getSectionTypes().contains("Mapping"));
+        Assert.assertTrue(extension.getSectionTypes().toString(), extension.getSectionTypes().containsAllArguments("Pure", "Data", "Mapping"));
+        Assert.assertFalse(extension.getSectionTypes().toString(), extension.getSectionTypes().contains("Connection"));
         PureGrammarParser parser = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), extension));
-        Assert.assertEquals(RustSectionResult.MAPPER.writeValueAsString(JAVA.parseModel(MODEL)), RustSectionResult.MAPPER.writeValueAsString(parser.parseModel(MODEL)));
+        Assert.assertEquals(RustSectionResult.MAPPER.writeValueAsString(JAVA.parseModel(SUPPORTED)), RustSectionResult.MAPPER.writeValueAsString(parser.parseModel(SUPPORTED)));
     }
 
     @Test
     public void testCorpusDumpsTakeOverMore()
     {
-        System.setProperty(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY, "Mapping, Runtime");
-        Assert.assertTrue(new RustGrammarParserExtension().getSectionTypes().containsAllArguments("Pure", "Mapping", "Runtime"));
+        System.setProperty(RustGrammarParserExtension.CORPUS_SECTIONS_PROPERTY, "Connection, Runtime");
+        Assert.assertTrue(new RustGrammarParserExtension().getSectionTypes().containsAllArguments("Pure", "Connection", "Runtime"));
     }
 
     @Test
@@ -132,7 +144,7 @@ public class TestRustSectionTakeover
                 .filter(SectionIndex.class::isInstance)
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("no section index"));
-        Assert.assertEquals(Arrays.asList(ImportAwareCodeSection.class, DefaultCodeSection.class, ImportAwareCodeSection.class),
+        Assert.assertEquals(Arrays.asList(ImportAwareCodeSection.class, DefaultCodeSection.class, ImportAwareCodeSection.class, ImportAwareCodeSection.class),
                 index.sections.stream().map(Object::getClass).collect(Collectors.toList()));
     }
 
@@ -145,10 +157,10 @@ public class TestRustSectionTakeover
         long unsupported = RustGrammarParity.counts().get(RustGrammarParity.Outcome.UNSUPPORTED);
         long mismatched = RustGrammarParity.counts().get(RustGrammarParity.Outcome.MISMATCH);
         assertParsesAsJava();
-        // Pure and Data match; Mapping has no Rust grammar yet.
+        // Pure, Data and the first mapping match; the second mapping's element has no Rust grammar yet.
         Assert.assertEquals(unsupported + 1, (long) RustGrammarParity.counts().get(RustGrammarParity.Outcome.UNSUPPORTED));
         Assert.assertEquals(mismatched, (long) RustGrammarParity.counts().get(RustGrammarParity.Outcome.MISMATCH));
-        Assert.assertTrue(RustGrammarParity.counts().get(RustGrammarParity.Outcome.MATCH) >= matched + 2);
+        Assert.assertTrue(RustGrammarParity.counts().get(RustGrammarParity.Outcome.MATCH) >= matched + 3);
     }
 
     private static void assertParsesAsJava() throws JsonProcessingException
