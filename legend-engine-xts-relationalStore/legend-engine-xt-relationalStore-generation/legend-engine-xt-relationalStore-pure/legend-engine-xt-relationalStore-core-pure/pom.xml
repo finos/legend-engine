@@ -113,6 +113,16 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Test_Interpreted_Relational_Preeval builds an interpreted runtime over the whole
+                         relational code base; sharing a JVM with Test_Pure_Relational's compiled metadata
+                         runs out of heap at CI's -Xmx6g. -->
+                    <reuseForks>false</reuseForks>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
