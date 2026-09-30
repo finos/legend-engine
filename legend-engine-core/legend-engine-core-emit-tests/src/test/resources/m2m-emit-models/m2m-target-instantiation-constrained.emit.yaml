@@ -12,19 +12,29 @@ description: |
   support, and `graphFetchChecked` (which would turn the violation into an assertable
   defect list) hits an unrelated serializer-codegen bug on this model shape.
 
+  The mapping also `include`s a second mapping that maps `Population` from an unrelated
+  `~src`. That makes `population` -- a complex property pass-through naming no target id --
+  resolvable by class through the include graph. Resolving a target for it would compare
+  `Population` against `S_Population` and reject a valid model. `classMappingByClass`
+  recurses into includes, so this is the include-graph counterpart to the inline collision
+  in `m2m-target-instantiation`.
+
 modelSources:
   model:
     root: m2m-target-instantiation-constrained
     files:
       - model.pure
+      - includedMapping.pure
       - mapping.pure
 
 features:
   - execution:test-data
   - grammar:constraint
   - grammar:function
+  - mapping:m2m-complex-property-passthrough
   - mapping:m2m-target-instantiation
   - mapping:mapping
+  - mapping:mapping-include
   - scaffolding:class
   - scaffolding:m2m-mapping
 stores: []

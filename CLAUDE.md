@@ -166,7 +166,22 @@ Protocol classes are versioned (`v1_24_0`, `v1_25_0`, …). Breaking changes req
 - **Copyright header:** every new file (including `.pure`) needs the Apache 2.0 header — Checkstyle enforces this.
 - **Logging:** SLF4J only — never `System.out.println`. For `INFO`-level operational events use `LogInfo` wrapper + `LoggingEventType` enum (in `legend-shared`); add new event types to the enum rather than free-text strings. Never log credentials/tokens, not even at DEBUG.
 - **Errors:** user-facing errors throw `EngineException` with `SourceInformation` and an `EngineErrorType` (`COMPILATION`/`EXECUTION`/`PARSER`/`INTERNAL`). Don't swallow exceptions. Pure-level: `assert(cond, | 'msg')` or `fail('msg')` — the Java layer converts `PureException` → `EngineException`.
-- **Comments:** don't narrate the code. Never add a comment that restates what the next line does — the code says it already, and the comment goes stale when the line changes. Comment only what the code *can't* say: a non-obvious "why", a spec/dialect quirk being worked around, or a link to an issue. Match the surrounding file's comment density; most functions here have none.
+- **Comments:** naming is the documentation. A function name and its body should read better than any
+  comment you could put above them; if they don't, rename or restructure rather than explain. Do not
+  narrate what the code does, and do not rationalise why you wrote it — both restate the code and
+  both go stale the moment it changes.
+
+  A comment earns its place only when the code is *genuinely ambiguous*, or when it looks like it
+  contradicts the status quo and a reader would otherwise "fix" it: a spec or dialect quirk being
+  worked around, a deliberate deviation from the surrounding pattern, an ordering constraint that
+  isn't visible locally, or a link to an issue. Write the surprise, not the summary.
+
+  **Tests are not an exception, they are the clearest case.** A test's name and its assertions
+  already state the intended behaviour; a comment above them almost always repeats it. Name the test
+  so the comment becomes unnecessary. The only test comment worth keeping is one explaining why an
+  assertion that *looks* wrong is correct.
+
+  Match the surrounding file's comment density; most functions here have none.
 - **Grammar changes:** update both parser and composer, and add a round-trip test.
 - **Tests:** use `JsonUnit.assertJsonEquals` for JSON comparison (not `String.equals`). Pure test resources go under `src/test/resources/` mirroring the production package.
 

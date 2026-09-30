@@ -2952,6 +2952,35 @@ function {doc.doc = 'Test that execution plans generate when using TabularFuncti
   runPlanTest(var:String[1]|$accessor->from($runtime), $expected, simpleRelationalMapping, $db, $dbType, $context, relationalExtensions());
 }
 
+function {doc.doc = 'Test that execution plans generate when a TabularFunction has array param'} meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionManyParam(dbType:DatabaseType[1], expected:String[1]):Boolean[1]
+{
+  let db = ^Database(package = meta::pure::executionPlan::tests, name = 'db');
+  let schema = ^Schema(database = $db, name = 'schema1');
+  let tabular = ^TabularFunction(schema = $schema, name = 'tb', parameters = [
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'param1', type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    ^meta::relational::metamodel::relation::FunctionParameter(name = 'rest', type = ^meta::relational::metamodel::datatype::Array(type = ^meta::relational::metamodel::datatype::Varchar(size = 200)))
+  ], columns = [
+    ^Column(name = 'col1', nullable = false, type = ^meta::relational::metamodel::datatype::Varchar(size = 200)),
+    ^Column(name = 'col2', nullable = false, type = ^meta::relational::metamodel::datatype::Array())
+  ]);
+
+  $schema->mutateAdd('tabularFunctions', $tabular);
+  $db->mutateAdd('schemas', $schema);
+
+  let accessor = ^meta::pure::store::RelationStoreAccessor<(col1:String[1], col2:Integer[1])>(path = ['meta::pure::executionPlan::tests', 'db'], sourceElement = $tabular, store = $db, arguments = [
+    trim('a')->deactivate(),
+    ['a', 'b', 'c']->deactivate()
+  ]);  
+
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(element = $db, connection = ^meta::external::store::relational::runtime::DatabaseConnection(type = $dbType)));
+
+  let context = ^meta::pure::runtime::ExecutionContext()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.USE_TABULAR_FUNCTION_CALL_TRANSLATION);
+
+  runPlanTest(|$accessor->from($runtime), $expected, simpleRelationalMapping, $db, $dbType, $context, relationalExtensions());
+}
+
+
+
 function {doc.doc = 'Test that execution plans generate when using TabularFunction accessor'} meta::pure::executionPlan::tests::testExecutionPlanForTabularFunctionNoParams(dbType:DatabaseType[1], expected:String[1]):Boolean[1]  
 {
   let db = ^Database(package = meta::pure::executionPlan::tests, name = 'db');

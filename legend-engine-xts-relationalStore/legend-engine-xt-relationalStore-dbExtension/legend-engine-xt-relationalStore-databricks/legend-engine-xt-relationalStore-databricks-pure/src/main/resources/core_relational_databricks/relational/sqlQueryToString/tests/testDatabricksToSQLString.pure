@@ -24,6 +24,7 @@ import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::tests::*;
+import meta::relational::tests::functions::sqlstring::databricks::*;
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testToSQLStringDatabricksSchemaNameShouldContainCatalogName():Boolean[1]
 {
@@ -303,4 +304,41 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks
   assert(!$flaggedPlanString->contains('nulls'), | 'expected flagged plan to drop the `nulls` clause, got:\n' + $flaggedPlanString);
   // sanity: the ORDER BY is still emitted -- we only removed the nulls suffix.
   assert($flaggedPlanString->contains('order by'), | 'expected flagged plan to still contain `order by`, got:\n' + $flaggedPlanString);
+}
+
+function <<access.private>> meta::relational::tests::functions::sqlstring::databricks::databricksActivationSql(f:meta::pure::metamodel::function::FunctionDefinition<Any>[1]):String[1]
+{
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection = ^TestDatabaseConnection(type = DatabaseType.Databricks)));
+  let context = ^FunctionActivatorExecutionContext(postProcessor = meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder_SQLQuery_1__PostProcessorResult_1_);
+  let plan = meta::pure::executionPlan::executionPlan($f, meta::relational::tests::simpleRelationalMapping, $runtime, $context, meta::relational::extension::relationalExtensions());
+  $plan.rootExecutionNode->meta::pure::executionPlan::allNodes(meta::relational::extension::relationalExtensions())
+    ->filter(n | $n->instanceOf(SQLExecutionNode))->cast(@SQLExecutionNode)
+    ->filter(n | $n.sqlQuery->toLower()->startsWith('select'))->last()->toOne('no select query generated').sqlQuery;
+}
+
+// A subquery is not allowed inside a Databricks join ON condition, so a table function parameter is
+// referenced directly there rather than through the func_param_table indirection used elsewhere.
+function <<test.Test>> meta::relational::tests::functions::sqlstring::databricks::testActivationJoinConditionParameterInTableFunctionDDL():Boolean[1]
+{
+  let sql = databricksActivationSql({threshold:Integer[1]|
+    Person.all()->project([col(p:Person[1]|$p.firstName, 'firstName'), col(p:Person[1]|$p.age, 'age')])
+                ->join(Person.all()->project([col(p:Person[1]|$p.age, 'age2')]), meta::relational::metamodel::join::JoinType.INNER,
+                       {a,b|($a.getInteger('age') == $b.getInteger('age2')) && ($b.getInteger('age2') > $threshold)})});
+  let ddl = meta::relational::functions::sqlQueryToString::databricks::createFunction(
+    ^meta::relational::metamodel::CreateFunctionSQL(
+      name = 'join_on_param_func',
+      schemaName = 'test_schema',
+      typedParameters = ^meta::relational::metamodel::SQLParameter(name='threshold', type=^meta::relational::metamodel::datatype::Integer()),
+      typedReturn = [
+        ^meta::relational::metamodel::SQLParameter(name='firstName', type=^meta::relational::metamodel::datatype::Varchar(size=200)),
+        ^meta::relational::metamodel::SQLParameter(name='age', type=^meta::relational::metamodel::datatype::Integer()),
+        ^meta::relational::metamodel::SQLParameter(name='age2', type=^meta::relational::metamodel::datatype::Integer())
+      ],
+      generatedSQL = $sql,
+      secure = false,
+      copyGrants = false
+    ),
+    meta::relational::functions::sqlQueryToString::createDbConfig(DatabaseType.Databricks),
+    meta::relational::extension::relationalExtensions());
+  assertEquals('CREATE OR REPLACE FUNCTION `test_schema`.`join_on_param_func`(threshold DECIMAL(19,0)) \nRETURNS TABLE(firstName STRING, age DECIMAL(19,0), age2 DECIMAL(19,0)) \nLANGUAGE SQL \nRETURN \nWITH func_param_table AS (SELECT threshold AS param_threshold) \nselect `persontable_0`.`firstName` as `firstName`, `persontable_0`.`age` as `age`, `persontable_0`.`age2` as `age2` from (select * from (select `root`.FIRSTNAME as `firstName`, `root`.AGE as `age` from personTable as `root`) as `persontable_1` inner join (select `root`.AGE as `age2` from personTable as `root` where `root`.AGE > (SELECT param_threshold FROM func_param_table)) as `persontable_3` on ((`persontable_1`.`age` = `persontable_3`.`age2` and `persontable_3`.`age2` > threshold))) as `persontable_0`;', $ddl);
 }

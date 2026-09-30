@@ -246,6 +246,28 @@ function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithD
    assertEquals('DECIMAL(7, 4)', $numericPropDType->meta::relational::metamodel::datatype::dataTypeToSqlText());
 }
 
+function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithIncompatibleTypesFailsWhenMatchRequired():Boolean[1]
+{
+   let mapping = meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+      ->rootClassMappingByClass(meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel)->toOne()
+      ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation);
+
+   let incompatiblePropElement = $mapping->propertyMappingsByPropertyName('incompatibleProp')->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne();
+
+   assertError(|$incompatiblePropElement->meta::relational::functions::typeInference::inferRelationalType(), 'Type inference not supported yet! Dyna function: case');
+}
+
+function <<test.Test>> meta::relational::tests::typeInference::testDynaCaseWithIncompatibleTypesReturnsEmptyWhenMatchNotRequired():Boolean[1]
+{
+   let mapping = meta::relational::tests::runtime::typeInference::DecimalCompatibilityMapping1
+      ->rootClassMappingByClass(meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel)->toOne()
+      ->cast(@meta::relational::mapping::RootRelationalInstanceSetImplementation);
+
+   let incompatiblePropElement = $mapping->propertyMappingsByPropertyName('incompatibleProp')->cast(@meta::relational::mapping::RelationalPropertyMapping).relationalOperationElement->toOne();
+
+   assert($incompatiblePropElement->meta::relational::functions::typeInference::inferRelationalType(false)->isEmpty());
+}
+
 function <<test.Test>> meta::relational::tests::typeInference::testMathOperationMinusInference_Double_Integer():Boolean[1]
 {
    let mapping = meta::relational::tests::runtime::typeInference::MathOperationCompatibilityMappingMinus
@@ -395,7 +417,9 @@ Database meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB
     prop2 Decimal(4, 1),
     prop3 Numeric(4, 4),
     prop4 INTEGER,
-    prop5 DOUBLE
+    prop5 DOUBLE,
+    prop6 VARCHAR(20),
+    prop7 DATE
   )
 )
 
@@ -405,6 +429,7 @@ Class meta::relational::tests::runtime::typeInference::DecimalCompatibilityModel
   intProp: Integer[1];
   floatProp: Float[1];
   numericProp: Decimal[1];
+  incompatibleProp: String[1];
 }
 
 ###Mapping
@@ -422,6 +447,10 @@ Mapping meta::relational::tests::runtime::typeInference::DecimalCompatibilityMap
       numericProp:  case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2),
           [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop2,
           [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop3
+      ),
+      incompatibleProp: case(isNotNull([meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop6),
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop6,
+          [meta::relational::tests::runtime::typeInference::DecimalCompatibilityDB]DecimalCompatibilityTable.prop7
       )
    }
 )

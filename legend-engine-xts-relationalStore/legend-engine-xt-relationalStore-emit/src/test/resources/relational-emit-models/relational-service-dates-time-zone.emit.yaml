@@ -1,0 +1,57 @@
+name: relational-service-dates-time-zone
+title: "Dates in Relational Service Queries Through a Zoned Connection"
+description: |
+  The services of relational-service-dates, over the same rows, through a
+  connection that keeps its wall clocks in America/New_York. A date-time in a
+  query, written in or given as a parameter, must be converted to New York time
+  before it meets a TIMESTAMP column, whether that column bounds a processing
+  or business dimension or is compared in a filter, and a TIMESTAMP read back
+  must be converted to UTC. A calendar date must not be converted at all.
+
+  So the date-time answers differ from those of the model with no zone, and the
+  calendar date answers must not. The data catches each wrong reading: ignoring
+  the zone, applying it to only one dimension of a bitemporal query, using EST
+  rather than the EDT in force in July, and moving a calendar date to the
+  previous day as though it were midnight UTC.
+
+  The rows ride on the connection rather than on the test suites, since a suite
+  that brings its own connection data has the connection rebuilt without its
+  time zone.
+
+modelSources:
+  model:
+    root: relational-service-dates-time-zone
+    files:
+      - runtime/runtime.pure
+      - service/asOfServices.pure
+      - service/filterServices.pure
+  dependencies:
+    - source: relational-shared-dates.emit.yaml
+
+features:
+  - execution:connection-time-zone
+  - execution:plan-generation
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relational-connection
+  - scaffolding:relational-mapping
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: basic
+tags:
+  - h2
+  - time-zone
+  - service-test
+  - parameters
+  - milestoning
+  - bitemporal
+  - date-time

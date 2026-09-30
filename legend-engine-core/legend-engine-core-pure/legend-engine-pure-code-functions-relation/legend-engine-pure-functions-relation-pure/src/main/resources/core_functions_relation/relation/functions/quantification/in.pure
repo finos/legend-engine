@@ -23,14 +23,16 @@ Whether a value appears in a relation's column.
 `$d.departmentId->in($employees->select(~department))`. On relational stores this compiles to an
 `IN (subquery)` predicate.
 
-**Do not negate it against a relation.** `!$value->in($rel)` is rejected on every relational store
-rather than being answered differently from the in-memory engines, because SQL's `NOT IN` returns
-`UNKNOWN` — and so drops rows — as soon as the searched column holds a null. Write the question with
-`exists` instead, which makes the treatment of an absent value explicit:
+**Negating it** (`!$value->in($rel)`) answers the same two-valued question `in()` itself does, on
+every store, including relational ones: `true` unless `value` actually matches a row. This is
+**not** the same question SQL's own `NOT IN (subquery)` asks — that operator is three-valued and
+returns `UNKNOWN` (dropping the row) as soon as the searched column holds a null anywhere. If that
+SQL nulls-trap behavior is what's actually wanted, spell it out with `exists` instead:
 
 ```pure
-// instead of  !$d.departmentId->in($employees->select(~department))
-$d.departmentId->isEmpty() || !$employees->exists(e | $e.department == $d.departmentId)
+// !$d.departmentId->in($employees->select(~department)) answers the two-valued question;
+// this instead reproduces SQL NOT IN's three-valued nulls trap
+$d.departmentId->isEmpty() || $employees->exists(e | $e.department->isEmpty()) || !$employees->exists(e | $e.department == $d.departmentId)
 ```
 
 The result is `Boolean[1]` and therefore **two-valued**: a null on either side answers `false`, never
@@ -114,6 +116,251 @@ function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn_N
     assertEquals('#TDS\n'+
                  '   departmentId,departmentName\n'+
                  '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// A null in the relation's column costs nothing, where SQL's NOT IN would drop every row.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// Both nulls at once, with the compared column absent from the outer projection.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)))->select(~departmentName);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentName\n'+
+                 '   Support\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Same in projection position: a computed boolean column rather than a filter.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_InExtend_NullValueAndNullInRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, null
+                                  #;
+                  $departments->extend(~notStaffed : d | !$d.departmentId->in($employees->select(~department)))
+                              ->select(~[departmentName, notStaffed]);
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentName,notStaffed\n'+
+                 '   Engineering,false\n'+
+                 '   Support,true\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// in() is false against an empty relation whatever the value, so its negation is true for every row.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_EmptyRelation<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #->filter(e | $e.employeeId > 1000);
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   null,Support\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Only the value is null. It is never a member, so its row survives where SQL's NOT IN drops it.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_NullValue<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      null, Support
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 3
+                                  #;
+                  $departments->filter(d | !$d.departmentId->in($employees->select(~department)));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   1,Engineering\n'+
+                 '   null,Support\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// The searched column is a grouping key, so the null is excluded through HAVING rather than WHERE.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testIn_Negated_GroupedRelationWithNull<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let payroll = #TDS
+                                  employeeId, department, salary
+                                  101, 1, 900
+                                  102, 1, 900
+                                  103, 2, 100
+                                  104, 3, 100
+                                  105, null, 900
+                                #->groupBy(~department, ~total : x | $x.salary : y | $y->plus())
+                                 ->filter(g | $g.total > 500)
+                                 ->select(~department);
+                  $departments->filter(d | !$d.departmentId->in($payroll));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   2,Support\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// The negation reaches in() through an &&, not directly.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn_Negated_And<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      null, Other
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                    102, 3
+                                  #;
+                  $departments->filter(d | !($d.departmentId->isNotEmpty() && $d.departmentId->in($employees->select(~department))));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   null,Other\n'+
+                 '   2,Support\n'+
+                 '#', $res->sort(~departmentName->ascending())->toString());
+}
+
+// Two in() calls under one or; also checks the two subqueries get distinct aliases.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #;
+                  let supportNames = #TDS
+                                       name
+                                       Support
+                                     #;
+                  $departments->filter(d | !($d.departmentId->in($employees->select(~department)) || $d.departmentName->in($supportNames->select(~name))));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   3,Sales\n'+
+                 '#', $res->sort(~departmentId->ascending())->toString());
+}
+
+// A negated in() and a negated equalTo(value, Relation) under one or.
+function <<PCT.test>> meta::pure::functions::relation::tests::in::testSimpleIn_Negated_Or_MixedWithScalarComparison<T|m>(f:Function<{Function<{->T[m]}>[1]->T[m]}>[1]):Boolean[1]
+{
+    let expr = {|
+                  let departments = #TDS
+                                      departmentId, departmentName
+                                      1, Engineering
+                                      2, Support
+                                      3, Sales
+                                    #;
+                  let employees = #TDS
+                                    employeeId, department
+                                    101, 1
+                                  #;
+                  let singleton = #TDS
+                                    department
+                                    2
+                                  #;
+                  $departments->filter(d | !($d.departmentId->in($employees->select(~department)) || $d.departmentId->equalTo($singleton->select(~department))));
+               };
+
+    let res = $f->eval($expr);
+
+    assertEquals('#TDS\n'+
+                 '   departmentId,departmentName\n'+
+                 '   3,Sales\n'+
                  '#', $res->sort(~departmentId->ascending())->toString());
 }
 

@@ -19,6 +19,11 @@ Class demo::m2m::instantiation::constrained::source::S_City
   population: Integer[1];
 }
 
+Class demo::m2m::instantiation::constrained::source::S_Population
+{
+  headcount: Integer[1];
+}
+
 Class demo::m2m::instantiation::constrained::target::City
 {
   code: String[1];

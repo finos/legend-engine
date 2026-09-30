@@ -14,9 +14,8 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -29,14 +28,29 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.RelationalMapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_DatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_GenerationFeaturesConfig;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_GenerationFeaturesConfig_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_TestDatabaseConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_Mapper;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalMapperPostProcessor;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_RelationalMapperPostProcessor_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_SchemaNameMapper;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_SchemaNameMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_TableNameMapper;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_TableNameMapper_Impl;
+import org.finos.legend.pure.generated.Root_meta_relational_metamodel_RelationalMapper;
+import org.finos.legend.pure.generated.core_relational_relational_runtime_relationalRuntimeExtension;
+import org.finos.legend.pure.m4.tools.time.TimeZones;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class HelperRelationalDatabaseConnectionBuilder
 {
-    public static void addTestDataSetUp(Root_meta_external_store_relational_runtime_TestDatabaseConnection test, String testDataSetupCsv, java.util.List<String> testDataSetupSqls)
+    public static void addTestDataSetUp(Root_meta_external_store_relational_runtime_TestDatabaseConnection test, String testDataSetupCsv, List<String> testDataSetupSqls)
     {
         if (testDataSetupCsv != null)
         {
@@ -45,7 +59,7 @@ public class HelperRelationalDatabaseConnectionBuilder
 
         if (testDataSetupSqls != null)
         {
-            test._testDataSetupSqls(FastList.newList(testDataSetupSqls));
+            test._testDataSetupSqls(Lists.mutable.withAll(testDataSetupSqls));
         }
     }
 
@@ -76,6 +90,21 @@ public class HelperRelationalDatabaseConnectionBuilder
                 db.name = element;
                 db._package = "";
                 context.processFirstPass(db);
+            }
+        }
+    }
+
+    public static void validateTimeZone(DatabaseConnection databaseConnection)
+    {
+        if (databaseConnection.timeZone != null)
+        {
+            try
+            {
+                TimeZones.parse(databaseConnection.timeZone);
+            }
+            catch (IllegalArgumentException e)
+            {
+                throw new EngineException(e.getMessage(), databaseConnection.sourceInformation, EngineErrorType.COMPILATION, e);
             }
         }
     }

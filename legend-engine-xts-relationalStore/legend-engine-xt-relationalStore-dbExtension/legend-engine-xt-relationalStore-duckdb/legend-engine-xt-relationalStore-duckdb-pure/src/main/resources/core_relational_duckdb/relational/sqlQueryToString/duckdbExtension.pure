@@ -37,7 +37,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
       semiStructuredElementProcessor = processSemiStructuredElementForDuckDB_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       tabularFunctionProcessor = meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor_String_1__String_1__FunctionParameter_MANY__String_1_,
-      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
+      tabularFunctionCallProcessor = meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionCallProcessor_String_1__String_1__TabularFunctionCallArgument_MANY__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForDuckDB_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForDuckDB_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       columnNameToIdentifier = columnNameToIdentifierForDuckDB_String_1__DbConfig_1__String_1_,
@@ -75,6 +75,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
 function meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionProcessor(schema:String[1], functionName: String[1], params: FunctionParameter[*]):String[1]
 {
    if($schema=='', | $functionName,| $schema+'.'+$functionName) + '('+ $params->map(p|$p.name)->joinStrings(', ')+ ')';
+}
+
+function meta::relational::functions::sqlQueryToString::duckDB::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
+{
+   let renderedArgs = $args.value->map(v | $v->match([
+      ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($sgc))->joinStrings('[', ', ', ']'),
+      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+   ]))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   $qualified + '(' + $renderedArgs + ')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::duckDB::processJoinForDuckDB(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
@@ -203,7 +213,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::duckD
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),   //aggregate function across rows (not and on conditions)
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('castBoolean',            $allStates,            ^ToSql(format='cast(%s as boolean)')),
-    dynaFnToSql('chr',                    $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('nullSafeEqual',          $allStates,            ^ToSql(format='%s is not distinct from %s')),
     dynaFnToSql('nullSafeNotEqual',       $allStates,            ^ToSql(format='%s is distinct from %s')),

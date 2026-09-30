@@ -1,0 +1,28 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// The trade feed every service reads, given to each test suite as test data.
+// Each trade carries every version of its product, since a model-to-model test
+// can read from one source only. Trade 2 gives its execution time with a New
+// York offset, which reading the feed resolves to UTC.
+
+###Data
+Data demo::m2m::dates::data::Trades
+{
+  ExternalFormat
+  #{
+    contentType: 'application/json';
+    data: '[{"id":1,"tradeDate":"2025-07-01","executedAt":"2025-07-01T16:00:00.000+0000","quantity":100,"productAllVersions":[{"id":1,"name":"Widget","businessDate":"2025-07-01"},{"id":1,"name":"Widget Mk2","businessDate":"2025-07-02"}]},{"id":2,"tradeDate":"2025-07-01","executedAt":"2025-07-01T21:30:00.000-0400","quantity":200,"productAllVersions":[{"id":2,"name":"Gadget","businessDate":"2025-07-01"}]},{"id":3,"tradeDate":"2025-07-02","executedAt":"2025-07-02T13:00:00.000+0000","quantity":300,"productAllVersions":[{"id":1,"name":"Widget","businessDate":"2025-07-01"},{"id":1,"name":"Widget Mk2","businessDate":"2025-07-02"}]},{"id":4,"tradeDate":"2025-07-02","executedAt":"2025-07-02T18:45:00.000+0000","quantity":400,"productAllVersions":[{"id":2,"name":"Gadget","businessDate":"2025-07-01"}]},{"id":5,"tradeDate":"2025-07-03","executedAt":"2025-07-03T13:30:00.000+0000","quantity":500,"productAllVersions":[{"id":1,"name":"Widget","businessDate":"2025-07-01"},{"id":1,"name":"Widget Mk2","businessDate":"2025-07-02"}]}]';
+  }#
+}

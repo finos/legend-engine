@@ -435,7 +435,8 @@ public class TestRelationalGrammarRoundtrip extends TestToPureGrammarRoundtrip
                 "      prop16 VARBINARY(1) NOT NULL,\n" +
                 "      prop17 BIT,\n" +
                 "      prop18 ARRAY,\n" + // will get converted to OTHER
-                "      prop19 OTHER\n" +
+                "      prop19 OTHER,\n" +
+                "      prop20 BOOLEAN\n" + // will get converted to BIT
                 "   )\n" +
                 ")";
         testFormat("###Relational\n" +
@@ -461,7 +462,8 @@ public class TestRelationalGrammarRoundtrip extends TestToPureGrammarRoundtrip
                 "    prop16 VARBINARY(1) NOT NULL,\n" +
                 "    prop17 BIT,\n" +
                 "    prop18 OTHER,\n" +
-                "    prop19 OTHER\n" +
+                "    prop19 OTHER,\n" +
+                "    prop20 BIT\n" +
                 "  )\n" +
                 ")\n", unformatted);
     }

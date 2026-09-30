@@ -155,7 +155,12 @@ function meta::relational::functions::sqlQueryToString::snowflake::tabularFuncti
 
 function meta::relational::functions::sqlQueryToString::snowflake::tabularFunctionCallProcessor(schema:String[1], functionName:String[1], args:TabularFunctionCallArgument[*], sgc:SqlGenerationContext[1]):String[1]
 {
-   'table(' + meta::relational::functions::sqlQueryToString::default::tabularFunctionCallProcessor($schema, $functionName, $args, $sgc) + ')';
+   let renderedArgs = $args.value->map(v | $v->match([
+      ll:LiteralList[1] | 'ARRAY_CONSTRUCT(' + $ll.values->map(e | $e->processOperation($sgc))->joinStrings(', ') + ')',
+      r:RelationalOperationElement[1] | $r->processOperation($sgc)
+   ]))->joinStrings(', ');
+   let qualified = if($schema == '', | $functionName, | $schema + '.' + $functionName);
+   'table(' + $qualified + '(' + $renderedArgs + '))';
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::schemaIdentifierToString(identifier:String[1], dbConfig: DbConfig[1]):String[1]
@@ -898,6 +903,7 @@ function meta::relational::functions::sqlQueryToString::snowflake::getColumnType
 {
     $type->match([
        s : meta::relational::metamodel::datatype::SemiStructured[1] | 'VARIANT',
+       b : meta::relational::metamodel::datatype::Bit[1] | 'BOOLEAN',
        a : meta::relational::metamodel::datatype::DataType[1] | $a->getColumnTypeSqlTextDefault()
     ]);
 }

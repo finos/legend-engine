@@ -1,0 +1,32 @@
+name: service-m2m-shared-dates
+title: "Shared Trade Feed for Model-to-Model Date EMIT Models"
+description: |
+  A reusable bundle for the services that put dates into model-to-model
+  queries: a trade feed whose trades carry a calendar date and a date-time and
+  every version of their business temporal product, the trades and products
+  read from it, a mapping that copies the dates across unchanged, a runtime
+  reading the feed through a JSON model connection, and the feed itself as a
+  Data element. Its own EMIT run parses and compiles only; the models that
+  query it claim what they execute.
+
+modelSources:
+  model:
+    root: service-m2m-shared-dates
+    files:
+      - model/model.pure
+      - mapping/mapping.pure
+      - runtime/runtime.pure
+      - data/data.pure
+
+features:
+  - scaffolding:class
+  - scaffolding:m2m-mapping
+  - scaffolding:model-connection
+  - scaffolding:runtime
+stores: []
+complexity: basic
+tags:
+  - m2m
+  - shared-domain
+  - milestoning
+  - date-time

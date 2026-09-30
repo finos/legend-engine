@@ -53,7 +53,7 @@ function meta::external::query::sql::expression::sqlExpressionFeatureExtension()
 function meta::external::query::sql::expression::extractFunctionFromSQLExpression(s:SQLExpression<Any>[1]):FunctionExpression[1]
 {
   let func = $s.pureFunction;
-  ^FunctionExpression(func = meta::pure::functions::lang::eval_Function_1__V_m_,
+  ^SimpleFunctionExpression(func = meta::pure::functions::lang::eval_Function_1__V_m_,
                       importGroup = ^ImportGroup(),
                       genericType = $func->functionReturnType(),
                       multiplicity = ZeroMany,

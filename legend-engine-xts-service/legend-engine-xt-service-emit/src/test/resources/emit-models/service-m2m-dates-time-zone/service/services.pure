@@ -1,0 +1,532 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Dates in the queries of services over a model-to-model mapping, with a time
+// zone named in each: in the format a graph fetch writes its date-times with,
+// in the mapping that builds the result, or in the query itself.
+
+###Service
+// The date-times are written with a dateTimeFormat that names PST, which
+// stands for the Los Angeles region and so is on PDT, seven hours behind
+// UTC, in July.
+Service demo::m2m::dates::zoned::service::TradesExecutedBeforeInPacificTimeLiteral
+{
+  pattern: '/api/m2m/dates/zoned/trades/before/pacific';
+  documentation: 'Trades executed before a moment, their times written in Pacific time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.executedAt < %2025-07-02T15:00:00+0000)->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[PST]yyyy-MM-dd"T"HH:mm:ss.SSSZ'));
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldWriteTimesInPacificTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T09:00:00.000-0700"},{"id":2,"executedAt":"2025-07-01T18:30:00.000-0700"},{"id":3,"executedAt":"2025-07-02T06:00:00.000-0700"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::zoned::service::TradesExecutedBeforeInPacificTimeParameter
+{
+  pattern: '/api/m2m/dates/zoned/trades/before/pacific/{cutoff}';
+  documentation: 'Trades executed before a moment, their times written in Pacific time, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|demo::m2m::dates::Trade.all()->filter(t|$t.executedAt < $cutoff)->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[PST]yyyy-MM-dd"T"HH:mm:ss.SSSZ'))};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldWriteTimesInPacificTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T09:00:00.000-0700"},{"id":2,"executedAt":"2025-07-01T18:30:00.000-0700"},{"id":3,"executedAt":"2025-07-02T06:00:00.000-0700"}]';
+                  }#;
+              }#
+          ]
+        },
+        justAfterMidnightUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T01:00:00+0000
+          ]
+          asserts:
+          [
+            shouldWriteTimesInPacificTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":1,"executedAt":"2025-07-01T09:00:00.000-0700"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// EST is a fixed offset of five hours behind UTC, kept even in July when New
+// York itself is on EDT, and the z in the format writes the zone as the
+// format names it. The trade date is a calendar date, which the format does
+// not touch.
+Service demo::m2m::dates::zoned::service::TradesOnDateInEasternStandardTimeLiteral
+{
+  pattern: '/api/m2m/dates/zoned/trades/on/eastern-standard';
+  documentation: 'Trades made on a date, their times written in Eastern Standard Time, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.tradeDate == %2025-07-02)->graphFetch(#{demo::m2m::dates::Trade{id, tradeDate, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, tradeDate, executedAt}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EST]yyyy-MM-dd HH:mm:ss z'));
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldWriteTimesInEasternStandardTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":3,"tradeDate":"2025-07-02","executedAt":"2025-07-02 08:00:00 EST"},{"id":4,"tradeDate":"2025-07-02","executedAt":"2025-07-02 13:45:00 EST"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::zoned::service::TradesOnDateInEasternStandardTimeParameter
+{
+  pattern: '/api/m2m/dates/zoned/trades/on/eastern-standard/{tradeDate}';
+  documentation: 'Trades made on a date, their times written in Eastern Standard Time, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {tradeDate: StrictDate[1]|demo::m2m::dates::Trade.all()->filter(t|$t.tradeDate == $tradeDate)->graphFetch(#{demo::m2m::dates::Trade{id, tradeDate, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, tradeDate, executedAt}}#, ^meta::pure::graphFetch::execution::AlloySerializationConfig(dateTimeFormat='[EST]yyyy-MM-dd HH:mm:ss z'))};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        secondOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            tradeDate = %2025-07-02
+          ]
+          asserts:
+          [
+            shouldWriteTimesInEasternStandardTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":3,"tradeDate":"2025-07-02","executedAt":"2025-07-02 08:00:00 EST"},{"id":4,"tradeDate":"2025-07-02","executedAt":"2025-07-02 13:45:00 EST"}]';
+                  }#;
+              }#
+          ]
+        },
+        firstOfJuly:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            tradeDate = %2025-07-01
+          ]
+          asserts:
+          [
+            shouldWriteTimesInEasternStandardTime:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"tradeDate":"2025-07-01","executedAt":"2025-07-01 11:00:00 EST"},{"id":2,"tradeDate":"2025-07-01","executedAt":"2025-07-01 20:30:00 EST"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// The mapping writes each execution time in two zones as it builds the
+// report, once with convertTimeZone and once with a format string that names
+// its zone.
+Service demo::m2m::dates::zoned::service::TradeReportsLiteral
+{
+  pattern: '/api/m2m/dates/zoned/trades/reports';
+  documentation: 'Trade reports giving local times, for trades executed before a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::TradeReport.all()->filter(r|$r.executedAt < %2025-07-02T15:00:00+0000)->graphFetch(#{demo::m2m::dates::TradeReport{id, newYorkTime, kolkataTime}}#)->serialize(#{demo::m2m::dates::TradeReport{id, newYorkTime, kolkataTime}}#);
+    mapping: demo::m2m::dates::TradeReportMapping;
+    runtime: demo::m2m::dates::runtime::TradeReportRuntime;
+  }
+  testSuites:
+  [
+    reportSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldWriteLocalTimes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"newYorkTime":"2025-07-01 12:00:00 America/New_York","kolkataTime":"2025-07-01 21:30:00 Asia/Kolkata"},{"id":2,"newYorkTime":"2025-07-01 21:30:00 America/New_York","kolkataTime":"2025-07-02 07:00:00 Asia/Kolkata"},{"id":3,"newYorkTime":"2025-07-02 09:00:00 America/New_York","kolkataTime":"2025-07-02 18:30:00 Asia/Kolkata"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::zoned::service::TradeReportsParameter
+{
+  pattern: '/api/m2m/dates/zoned/trades/reports/{cutoff}';
+  documentation: 'Trade reports giving local times, for trades executed before a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {cutoff: DateTime[1]|demo::m2m::dates::TradeReport.all()->filter(r|$r.executedAt < $cutoff)->graphFetch(#{demo::m2m::dates::TradeReport{id, newYorkTime, kolkataTime}}#)->serialize(#{demo::m2m::dates::TradeReport{id, newYorkTime, kolkataTime}}#)};
+    mapping: demo::m2m::dates::TradeReportMapping;
+    runtime: demo::m2m::dates::runtime::TradeReportRuntime;
+  }
+  testSuites:
+  [
+    reportSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        afternoonUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T15:00:00+0000
+          ]
+          asserts:
+          [
+            shouldWriteLocalTimes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"newYorkTime":"2025-07-01 12:00:00 America/New_York","kolkataTime":"2025-07-01 21:30:00 Asia/Kolkata"},{"id":2,"newYorkTime":"2025-07-01 21:30:00 America/New_York","kolkataTime":"2025-07-02 07:00:00 Asia/Kolkata"},{"id":3,"newYorkTime":"2025-07-02 09:00:00 America/New_York","kolkataTime":"2025-07-02 18:30:00 Asia/Kolkata"}]';
+                  }#;
+              }#
+          ]
+        },
+        justAfterMidnightUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            cutoff = %2025-07-02T01:00:00+0000
+          ]
+          asserts:
+          [
+            shouldWriteLocalTimes:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '{"id":1,"newYorkTime":"2025-07-01 12:00:00 America/New_York","kolkataTime":"2025-07-01 21:30:00 Asia/Kolkata"}';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+// Both the execution times and the moment are converted to New York dates
+// before they are compared. 02:00 UTC on 2025-07-02 is still 2025-07-01 in
+// New York, and so is the execution of trade 2 at 01:30 UTC, which comparing
+// UTC dates would put on the wrong day.
+Service demo::m2m::dates::zoned::service::TradesOnNewYorkDayLiteral
+{
+  pattern: '/api/m2m/dates/zoned/trades/new-york-day';
+  documentation: 'Trades executed on the New York calendar day of a moment, written into the query.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: |demo::m2m::dates::Trade.all()->filter(t|$t.executedAt->convertTimeZone('America/New_York', 'yyyy-MM-dd') == %2025-07-02T02:00:00+0000->convertTimeZone('America/New_York', 'yyyy-MM-dd'))->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#);
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        lateEveningInNewYork:
+        {
+          serializationFormat: PURE;
+          asserts:
+          [
+            shouldReturnThatNewYorkDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+Service demo::m2m::dates::zoned::service::TradesOnNewYorkDayParameter
+{
+  pattern: '/api/m2m/dates/zoned/trades/new-york-day/{asOf}';
+  documentation: 'Trades executed on the New York calendar day of a moment, given as a parameter.';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: {asOf: DateTime[1]|demo::m2m::dates::Trade.all()->filter(t|$t.executedAt->convertTimeZone('America/New_York', 'yyyy-MM-dd') == $asOf->convertTimeZone('America/New_York', 'yyyy-MM-dd'))->graphFetch(#{demo::m2m::dates::Trade{id, executedAt}}#)->serialize(#{demo::m2m::dates::Trade{id, executedAt}}#)};
+    mapping: demo::m2m::dates::TradeMapping;
+    runtime: demo::m2m::dates::runtime::TradeRuntime;
+  }
+  testSuites:
+  [
+    tradeSuite:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              demo::m2m::dates::data::Trades
+            }#
+        ]
+      ]
+      tests:
+      [
+        lateEveningInNewYork:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            asOf = %2025-07-02T02:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnThatNewYorkDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":1,"executedAt":"2025-07-01T16:00:00.000"},{"id":2,"executedAt":"2025-07-02T01:30:00.000"}]';
+                  }#;
+              }#
+          ]
+        },
+        middayUtc:
+        {
+          serializationFormat: PURE;
+          parameters:
+          [
+            asOf = %2025-07-02T12:00:00+0000
+          ]
+          asserts:
+          [
+            shouldReturnThatNewYorkDaysTrades:
+              EqualToJson
+              #{
+                expected:
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"id":3,"executedAt":"2025-07-02T13:00:00.000"},{"id":4,"executedAt":"2025-07-02T18:45:00.000"}]';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

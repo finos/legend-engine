@@ -1,0 +1,65 @@
+name: relation-service-dates
+title: "Dates in Service Queries over Relation Function Mappings"
+description: |
+  The services of relational-service-dates, over the same rows, with every
+  class mapped by a relation function (~func) rather than a table, and the
+  milestoned properties navigated through ModelJoin. They ask the same
+  questions and must give the same answers: dates written into the query and
+  given as parameters, for all() on business temporal, processing temporal, and
+  bitemporal classes, for milestoned properties, and for filters on plain DATE
+  and TIMESTAMP columns.
+
+  Two more pairs of services ask their questions in ways only a relation can. One
+  projects with project(~[...]), so that the query returns a Relation, and a test
+  suite that gives such a query its data runs it on DuckDB rather than H2. The
+  other filters the table itself with a relation expression that names its
+  runtime with from(), and so names no mapping at all.
+
+  The connection names no time zone; relation-service-dates-time-zone asks the
+  same questions of the same rows through one that does.
+
+modelSources:
+  model:
+    root: relation-service-dates
+    files:
+      - data/testData.pure
+      - runtime/runtime.pure
+      - service/asOfServices.pure
+      - service/filterServices.pure
+      - service/relationServices.pure
+  dependencies:
+    - source: relation-shared-dates.emit.yaml
+
+features:
+  - execution:data-element
+  - execution:plan-generation
+  - execution:service
+  - execution:service-parameter
+  - execution:service-test
+  - execution:test-data
+  - grammar:function
+  - mapping:relation-model-join
+  - milestoning:bi-temporal
+  - milestoning:business-temporal
+  - milestoning:milestoning
+  - milestoning:point-in-time-query
+  - milestoning:processing-temporal
+  - scaffolding:class
+  - scaffolding:relation-function
+  - scaffolding:relation-mapping
+  - scaffolding:relational-connection
+  - scaffolding:relational-store
+  - scaffolding:runtime
+stores:
+  - relational
+complexity: intermediate
+tags:
+  - h2
+  - duckdb
+  - relation
+  - service-test
+  - parameters
+  - milestoning
+  - bitemporal
+  - modeljoin
+  - date-time

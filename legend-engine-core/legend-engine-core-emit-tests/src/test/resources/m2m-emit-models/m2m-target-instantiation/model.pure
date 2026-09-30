@@ -20,6 +20,12 @@ Class demo::m2m::instantiation::source::S_Country
   capitalName: String[1];
 }
 
+Class demo::m2m::instantiation::source::S_Details
+{
+  detailsName: String[1];
+  detailsCapitalName: String[1];
+}
+
 Class demo::m2m::instantiation::target::Country
 {
   code: String[1];

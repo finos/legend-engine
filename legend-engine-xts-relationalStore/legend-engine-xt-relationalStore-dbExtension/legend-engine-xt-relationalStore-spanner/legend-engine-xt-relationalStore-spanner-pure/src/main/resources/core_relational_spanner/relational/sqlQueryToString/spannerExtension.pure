@@ -298,6 +298,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::Timestamp[1] | 'timestamptz',
+      b : meta::relational::metamodel::datatype::Bit[1] | 'BOOL',
       a : Any[*] | meta::relational::metamodel::datatype::dataTypeToSqlText($columnType)
    ])
 }

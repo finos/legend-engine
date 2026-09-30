@@ -29,7 +29,7 @@
     "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00932: inconsistent datatypes: expected TIMESTAMP got JSON\n\nhttps://docs.oracle.com/error-help/db/ora-00932/"
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToEnum_Function_1__Boolean_1_",
-    "expectedError" : "\"Execution error message mismatch.\nThe actual message was \"No error was thrown\"\nwhere the expected message was:\"Month is not managed yet!\"\""
+    "expectedError" : "Execution error message mismatch.\nThe actual message was \"The enum value '\"January\"' can't be found in the enumeration meta::pure::functions::date::Month\"\nwhere the expected message was:\"Month is not managed yet!\""
   }, {
     "test" : "meta::pure::functions::variant::convert::tests::to::testToFloatFromInteger_Function_1__Boolean_1_",
     "expectedError" : "java.sql.SQLSyntaxErrorException: ORA-00905: missing keyword\n\nhttps://docs.oracle.com/error-help/db/ora-00905/"

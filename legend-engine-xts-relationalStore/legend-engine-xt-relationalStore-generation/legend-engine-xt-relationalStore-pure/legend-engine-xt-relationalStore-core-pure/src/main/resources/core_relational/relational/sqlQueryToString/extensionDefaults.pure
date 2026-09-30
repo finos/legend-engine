@@ -200,6 +200,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('cast',                   $allStates,            ^ToSql(format='cast(%s as %s)')),
     dynaFnToSql('variantTo',              $allStates,            ^ToSql(format='cast(%s as %s)')),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='cbrt(%s)')),
+    dynaFnToSql('booleanColumn',          $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='chr(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -749,7 +750,17 @@ function <<doc.deprecated>> meta::relational::functions::sqlQueryToString::defau
    ])
 }
 
+function meta::relational::functions::sqlQueryToString::default::booleanColumnAsString(column:String[1]):String[1]
+{
+   'case when ' + $column + ' is null then null when ' + $column + ' = 1 then \'true\' else \'false\' end';
+}
+
 function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1]) : String[*]
+{
+   meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault($loadTableSQL, $dbConfig, {s:String[1] | $s});
+}
+
+function meta::relational::functions::sqlQueryToString::default::loadValuesToDbTableDefault(loadTableSQL:LoadTableSQL[1] , dbConfig: DbConfig[1], bit:meta::pure::metamodel::function::Function<{String[1]->String[1]}>[1]) : String[*]
 {
    if ($loadTableSQL.parsedData.values->isEmpty(),
     | [], 
@@ -759,7 +770,7 @@ function meta::relational::functions::sqlQueryToString::default::loadValuesToDbT
             +') '
             + 'values';
 
-      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type) + ')')
+      $loadTableSQL.parsedData.values->map(row |  '(' + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type, $bit) + ')')
         ->joinStrings($sql, ', ', ';');
    );
 }

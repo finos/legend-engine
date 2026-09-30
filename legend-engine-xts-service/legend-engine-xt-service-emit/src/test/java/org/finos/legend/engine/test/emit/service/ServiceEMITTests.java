@@ -32,8 +32,12 @@ import java.util.stream.Stream;
  * mappings it exercises — {@code relational-legacy-mapping-test} in the relational
  * suite.
  *
- * <p>All models are backed by an in-memory H2 relational mapping so the tests execute
- * rather than only compile. The module hosts a single subject area, so it keeps the
+ * <p>Services over a model-to-model mapping live here too, rather than beside the
+ * mappings in the M2M suite, whose module has no service test runner.
+ *
+ * <p>Every model's tests execute rather than only compile: most are backed by an
+ * in-memory H2 relational mapping, and the model-to-model ones read JSON test data
+ * through a model connection. The module hosts a single subject area, so it keeps the
  * conventional {@code emit-models/} root and needs no {@code includedRelativeSubpaths}
  * override in the server pom (see {@code docs/emit/emit.md} §5.4).
  */

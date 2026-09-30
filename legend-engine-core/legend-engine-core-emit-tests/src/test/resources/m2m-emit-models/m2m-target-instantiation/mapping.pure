@@ -23,6 +23,15 @@ Mapping demo::m2m::instantiation::CountryMapping
     details: $src->demo::m2m::instantiation::makeDetails()
   }
 
+  demo::m2m::instantiation::target::Details[detailsFromSource]: Pure
+  {
+    ~src demo::m2m::instantiation::source::S_Details
+
+    name: $src.detailsName,
+    capital: ^demo::m2m::instantiation::target::Capital(capitalName = $src.detailsCapitalName),
+    metadata: ^demo::m2m::instantiation::target::Metadata(source = 'details-source')
+  }
+
   testSuites:
   [
     targetInstantiationSuite:

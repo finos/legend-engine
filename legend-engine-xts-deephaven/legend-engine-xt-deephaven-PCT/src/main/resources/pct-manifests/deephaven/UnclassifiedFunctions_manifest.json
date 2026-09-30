@@ -142,6 +142,9 @@
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_CaseSensitive_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_\""
   }, {
+    "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Conjunction_Function_1__Boolean_1_",
+    "expectedError" : "\"function not supported yet: meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_\""
+  }, {
     "test" : "meta::pure::functions::string::tests::regexpLike::testRegexpLike_Function_1__Boolean_1_",
     "expectedError" : "\"function not supported yet: meta::pure::functions::string::regexpLike_String_1__String_1__RegexpParameter_$1_MANY$__Boolean_1_\""
   }, {

@@ -14,8 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.databricks;
 
-import org.finos.legend.pure.m3.exception.PureExecutionException;
-
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -38,11 +37,22 @@ import java.sql.Statement;
  * This proxy exploits that existing branch: it wraps a real JDBC {@link Connection} (and, recursively, every
  * {@link Statement}/{@link PreparedStatement}/{@link CallableStatement}/{@link ResultSet} it hands back) so that any
  * {@link SQLException} raised by an underlying call is cleaned via {@link DatabricksManager#cleanErrorMessage} and
- * rethrown as a {@link PureExecutionException} - already a {@link RuntimeException} - before the shared executor
- * code's generic catch block ever sees it. No shared executor class needs to change.
+ * rethrown as a {@code org.finos.legend.pure.m3.exception.PureExecutionException} - already a
+ * {@link RuntimeException} - before the shared executor code's generic catch block ever sees it. No shared executor
+ * class needs to change.
+ * <p>
+ * That exception type is constructed reflectively rather than via a compile-time dependency: this module
+ * ({@code legend-engine-xt-relationalStore-databricks-execution}) is also pulled in by
+ * {@code legend-engine-xt-relationalStore-executionPlan-connection-authentication-default}, which enforces (via the
+ * root POM's {@code executionEnforcement} rule) that no Pure-compiler dependency reaches its classpath. The real
+ * plan-execution path that actually triggers this proxy always runs with the full Pure runtime on the classpath, so
+ * the reflective lookup below succeeds there; the fallback exists only so a hypothetical Pure-free caller of this
+ * proxy still gets a clean {@link RuntimeException} instead of a {@link NoClassDefFoundError}.
  */
 public final class DatabricksErrorCleaningJdbcProxy implements InvocationHandler
 {
+    private static final String PURE_EXECUTION_EXCEPTION_CLASS_NAME = "org.finos.legend.pure.m3.exception.PureExecutionException";
+
     private final Object delegate;
     private final DatabricksManager databaseManager;
 
@@ -91,11 +101,25 @@ public final class DatabricksErrorCleaningJdbcProxy implements InvocationHandler
             Throwable cause = e.getCause();
             if (cause instanceof SQLException)
             {
-                throw new PureExecutionException(this.databaseManager.cleanErrorMessage(cause.getMessage()), cause);
+                throw newPureExecutionException(this.databaseManager.cleanErrorMessage(cause.getMessage()), cause);
             }
             throw cause;
         }
         return wrapIfJdbcHandle(result);
+    }
+
+    private static RuntimeException newPureExecutionException(String cleanedMessage, Throwable cause)
+    {
+        try
+        {
+            Class<?> pureExecutionExceptionClass = Class.forName(PURE_EXECUTION_EXCEPTION_CLASS_NAME);
+            Constructor<?> constructor = pureExecutionExceptionClass.getConstructor(String.class, Throwable.class);
+            return (RuntimeException) constructor.newInstance(cleanedMessage, cause);
+        }
+        catch (ReflectiveOperationException reflectionFailure)
+        {
+            return new RuntimeException(cleanedMessage, cause);
+        }
     }
 
     private Object wrapIfJdbcHandle(Object result)

@@ -113,8 +113,9 @@ function meta::relational::functions::typeInference::inferDynaFunctionReturnType
    let dfToReturnFunctionMap = meta::relational::functions::typeInference::getDynaFunctionTypeInferenceMap();
    let candidateMatchAndDTypePairs = $dfToReturnFunctionMap->get($d.name).values;
    let filteredMatchAndDTypePairs = $candidateMatchAndDTypePairs->filter(p | $p.first->eval($d.parameters));
-   if($failOnMatchFailure, | assert($filteredMatchAndDTypePairs->size() >= 1, 'Type inference not supported yet! Dyna function: ' + $d.name);, | []);
-   if($filteredMatchAndDTypePairs->size() >= 1, | $filteredMatchAndDTypePairs->at(0).second->eval($d.parameters), | []);
+   let result = if($filteredMatchAndDTypePairs->size() >= 1, | $filteredMatchAndDTypePairs->at(0).second->eval($d.parameters), | []);
+   if($failOnMatchFailure, | assert($result->isNotEmpty(), 'Type inference not supported yet! Dyna function: ' + $d.name);, | []);
+   $result;
 }
 
 function meta::relational::functions::typeInference::inferRelationalType(rop: RelationalOperationElement[1]):meta::relational::metamodel::datatype::DataType[0..1]
@@ -406,8 +407,7 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
                {params: RelationalOperationElement[*] | let size = ($params->size()-1)/2;
                                                         let range = range(0, $size->floor()*2, 2);
                                                         let types = $range->map(o | $params->at($o + 1)->inferRelationalType())->concatenate($params->at($params->size()-1)->inferRelationalType());
-                                                        assert($types->isSafeTypePossible(), 'Type inference not supported yet! Dyna function: case');
-                                                        $types->getSafeType();}
+                                                        if($types->isSafeTypePossible(), | $types->getSafeType(), | []);}
             )
          ])
       ),

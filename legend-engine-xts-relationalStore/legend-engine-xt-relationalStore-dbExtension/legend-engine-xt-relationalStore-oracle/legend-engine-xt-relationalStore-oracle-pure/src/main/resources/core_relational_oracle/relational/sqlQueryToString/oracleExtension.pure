@@ -193,6 +193,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='%s', transform={p:String[3] | $p->at(0) + ' + INTERVAL \'' + $p->at(1) + '\' ' + $p->at(2)->mapToDBUnitType() + '(' + $p->at(1)->toString()->length()->toString() + ')'})),
+    dynaFnToSql('booleanColumn',          $allStates,            ^ToSql(format='%s', transform={p:String[1] | $p->booleanColumnAsString()})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, true)})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='%s', transform={p:String[1] | convertBoolAndOrToCaseStatement($p, false)})),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='power(%s,1/3)')),
@@ -340,8 +341,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
 function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::processSelectSQLQueryForOracle(s:SelectSQLQuery[1], dbConfig : DbConfig[1], format:Format[1], config:Config[1], isSubSelect : Boolean[1], extensions:Extension[*]):String[1]
 {
   assertEmpty($s.pivot, 'pivot is not supported');
-  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
-  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let opStr = if($s.filteringOperation->isEmpty(), |'', |$s.filteringOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
+  let havingStr = if($s.havingOperation->isEmpty(), |'', |$s.havingOperation->map(s|$s->wrapAsBooleanOperation($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> '));
 
   $format.separator + 'select ' + if($s.distinct == true,|'distinct ',|'') +
   processSelectColumnsOracle($s.columns, $dbConfig, $format->indent(), ^Config(), ',', false, $extensions) +
@@ -467,7 +468,7 @@ function meta::relational::functions::sqlQueryToString::oracle::translateCreateT
   '    EXECUTE IMMEDIATE \'' + 'Create Table '+ $tableName +
       + '('
       + $t.columns->cast(@meta::relational::metamodel::Column)
-         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextDefault($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' ))
+         ->map(c | $c.name->processColumnName($dbConfig) + ' ' +  getColumnTypeSqlTextForOracle($c.type) + if($c.nullable->isEmpty() || $applyConstraints == false, | '', | if($c.nullable == true , | ' NULL', | ' NOT NULL' ))
                     + if ($t.primaryKey->isEmpty() || $applyConstraints == false || !$c->in($t.primaryKey), | '', | ' PRIMARY KEY')
          )
         ->joinStrings(',')
@@ -483,9 +484,17 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::oracl
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             +') '
             + 'values ('
-            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+            + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type, meta::relational::functions::database::testDataSQLgeneration::bitAsNumber_String_1__String_1_)
             + ')';
    );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::oracle::getColumnTypeSqlTextForOracle(columnType:meta::relational::metamodel::datatype::DataType[1]):String[1]
+{
+   $columnType->match([
+      b : meta::relational::metamodel::datatype::Bit[1] | 'NUMBER(1)',
+      a : Any[*] | getColumnTypeSqlTextDefault($columnType)
+   ])
 }
 
 // Oracle has no ~ operator; a capturing group is used because Oracle's engine rejects (?:...).
