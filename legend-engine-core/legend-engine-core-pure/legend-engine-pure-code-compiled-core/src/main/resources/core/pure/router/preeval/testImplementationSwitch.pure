@@ -426,3 +426,26 @@ function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch:
     retyped(1, ^GenericType(rawType = List, typeArguments = ^GenericType(rawType = Integer))),
     retyped(1, ^GenericType(rawType = List, typeArguments = ^GenericType(rawType = String))));
 }
+
+function <<access.private>> meta::pure::router::preeval::tests::implementationSwitch::runtimeRelation(rows:Integer[1]):Any[1]
+{
+  #TDS
+    a, b
+    1, x
+    2, y
+  #->meta::pure::functions::relation::filter(r | $r.a > 0)->meta::pure::functions::relation::limit($rows);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowAcceptsEqualRuntimeRelations():Boolean[1]
+{
+  assertSamePrevalResult(
+      ^PrevalWrapper<Any>(value = heldValue(runtimeRelation(1)), canPreval = true, openVars = [], modified = true),
+      ^PrevalWrapper<Any>(value = heldValue(runtimeRelation(1)), canPreval = true, openVars = [], modified = true),
+      newMap([]->cast(@Pair<String, List<Any>>)),
+      []);
+}
+
+function <<test.Test>> meta::pure::router::preeval::tests::implementationSwitch::testShadowRejectsRuntimeRelationsWithDifferentRowCounts():Boolean[1]
+{
+  assertShadowRejects(runtimeRelation(1), runtimeRelation(2));
+}
