@@ -20,6 +20,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 public class TestCaseLoader
@@ -28,11 +30,22 @@ public class TestCaseLoader
 
     public static TestFile load(String resourcePath)
     {
-        try (InputStream is = TestCaseLoader.class.getClassLoader().getResourceAsStream(resourcePath))
+        return load(resourcePath, null);
+    }
+
+    /**
+     * Reads one corpus file, from {@code baseDir} when given and from the classpath otherwise.
+     * {@code baseDir} is the resource root (the directory containing {@code parity-tests/}), so the
+     * same relative paths work either way and there is only one list of corpus files to maintain.
+     */
+    public static TestFile load(String resourcePath, Path baseDir)
+    {
+        try (InputStream is = open(resourcePath, baseDir))
         {
             if (is == null)
             {
-                throw new RuntimeException("Resource not found: " + resourcePath);
+                throw new RuntimeException("Resource not found: " + resourcePath
+                        + (baseDir == null ? "" : " (under " + baseDir + ")"));
             }
             TestFile file = YAML_MAPPER.readValue(is, TestFile.class);
             validate(file, resourcePath);
@@ -42,6 +55,16 @@ public class TestCaseLoader
         {
             throw new RuntimeException("Failed to load test file: " + resourcePath, e);
         }
+    }
+
+    private static InputStream open(String resourcePath, Path baseDir) throws IOException
+    {
+        if (baseDir == null)
+        {
+            return TestCaseLoader.class.getClassLoader().getResourceAsStream(resourcePath);
+        }
+        Path file = baseDir.resolve(resourcePath);
+        return Files.isRegularFile(file) ? Files.newInputStream(file) : null;
     }
 
     /**

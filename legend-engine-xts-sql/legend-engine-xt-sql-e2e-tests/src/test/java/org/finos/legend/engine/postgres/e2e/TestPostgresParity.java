@@ -306,7 +306,7 @@ public class TestPostgresParity
         if (Boolean.getBoolean("parity.updateStatus"))
         {
             // the corpus lives in src/main/resources so the interpreted dev-loop harness can
-            // depend on it; see docs/engineering/guides/sql-e2e-interpreted-devloop.md
+            // depend on it; see this module's README
             File resourceDir = new File("src/main/resources");
             if (!resourceDir.isDirectory())
             {

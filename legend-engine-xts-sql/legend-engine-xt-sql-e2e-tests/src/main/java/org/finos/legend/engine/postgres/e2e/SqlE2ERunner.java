@@ -22,6 +22,10 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -52,6 +56,14 @@ public final class SqlE2ERunner
     private static final Logger LOGGER = LoggerFactory.getLogger(SqlE2ERunner.class);
 
     private static final String IMAGE = "postgres:16-alpine";
+
+    /**
+     * Resource root to read the corpus from instead of the classpath, making YAML edits live for a
+     * long-running session (the Pure LSP dev loop). Unset in CI, where the packaged corpus is the
+     * right one and cannot change mid-run.
+     */
+    private static final String CORPUS_DIR_PROPERTY = "sql.e2e.corpus.dir";
+    private static final long CORPUS_CHECK_INTERVAL_MS = 1000L;
 
     public static final String[] TEST_FILES = {
             "parity-tests/schema.yaml",
@@ -134,10 +146,15 @@ public final class SqlE2ERunner
     private final PostgreSQLContainer<?> container;
     private final PGSimpleDataSource dataSource;
     private final DirectPostgresRunner reference;
-    private final Map<String, Entry> corpus = new LinkedHashMap<>();
-    private final Set<String> knownTables = new HashSet<>();
+    // Swapped wholesale on reload, never mutated in place: executions run concurrently, and
+    // clearing-then-repopulating a live map would let a reader observe a half-empty corpus.
+    private volatile Map<String, Entry> corpus = new LinkedHashMap<>();
+    private volatile Set<String> knownTables = new HashSet<>();
     private final Map<String, ResultMatrix> referenceCache = new ConcurrentHashMap<>();
     private final Map<String, String> referenceErrorCache = new ConcurrentHashMap<>();
+    private final Path corpusDir = resolveCorpusDir();
+    private volatile long lastCorpusCheckMs;
+    private volatile long loadedCorpusStamp;
     private final String host;
     private final int port;
     private final String database;
@@ -228,31 +245,14 @@ public final class SqlE2ERunner
         {
             throw new RuntimeException("Failed to initialise SQL e2e harness", e);
         }
-        LOGGER.info("SQL e2e harness ready with {} cases in {} ms", this.corpus.size(), System.currentTimeMillis() - start);
+        LOGGER.info("SQL e2e harness ready with {} cases in {} ms (corpus: {})", this.corpus.size(),
+                System.currentTimeMillis() - start,
+                this.corpusDir == null ? "classpath, fixed for this JVM" : this.corpusDir + ", reloaded on edit");
     }
 
     private void loadCorpusAndSeed() throws Exception
     {
-        for (String testFile : TEST_FILES)
-        {
-            TestCaseLoader.TestFile file = TestCaseLoader.load(testFile);
-            if (file.schema != null)
-            {
-                new SchemaManager(this.dataSource).createSchema(file.schema);
-                for (TestCaseLoader.TableDef table : file.schema.tables)
-                {
-                    this.knownTables.add(table.name.toLowerCase());
-                }
-            }
-            if (file.tests != null)
-            {
-                String category = testFile.replace("parity-tests/", "").replace(".yaml", "");
-                for (TestCaseLoader.TestCase tc : file.tests)
-                {
-                    this.corpus.put(tc.id, new Entry(tc, category));
-                }
-            }
-        }
+        readCorpus(true);
         try (Connection conn = this.dataSource.getConnection();
              Statement stmt = conn.createStatement())
         {
@@ -262,11 +262,150 @@ public final class SqlE2ERunner
     }
 
     /**
+     * Parses every corpus file and publishes a fresh {@code corpus}/{@code knownTables} pair.
+     * {@code createSchemas} is true only on first load: re-running {@link SchemaManager} would drop
+     * and recreate tables in the live Postgres, so a reload picks up case edits but NOT schema
+     * edits - changing {@code schema.yaml} still needs a restart.
+     */
+    private void readCorpus(boolean createSchemas) throws Exception
+    {
+        Map<String, Entry> nextCorpus = new LinkedHashMap<>();
+        Set<String> nextTables = new HashSet<>();
+        for (String testFile : TEST_FILES)
+        {
+            TestCaseLoader.TestFile file = TestCaseLoader.load(testFile, this.corpusDir);
+            if (file.schema != null)
+            {
+                if (createSchemas)
+                {
+                    new SchemaManager(this.dataSource).createSchema(file.schema);
+                }
+                for (TestCaseLoader.TableDef table : file.schema.tables)
+                {
+                    nextTables.add(table.name.toLowerCase());
+                }
+            }
+            if (file.tests != null)
+            {
+                String category = testFile.replace("parity-tests/", "").replace(".yaml", "");
+                for (TestCaseLoader.TestCase tc : file.tests)
+                {
+                    nextCorpus.put(tc.id, new Entry(tc, category));
+                }
+            }
+        }
+        this.corpus = nextCorpus;
+        this.knownTables = nextTables;
+    }
+
+    /**
+     * Picks up corpus edits without a restart, when {@code -Dsql.e2e.corpus.dir} points at a source
+     * tree. A classpath-loaded corpus lives in a jar that cannot change under a running JVM, so it
+     * is read once and this is a no-op.
+     * <p>
+     * Gated on newest-mtime rather than reloading unconditionally: a full parse is ~80ms, which is
+     * negligible per batch but not per case, and {@code executeSQLE2ETest} resolves one case at a
+     * time. The time check keeps the stat storm off the hot path in between.
+     * <p>
+     * Reference caches are deliberately left alone - they are keyed by SQL text, so an edited case
+     * misses naturally and re-executes, while entries for removed cases are simply never looked up.
+     */
+    private void refreshCorpusIfChanged()
+    {
+        if (this.corpusDir == null)
+        {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (now - this.lastCorpusCheckMs < CORPUS_CHECK_INTERVAL_MS)
+        {
+            return;
+        }
+        synchronized (this)
+        {
+            if (now - this.lastCorpusCheckMs < CORPUS_CHECK_INTERVAL_MS)
+            {
+                return;
+            }
+            this.lastCorpusCheckMs = now;
+            long stamp = newestCorpusMtime();
+            if (stamp == this.loadedCorpusStamp)
+            {
+                return;
+            }
+            try
+            {
+                readCorpus(false);
+                this.loadedCorpusStamp = stamp;
+                LOGGER.info("SQL e2e corpus reloaded from {} ({} cases)", this.corpusDir, this.corpus.size());
+            }
+            catch (Exception e)
+            {
+                // Keep serving the last good corpus: a half-saved YAML edit should surface as a
+                // logged warning on the next call, not tear down a running dev-loop session.
+                LOGGER.warn("SQL e2e corpus reload failed, keeping the previously loaded corpus", e);
+            }
+        }
+    }
+
+    private long newestCorpusMtime()
+    {
+        long newest = 0L;
+        for (String testFile : TEST_FILES)
+        {
+            try
+            {
+                Path p = this.corpusDir.resolve(testFile);
+                if (Files.isRegularFile(p))
+                {
+                    newest = Math.max(newest, Files.getLastModifiedTime(p).toMillis());
+                }
+            }
+            catch (IOException e)
+            {
+                LOGGER.debug("Could not stat corpus file {}", testFile, e);
+            }
+        }
+        return newest;
+    }
+
+    /**
+     * Resolves {@code -Dsql.e2e.corpus.dir} to the resource root holding {@code parity-tests/}.
+     * Returns null (meaning "read from the classpath") when unset or when it does not point at a
+     * usable directory - a bad path degrades to the packaged corpus with a warning rather than
+     * failing the session.
+     */
+    private static Path resolveCorpusDir()
+    {
+        String configured = System.getProperty(CORPUS_DIR_PROPERTY);
+        if (configured == null || configured.trim().isEmpty())
+        {
+            return null;
+        }
+        Path dir = Paths.get(configured.trim());
+        if (!Files.isDirectory(dir))
+        {
+            LOGGER.warn("{}={} is not a directory; reading the corpus from the classpath instead",
+                    CORPUS_DIR_PROPERTY, configured);
+            return null;
+        }
+        if (!Files.isDirectory(dir.resolve("parity-tests")))
+        {
+            LOGGER.warn("{}={} has no parity-tests/ subdirectory - it should be the resource root, "
+                    + "not the corpus directory itself; reading from the classpath instead",
+                    CORPUS_DIR_PROPERTY, configured);
+            return null;
+        }
+        return dir;
+    }
+
+    /**
      * Resolve a filter to matching test ids. A filter is an exact id, an exact category
      * ({@code functions/math_functions}), a prefix ending in {@code *}, or empty for everything.
      */
     public List<String> listIds(String filter)
     {
+        refreshCorpusIfChanged();
         List<String> out = new ArrayList<>();
         String f = filter == null ? "" : filter.trim();
         for (Map.Entry<String, Entry> e : this.corpus.entrySet())
@@ -303,6 +442,7 @@ public final class SqlE2ERunner
      */
     public CaseRef resolveCaseRef(String corpusId, String path)
     {
+        refreshCorpusIfChanged();
         Entry entry = this.corpus.get(corpusId);
         if (entry == null)
         {
@@ -512,6 +652,7 @@ public final class SqlE2ERunner
 
     public List<String> categories()
     {
+        refreshCorpusIfChanged();
         Set<String> out = new java.util.LinkedHashSet<>();
         for (Entry e : this.corpus.values())
         {

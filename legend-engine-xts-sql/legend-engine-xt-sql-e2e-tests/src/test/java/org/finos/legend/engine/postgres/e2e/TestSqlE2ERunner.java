@@ -132,4 +132,38 @@ public class TestSqlE2ERunner
         Assertions.assertNotNull(diff, "an empty actual result must not match the seeded persons table");
         Assertions.assertTrue(diff.toLowerCase().contains("row count"), diff);
     }
+
+    @Test
+    public void corpusDirUnsetMeansClasspathAndAFixedCorpus()
+    {
+        // The default: no property, corpus comes from the jar and cannot change under the JVM.
+        Assertions.assertNull(System.getProperty("sql.e2e.corpus.dir"),
+                "this test asserts the default; something set the property");
+        Assertions.assertTrue(SqlE2ERunner.get().listIds("").size() > 1000);
+    }
+
+    @Test
+    public void loadsCorpusFromADirectoryWhenGivenOne() throws Exception
+    {
+        // Same relative paths as the classpath form - sql.e2e.corpus.dir is the resource ROOT, the
+        // directory holding parity-tests/, so TEST_FILES needs no second spelling.
+        java.nio.file.Path root = java.nio.file.Paths.get("src/main/resources");
+        Assertions.assertTrue(java.nio.file.Files.isDirectory(root.resolve("parity-tests")),
+                "expected to run from the module dir; got " + root.toAbsolutePath());
+
+        TestCaseLoader.TestFile fromDir = TestCaseLoader.load("parity-tests/smoke_tests.yaml", root);
+        TestCaseLoader.TestFile fromCp = TestCaseLoader.load("parity-tests/smoke_tests.yaml");
+        Assertions.assertEquals(fromCp.tests.size(), fromDir.tests.size());
+        Assertions.assertEquals(fromCp.tests.get(0).id, fromDir.tests.get(0).id);
+    }
+
+    @Test
+    public void aMissingFileUnderTheCorpusDirIsReportedWithThatDir()
+    {
+        java.nio.file.Path root = java.nio.file.Paths.get("src/main/resources");
+        RuntimeException e = Assertions.assertThrows(RuntimeException.class,
+                () -> TestCaseLoader.load("parity-tests/no_such_file.yaml", root));
+        Assertions.assertTrue(e.getMessage().contains("no_such_file.yaml"), e.getMessage());
+        Assertions.assertTrue(e.getMessage().contains("src/main/resources"), e.getMessage());
+    }
 }
