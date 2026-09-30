@@ -82,11 +82,16 @@ public class ResultComparator
             return false;
         }
 
+        // Canonicalise temporal values to epoch millis before the Number branch below: the JDBC
+        // reference side yields java.sql.Date/Timestamp, Legend's TDS JSON yields epoch-millis Long.
+        Object e = toEpochMillisIfTemporal(expected);
+        Object a = toEpochMillisIfTemporal(actual);
+
         // Numeric comparison with epsilon for floating point
-        if (expected instanceof Number && actual instanceof Number)
+        if (e instanceof Number && a instanceof Number)
         {
-            double ev = ((Number) expected).doubleValue();
-            double av = ((Number) actual).doubleValue();
+            double ev = ((Number) e).doubleValue();
+            double av = ((Number) a).doubleValue();
             if (Double.isNaN(ev) && Double.isNaN(av))
             {
                 return true;
@@ -96,12 +101,12 @@ public class ResultComparator
                 return ev == av;
             }
             // For BigDecimal, compare with scale awareness
-            if (expected instanceof BigDecimal && actual instanceof BigDecimal)
+            if (e instanceof BigDecimal && a instanceof BigDecimal)
             {
-                return ((BigDecimal) expected).compareTo((BigDecimal) actual) == 0;
+                return ((BigDecimal) e).compareTo((BigDecimal) a) == 0;
             }
             // Float/double: relative + absolute epsilon comparison
-            if (expected instanceof Float || expected instanceof Double || actual instanceof Float || actual instanceof Double)
+            if (e instanceof Float || e instanceof Double || a instanceof Float || a instanceof Double)
             {
                 double diff = Math.abs(ev - av);
                 double maxAbs = Math.max(Math.abs(ev), Math.abs(av));
@@ -112,13 +117,42 @@ public class ResultComparator
         }
 
         // Boolean comparison
-        if (expected instanceof Boolean && actual instanceof Boolean)
+        if (e instanceof Boolean && a instanceof Boolean)
         {
-            return expected.equals(actual);
+            return e.equals(a);
         }
 
         // Default: string comparison
-        return expected.toString().equals(actual.toString());
+        return e.toString().equals(a.toString());
+    }
+
+    /**
+     * java.sql.Date/Time/Timestamp all extend java.util.Date, so this covers every JDBC temporal
+     * type in one check.
+     */
+    private static Object toEpochMillisIfTemporal(Object value)
+    {
+        if (value instanceof java.util.Date)
+        {
+            return ((java.util.Date) value).getTime();
+        }
+        if (value instanceof java.time.Instant)
+        {
+            return ((java.time.Instant) value).toEpochMilli();
+        }
+        if (value instanceof java.time.LocalDate)
+        {
+            return ((java.time.LocalDate) value).atStartOfDay(java.time.ZoneOffset.UTC).toInstant().toEpochMilli();
+        }
+        if (value instanceof java.time.LocalDateTime)
+        {
+            return ((java.time.LocalDateTime) value).toInstant(java.time.ZoneOffset.UTC).toEpochMilli();
+        }
+        if (value instanceof java.time.OffsetDateTime)
+        {
+            return ((java.time.OffsetDateTime) value).toInstant().toEpochMilli();
+        }
+        return value;
     }
 
     public static class ComparisonResult

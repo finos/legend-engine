@@ -1,0 +1,676 @@
+// Copyright 2026 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+// Interpreted-mode dev loop for the SQL e2e parity corpus: SQL parse, routing, plan generation and
+// dialect SQL emission run here in Pure so .pure edits are picked up by a warm LSP session without a
+// rebuild. Corpus access and reference Postgres execution stay in Java. This is a dev-loop tool, not
+// a CI signal - TestPostgresParity covers the real pg-wire path.
+
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::metamodel::*;
+import meta::external::query::sql::e2e::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::pure::extension::*;
+import meta::pure::profiles::*;
+
+// Both is only meaningful for ad hoc SQL execution (executeAdhocSQL): run against both paths at once.
+// executeSQLE2ETest and runOneCase always take a single TDS or Relation path.
+Enum meta::external::query::sql::e2e::SqlE2EPath
+{
+  TDS,
+  Relation,
+  Both
+}
+
+// A corpus case crossed with one execution path, resolved down to what runOneCase needs to run it.
+Class meta::external::query::sql::e2e::SqlE2ECaseRef
+{
+  corpusId: String[1];
+  path: SqlE2EPath[1];
+  sql: String[0..1];            // rewritten for this path; empty if skip/bugReason/rewriteError is set
+  hasOrderBy: Boolean[1];
+  skip: String[0..1];
+  bugReason: String[0..1];      // Postgres rejected the reference SQL - a corpus bug, not a Legend one
+  rewriteError: String[0..1];
+  expectedStatus: String[0..1]; // the recorded baseline for this path
+}
+
+function meta::external::query::sql::e2e::displayId(ref:SqlE2ECaseRef[1]):String[1]
+{
+  $ref.corpusId + '|' + $ref.path.name
+}
+
+Class meta::external::query::sql::e2e::SqlE2EConnection
+{
+  host: String[1];
+  port: Integer[1];
+  databaseName: String[1];
+  user: String[1];
+  password: String[1];
+}
+
+// Not meta::pure::test::surveyor's types: a corpus case isn't a Pure test function, and BUG (the
+// reference SQL itself was rejected by Postgres) has no surveyor equivalent.
+Enum meta::external::query::sql::e2e::SqlE2ETestStatus
+{
+  PASS,
+  FAIL,
+  ERROR,
+  SKIP,
+  BUG
+}
+
+Class meta::external::query::sql::e2e::SqlE2ETestResult
+{
+  id: String[1];
+  status: SqlE2ETestStatus[1];
+  elapsed: Integer[1];
+  message: String[0..1];
+}
+
+Class meta::external::query::sql::e2e::SqlE2ETestReport
+{
+  results: SqlE2ETestResult[*];
+  totalElapsed: Integer[1];
+  passCount: Integer[1];
+  failCount: Integer[1];
+  errorCount: Integer[1];
+  skipCount: Integer[1];
+  bugCount: Integer[1];
+}
+
+// Pairs a fresh result with the corpus's recorded baseline, for divergence detection.
+Class meta::external::query::sql::e2e::SqlE2EOutcome
+{
+  id: String[1];
+  expected: String[0..1];
+  result: SqlE2ETestResult[1];
+}
+
+// Ad hoc SQL has no corpus baseline to classify against, only "did each side execute, and did they
+// agree" - hence its own shape rather than reusing SqlE2ETestResult.
+Class meta::external::query::sql::e2e::SqlE2EAdhocResult
+{
+  path: SqlE2EPath[1];
+  legendResultJson: String[0..1];
+  legendError: String[0..1];
+  referenceRows: String[0..1];
+  referenceError: String[0..1];
+  matched: Boolean[0..1];
+}
+
+// Every corpus case matching filter, crossed with both execution paths and resolved for each.
+native function meta::external::query::sql::e2e::resolveCaseRefs(filter:String[1]):SqlE2ECaseRef[*];
+
+// Runs and classifies one (case id, path) pair. Pure has no try/catch, so trapping and timing the
+// run happens here rather than in Pure - a single failing case must not abort a whole category run.
+native function meta::external::query::sql::e2e::executeSQLE2ETest(caseId:String[1], path:SqlE2EPath[1]):SqlE2ETestResult[1];
+
+// Runs sql against Postgres and against Legend (path Both runs both paths), trapping each side
+// independently so a failure on one does not hide whether the other executed.
+native function meta::external::query::sql::e2e::executeAdhocSQL(sql:String[1], path:SqlE2EPath[1]):SqlE2EAdhocResult[*];
+
+function meta::external::query::sql::e2e::runtimeFor(conn:SqlE2EConnection[1]):meta::core::runtime::Runtime[1]
+{
+  ^meta::core::runtime::EngineRuntime(
+    connectionStores = ^meta::core::runtime::ConnectionStore(
+      element = e2e::TestDB,
+      connection = ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
+        type = meta::relational::runtime::DatabaseType.Postgres,
+        datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::StaticDatasourceSpecification(
+          host = $conn.host,
+          port = $conn.port,
+          databaseName = $conn.databaseName
+        ),
+        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::UserNamePasswordAuthenticationStrategy(
+          baseVaultReference = 'e2e.',
+          userNameVaultReference = 'user',
+          passwordVaultReference = 'password'
+        )
+      )
+    )
+  )
+}
+
+// One SQLSource per zero-arg accessor function in the model, mirroring what E2eTestSourceProvider
+// resolves on the Java side. Parameterised accessors are skipped: no corpus case uses them.
+function meta::external::query::sql::e2e::sqlSources(prefix:String[1], conn:SqlE2EConnection[1]):SQLSource[*]
+{
+  let rt = meta::external::query::sql::e2e::runtimeFor($conn);
+  'e2e'->pathToElement()->cast(@Package).children
+    ->filter(c | $c->instanceOf(ConcreteFunctionDefinition))
+    ->cast(@ConcreteFunctionDefinition<Any>)
+    ->filter(f | $f.functionName->toOne()->startsWith($prefix) && $f->functionType().parameters->isEmpty())
+    ->map(f |
+      ^SQLSource(
+        type = 'func',
+        func = $f,
+        mapping = e2e::TestMapping,
+        runtime = $rt,
+        key = [^SQLSourceArgument(index = 0, value = 'e2e::' + $f.functionName->toOne())]
+      )
+    );
+}
+
+// Parses, plans and executes sql against Legend, returning the raw executePlanAsJSON TDS payload.
+function meta::external::query::sql::e2e::executeLegend(sql:String[1], prefix:String[1], conn:SqlE2EConnection[1], ext:Extension[*]):String[1]
+{
+  let query = meta::external::store::relational::postgresSql::parser::parseSqlStatement($sql)->cast(@Query);
+  let res = getPlanResultFromSQL(meta::external::query::sql::e2e::sqlSources($prefix, $conn), $query, $ext);
+  let plan = if($res.plan->isNotEmpty(),
+               | $res.plan->toOne(),
+               | meta::pure::executionPlan::executionPlan(
+                   $res.lambda->toOne(),
+                   if($res.mapping->isNotEmpty(), | $res.mapping->toOne(), | meta::external::query::sql::transformation::compile::utils::emptyMapping()),
+                   $res.runtime->toOne(),
+                   ^meta::pure::runtime::ExecutionContext(),
+                   $ext,
+                   noDebug()
+                 )
+             );
+  let bound = $plan->meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions('LegendJava');
+  let protocolPlan = $bound->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformPlan($ext);
+  let planAsJson = $protocolPlan->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
+  meta::legend::executePlanAsJSON($planAsJson, []);
+}
+
+// Invoked by executeAdhocSQL with SQL already FROM-rewritten (the rewrite itself is plain text
+// manipulation, done in Java rather than here).
+function meta::external::query::sql::e2e::runOneAdhocLegend(rewrittenSql:String[1], prefix:String[1], conn:SqlE2EConnection[1]):String[1]
+{
+  meta::external::query::sql::e2e::executeLegend($rewrittenSql, $prefix, $conn, meta::relational::extension::relationalExtensions())
+}
+
+// Invoked by executeSQLE2ETest only when ref has real SQL to run (skip/bug/rewrite-error cases are
+// classified in Java without reaching here).
+function meta::external::query::sql::e2e::runOneCase(ref:SqlE2ECaseRef[1], conn:SqlE2EConnection[1]):String[1]
+{
+  assert($ref.path != SqlE2EPath.Both, | 'runOneCase requires a single path (TDS or Relation), got Both');
+  let prefix = if($ref.path == SqlE2EPath.TDS, | 'tds_', | 'rel_');
+  let ext = meta::relational::extension::relationalExtensions();
+  meta::external::query::sql::e2e::executeLegend($ref.sql->toOne(), $prefix, $conn, $ext);
+}
+
+function meta::external::query::sql::e2e::runOutcomeFor(ref:SqlE2ECaseRef[1]):SqlE2EOutcome[1]
+{
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($ref.corpusId, $ref.path);
+  ^SqlE2EOutcome(id = $ref->meta::external::query::sql::e2e::displayId(), expected = $ref.expectedStatus, result = $r);
+}
+
+function meta::external::query::sql::e2e::runQuiet(filter:String[1]):SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::resolveCaseRefs($filter)->map(ref | meta::external::query::sql::e2e::runOutcomeFor($ref))
+}
+
+function meta::external::query::sql::e2e::statusLabel(o:SqlE2EOutcome[1]):String[1]
+{
+  $o.result.status.name
+}
+
+function meta::external::query::sql::e2e::run(filter:String[1]):SqlE2EOutcome[*]
+{
+  let outcomes = meta::external::query::sql::e2e::runQuiet($filter);
+  $outcomes->map(o | println(meta::external::query::sql::e2e::statusLabel($o)
+                             + ' ' + $o.id
+                             + if($o.expected->isNotEmpty() && $o.expected->toOne() != meta::external::query::sql::e2e::statusLabel($o), | ' (baseline ' + $o.expected->toOne() + ')', | '')
+                             + if($o.result.message->isNotEmpty(), | '\n    ' + $o.result.message->toOne(), | '')));
+  let pass = $outcomes->filter(o | $o.result.status == SqlE2ETestStatus.PASS)->size();
+  println($pass->toString() + '/' + $outcomes->size()->toString() + ' matched reference Postgres');
+  $outcomes;
+}
+
+// A regression: the corpus baseline says PASS but this run did not reproduce it.
+function meta::external::query::sql::e2e::isDivergence(o:SqlE2EOutcome[1]):Boolean[1]
+{
+  $o.expected->isNotEmpty() && $o.expected->toOne() == 'PASS' && $o.result.status != SqlE2ETestStatus.PASS
+}
+
+function meta::external::query::sql::e2e::firstLine(s:String[1]):String[1]
+{
+  $s->split('\n')->at(0)
+}
+
+// Compact single-string report: one summary line, then one line per divergence.
+function meta::external::query::sql::e2e::divergenceReport(filter:String[1]):String[1]
+{
+  let outcomes = meta::external::query::sql::e2e::runQuiet($filter);
+  let divergent = $outcomes->filter(o | $o->meta::external::query::sql::e2e::isDivergence());
+  let summary = 'SUMMARY filter=' + $filter
+              + ' total=' + $outcomes->size()->toString()
+              + ' pass=' + $outcomes->filter(o | $o.result.status == SqlE2ETestStatus.PASS)->size()->toString()
+              + ' divergent=' + $divergent->size()->toString();
+  let lines = $divergent->map(o | 'DIVERGE ' + $o.id + '~|~' + meta::external::query::sql::e2e::statusLabel($o) + '~|~'
+                                 + if($o.result.message->isNotEmpty(), | $o.result.message->toOne()->meta::external::query::sql::e2e::firstLine(), | ''));
+  ([$summary]->concatenate($lines))->joinStrings('\n');
+}
+
+function meta::external::query::sql::e2e::executeSQLTests(refs:SqlE2ECaseRef[*]):SqlE2ETestReport[1]
+{
+  let results = $refs->map(ref | meta::external::query::sql::e2e::executeSQLE2ETest($ref.corpusId, $ref.path));
+  meta::external::query::sql::e2e::buildTestReport($results);
+}
+
+function meta::external::query::sql::e2e::executeSQLTestCategory(category:String[1]):SqlE2ETestReport[1]
+{
+  meta::external::query::sql::e2e::executeSQLTests(meta::external::query::sql::e2e::resolveCaseRefs($category))
+}
+
+function meta::external::query::sql::e2e::buildTestReport(results:SqlE2ETestResult[*]):SqlE2ETestReport[1]
+{
+  ^SqlE2ETestReport(
+    results = $results,
+    totalElapsed = $results->map(r | $r.elapsed)->plus(),
+    passCount = $results->filter(r | $r.status == SqlE2ETestStatus.PASS)->size(),
+    failCount = $results->filter(r | $r.status == SqlE2ETestStatus.FAIL)->size(),
+    errorCount = $results->filter(r | $r.status == SqlE2ETestStatus.ERROR)->size(),
+    skipCount = $results->filter(r | $r.status == SqlE2ETestStatus.SKIP)->size(),
+    bugCount = $results->filter(r | $r.status == SqlE2ETestStatus.BUG)->size()
+  );
+}
+
+
+// ---------------------------------------------------------------------------------------------
+// Zero-arg entry points, one per corpus category, so `pure-lsp execute <path>` and
+// `pure-lsp execute-parallel` can drive them directly. Generated from SqlE2ERunner.TEST_FILES.
+// ---------------------------------------------------------------------------------------------
+
+function meta::external::query::sql::e2e::run::smoke_tests():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('smoke_tests')
+}
+
+function meta::external::query::sql::e2e::run::functions_math_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/math_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_string_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/string_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_binary_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/binary_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_pgcrypto_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/pgcrypto_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_pattern_matching():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/pattern_matching')
+}
+
+function meta::external::query::sql::e2e::run::functions_formatting_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/formatting_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_datetime_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/datetime_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_date_literals():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/date_literals')
+}
+
+function meta::external::query::sql::e2e::run::functions_conditional_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/conditional_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_json_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/json_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_array_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/array_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_aggregate_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/aggregate_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_window_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/window_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_network_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/network_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_system_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/system_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_sequence_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/sequence_functions')
+}
+
+function meta::external::query::sql::e2e::run::functions_set_returning_functions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('functions/set_returning_functions')
+}
+
+function meta::external::query::sql::e2e::run::operators_math_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/math_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_string_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/string_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_comparison_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/comparison_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_logical_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/logical_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_pattern_matching_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/pattern_matching_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_json_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/json_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_datetime_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/datetime_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_other_type_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/other_type_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_bitstring_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/bitstring_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_array_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/array_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_range_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/range_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_network_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/network_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_fts_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/fts_operators')
+}
+
+function meta::external::query::sql::e2e::run::operators_geometric_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('operators/geometric_operators')
+}
+
+function meta::external::query::sql::e2e::run::predicates_comparison_predicates():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('predicates/comparison_predicates')
+}
+
+function meta::external::query::sql::e2e::run::format_tokens_to_char_tokens():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('format_tokens/to_char_tokens')
+}
+
+function meta::external::query::sql::e2e::run::format_tokens_extract_fields():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('format_tokens/extract_fields')
+}
+
+function meta::external::query::sql::e2e::run::structural_joins():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/joins')
+}
+
+function meta::external::query::sql::e2e::run::structural_unions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/unions')
+}
+
+function meta::external::query::sql::e2e::run::structural_subqueries():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/subqueries')
+}
+
+function meta::external::query::sql::e2e::run::structural_ctes():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/ctes')
+}
+
+function meta::external::query::sql::e2e::run::structural_order_limit_offset():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/order_limit_offset')
+}
+
+function meta::external::query::sql::e2e::run::structural_group_by():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/group_by')
+}
+
+function meta::external::query::sql::e2e::run::structural_distinct():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/distinct')
+}
+
+function meta::external::query::sql::e2e::run::structural_null_semantics():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/null_semantics')
+}
+
+function meta::external::query::sql::e2e::run::structural_type_casting():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/type_casting')
+}
+
+function meta::external::query::sql::e2e::run::structural_case_expressions():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/case_expressions')
+}
+
+function meta::external::query::sql::e2e::run::structural_where_predicates():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/where_predicates')
+}
+
+function meta::external::query::sql::e2e::run::structural_aliases():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/aliases')
+}
+
+function meta::external::query::sql::e2e::run::structural_having():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/having')
+}
+
+function meta::external::query::sql::e2e::run::structural_lateral_joins():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/lateral_joins')
+}
+
+function meta::external::query::sql::e2e::run::structural_boolean_logic():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/boolean_logic')
+}
+
+function meta::external::query::sql::e2e::run::structural_select_star():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/select_star')
+}
+
+function meta::external::query::sql::e2e::run::structural_multiple_schemas():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/multiple_schemas')
+}
+
+function meta::external::query::sql::e2e::run::structural_json_operators():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/json_operators')
+}
+
+function meta::external::query::sql::e2e::run::structural_interval_arithmetic():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/interval_arithmetic')
+}
+
+function meta::external::query::sql::e2e::run::structural_column_resolution_across_renames():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/column_resolution_across_renames')
+}
+
+function meta::external::query::sql::e2e::run::structural_column_resolution_corpus_shapes():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/column_resolution_corpus_shapes')
+}
+
+function meta::external::query::sql::e2e::run::structural_grouping_sets():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/grouping_sets')
+}
+
+function meta::external::query::sql::e2e::run::structural_filter_clause():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/filter_clause')
+}
+
+function meta::external::query::sql::e2e::run::structural_within_group():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/within_group')
+}
+
+function meta::external::query::sql::e2e::run::structural_tablesample():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/tablesample')
+}
+
+function meta::external::query::sql::e2e::run::structural_fetch_with_ties():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/fetch_with_ties')
+}
+
+function meta::external::query::sql::e2e::run::structural_recursive_ctes():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/recursive_ctes')
+}
+
+function meta::external::query::sql::e2e::run::structural_values_clause():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('structural/values_clause')
+}
+
+function meta::external::query::sql::e2e::run::window_frames_frame_types():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('window_frames/frame_types')
+}
+
+function meta::external::query::sql::e2e::run::window_frames_partition_ordering():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('window_frames/partition_ordering')
+}
+
+function meta::external::query::sql::e2e::run::window_frames_frame_exclusion():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('window_frames/frame_exclusion')
+}
+
+function meta::external::query::sql::e2e::run::window_frames_named_windows():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('window_frames/named_windows')
+}
+
+function meta::external::query::sql::e2e::run::compositions_agg_window_mix():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('compositions/agg_window_mix')
+}
+
+function meta::external::query::sql::e2e::run::compositions_multi_join_agg():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('compositions/multi_join_agg')
+}
+
+function meta::external::query::sql::e2e::run::compositions_stress_queries():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('compositions/stress_queries')
+}
+
+function meta::external::query::sql::e2e::run::compositions_nested_subqueries():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('compositions/nested_subqueries')
+}
+
+function meta::external::query::sql::e2e::run::compositions_window_over_agg():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('compositions/window_over_agg')
+}
+
+function meta::external::query::sql::e2e::run::all():SqlE2EOutcome[*]
+{
+  meta::external::query::sql::e2e::run('')
+}
+
+function meta::external::query::sql::e2e::diagCase(caseId:String[1]):String[1]
+{
+  let rep = meta::external::query::sql::e2e::run($caseId)->map(o | 'STATUS=' + meta::external::query::sql::e2e::statusLabel($o) + ' ' + $o.id + if($o.result.message->isNotEmpty(), | '\n' + $o.result.message->toOne(), | ''))->joinStrings('\n---\n');
+  println($rep);
+  $rep;
+}
+
+// Ad hoc SQL diagnostic - no corpus entry required. path is 'TDS', 'Relation', or 'Both'.
+function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], path:SqlE2EPath[1]):String[1]
+{
+  let results = meta::external::query::sql::e2e::executeAdhocSQL($sql, $path);
+  let rep = $results->map(r | 'PATH=' + $r.path.name
+      + if($r.matched->isNotEmpty(), | ' matched=' + $r.matched->toOne()->toString(), | '')
+      + if($r.legendError->isNotEmpty(), | '\n  legendError: ' + $r.legendError->toOne(), | '\n  legend: ' + if($r.legendResultJson->isNotEmpty(), | $r.legendResultJson->toOne(), | '(none)'))
+      + if($r.referenceError->isNotEmpty(), | '\n  referenceError: ' + $r.referenceError->toOne(), | '\n  reference:\n' + if($r.referenceRows->isNotEmpty(), | $r.referenceRows->toOne(), | '(none)'))
+    )->joinStrings('\n---\n');
+  println($rep);
+  $rep;
+}
+
+// GENERATED-CASE-RUNNERS-START
+// GENERATED-CASE-RUNNERS-END

@@ -7,3 +7,4 @@
 - [Build discipline reminders](build_discipline.md) — `mvn clean` mandatory, `-T 4 -DskipTests`, `-am` for scoping, Testcontainers autostart, cloud-only adapters (Databricks/Snowflake) unverifiable locally, IntelliJ gotcha
 - [New-feature wiring recipes](feature_wiring_recipes.md) — minimal file sets to touch when adding a scalar vs aggregate vs window function vs new SQL construct vs new dialect, cross-referenced to docs/pct/wiring-howto.md
 - [Cursor remap & TDS result-type bugs](cursor_remap_and_tds_result_type.md) — pivot-after-concatenate: isolateTdsSelect findOneNode crash (fixed 2026-04-22), isResultColumnsDynamic false-negative post-isolation (open), SQLExecutionResult null-guard trap
+- [SQL e2e Relation-path divergences](sql_e2e_relation_path_divergences.md) — interpreted corpus runs mis-report ERROR-class failures: `pair`+generic-fn and `reactivate`/preeval are interpreter bugs, not SQL bugs

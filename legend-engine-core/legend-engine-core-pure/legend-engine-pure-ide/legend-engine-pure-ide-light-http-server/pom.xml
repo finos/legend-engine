@@ -474,6 +474,23 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!--
+          The SQL e2e interpreted dev loop runs its natives inside a Pure LSP/IDE session, and the
+          session's host classpath is `mvn dependency:build-classpath` on this module. Declaring
+          them here is what makes that discovery route pick them up, instead of each developer
+          hand-merging a classpath.
+        -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-e2e-pure</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-e2e-tests</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
     </dependencies>
 
     <profiles>

@@ -9,35 +9,35 @@ tests:
 
 # # (number of points / intersection point)
 - id: geo_hash__path_npoints
-  sql: SELECT # path '((1,1),(2,2),(3,1))' AS result FROM persons WHERE id = 1
+  sql: "SELECT # path '((1,1),(2,2),(3,1))' AS result FROM persons WHERE id = 1"
   operator: "#"
   signature: "#(-, path) → int4"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hash__polygon_npoints
-  sql: SELECT # polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1
+  sql: "SELECT # polygon '((0,0),(0,1),(1,1),(1,0))' AS result FROM persons WHERE id = 1"
   operator: "#"
   signature: "#(-, polygon) → int4"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hash__box_intersection
-  sql: SELECT box '(3,3),(1,1)' # box '(4,4),(2,2)' AS result FROM persons WHERE id = 1
+  sql: "SELECT box '(3,3),(1,1)' # box '(4,4),(2,2)' AS result FROM persons WHERE id = 1"
   operator: "#"
   signature: "#(box, box) → box"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hash__line_intersection
-  sql: SELECT line '{1,0,0}' # line '{0,1,0}' AS result FROM persons WHERE id = 1
+  sql: "SELECT line '{1,0,0}' # line '{0,1,0}' AS result FROM persons WHERE id = 1"
   operator: "#"
   signature: "#(line, line) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hash__lseg_intersection
-  sql: SELECT lseg '[(0,0),(2,2)]' # lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1
+  sql: "SELECT lseg '[(0,0),(2,2)]' # lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1"
   operator: "#"
   signature: "#(lseg, lseg) → point"
   expected_tds_status: ERROR
@@ -45,42 +45,42 @@ tests:
 
 # ## (point of closest proximity)
 - id: geo_hashhash__line_lseg
-  sql: SELECT line '{1,0,0}' ## lseg '[(1,1),(1,5)]' AS result FROM persons WHERE id = 1
+  sql: "SELECT line '{1,0,0}' ## lseg '[(1,1),(1,5)]' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(line, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hashhash__lseg_box
-  sql: SELECT lseg '[(0,0),(5,5)]' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1
+  sql: "SELECT lseg '[(0,0),(5,5)]' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(lseg, box) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hashhash__lseg_lseg
-  sql: SELECT lseg '[(0,0),(2,2)]' ## lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1
+  sql: "SELECT lseg '[(0,0),(2,2)]' ## lseg '[(0,2),(2,0)]' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(lseg, lseg) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hashhash__point_box
-  sql: SELECT point '(0,0)' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1
+  sql: "SELECT point '(0,0)' ## box '(3,3),(1,1)' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(point, box) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hashhash__point_line
-  sql: SELECT point '(0,0)' ## line '{1,0,-5}' AS result FROM persons WHERE id = 1
+  sql: "SELECT point '(0,0)' ## line '{1,0,-5}' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(point, line) → point"
   expected_tds_status: ERROR
   expected_rel_status: ERROR
 
 - id: geo_hashhash__point_lseg
-  sql: SELECT point '(0,0)' ## lseg '[(1,1),(1,5)]' AS result FROM persons WHERE id = 1
+  sql: "SELECT point '(0,0)' ## lseg '[(1,1),(1,5)]' AS result FROM persons WHERE id = 1"
   operator: "##"
   signature: "##(point, lseg) → point"
   expected_tds_status: ERROR

@@ -129,11 +129,11 @@ tests:
     expected_rel_status: ERROR
 
   - id: unnest__anyarray__from_table
-    sql: "SELECT UNNEST(ARRAY[1,2,3]) AS result"
+    sql: "SELECT UNNEST(ARRAY[1,2,3]) AS result FROM dates WHERE id = 1"
     function: unnest
     signature: "unnest(anyarray) → SETOF anyelement"
-    expected_tds_status: PASS
-    expected_rel_status: PASS
+    expected_tds_status: ERROR
+    expected_rel_status: ERROR
 
   - id: unnest__anymultirange__unsupported_type
     sql: "SELECT 1 AS result FROM persons WHERE id = 1"

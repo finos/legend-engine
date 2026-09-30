@@ -123,6 +123,7 @@ all backends. See [Testing Strategy — PCT](testing/testing-strategy.md#5-pct-p
 | [Contributor Workflow](guides/contributor-workflow.md) | How to add a grammar section, store extension, or function activator |
 | [Exploration & Discovery](guides/exploration.md) | Systematic approach for new engineers exploring the codebase |
 | [Pure IDE Delta-Compiler Debugging](guides/pure-ide-delta-compiler-debugging.md) | Driving the Pure IDE over HTTP to delta-compile and run `.pure` code in seconds instead of a full Maven rebuild |
+| [SQL E2E Interpreted Dev Loop](guides/sql-e2e-interpreted-devloop.md) | Running slices of the SQL e2e parity corpus through the interpreted Pure LSP; why interpreted results need confirming against the compiled suite |
 | [Identity, Authentication & Traceability](guides/identity-authentication-guide.md) | Identity model, credential types, authentication flows, vault integration, end-to-end traceability |
 | [Logging, Tracing & Observability](guides/logging-tracing-observability.md) | Structured logging with `LogInfo`, OpenTracing, OpenTelemetry, Prometheus metrics |
 

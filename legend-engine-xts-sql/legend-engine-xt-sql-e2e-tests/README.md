@@ -2,11 +2,16 @@
 
 End-to-end tests that compare SQL execution between a real **PostgreSQL 16** database and the **Legend SQL wire-protocol server**. Every SQL query is run against both, and results are compared cell-by-cell to verify parity.
 
+> 📌 **Before investigating a failure, read [KNOWN-GAPS.md](KNOWN-GAPS.md).** A large number of
+> `ERROR` baselines are expected (the corpus enumerates the whole Postgres surface), and there are
+> three traps — interpreted-mode results that do not reproduce compiled, queries with no `FROM`
+> that bypass Legend entirely, and unquoted `#` in YAML — that have each cost real debugging time.
+
 ## What this module does
 
 1. Starts a Postgres 16 container (via Testcontainers)
 2. Starts a Legend SQL server (wire-protocol, backed by the same Postgres via a Pure model)
-3. Loads YAML test definitions from `src/test/resources/parity-tests/`
+3. Loads YAML test definitions from `src/main/resources/parity-tests/`
 4. For each test, runs the SQL against both Postgres and Legend (via TDS **and** Relation paths)
 5. Compares results and records status: `PASS`, `FAIL`, `ERROR`, `SKIP`, or `BUG`
 6. Produces coverage reports in `target/` (`function-coverage.md`, `structural-parity.md`)
@@ -32,36 +37,46 @@ mvn test -pl legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests -Dparity.ignor
 
 ## Directory structure
 
+The corpus and the harness classes it needs live in `src/main` rather than `src/test`, so the
+interpreted dev-loop module (`legend-engine-xt-sql-e2e-pure`) can depend on them. Everything that
+is only meaningful to the compiled suite stays in `src/test`.
+
 ```
-src/test/
+src/main/
 ├── java/.../postgres/e2e/
-│   ├── TestPostgresParity.java      # Main test suite (JUnit 5 @TestFactory)
 │   ├── TestCaseLoader.java          # YAML → Java POJO loader
 │   ├── AstFromRewriter.java         # Rewrites table refs to func() calls
 │   ├── DirectPostgresRunner.java    # Runs SQL against real Postgres
 │   ├── ResultMatrix.java            # Typed result grid
 │   ├── ResultComparator.java        # Cell-by-cell comparison
-│   ├── ParityReport.java            # Console + JSON report
 │   ├── SchemaManager.java           # Creates tables from YAML schema
-│   ├── YamlStatusUpdater.java       # Writes expected status back to YAML
-│   ├── E2eTestSourceProvider.java   # Wires Legend SQL to the Postgres container
-│   ├── E2eTestPostgresServer.java   # Minimal Legend wire-protocol server
-│   ├── E2eLegendTestClient.java     # HTTP client for Legend SQL API
-│   └── coverage/                    # Report generators
-│       ├── FunctionCoverageReport.java
-│       ├── StructuralParityReport.java
-│       ├── FunctionCatalogExtractor.java
-│       ├── FunctionCoverageMapper.java
-│       └── ErrorCategorizer.java
+│   └── SqlE2ERunner.java            # Process-wide harness for the interpreted dev loop
 └── resources/
     ├── e2e-model.pure               # Pure model (classes, mapping, store, functions)
     └── parity-tests/
         ├── schema.yaml              # Shared table definitions + seed data
-        ├── smoke_tests.yaml         # 10 basic smoke tests
+        ├── smoke_tests.yaml         # basic smoke tests
         ├── functions/               # Per-category function tests (575 Postgres signatures)
+        ├── operators/               # Per-operator tests
+        ├── predicates/ format_tokens/
         ├── structural/              # SQL construct tests (JOINs, CTEs, subqueries, etc.)
         ├── window_frames/           # Window function frame tests
         └── compositions/            # Complex multi-feature queries
+
+src/test/java/.../postgres/e2e/
+├── TestPostgresParity.java          # Main test suite (JUnit 5 @TestFactory)
+├── TestSqlE2ERunner.java            # Covers SqlE2ERunner (corpus load, rewrite, reference exec)
+├── ParityReport.java                # Console + JSON report
+├── YamlStatusUpdater.java           # Writes expected status back to YAML
+├── E2eTestSourceProvider.java       # Wires Legend SQL to the Postgres container
+├── E2eTestPostgresServer.java       # Minimal Legend wire-protocol server
+├── E2eLegendTestClient.java         # HTTP client for Legend SQL API
+└── coverage/                        # Report generators
+    ├── FunctionCoverageReport.java
+    ├── StructuralParityReport.java
+    ├── FunctionCatalogExtractor.java
+    ├── FunctionCoverageMapper.java
+    └── ErrorCategorizer.java
 ```
 
 ## YAML test format
@@ -110,7 +125,7 @@ Update the test's expected_tds_status in the YAML file to PASS.
 
 If you prefer to update only specific tests:
 
-1. Open the relevant YAML file in `src/test/resources/parity-tests/`
+1. Open the relevant YAML file in `src/main/resources/parity-tests/`
 2. Find the test by its `id`
 3. Change `expected_tds_status: ERROR` to `expected_tds_status: PASS` (and/or `expected_rel_status`)
 4. Re-run to confirm the build passes

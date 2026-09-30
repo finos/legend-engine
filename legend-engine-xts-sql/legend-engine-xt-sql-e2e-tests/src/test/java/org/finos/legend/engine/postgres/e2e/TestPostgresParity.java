@@ -305,10 +305,12 @@ public class TestPostgresParity
         report.writeJsonReport(new File("target/parity-report.json"));
         if (Boolean.getBoolean("parity.updateStatus"))
         {
-            File resourceDir = new File("src/test/resources");
+            // the corpus lives in src/main/resources so the interpreted dev-loop harness can
+            // depend on it; see docs/engineering/guides/sql-e2e-interpreted-devloop.md
+            File resourceDir = new File("src/main/resources");
             if (!resourceDir.isDirectory())
             {
-                resourceDir = new File("legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests/src/test/resources");
+                resourceDir = new File("legend-engine-xts-sql/legend-engine-xt-sql-e2e-tests/src/main/resources");
             }
             statusUpdater.updateFiles(resourceDir, TEST_FILES);
         }

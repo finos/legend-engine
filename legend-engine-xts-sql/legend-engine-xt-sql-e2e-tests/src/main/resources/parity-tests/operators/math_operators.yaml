@@ -184,11 +184,11 @@ tests:
   expected_rel_status: ERROR
 
 - id: op_bitxor__int__basic
-  sql: SELECT id, int_val # small_val AS result FROM numbers WHERE id = 1
+  sql: "SELECT id, int_val # small_val AS result FROM numbers WHERE id = 1"
   operator: "#"
   signature: "#(int4, int4) → int4"
-  expected_tds_status: BUG
-  expected_rel_status: BUG
+  expected_tds_status: ERROR
+  expected_rel_status: ERROR
 
 - id: op_bitnot__int__basic
   sql: SELECT id, ~int_val AS result FROM numbers WHERE id = 1
@@ -427,8 +427,8 @@ tests:
   sql: SELECT d + 5 AS result FROM dates WHERE id = 1
   operator: "+"
   signature: "+(datetime, numeric) → datetime"
-  expected_tds_status: FAIL
-  expected_rel_status: FAIL
+  expected_tds_status: PASS
+  expected_rel_status: PASS
 
 - id: op_add__int_plus_date_days
   sql: SELECT 5 + d AS result FROM dates WHERE id = 1

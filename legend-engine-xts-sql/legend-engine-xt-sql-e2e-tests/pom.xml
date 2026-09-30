@@ -59,6 +59,23 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <!-- required on the compile classpath (generic signatures / JUnit4 TestRule
+                                     in testcontainers) but not directly imported -->
+                                <dependency>org.antlr:antlr4-runtime</dependency>
+                                <dependency>junit:junit</dependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
@@ -123,8 +140,11 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
@@ -134,17 +154,15 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <scope>test</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-yaml</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <scope>test</scope>
         </dependency>
         <!-- Markdown to HTML for report generation -->
         <dependency>
@@ -164,7 +182,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Legend SQL HTTP API (SqlExecute, SQLSourceProvider) -->
@@ -181,10 +198,15 @@
         </dependency>
 
         <!-- JUnit 4 (needed for ResourceTestRule) -->
+        <!-- compile scope: testcontainers' GenericContainer implements JUnit4 TestRule -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
         </dependency>
 
         <!-- SQL providers -->
@@ -239,7 +261,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-vault-core</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -323,19 +344,16 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
@@ -378,7 +396,6 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-postgresSql-grammar</artifactId>
-            <scope>test</scope>
         </dependency>
 
         <!-- Compiler -->
@@ -402,7 +419,6 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>javax.ws.rs</groupId>
