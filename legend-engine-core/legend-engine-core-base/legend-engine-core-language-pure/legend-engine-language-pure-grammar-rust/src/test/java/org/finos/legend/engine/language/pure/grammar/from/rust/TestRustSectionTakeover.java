@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 
 /**
  * Section types the Rust parser takes over parse exactly as the Java parser alone parses them, in every mode: what it
- * has a grammar for (`Data`, a section without imports, and `Mapping`), and a section holding grammar it has none for
- * yet (a mapping's `Operation` element), which falls back.
+ * has a grammar for (`Data`, a section without imports, and `Mapping`), and a section type it has no grammar for yet
+ * (`Connection`), taken over as a corpus dump takes it over, which falls back.
  */
 public class TestRustSectionTakeover
 {
@@ -61,17 +61,15 @@ public class TestRustSectionTakeover
 
     private static final String MODEL = SUPPORTED +
             "\n" +
-            "###Mapping\n" +
-            "Mapping a::N\n" +
-            "(\n" +
-            "  *a::A[a]: Operation\n" +
-            "  {\n" +
-            "    meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a)\n" +
-            "  }\n" +
-            ")\n";
+            "###Connection\n" +
+            "JsonModelConnection a::C\n" +
+            "{\n" +
+            "  class: a::A;\n" +
+            "  url: 'data:application/json,{}';\n" +
+            "}\n";
 
     private static final PureGrammarParser JAVA = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser()));
-    private static final PureGrammarParser TAKEN_OVER = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), new RustGrammarParserExtension("Pure", "Data", "Mapping")));
+    private static final PureGrammarParser TAKEN_OVER = PureGrammarParser.newInstance(PureGrammarParserExtensions.fromExtensions(new CorePureGrammarParser(), new RustGrammarParserExtension("Pure", "Data", "Mapping", "Connection")));
 
     private String previousMode;
     private String previousFallback;
@@ -157,7 +155,7 @@ public class TestRustSectionTakeover
         long unsupported = RustGrammarParity.counts().get(RustGrammarParity.Outcome.UNSUPPORTED);
         long mismatched = RustGrammarParity.counts().get(RustGrammarParity.Outcome.MISMATCH);
         assertParsesAsJava();
-        // Pure, Data and the first mapping match; the second mapping's element has no Rust grammar yet.
+        // Pure, Data and Mapping match; Connection has no Rust grammar yet.
         Assert.assertEquals(unsupported + 1, (long) RustGrammarParity.counts().get(RustGrammarParity.Outcome.UNSUPPORTED));
         Assert.assertEquals(mismatched, (long) RustGrammarParity.counts().get(RustGrammarParity.Outcome.MISMATCH));
         Assert.assertTrue(RustGrammarParity.counts().get(RustGrammarParity.Outcome.MATCH) >= matched + 3);
