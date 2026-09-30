@@ -119,17 +119,27 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         return function instanceof ElementWithStereotypes && ((ElementWithStereotypes) function)._stereotypes().anySatisfy(s -> stereotype.equals(s._value()) && s._profile() != null && profilePath.equals(PackageableElement.getUserPathForPackageableElement(s._profile())));
     }
 
+    private FunctionType functionType(Object function)
+    {
+        if (function instanceof FunctionDefinition || function instanceof NativeFunction)
+        {
+            // parity: Pure's functionType() reads the classifier generic type directly; processor support recomputes and caches it per model
+            return (FunctionType) ((Function<?>) function)._classifierGenericType()._typeArguments().getFirst()._rawType();
+        }
+        return (FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function);
+    }
+
     @Override
     public ImmutableList<String> parameterNames(Object function)
     {
-        FunctionType functionType = (FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function);
+        FunctionType functionType = functionType(function);
         return Lists.immutable.<VariableExpression>withAll(functionType._parameters()).collect(VariableExpression::_name);
     }
 
     @Override
     public ImmutableList<String> typeParameterNames(Object function)
     {
-        FunctionType functionType = (FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function);
+        FunctionType functionType = functionType(function);
         return Lists.immutable.<TypeParameter>withAll(functionType._typeParameters()).collect(TypeParameter::_name);
     }
 
@@ -169,7 +179,7 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         }
         if (function instanceof NativeFunction || function instanceof FunctionDefinition)
         {
-            return ((FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function))._returnType();
+            return functionType(function)._returnType();
         }
         throw error("functionReturnType not supported yet for the type " + typeDescription(function));
     }
@@ -187,7 +197,7 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         }
         if (function instanceof NativeFunction || function instanceof FunctionDefinition)
         {
-            return ((FunctionType) this.processorSupport.function_getFunctionType((CoreInstance) function))._returnMultiplicity();
+            return functionType(function)._returnMultiplicity();
         }
         throw error("functionReturnMultiplicity not supported yet for the type " + typeDescription(function));
     }
