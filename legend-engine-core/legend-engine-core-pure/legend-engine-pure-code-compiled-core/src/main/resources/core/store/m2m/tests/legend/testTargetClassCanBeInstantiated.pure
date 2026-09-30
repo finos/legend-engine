@@ -186,3 +186,89 @@ meta::pure::mapping::modelToModel::test::alloy::simple::TargetClassInstantiation
 
   assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"child":{"j": 1}}}'->parseJSON(), $result->toOne()->parseJSON()));
 }
+
+
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, meta::pure::executionPlan::engine::java::roadmap::feature.M2MBasics>>
+{  serverVersion.start='v1_20_0',
+   doc.doc='Example to test that a source class instantiated with the new operator does not demand properties the source tree does not fetch'
+}
+meta::pure::mapping::modelToModel::test::alloy::simple::SourceClassInstantiationWithUnfetchedProperty() : Boolean[1]
+{
+  let grammar = '###Pure\n'+
+    'Class test::model::Position\n'+
+    '{\n'+
+    '  units: Float[0..1];\n'+
+    '  floorAtZero: Boolean[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'Class test::model::PositionView\n'+
+    '{\n'+
+    '  units: Float[0..1];\n'+
+    '  defaultUnits: Float[0..1];\n'+
+    '}\n'+
+    '\n'+
+    'function test::model::defaultPosition(): test::model::Position[1]\n'+
+    '{\n'+
+    '  ^test::model::Position(units=1.0);' +
+    '}\n'+
+    '\n'+
+    'function test::query::getPositionView(): String[1]\n'+
+    '{\n'+
+    '  test::model::PositionView.all()->graphFetch(\n'+
+    '    #{\n'+
+    '      test::model::PositionView {\n'+
+    '        units,\n'+
+    '        defaultUnits\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->serialize(\n'+
+    '    #{\n'+
+    '      test::model::PositionView {\n'+
+    '        units,\n'+
+    '        defaultUnits\n'+
+    '      }\n'+
+    '    }#\n'+
+    '  )->from(test::mapping::PositionViewMap, test::runtime::positionRuntime)\n'+
+    '}\n'+
+    '\n'+
+    '###Mapping\n'+
+    'Mapping test::mapping::PositionViewMap\n'+
+    '(\n'+
+    '  *test::model::PositionView: Pure\n'+
+    '  {\n'+
+    '    ~src test::model::Position\n'+
+    '    units: $src.units,\n'+
+    '    defaultUnits: test::model::defaultPosition().units\n'+
+    '  }\n'+
+    ')\n'+
+    '\n'+
+    '###Connection\n'+
+    'JsonModelConnection test::connection::positionConnection\n'+
+    '{\n'+
+    '  class: test::model::Position;\n'+
+    '  url: \'data:application/json,{"units":2.0,"floorAtZero":true}\';\n'+
+    '}\n'+
+    '\n'+
+    '###Runtime\n'+
+    'Runtime test::runtime::positionRuntime\n'+
+    '{\n'+
+    '  mappings:\n'+
+    '  [\n'+
+    '    test::mapping::PositionViewMap\n'+
+    '  ];\n'+
+    '  connections:\n'+
+    '  [\n'+
+    '    ModelStore:\n'+
+    '    [\n'+
+    '      connection_1: test::connection::positionConnection\n'+
+    '    ]\n'+
+    '  ];\n'+
+    '}';
+
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let function = $elements->filter(e|$e->instanceOf(FunctionDefinition) && $e->cast(@PackageableElement)->elementToPath() == 'test::query::getPositionView__String_1_')->at(0)->cast(@FunctionDefinition<{->String[1]}>);
+
+  let result = meta::legend::executeLegendQuery($function, [], meta::pure::extension::defaultExtensions());
+
+  assert(jsonEquivalent('{"builder":{"_type":"json"},"values":{"units": 2.0, "defaultUnits": 1.0}}'->parseJSON(), $result->toOne()->parseJSON()));
+}
