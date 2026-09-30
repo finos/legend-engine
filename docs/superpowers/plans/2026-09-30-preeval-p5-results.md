@@ -103,3 +103,43 @@ Removing the walks needs `instanceof` or metadata-index lookups instead of paths
 - **Measured gain:** ×1.24–1.30 in total on the fresh-model benchmark, which is pessimistic for JAVA, and ×2.0–3.0 at steady state on a reused model.
 - **No regression** under the plan's rule. The two tiny fresh-model cases are recorded above.
 - **Target gain** (spec §4.5): total preval ×1.24–1.30 across the ten comparison workloads on fresh models, and ×2–3 at steady state.
+
+## Full estate under SHADOW (Task 5, 2026-09-30)
+
+Forks cannot run `build.yml`: every job is gated on `github.repository == 'finos/legend-engine'`. So the estate ran through draft PR [#5305](https://github.com/finos/legend-engine/pull/5305)'s CI:
+- **Control:** the PR's first run, at the default `PURE`.
+- **SHADOW runs:** a temporary commit set `-Dlegend.engine.preeval.implementation=SHADOW` in the test JVMs. It was reverted afterwards.
+
+PR CI tests the branch merged with the current `master`, so runs hours apart can differ slightly in upstream test counts.
+
+| Run | Head | Result |
+|---|---|---|
+| Control 36708836854 | `87aa01e` (PURE) | failed: `relationalStore`, `Test_Interpreted_Relational_Preeval` OutOfMemory (finding #0) |
+| SHADOW 36729938267 | `57b9598` | failed: `sql`, 23 errors in `Test_Query_SQL_VariantFunctions_Reverse_PCT` (finding #1) |
+| SHADOW 36754872271 | `1045809` | **all jobs green** |
+
+The final SHADOW run was compared test by test against the control for every CI group. The groups are core, sql, h2, duckdb, postgres, memsql, snowflake, spanner, sqlserver, databases (clickhouse, oracle, trino, deephaven), elasticsearch, graphql, javaBinding, ide-tools, python, server and the catch-all unit-test job.
+
+About 47,500 tests ran with **0 SHADOW-only failures, 0 control-only failures and no differing failures**. `relationalStore` has no control artifact, because the control job failed before uploading. Under SHADOW it ran 3,064 tests with 0 failures.
+
+Count differences are explained:
+- `core` +14: the two new relation tests, which run in 7 suite variants.
+- `test-results` +11: upstream `master` drift in `ServiceEMITTests`.
+
+The first SHADOW run's `MISALIGNED` diff lines, in h2 SDT and memsql, were collection-order changes with 0 failures on either side.
+
+### Findings
+
+| # | Root cause | Category | Smallest failing test | Status |
+|---|---|---|---|---|
+| 0 | `Test_Interpreted_Relational_Preeval` shared a Surefire JVM with `Test_Pure_Relational` at CI's `-Xmx6g` and ran out of heap building the interpreted runtime. This was a P4 Task 4 defect: locally the class always ran alone. | TEST-INFRA | `Test_Interpreted_Relational_Preeval.suite` | fixed in `57b95982eb7` (RC Surefire `reuseForks=false`) |
+| 1 | Runtime relations produced by natively executed relation functions reached `describeInstance`, which evaluated `TDS.csv` on them. The compiled class `TDSContainer` extends `Relation_Impl`, not the M3 `TDS` interface, so compiled mode crashed; interpreted mode described them as opaque. | COMPARATOR | `testJsonArrayOfFloat` (SQL Variant reverse PCT); pinned by `testShadowAcceptsEqualRuntimeRelations` | fixed in `1045809a847` |
+
+For #1, the fix describes each kind differently:
+- `#TDS` literals (M3 `TDS`): by `csv` content.
+- Relation accessors: by the structural walk, never calling `size()`, which would hit a store.
+- Other relations: by generic type and row count.
+
+Two runtime relations with the same type and row count but different rows therefore compare equal. This is an accepted blind spot of the same kind as other native-backed values.
+
+No JAVA-BUG or PURE-QUIRK was found.
