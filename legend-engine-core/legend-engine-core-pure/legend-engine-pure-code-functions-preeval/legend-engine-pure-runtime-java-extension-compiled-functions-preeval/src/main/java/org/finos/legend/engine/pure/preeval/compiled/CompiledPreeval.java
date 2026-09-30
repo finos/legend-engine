@@ -21,6 +21,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.pure.preeval.PreevalImplementation;
+import org.finos.legend.engine.pure.preeval.PreevalStatistics;
 import org.finos.legend.engine.pure.preeval.Preevaluator;
 import org.finos.legend.engine.pure.preeval.PrevalResult;
 import org.finos.legend.engine.pure.preeval.PrevalState;
@@ -46,7 +47,7 @@ public final class CompiledPreeval
     {
         CompiledPrevalRuntime runtime = new CompiledPrevalRuntime(sourceInformation, executionSupport);
         PrevalState state = PrevalState.initial(toVars(inScopeVars), toVars(rollingInScopeVars), ((Root_meta_pure_tools_DebugContext) debug)._debug());
-        PrevalResult result = new Preevaluator(runtime, new CompiledPrevalHooks(hooks, executionSupport)).preval(item, state);
+        PrevalResult result = new Preevaluator(runtime, PreevalStatistics.instrument(new CompiledPrevalHooks(hooks, executionSupport))).preval(item, state);
         CoreInstance pureResult = ((CompiledExecutionSupport) executionSupport).getProcessorSupport().newCoreInstance(null, PREVAL_RESULT, null);
         set(pureResult, "_value", Object.class, result.getValue());
         set(pureResult, "_canPreval", boolean.class, result.canPreval());

@@ -17,6 +17,7 @@ package org.finos.legend.engine.pure.preeval.interpreted.natives;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
+import org.finos.legend.engine.pure.preeval.PreevalStatistics;
 import org.finos.legend.engine.pure.preeval.Preevaluator;
 import org.finos.legend.engine.pure.preeval.PrevalResult;
 import org.finos.legend.engine.pure.preeval.PrevalState;
@@ -64,12 +65,12 @@ public class PrevalNative extends NativeFunction
         CoreInstance isGetAllFunction = Instance.getValueForMetaPropertyToOneResolved(hooks, "isGetAllFunction", processorSupport);
         CoreInstance resolveTdsSchema = Instance.getValueForMetaPropertyToOneResolved(hooks, "resolveTdsSchema", processorSupport);
         PrevalState state = PrevalState.initial(runtime.toVars(params.get(1)), runtime.toVars(params.get(2)), PrimitiveUtilities.getBooleanValue(debug.getValueForMetaPropertyToOne("debug")));
-        PrevalResult result = new Preevaluator(runtime, new InterpretedPrevalHooks(runtime,
+        PrevalResult result = new Preevaluator(runtime, PreevalStatistics.instrument(new InterpretedPrevalHooks(runtime,
                 stopPreeval, getParentOrEmptyVariableContextForLambda(variableContext, stopPreeval),
                 shouldInline, getParentOrEmptyVariableContextForLambda(variableContext, shouldInline),
                 isGeneratedMilestoningProperty, getParentOrEmptyVariableContextForLambda(variableContext, isGeneratedMilestoningProperty),
                 isGetAllFunction, getParentOrEmptyVariableContextForLambda(variableContext, isGetAllFunction),
-                resolveTdsSchema, getParentOrEmptyVariableContextForLambda(variableContext, resolveTdsSchema))).preval(item, state);
+                resolveTdsSchema, getParentOrEmptyVariableContextForLambda(variableContext, resolveTdsSchema)))).preval(item, state);
         return ValueSpecificationBootstrap.wrapValueSpecification(runtime.toPureResult(result), false, processorSupport);
     }
 }

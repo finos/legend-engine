@@ -539,6 +539,46 @@ public abstract class AbstractTestPrevalNative extends AbstractPureTestWithCoreC
                 "assert(($implementation == 'PURE') || ($implementation == 'JAVA') || ($implementation == 'SHADOW'), |'unexpected: ' + $implementation);");
     }
 
+    @Test
+    public void testStatisticsCountRulesAndHooksWhenEnabled()
+    {
+        String previous = System.getProperty(PreevalStatistics.SYSTEM_PROPERTY);
+        System.setProperty(PreevalStatistics.SYSTEM_PROPERTY, "true");
+        PreevalStatistics.reset();
+        try
+        {
+            executeTestFunction(
+                    "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                    "prevalNative({|1 + 1}, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());");
+            Assert.assertTrue(PreevalStatistics.ruleCounts().toString(), PreevalStatistics.ruleCounts().getOrDefault("ReactivateRule", 0L) >= 1);
+            Assert.assertTrue(PreevalStatistics.hookCallCounts().toString(), PreevalStatistics.hookCallCounts().getOrDefault("stopPreeval", 0L) >= 1);
+        }
+        finally
+        {
+            if (previous == null)
+            {
+                System.clearProperty(PreevalStatistics.SYSTEM_PROPERTY);
+            }
+            else
+            {
+                System.setProperty(PreevalStatistics.SYSTEM_PROPERTY, previous);
+            }
+            PreevalStatistics.reset();
+        }
+    }
+
+    @Test
+    public void testStatisticsStayEmptyWhenDisabled()
+    {
+        System.clearProperty(PreevalStatistics.SYSTEM_PROPERTY);
+        PreevalStatistics.reset();
+        executeTestFunction(
+                "let emptyVars = newMap([]->cast(@Pair<String, List<Any>>));",
+                "prevalNative({|1 + 1}, $emptyVars, $emptyVars, " + HOOKS + ", noDebug());");
+        Assert.assertTrue(PreevalStatistics.ruleCounts().isEmpty());
+        Assert.assertTrue(PreevalStatistics.hookCallCounts().isEmpty());
+    }
+
     private void executeTestFunction(String... lines)
     {
         String code = "import meta::pure::functions::preeval::*;\n\nfunction test():Any[*]\n{\n    " + String.join("\n    ", lines) + "\n}\n";

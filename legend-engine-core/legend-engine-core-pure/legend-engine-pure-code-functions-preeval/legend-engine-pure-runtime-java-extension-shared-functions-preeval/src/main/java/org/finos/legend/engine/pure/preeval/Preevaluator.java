@@ -261,6 +261,7 @@ public final class Preevaluator implements PrevalServices
         PreParameterRule preParameterRule = Rules.PRE_PARAMETER.detect(r -> r.matches(expression, this));
         if (preParameterRule != null)
         {
+            PreevalStatistics.ruleApplied(preParameterRule);
             PrevalResult handled = preParameterRule.apply(expression, state, this);
             if (handled != null)
             {
@@ -281,6 +282,7 @@ public final class Preevaluator implements PrevalServices
         ExpressionRule expansion = Rules.EXPANSION.detect(r -> r.matches(prologue, this));
         if (expansion != null)
         {
+            PreevalStatistics.ruleApplied(expansion);
             return expansion.apply(prologue, this);
         }
         Prologue reasoned = prologue.withNotPrevalReason(notPrevalReason(rewritten, prologue.parameters(), state));
@@ -290,12 +292,14 @@ public final class Preevaluator implements PrevalServices
             ImmutableList<ExpressionRule> handlers = Rules.NOT_PREVALLED.select(r -> r.matches(reasoned, this));
             if (handlers.notEmpty())
             {
+                PreevalStatistics.ruleApplied(handlers.getFirst());
                 return handlers.getFirst().apply(reasoned, this);
             }
             trace(state, () -> "Not prevalling (" + reasoned.notPrevalReason() + ")");
             return reasoned.notPrevalled();
         }
         trace(state, () -> "Performing preval");
+        PreevalStatistics.ruleApplied(Rules.REACTIVATE);
         return Rules.REACTIVATE.apply(reasoned, this);
     }
 
