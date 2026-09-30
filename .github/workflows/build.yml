@@ -275,7 +275,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
-          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g${{ inputs.preeval_implementation != '' && format(' -Dlegend.engine.preeval.implementation={0}', inputs.preeval_implementation) || '' }}" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToExclude.outputs.EXCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g${{ inputs.preeval_implementation != '' && format(' -Dlegend.engine.preeval.implementation={0}', inputs.preeval_implementation) || ' -Dlegend.engine.preeval.implementation=SHADOW' }}" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
@@ -322,7 +322,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           JDK_JAVA_OPTIONS: "--add-opens=java.base/java.nio=org.apache.arrow.memory.core,ALL-UNNAMED"
         run: |
-          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g${{ inputs.preeval_implementation != '' && format(' -Dlegend.engine.preeval.implementation={0}', inputs.preeval_implementation) || '' }}" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+          mvn -B -e surefire:test ${{ needs.build.outputs.pureVersionArg }} -pl ${{ steps.modulesToInclude.outputs.INCLUSION_MODULES }} ${{ needs.build.outputs.profiles }} -T2 -DargLine="-Xmx6g${{ inputs.preeval_implementation != '' && format(' -Dlegend.engine.preeval.implementation={0}', inputs.preeval_implementation) || ' -Dlegend.engine.preeval.implementation=SHADOW' }}" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v7
