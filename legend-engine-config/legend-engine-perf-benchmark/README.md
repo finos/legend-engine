@@ -54,6 +54,7 @@ model size. Query shapes vary one dimension each:
 | `graphK` | graph-fetch tree depth (the shape services use) |
 | `semiK` / `semiwK` / `semijoinK` | semi-structured path depth, access width, and width combined with join navigation |
 | `variantrel` | Variant functions through the relation path |
+| `relsort` | a Relation sort on two columns plus a limit; `ascending`/`descending` are routed through preeval |
 | `m2mview` | a model-to-model view over the relational mapping |
 
 Mapping shape flags: `--nextmult 1|0..1` (chain multiplicity), `--union K` (Operation union over K
@@ -61,6 +62,8 @@ set implementations), `--includes K` (K-deep mapping include chain), `--mileston
 (business-temporal), `--relfunc` (Relation `~func` mappings plus ModelJoin associations), `--m2m`
 (model-to-model view via `ModelChainConnection`), `--semi D` (SEMISTRUCTURED column with a JSON
 binding over a D-level model).
+
+Query flags: `--from` appends `->from(<mapping>, test::Runtime)` to the query, the form Studio and saved queries use. `--direct-preval` adds a `preval` phase that pre-evaluates the query lambda directly, as the SQL, lineage and OpenAPI paths do.
 
 Other flags: `--dbtype H2|DuckDB|Snowflake` (plan generation works for any dialect without a
 connection), `--iters`, `--warmup`, `--execute`, `--csv <path>`, `--dumpplan <path>`, `--pause`
@@ -175,6 +178,24 @@ Deviation is judged in both directions. A slower result is a regression. A faste
 separately, because until the gain is recorded the baseline still permits the old cost, and a later
 change could give it back unnoticed. Rerun with `--rebase` and commit the baseline in the same pull
 request as the change that earned it. `--allow-improvement` turns that side off.
+
+## Comparing preeval implementations
+
+`--preeval` compares the Pure and Java implementations of plan-time pre-evaluation (`preval`) on the same workloads, in one JVM:
+
+```bash
+java ... org.finos.legend.engine.perf.PipelineBench --preeval [--iters 10] [--warmup 3] [--out results.json] [--margin 0.10] [--min-delta-ms 10]
+```
+
+Plan generation calls `preval` only for functions stereotyped `NormalizeRequiredFunction` (Relation `ascending`, `over`, ...) and for function-expression arguments of `from`, `with` and `getAll`. A class-based query planned with a mapping and runtime does no preeval at all. So the comparison's class-based workloads use `--direct-preval`, and `relsort` covers the router path.
+
+For every workload it runs the pipeline under `-Dlegend.engine.preeval.implementation=PURE` and `JAVA`, alternating the order each iteration so JIT drift favours neither side. It reports the median `planPure` time and the median total time spent in `preval`, per implementation.
+
+Preval time comes from the `traceSpan('preval')` that wraps every `preval` entry point. The comparison registers its own OpenTracing tracer to time those spans, so `planPure` numbers in this mode include tracer overhead and are not comparable with `--suite default`. Only the outermost `preval` span on a thread is counted. The run fails if no spans are recorded, for example because another tracer is already registered, or if the two implementations record a different number of spans.
+
+A workload regresses when `JAVA` is slower than `PURE`, on `planPure` or on `preval`, by more than `--margin` **and** by more than `--min-delta-ms`. The process exits non-zero if any workload regresses.
+
+After the timed runs, each workload is run once more under `JAVA` with `-Dlegend.engine.preeval.statistics=true`. That records how often each rewrite rule fired, and how often and for how long each Pure hook (`stopPreeval`, `shouldInline`, ...) was called back. These counts are in the results file under `statistics`.
 
 ## Measuring a second environment with Docker
 
