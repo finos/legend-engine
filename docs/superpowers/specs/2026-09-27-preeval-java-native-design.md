@@ -213,7 +213,7 @@ text. Exceptions thrown by hooks or reactivation propagate unchanged. Nothing is
      `JAVA`, over relational TDS/Relation, milestoning, SQL-over-Legend and graph fetch queries.
    - It reports the `traceSpan('preval')` time and end-to-end `planPure` time.
    - Per-rule fire counts and timings come from `DebugTrace`/metrics.
-   - The target gain is set after the first baseline run.
+   - Target gain, set from the P5 baseline (2026-09-30): total preval ×1.24–1.30 across the ten comparison workloads on fresh models (PURE ≈14.5 ms → JAVA ≈11.4 ms), and ×2–3 at steady state on a reused model, with no workload regressing under the benchmark's rule; see `docs/superpowers/plans/2026-09-30-preeval-p5-results.md`.
 
 ## 5. Phases — Track 1 (Java 11 port)
 
