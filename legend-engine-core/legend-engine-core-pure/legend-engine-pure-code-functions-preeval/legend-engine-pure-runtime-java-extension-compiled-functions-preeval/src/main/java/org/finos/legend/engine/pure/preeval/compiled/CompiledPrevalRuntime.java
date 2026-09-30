@@ -59,6 +59,12 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.support
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 final class CompiledPrevalRuntime implements PrevalRuntime
 {
@@ -67,7 +73,9 @@ final class CompiledPrevalRuntime implements PrevalRuntime
     private final CompiledExecutionSupport executionSupport;
     private final ProcessorSupport processorSupport;
     private final SourceInformation sourceInformation;
-    private final MutableMap<String, CoreInstance> elementsByPath = Maps.mutable.empty();
+    private static final Map<ExecutionSupport, ConcurrentMap<String, Optional<CoreInstance>>> ELEMENTS_BY_MODEL = Collections.synchronizedMap(new WeakHashMap<>());
+
+    private final ConcurrentMap<String, Optional<CoreInstance>> elementsByPath;
     private Multiplicity pureOne;
     private Multiplicity pureZero;
 
@@ -76,6 +84,7 @@ final class CompiledPrevalRuntime implements PrevalRuntime
         this.executionSupport = (CompiledExecutionSupport) executionSupport;
         this.processorSupport = this.executionSupport.getProcessorSupport();
         this.sourceInformation = sourceInformation;
+        this.elementsByPath = ELEMENTS_BY_MODEL.computeIfAbsent(executionSupport, support -> new ConcurrentHashMap<>());
     }
 
     @Override
@@ -472,11 +481,7 @@ final class CompiledPrevalRuntime implements PrevalRuntime
 
     private CoreInstance element(String path)
     {
-        if (!this.elementsByPath.containsKey(path))
-        {
-            this.elementsByPath.put(path, this.processorSupport.package_getByUserPath(path));
-        }
-        return this.elementsByPath.get(path);
+        return this.elementsByPath.computeIfAbsent(path, p -> Optional.ofNullable(this.processorSupport.package_getByUserPath(p))).orElse(null);
     }
 
     private static Object unwrapSingleton(Object value)
