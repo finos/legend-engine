@@ -3074,12 +3074,20 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
 
    let setImpl = if($isDataType || $targetType ->_subTypeOf(TabularDataSet) || $targetType ->_subTypeOf(meta::pure::metamodel::relation::Relation),|[],|$elements->map(e|$e->cast(@StoreMappingRoutedValueSpecification).sets->toOne())->removeDuplicates());
    let res = if ($operation.select.data->isEmpty(),
-      |// Align columns across union arms (all arms must have the same columns for SQL UNION ALL)
-       let columns = $processed.element->cast(@SelectWithCursor).select.columns;
+      |// Isolate arms whose own order by/limit would otherwise bind to the whole set operation
+       let arms = $processed->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
+                                    if ($selectWithCursor.select->requiresIsolationAsSetOperand(),
+                                        |^$p(element = $selectWithCursor->isolateTdsSelect($extensions)),
+                                        |$p
+                                    );
+                               );
+
+       // Align columns across union arms (all arms must have the same columns for SQL UNION ALL)
+       let columns = $arms.element->cast(@SelectWithCursor).select.columns;
        let transformed = if (!$columns->isEmpty() && $columns->forAll(c | $c->instanceOf(Alias) || $c->instanceOf(TableAliasColumn)),
-                              | $processed->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
+                              | $arms->map(p|let selectWithCursor = $p.element->cast(@SelectWithCursor);
                                                   let select = $selectWithCursor.select->alignJoinAndPkColumnsForUnion($columns);
-                                                  let element = $elements->at($processed->indexOf($p));
+                                                  let element = $elements->at($arms->indexOf($p));
                                                   let type = if($isDataType || $targetType ->_subTypeOf(TabularDataSet) || $targetType ->_subTypeOf(meta::pure::metamodel::relation::Relation),
                                                                 |[],
                                                                 |^Alias
@@ -3092,7 +3100,7 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                                                   let newSelectWithCursor = ^$selectWithCursor(select = $newSelect);
                                                   ^$p(element = $newSelectWithCursor);
                                              );,
-                              | $processed
+                              | $arms
                         );
 
        print(if(!$context.debug, |'', | $transformed->map(t|$context.space+' >Result: '+$t.element->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.DebugPrint, $extensions)+'\n')->makeString('')));
@@ -3126,7 +3134,13 @@ function meta::relational::functions::pureToSqlQuery::processConcatenate(f:Funct
                          filteringOperation = [],
                          havingOperation = [],
                          groupBy = [],
-                         qualifyOperation = []
+                         qualifyOperation = [],
+                         // The union select must not inherit an arm's own distinct/order by/etc.
+                         distinct = false,
+                         pivot = [],
+                         orderBy = [],
+                         fromRow = [],
+                         toRow = []
                    ),
          currentTreeNode = $newRoot
        );,
@@ -3925,6 +3939,11 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::isolate
   ^$query(select = $newSelect,
           currentTreeNode = $query.currentTreeNode->map(ctn | $ctn->findNode($select.data->toOne(), $newNode)->orElse($newNode))
   );
+}
+
+function <<access.private>> meta::relational::functions::pureToSqlQuery::requiresIsolationAsSetOperand(select:SelectSQLQuery[1]):Boolean[1]
+{
+   !$select.orderBy->isEmpty() || !$select.fromRow->isEmpty() || !$select.toRow->isEmpty()
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::isolateSubSelectIfNotLastOperation(select:SelectSQLQuery[1], query:SelectWithCursor[1], f:FunctionExpression[1], parents:FunctionExpression[*], extensions:Extension[*]):SelectWithCursor[1]
