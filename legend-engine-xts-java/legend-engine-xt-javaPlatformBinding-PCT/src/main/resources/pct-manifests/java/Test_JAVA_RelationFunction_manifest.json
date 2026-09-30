@@ -382,11 +382,27 @@
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
+      "test": "meta::pure::functions::relation::tests::concatenate::testConcatenateOfDistinctRelation_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedLimitedRelations_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedRelations_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
       "test": "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {
       "test": "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_",
+      "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
+    },
+    {
+      "test": "meta::pure::functions::relation::tests::concatenate::testSortOfConcatenateOfSortedRelations_Function_1__Boolean_1_",
       "expectedError": "\"Instance of type 'meta::pure::metamodel::relation::TDS' can't be translated\""
     },
     {

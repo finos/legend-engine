@@ -289,11 +289,23 @@
     "test" : "meta::pure::functions::relation::tests::composition::test_Static_Pivot_Filter_Function_1__Boolean_1_",
     "expectedError" : "Match failure: PlatformClusteredValueSpecificationObject instanceOf PlatformClusteredValueSpecification"
   }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testConcatenateOfDistinctRelation_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::distinct_Relation_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedLimitedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_\""
+  }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testConcatenateOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_\""
+  }, {
     "test" : "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenateShared_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_"
   }, {
     "test" : "meta::pure::functions::relation::tests::concatenate::testSimpleConcatenate_MultipleExpressions_Function_1__Boolean_1_",
     "expectedError" : "Match failure: LambdaFunctionObject instanceOf LambdaFunction"
+  }, {
+    "test" : "meta::pure::functions::relation::tests::concatenate::testSortOfConcatenateOfSortedRelations_Function_1__Boolean_1_",
+    "expectedError" : "Execution error at (resource:/core_deephaven_pure/functions/pure_to_deephaven.pure line:1066 column:70), \"function not supported yet: meta::pure::functions::relation::concatenate_Relation_1__Relation_1__Relation_1_\""
   }, {
     "test" : "meta::pure::functions::relation::tests::cumulativeDistribution::testOLAPWithPartitionAndOrderCummulativeDistribution_Function_1__Boolean_1_",
     "expectedError" : "function not supported yet: meta::pure::functions::relation::cumulativeDistribution_Relation_1___Window_1__T_1__Float_1_"
