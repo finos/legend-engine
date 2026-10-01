@@ -3982,6 +3982,42 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+// old_String is load-bearing: it reads the very column the window result is about to
+// displace. Its extend is emitted before the rename, so it binds to the base value,
+// while String ends up carrying the computed one.
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNestedWindowAliasCollidesWithUnselectedSourceColumn():Boolean[1]
+{
+  test(
+    'SELECT String AS "old_String", Integer, ' +
+    'abs(row_number() OVER (PARTITION BY Boolean ORDER BY Integer ASC)) AS "String" ' +
+    'FROM service."/service/service1"',
+    [
+      c({|
+          FlatInput.all()
+              ->project(
+                [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+                [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+              ->extend([col(row:TDSRow[1] | $row.getString('String'), 'old_String')])
+              ->olapGroupBy(['Boolean'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), '__sql_window_String_0')
+              ->renameColumns([pair('String', '__sql_displaced_String')])
+              ->extend([col(row:TDSRow[1] | abs($row.getInteger('__sql_window_String_0')), 'String')])
+              ->restrict(['old_String', 'Integer', 'String'])
+      }, true, false),
+
+      c({|
+          FlatInput.all()
+              ->project(
+                ~[ Boolean: x | $x.booleanIn, Integer: x | $x.integerIn, Float: x | $x.floatIn, Decimal: x | $x.decimalIn, StrictDate: x | $x.strictDateIn, DateTime: x | $x.dateTimeIn, String: x | $x.stringIn])
+              ->extend(~[old_String: x | $x.String])
+              ->extend(over(~[Boolean], [~Integer->ascending()]), ~['__sql_window_String_0':{p,w,r| $p->rowNumber($r)}])
+              ->rename(~String, ~'__sql_displaced_String')
+              ->extend(~[String: x | $x.'__sql_window_String_0'->abs()])
+              ->select(~[old_String, Integer, String])
+      }, true, false)
+    ]
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testRelationWindowFunctions():Boolean[1]
 {
   test(
