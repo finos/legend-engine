@@ -41,6 +41,7 @@ members = [
     "crates/dsl-runtime",
     "crates/dsl-service",
     "crates/dsl-service-store",
+    "crates/dsl-snowflake",
     "crates/dsl-store",
     "crates/dsl-sql",
     "crates/dsl-tds",

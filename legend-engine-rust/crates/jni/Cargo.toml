@@ -52,6 +52,7 @@ legend-pure-dsl-relational-snowflake = { path = "../dsl-relational-snowflake" }
 legend-pure-dsl-runtime = { path = "../dsl-runtime" }
 legend-pure-dsl-service = { path = "../dsl-service" }
 legend-pure-dsl-service-store = { path = "../dsl-service-store" }
+legend-pure-dsl-snowflake = { path = "../dsl-snowflake" }
 legend-pure-dsl-sql = { path = "../dsl-sql" }
 legend-pure-dsl-tds = { path = "../dsl-tds" }
 jni = { workspace = true }

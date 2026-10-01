@@ -160,7 +160,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.4 | `###ServiceStore`: service stores | serviceStore | 81 | 13 | Done: all match but one the engine rejects for a security scheme no grammar reads (accepted) |
 | 7.5 | `###ExternalFormat`: schema sets and bindings | core (external format) | 77 | 0 | Done: all match but one in a format only the engine's tests define (accepted) |
 | 7.6 | `###Diagram` | diagram | 36 | 20 | Done: all match |
-| 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | |
+| 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | Done: all match |
 | 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | |
 | 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | |
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | |
@@ -223,4 +223,13 @@ the Pure tokens written together again, and reports where the engine's
 lexer would have read another token (a number for an id, digits and
 letters for a number). Its numbers are doubles, written as Java writes
 them (the protocol record's `Double`: `2.23E10`, ties to even).
+
+7.7's crate is `dsl-snowflake` (the function activators' module, apart
+from `dsl-relational-snowflake`, the relational store's Snowflake
+extension), read and walked the same way, its apps first, then its UDFs;
+its deployment configurations are read and left out, as the walker leaves
+them. A function's identifier, `my::f(String[1]):String[1]`, is read as
+written without spaces, by the parser's `forms::function_identifier`
+(shared with `dsl-mapping`'s relation function mappings and the other
+function activators).
 

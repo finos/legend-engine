@@ -33,7 +33,8 @@ grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-persistence` (`###Persistence`, with its extensions'
 `dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
 (`###Relational`), `dsl-runtime` (`###Runtime`), `dsl-service`
-(`###Service`) and `dsl-service-store` (`###ServiceStore`); the stores'
+(`###Service`), `dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
+(`###Snowflake`); the stores'
 mapping, connection and test data grammars in `dsl-relational`,
 `dsl-relational-snowflake`, `dsl-service-store`, `dsl-mongodb`,
 `dsl-deephaven` and `dsl-elasticsearch`; and the connections' authentication

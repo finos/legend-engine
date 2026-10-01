@@ -39,9 +39,10 @@ use legend_pure_parser_lexer::{Token, TokenKind};
 use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::cursor::Cursor;
 use legend_pure_parser_parser::error::ParseError;
+use legend_pure_parser_parser::forms::type_text;
 use legend_pure_parser_parser::words::{
     Name, QualifiedName, adjacent, eat_command, identifier, is_string, is_word, is_word_kind,
-    qualified_name, unexpected,
+    qualified_name,
 };
 use legend_pure_parser_protocol::element_protocol::ConvertError;
 use legend_pure_parser_protocol::v1::convert::convert_expression_typed;
@@ -323,63 +324,6 @@ fn property_mapping(ctx: &mut ParserContext<'_>) -> Result<PurePropertyMapping, 
         transform,
         source_info: ctx.cursor().span_since(&start),
     })
-}
-
-/// A type as the walker reads it, `getText()`: its tokens without spaces.
-/// A qualified name, with its unit (`~Unit`), type arguments (`<…>`) and
-/// type variable values (`(…)`), or a function or relation type (`{…}`,
-/// `(…)`).
-pub(crate) fn type_text(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
-    let mut text = String::new();
-    if matches!(
-        ctx.cursor().peek_kind(),
-        TokenKind::LBrace | TokenKind::LParen
-    ) {
-        balanced(ctx, &mut text)?;
-        return Ok(text);
-    }
-    text.push_str(&qualified_name(ctx)?.text);
-    // A unit, `Mass~Kilogram`.
-    let cursor = ctx.cursor();
-    if cursor.check(TokenKind::Tilde)
-        && is_word_kind(cursor.peek_kind_at(1))
-        && adjacent(cursor.peek(), cursor.peek_at(1))
-    {
-        text.push_str(&cursor.advance().text);
-        text.push_str(&cursor.advance().text);
-    }
-    if ctx.cursor().check(TokenKind::Less) {
-        balanced(ctx, &mut text)?;
-    }
-    if ctx.cursor().check(TokenKind::LParen) {
-        balanced(ctx, &mut text)?;
-    }
-    Ok(text)
-}
-
-/// An opening bracket, parenthesis, brace or `<` and what it holds, up to
-/// its closing one, appended to `text` as written.
-pub(crate) fn balanced(ctx: &mut ParserContext<'_>, text: &mut String) -> Result<(), ParseError> {
-    let mut depth = 0_usize;
-    loop {
-        let token = ctx.cursor().peek().clone();
-        let (opens, closes) = match token.kind {
-            TokenKind::LBrace | TokenKind::LParen | TokenKind::LBracket | TokenKind::Less => (1, 0),
-            TokenKind::RBrace | TokenKind::RParen | TokenKind::RBracket | TokenKind::Greater => {
-                (0, 1)
-            }
-            TokenKind::GreaterGreater => (0, 2),
-            TokenKind::GreaterGreaterGreater => (0, 3),
-            TokenKind::Eof => return Err(unexpected(&token)),
-            _ => (0, 0),
-        };
-        text.push_str(&token.text);
-        ctx.cursor().advance();
-        depth = (depth + opens).saturating_sub(closes);
-        if depth == 0 {
-            return Ok(());
-        }
-    }
 }
 
 /// An expression as the walker makes it a lambda: the body of one without

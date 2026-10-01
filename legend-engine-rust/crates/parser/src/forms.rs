@@ -13,14 +13,15 @@
 // limitations under the License.
 
 //! The forms the engine's section grammars repeat: a field, `name: value;`;
-//! a list, `[ item, … ]`; a string, `'text'`.
+//! a list, `[ item, … ]`; a string, `'text'`; and what their walkers read as
+//! written, without spaces (`getText()`): a type, a function's identifier.
 
 use legend_pure_parser_lexer::{Token, TokenKind};
 
 use crate::ParserContext;
 use crate::error::ParseError;
 use crate::string_value;
-use crate::words::{is_string, unexpected};
+use crate::words::{adjacent, is_string, is_word_kind, qualified_name, unexpected};
 
 type R<T> = Result<T, ParseError>;
 
@@ -109,4 +110,91 @@ pub fn separated<T>(
         items.push(item(ctx)?);
     }
     Ok(items)
+}
+
+/// A type as the walker reads it, `getText()`: its tokens without spaces.
+/// A qualified name, with its unit (`~Unit`), type arguments (`<…>`) and
+/// type variable values (`(…)`), or a function or relation type (`{…}`,
+/// `(…)`).
+///
+/// # Errors
+///
+/// A malformed type.
+pub fn type_text(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
+    let mut text = String::new();
+    if matches!(
+        ctx.cursor().peek_kind(),
+        TokenKind::LBrace | TokenKind::LParen
+    ) {
+        balanced(ctx, &mut text)?;
+        return Ok(text);
+    }
+    text.push_str(&qualified_name(ctx)?.text);
+    // A unit, `Mass~Kilogram`.
+    let cursor = ctx.cursor();
+    if cursor.check(TokenKind::Tilde)
+        && is_word_kind(cursor.peek_kind_at(1))
+        && adjacent(cursor.peek(), cursor.peek_at(1))
+    {
+        text.push_str(&cursor.advance().text);
+        text.push_str(&cursor.advance().text);
+    }
+    if ctx.cursor().check(TokenKind::Less) {
+        balanced(ctx, &mut text)?;
+    }
+    if ctx.cursor().check(TokenKind::LParen) {
+        balanced(ctx, &mut text)?;
+    }
+    Ok(text)
+}
+
+/// An opening bracket, parenthesis, brace or `<` and what it holds, up to
+/// its closing one, appended to `text` as written.
+///
+/// # Errors
+///
+/// The input ends before the closing one.
+pub fn balanced(ctx: &mut ParserContext<'_>, text: &mut String) -> Result<(), ParseError> {
+    let mut depth = 0_usize;
+    loop {
+        let token = ctx.cursor().peek().clone();
+        let (opens, closes) = match token.kind {
+            TokenKind::LBrace | TokenKind::LParen | TokenKind::LBracket | TokenKind::Less => (1, 0),
+            TokenKind::RBrace | TokenKind::RParen | TokenKind::RBracket | TokenKind::Greater => {
+                (0, 1)
+            }
+            TokenKind::GreaterGreater => (0, 2),
+            TokenKind::GreaterGreaterGreater => (0, 3),
+            TokenKind::Eof => return Err(unexpected(&token)),
+            _ => (0, 0),
+        };
+        text.push_str(&token.text);
+        ctx.cursor().advance();
+        depth = (depth + opens).saturating_sub(closes);
+        if depth == 0 {
+            return Ok(());
+        }
+    }
+}
+
+/// `my::f(Type[m], …):Type[m]`, as written without spaces (the grammar's
+/// `functionIdentifier`).
+///
+/// # Errors
+///
+/// A malformed identifier.
+pub fn function_identifier(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
+    let mut text = qualified_name(ctx)?.text;
+    if !ctx.cursor().check(TokenKind::LParen) {
+        return Err(unexpected(ctx.cursor().peek()));
+    }
+    balanced(ctx, &mut text)?;
+    let colon = ctx.cursor().expect(TokenKind::Colon)?;
+    text.push_str(&colon.text);
+    text.push_str(&type_text(ctx)?);
+    if !ctx.cursor().check(TokenKind::LBracket) {
+        return Err(unexpected(ctx.cursor().peek()));
+    }
+    balanced(ctx, &mut text)?;
+    Ok(text)
 }

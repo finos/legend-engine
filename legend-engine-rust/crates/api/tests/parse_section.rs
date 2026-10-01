@@ -35,6 +35,7 @@ use legend_pure_dsl_relational_snowflake as _;
 use legend_pure_dsl_runtime as _;
 use legend_pure_dsl_service as _;
 use legend_pure_dsl_service_store as _;
+use legend_pure_dsl_snowflake as _;
 use legend_pure_dsl_sql as _;
 use legend_pure_dsl_store as _;
 use legend_pure_dsl_tds as _;
@@ -74,7 +75,8 @@ fn capabilities_report_linked_grammars() {
             "Relational",
             "Runtime",
             "Service",
-            "ServiceStore"
+            "ServiceStore",
+            "Snowflake"
         ]
     );
     assert!(

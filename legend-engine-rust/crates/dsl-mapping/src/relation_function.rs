@@ -45,6 +45,7 @@ use legend_pure_parser_lexer::{Token, TokenKind};
 use legend_pure_parser_parser::ParserContext;
 use legend_pure_parser_parser::cursor::Cursor;
 use legend_pure_parser_parser::error::ParseError;
+use legend_pure_parser_parser::forms::{function_identifier, type_text};
 use legend_pure_parser_parser::words::{
     QualifiedName, adjacent, at_word, eat_command, identifier, is_string, is_word, is_word_kind,
     qualified_name, unexpected,
@@ -58,7 +59,6 @@ use smol_str::SmolStr;
 
 use crate::ast::{MappingElement, MappingElementBody, MappingElementHeader};
 use crate::grammar::{ElementSpan, MappingElementGrammar, MappingElementKind};
-use crate::pure_instance::{balanced, type_text};
 use crate::section::{expression_block, separated};
 
 /// The element type this grammar reads.
@@ -261,24 +261,6 @@ impl MappingElementGrammar for RelationFunctionGrammar {
         }
         Ok((MappingElementKind::Class, json))
     }
-}
-
-/// `my::f(Type[m], …):Type[m]`, as written without spaces (the grammar's
-/// `functionIdentifier`).
-fn function_identifier(ctx: &mut ParserContext<'_>) -> Result<String, ParseError> {
-    let mut text = qualified_name(ctx)?.text;
-    if !ctx.cursor().check(TokenKind::LParen) {
-        return Err(unexpected(ctx.cursor().peek()));
-    }
-    balanced(ctx, &mut text)?;
-    let colon = ctx.cursor().expect(TokenKind::Colon)?;
-    text.push_str(&colon.text);
-    text.push_str(&type_text(ctx)?);
-    if !ctx.cursor().check(TokenKind::LBracket) {
-        return Err(unexpected(ctx.cursor().peek()));
-    }
-    balanced(ctx, &mut text)?;
-    Ok(text)
 }
 
 /// How many tokens a `~src` expression has: up to `~primaryKey`, or the

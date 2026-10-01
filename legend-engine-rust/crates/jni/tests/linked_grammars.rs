@@ -33,7 +33,8 @@ fn library_links_the_section_and_island_grammars() {
             "Relational",
             "Runtime",
             "Service",
-            "ServiceStore"
+            "ServiceStore",
+            "Snowflake"
         ]
     );
     assert!(
