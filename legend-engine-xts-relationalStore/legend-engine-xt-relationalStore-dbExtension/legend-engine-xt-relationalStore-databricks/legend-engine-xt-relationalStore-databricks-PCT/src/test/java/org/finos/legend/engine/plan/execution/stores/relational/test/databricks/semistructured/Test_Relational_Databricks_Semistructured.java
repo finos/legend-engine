@@ -48,17 +48,6 @@ public class Test_Relational_Databricks_Semistructured
         // executor will re-throw wrapped in an AssertionError so we don't silently mask
         // regressions.
         MutableMap<String, String> pathToReason = Maps.mutable.<String, String>empty()
-                // [unsupportedFeature] Collapsing a to-many with joinStrings needs a group-concat
-                // aggregator, and Databricks registers processJoinStringsOperationWithConcatCall -
-                // the string-concat form - so processJoinStringsOperation finds no groupByCat and
-                // refuses. Nothing to do with the array explode: the same call over any grouped
-                // column fails the same way. The other to-many tests in this model pass here.
-                // Added by origin/master's "Fan a to-many bound to a semi-structured array out to
-                // rows" (#5105); this branch has no prior fix for it, unlike the other four
-                // entries master quarantined alongside it in the same commit (see note below).
-                .withKeyValue(
-                        "meta::relational::tests::semistructured::wildcard::testToManyPropertyAggregated_Connection_1__Boolean_1_",
-                        "The database type 'Databricks' is not supported yet!")
                 // [columnPruning] Mixing an extract (variant_get) with an explode over the same
                 // semi-structured array makes Spark's column-pruning rewrite drop the extracted
                 // column before the join that references it, so the generated logical plan probes
