@@ -163,7 +163,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | Done: all match |
 | 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | Done: all match |
 | 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | Done: all match |
-| 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | |
+| 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | Done: all match |
 | 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | |
 | 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | |
 | 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | |
@@ -249,4 +249,13 @@ its keys in the order written, a key written again keeping its place with
 its later value (Jackson's tree), the types' `false` defaults written as the
 engine writes them. A schema it fails on without a message of its own (its
 `bsonType` missing, `regex`, …) is unsupported.
+
+7.10's crate is `dsl-generation`, both sections read whole, then walked
+(the specification's as blocks of fields). A file generation is named by
+its generator's type, any identifier, which the walker lowercases the
+first letter of; its configuration properties have any name: where the
+grammar reads a field both as the generation's own and as a property
+(`scopeElements: ['a'];`, `generationOutputPath: 'p';`), it takes its own,
+and a property of either name is the walker's error. An integer too large
+for a Java `long` makes the engine fail, so Rust reports it unsupported.
 

@@ -30,6 +30,7 @@ members = [
     "crates/dsl-diagram",
     "crates/dsl-elasticsearch",
     "crates/dsl-external-format",
+    "crates/dsl-generation",
     "crates/dsl-graph",
     "crates/dsl-mapping",
     "crates/dsl-mongodb",

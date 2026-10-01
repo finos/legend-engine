@@ -61,6 +61,7 @@ use legend_pure_dsl_deephaven as _;
 use legend_pure_dsl_diagram as _;
 use legend_pure_dsl_elasticsearch as _;
 use legend_pure_dsl_external_format as _;
+use legend_pure_dsl_generation as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
 use legend_pure_dsl_mongodb as _;

@@ -29,7 +29,8 @@ grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-data-space` (`###DataSpace`), `dsl-dataquality`
 (`###DataQualityValidation`), `dsl-diagram` (`###Diagram`),
 `dsl-elasticsearch` (`###Elasticsearch`), `dsl-external-format`
-(`###ExternalFormat`), `dsl-mapping` (`###Mapping`), `dsl-mongodb`
+(`###ExternalFormat`), `dsl-generation` (`###FileGeneration` and
+`###GenerationSpecification`), `dsl-mapping` (`###Mapping`), `dsl-mongodb`
 (`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
 `dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
 (`###Relational`), `dsl-runtime` (`###Runtime`), `dsl-service`
