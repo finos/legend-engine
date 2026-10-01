@@ -126,6 +126,15 @@ function meta::pure::executionPlan::platformBinding::legendJava::fillNewFunction
    ^$context(conventions = ^$oldConventions(newFunctionProhibitedList = $cls->map(c|$c.class())));
 }
 
+// Classes whose interfaces the plan generates from its own type infos. Coders that instantiate classes (e.g. new) must
+// reuse these interfaces rather than generate their own from the full class, or the plan's implementations of them
+// (which only carry the properties the plan needs) no longer compile.
+function meta::pure::executionPlan::platformBinding::legendJava::fillPlanInterfaceClasses(context:GenerationContext[1]):GenerationContext[1]
+{
+   let oldConventions = $context.conventions;
+   ^$context(conventions = ^$oldConventions(planInterfaceClasses = $context.typeInfos->allClassInfos()->map(c|$c.class())));
+}
+
 function meta::pure::executionPlan::platformBinding::legendJava::generatedCode(project:Project[1], entryPoint:meta::external::language::java::metamodel::Class[1]):GeneratedCode[1]
 {
    assert($project->containsClass($entryPoint), 'Entry point class is missing');
