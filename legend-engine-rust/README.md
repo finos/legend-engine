@@ -65,7 +65,7 @@ cargo llvm-cov nextest --workspace --exclude legend-pure-parser-jni --fail-under
 | `legend-pure-dsl-graph` | Graph-fetch island `#{ Class { prop } }#` (parser + protocol) | ast, lexer, parser, protocol |
 | `legend-pure-dsl-store` | Relation-store-accessor island `#>{ store::Db.table }#` (parser + protocol) | ast, lexer, parser, protocol |
 | `legend-pure-dsl-relational` | The relational store: the `###Relational` section (databases), `Relational #{…}#` test data, `Relational` mapping elements and test input, and `RelationalDatabaseConnection` with its specifications (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection |
-| `legend-pure-dsl-mongodb` | The engine's MongoDB extension: `MongoDB` mapping elements and `MongoDBConnection`s (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection, dsl-authentication |
+| `legend-pure-dsl-mongodb` | The engine's MongoDB extension: the `###MongoDB` section's databases, `MongoDB` mapping elements and `MongoDBConnection`s (parser + protocol) | ast, lexer, parser, protocol, dsl-mapping, dsl-connection, dsl-authentication |
 | `legend-pure-dsl-deephaven` | The engine's Deephaven extension: `DeephavenConnection`s (parser + protocol) | ast, lexer, parser, protocol, dsl-connection, dsl-authentication |
 | `legend-pure-dsl-elasticsearch` | The engine's Elasticsearch extension: the `###Elasticsearch` section's stores and `Elasticsearch7ClusterConnection`s (parser + protocol) | ast, lexer, parser, protocol, dsl-connection, dsl-authentication |
 | `legend-pure-dsl-authentication` | The engine's authentication module: connections' authentication specifications, `# Type { … }#`, and their secrets (parser + protocol) | ast, lexer, parser, protocol |

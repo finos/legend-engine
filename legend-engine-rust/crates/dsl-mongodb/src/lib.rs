@@ -33,18 +33,20 @@
 //! )
 //! ```
 //!
-//! The extension's `###MongoDB` section is still to come (step 7 of
-//! `docs/porting-status.md`).
-//!
 //! Crate layout:
 //!
 //! - [`mapping`] — [`mapping::MongoDbMappingGrammar`] registers as
 //!   `dsl-mapping`'s mapping element grammar for `MongoDB`.
 //! - [`connection`] — [`connection::MongoDbConnectionGrammar`] registers as
 //!   `dsl-connection`'s connection grammar for `MongoDBConnection`.
+//! - [`store`] — the `###MongoDB` section, its databases:
+//!   [`store::section::MongoDBSectionParser`] and
+//!   [`store::section::MongoDBProtocol`] register as its section grammar and
+//!   element protocol.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
 pub mod connection;
 pub mod mapping;
+pub mod store;

@@ -72,6 +72,7 @@ fn capabilities_report_linked_grammars() {
             "Elasticsearch",
             "ExternalFormat",
             "Mapping",
+            "MongoDB",
             "Persistence",
             "Relational",
             "Runtime",

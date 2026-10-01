@@ -29,19 +29,18 @@ grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-data-space` (`###DataSpace`), `dsl-dataquality`
 (`###DataQualityValidation`), `dsl-diagram` (`###Diagram`),
 `dsl-elasticsearch` (`###Elasticsearch`), `dsl-external-format`
-(`###ExternalFormat`),
-`dsl-mapping` (`###Mapping`),
-`dsl-persistence` (`###Persistence`, with its extensions'
+(`###ExternalFormat`), `dsl-mapping` (`###Mapping`), `dsl-mongodb`
+(`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
 `dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
 (`###Relational`), `dsl-runtime` (`###Runtime`), `dsl-service`
 (`###Service`), `dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
-(`###Snowflake`); the stores'
-mapping, connection and test data grammars in `dsl-relational`,
-`dsl-relational-snowflake`, `dsl-service-store`, `dsl-mongodb`,
-`dsl-deephaven` and `dsl-elasticsearch`; and the connections' authentication
-grammar `dsl-authentication`. They self-register. To add grammars (e.g.
-Legend Engine's own), build an aggregator `cdylib` that depends on this
-crate and the grammar crates, and force-links them:
+(`###Snowflake`); the stores' mapping, connection and test data grammars in
+`dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,
+`dsl-mongodb`, `dsl-deephaven` and `dsl-elasticsearch`; and the
+connections' authentication grammar `dsl-authentication`. They
+self-register. To add grammars (e.g. Legend Engine's own), build an
+aggregator `cdylib` that depends on this crate and the grammar crates, and
+force-links them:
 
 ```rust
 use legend_pure_rust_parser as _;

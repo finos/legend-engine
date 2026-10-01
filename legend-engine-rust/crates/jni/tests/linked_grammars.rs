@@ -30,6 +30,7 @@ fn library_links_the_section_and_island_grammars() {
             "Elasticsearch",
             "ExternalFormat",
             "Mapping",
+            "MongoDB",
             "Persistence",
             "Relational",
             "Runtime",

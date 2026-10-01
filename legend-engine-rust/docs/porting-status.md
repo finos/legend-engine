@@ -162,7 +162,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.6 | `###Diagram` | diagram | 36 | 20 | Done: all match |
 | 7.7 | `###Snowflake`: Snowflake apps and M2M UDFs | snowflake | 20 | 11 | Done: all match |
 | 7.8 | `###Elasticsearch`: Elasticsearch 7 stores | elasticsearch | 12 | 0 | Done: all match |
-| 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | |
+| 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | Done: all match |
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | |
 | 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | |
 | 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | |
@@ -240,4 +240,13 @@ messages (`Field ''indices'' is required`); an index's or a property's name
 is a `VALID_STRING`, none of the grammar's keywords. A property's own
 properties and fields are maps: a name written twice makes the engine fail
 without a message (`Collectors.toMap`), so Rust reports it unsupported.
+
+7.9's grammar joins `dsl-mongodb` (its `store` module). The walker keeps a
+database's collections with a schema (includes, joins and views are read
+and left out) and reads each schema with the engine's
+`MongoDBSchemaDeserializer`, mirrored here over the JSON the grammar reads:
+its keys in the order written, a key written again keeping its place with
+its later value (Jackson's tree), the types' `false` defaults written as the
+engine writes them. A schema it fails on without a message of its own (its
+`bsonType` missing, `regex`, …) is unsupported.
 
