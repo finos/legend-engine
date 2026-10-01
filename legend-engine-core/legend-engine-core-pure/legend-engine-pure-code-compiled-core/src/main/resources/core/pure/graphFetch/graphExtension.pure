@@ -95,8 +95,8 @@ function <<access.private>> meta::pure::graphFetch::addSubTypeTree(onto:GraphFet
 
    let treeWithSubTypeTrees= $existingSubTrees->match([
       stree0: SubTypeGraphFetchTree[0] | ^$onto(subTypeTrees = $onto.subTypeTrees->concatenate($subTree)),
-      stree : SubTypeGraphFetchTree[1] | ^$onto(subTrees = $onto.subTypeTrees->cast(@SubTypeGraphFetchTree)->filter(st|!$st->forSameSubTypeClass($stree))
-                                                              ->concatenate($stree->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))))        // recursively add subtype trees if already existing subtype tree found
+      stree : SubTypeGraphFetchTree[1] | ^$onto(subTypeTrees = $onto.subTypeTrees->cast(@SubTypeGraphFetchTree)->filter(st|!$st->forSameSubTypeClass($stree))
+                                                              ->concatenate($stree->addSubTrees($subTree.subTrees->cast(@PropertyGraphFetchTree))->addSubTypeTrees($subTree.subTypeTrees->cast(@SubTypeGraphFetchTree))->cast(@SubTypeGraphFetchTree)))        // merge into the existing subtype tree for the same class
 
    ]);
    let treeWithBasePropertiesCopiedToSubTypeTrees = $treeWithSubTypeTrees->meta::pure::graphFetch::copyPropertiesFromBaseTreeToSubTypeTrees();
