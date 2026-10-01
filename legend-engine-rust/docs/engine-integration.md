@@ -120,7 +120,8 @@ legend-pure takes its own back:
   `dsl-runtime`, `dsl-service`, `dsl-persistence` and its extensions',
   `dsl-data-space`, `dsl-dataquality`, `dsl-diagram`,
   `dsl-external-format`, `dsl-function-activator`, `dsl-generation`,
-  `dsl-relational-snowflake`, `dsl-service-store`, `dsl-snowflake`,
+  `dsl-memsql-function`, `dsl-relational-snowflake`, `dsl-service-store`,
+  `dsl-snowflake`,
   `dsl-mongodb`, `dsl-deephaven`, `dsl-elasticsearch`,
   `dsl-authentication`; the data space include is read in `dsl-mapping`),
   depending on the legend-pure crates.

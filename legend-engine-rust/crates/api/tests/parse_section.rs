@@ -27,6 +27,7 @@ use legend_pure_dsl_external_format as _;
 use legend_pure_dsl_generation as _;
 use legend_pure_dsl_graph as _;
 use legend_pure_dsl_mapping as _;
+use legend_pure_dsl_memsql_function as _;
 use legend_pure_dsl_mongodb as _;
 use legend_pure_dsl_persistence as _;
 use legend_pure_dsl_persistence_cloud as _;
@@ -76,6 +77,7 @@ fn capabilities_report_linked_grammars() {
             "FileGeneration",
             "GenerationSpecification",
             "Mapping",
+            "MemSql",
             "MongoDB",
             "Persistence",
             "QueryPostProcessor",

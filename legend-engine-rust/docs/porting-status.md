@@ -166,7 +166,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | Done: all match |
 | 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | Done: all match |
 | 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | Done: all match |
-| 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | |
+| 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | Done: all match |
 | 7.14 | `###HostedService` | hostedService | 6 | 1 | |
 | 7.15 | `###BigQuery`: BigQuery functions | bigqueryFunction | 6 | 3 | |
 | 7.16 | `###Text` | text | 6 | 3 | |
@@ -281,4 +281,12 @@ qualified names and its multiplicities `[*]`, `[n]`, `[n . . m]` or
 rule doesn't take (`[0..1]` is a syntax error), and `.1` as a float. A
 decimal's precision or scale too large for a Java `long` makes the engine
 fail, so Rust reports it unsupported.
+
+7.13's crate is `dsl-memsql-function`, read and walked as 7.7's, with
+`dsl-function-activator`. A function's activation configuration keeps its
+connection as written (`getText()`, quotes kept), unpositioned, as the
+walker leaves it. The walker makes a deployment configuration,
+`MemSqlFunctionDeploymentConfiguration my::C { … }`, an element without a
+name or a package (its path `null` in the section's index), which Rust
+reports unsupported, after the functions' errors; no test writes one.
 

@@ -34,6 +34,7 @@ members = [
     "crates/dsl-generation",
     "crates/dsl-graph",
     "crates/dsl-mapping",
+    "crates/dsl-memsql-function",
     "crates/dsl-mongodb",
     "crates/dsl-persistence",
     "crates/dsl-persistence-cloud",

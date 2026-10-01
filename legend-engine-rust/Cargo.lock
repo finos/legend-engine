@@ -433,6 +433,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "legend-pure-dsl-memsql-function"
+version = "0.1.0"
+dependencies = [
+ "legend-pure-dsl-function-activator",
+ "legend-pure-parser-ast",
+ "legend-pure-parser-lexer",
+ "legend-pure-parser-parser",
+ "legend-pure-parser-protocol",
+ "linkme",
+ "serde_json",
+]
+
+[[package]]
 name = "legend-pure-dsl-mongodb"
 version = "0.1.0"
 dependencies = [
@@ -629,6 +642,7 @@ dependencies = [
  "legend-pure-dsl-generation",
  "legend-pure-dsl-graph",
  "legend-pure-dsl-mapping",
+ "legend-pure-dsl-memsql-function",
  "legend-pure-dsl-mongodb",
  "legend-pure-dsl-persistence",
  "legend-pure-dsl-persistence-cloud",
@@ -684,6 +698,7 @@ dependencies = [
  "legend-pure-dsl-generation",
  "legend-pure-dsl-graph",
  "legend-pure-dsl-mapping",
+ "legend-pure-dsl-memsql-function",
  "legend-pure-dsl-mongodb",
  "legend-pure-dsl-persistence",
  "legend-pure-dsl-persistence-cloud",

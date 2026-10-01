@@ -31,13 +31,14 @@ grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-diagram` (`###Diagram`), `dsl-elasticsearch` (`###Elasticsearch`),
 `dsl-external-format` (`###ExternalFormat`), `dsl-generation`
 (`###FileGeneration` and `###GenerationSpecification`), `dsl-mapping`
-(`###Mapping`), `dsl-mongodb` (`###MongoDB`), `dsl-persistence`
-(`###Persistence`, with its extensions' `dsl-persistence-relational` and
-`dsl-persistence-cloud`), `dsl-relational` (`###Relational` and
-`###QueryPostProcessor`), `dsl-runtime` (`###Runtime`), `dsl-service`
-(`###Service`), `dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
-(`###Snowflake`); the stores' mapping, connection and test data grammars in
-`dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,
+(`###Mapping`), `dsl-memsql-function` (`###MemSql`), `dsl-mongodb`
+(`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
+`dsl-persistence-relational` and `dsl-persistence-cloud`),
+`dsl-relational` (`###Relational` and `###QueryPostProcessor`),
+`dsl-runtime` (`###Runtime`), `dsl-service` (`###Service`),
+`dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
+(`###Snowflake`); the stores' mapping, connection and test data grammars
+in `dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,
 `dsl-mongodb`, `dsl-deephaven` and `dsl-elasticsearch`; and the
 connections' authentication grammar `dsl-authentication`. They
 self-register. To add grammars (e.g. Legend Engine's own), build an
