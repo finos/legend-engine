@@ -165,7 +165,7 @@ names the subphase each waits for (`grep -c 'step 7.1 '` counts 7.1's).
 | 7.9 | `###MongoDB`: MongoDB stores | mongodb | 12 | 0 | Done: all match |
 | 7.10 | `###FileGeneration` and `###GenerationSpecification` | generation | 15 | 6 | Done: all match |
 | 7.11 | `###QueryPostProcessor`: relational mappers | relationalStore | 10 | 0 | Done: all match |
-| 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | |
+| 7.12 | `###Deephaven`: Deephaven stores and apps | deephaven | 9 | 0 | Done: all match |
 | 7.13 | `###MemSql`: MemSQL functions | memsqlFunction | 7 | 4 | |
 | 7.14 | `###HostedService` | hostedService | 6 | 1 | |
 | 7.15 | `###BigQuery`: BigQuery functions | bigqueryFunction | 6 | 3 | |
@@ -231,7 +231,7 @@ its deployment configurations are read and left out, as the walker leaves
 them. A function's identifier, `my::f(String[1]):String[1]`, is read as
 written without spaces, by the parser's `forms::function_identifier`
 (shared with `dsl-mapping`'s relation function mappings and the other
-function activators).
+function activators, but Deephaven's: see 7.12).
 
 7.8's grammar joins the crate of the store's connection grammar,
 `dsl-elasticsearch` (its `store` module), read and walked the same way.
@@ -263,4 +263,18 @@ for a Java `long` makes the engine fail, so Rust reports it unsupported.
 `mapper` module): relational mappers, whose walker checks nothing its
 grammar doesn't, read into their records directly. Not reproduced: the
 walker keeps a section's imports only when it has a mapper.
+
+7.12's grammar joins the crate of the store's connection grammar,
+`dsl-deephaven` (its `store` module), read and walked the same way, its
+stores first, then its apps. The walker names a store's fields by the
+lexer's literal names (`Field ''tables'' is required`); a table's or a
+column's name is a `VALID_STRING`, none of the grammar's keywords, and
+columns written without a comma between them start another list of them,
+of which the walker takes one. An app's function has the grammar's own
+rule, `appFunctionIdentifier`, read by its own reader: its types are
+qualified names and its multiplicities `[*]`, `[n]`, `[n . . m]` or
+`[n . . *]`, since the engine's lexer reads `..` as one token, which the
+rule doesn't take (`[0..1]` is a syntax error), and `.1` as a float. A
+decimal's precision or scale too large for a Java `long` makes the engine
+fail, so Rust reports it unsupported.
 

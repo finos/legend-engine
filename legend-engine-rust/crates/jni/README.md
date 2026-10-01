@@ -27,13 +27,14 @@ The library links the island grammars `dsl-graph` (`#{…}#`), `dsl-store`
 (`#>{…}#`), `dsl-sql` (`#SQL{…}#`) and `dsl-tds` (`#TDS{…}#`); the section
 grammars `dsl-connection` (`###Connection`), `dsl-data` (`###Data`),
 `dsl-data-space` (`###DataSpace`), `dsl-dataquality`
-(`###DataQualityValidation`), `dsl-diagram` (`###Diagram`),
-`dsl-elasticsearch` (`###Elasticsearch`), `dsl-external-format`
-(`###ExternalFormat`), `dsl-generation` (`###FileGeneration` and
-`###GenerationSpecification`), `dsl-mapping` (`###Mapping`), `dsl-mongodb`
-(`###MongoDB`), `dsl-persistence` (`###Persistence`, with its extensions'
-`dsl-persistence-relational` and `dsl-persistence-cloud`), `dsl-relational`
-(`###Relational` and `###QueryPostProcessor`), `dsl-runtime` (`###Runtime`), `dsl-service`
+(`###DataQualityValidation`), `dsl-deephaven` (`###Deephaven`),
+`dsl-diagram` (`###Diagram`), `dsl-elasticsearch` (`###Elasticsearch`),
+`dsl-external-format` (`###ExternalFormat`), `dsl-generation`
+(`###FileGeneration` and `###GenerationSpecification`), `dsl-mapping`
+(`###Mapping`), `dsl-mongodb` (`###MongoDB`), `dsl-persistence`
+(`###Persistence`, with its extensions' `dsl-persistence-relational` and
+`dsl-persistence-cloud`), `dsl-relational` (`###Relational` and
+`###QueryPostProcessor`), `dsl-runtime` (`###Runtime`), `dsl-service`
 (`###Service`), `dsl-service-store` (`###ServiceStore`) and `dsl-snowflake`
 (`###Snowflake`); the stores' mapping, connection and test data grammars in
 `dsl-relational`, `dsl-relational-snowflake`, `dsl-service-store`,

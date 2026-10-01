@@ -14,7 +14,7 @@
 
 [package]
 name = "legend-pure-dsl-deephaven"
-description = "Deephaven grammars for Legend Pure: `DeephavenConnection`s"
+description = "Deephaven grammars for Legend Pure: `DeephavenConnection`s and the `###Deephaven` section"
 edition.workspace = true
 version.workspace = true
 license.workspace = true
@@ -29,3 +29,4 @@ legend-pure-parser-parser = { path = "../parser" }
 legend-pure-parser-protocol = { path = "../protocol" }
 linkme = { workspace = true }
 serde_json = { workspace = true }
+smol_str = { workspace = true }

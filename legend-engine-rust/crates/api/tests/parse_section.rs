@@ -69,6 +69,7 @@ fn capabilities_report_linked_grammars() {
             "Data",
             "DataQualityValidation",
             "DataSpace",
+            "Deephaven",
             "Diagram",
             "Elasticsearch",
             "ExternalFormat",

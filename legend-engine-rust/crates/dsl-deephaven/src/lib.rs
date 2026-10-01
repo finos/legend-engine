@@ -14,10 +14,11 @@
 
 //! # Legend Pure — Deephaven grammars
 //!
-//! The engine's Deephaven store extension (`legend-engine-xts-deephaven`):
-//! `DeephavenConnection`s, a Deephaven server's URL and authentication
-//! (`DeephavenConnectionParserGrammar` and its walker), the engine's
-//! `DeephavenConnection`.
+//! The engine's Deephaven extension (`legend-engine-xts-deephaven`):
+//!
+//! - `DeephavenConnection`s, a Deephaven server's URL and authentication
+//!   (`DeephavenConnectionParserGrammar` and its walker), the engine's
+//!   `DeephavenConnection`:
 //!
 //! ```pure
 //! ###Connection
@@ -29,15 +30,20 @@
 //! }
 //! ```
 //!
-//! The extension's `###Deephaven` section is still to come (step 7 of
-//! `docs/porting-status.md`).
+//! - the `###Deephaven` section, its stores' tables and columns and its
+//!   apps (`DeephavenParserGrammar` and `DeephavenParseTreeWalker`), the
+//!   engine's `DeephavenStore` and `DeephavenApp`.
 //!
 //! Crate layout:
 //!
 //! - [`connection`] — [`connection::DeephavenConnectionGrammar`] registers
 //!   as `dsl-connection`'s connection grammar for `DeephavenConnection`.
+//! - [`store`] — [`store::section::DeephavenSectionParser`] and
+//!   [`store::section::DeephavenProtocol`], the section's parser and its
+//!   elements' JSON.
 
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
 pub mod connection;
+pub mod store;

@@ -19,10 +19,8 @@
 9af6a233d74ce934  accepted: a data space executable with neither a query nor an executable; the engine rejects it without a position, which a Rust error always has, so Rust reports it unsupported and the engine then parses the section
 3f46588323583c5e  accepted: a schema set in the format `Example`, which only the engine's tests define; Rust knows the formats the engine's modules define and reports another unsupported, for the engine to check against the formats it has
 024e8df2f691cbf4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
-03fce135d98edefe  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 0e4aa0a30ef8815f  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
 14d1b45a72c5a182  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
-18891a734607ebe2  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 192e4a8912992ec3  unsupported: not ported yet: step 7.16 (the `###Text` section)
 19f35079c1a46b4a  unsupported: not ported yet: step 7.14 (the `###HostedService` section)
 1e92913c475ac2f0  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
@@ -35,12 +33,10 @@
 5684d1bc292024ec  accepted: the engine rejects a test assertion of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 5a50a5d4628ccda1  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
 5c33b806ccf794f4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
-6a8c873ad52bb617  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 7092637e65a2ca4d  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
 79cfe0529df9b41e  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
 79db6a57947b61f1  unsupported: not ported yet: step 7.14 (the `###HostedService` section)
 7c170dfd49f35bfa  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-7ca8903f2e7d20cb  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 7e61052a44a56d92  unsupported: not ported yet: step 7.16 (the `###Text` section)
 8611963027f901f8  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
 92ac36b9207ff18b  unsupported: not ported yet: step 7.14 (the `###HostedService` section)
@@ -51,16 +47,11 @@ a4d0c70325faf21e  unsupported: not ported yet: step 7.16 (the `###Text` section)
 af6653c3bb096f1d  accepted: the engine rejects a query generation config of type `UnknownConfig`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 b1f0017c83c207bb  accepted: the engine rejects a service store security scheme of type `INVALID`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 b5e5df0802ef7981  accepted: the engine rejects a persistence platform of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
-b6c96d43012f124c  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
-bd8a8285e1dcaabc  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
-d292f7a9813f9df1  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 d3be8c92e5bf6162  accepted: the engine rejects a mapping element of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section
 da7c272c55445935  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
-e326c204be8c1e57  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 e3c93e7e4f4b14d4  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 e61fc8c2f87416a1  unsupported: not ported yet: step 7.13 (the `###MemSql` section)
 e782ee97fbd0a20b  unsupported: not ported yet: step 7.14 (the `###HostedService` section)
 f03e838859ac1de8  unsupported: not ported yet: step 7.15 (the `###BigQuery` section)
 f97ffa54b5d776c8  unsupported: not ported yet: step 7.17 (the `###FunctionJar` section)
-fbf834c215428e8f  unsupported: not ported yet: step 7.12 (the `###Deephaven` section)
 fdf962a97b129789  accepted: the engine rejects embedded data of type `Unknown`, which no grammar reads; Rust reports it unsupported, as an engine extension may read it, and the engine then parses the section

@@ -333,6 +333,7 @@ dependencies = [
  "legend-pure-parser-protocol",
  "linkme",
  "serde_json",
+ "smol_str",
 ]
 
 [[package]]
