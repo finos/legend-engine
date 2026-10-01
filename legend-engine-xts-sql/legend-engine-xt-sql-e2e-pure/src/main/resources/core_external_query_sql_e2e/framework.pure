@@ -283,378 +283,53 @@ function meta::external::query::sql::e2e::buildTestReport(results:SqlE2ETestResu
 
 
 // ---------------------------------------------------------------------------------------------
-// Zero-arg entry points, one per corpus category, so `pure-lsp execute <path>` and
-// `pure-lsp execute-parallel` can drive them directly. Generated from SqlE2ERunner.TEST_FILES.
+// Entry points the LSP can invoke directly. It binds String[1] literals only, so a mode arrives as
+// the name of a SqlE2EPath value rather than as the enum - which is what lets a case run from
+// `pure-sql-e2e` with no wrapper function generated into this file.
 // ---------------------------------------------------------------------------------------------
 
-function meta::external::query::sql::e2e::run::smoke_tests():SqlE2EOutcome[*]
+function meta::external::query::sql::e2e::pathFromName(mode:String[1]):SqlE2EPath[1]
 {
-  meta::external::query::sql::e2e::run('smoke_tests')
+  meta::pure::functions::lang::extractEnumValue(SqlE2EPath, $mode)->cast(@SqlE2EPath)
 }
 
-function meta::external::query::sql::e2e::run::functions_math_functions():SqlE2EOutcome[*]
+// One case in one mode, shaped as a test: PASS passes, every other status fails. The corpus
+// baseline is deliberately not consulted - this reports what the case does now.
+function meta::external::query::sql::e2e::checkCase(caseId:String[1], mode:String[1]):Boolean[1]
 {
-  meta::external::query::sql::e2e::run('functions/math_functions')
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($caseId, meta::external::query::sql::e2e::pathFromName($mode));
+  let label = $caseId + '|' + $mode;
+  println('STATUS|' + $label + '|' + $r.status.name + '|' + $r.elapsed->toString());
+  assert($r.status == SqlE2ETestStatus.PASS,
+         | $label + ' ' + $r.status.name
+           + if($r.message->isNotEmpty(), | ': ' + $r.message->toOne(), | ''));
+  true;
 }
 
-function meta::external::query::sql::e2e::run::functions_string_functions():SqlE2EOutcome[*]
+// filters is comma-separated so several ids or categories resolve in one call.
+function meta::external::query::sql::e2e::caseIndex(filters:String[1]):String[1]
 {
-  meta::external::query::sql::e2e::run('functions/string_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_binary_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/binary_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_pgcrypto_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/pgcrypto_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_pattern_matching():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/pattern_matching')
-}
-
-function meta::external::query::sql::e2e::run::functions_formatting_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/formatting_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_datetime_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/datetime_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_date_literals():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/date_literals')
-}
-
-function meta::external::query::sql::e2e::run::functions_conditional_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/conditional_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_json_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/json_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_array_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/array_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_aggregate_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/aggregate_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_window_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/window_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_network_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/network_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_system_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/system_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_sequence_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/sequence_functions')
-}
-
-function meta::external::query::sql::e2e::run::functions_set_returning_functions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('functions/set_returning_functions')
-}
-
-function meta::external::query::sql::e2e::run::operators_math_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/math_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_string_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/string_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_comparison_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/comparison_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_logical_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/logical_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_pattern_matching_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/pattern_matching_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_json_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/json_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_datetime_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/datetime_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_other_type_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/other_type_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_bitstring_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/bitstring_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_array_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/array_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_range_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/range_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_network_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/network_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_fts_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/fts_operators')
-}
-
-function meta::external::query::sql::e2e::run::operators_geometric_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('operators/geometric_operators')
-}
-
-function meta::external::query::sql::e2e::run::predicates_comparison_predicates():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('predicates/comparison_predicates')
-}
-
-function meta::external::query::sql::e2e::run::format_tokens_to_char_tokens():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('format_tokens/to_char_tokens')
-}
-
-function meta::external::query::sql::e2e::run::format_tokens_extract_fields():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('format_tokens/extract_fields')
-}
-
-function meta::external::query::sql::e2e::run::structural_joins():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/joins')
-}
-
-function meta::external::query::sql::e2e::run::structural_unions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/unions')
-}
-
-function meta::external::query::sql::e2e::run::structural_subqueries():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/subqueries')
-}
-
-function meta::external::query::sql::e2e::run::structural_ctes():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/ctes')
-}
-
-function meta::external::query::sql::e2e::run::structural_order_limit_offset():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/order_limit_offset')
-}
-
-function meta::external::query::sql::e2e::run::structural_group_by():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/group_by')
-}
-
-function meta::external::query::sql::e2e::run::structural_distinct():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/distinct')
-}
-
-function meta::external::query::sql::e2e::run::structural_null_semantics():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/null_semantics')
-}
-
-function meta::external::query::sql::e2e::run::structural_type_casting():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/type_casting')
-}
-
-function meta::external::query::sql::e2e::run::structural_case_expressions():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/case_expressions')
-}
-
-function meta::external::query::sql::e2e::run::structural_where_predicates():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/where_predicates')
-}
-
-function meta::external::query::sql::e2e::run::structural_aliases():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/aliases')
-}
-
-function meta::external::query::sql::e2e::run::structural_having():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/having')
-}
-
-function meta::external::query::sql::e2e::run::structural_lateral_joins():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/lateral_joins')
-}
-
-function meta::external::query::sql::e2e::run::structural_boolean_logic():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/boolean_logic')
-}
-
-function meta::external::query::sql::e2e::run::structural_select_star():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/select_star')
-}
-
-function meta::external::query::sql::e2e::run::structural_multiple_schemas():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/multiple_schemas')
-}
-
-function meta::external::query::sql::e2e::run::structural_json_operators():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/json_operators')
-}
-
-function meta::external::query::sql::e2e::run::structural_interval_arithmetic():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/interval_arithmetic')
-}
-
-function meta::external::query::sql::e2e::run::structural_column_resolution_across_renames():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/column_resolution_across_renames')
-}
-
-function meta::external::query::sql::e2e::run::structural_column_resolution_corpus_shapes():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/column_resolution_corpus_shapes')
-}
-
-function meta::external::query::sql::e2e::run::structural_grouping_sets():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/grouping_sets')
-}
-
-function meta::external::query::sql::e2e::run::structural_filter_clause():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/filter_clause')
-}
-
-function meta::external::query::sql::e2e::run::structural_within_group():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/within_group')
-}
-
-function meta::external::query::sql::e2e::run::structural_tablesample():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/tablesample')
-}
-
-function meta::external::query::sql::e2e::run::structural_fetch_with_ties():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/fetch_with_ties')
-}
-
-function meta::external::query::sql::e2e::run::structural_recursive_ctes():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/recursive_ctes')
-}
-
-function meta::external::query::sql::e2e::run::structural_values_clause():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('structural/values_clause')
-}
-
-function meta::external::query::sql::e2e::run::window_frames_frame_types():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('window_frames/frame_types')
-}
-
-function meta::external::query::sql::e2e::run::window_frames_partition_ordering():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('window_frames/partition_ordering')
-}
-
-function meta::external::query::sql::e2e::run::window_frames_frame_exclusion():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('window_frames/frame_exclusion')
-}
-
-function meta::external::query::sql::e2e::run::window_frames_named_windows():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('window_frames/named_windows')
-}
-
-function meta::external::query::sql::e2e::run::compositions_agg_window_mix():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('compositions/agg_window_mix')
-}
-
-function meta::external::query::sql::e2e::run::compositions_multi_join_agg():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('compositions/multi_join_agg')
-}
-
-function meta::external::query::sql::e2e::run::compositions_stress_queries():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('compositions/stress_queries')
-}
-
-function meta::external::query::sql::e2e::run::compositions_nested_subqueries():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('compositions/nested_subqueries')
-}
-
-function meta::external::query::sql::e2e::run::compositions_window_over_agg():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('compositions/window_over_agg')
-}
-
-function meta::external::query::sql::e2e::run::all():SqlE2EOutcome[*]
-{
-  meta::external::query::sql::e2e::run('')
+  let out = $filters->split(',')
+    ->map(f | meta::external::query::sql::e2e::resolveCaseRefs($f->trim()))
+    ->map(r | $r.corpusId + '|' + $r.path.name)
+    ->removeDuplicates()
+    ->joinStrings('\n');
+  println($out);
+  $out;
 }
 
 function meta::external::query::sql::e2e::diagCase(caseId:String[1]):String[1]
 {
   let rep = meta::external::query::sql::e2e::run($caseId)->map(o | 'STATUS=' + meta::external::query::sql::e2e::statusLabel($o) + ' ' + $o.id + if($o.result.message->isNotEmpty(), | '\n' + $o.result.message->toOne(), | ''))->joinStrings('\n---\n');
+  println($rep);
+  $rep;
+}
+
+function meta::external::query::sql::e2e::diagCase(caseId:String[1], mode:String[1]):String[1]
+{
+  let r = meta::external::query::sql::e2e::executeSQLE2ETest($caseId, meta::external::query::sql::e2e::pathFromName($mode));
+  let rep = 'STATUS=' + $r.status.name + ' ' + $r.id
+            + if($r.message->isNotEmpty(), | '\n' + $r.message->toOne(), | '');
   println($rep);
   $rep;
 }
@@ -672,5 +347,7 @@ function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], path:SqlE2EPa
   $rep;
 }
 
-// GENERATED-CASE-RUNNERS-START
-// GENERATED-CASE-RUNNERS-END
+function meta::external::query::sql::e2e::diagAdhoc(sql:String[1], mode:String[1]):String[1]
+{
+  meta::external::query::sql::e2e::diagAdhoc($sql, meta::external::query::sql::e2e::pathFromName($mode))
+}

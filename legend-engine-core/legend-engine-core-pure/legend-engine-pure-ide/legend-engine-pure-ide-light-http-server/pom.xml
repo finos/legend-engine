@@ -487,8 +487,16 @@
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.finos.legend.engine</groupId>
-                    <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentelemetry.instrumentation</groupId>
+                    <artifactId>opentelemetry-logback-mdc-1.0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.docker-java</groupId>
+                    <artifactId>docker-java-transport-httpclient5</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -499,8 +507,16 @@
             <scope>runtime</scope>
             <exclusions>
                 <exclusion>
-                    <groupId>org.finos.legend.engine</groupId>
-                    <artifactId>legend-engine-xt-sql-postgres-server</artifactId>
+                    <groupId>io.opentelemetry</groupId>
+                    <artifactId>opentelemetry-exporter-zipkin</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.opentelemetry.instrumentation</groupId>
+                    <artifactId>opentelemetry-logback-mdc-1.0</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.github.docker-java</groupId>
+                    <artifactId>docker-java-transport-httpclient5</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
