@@ -21,8 +21,8 @@
 //! | Java | Rust |
 //! |---|---|
 //! | `String capabilities()` | [`legend_pure_parser_api::capabilities_json`] |
-//! | `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)` | [`legend_pure_parser_api::parse_section_json`] |
-//! | `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)` | [`legend_pure_parser_api::parse_expression_json`] |
+//! | `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_section_json`] |
+//! | `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | [`legend_pure_parser_api::parse_expression_json`] |
 //!
 //! The surface is generic: adding a grammar never changes it. The grammars
 //! available are whatever crates are linked into the library — here every
@@ -46,7 +46,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
-use jni::sys::{jboolean, jint, jstring};
+use jni::sys::{jint, jstring};
 use legend_pure_parser_api::{
     ErrorKind, ExpressionKind, ExpressionRequest, SectionError, SectionRequest,
 };
@@ -107,10 +107,8 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
 }
 
 /// `static native String parseSection(String sectionType, String code,
-/// String sourceId, int lineOffset, int columnOffset,
-/// boolean returnSourceInfo)`.
+/// String sourceId, int lineOffset, int columnOffset)`.
 #[unsafe(no_mangle)]
-#[allow(clippy::too_many_arguments)] // Mirrors the Java signature.
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseSection<
     'local,
 >(
@@ -121,7 +119,6 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     source_id: JString<'local>,
     line_offset: jint,
     column_offset: jint,
-    return_source_info: jboolean,
 ) -> jstring {
     respond(&mut env, |env| {
         let section_type = java_string(env, &section_type, "sectionType")?;
@@ -134,17 +131,14 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
                 source_id: &source_id,
                 line_offset,
                 column_offset,
-                return_source_info: return_source_info != 0,
             },
         ))
     })
 }
 
 /// `static native String parseExpression(String kind, String code,
-/// String sourceId, int lineOffset, int columnOffset,
-/// boolean returnSourceInfo)`.
+/// String sourceId, int lineOffset, int columnOffset)`.
 #[unsafe(no_mangle)]
-#[allow(clippy::too_many_arguments)] // Mirrors the Java signature.
 pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParser_parseExpression<
     'local,
 >(
@@ -155,7 +149,6 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
     source_id: JString<'local>,
     line_offset: jint,
     column_offset: jint,
-    return_source_info: jboolean,
 ) -> jstring {
     respond(&mut env, |env| {
         let kind_name = java_string(env, &kind, "kind")?;
@@ -175,7 +168,6 @@ pub extern "system" fn Java_org_finos_legend_pure_rust_parser_NativeGrammarParse
                 source_id: &source_id,
                 line_offset,
                 column_offset,
-                return_source_info: return_source_info != 0,
             },
         ))
     })

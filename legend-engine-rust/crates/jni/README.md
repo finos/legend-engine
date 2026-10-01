@@ -10,8 +10,8 @@ JNI bridge for the Rust grammar parser. Builds `liblegend_pure_rust_parser`
 | Java (`static native`) | Returns |
 |---|---|
 | `String capabilities()` | `{"sections":[…],"islands":[…]}` — the grammars linked into this library |
-| `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)` | `{"elements":[…],"imports":[…]}` (`imports` absent for a grammar without them) or `{"error":{"kind","message","sourceInformation"?}}` |
-| `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo)` | `{"value":…}` (`kind`: `lambda`, `valueSpecification` or `graphFetch`) or the same error JSON |
+| `String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset)` | `{"elements":[…],"imports":[…]}` (`imports` absent for a grammar without them) or `{"error":{"kind","message","sourceInformation"?}}` |
+| `String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset)` | `{"value":…}` (`kind`: `lambda`, `valueSpecification` or `graphFetch`) or the same error JSON |
 
 `kind` is `parser` (syntax error), `unsupported` (valid input this build
 cannot convert — fall back to the Java parser) or `internal`. The contract

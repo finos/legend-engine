@@ -67,6 +67,14 @@ final class RustSectionResult
                     .addDeserializer(Number.class, new NumberFloatsAsDoubles()));
 
     /**
+     * {@link #MAPPER}, reading every source information as null: the Rust parser always reports positions, and the
+     * Java parser builds none when its caller asks for none.
+     */
+    static final ObjectMapper MAPPER_WITHOUT_SOURCE_INFORMATION = MAPPER.copy()
+            .registerModule(new SimpleModule("rustParserWithoutSourceInformation")
+                    .addDeserializer(SourceInformation.class, new SourceInformationAsNull()));
+
+    /**
      * The class instance types the protocol extensions on this classpath map to protocol classes.
      */
     private static final Set<String> CLASS_INSTANCE_TYPES = PureProtocolObjectMapperFactory.getClassInstanceTypeMappings().keySet();
@@ -110,7 +118,7 @@ final class RustSectionResult
     static RustSectionResult parse(SectionSourceCode code, boolean returnSourceInfo)
     {
         ParseTreeWalkerSourceInformation walker = code.walkerSourceInformation;
-        String json = NativeGrammarParser.parseSection(code.sectionType, code.code, walker.getSourceId(), walker.getLineOffset(), walker.getColumnOffset(), returnSourceInfo);
+        String json = NativeGrammarParser.parseSection(code.sectionType, code.code, walker.getSourceId(), walker.getLineOffset(), walker.getColumnOffset());
         if (json == null)
         {
             return internalError("the Rust parser returned no result");
@@ -130,10 +138,11 @@ final class RustSectionResult
                 // An island whose engine extension is not on this classpath: the Java parser reports that.
                 return new RustSectionResult(Collections.emptyList(), Collections.emptyList(), UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
             }
+            ObjectMapper mapper = returnSourceInfo ? MAPPER : MAPPER_WITHOUT_SOURCE_INFORMATION;
             List<PackageableElement> elements = new ArrayList<>();
             for (JsonNode element : root.path("elements"))
             {
-                elements.add(MAPPER.treeToValue(element, PackageableElement.class));
+                elements.add(mapper.treeToValue(element, PackageableElement.class));
             }
             List<String> imports = null;
             if (root.has("imports"))
@@ -255,6 +264,24 @@ final class RustSectionResult
         public Number deserialize(JsonParser parser, DeserializationContext context) throws IOException
         {
             return parser.hasToken(JsonToken.VALUE_NUMBER_FLOAT) ? (Number) parser.getDoubleValue() : (Number) NumberDeserializers.NumberDeserializer.instance.deserialize(parser, context);
+        }
+    }
+
+    /**
+     * Source information, skipped and read as null.
+     */
+    private static final class SourceInformationAsNull extends StdDeserializer<SourceInformation>
+    {
+        private SourceInformationAsNull()
+        {
+            super(SourceInformation.class);
+        }
+
+        @Override
+        public SourceInformation deserialize(JsonParser parser, DeserializationContext context) throws IOException
+        {
+            parser.skipChildren();
+            return null;
         }
     }
 

@@ -59,7 +59,6 @@ fn pure(code: &str) -> SectionRequest<'_> {
         source_id: "model.pure",
         line_offset: -1,
         column_offset: 0,
-        return_source_info: true,
     }
 }
 
@@ -141,15 +140,6 @@ fn elements_and_imports_with_document_positions() {
     assert_eq!(class["sourceInformation"]["startLine"], 2);
     assert_eq!(class["sourceInformation"]["sourceId"], "model.pure");
     assert_eq!(class["properties"][0]["sourceInformation"]["startLine"], 4);
-}
-
-#[test]
-fn no_source_information_when_not_requested() {
-    let mut request = pure("\nClass <<doc.deprecated>> a::A { p: String[1]; }\n");
-    request.return_source_info = false;
-    let result = parse_section(&request).expect("parses");
-    let json = serde_json::to_string(&result.elements).expect("serializes");
-    assert!(!json.contains("ourceInformation"), "{json}");
 }
 
 #[test]
@@ -321,14 +311,6 @@ fn an_expected_relation_is_positioned_as_the_engine_does() {
     );
     // `:` right after `#{`, to the `;` ending the text's second line.
     assert_eq!(span(expected), (7, 5, 8, 12));
-
-    // Unlike an `equalTo`'s, the relation has no positions when none are
-    // asked for: the engine reads it with the section's own setting.
-    let mut request = pure(code);
-    request.return_source_info = false;
-    let result = parse_section(&request).expect("parses");
-    let expected = &result.elements[0]["tests"][0]["tests"][0]["assertions"][0]["expected"];
-    assert!(expected.get("sourceInformation").is_none(), "{expected}");
 }
 
 #[test]

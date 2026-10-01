@@ -73,7 +73,7 @@ public final class NativeGrammarParser
     /**
      * Parses one grammar section body into Protocol v1 elements.
      *
-     * <p>{@code code} is the section body without its {@code ###} header; positions are reported in document
+     * <p>{@code code} is the section body without its {@code ###} header; positions are always reported, in document
      * coordinates using the offsets, as the engine's section parsers receive them.</p>
      *
      * @param sectionType      the section type from the header, e.g. {@code Pure}
@@ -81,28 +81,26 @@ public final class NativeGrammarParser
      * @param sourceId         the source id reported in source information
      * @param lineOffset       added to every line number
      * @param columnOffset     added to column numbers on the body's first line
-     * @param returnSourceInfo whether to emit source information
      * @return JSON {@code {"elements":[...],"imports":[...]}} ({@code imports} absent when the section's grammar has
      *     none), or {@code {"error":{"kind","message",...}}} where kind is {@code parser}, {@code unsupported} or
      *     {@code internal}; null only if the result could not be allocated
      */
-    public static native String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo);
+    public static native String parseSection(String sectionType, String code, String sourceId, int lineOffset, int columnOffset);
 
     /**
      * Parses a standalone expression into Protocol v1, as the engine's {@code PureGrammarParser} parses lambdas
      * ({@code parseLambda}), value specifications ({@code parseValueSpecification}) and graph fetch trees
-     * ({@code parseGraphFetch}).
+     * ({@code parseGraphFetch}), with positions.
      *
      * @param kind             {@code lambda}, {@code valueSpecification} or {@code graphFetch}
      * @param code             the expression's text
      * @param sourceId         the source id reported in source information
      * @param lineOffset       added to every line number
      * @param columnOffset     added to column numbers on the text's first line
-     * @param returnSourceInfo whether to emit source information
      * @return JSON {@code {"value":...}} (a lambda, a value specification or a root graph fetch tree), or the error
      *     JSON {@link #parseSection} returns; null only if the result could not be allocated
      */
-    public static native String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset, boolean returnSourceInfo);
+    public static native String parseExpression(String kind, String code, String sourceId, int lineOffset, int columnOffset);
 
     private static String load()
     {

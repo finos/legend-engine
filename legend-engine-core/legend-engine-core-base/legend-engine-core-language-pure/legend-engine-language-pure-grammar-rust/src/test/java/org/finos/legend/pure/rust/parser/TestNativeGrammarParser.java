@@ -51,7 +51,7 @@ public class TestNativeGrammarParser
     public void testParseSection()
     {
         // A section body as the engine hands it over: after the header, line offset -1.
-        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A {}\n", "test.pure", -1, 0, true);
+        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A {}\n", "test.pure", -1, 0);
         Assert.assertTrue(json, json.contains("\"_type\":\"class\""));
         Assert.assertTrue(json, json.contains("\"startLine\":1"));
         Assert.assertFalse(json, json.contains("\"error\""));
@@ -60,24 +60,24 @@ public class TestNativeGrammarParser
     @Test
     public void testSyntaxErrorIsReportedAsJson()
     {
-        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A { p: }\n", "test.pure", -1, 0, true);
+        String json = NativeGrammarParser.parseSection("Pure", "\nClass a::A { p: }\n", "test.pure", -1, 0);
         Assert.assertTrue(json, json.contains("\"kind\":\"parser\""));
     }
 
     @Test
     public void testParseExpression()
     {
-        String json = NativeGrammarParser.parseExpression("lambda", "x|$x + 1", "query", 0, 0, true);
+        String json = NativeGrammarParser.parseExpression("lambda", "x|$x + 1", "query", 0, 0);
         Assert.assertTrue(json, json.startsWith("{\"value\":{"));
         Assert.assertTrue(json, json.contains("\"_type\":\"lambda\""));
-        String unknown = NativeGrammarParser.parseExpression("sql", "1", "query", 0, 0, true);
+        String unknown = NativeGrammarParser.parseExpression("sql", "1", "query", 0, 0);
         Assert.assertTrue(unknown, unknown.contains("\"kind\":\"unsupported\""));
     }
 
     @Test
     public void testNullArgumentIsAnInternalError()
     {
-        String json = NativeGrammarParser.parseSection("Pure", null, "test.pure", -1, 0, true);
+        String json = NativeGrammarParser.parseSection("Pure", null, "test.pure", -1, 0);
         Assert.assertTrue(json, json.contains("\"kind\":\"internal\""));
     }
 }

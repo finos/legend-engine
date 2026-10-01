@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.from.rust;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import org.finos.legend.engine.protocol.pure.m3.SourceInformation;
 import org.finos.legend.pure.rust.parser.NativeGrammarParser;
@@ -56,7 +57,7 @@ final class RustExpressionResult<T>
      */
     static <T> RustExpressionResult<T> parse(RustExpression<T> expression, boolean returnSourceInfo)
     {
-        String json = NativeGrammarParser.parseExpression(expression.kind, expression.code, expression.sourceId, expression.lineOffset, expression.columnOffset, returnSourceInfo);
+        String json = NativeGrammarParser.parseExpression(expression.kind, expression.code, expression.sourceId, expression.lineOffset, expression.columnOffset);
         if (json == null)
         {
             return error(RustSectionResult.INTERNAL_ERROR, "the Rust parser returned no result", null);
@@ -75,7 +76,8 @@ final class RustExpressionResult<T>
             {
                 return error(RustSectionResult.UNSUPPORTED, "no protocol extension for class instance type '" + absentType + "'", null);
             }
-            return new RustExpressionResult<>(RustSectionResult.MAPPER.treeToValue(root.path("value"), expression.type), null, null, null);
+            ObjectMapper mapper = returnSourceInfo ? RustSectionResult.MAPPER : RustSectionResult.MAPPER_WITHOUT_SOURCE_INFORMATION;
+            return new RustExpressionResult<>(mapper.treeToValue(root.path("value"), expression.type), null, null, null);
         }
         catch (InvalidTypeIdException e)
         {

@@ -18,8 +18,9 @@
 //! Protocol v1 elements, exactly as a Legend Engine `SectionParser`
 //! receives it (see `docs/engine-integration.md`).
 //!
-//! - The body has no `###Section` header; positions are reported in
-//!   document coordinates using the engine's line/column offsets.
+//! - The body has no `###Section` header; positions are always reported,
+//!   in document coordinates using the engine's line/column offsets (the
+//!   engine drops them on read when its caller asks for none).
 //! - Parsing is all-or-nothing: the first error wins and no partial
 //!   elements are returned.
 //! - [`ErrorKind::Unsupported`] marks input this parser cannot yet turn into
@@ -95,8 +96,6 @@ pub struct SectionRequest<'a> {
     pub line_offset: i32,
     /// Added to column numbers on the body's first line.
     pub column_offset: i32,
-    /// When `false`, no source information is emitted on elements.
-    pub return_source_info: bool,
 }
 
 /// The parsed section: its protocol elements and its imports.
@@ -187,11 +186,8 @@ pub fn parse_section(request: &SectionRequest<'_>) -> Result<SectionResult, Sect
         imports.extend(section.imports.iter().map(|i| i.path.to_string()));
         for element in &section.elements {
             let protocol = convert_element(element)?;
-            let mut json = serde_json::to_value(&protocol)
+            let json = serde_json::to_value(&protocol)
                 .map_err(|e| SectionError::from(ConvertError::from(e)))?;
-            if !request.return_source_info {
-                strip_source_information(&mut json);
-            }
             elements.push(json);
         }
     }
@@ -241,8 +237,6 @@ pub struct ExpressionRequest<'a> {
     pub line_offset: i32,
     /// Added to column numbers on the text's first line.
     pub column_offset: i32,
-    /// When `false`, no source information is emitted.
-    pub return_source_info: bool,
 }
 
 /// Parses a standalone expression into its protocol JSON, as the engine's
@@ -272,15 +266,10 @@ pub fn parse_expression(
         ExpressionKind::GraphFetch => {
             let expression = parse_standalone_expression(code, source_id, offset)
                 .map_err(|e| parse_error(&e))?;
-            return graph_fetch_tree(&expression, request.return_source_info);
+            return graph_fetch_tree(&expression);
         }
     };
-    let mut json =
-        serde_json::to_value(&value).map_err(|e| SectionError::from(ConvertError::from(e)))?;
-    if !request.return_source_info {
-        strip_source_information(&mut json);
-    }
-    Ok(json)
+    serde_json::to_value(&value).map_err(|e| SectionError::from(ConvertError::from(e)))
 }
 
 /// The engine's `concreteFunctionDefinition`: a code block that is one
@@ -304,10 +293,7 @@ fn lambda(block: &CodeBlock) -> Result<ValueSpecification, SectionError> {
 
 /// The engine's `parseGraphFetch`: the value of the class instance a graph
 /// fetch island is.
-fn graph_fetch_tree(
-    expression: &Expression,
-    return_source_info: bool,
-) -> Result<serde_json::Value, SectionError> {
+fn graph_fetch_tree(expression: &Expression) -> Result<serde_json::Value, SectionError> {
     let ValueSpecification::ClassInstance(instance) = convert_expression_typed(expression)? else {
         return Err(SectionError::new(
             ErrorKind::Parser,
@@ -315,11 +301,7 @@ fn graph_fetch_tree(
             Some(expression.source_info()),
         ));
     };
-    let mut json = instance.value;
-    if !return_source_info {
-        strip_source_information(&mut json);
-    }
-    Ok(json)
+    Ok(instance.value)
 }
 
 /// The engine's source offsets, which must not make positions negative.
@@ -418,76 +400,6 @@ fn section_text(request: &SectionRequest<'_>) -> Result<String, SectionError> {
     ))
 }
 
-/// Removes every source-information field, recursively.
-///
-/// The engine's walker returns `null` for every source information when
-/// `returnSourceInfo` is off. Protocol names them all `sourceInformation`
-/// or `<x>SourceInformation` (e.g. `profileSourceInformation`), including
-/// inside plug-in JSON. One exception: the engine parses a function test's
-/// argument values, a service test's parameter values, a persistence
-/// context's primitive service parameter values and an `equalTo`
-/// assertion's expected value (a function test's, a mapping test's or a
-/// service test's) with walkers of their own, which always position them
-/// (`visitFunctionTestParameter`, `visitTestParameter`, `visitPrimitiveValue`,
-/// `visitTestAssertion`, `EqualToGrammarParser`).
-fn strip_source_information(value: &mut serde_json::Value) {
-    match value {
-        serde_json::Value::Object(map) => {
-            map.retain(|key, _| key != "sourceInformation" && !key.ends_with("SourceInformation"));
-            let kind = map
-                .get("_type")
-                .and_then(serde_json::Value::as_str)
-                .map(str::to_owned);
-            for (key, child) in map.iter_mut() {
-                match (kind.as_deref(), key.as_str()) {
-                    (Some("functionTest" | "serviceTest"), "parameters") => {
-                        keep_values_positioned(child);
-                    }
-                    // A legacy service test's assertion's parameters.
-                    (None, "parametersValues") => keep_list_values_positioned(child),
-                    (Some("equalTo"), "expected")
-                    | (Some("primitiveTypeValue"), "primitiveType") => {}
-                    _ => strip_source_information(child),
-                }
-            }
-        }
-        serde_json::Value::Array(items) => items.iter_mut().for_each(strip_source_information),
-        _ => {}
-    }
-}
-
-/// Strips a function test's parameters but their values.
-fn keep_values_positioned(parameters: &mut serde_json::Value) {
-    for parameter in parameters.as_array_mut().into_iter().flatten() {
-        let serde_json::Value::Object(map) = parameter else {
-            continue;
-        };
-        map.retain(|key, _| key != "sourceInformation");
-        for (key, child) in map.iter_mut() {
-            if key != "value" {
-                strip_source_information(child);
-            }
-        }
-    }
-}
-
-/// Strips a legacy service test's parameter values but the values
-/// themselves: the service's walker positions a list of them, `list([…])`,
-/// and the values are positioned by a walker of their own.
-fn keep_list_values_positioned(values: &mut serde_json::Value) {
-    for value in values.as_array_mut().into_iter().flatten() {
-        let serde_json::Value::Object(map) = value else {
-            continue;
-        };
-        if map.get("_type").and_then(serde_json::Value::as_str) == Some("classInstance") {
-            map.remove("sourceInformation");
-            if let Some(serde_json::Value::Object(list)) = map.get_mut("value") {
-                list.remove("sourceInformation");
-            }
-        }
-    }
-}
-
 /// [`capabilities`] as a JSON string.
 #[must_use]
 pub fn capabilities_json() -> String {
@@ -536,127 +448,6 @@ fn to_json<T: Serialize>(value: &T) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn strip_removes_nested_source_information() {
-        let mut v = serde_json::json!({
-            "sourceInformation": {"startLine": 1},
-            "stereotypes": [{"profileSourceInformation": {}, "value": "x"}],
-            "body": [{"_type": "func", "sourceInformation": {}}],
-        });
-        strip_source_information(&mut v);
-        assert_eq!(
-            v,
-            serde_json::json!({"stereotypes": [{"value": "x"}], "body": [{"_type": "func"}]})
-        );
-    }
-
-    #[test]
-    fn strip_keeps_any_equal_to_value_positioned() {
-        let si = serde_json::json!({"startLine": 1});
-        let mut v = serde_json::json!({
-            "_type": "mappingTest",
-            "sourceInformation": si,
-            "assertions": [
-                {"_type": "equalTo", "sourceInformation": si, "expected": {"_type": "collection", "sourceInformation": si, "values": [{"_type": "integer", "sourceInformation": si}]}},
-            ],
-        });
-        strip_source_information(&mut v);
-        assert_eq!(
-            v,
-            serde_json::json!({
-                "_type": "mappingTest",
-                "assertions": [
-                    {"_type": "equalTo", "expected": {"_type": "collection", "sourceInformation": si, "values": [{"_type": "integer", "sourceInformation": si}]}},
-                ],
-            })
-        );
-    }
-
-    #[test]
-    fn strip_keeps_service_test_values_positioned() {
-        let si = serde_json::json!({"startLine": 1});
-        let mut v = serde_json::json!({
-            "_type": "service",
-            "testSuites": [{"_type": "serviceTestSuite", "sourceInformation": si, "tests": [
-                {"_type": "serviceTest", "parameters": [{"name": "p", "value": {"_type": "integer", "sourceInformation": si}}]},
-            ]}],
-            "test": {"_type": "singleExecutionTest", "sourceInformation": si, "asserts": [
-                {"sourceInformation": si, "parametersValues": [
-                    {"_type": "string", "sourceInformation": si},
-                    {"_type": "classInstance", "type": "listInstance", "sourceInformation": si,
-                     "value": {"sourceInformation": si, "values": [{"_type": "integer", "sourceInformation": si}]}},
-                ]},
-            ]},
-        });
-        strip_source_information(&mut v);
-        assert_eq!(
-            v,
-            serde_json::json!({
-                "_type": "service",
-                "testSuites": [{"_type": "serviceTestSuite", "tests": [
-                    {"_type": "serviceTest", "parameters": [{"name": "p", "value": {"_type": "integer", "sourceInformation": si}}]},
-                ]}],
-                "test": {"_type": "singleExecutionTest", "asserts": [
-                    {"parametersValues": [
-                        {"_type": "string", "sourceInformation": si},
-                        {"_type": "classInstance", "type": "listInstance",
-                         "value": {"values": [{"_type": "integer", "sourceInformation": si}]}},
-                    ]},
-                ]},
-            })
-        );
-    }
-
-    #[test]
-    fn strip_keeps_persistence_service_parameter_values_positioned() {
-        let si = serde_json::json!({"startLine": 1});
-        let mut v = serde_json::json!({
-            "_type": "persistenceContext",
-            "sourceInformation": si,
-            "serviceParameters": [{"name": "p", "sourceInformation": si, "value": {
-                "_type": "primitiveTypeValue",
-                "primitiveType": {"_type": "string", "value": "x", "sourceInformation": si},
-            }}],
-        });
-        strip_source_information(&mut v);
-        assert_eq!(
-            v,
-            serde_json::json!({
-                "_type": "persistenceContext",
-                "serviceParameters": [{"name": "p", "value": {
-                    "_type": "primitiveTypeValue",
-                    "primitiveType": {"_type": "string", "value": "x", "sourceInformation": si},
-                }}],
-            })
-        );
-    }
-
-    #[test]
-    fn strip_keeps_function_test_values_positioned() {
-        let si = serde_json::json!({"startLine": 1});
-        let mut v = serde_json::json!({
-            "_type": "functionTest",
-            "sourceInformation": si,
-            "parameters": [{"sourceInformation": si, "value": {"_type": "string", "sourceInformation": si}}],
-            "assertions": [
-                {"_type": "equalTo", "sourceInformation": si, "expected": {"_type": "string", "sourceInformation": si}},
-                {"_type": "equalToJson", "sourceInformation": si, "expected": {"_type": "externalFormat", "sourceInformation": si}},
-            ],
-        });
-        strip_source_information(&mut v);
-        assert_eq!(
-            v,
-            serde_json::json!({
-                "_type": "functionTest",
-                "parameters": [{"value": {"_type": "string", "sourceInformation": si}}],
-                "assertions": [
-                    {"_type": "equalTo", "expected": {"_type": "string", "sourceInformation": si}},
-                    {"_type": "equalToJson", "expected": {"_type": "externalFormat"}},
-                ],
-            })
-        );
-    }
 
     #[test]
     fn error_json_shape() {

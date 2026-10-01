@@ -38,7 +38,6 @@ fn parse(data: &str) -> Result<Value, SectionError> {
         source_id: "",
         line_offset: -1,
         column_offset: 0,
-        return_source_info: true,
     };
     parse_section(&request)
         .map(|result| result.elements[0]["tests"][0]["testData"][0]["data"].clone())

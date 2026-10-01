@@ -90,6 +90,16 @@ public class TestRustExpressionParser
     }
 
     @Test
+    public void testExpressionsParsedByRustWithoutSourceInformation() throws JsonProcessingException
+    {
+        System.setProperty(RustGrammarMode.FALLBACK_PROPERTY, "false");
+        String lambda = "x|[$x, #{a::A{b}}#]";
+        assertWithoutSourceInformation(json(JAVA.parseLambda(lambda, "query", 2, 5, false)), json(RUST.parseLambda(lambda, "query", 2, 5, false)));
+        assertWithoutSourceInformation(json(JAVA.parseValueSpecification("[1, 'a']", "", 0, 0, false)), json(RUST.parseValueSpecification("[1, 'a']", "", 0, 0, false)));
+        assertWithoutSourceInformation(json(JAVA.parseGraphFetch("#{a::A{b, c{d}}}#", "", 0, 0, false)), json(RUST.parseGraphFetch("#{a::A{b, c{d}}}#", "", 0, 0, false)));
+    }
+
+    @Test
     public void testDecimalsKeepTheirDigitsAndScale()
     {
         // Read from the Rust parser's JSON exactly as the Java parser builds them, beyond what a double holds.
@@ -141,6 +151,12 @@ public class TestRustExpressionParser
     private static Multiplicity columnMultiplicity(LambdaFunction lambda)
     {
         return ((ColSpecArray) ((ClassInstance) lambda.body.get(0)).value).colSpecs.get(0).multiplicity;
+    }
+
+    private static void assertWithoutSourceInformation(String java, String rust)
+    {
+        Assert.assertFalse(rust, rust.toLowerCase().contains("sourceinformation"));
+        Assert.assertEquals(java, rust);
     }
 
     private static String json(Object value) throws JsonProcessingException

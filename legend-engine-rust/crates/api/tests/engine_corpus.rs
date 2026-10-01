@@ -194,7 +194,6 @@ fn parse_section_entry(entry: &Entry) -> (Value, Result<Value, SectionError>) {
         source_id: text(&entry.meta, "sourceId"),
         line_offset: offset(&entry.meta, "lineOffset"),
         column_offset: offset(&entry.meta, "columnOffset"),
-        return_source_info: true,
     };
     // `imports` is absent for a section whose grammar has none (the engine's
     // `DefaultCodeSection`), and `[]` compares as absent: `sectionClass`
@@ -232,7 +231,6 @@ fn parse_expression_entry(entry: &Entry) -> (Value, Result<Value, SectionError>)
         source_id: text(&entry.meta, "sourceId"),
         line_offset: offset(&entry.meta, "lineOffset"),
         column_offset: offset(&entry.meta, "columnOffset"),
-        return_source_info: true,
     };
     let rust = parse_expression(&request).map(|value| json!({ "value": value }));
     (json!({ "value": entry.java["value"] }), rust)

@@ -31,7 +31,9 @@ The section parser receives `SectionSourceCode`:
   `lineOffset = headerLine - 2`.
 - Positions are 1-based with an inclusive end column (ANTLR semantics).
   `columnOffset` applies to the first line only.
-  `returnSourceInfo = false` means no `sourceInformation` anywhere.
+  `returnSourceInfo = false` means no `sourceInformation` anywhere: the Rust
+  parser always emits positions, and the engine's binding drops every
+  `SourceInformation` when it reads the JSON for a caller that asked for none.
 
 The section parser must return the section class Java's parser returns (an
 `ImportAwareCodeSection` for a grammar with imports, always for `###Pure`;
@@ -145,10 +147,9 @@ legend-pure takes its own back:
 section contract above: `lineOffset` / `columnOffset` are applied in the
 lexer (`tokenize_with_offset`), so AST, error and protocol positions are all
 born in document coordinates; the first error wins; `Unsupported` covers
-unlinked grammars, `native function`, and offsets below `-1`. With
-`returnSourceInfo = false`, every `sourceInformation` / `…SourceInformation`
-field is removed. `parse_section_json` / `capabilities_json` are the JSON
-forms the JNI layer returns.
+unlinked grammars, `native function`, and offsets below `-1`. Positions are
+always emitted. `parse_section_json` / `capabilities_json` are the JSON forms
+the JNI layer returns.
 
 ### Generic JNI surface
 
@@ -157,12 +158,12 @@ the engine module `legend-engine-language-pure-grammar-rust` (below), in the
 package it had in legend-pure, which the JNI symbols' names follow:
 
 - `capabilities()` returns `{"sections":[…],"islands":[…]}`.
-- `parseSection(sectionType, code, sourceId, lineOffset, columnOffset, returnSourceInfo)`
+- `parseSection(sectionType, code, sourceId, lineOffset, columnOffset)`
   returns JSON: `{"elements":[…],"imports":[…]}` (`imports` absent when
   the section's grammar has none) or
   `{"error":{"message","sourceInformation","kind"}}`.
   `kind: "unsupported"` lets Java fall back to its own parser.
-- `parseExpression(kind, code, sourceId, lineOffset, columnOffset, returnSourceInfo)`
+- `parseExpression(kind, code, sourceId, lineOffset, columnOffset)`
   parses a standalone `lambda`, `valueSpecification` or `graphFetch` as the
   engine's `PureGrammarParser` does, into `{"value":…}` or the same error
   JSON. A lambda's text is a code block: one lambda is the result; other

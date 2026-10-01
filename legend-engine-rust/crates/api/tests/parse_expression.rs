@@ -28,7 +28,6 @@ fn request(kind: ExpressionKind, code: &str) -> ExpressionRequest<'_> {
         source_id: "query",
         line_offset: 0,
         column_offset: 0,
-        return_source_info: true,
     }
 }
 
@@ -104,17 +103,6 @@ fn offsets_shift_positions() {
     shifted.column_offset = 10;
     let lambda = parse_expression(&shifted).expect("parses");
     assert_eq!(span(&lambda), (5, 11, 5, 12));
-}
-
-#[test]
-fn no_positions_when_none_are_asked_for() {
-    let mut request = request(ExpressionKind::Lambda, "x|[$x, #{my::Person{name}}#]");
-    request.return_source_info = false;
-    let lambda = parse_expression(&request).expect("parses");
-    assert!(
-        !lambda.to_string().contains("sourceInformation"),
-        "{lambda}"
-    );
 }
 
 #[test]
