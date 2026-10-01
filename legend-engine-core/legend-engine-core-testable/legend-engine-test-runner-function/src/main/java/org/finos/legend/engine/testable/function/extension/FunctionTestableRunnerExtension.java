@@ -54,6 +54,13 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        Function function = (Function) element;
+        return function.tests == null ? 0 : function.tests.size();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition)

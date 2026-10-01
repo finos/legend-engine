@@ -60,6 +60,20 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
+    public int getTestCount(PackageableElement element)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
+        return mapping.testSuites == null ? 0 : mapping.testSuites.size();
+    }
+
+    @Override
+    public boolean hasLegacyTests(PackageableElement element)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping mapping = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping) element;
+        return mapping.tests != null && !mapping.tests.isEmpty();
+    }
+
+    @Override
     public TestRunner getTestRunner(Testable testable)
     {
         if (testable instanceof Mapping)

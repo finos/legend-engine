@@ -21,13 +21,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.finos.legend.engine.testable.api.model.TestableElementCoverageResult;
-import org.finos.legend.engine.testable.api.model.TestableElementInfo;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -45,9 +42,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Api(tags = "Testable")
 @Path("pure/v1/testable")
@@ -88,19 +82,7 @@ public class TestableElementCoverageApi
         {
             try
             {
-                List<TestableElementInfo> services = pureModelContextData.getElements().stream()
-                        .filter(Service.class::isInstance)
-                        .map(Service.class::cast)
-                        .map(TestableElementCoverageApi::analyzeService)
-                        .collect(Collectors.toList());
-
-                List<TestableElementInfo> mappings = pureModelContextData.getElements().stream()
-                        .filter(Mapping.class::isInstance)
-                        .map(Mapping.class::cast)
-                        .map(TestableElementCoverageApi::analyzeMapping)
-                        .collect(Collectors.toList());
-
-                TestableElementCoverageResult result = new TestableElementCoverageResult(services, mappings);
+                TestableElementCoverageResult result = TestableElementCoverageAnalyzer.analyze(pureModelContextData);
                 return ManageConstantResult.manageResult(identity.getName(), result, objectMapper);
             }
             catch (Exception e)
@@ -108,21 +90,5 @@ public class TestableElementCoverageApi
                 return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
-    }
-
-    private static TestableElementInfo analyzeService(Service service)
-    {
-        boolean hasTestSuites = service.testSuites != null && !service.testSuites.isEmpty();
-        boolean hasLegacyTests = service.test != null;
-        int testSuiteCount = hasTestSuites ? service.testSuites.size() : 0;
-        return new TestableElementInfo(service.getPath(), "Service", hasTestSuites, hasLegacyTests, testSuiteCount);
-    }
-
-    private static TestableElementInfo analyzeMapping(Mapping mapping)
-    {
-        boolean hasTestSuites = mapping.testSuites != null && !mapping.testSuites.isEmpty();
-        boolean hasLegacyTests = mapping.tests != null && !mapping.tests.isEmpty();
-        int testSuiteCount = hasTestSuites ? mapping.testSuites.size() : 0;
-        return new TestableElementInfo(mapping.getPath(), "Mapping", hasTestSuites, hasLegacyTests, testSuiteCount);
     }
 }
